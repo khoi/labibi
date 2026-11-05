@@ -216,6 +216,7 @@ export function botIntroPrompt(input: {
 }): string {
   const canAsk = !input.disabledBuiltinTools.includes("ask_user");
   const canUpdate = !input.disabledBuiltinTools.includes("update_bot");
+  const canConnect = !input.disabledBuiltinTools.includes("connect_app");
   const options =
     "two to four short options that fit your name, anything your description or instructions already say, and what you know about them, never a stock list";
   return [
@@ -233,6 +234,9 @@ export function botIntroPrompt(input: {
     "If your profile already makes that clear, say in one line what you will do instead of asking.",
     canUpdate
       ? 'Once you know what you are for, use update_bot to set what is already clear: a one-line description of what you do, your instructions on how you do it, and a short name if yours is still a placeholder like "New Bot". Leave anything vague unset to fill in later as the work becomes clearer, and otherwise keep your name and look.'
+      : undefined,
+    canConnect
+      ? "Before you start, use connect_app for the one or two apps that would help most with that work, such as their email, calendar, or chat, so they can connect them right here. Skip any that is already connected or not available. Do not wait on the cards: say in one line that you will do more once they connect, and carry on with what you have."
       : undefined,
     "Then get started, asking one follow-up only if you cannot start without it.",
   ]
