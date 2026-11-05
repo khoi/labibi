@@ -19,6 +19,7 @@ export const ProductEventType = z.enum([
   "thread.computer",
   "thread.subagent",
   "thread.cloud_agent",
+  "thread.call.ended",
   "run.started",
   "run.steering.claimed",
   "run.checkpointed",
@@ -105,7 +106,17 @@ export const BotSettingsValuesSchema = z.object({
 });
 export type BotSettingsValues = z.infer<typeof BotSettingsValuesSchema>;
 
-export const MessageBlock = z.discriminatedUnion("kind", [
+function retiredCallBlockAsText(block: unknown): unknown {
+  if (typeof block !== "object" || block === null || !("kind" in block)) return block;
+  const fields = block as Record<string, unknown>;
+  if (fields.kind === "voice_call") {
+    return { kind: "text", text: String(fields.farewell || fields.title || "") };
+  }
+  if (fields.kind === "call_request") return { kind: "text", text: String(fields.reason ?? "") };
+  return block;
+}
+
+const MessageBlockSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("text"), text: z.string() }),
   z.object({
     kind: z.literal("card"),
@@ -353,6 +364,7 @@ export const MessageBlock = z.discriminatedUnion("kind", [
     hop: z.number().int().nonnegative().optional(),
   }),
 ]);
+export const MessageBlock = z.preprocess(retiredCallBlockAsText, MessageBlockSchema);
 export type MessageBlock = z.infer<typeof MessageBlock>;
 
 /**

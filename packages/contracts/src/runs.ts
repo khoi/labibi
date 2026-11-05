@@ -13,6 +13,7 @@ export const RUN_TRIGGERS = [
   "resume",
   "follow_up",
   "reaction",
+  "call_end",
   "spawn",
   "skill",
   "bot_message",

@@ -80,10 +80,12 @@ for (const app of ["web", "www"]) {
 await mkdir(path("apps/www/public/brand/kit"), { recursive: true });
 await png(rounded, "apps/www/public/brand/labradoodle-mark.png", 256);
 await png(rounded, "apps/www/public/brand/kit/labradoodle-icon.png", 1024);
-await sharp(rounded).resize(400).webp().toFile(path("apps/www/public/brand/kit/labradoodle-icon-preview.webp"));
+await sharp(rounded)
+  .resize(400)
+  .webp()
+  .toFile(path("apps/www/public/brand/kit/labradoodle-icon-preview.webp"));
 await png(rounded, "apps/mobile/assets/favicon.png", 128);
 await png(square, "apps/mobile/assets/icon.png", 1024);
-await png(square, "apps/mobile/ios-widgets/Assets.xcassets/AppMark.imageset/app-mark.png", 180);
 await png(square, "apps/desktop/assets/icon.png", 1024);
 await ico(rounded, "apps/desktop/assets/icon.ico", [16, 32, 48, 64, 128, 256]);
 
@@ -93,14 +95,21 @@ await sharp(await clip(await art(1024, 0.5, plate), 1024, 100, 185))
   .toFile(path("apps/desktop/assets/icon-macos.png"));
 
 // Icon Composer's layer: the coil alone; the bundle paints the white plate.
-await sharp(await art(1024, 0.62)).png().toFile(path("packages/ui-tokens/assets/Labradoodle.icon/Assets/doodle.png"));
+await sharp(await art(1024, 0.62))
+  .png()
+  .toFile(path("packages/ui-tokens/assets/Labradoodle.icon/Assets/doodle.png"));
 
 // Android: the coil sits inside the launcher's 66% safe circle on a white background layer.
-await sharp(await art(1024, 0.46)).png().toFile(path("apps/mobile/assets/adaptive-icon.png"));
+await sharp(await art(1024, 0.46))
+  .png()
+  .toFile(path("apps/mobile/assets/adaptive-icon.png"));
 await sharp({ create: { width: 1024, height: 1024, channels: 3, background: plate } })
   .png()
   .toFile(path("apps/mobile/assets/icon-background.png"));
-const silhouette = await sharp(await art(1024, 0.46)).extractChannel("alpha").png().toBuffer();
+const silhouette = await sharp(await art(1024, 0.46))
+  .extractChannel("alpha")
+  .png()
+  .toBuffer();
 await sharp({ create: { width: 1024, height: 1024, channels: 3, background: "black" } })
   .joinChannel(silhouette)
   .png()
@@ -119,7 +128,9 @@ await sharp({ create: { width: 72, height: 72, channels: 3, background: "white" 
   .toFile(path("apps/mobile/assets/notification-icon.png"));
 
 // The lockup: the mark beside the wordmark, as the press kit offers it.
-const word = await sharp(path("apps/www/public/brand/kit/labradoodle-wordmark.svg"), { density: 900 })
+const word = await sharp(path("apps/www/public/brand/kit/labradoodle-wordmark.svg"), {
+  density: 900,
+})
   .resize({ height: 300 })
   .png()
   .toBuffer();
@@ -134,4 +145,7 @@ const lockup = await sharp({
   .png()
   .toBuffer();
 await sharp(lockup).toFile(path("apps/www/public/brand/kit/labradoodle-logo.png"));
-await sharp(lockup).resize({ width: 1000 }).webp().toFile(path("apps/www/public/brand/kit/labradoodle-logo-preview.webp"));
+await sharp(lockup)
+  .resize({ width: 1000 })
+  .webp()
+  .toFile(path("apps/www/public/brand/kit/labradoodle-logo-preview.webp"));
