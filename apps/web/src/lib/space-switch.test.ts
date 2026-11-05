@@ -138,17 +138,12 @@ describe("space switch decision", () => {
     const { spaceSwitchDecision } = await import("./space-switch");
     const started = new URL("https://example.test/app/bot-a");
     const current = new URL("https://example.test/app/bot-a?panel=files#preview");
-    expect(spaceSwitchDecision(true, started.pathname, current.pathname, false)).toBe("commit");
+    expect(spaceSwitchDecision(true, started.pathname, current.pathname)).toBe("commit");
   });
 
   it("abandons superseded requests and navigation to another pathname", async () => {
     const { spaceSwitchDecision } = await import("./space-switch");
-    expect(spaceSwitchDecision(false, "/app/a", "/app/a", true)).toBe("abandon");
-    expect(spaceSwitchDecision(true, "/app/a", "/app/c", false)).toBe("abandon");
-  });
-
-  it("reloads if a call starts before the transition commits", async () => {
-    const { spaceSwitchDecision } = await import("./space-switch");
-    expect(spaceSwitchDecision(true, "/app/a", "/app/a", true)).toBe("reload");
+    expect(spaceSwitchDecision(false, "/app/a", "/app/a")).toBe("abandon");
+    expect(spaceSwitchDecision(true, "/app/a", "/app/c")).toBe("abandon");
   });
 });

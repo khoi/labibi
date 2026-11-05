@@ -106,7 +106,17 @@ export const BotSettingsValuesSchema = z.object({
 });
 export type BotSettingsValues = z.infer<typeof BotSettingsValuesSchema>;
 
-export const MessageBlock = z.discriminatedUnion("kind", [
+function retiredCallBlockAsText(block: unknown): unknown {
+  if (typeof block !== "object" || block === null || !("kind" in block)) return block;
+  const fields = block as Record<string, unknown>;
+  if (fields.kind === "voice_call") {
+    return { kind: "text", text: String(fields.farewell || fields.title || "") };
+  }
+  if (fields.kind === "call_request") return { kind: "text", text: String(fields.reason ?? "") };
+  return block;
+}
+
+const MessageBlockSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("text"), text: z.string() }),
   z.object({
     kind: z.literal("card"),
@@ -194,29 +204,6 @@ export const MessageBlock = z.discriminatedUnion("kind", [
     kind: z.literal("computer"),
     state: z.string(),
     text: z.string(),
-  }),
-  z.object({
-    /** Transcript card left in the thread when the bot hangs up a voice call. */
-    kind: z.literal("voice_call"),
-    /** Absent when the call had no client nonce to derive an id from. */
-    callId: z.string().optional(),
-    title: z.string(),
-    farewell: z.string(),
-    /** Connected time the caller's client measured; absent when the bot hung up. */
-    durationSeconds: z.number().int().nonnegative().optional(),
-  }),
-  z.object({
-    /** The bot is calling the user; the card tracks the call from ringing to its outcome. */
-    kind: z.literal("call_request"),
-    callId: z.string(),
-    /** Why the bot is calling, shown on the incoming call. */
-    reason: z.string(),
-    /** The bot's first spoken sentence once the user answers. */
-    opening: z.string(),
-    status: z.enum(["ringing", "answered", "declined", "missed"]),
-    expiresAt: z.string(),
-    /** Connected time the user's client measured after answering. */
-    durationSeconds: z.number().int().nonnegative().optional(),
   }),
   z.object({ kind: z.literal("meta"), text: z.string() }),
   z.object({
@@ -377,6 +364,7 @@ export const MessageBlock = z.discriminatedUnion("kind", [
     hop: z.number().int().nonnegative().optional(),
   }),
 ]);
+export const MessageBlock = z.preprocess(retiredCallBlockAsText, MessageBlockSchema);
 export type MessageBlock = z.infer<typeof MessageBlock>;
 
 /**
@@ -489,8 +477,6 @@ export const ThreadMessageSchema = z.object({
   replyQuote: z.string().optional(),
   replyPreview: ReplyPreviewSchema.nullable().optional(),
   runId: Id.optional(),
-  /** Set when the message was sent from a live voice call; groups one call's transcript. */
-  callId: z.string().optional(),
   createdAt: z.string(),
 });
 export type ThreadMessage = z.infer<typeof ThreadMessageSchema>;

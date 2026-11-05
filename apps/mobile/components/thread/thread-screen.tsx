@@ -24,7 +24,6 @@ import { rpc } from "../../lib/api";
 import { useAppForeground } from "../../lib/app-foreground";
 import { mobileTokens } from "../../lib/appearance";
 import type { MobileArtifactTarget } from "../../lib/artifact-open";
-import { useCallSession } from "../../lib/call-session";
 import { composerDraftScope } from "../../lib/composer-draft";
 import { cronLabels } from "../../lib/cron";
 import { useI18n } from "../../lib/i18n";
@@ -56,7 +55,7 @@ import { useThreadSend } from "../../lib/thread-send";
 import { threadGroupMembers } from "../../lib/thread-snapshot";
 import { useThreadSync } from "../../lib/thread-sync";
 import { useThreadTranscript } from "../../lib/thread-transcript";
-import { useAutoSpeakReply, useSpeakMessages, useThreadVoiceCall } from "../../lib/thread-voice";
+import { useAutoSpeakReply, useSpeakMessages } from "../../lib/thread-voice";
 import { liveEndRunError } from "../../lib/thread-window";
 import { FailedSendBubble } from "../failed-send-bubble";
 import { NewestPageCards } from "../pages/page-card";
@@ -123,8 +122,6 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
   const readOnly = readOnlyParam === "1";
   const requestedThreadId = typeof threadId === "string" && threadId ? threadId : undefined;
   const inGroup = Boolean(groupId);
-  const call = useCallSession();
-  const onCall = Boolean(botId) && call?.botId === botId;
   // The composer floats over the list, which scrolls underneath; this keeps the newest message
   // clear of it. A read-only chat has no composer.
   const [dockHeight, setDockHeight] = useState(0);
@@ -379,8 +376,8 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     refresh,
     showLatest,
     markCaughtUp,
-    // The voice hook below owns bot switching; a send only switches after this render.
-    openBotChat: (target, ring) => openBotChat(target, ring),
+    openBotChat: (target) =>
+      router.replace({ pathname: "/thread", params: { botId: target.id, name: target.name } }),
   });
   const { replyTarget, setReplyTarget, replyQuote, setReplyQuote, quoteTarget, setQuoteTarget } =
     composer;
@@ -412,15 +409,6 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     members: snap?.members,
     displayName,
     mentionBots,
-  });
-
-  const { startVoiceCall, openBotChat } = useThreadVoiceCall({
-    botId,
-    readOnly,
-    displayName,
-    mentionBots,
-    mentionBotsRef,
-    activeBotId,
   });
 
   const { runError, normalizedRunError, runErrorAction, detailsOpen, setDetailsOpen } =
@@ -482,7 +470,6 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     groupId,
     inGroup,
     readOnly,
-    onCall,
     displayName,
     mentionBots,
     currentBot,
@@ -635,8 +622,6 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
               attachmentIds={attachments.activePendingAttachments.map(
                 (attachment) => attachment.id,
               )}
-              botId={botId}
-              onCall={onCall}
               working={working}
               sending={composer.sending || attachments.shareImporting}
               styles={styles}
@@ -644,7 +629,6 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
               attachFrom={attachments.attachFrom}
               send={composer.send}
               stop={composer.stop}
-              startVoiceCall={startVoiceCall}
               onSlashAction={composer.runSlashAction}
               onEmptied={composer.composerEmptied}
             />

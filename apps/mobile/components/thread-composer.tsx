@@ -80,8 +80,6 @@ type ThreadComposerProps = {
   replyTargetId?: string;
   replyQuote: string | null;
   attachmentIds: string[];
-  botId?: string;
-  onCall: boolean;
   working: boolean;
   sending: boolean;
   styles: { circleButton: ViewStyle; composerFill: ViewStyle };
@@ -89,7 +87,6 @@ type ThreadComposerProps = {
   attachFrom: (source: string) => void;
   send: () => Promise<void>;
   stop: () => Promise<void>;
-  startVoiceCall: () => Promise<void>;
   onSlashAction: (action: SlashActionId) => void;
   /** The composer holds no text: the last of it was deleted or sent. */
   onEmptied?: () => void;
@@ -105,8 +102,6 @@ export function ThreadComposer({
   replyTargetId,
   replyQuote,
   attachmentIds,
-  botId,
-  onCall,
   working,
   sending,
   styles,
@@ -114,7 +109,6 @@ export function ThreadComposer({
   attachFrom,
   send,
   stop,
-  startVoiceCall,
   onSlashAction,
   onEmptied,
 }: ThreadComposerProps) {
@@ -548,7 +542,7 @@ export function ThreadComposer({
             borderRadius: 22,
             flexDirection: "row",
             alignItems: "flex-end",
-            // Keeps text clear of the call/send pill even when it runs to the trailing edge (RTL).
+            // Keeps text clear of the send pill even when it runs to the trailing edge (RTL).
             gap: 8,
             paddingStart: 16,
             paddingEnd: 8,
@@ -734,50 +728,27 @@ export function ThreadComposer({
               </TextInput>
             </Pressable>
           </View>
-          {!canSend && botId && !onCall ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t("Call")}
-              hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
-              onPress={() => void startVoiceCall()}
-              style={{ marginBottom: 8 }}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t("Send")}
+            disabled={sending || !canSend}
+            hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+            onPress={() => void send()}
+            style={{ marginBottom: 8, opacity: sending || !canSend ? 0.5 : 1 }}
+          >
+            <GlassSurface
+              tint={tokens.primary}
+              style={composerPillStyle}
+              fallbackStyle={{ backgroundColor: tokens.primary }}
             >
-              <GlassSurface
-                tint={tokens.primary}
-                style={composerPillStyle}
-                fallbackStyle={{ backgroundColor: tokens.primary }}
-              >
-                <NativeSymbol
-                  ios="waveform"
-                  android="pulse-outline"
-                  size={15}
-                  color={tokens.primaryForeground}
-                />
-              </GlassSurface>
-            </Pressable>
-          ) : (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t("Send")}
-              disabled={sending || !canSend}
-              hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
-              onPress={() => void send()}
-              style={{ marginBottom: 8, opacity: sending || !canSend ? 0.5 : 1 }}
-            >
-              <GlassSurface
-                tint={tokens.primary}
-                style={composerPillStyle}
-                fallbackStyle={{ backgroundColor: tokens.primary }}
-              >
-                <NativeSymbol
-                  ios="arrow.up"
-                  android="arrow-up"
-                  size={15}
-                  color={tokens.primaryForeground}
-                />
-              </GlassSurface>
-            </Pressable>
-          )}
+              <NativeSymbol
+                ios="arrow.up"
+                android="arrow-up"
+                size={15}
+                color={tokens.primaryForeground}
+              />
+            </GlassSurface>
+          </Pressable>
         </GlassSurface>
         {working ? (
           <Pressable

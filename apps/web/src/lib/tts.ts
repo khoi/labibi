@@ -16,7 +16,6 @@ export interface SpeechSnapshot {
   status: SpeechStatus;
   botId?: string;
   messageId?: string;
-  caption?: string;
   error?: string;
 }
 
@@ -55,11 +54,6 @@ export class Speaker {
   private set(next: SpeechSnapshot) {
     this.snapshot = next;
     for (const watcher of [...this.watchers]) watcher(next);
-  }
-
-  isSpeaking(messageId?: string): boolean {
-    if (this.snapshot.status === "idle") return false;
-    return messageId ? this.snapshot.messageId === messageId : true;
   }
 
   stop() {
@@ -131,12 +125,7 @@ export class Speaker {
         return failure;
       }
       if (!live()) return;
-      this.set({
-        status: "speaking",
-        botId: opts.botId,
-        messageId: opts.messageId,
-        caption: utterances[i],
-      });
+      this.set({ status: "speaking", botId: opts.botId, messageId: opts.messageId });
       const finished = await this.play(rendered.blob, live);
       if (!finished || !live()) {
         if (live()) this.set(IDLE);

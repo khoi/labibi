@@ -40,7 +40,7 @@ export const selfHosted: VoiceProvider = {
   h1: "Self-hosted voice for AI agents: Kokoro, Whisper and open source TTS",
   intro: [
     "You don't need a voice vendor to talk to an AI agent. Open models such as [Kokoro](https://huggingface.co/hexgrad/Kokoro-82M) for speech and Whisper for transcription run on an ordinary computer, and several open source servers put them behind the same API shape OpenAI uses. Point an agent at that server and no voice vendor ever hears you. The finished audio still goes to whichever device is listening.",
-    "[Labradoodle](/) is an open source app for AI teammates that do real work. You talk to each bot in chat, and you can also talk to it by voice: hold the mic to speak, have replies read aloud, or call a bot in real time. Its **Self-hosted** voice option connects to any OpenAI-compatible speech server you run, so a [self-hosted Labradoodle](/self-hosted-ai-agent/) can have voice with no hosted service at all.",
+    "[Labradoodle](/) is an open source app for AI teammates that do real work. You talk to each bot in chat, and you can also talk to it by voice: hold the mic to speak or have replies read aloud. Its **Self-hosted** voice option connects to any OpenAI-compatible speech server you run, so a [self-hosted Labradoodle](/self-hosted-ai-agent/) can have voice with no hosted service at all.",
     "This page compares the open source speech models people actually run in 2026, their licenses and hardware, what self-hosting costs against hosted APIs, and how to connect a server to Labradoodle.",
   ],
   scene: {
@@ -172,12 +172,11 @@ export const selfHosted: VoiceProvider = {
     {
       heading: "What you can do with self-hosted voice in Labradoodle",
       paragraphs: [
-        "Labradoodle sends both speech and transcription to the one **Server URL** you enter. If that server does both, you get every voice feature in the [voice and calls guide](/docs/voice-and-calls/).",
+        "Labradoodle sends both speech and transcription to the one **Server URL** you enter. If that server does both, you get every voice feature in the [voice guide](/docs/voice-and-calls/).",
       ],
       bullets: [
         "Talk instead of typing. Hold the mic in the composer and your server transcribes what you say.",
         "Hear replies. Choose **Speak this reply** on a message, or turn on **Read replies aloud** in a bot's settings.",
-        "Call a bot with **Call** at the top of the chat, or let a bot call you, for example when you ask it to call you at 5.",
         "Pick a voice from the server's own list. Kokoro voices show their language, and Labradoodle passes that language to the server so a French voice reads with French pronunciation.",
         "Choose the models. **Speech model** and **Transcription model** take whatever names your server uses.",
       ],
@@ -192,13 +191,13 @@ export const selfHosted: VoiceProvider = {
     {
       heading: "Limits and network rules",
       bullets: [
-        "Quality and speed depend on your models and hardware. Whisper on a CPU can be slow on a call.",
-        "A speech-only server such as Kokoro-FastAPI can't transcribe. Use a server that does both if you want to hold the mic or make calls.",
+        "Quality and speed depend on your models and hardware. Whisper on a CPU can be slow on long recordings.",
+        "A speech-only server such as Kokoro-FastAPI can't transcribe. Use a server that does both if you want to hold the mic.",
         "Addresses on your own network, `localhost` and `host.docker.internal` are refused unless the server sets `MCP_ALLOW_PRIVATE_ENDPOINT=true` on the API and worker. That setting applies to every user, so leave it off on a public install.",
         "A hostname that resolves to a private address must also be listed in `RAKAZO_OPENAI_COMPAT_PRIVATE_HOSTS`. Cloud metadata and link-local addresses are always blocked.",
         "A public address must use HTTPS if you add an API key. Setting `RAKAZO_OPENAI_COMPAT_ALLOW_PUBLIC=0` blocks public servers, and hides the option if private ones aren't allowed either.",
         "Watch the license. Several popular open models, including F5-TTS, XTTS-v2 and Fish Audio's open weights, aren't free for commercial use.",
-        "On the mobile app, calls can use your phone's own voices if you pick a **Device voice** in the bot's settings. Otherwise replies use this provider.",
+        "On the mobile app, a bot can speak with your phone's own voices if you pick a **Device voice** in its settings. Otherwise replies use this provider.",
       ],
     },
     {
@@ -208,7 +207,7 @@ export const selfHosted: VoiceProvider = {
       ],
       steps: [
         "Start a speech server, for example the Kokoro-FastAPI Docker image, Speaches, or `mlx_audio.server` on a Mac.",
-        "On the Labradoodle API and worker, set `MCP_ALLOW_PRIVATE_ENDPOINT=true` for a server on your network, and `PHONE_CALLS_ENABLED=true` to turn on hold-to-talk and calls. Restart them.",
+        "On the Labradoodle API and worker, set `MCP_ALLOW_PRIVATE_ENDPOINT=true` for a server on your network, and restart them.",
         "Open **Settings → Voice**, set **Provider** to **Self-hosted** and enter the **Server URL**, such as `http://192.168.1.10:8880/v1`. Labradoodle adds `/v1` if you leave it off. If Labradoodle runs in Docker and the speech server is on the same machine, use `host.docker.internal` instead of `localhost`.",
         "Add an **API key** only if your server needs one. Change **Speech model** and **Transcription model** if your server uses other names; Kokoro-FastAPI expects `kokoro`.",
         "Choose **Connect**, pick a **Voice** and choose **Hear a sample**.",

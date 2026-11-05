@@ -3,8 +3,8 @@
     "NSCameraUsageDescription": "Labradoodle usa la cámara para que puedas adjuntar fotos a un mensaje para un bot.",
     "NSPhotoLibraryUsageDescription": "Labradoodle usa tu fototeca para que puedas adjuntar imágenes a un mensaje para un bot.",
     "NSLocalNetworkUsageDescription": "Labradoodle se conecta a un servidor de Labradoodle autoalojado en tu red local.",
-    "NSMicrophoneUsageDescription": "Labradoodle usa el micrófono para las llamadas de voz con tus bots.",
-    "NSSpeechRecognitionUsageDescription": "Labradoodle convierte lo que dices en mensajes durante las llamadas de voz.",
+    "NSMicrophoneUsageDescription": "Labradoodle usa el micrófono para grabar mensajes de voz para tus bots.",
+    "NSSpeechRecognitionUsageDescription": "Labradoodle convierte lo que dices en mensajes para tus bots.",
     "NSFaceIDUsageDescription": "Permite que Labradoodle acceda a tus datos biométricos de Face ID."
   }
 }

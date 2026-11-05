@@ -1,4 +1,3 @@
-import type { ThreadItem } from "@labradoodle/core";
 import { reconcileThreadScrollState } from "@labradoodle/core";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type {
@@ -56,7 +55,7 @@ export function useThreadListScroll({
     loadingOlderContent,
     pinnedScrollMetrics,
   } = history;
-  const list = useRef<FlatList<ThreadItem<MobileMessage>>>(null);
+  const list = useRef<FlatList<MobileMessage>>(null);
   const pinnedList = useRef<ScrollView>(null);
   const helperViewport = useRef<View>(null);
   const helperScrollOffset = useRef(0);

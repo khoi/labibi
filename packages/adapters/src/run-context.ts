@@ -227,9 +227,6 @@ export interface RunSource {
   historySearchBeforeSeq: number;
   /** See historyMyChatsAllowed; claimed outside steering still revokes it per call. */
   myChatsAllowed: boolean;
-  voiceCall: boolean;
-  callEndRun: boolean;
-  callClientNonce: string | null;
   peerMessage: Awaited<ReturnType<typeof loadBotMessageContext>>;
   /** Whose own computer user_computer_shell may reach (see userComputerOwner). */
   userComputerOwner: string | undefined;

@@ -245,6 +245,27 @@ describe("contracts", () => {
     expect(MessageBlock.parse({ kind: "steps", steps })).toEqual({ kind: "steps", steps });
   });
 
+  it("reads call cards saved before calls were removed as text", () => {
+    expect(
+      MessageBlock.parse({
+        kind: "voice_call",
+        callId: "c1",
+        title: "Deploy check",
+        farewell: "Bye",
+      }),
+    ).toEqual({ kind: "text", text: "Bye" });
+    expect(
+      MessageBlock.parse({
+        kind: "call_request",
+        callId: "c2",
+        reason: "Confirm the budget",
+        opening: "Hi",
+        status: "missed",
+        expiresAt: "2026-01-01T00:00:00.000Z",
+      }),
+    ).toEqual({ kind: "text", text: "Confirm the budget" });
+  });
+
   it("limits reactions to persisted non-channel messages", () => {
     expect(
       canReactToThreadMessage({ id: "message-1", blocks: [{ kind: "text", text: "hi" }] }),

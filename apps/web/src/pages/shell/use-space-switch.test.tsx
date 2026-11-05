@@ -14,7 +14,6 @@ const state = vi.hoisted(() => ({
   discard: vi.fn(),
   select: vi.fn(),
   cached: vi.fn(),
-  call: vi.fn(),
   remount: vi.fn(),
   stop: vi.fn(),
 }));
@@ -25,7 +24,6 @@ vi.mock("../../lib/bootstrap", () => ({
 vi.mock("../../lib/bootstrap-target", () => ({
   initialBootstrapTarget: () => ({ botId: "target" }),
 }));
-vi.mock("../../lib/call-session", () => ({ getSnapshot: state.call }));
 vi.mock("../../lib/organizations", () => ({ leaveOrganization: async () => {} }));
 vi.mock("../../lib/query", () => ({
   queryClient: { getQueryData: state.cached },
@@ -75,7 +73,6 @@ beforeEach(() => {
   navigate = vi.fn();
   state.prime.mockImplementation(() => new Promise<void>((resolve) => pending.push(resolve)));
   state.cached.mockReturnValue(undefined);
-  state.call.mockReturnValue(null);
   state.select.mockReturnValue(true);
   state.remount.mockImplementation((commit: () => boolean) => commits.push(commit));
   root = createRoot(document.createElement("div"));

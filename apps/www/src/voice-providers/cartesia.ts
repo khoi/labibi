@@ -50,27 +50,26 @@ export const cartesia: VoiceProvider = {
   name: "Cartesia",
   does: "Speaks only",
   runs: "Hosted",
-  bestFor: "Fast, natural voices on calls",
+  bestFor: "Fast, natural voices for replies",
   title: "Cartesia pricing and Cartesia vs ElevenLabs for AI voice agents (2026)",
   description:
-    "Cartesia Sonic pricing explained: plans, credits, cost per hour of speech and Ink transcription, and how Cartesia compares with ElevenLabs on latency, price and cloning. How Labradoodle uses Cartesia for calls, limits and setup.",
+    "Cartesia Sonic pricing explained: plans, credits, cost per hour of speech and Ink transcription, and how Cartesia compares with ElevenLabs on latency, price and cloning. How Labradoodle uses Cartesia to read replies aloud, limits and setup.",
   h1: "Cartesia for AI agents: pricing, Cartesia vs ElevenLabs, and setup",
   intro: [
     "[Cartesia](https://cartesia.ai) builds speech models for live conversation. Its Sonic text to speech is designed to start talking almost immediately, which is what a voice agent needs when someone is waiting on the other end.",
-    "[Labradoodle](/) is an open source app for AI teammates that do real work. You talk to each bot in chat, and you can also talk to it by voice: hold the mic to speak, have replies read aloud, or call a bot in real time. Connect Cartesia and it gives your bots their voice. Your device listens and turns your speech into text, and Labradoodle runs the bot and keeps the transcript in the chat.",
+    "[Labradoodle](/) is an open source app for AI teammates that do real work. You talk to each bot in chat, and you can also talk to it by voice: hold the mic to speak or have replies read aloud. Connect Cartesia and it gives your bots their voice. Your device listens and turns your speech into text, and Labradoodle runs the bot and keeps the transcript in the chat.",
     "This page covers Cartesia's plans and prices as of November 2026, what a bot that talks every day costs, how Cartesia compares with ElevenLabs, and what Labradoodle does and doesn't use.",
   ],
   scene: {
     bot: "Sales Outbound",
     color: "#FFBC0A",
     where: "Voice from Cartesia",
-    ask: "call me when the overnight list is ready",
-    reply: "will do. i'll ring you once the drafts are queued.",
+    ask: "read me the overnight list",
+    reply: "18 drafts queued. the 12 strongest are ready to send.",
     results: [
-      { k: "Call", v: "rang you at 6:02am" },
-      { k: "Decided", v: "send the 12 strongest drafts" },
-      { k: "Decided", v: "hold the rest until Monday" },
-      { k: "Transcript", v: "saved in this chat" },
+      { k: "Read aloud", v: "spoken with Sonic" },
+      { k: "Ready", v: "send the 12 strongest drafts" },
+      { k: "Held", v: "the rest until Monday" },
     ],
   },
   sections: [
@@ -163,21 +162,19 @@ export const cartesia: VoiceProvider = {
     {
       heading: "What you can do with Cartesia in Labradoodle",
       paragraphs: [
-        "In Labradoodle, Cartesia speaks and doesn't transcribe. Everything that needs a voice works with it, and your device handles listening. The [voice and calls guide](/docs/voice-and-calls/) shows where each control lives.",
+        "In Labradoodle, Cartesia speaks and doesn't transcribe. Everything that needs a voice works with it, and your device handles listening. The [voice guide](/docs/voice-and-calls/) shows where each control lives.",
       ],
       bullets: [
         "Hear replies. Choose **Speak this reply** on any message, or turn on **Read replies aloud** in a bot's settings. Replies are spoken with `sonic-3`.",
-        "Call a bot. Choose **Call** at the top of a chat to talk in real time. You can cut in while the bot is speaking, and the transcript stays in the chat.",
-        "Get called. Ask \"call me when the overnight list is ready\" and the bot rings you. A bot may also call if you've missed the same reminder several times.",
         "Give each bot its own voice. The **Voice** next to **Read replies aloud** overrides your default for that bot.",
         "Use your own voices. The voice picker lists the voices your Cartesia account can use, including ones you cloned.",
-        "Talk instead of typing, with your device's speech recognition. Holding the mic uses the browser's recognition in Chrome and the system's in the desktop app. On calls in the mobile app, the phone listens.",
+        "Talk instead of typing, with your device's speech recognition. Holding the mic uses the browser's recognition in Chrome and the system's in the desktop app.",
       ],
     },
     {
       heading: "When to choose Cartesia",
       paragraphs: [
-        "Choose Cartesia when you mostly listen to your bots and call them, and you want voices that sound natural and start quickly. It fits people who use Chrome, the desktop app or the mobile app, where speech recognition is already on the device.",
+        "Choose Cartesia when you mostly listen to your bots, and you want voices that sound natural and start quickly. It fits people who use Chrome, the desktop app or the mobile app, where speech recognition is already on the device.",
         "If you need transcription from the provider too, pick one that does both. [ElevenLabs](/voice-providers/elevenlabs/) has the widest choice of voices and cloning, [OpenAI](/voice-providers/openai/) suits you if you already have a key, and [Fish Audio](/voice-providers/fish-audio/) adds expressive speech at a lower price. To keep audio on your own hardware, run a [self-hosted](/voice-providers/self-hosted/) speech server, or use [Server (Mac)](/voice-providers/macos/) if your server runs on a Mac. The [comparison](/voice-providers/) puts them side by side.",
       ],
     },
@@ -189,9 +186,8 @@ export const cartesia: VoiceProvider = {
         "Labradoodle always speaks with `sonic-3`. You can't pick Sonic 3.6 or set emotion, speed or pronunciation from Labradoodle.",
         "Each sentence is generated as a finished clip and played in order, rather than streamed over Cartesia's real-time connection, so a bot starts talking a little later than Sonic alone could.",
         "Labradoodle doesn't clone voices itself. Create the clone in Cartesia first. The picker loads up to 2,000 voices, and voices beyond that can't be chosen.",
-        "Speech requests at once are capped per plan, from 2 on Free to 15 on Scale. Several people sharing one key on calls can hit that.",
+        "Speech requests at once are capped per plan, from 2 on Free to 15 on Scale. Several people sharing one key can hit that.",
         "Zero data retention, HIPAA agreements and regional endpoints in the EU, UK, India and Australia are Enterprise features. Cartesia is SOC 2 Type II certified.",
-        "Calls and hold-to-talk are a server setting. On a self-hosted server they stay off until the admin turns them on.",
       ],
     },
     {
@@ -204,7 +200,6 @@ export const cartesia: VoiceProvider = {
         "In Labradoodle, open **Settings → Voice**, choose **Cartesia** as the **Provider**, paste the **API key** and choose **Connect**.",
         "Pick a **Voice** and use **Hear a sample** to check it.",
         "Optionally, open a bot's settings, expand **Advanced**, turn on **Read replies aloud** and give it its own **Voice**.",
-        "If you run your own server and want calls and hold-to-talk, set `PHONE_CALLS_ENABLED=true` on the API and worker.",
       ],
     },
   ],
@@ -227,7 +222,7 @@ export const cartesia: VoiceProvider = {
     {
       question: "Can I build a voice agent with Cartesia Sonic?",
       answer:
-        "Yes. In Labradoodle, connect Cartesia in **Settings → Voice** and your bots speak with Sonic when they read replies or take a call. Your device turns your speech into text, so you don't need a second provider.",
+        "Yes. In Labradoodle, connect Cartesia in **Settings → Voice** and your bots speak with Sonic when they read replies aloud. Your device turns your speech into text, so you don't need a second provider.",
     },
     {
       question: "Does Cartesia transcribe speech in Labradoodle?",

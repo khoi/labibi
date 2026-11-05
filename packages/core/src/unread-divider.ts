@@ -22,14 +22,6 @@ export function unreadDividerMessageId(
   return messages[index]?.id ?? null;
 }
 
-/** A voice card gets the divider above it when any message inside it starts the unread part. */
-export function voiceChatHoldsMessage(
-  group: { messages: readonly { id: string }[] },
-  messageId: string | null,
-): boolean {
-  return messageId !== null && group.messages.some((message) => message.id === messageId);
-}
-
 /**
  * Starts tasks in queue order after the prior task settles or reaches `maxWaitMs` from its
  * start. Failed tasks do not block the queue. A timeout only releases the queue; it does not

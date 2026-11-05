@@ -8,7 +8,6 @@ import { reconcileComputerRuns } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import type { PoolClient } from "pg";
 import { returnBotMessageOutcome } from "./bot-messages.js";
-import { reconcileCallRequests } from "./call-request.js";
 import { scheduleComputerControlExpiry } from "./computer-control.js";
 import { findRunRecoveryBlockers } from "./run-recovery.js";
 import { reconcileStuckWork } from "./stuck-work.js";
@@ -153,7 +152,6 @@ export function createJobReconciler(
 
       const auxiliary = await Promise.allSettled(
         [
-          () => reconcileCallRequests(deps),
           () => reconcileComputerRuns(deps.prisma),
           deps.reconcileCloudAgents,
           deps.reconcilePurchases,

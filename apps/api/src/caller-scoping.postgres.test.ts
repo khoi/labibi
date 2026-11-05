@@ -271,10 +271,7 @@ describePostgres("caller and tenant scoping (PostgreSQL)", () => {
   it("runs authenticated procedures inside the caller's tenant", async () => {
     const own = await bot(shared, userA, { name: "Own" });
     const elsewhere = await bot(other, userA, { name: "Elsewhere" });
-    const router = createRouter({
-      prisma: runtime.prisma,
-      env: { ticketBoardEnabled: true },
-    } as unknown as RouterDeps);
+    const router = createRouter({ prisma: runtime.prisma, env: {} } as unknown as RouterDeps);
     const call = async (procedure: string) => {
       const { response } = await new RPCHandler(router).handle(
         new Request(`https://api.example.test/rpc/${procedure}`, {
@@ -291,7 +288,6 @@ describePostgres("caller and tenant scoping (PostgreSQL)", () => {
     const listed = (await call("bots/list")).map((row) => row.id);
     expect(listed).toContain(own.id);
     expect(listed).not.toContain(elsewhere.id);
-    expect(await call("boards/list")).toEqual([expect.objectContaining({ spaceId: shared })]);
   });
 
   it("scopes a person with two organizations to the one their Space is in", async () => {

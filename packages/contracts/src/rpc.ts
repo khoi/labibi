@@ -19,20 +19,6 @@ import {
   ATTACHMENT_COUNT_CEILING,
 } from "./attachments.js";
 import { AuditEventListInputSchema, AuditEventPageSchema } from "./audit-events.js";
-import {
-  BoardEventSchema,
-  BoardSchema,
-  CommentTicketInput,
-  CreateTicketInput,
-  GetTicketInput,
-  ListTicketsInput,
-  ListTicketsOutput,
-  MoveTicketInput,
-  RenameBoardInput,
-  TicketCommentSchema,
-  TicketSchema,
-  UpdateTicketInput,
-} from "./board.js";
 import { BotAvatarSetSchema } from "./bot-avatar.js";
 import {
   BotSecretMetadata,
@@ -91,7 +77,6 @@ import {
   ExternalConversationPolicySchema,
   GroupDetailSchema,
   GroupSchema,
-  IncomingBotCallSchema,
   IntegrationCatalogResultSchema,
   McpServerConfigInput,
   McpServerSchema,
@@ -671,60 +656,6 @@ export const appContract = {
       )
       .output(z.object({ ok: z.literal(true), runIds: z.array(Id).optional() })),
     stop: oc.input(threadTarget).output(z.object({ ok: z.literal(true) })),
-    followUp: oc
-      .input(
-        threadTarget.safeExtend({
-          text: z.string().min(1),
-          /** Carries the call id, so a turn taken mid-run stays in the call's card. */
-          clientNonce: z.string().min(1).max(200).optional(),
-        }),
-      )
-      .output(z.object({ ok: z.literal(true) })),
-    /** The client hung up: close the call card and let the bot finish what was asked on it. */
-    endCall: oc
-      // ":" separates the call id from the nonce suffix, so it can never appear inside one.
-      .input(
-        botId.safeExtend({
-          callId: z
-            .string()
-            .min(1)
-            .max(200)
-            .regex(/^[^:]+$/),
-          /** How long the call was connected, measured from pickup on the caller's client. */
-          durationSeconds: z
-            .number()
-            .int()
-            .nonnegative()
-            .max(7 * 24 * 60 * 60)
-            .optional(),
-        }),
-      )
-      .output(z.object({ ok: z.literal(true) })),
-    /** The user picked up the bot's call: returns what the bot opens with. */
-    answerCall: oc
-      .input(
-        botId.safeExtend({
-          callId: z
-            .string()
-            .min(1)
-            .max(200)
-            .regex(/^[^:]+$/),
-        }),
-      )
-      .output(z.object({ opening: z.string(), reason: z.string() })),
-    /** The user turned the bot's call down, asked for it later, or it rang out. */
-    declineCall: oc
-      .input(
-        botId.safeExtend({
-          callId: z
-            .string()
-            .min(1)
-            .max(200)
-            .regex(/^[^:]+$/),
-          outcome: z.enum(["declined", "missed"]),
-        }),
-      )
-      .output(z.object({ ok: z.literal(true) })),
     clear: oc.input(threadTarget).output(z.object({ ok: z.literal(true) })),
     answer: oc
       .input(
@@ -733,8 +664,6 @@ export const appContract = {
             runId: Id,
             messageId: Id,
             answer: z.string(),
-            /** Carries the call id for an answer spoken during a call. */
-            clientNonce: z.string().min(1).max(200).optional(),
             /** A login card's answer, one per requested field; `answer` is then empty. */
             fields: z.array(LoginFieldInput).min(1).max(LOGIN_FIELD_LIMIT).optional(),
             /** A login card's answer from apps that predate `fields`; `answer` carries its password. */
@@ -754,7 +683,7 @@ export const appContract = {
           .refine(
             (input) =>
               input.dismiss
-                ? input.answer === "" && !input.username && !input.fields && !input.clientNonce
+                ? input.answer === "" && !input.username && !input.fields
                 : input.fields
                   ? input.answer === "" && !input.username
                   : input.answer.length > 0,
@@ -955,21 +884,6 @@ export const appContract = {
       )
       .output(ScratchpadItemSchema),
     remove: oc.input(z.object({ itemId: Id })).output(z.object({ ok: z.literal(true) })),
-  },
-  boards: {
-    list: oc.output(z.array(BoardSchema)),
-    get: oc.output(BoardSchema),
-    rename: oc.input(RenameBoardInput).output(BoardSchema),
-    subscribe: oc.output(eventIterator(BoardEventSchema)),
-  },
-  tickets: {
-    list: oc.input(ListTicketsInput).output(ListTicketsOutput),
-    get: oc.input(GetTicketInput).output(TicketSchema),
-    create: oc.input(CreateTicketInput).output(TicketSchema),
-    update: oc.input(UpdateTicketInput).output(TicketSchema),
-    move: oc.input(MoveTicketInput).output(TicketSchema),
-    comment: oc.input(CommentTicketInput).output(TicketCommentSchema),
-    comments: oc.input(z.object({ ticketId: Id })).output(z.array(TicketCommentSchema)),
   },
   skills: {
     list: oc.input(botId).output(z.array(TaughtSkillSchema)),
@@ -1415,34 +1329,6 @@ export const appContract = {
         }),
       ),
     ),
-    subscribeCalls: oc.output(
-      eventIterator(
-        z.object({
-          type: z.enum(["incoming.calls", "heartbeat"]),
-          payload: z.object({ calls: z.array(IncomingBotCallSchema) }).optional(),
-        }),
-      ),
-    ),
-    declineIncomingCall: oc
-      .input(z.object({ callId: z.string().uuid() }))
-      .output(z.object({ ok: z.literal(true) })),
-    registerCallPush: oc
-      .input(
-        z
-          .object({
-            deviceId: z.string().uuid(),
-            platform: z.enum(["ios", "android"]),
-            expoToken: z.string().min(8).max(512).regex(/^\S+$/).optional(),
-            voipToken: z
-              .string()
-              .regex(/^[a-fA-F0-9]{64,200}$/)
-              .optional(),
-          })
-          .refine((value) =>
-            Boolean(value.expoToken || (value.platform === "ios" && value.voipToken)),
-          ),
-      )
-      .output(z.object({ ok: z.literal(true) })),
     registerPush: oc
       // No whitespace: the token store keeps the registering session on the next line.
       .input(

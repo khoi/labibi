@@ -10,7 +10,6 @@ import {
 } from "@labradoodle/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
-  BookOpen,
   Check,
   Download,
   FolderOpen,
@@ -20,7 +19,6 @@ import {
   ScrollText,
   Settings,
   Smartphone,
-  SquareKanban,
   UserPlus,
   UserRound,
 } from "lucide-react";
@@ -40,7 +38,6 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   onIntegrations: () => void;
   onSkills: () => void;
-  onBoard?: () => void;
   links?: NavLink[];
   onLink?: (link: NavLink) => void;
   onArtifacts: () => void;
@@ -70,7 +67,6 @@ export function SidebarFooter({
   onOpenChange,
   onIntegrations,
   onSkills,
-  onBoard,
   links = [],
   onLink,
   onArtifacts,
@@ -204,16 +200,6 @@ export function SidebarFooter({
               <FolderOpen className="text-muted-foreground" strokeWidth={1.75} />
               <Trans>Artifacts</Trans>
             </Button>
-            {onBoard ? (
-              <Button
-                variant="ghost"
-                className="h-9 w-full justify-start gap-2.5 font-normal"
-                onClick={onBoard}
-              >
-                <SquareKanban className="text-muted-foreground" strokeWidth={1.75} />
-                <Trans>Board</Trans>
-              </Button>
-            ) : null}
             {links.map((link) => (
               <Button
                 key={link.id}
@@ -247,15 +233,6 @@ export function SidebarFooter({
                 <Trans>Invite friends</Trans>
               </Button>
             ) : null}
-            <a
-              className={`${buttonVariants({ variant: "ghost" })} h-9 w-full justify-start gap-2.5 font-normal`}
-              href="https://github.com/elie222/rakazo/blob/main/docs/self-host.md"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <BookOpen className="text-muted-foreground" strokeWidth={1.75} />
-              <Trans>Docs</Trans>
-            </a>
             <div className="my-1 border-t border-border" />
             <Button
               variant="ghost"

@@ -60,20 +60,19 @@ export const elevenlabs: VoiceProvider = {
   h1: "ElevenLabs for AI agents: pricing, alternatives and setup",
   intro: [
     "[ElevenLabs](https://elevenlabs.io) is a voice AI company best known for natural, expressive text to speech and voice cloning. Its API also transcribes speech, so one key covers both directions of a conversation.",
-    "[Labradoodle](/) is an open source app for AI teammates that do real work. You talk to each bot in chat, and you can also talk to it by voice: hold the mic to speak, have replies read aloud, or call a bot in real time. Connect ElevenLabs and it does the speaking and the transcription. Labradoodle runs the bot, decides what it says, and keeps the transcript in the chat.",
+    "[Labradoodle](/) is an open source app for AI teammates that do real work. You talk to each bot in chat, and you can also talk to it by voice: hold the mic to speak or have replies read aloud. Connect ElevenLabs and it does the speaking and the transcription. Labradoodle runs the bot, decides what it says, and keeps the transcript in the chat.",
     "This page covers what ElevenLabs costs as of November 2026, how its plans and API billing differ, what a bot that talks every day actually costs, and how it compares with the alternatives.",
   ],
   scene: {
     bot: "Chief of Staff",
     color: "#4FAA52",
     where: "Voice from ElevenLabs",
-    ask: "call me at 5 to go over the day",
-    reply: "will do. talk at 5.",
+    ask: "read me today's summary",
+    reply: "two things need you. the rest is handled.",
     results: [
-      { k: "Call", v: "answered at 5:00pm" },
-      { k: "Decided", v: "board prep moves to Thursday" },
-      { k: "Decided", v: "decline the vendor demo" },
-      { k: "Transcript", v: "saved in this chat" },
+      { k: "Read aloud", v: "in your cloned voice" },
+      { k: "Moved", v: "budget review to Thursday" },
+      { k: "Declined", v: "the vendor demo" },
     ],
   },
   sections: [
@@ -190,20 +189,18 @@ export const elevenlabs: VoiceProvider = {
     {
       heading: "ElevenLabs alternatives",
       paragraphs: [
-        `The best alternative depends on why you're leaving. If it's price, [Fish Audio](/voice-providers/fish-audio/) costs ${shareOf(RATES.fish, FLASH)} the per-character price, with cloning and a big voice library, and a [self-hosted](/voice-providers/self-hosted/) Kokoro server costs only hardware. If it's latency on calls, [Cartesia](/voice-providers/cartesia/) is built for it, though in Labradoodle it only speaks. If you already pay OpenAI, [OpenAI](/voice-providers/openai/) is the quickest start, but its speech model shuts down on January 6, 2027.`,
+        `The best alternative depends on why you're leaving. If it's price, [Fish Audio](/voice-providers/fish-audio/) costs ${shareOf(RATES.fish, FLASH)} the per-character price, with cloning and a big voice library, and a [self-hosted](/voice-providers/self-hosted/) Kokoro server costs only hardware. If it's latency, [Cartesia](/voice-providers/cartesia/) is built for it, though in Labradoodle it only speaks. If you already pay OpenAI, [OpenAI](/voice-providers/openai/) is the quickest start, but its speech model shuts down on January 6, 2027.`,
         `Outside Labradoodle, Deepgram is strong at transcription (Nova-3 from ${usd(RATES.deepgramBatchHour)} an hour) with Aura-2 voices that are ${priceVersus(RATES.deepgram, FLASH)} Flash v2.5 but plainer; Google, Azure and Amazon Polly are cheap at scale and come with cloud compliance paperwork; Hume and Inworld focus on expressive or low-cost voices for agents. PlayHT, once a common alternative, shut down at the end of 2025. Labradoodle has no built-in connection for any of these.`,
       ],
     },
     {
       heading: "What you can do with ElevenLabs in Labradoodle",
       paragraphs: [
-        "ElevenLabs both speaks and transcribes, so it covers every voice feature in Labradoodle. The [voice and calls guide](/docs/voice-and-calls/) shows where each control lives.",
+        "ElevenLabs both speaks and transcribes, so it covers every voice feature in Labradoodle. The [voice guide](/docs/voice-and-calls/) shows where each control lives.",
       ],
       bullets: [
         "Talk instead of typing. Hold the mic in the composer, speak, and let go to send. When Labradoodle transcribes on the server, as it does in a phone browser or the desktop app, it uses ElevenLabs' `scribe_v2`.",
         "Hear replies. Choose **Speak this reply** on any message, or turn on **Read replies aloud** in a bot's settings to hear everything it says.",
-        "Call a bot. Choose **Call** at the top of a chat to talk in real time. You can cut in while the bot is speaking, and the transcript stays in the chat.",
-        "Get called. Ask \"call me at 5 to go over the day\" and the bot rings you then. A bot may also call if you've missed the same reminder several times.",
         "Give each bot its own voice. The **Voice** next to **Read replies aloud** overrides your default for that bot, so your inbox bot and your sales bot don't sound alike.",
         "Use your own voices. The voice picker lists the voices in your ElevenLabs account, including ones you cloned or saved from its library.",
         "Send voice notes from chat apps. A voice note sent to a bot through Telegram, for example, is transcribed with ElevenLabs before the bot reads it. See [messaging apps](/docs/messaging-apps/).",
@@ -226,7 +223,6 @@ export const elevenlabs: VoiceProvider = {
         "The Free plan is for non-commercial use with attribution. A bot that talks to customers needs a paid plan.",
         "Unused plan credits roll over for up to two months, but cancelling or downgrading forfeits them at the end of the cycle. Recent reviews complain about exactly this, so downgrade after you've used them.",
         "Zero retention mode and data residency in the EU, India or Singapore are Enterprise-only.",
-        "Calls and hold-to-talk are a server setting. On a self-hosted server they stay off until the admin turns them on.",
         "In a desktop browser such as Chrome, Labradoodle may use the browser's own speech recognition for the mic instead of ElevenLabs.",
       ],
     },
@@ -240,7 +236,6 @@ export const elevenlabs: VoiceProvider = {
         "In Labradoodle, open **Settings → Voice**, choose **ElevenLabs** as the **Provider**, paste the **API key** and choose **Connect**.",
         "Pick a **Voice** and use **Hear a sample** to check it.",
         "Optionally, open a bot's settings, expand **Advanced**, turn on **Read replies aloud** and give it its own **Voice**.",
-        "If you run your own server and want calls and hold-to-talk, set `PHONE_CALLS_ENABLED=true` on the API and worker.",
       ],
     },
   ],
@@ -263,7 +258,7 @@ export const elevenlabs: VoiceProvider = {
     {
       question: "Can I talk to my AI agent with ElevenLabs?",
       answer:
-        "Yes. In Labradoodle, connect ElevenLabs in **Settings → Voice**, then hold the mic to speak to a bot, have its replies read aloud, or call it in real time. ElevenLabs does the speech and transcription; the bot runs in Labradoodle.",
+        "Yes. In Labradoodle, connect ElevenLabs in **Settings → Voice**, then hold the mic to speak to a bot, or have its replies read aloud. ElevenLabs does the speech and transcription; the bot runs in Labradoodle.",
     },
     {
       question: "Can a Labradoodle bot use my cloned ElevenLabs voice?",
@@ -278,7 +273,7 @@ export const elevenlabs: VoiceProvider = {
     {
       question: "What is the best ElevenLabs alternative?",
       answer:
-        "For price, [Fish Audio](/voice-providers/fish-audio/) or a [self-hosted](/voice-providers/self-hosted/) Kokoro server. For fast calls, [Cartesia](/voice-providers/cartesia/). For a quick start with a key you have, [OpenAI](/voice-providers/openai/), until its speech model shuts down in January 2027. For transcription at scale outside Labradoodle, Deepgram.",
+        "For price, [Fish Audio](/voice-providers/fish-audio/) or a [self-hosted](/voice-providers/self-hosted/) Kokoro server. For fast speech, [Cartesia](/voice-providers/cartesia/). For a quick start with a key you have, [OpenAI](/voice-providers/openai/), until its speech model shuts down in January 2027. For transcription at scale outside Labradoodle, Deepgram.",
     },
     {
       question: "Deepgram vs ElevenLabs: which is better?",
@@ -288,7 +283,7 @@ export const elevenlabs: VoiceProvider = {
     {
       question: "Do I need ElevenLabs to use Labradoodle?",
       answer:
-        "No. Voice is optional, and Labradoodle works fully in text. On the mobile app, a bot can also use your phone's own voice for calls.",
+        "No. Voice is optional, and Labradoodle works fully in text. On the mobile app, a bot can also speak with your phone's own voices.",
     },
   ],
   sources: withPricingSources(

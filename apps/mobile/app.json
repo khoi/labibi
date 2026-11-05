@@ -26,14 +26,7 @@
         "expo-audio",
         {
           "enableBackgroundPlayback": false,
-          "microphonePermission": "Labradoodle uses the microphone for voice calls with your bots."
-        }
-      ],
-      [
-        "expo-speech-recognition",
-        {
-          "speechRecognitionPermission": "Labradoodle turns your speech into messages during voice calls.",
-          "microphonePermission": "Labradoodle uses the microphone for voice calls with your bots."
+          "microphonePermission": "Labradoodle uses the microphone to record voice messages for your bots."
         }
       ],
       "expo-localization",
@@ -50,7 +43,7 @@
         {
           "photosPermission": "Labradoodle uses your photo library so you can attach images to a bot message.",
           "cameraPermission": "Labradoodle uses the camera so you can attach photos to a bot message.",
-          "microphonePermission": "Labradoodle uses the microphone for voice calls with your bots."
+          "microphonePermission": "Labradoodle uses the microphone to record voice messages for your bots."
         }
       ],
       "./plugins/with-share-extension",
@@ -116,11 +109,9 @@
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true
         },
-        "UIBackgroundModes": ["voip", "audio", "remote-notification"],
         "NSUserActivityTypes": ["INSendMessageIntent"]
       },
       "entitlements": {
-        "com.apple.developer.usernotifications.time-sensitive": true,
         "com.apple.developer.usernotifications.communication": true
       }
     },
@@ -147,10 +138,6 @@
           "experimental": {
             "ios": {
               "appExtensions": [
-                {
-                  "targetName": "LabradoodleWidgets",
-                  "bundleIdentifier": "com.rakazo.app.widgets"
-                },
                 {
                   "targetName": "expo-sharing-extension",
                   "bundleIdentifier": "com.rakazo.app.expo-sharing-extension",

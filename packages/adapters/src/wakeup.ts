@@ -31,16 +31,9 @@ async function isInteractiveRun(prisma: RunLookup, runId: string): Promise<boole
   const run = await prisma.run.findUnique({ where: { id: runId }, select: { trigger: true } });
   return Boolean(
     run &&
-      [
-        "user",
-        "follow_up",
-        "reaction",
-        "call_end",
-        "messaging",
-        "created",
-        "skill",
-        "resume",
-      ].includes(run.trigger),
+      ["user", "follow_up", "reaction", "messaging", "created", "skill", "resume"].includes(
+        run.trigger,
+      ),
   );
 }
 

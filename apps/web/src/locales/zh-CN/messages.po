@@ -111,11 +111,6 @@ msgstr "{0} GB"
 msgid "{0} handling"
 msgstr "如何处理 {0}"
 
-#. placeholder {0}: bot.name
-#: src/components/call/IncomingCall.tsx
-msgid "{0} is calling you"
-msgstr "{0} 正在呼叫你"
-
 #. placeholder {0}: updated.name
 #: src/pages/McpServersOverlay.tsx
 msgid "{0} is not working"
@@ -841,11 +836,6 @@ msgstr "其他助手"
 msgid "Answer"
 msgstr "回答"
 
-#: src/components/call/IncomingCall.tsx
-msgctxt "incoming call"
-msgid "Answer"
-msgstr "接听"
-
 #: src/components/AskCard.tsx
 msgid "Answered"
 msgstr "已回答"
@@ -932,10 +922,6 @@ msgstr "审批"
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
 msgstr "批准"
-
-#: src/lib/call-session.ts
-msgid "Approve or deny it on screen."
-msgstr "请在屏幕上批准或拒绝。"
 
 #: src/pages/shell/message-cards.tsx
 msgid "Approve this server to let your agent use its tools."
@@ -1068,7 +1054,6 @@ msgstr "头像工作室"
 #: src/pages/AdminAccessPage.tsx
 #: src/pages/AdminPluginsPage.tsx
 #: src/pages/Auth.tsx
-#: src/pages/Board.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/NavLinkPage.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -1125,15 +1110,6 @@ msgstr "账单周期"
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Block"
 msgstr "阻止"
-
-#: src/lib/ticket-status.ts
-msgid "Blocked"
-msgstr "已阻塞"
-
-#: src/components/SidebarFooter.tsx
-#: src/pages/Board.tsx
-msgid "Board"
-msgstr "看板"
 
 #: src/pages/shell/computer-view.tsx
 #: src/pages/shell/use-computer.tsx
@@ -1211,27 +1187,6 @@ msgstr "浏览 MCP 服务器"
 #: src/pages/shell/agent-import.tsx
 msgid "Built-in"
 msgstr "内置"
-
-#: src/pages/shell/chat-header.tsx
-msgid "Call"
-msgstr "通话"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Call back"
-msgstr "回拨"
-
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Call with {0}"
-msgstr "与 {0} 通话"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Calling you…"
-msgstr "正在呼叫你…"
-
-#: src/components/call/CallCard.tsx
-msgid "Calling…"
-msgstr "正在呼叫…"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Calls"
@@ -1630,10 +1585,6 @@ msgstr ""
 #: src/components/SecretAskCard.tsx
 msgid "Command variable"
 msgstr "命令变量"
-
-#: src/pages/Board.tsx
-msgid "Comment"
-msgstr "评论"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Communication"
@@ -2414,11 +2365,6 @@ msgstr "无法搜索目录"
 msgid "Could not send reset email"
 msgstr "无法发送重置邮件"
 
-#: src/components/call/IncomingCall.tsx
-#: src/lib/call-session.ts
-msgid "Could not send that"
-msgstr "无法发送"
-
 #: src/components/VaultSettings.tsx
 msgid "Could not show the credential"
 msgstr "无法显示凭据"
@@ -2537,7 +2483,6 @@ msgid "Country"
 msgstr ""
 
 #: src/components/CreateOrganizationDialog.tsx
-#: src/pages/Board.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
@@ -2682,7 +2627,6 @@ msgstr "日常工作"
 msgid "days"
 msgstr "天"
 
-#: src/components/call/IncomingCall.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Decline"
 msgstr "拒绝"
@@ -2810,7 +2754,6 @@ msgstr "拒绝"
 msgid "Deployment default ({0})"
 msgstr ""
 
-#: src/pages/Board.tsx
 #: src/pages/shell/agent-import.tsx
 msgid "Description"
 msgstr "描述"
@@ -2843,10 +2786,6 @@ msgstr "开发"
 #: src/pages/shell/keyboard-shortcuts-dialog.tsx
 msgid "Dictate"
 msgstr "听写"
-
-#: src/lib/dictation.ts
-msgid "Dictation ended unexpectedly."
-msgstr ""
 
 #: src/lib/dictation.ts
 msgid "Dictation failed: {code}"
@@ -2935,10 +2874,6 @@ msgstr "Docker"
 msgid "Docker limits access to your computer for added security. Using {hostLabel} lets bots work with your local files and tools."
 msgstr "Docker 限制对你电脑的访问，以提高安全性。使用{hostLabel}时，Bot 可以处理你的本地文件并使用本地工具。"
 
-#: src/components/SidebarFooter.tsx
-msgid "Docs"
-msgstr "文档"
-
 #: src/pages/KnowledgeSection.tsx
 msgid "Document changed. Reopen to edit the latest version."
 msgstr "文档已更改。请重新打开以编辑最新版本。"
@@ -2949,7 +2884,6 @@ msgstr "还没有账户？"
 
 #: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
-#: src/lib/ticket-status.ts
 #: src/pages/ActivityList.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/import-setup-card.tsx
@@ -3452,18 +3386,6 @@ msgstr "群组设置"
 msgid "Group updates"
 msgstr "合并更新"
 
-#: src/components/call/CallCard.tsx
-msgid "Hang up"
-msgstr "挂断"
-
-#: src/lib/call-session.ts
-msgid "Hang up first, then enter the code on screen."
-msgstr "请先挂断，然后输入屏幕上的代码。"
-
-#: src/lib/call-session.ts
-msgid "Hang up, then enter the code on screen."
-msgstr "请挂断，然后输入屏幕上的代码。"
-
 #: src/pages/RoutineEditor.tsx
 msgid "header"
 msgstr "请求头"
@@ -3508,11 +3430,6 @@ msgstr "隐藏"
 msgid "Hide password"
 msgstr "隐藏密码"
 
-#: src/components/call/VoiceChatCard.tsx
-msgid "Hide transcript"
-msgstr "隐藏文字记录"
-
-#: src/lib/ticket-priority.ts
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "High"
@@ -3606,14 +3523,6 @@ msgstr "导入 Agent"
 msgid "Import data"
 msgstr "导入数据"
 
-#: src/lib/ticket-status.ts
-msgid "In progress"
-msgstr "进行中"
-
-#: src/lib/ticket-status.ts
-msgid "In review"
-msgstr "审核中"
-
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "In this bot"
 msgstr "已在此 Bot"
@@ -3629,10 +3538,6 @@ msgstr "收件箱和邮件"
 #: src/pages/shell/agent-import.tsx
 msgid "Include API keys"
 msgstr "包含 API 密钥"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Incoming call"
-msgstr "来电"
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Inherit default"
@@ -3876,10 +3781,6 @@ msgstr "关联 SSO"
 msgid "List view"
 msgstr "列表视图"
 
-#: src/components/call/CallCard.tsx
-msgid "Listening"
-msgstr "聆听"
-
 #: src/components/composer/HoldToTalk.tsx
 msgid "Listening…"
 msgstr "正在聆听…"
@@ -3969,7 +3870,6 @@ msgstr ""
 msgid "Looks like it contains a key"
 msgstr "似乎包含密钥"
 
-#: src/lib/ticket-priority.ts
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "Low"
@@ -4176,7 +4076,6 @@ msgstr "已发给 {peer}"
 msgid "Messaging"
 msgstr "消息"
 
-#: src/lib/call-session.ts
 #: src/lib/dictation.ts
 msgid "Microphone failed"
 msgstr "麦克风失败"
@@ -4199,10 +4098,6 @@ msgstr "最小化"
 msgid "Minimize bots"
 msgstr "最小化 Bot"
 
-#: src/components/call/CallCard.tsx
-msgid "Minimize call"
-msgstr "最小化通话"
-
 #: src/lib/cron.ts
 msgid "minute"
 msgstr "分钟"
@@ -4211,10 +4106,6 @@ msgstr "分钟"
 #: src/pages/RoutineEditor.tsx
 msgid "minutes"
 msgstr "分钟"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Missed call"
-msgstr "未接来电"
 
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Mode"
@@ -4316,14 +4207,6 @@ msgstr "移动到"
 #: src/pages/ModelRoleSettings.tsx
 msgid "Move up"
 msgstr "上移"
-
-#: src/components/call/CallCard.tsx
-msgid "Mute"
-msgstr "静音"
-
-#: src/components/call/CallCard.tsx
-msgid "Muted"
-msgstr "已静音"
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "My computers"
@@ -4477,10 +4360,6 @@ msgstr "新建技能"
 msgid "New space"
 msgstr "新建工作区"
 
-#: src/pages/Board.tsx
-msgid "New ticket"
-msgstr "新建工单"
-
 #: src/components/VaultSettings.tsx
 msgid "New variable"
 msgstr ""
@@ -4612,10 +4491,6 @@ msgstr "暂无技能"
 msgid "No submissions"
 msgstr "暂无提交"
 
-#: src/pages/Board.tsx
-msgid "No tickets yet"
-msgstr "还没有工单"
-
 #: src/pages/RoutineEditor.tsx
 msgid "No trigger"
 msgstr "无触发器"
@@ -4624,10 +4499,6 @@ msgstr "无触发器"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "None"
 msgstr ""
-
-#: src/lib/ticket-priority.ts
-msgid "Normal"
-msgstr "普通"
 
 #: src/pages/shell/agent-import.tsx
 msgid "Not a valid skill"
@@ -4778,15 +4649,6 @@ msgstr "打开 {title}"
 msgid "Open <0>{0}</0> and enter this code:"
 msgstr "打开 <0>{0}</0>，输入这个验证码："
 
-#: src/pages/shell/chat-header.tsx
-msgid "Open call"
-msgstr "打开通话"
-
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Open chat with {0}"
-msgstr "打开与 {0} 的对话"
-
 #: src/components/ComputersUnavailableHint.tsx
 msgid "Open computer settings"
 msgstr "打开电脑设置"
@@ -4875,7 +4737,6 @@ msgstr "输出"
 #: src/components/pages/SharePopover.tsx
 #: src/components/SpaceMembersSettings.tsx
 #: src/lib/identity-display.ts
-#: src/pages/Board.tsx
 msgid "Owner"
 msgstr "所有者"
 
@@ -5027,10 +4888,6 @@ msgstr "个人"
 msgid "Phone"
 msgstr ""
 
-#: src/components/call/VoiceChatCard.tsx
-msgid "Phone call"
-msgstr "电话"
-
 #: src/pages/shell/chat-context.tsx
 #: src/pages/shell/chat-shared.ts
 msgid "Photo"
@@ -5128,10 +4985,6 @@ msgstr "上一页"
 #: src/pages/SettingsOverlay.tsx
 msgid "Previous settings sections"
 msgstr "上一组设置项"
-
-#: src/pages/Board.tsx
-msgid "Priority"
-msgstr "优先级"
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Private"
@@ -5601,11 +5454,6 @@ msgstr "立即重试"
 msgid "Retry screen"
 msgstr "重新连接屏幕"
 
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Return to call with {0}"
-msgstr "返回与 {0} 的通话"
-
 #: src/pages/McpOAuthCallback.tsx
 #: src/pages/SlackInstallCallback.tsx
 msgid "Return to Labradoodle"
@@ -5714,7 +5562,6 @@ msgstr "周六"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/AccountSettingsOverlay.tsx
-#: src/pages/Board.tsx
 #: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx
 #: src/pages/KnowledgeSection.tsx
@@ -5775,10 +5622,6 @@ msgstr "正在保存…"
 #: src/pages/shell/dialogs.tsx
 msgid "Saving…"
 msgstr "正在保存…"
-
-#: src/lib/call-session.ts
-msgid "Say yes or no, or answer in a sentence."
-msgstr "回答是或否，或一句话说明。"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Schedule delayed"
@@ -5956,7 +5799,6 @@ msgstr "服务器 URL"
 msgid "Set"
 msgstr "设置"
 
-#: src/components/call/CallCard.tsx
 #: src/components/SidebarFooter.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/SettingsOverlay.tsx
@@ -6058,10 +5900,6 @@ msgstr "显示已选"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Show tool activity"
 msgstr "显示工具活动"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Show transcript"
-msgstr "显示文字记录"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Sidebar density"
@@ -6233,10 +6071,6 @@ msgstr "朗读"
 msgid "Speak this reply"
 msgstr "朗读这条回复"
 
-#: src/components/call/CallCard.tsx
-msgid "Speaking"
-msgstr "正在说话"
-
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Speech model"
 msgstr "语音模型"
@@ -6306,7 +6140,6 @@ msgid "State or region"
 msgstr ""
 
 #: src/pages/ActivityList.tsx
-#: src/pages/Board.tsx
 msgid "Status"
 msgstr "状态"
 
@@ -6497,10 +6330,6 @@ msgstr "Bot 可以使用该文件，但看不到图片内容。"
 msgid "The bot's browser stays signed in for everyone in this space"
 msgstr ""
 
-#: src/lib/dictation.ts
-msgid "The browser keeps dropping the microphone. Start dictation again to retry."
-msgstr ""
-
 #: src/lib/model-connection-preflight.ts
 msgid "The connection timed out."
 msgstr "连接超时。"
@@ -6573,7 +6402,6 @@ msgstr "这些已保存的设置读不出来。请移除后再添加一次。"
 msgid "They get {weeks} weeks free."
 msgstr "对方可免费使用 {weeks} 周。"
 
-#: src/components/call/CallCard.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
@@ -6606,17 +6434,8 @@ msgid "This bot runs on this computer, not a Linux desktop. Shell and files use 
 msgstr "此 Bot 运行在这台电脑上，而不是 Linux 桌面。Shell 和文件使用你的主目录。"
 
 #: src/lib/dictation.ts
-msgid "This browser can't detect when you stop talking. Use Chrome, the desktop app, or hold-to-talk in the composer."
-msgstr ""
-
-#: src/lib/dictation.ts
 msgid "This browser has no on-device dictation. Connect a voice provider with transcription, or use Chrome / the desktop app."
 msgstr ""
-
-#: src/components/call/IncomingCall.tsx
-#: src/lib/user-error.ts
-msgid "This call is no longer ringing."
-msgstr "这通电话已经不响了。"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -6762,10 +6581,6 @@ msgstr "时区"
 msgid "Timing may differ"
 msgstr "运行时间可能不同"
 
-#: src/pages/Board.tsx
-msgid "Title"
-msgstr "标题"
-
 #: src/pages/ActivityList.tsx
 msgid "To"
 msgstr "到"
@@ -6774,10 +6589,6 @@ msgstr "到"
 #: src/pages/ActivityList.tsx
 msgid "To {0}"
 msgstr "到 {0}"
-
-#: src/lib/ticket-status.ts
-msgid "To do"
-msgstr "待办"
 
 #: src/pages/shell/bot-picker.tsx
 msgid "To:"
@@ -6821,10 +6632,6 @@ msgstr "工具"
 #: src/components/composer/HoldToTalk.tsx
 msgid "Transcribing…"
 msgstr "正在转写…"
-
-#: src/components/call/CallCard.tsx
-msgid "Transcript"
-msgstr "文字记录"
 
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Transcription model"
@@ -6917,10 +6724,6 @@ msgstr "卸载"
 msgid "Unlink"
 msgstr "取消关联"
 
-#: src/components/call/CallCard.tsx
-msgid "Unmute"
-msgstr "取消静音"
-
 #: src/components/pages/PagesList.tsx
 #: src/pages/BotContextMenu.tsx
 msgid "Unpin"
@@ -6999,10 +6802,6 @@ msgstr "立即升级"
 #: src/pages/shell/avatar-studio-popover.tsx
 msgid "Upload"
 msgstr "上传"
-
-#: src/lib/ticket-priority.ts
-msgid "Urgent"
-msgstr "紧急"
 
 #: src/pages/settings-nav.ts
 msgid "Usage"
@@ -7273,10 +7072,6 @@ msgstr "Bot 应在哪里运行？"
 msgid "Who can open this page"
 msgstr "谁可以打开此页面"
 
-#: src/lib/ticket-status.ts
-msgid "Won't do"
-msgstr "不做"
-
 #: src/components/SignupSurvey.tsx
 msgid "Work"
 msgstr "工作"
@@ -7333,10 +7128,6 @@ msgstr "如果没有自动跳转，可以关闭此标签页。"
 #: src/pages/McpOAuthCallback.tsx
 msgid "You can close this window."
 msgstr "可以关闭此窗口。"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "You declined"
-msgstr "你已拒接"
 
 #: src/components/InviteDialog.tsx
 msgid "You get a free month when they start their trial with a new card."

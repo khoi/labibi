@@ -1,7 +1,6 @@
 import { t } from "@lingui/core/macro";
 import { useEffect, useRef, useState } from "react";
 import { authClient } from "./auth";
-import { endCallBeforeSignOut, forgetSignedInUser, sessionChangedUnderPage } from "./call-session";
 import { clearComposerDrafts } from "./composer-draft";
 import { clearSpaceSelection } from "./rpc";
 
@@ -11,20 +10,12 @@ export const LOG_OUT_FAILED_KEY = "rakazo.logOutFailed";
 let logOutFailed = false;
 
 /**
- * Signs out, then loads a fresh page whether or not it worked, so no call, microphone, pending
- * answer or queued request from this session survives in the page.
+ * Signs out, then loads a fresh page whether or not it worked, so no pending answer or queued
+ * request from this session survives in the page.
  */
 export async function signOut(destination: string): Promise<void> {
-  // Hang up while the session still exists, so the server-side hang-up is authorized.
-  await endCallBeforeSignOut();
-  // The account changed while hanging up: signing out now would sign out the other account.
-  if (sessionChangedUnderPage()) {
-    window.location.reload();
-    return;
-  }
   const result = await authClient.signOut().catch(() => null);
   if (result && !result.error) {
-    forgetSignedInUser();
     clearSpaceSelection();
     clearComposerDrafts();
     window.location.assign(destination);

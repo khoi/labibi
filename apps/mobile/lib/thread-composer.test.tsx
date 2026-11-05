@@ -227,8 +227,6 @@ const props: Omit<ComponentProps<typeof ThreadComposer>, "ref"> = {
   composerPrompt: "Message…",
   replyQuote: null,
   attachmentIds: [],
-  botId: "bot-1",
-  onCall: false,
   working: false,
   sending: false,
   styles: { circleButton: {}, composerFill: {} },
@@ -236,7 +234,6 @@ const props: Omit<ComponentProps<typeof ThreadComposer>, "ref"> = {
   attachFrom: vi.fn(),
   send: vi.fn(async () => {}),
   stop: vi.fn(async () => {}),
-  startVoiceCall: vi.fn(async () => {}),
   onSlashAction: vi.fn(),
 };
 
@@ -1158,14 +1155,12 @@ describe("thread composer isolation", () => {
     expect(composer.current!.snapshot().skill).toBeNull();
   });
 
-  it("clears a slash query before routing and uses the call control for an empty draft", () => {
+  it("clears a slash query before routing", () => {
     type("/settings");
     press("Chat Settings");
     expect(props.onSlashAction).toHaveBeenCalledWith("chat-settings");
     expect(container.querySelector("input")!.value).toBe("");
     expect(container.querySelector('[data-testid="slash-picker"]')).toBeNull();
-    press("Call");
-    expect(props.startVoiceCall).toHaveBeenCalledOnce();
   });
 
   it("focuses the input when its padding wrapper is pressed without adding an accessibility stop", () => {
@@ -1204,29 +1199,23 @@ describe("thread composer isolation", () => {
     },
   );
 
-  it("insets the call and send pills equally from the capsule's bottom and trailing edges", () => {
+  it("insets the send pill equally from the capsule's bottom and trailing edges", () => {
     const style = (element: Element) => JSON.parse((element as HTMLElement).dataset.style!);
-    for (const label of ["Call", "Send"]) {
-      if (label === "Send") type("Hello");
-      const button = container.querySelector(`button[aria-label="${label}"]`)!;
-      const pill = style(button.querySelector("[data-glass]")!);
-      const capsule = style(button.closest('[data-glass="roundedRectangle"]')!);
-      const inset = (capsule.minHeight - pill.height) / 2;
-      expect(style(button).marginBottom).toBe(inset);
-      expect(capsule.paddingEnd).toBe(inset);
-    }
+    type("Hello");
+    const button = container.querySelector('button[aria-label="Send"]')!;
+    const pill = style(button.querySelector("[data-glass]")!);
+    const capsule = style(button.closest('[data-glass="roundedRectangle"]')!);
+    const inset = (capsule.minHeight - pill.height) / 2;
+    expect(style(button).marginBottom).toBe(inset);
+    expect(capsule.paddingEnd).toBe(inset);
   });
 
-  it("keeps right-to-left text clear of the call and send pills", () => {
+  it("keeps right-to-left text clear of the send pill", () => {
     const style = (element: Element) => JSON.parse((element as HTMLElement).dataset.style!);
     // Right-to-left text runs up to the field's trailing edge, right next to the pill.
-    for (const [label, draft] of [
-      ["Call", ""],
-      ["Send", "אבג"],
-      ["Send", "مرحبا\nبالعالم"],
-    ] as const) {
+    for (const draft of ["אבג", "مرحبا\nبالعالم"]) {
       type(draft);
-      const button = container.querySelector(`button[aria-label="${label}"]`)!;
+      const button = container.querySelector('button[aria-label="Send"]')!;
       const capsule = style(button.closest('[data-glass="roundedRectangle"]')!);
       expect(capsule.gap).toBe(capsule.paddingEnd);
     }

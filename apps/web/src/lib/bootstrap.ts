@@ -6,20 +6,9 @@ import { identityLabels } from "./identity-display";
 import { markOnce } from "./performance";
 import { rpc, selectedSpaceId } from "./rpc";
 
-let ticketBoardEnabled = false;
 let maxUploadSizeBytes = ATTACHMENT_MAX_BYTES;
 export function getMaxUploadSizeBytes() {
   return maxUploadSizeBytes;
-}
-const capabilityListeners = new Set<() => void>();
-export function getTicketBoardEnabled() {
-  return ticketBoardEnabled;
-}
-export function subscribeTicketBoardEnabled(listener: () => void) {
-  capabilityListeners.add(listener);
-  return () => {
-    capabilityListeners.delete(listener);
-  };
 }
 
 let primedBootstrap: {
@@ -110,8 +99,6 @@ function requestBootstrap(botId?: string, spaceId?: string) {
 }
 
 function applyCapabilities(bootstrap: AppBootstrap): AppBootstrap {
-  ticketBoardEnabled = bootstrap.me.ticketBoardEnabled;
   maxUploadSizeBytes = attachmentMaxBytes(bootstrap.me);
-  for (const listener of capabilityListeners) listener();
   return bootstrap;
 }

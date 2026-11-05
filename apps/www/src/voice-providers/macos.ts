@@ -12,22 +12,22 @@ export const macos: VoiceProvider = {
   bestFor: "Running Labradoodle on a Mac with no voice key",
   title: "macOS text to speech for AI agents: the built-in Mac voices, free and with no API key",
   description:
-    "How macOS text to speech works, from Read & Speak to the say command and Premium voices, and how Labradoodle uses the Mac's built-in voices so AI agents can read replies and call you for free. Compared with paid voice APIs, with limits and setup.",
+    "How macOS text to speech works, from Read & Speak to the say command and Premium voices, and how Labradoodle uses the Mac's built-in voices so AI agents can read replies aloud for free. Compared with paid voice APIs, with limits and setup.",
   h1: "macOS text to speech for AI agents: use your Mac's built-in voices",
   intro: [
     "Every Mac ships with dozens of text-to-speech voices, and Apple offers Enhanced and Premium versions that sound more natural. The `say` command turns text into speech with any of them, entirely on the machine, with no account and no API key.",
-    "[Labradoodle](/) is an open source app for AI teammates that do real work. You talk to each bot in chat, and you can also talk to it by voice: hold the mic to speak, have replies read aloud, or call a bot in real time. When the Labradoodle server runs directly on a Mac, it offers **Server (Mac)** as a voice provider, so bots speak with that Mac's voices and no voice vendor.",
+    "[Labradoodle](/) is an open source app for AI teammates that do real work. You talk to each bot in chat, and you can also talk to it by voice: hold the mic to speak or have replies read aloud. When the Labradoodle server runs directly on a Mac, it offers **Server (Mac)** as a voice provider, so bots speak with that Mac's voices and no voice vendor.",
   ],
   scene: {
     bot: "Chief of Staff",
     color: "#4FAA52",
     where: "Voice from the server's Mac",
-    ask: "call me at 5 to go over the day",
-    reply: "will do. i'll ring you at 5.",
+    ask: "read me today's summary",
+    reply: "two things need you. the rest is handled.",
     results: [
       { k: "Voice", v: "Zoe (Premium), built into macOS" },
       { k: "Key", v: "None needed" },
-      { k: "Call", v: "4 min, transcript in chat" },
+      { k: "Read aloud", v: "every reply, on your phone or laptop" },
     ],
   },
   sections: [
@@ -61,11 +61,10 @@ export const macos: VoiceProvider = {
     {
       heading: "What you can do with macOS voices in Labradoodle",
       paragraphs: [
-        "The server renders each reply into a short audio clip with `say` and sends it to whoever is listening, so it plays on your phone or laptop like any other voice, not out of the server's speakers. The [voice and calls guide](/docs/voice-and-calls/) covers each feature.",
+        "The server renders each reply into a short audio clip with `say` and sends it to whoever is listening, so it plays on your phone or laptop like any other voice, not out of the server's speakers. The [voice guide](/docs/voice-and-calls/) covers each feature.",
       ],
       bullets: [
         "Hear replies. Choose **Speak this reply** on a message, or turn on **Read replies aloud** in a bot's settings.",
-        "Call a bot with **Call** at the top of the chat, or have a bot call you when you ask it to.",
         "Talk instead of typing, using on-device speech recognition. macOS voices don't transcribe, so your words are recognized by your browser, such as Chrome, or by the Labradoodle desktop app on a Mac.",
         "Choose any installed voice, and a different one for each bot. Premium and Enhanced voices are listed first.",
       ],
@@ -81,11 +80,11 @@ export const macos: VoiceProvider = {
       heading: "Limits",
       bullets: [
         "Labradoodle only offers **Server (Mac)** when its server process runs directly on macOS. A server in Docker, including Docker Desktop on a Mac and the desktop app's **This computer** install, runs Linux inside the container, so the option doesn't appear. Linux hosts don't list it either.",
-        "It doesn't transcribe. Hold-to-talk and calls depend on speech recognition in your browser or the desktop app, and voice notes from messaging apps reach bots without a transcript.",
+        "It doesn't transcribe. Hold-to-talk depends on speech recognition in your browser or the desktop app, and voice notes from messaging apps reach bots without a transcript.",
         "macOS voices sound less natural than the best hosted voices, and there's no voice cloning.",
         "The voices are whatever is installed on the server's Mac. A newly downloaded voice can take a few minutes to show up.",
         "Labradoodle lists the voices `say -v '?'` reports. We haven't tested Personal Voice, which needs the server process to be granted permission.",
-        "On the mobile app, calls can use your phone's own voices if you pick a **Device voice** in the bot's settings. Otherwise replies use this provider.",
+        "On the mobile app, a bot can speak with your phone's own voices if you pick a **Device voice** in its settings. Otherwise replies use this provider.",
       ],
     },
     {
@@ -95,7 +94,6 @@ export const macos: VoiceProvider = {
       ],
       steps: [
         "On the Mac, clone Labradoodle, copy `.env.example` to `.env`, then run `pnpm install`, `pnpm sandbox:build` and `pnpm dev`. This runs the Labradoodle API directly on macOS.",
-        "To use hold-to-talk and calls, set `PHONE_CALLS_ENABLED=true` in `.env` and restart.",
         "Optionally download Enhanced or Premium voices under **System Settings → Accessibility → Read & Speak**, with the Info button next to **System voice**.",
         "In Labradoodle, open **Settings → Voice** and set **Provider** to **Server (Mac)**. There's no key to enter.",
         "Pick a **Voice** and choose **Hear a sample**.",
@@ -103,12 +101,12 @@ export const macos: VoiceProvider = {
     },
   ],
   image: {
-    webp: "/graphics/voice-providers/macos.webp",
-    avif: "/graphics/voice-providers/macos.avif",
-    width: 1280,
-    height: 720,
-    alt: "Labradoodle showing an incoming call from the bot Chief, with Decline and Answer buttons beside the chat.",
-    caption: "Chief calling from Labradoodle. With macOS voices, its side of the call is spoken by the server's Mac.",
+    webp: "/graphics/grok/chat.webp",
+    avif: "/graphics/grok/chat.avif",
+    width: 1200,
+    height: 800,
+    alt: "Labradoodle with the bot Inbox replying in chat, beside a list of bots.",
+    caption: "A bot's chat in Labradoodle. With macOS voices, replies you hear are spoken by the server's Mac.",
   },
   faq: [
     {

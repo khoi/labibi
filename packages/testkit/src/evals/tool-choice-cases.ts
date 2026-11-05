@@ -591,14 +591,6 @@ export const TOOL_CHOICE_DEFINITIONS: ToolChoiceCase[] = [
     expect: { order: ["find_tool", "scratchpad_add"] },
   },
   {
-    id: "lazy-unoffered",
-    area: "lazy-tools",
-    kind: "control",
-    purpose: "Never run a tool this run was not offered.",
-    prompt: "Phone me right now.",
-    expect: { notCalls: ["use_tool", "call_user"] },
-  },
-  {
     id: "lazy-common-shell",
     area: "lazy-tools",
     kind: "control",

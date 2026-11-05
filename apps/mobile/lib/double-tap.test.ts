@@ -67,8 +67,6 @@ describe("double tap reaction eligibility", () => {
     "connect",
     "app_connect",
     "computer",
-    "call_request",
-    "voice_call",
     "skill_draft",
     "routine",
     "subagent",

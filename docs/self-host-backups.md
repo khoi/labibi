@@ -311,8 +311,7 @@ settings. Uploaded backups stay in the bucket.
 
 To move from Labradoodle Cloud to your own install (or back), use **Settings → Export data** on the
 old install and **Import data** on the new one. The export is a zip of every space you belong
-to: bots, chats, files, memory, routines, skills, bot workspace files and, in spaces you own,
-the board. Content is decrypted inside the zip, so keep it private. Importing creates new
+to: bots, chats, files, memory, routines, skills and bot workspace files. Content is decrypted inside the zip, so keep it private. Importing creates new
 spaces you own. Routines arrive switched off. Credentials and connections (model keys, apps,
 MCP servers, messaging) stay behind, so connect them again on the new install. Workspace files
 over 8 MiB are left out, the export must stay under 4 GiB, and the upload must finish within

@@ -23,7 +23,7 @@ export function homepage(slug: string, provider: string, alt: string): ArticleIm
 }
 
 export const VOICE_DOC: SourceLink = {
-  label: "Labradoodle, voice and calls",
+  label: "Labradoodle, voice",
   href: `${GITHUB_URL}/blob/main/docs/voice-and-calls.md`,
 };
 

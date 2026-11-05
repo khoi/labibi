@@ -1,10 +1,6 @@
 {
-  "platforms": ["android", "apple"],
+  "platforms": ["android"],
   "android": {
     "modules": ["com.rakazo.notifications.LabradoodleNotificationsModule"]
-  },
-  "apple": {
-    "modules": ["LabradoodleNotificationsModule"],
-    "appDelegateSubscribers": ["LabradoodleCallsSubscriber"]
   }
 }

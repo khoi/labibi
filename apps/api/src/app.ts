@@ -38,7 +38,6 @@ import {
   ComposioConnector,
   contentKeyProviderFromEnv,
   createAgentHomeStore,
-  createApnsVoipProvider,
   createArtifactStore,
   createAuditLogReconciler,
   createBackgroundJobHandlers,
@@ -58,7 +57,6 @@ import {
   createRunSecretWriter,
   createSecretStore,
   createStrategicInitiativeReconciler,
-  createTicketChangeNotifier,
   createWebProvider,
   deploymentModelUsageLookup,
   EmailEmulator,
@@ -122,7 +120,6 @@ import { encryptionKeyWarning, signupPolicyFromEnv } from "@labradoodle/core";
 import type { Pool, PrismaClient } from "@labradoodle/db";
 import {
   configureProviderTransactionPool,
-  createBoardEvents,
   createDb,
   createPool,
   createSecurityEventPruner,
@@ -354,8 +351,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     analytics,
     runSecretWriter: createRunSecretWriter(secrets),
   });
-  const ticketBoardEnabled = env.ticketBoardEnabled;
-  const boardEvents = createBoardEvents(realtime);
   const environmentSignupPolicy = signupPolicyFromEnv(env);
   // Mirror the env policy for the previous release during a rolling deploy.
   await prisma.deploymentSettings.upsert({
@@ -400,12 +395,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
       ),
       runs!,
     );
-  const ticketChanges = createTicketChangeNotifier({
-    boardEvents,
-    jobs,
-    prisma,
-    ticketBoardEnabled,
-  });
   const sandbox: SandboxProvider =
     sandboxOverride ??
     (await createRunSandbox(env.sandboxProvider, {
@@ -542,7 +531,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
       sessionExpiresAt: (sessionId) => pushSessionExpiresAt(prisma, sessionId),
       jobs,
       accessToken: env.expoAccessToken,
-      voip: await createApnsVoipProvider(env.apnsVoip),
     });
   const userDeviceSecret = userDeviceForwardSecret(env.encryptionKey);
   const userDeviceHub = env.userDevicesEnabled
@@ -720,11 +708,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     notifications,
     jobs,
     events,
-    onTicketChange: ticketChanges,
-    ticketBoardEnabled,
-    phoneCallsEnabled: env.phoneCallsEnabled,
-    phoneCallRingSeconds: env.phoneCallRingSeconds,
-    phoneCallCooldownMinutes: env.phoneCallCooldownMinutes,
     messaging: messaging ? createMessagingContextLoader(prisma) : undefined,
     web: createWebProvider(),
     cloudAgent,
@@ -851,11 +834,8 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     paymentWallet,
     codexCatalog,
     prisma,
-    notifications,
     pushTokens,
     events,
-    ticketChanges,
-    boardEvents,
     auth,
     jobs,
     sandbox,
@@ -890,9 +870,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
       openSignup: env.messagingOpenSignup,
     },
     env: {
-      phoneCallsEnabled: env.phoneCallsEnabled,
-      phoneCallRingSeconds: env.phoneCallRingSeconds,
-      ticketBoardEnabled,
       navLinks: env.navLinks,
       adminEmails: env.adminEmails,
       maxUploadSizeBytes: env.maxUploadSizeBytes,

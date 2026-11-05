@@ -17,7 +17,6 @@ import {
 import {
   ACTIVE_RUN_STATUSES,
   BACKGROUND_RUN_TRIGGERS,
-  callIdFromClientNonce,
   isConversationalRun,
   MODEL_REQUIRED_SEND_ERROR,
   mentionedGroupBotIds,
@@ -829,9 +828,6 @@ export async function sendThreadMessage(
     releaseTakeover,
   );
   if (existing) return existing;
-  // Live events carry the call id so a spoken turn joins the call card on first
-  // paint; without it the bubble shows loose until a refetch reads the nonce.
-  const callId = callIdFromClientNonce(input.clientNonce);
   const requestedReplyQuote = input.replyQuote?.trim() || undefined;
   if (requestedReplyQuote && !input.replyToMessageId) {
     throw new ORPCError("BAD_REQUEST", { message: "replyQuote requires replyToMessageId." });
@@ -1007,7 +1003,6 @@ export async function sendThreadMessage(
               role: "user",
               blocks,
               author,
-              callId,
               runIds: answered.map((run) => run.id),
               replyToMessageId,
               replyQuote,
@@ -1054,7 +1049,6 @@ export async function sendThreadMessage(
               role: "user",
               blocks,
               author,
-              callId,
               replyToMessageId,
               replyQuote,
               replyPreview,
@@ -1107,7 +1101,6 @@ export async function sendThreadMessage(
             role: "user",
             blocks,
             author,
-            callId,
             runIds: [run.id],
             replyToMessageId,
             replyQuote,
@@ -1326,7 +1319,6 @@ export async function sendThreadMessage(
           role: "user",
           blocks,
           author,
-          callId,
           runIds: runs.map((run) => run.id),
           replyToMessageId,
           replyQuote,

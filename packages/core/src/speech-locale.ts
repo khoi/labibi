@@ -59,24 +59,3 @@ function speakerTag(raw: string | null | undefined): string | null {
   const region = match[2]?.toUpperCase();
   return region ? `${language}-${region}` : language;
 }
-
-/**
- * The tag in `supported` closest to `wanted`. iOS starts a recognizer only for a tag it lists
- * exactly, and a phone's language and region (`es-AR`, `en-DE`) often is not one: fall back to
- * the region the app uses for that language, then to any region of it. An empty list means the
- * recognizer does not say, so `wanted` stays.
- */
-export function supportedSpeechTag(wanted: string, supported: readonly string[]): string {
-  const key = (tag: string) => speakerTag(tag)?.toLowerCase() ?? "";
-  const [language = "", region] = key(wanted).split("-");
-  const home =
-    language === "es" && region && region !== "es"
-      ? LATIN_AMERICAN_SPANISH
-      : Object.values(SPEECH_LOCALE_TAGS).find((tag) => key(tag).startsWith(`${language}-`));
-  return (
-    supported.find((tag) => key(tag) === key(wanted)) ??
-    supported.find((tag) => key(tag) === key(home ?? "")) ??
-    [...supported].sort().find((tag) => key(tag).split("-")[0] === language) ??
-    wanted
-  );
-}

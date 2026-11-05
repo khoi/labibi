@@ -99,7 +99,6 @@ export async function endDeactivatedAccess(deps: AccountStatusDeps, userId: stri
     () => prisma.session.deleteMany({ where: { userId } }),
     () => revokeUserDevices(deps.devices, userId),
     () => deps.pushTokens.remove(userId),
-    () => prisma.callPushDevice.deleteMany({ where: { userId } }),
     // A pending code would otherwise link a chat app to the account after this.
     () => prisma.messagingLinkCode.deleteMany({ where: { userId } }),
     // Screen links issued before now stop working; people still allowed get new ones.

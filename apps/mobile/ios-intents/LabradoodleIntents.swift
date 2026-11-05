@@ -102,29 +102,6 @@ struct OpenBotIntent: AppIntent {
   }
 }
 
-/// Opens a bot's chat and starts a voice call. The call request goes through
-/// modules/labradoodle-voice-chat, since the chat link alone must never open the microphone.
-struct StartVoiceChatIntent: AppIntent {
-  static let title: LocalizedStringResource = "Start Voice Chat"
-  static let description = IntentDescription("Open Labradoodle and start a voice call with a bot.")
-  static let openAppWhenRun = true
-
-  @Parameter(title: "Bot", description: "Leave empty to use the chat you opened last.")
-  var bot: BotEntity?
-
-  @MainActor
-  func perform() async throws -> some IntentResult {
-    guard let target = try await target(bot) else { throw MessageBotError.noBot }
-    let botId = target.botId
-    UserDefaults.standard.set(
-      ["botId": botId, "at": String(Date().timeIntervalSince1970)],
-      forKey: "rakazo.pending_voice_chat")
-    NotificationCenter.default.post(name: Notification.Name("LabradoodlePendingVoiceChat"), object: nil)
-    await openChat(botId: botId, spaceId: target.spaceId)
-    return .result()
-  }
-}
-
 /// The single record written by lib/last-bot.ts; legacy ids have no verified owner.
 private struct SavedLastBot: Decodable {
   let botId: String
@@ -138,10 +115,9 @@ private struct SavedLastBot: Decodable {
 /// wrong; returns nil only when no bot was saved or the saved one is not this account's, which
 /// ask for a chat first.
 private func target(
-  _ bot: BotEntity?, with snapshot: LabradoodleSession? = nil
+  _ bot: BotEntity?, with session: LabradoodleSession
 ) async throws -> (botId: String, spaceId: String?)? {
   if let bot { return (bot.botId, bot.spaceId) }
-  let session = try snapshot ?? LabradoodleSession.load()
   guard
     let data = secureStoreItem("rakazo.last_bot_id")?.data(using: .utf8),
     let last = try? JSONDecoder().decode(SavedLastBot.self, from: data),
@@ -175,16 +151,9 @@ private struct Delivery {
 private func send(_ message: String, file: IntentFile?, to bot: BotEntity?) async throws -> Delivery {
   let session = try LabradoodleSession.load()
   guard let target = try await target(bot, with: session) else { throw MessageBotError.noBot }
-  return try await send(message, file: file, to: target, with: session, timeout: 60)
-}
-
-private func send(
-  _ message: String, file: IntentFile?, to target: (botId: String, spaceId: String?),
-  with session: LabradoodleSession, timeout: TimeInterval
-) async throws -> Delivery {
   let botId = target.botId
   let spaceId = target.spaceId ?? session.selectedSpaceId
-  try await session.requireConsent(["botId": botId], spaceId: spaceId, timeout: timeout)
+  try await session.requireConsent(["botId": botId], spaceId: spaceId)
   var input: [String: Any] = [
     "botId": botId,
     "text": message.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -203,20 +172,8 @@ private func send(
     input["artifactIds"] = [artifact.id]
     input["imageHandling"] = "confirm"
   }
-  let sent: Sent = try await session.rpc(
-    "threads/send", input, spaceId: spaceId, timeout: timeout)
+  let sent: Sent = try await session.rpc("threads/send", input, spaceId: spaceId)
   return Delivery(session: session, botId: botId, spaceId: spaceId, runId: sent.runId)
-}
-
-/// A voice message goes to the bot whose chat was opened last; its reply arrives as a notification.
-/// The bot and session are read now, while unlocked. Its island waits on the send, so a lost
-/// connection gives up sooner than a typed message would.
-func lastBotSender() async throws -> (String) async throws -> Void {
-  let session = try LabradoodleSession.load()
-  guard let target = try await target(nil, with: session) else { throw MessageBotError.noBot }
-  return { message in
-    _ = try await send(message, file: nil, to: target, with: session, timeout: 15)
-  }
 }
 
 /// The bot's text for the run, once it finishes or stops to wait for the user; nil if it is still
@@ -270,16 +227,6 @@ struct LabradoodleShortcuts: AppShortcutsProvider {
       phrases: ["Open a bot in \(.applicationName)"],
       shortTitle: "Open Bot",
       systemImageName: "arrow.up.forward.app")
-    AppShortcut(
-      intent: StartVoiceChatIntent(),
-      phrases: ["Start a voice chat in \(.applicationName)"],
-      shortTitle: "Start Voice Chat",
-      systemImageName: "waveform")
-    AppShortcut(
-      intent: RecordVoiceMessageIntent(),
-      phrases: ["Record a message in \(.applicationName)"],
-      shortTitle: "Record Message",
-      systemImageName: "mic")
   }
 }
 

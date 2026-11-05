@@ -21,7 +21,6 @@ const payloadSchemas = {
     leaseId: z.string().min(1),
   }),
   "skill.teaching-expire": z.object({ skillId: z.string().min(1) }),
-  "call.expire": z.object({ threadId: z.string().min(1), callId: z.string().min(1) }),
   // The member whose turn asked for it, who pays; older jobs name only the thread.
   "history.compact": z.object({
     threadId: z.string().min(1),
@@ -141,15 +140,6 @@ export function skillTeachingExpireJob(skillId: string, availableAt: Date): Back
     payload: { skillId },
     availableAt,
     replaceKey: skillTeachingExpireJobKey(skillId),
-  };
-}
-
-export function callExpireJob(threadId: string, callId: string, availableAt: Date): BackgroundJob {
-  return {
-    name: "call.expire",
-    payload: { threadId, callId },
-    availableAt,
-    replaceKey: `call.expire:${callId}`,
   };
 }
 

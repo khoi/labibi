@@ -30,13 +30,6 @@ import {
   skillUpdateFromTool,
 } from "./skill-tools.js";
 import { taskCatalogFromTool } from "./task-catalog.js";
-import {
-  commentTicket,
-  createTicket,
-  getTicket,
-  listBoardTickets,
-  updateTicket,
-} from "./ticket-tools.js";
 
 /** A command watch may not run what the desktop guard keeps the bot from running itself. */
 function commandWatchGuardError(ctx: RunContext, watch: unknown): string | undefined {
@@ -68,7 +61,7 @@ export async function scheduleCreateRefusal(
   return error ? { error } : undefined;
 }
 
-/** The task catalog, scratchpad, ticket board, schedules and skills. */
+/** The task catalog, scratchpad, schedules and skills. */
 export const taskTools: ToolHandlers = {
   async task_catalog(ctx) {
     const { deps, run, bot, thread } = ctx;
@@ -137,73 +130,6 @@ export const taskTools: ToolHandlers = {
       itemId: String(args.itemId ?? ""),
     });
     return call.finish(removed);
-  },
-  async board_tickets(ctx, call) {
-    const { deps, run } = ctx;
-    const { args } = call;
-    return call.finish(
-      await listBoardTickets(deps, {
-        spaceId: run.spaceId,
-        status: args.status !== undefined ? String(args.status) : undefined,
-        assigneeBotId: args.ownerBotId !== undefined ? String(args.ownerBotId) : undefined,
-        cursor: args.cursor !== undefined ? String(args.cursor) : undefined,
-      }),
-    );
-  },
-  async ticket_get(ctx, call) {
-    const { deps, run } = ctx;
-    const { args } = call;
-    return call.finish(
-      await getTicket(deps, {
-        spaceId: run.spaceId,
-        ref: String(args.ref ?? ""),
-      }),
-    );
-  },
-  async ticket_create(ctx, call) {
-    const { deps, run, bot } = ctx;
-    const { args } = call;
-    return call.finish(
-      await createTicket(deps, {
-        spaceId: run.spaceId,
-        botId: bot.id,
-        userId: run.userId,
-        title: String(args.title ?? ""),
-        description: args.description !== undefined ? String(args.description) : undefined,
-        priority: args.priority !== undefined ? String(args.priority) : undefined,
-        ownerBotId: args.ownerBotId !== undefined ? String(args.ownerBotId) : undefined,
-      }),
-    );
-  },
-  async ticket_update(ctx, call) {
-    const { deps, run, bot } = ctx;
-    const { args } = call;
-    return call.finish(
-      await updateTicket(deps, {
-        spaceId: run.spaceId,
-        botId: bot.id,
-        userId: run.userId,
-        id: String(args.id ?? ""),
-        title: args.title !== undefined ? String(args.title) : undefined,
-        description: args.description !== undefined ? String(args.description) : undefined,
-        priority: args.priority !== undefined ? String(args.priority) : undefined,
-        status: args.status !== undefined ? String(args.status) : undefined,
-        ownerBotId: args.ownerBotId !== undefined ? String(args.ownerBotId) : undefined,
-      }),
-    );
-  },
-  async ticket_comment(ctx, call) {
-    const { deps, run, bot } = ctx;
-    const { args } = call;
-    return call.finish(
-      await commentTicket(deps, {
-        spaceId: run.spaceId,
-        botId: bot.id,
-        userId: run.userId,
-        id: String(args.id ?? ""),
-        body: String(args.body ?? ""),
-      }),
-    );
   },
   async schedule_create(ctx, call) {
     const { deps, run, bot, thread } = ctx;

@@ -189,28 +189,7 @@ describe("builtin tools", () => {
       messagingChannelRun: false,
       voiceCall: true,
     };
-    const ticketNames = [
-      "board_tickets",
-      "ticket_get",
-      "ticket_create",
-      "ticket_update",
-      "ticket_comment",
-    ];
-    const enabled = selectBuiltinToolsForRun({ ...options, ticketBoardEnabled: true }).map(
-      (tool) => tool.name,
-    );
-    const disabled = selectBuiltinToolsForRun({ ...options, ticketBoardEnabled: false }).map(
-      (tool) => tool.name,
-    );
-    expect(enabled.filter((name) => ticketNames.includes(name))).toEqual(ticketNames);
-    expect(disabled).toEqual(enabled.filter((name) => !ticketNames.includes(name)));
-    expect(
-      selectBuiltinToolsForRun({
-        ...options,
-        ticketBoardEnabled: true,
-        disabledBuiltinTools: ticketNames,
-      }).map((tool) => tool.name),
-    ).toEqual(disabled);
+    const enabled = selectBuiltinToolsForRun(options).map((tool) => tool.name);
     const purchaseNames = ["request_purchase", "purchase_status", "paid_request"];
     expect(enabled.filter((name) => purchaseNames.includes(name))).toEqual([]);
     expect(

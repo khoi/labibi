@@ -1,24 +1,15 @@
 import { runContinueJob, runJobKey } from "@labradoodle/adapter-kit";
-import { settleCallRequest } from "@labradoodle/adapters";
 import type { Actor, ProductEvent } from "@labradoodle/contracts";
 import {
   AttachmentValidationError,
-  CALL_CLIENT_NONCE_PREFIX,
-  callClientNonce,
   expandSkillReferencesInPrompt,
   MODEL_REQUIRED_SEND_ERROR,
-  QUEUE_HOLDING_RUN_STATUSES,
 } from "@labradoodle/core";
 import type { Prisma } from "@labradoodle/db";
 import {
   AnswerTooLongError,
-  appendEventInTransaction,
   createExternalConversationRepos,
-  createThreadMessageInTransaction,
   IsolationError,
-  loadMessageAuthor,
-  lockSpaceGroup,
-  touchGroupUpdatedAt,
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { ORPCError } from "@orpc/server";
@@ -61,17 +52,6 @@ import {
   THREAD_MESSAGE_PAGE_SIZE,
 } from "./shared.js";
 
-/** Deterministic nonce for a call's marker message. The unique (threadId, clientNonce)
- * index makes it the hang-up idempotency key, and the "call:" prefix lets clients derive
- * the marker's callId. User turns carry a uuid suffix, so they never collide. */
-export function callMarkerClientNonce(callId: string): string {
-  return `${CALL_CLIENT_NONCE_PREFIX}${callId}:marker`;
-}
-
-/** The card is closed by a marker; the run that follows finishes whatever the call left open. */
-const HANG_UP_PROMPT =
-  "The voice call just ended because the user hung up. First call end_call with a short title for the call (leave farewell empty). Then, if anything the user asked for during the call is still unfinished, complete it now as a normal chat reply with full formatting. If nothing is pending, reply with one short sentence.";
-
 /** A send with routines that already has runs saved under its nonce. */
 class SavedSubmission extends Error {}
 
@@ -92,7 +72,7 @@ export function takeoverReleaser(deps: RouterDeps, actor: Actor, target: ThreadT
 }
 
 export function threadsRoutes(ctx: RouterContext) {
-  const { deps, authed, callsEnabled, codexCatalog, repos, agentSkills } = ctx;
+  const { deps, authed, codexCatalog, repos, agentSkills } = ctx;
   /** The bot a reaction can wake: the thread's bot, or in a group the bot that wrote the message. */
   const reactedBotId = async (target: ThreadTarget, messageId: string) =>
     target.kind === "bot"
@@ -384,266 +364,6 @@ export function threadsRoutes(ctx: RouterContext) {
         }
         return { ok: true as const };
       }),
-      followUp: authed.threads.followUp.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
-        if (target.kind === "bot") {
-          await assertTeachingSendAllowed(deps.prisma, context.actor.spaceId, target.botId);
-          const sent = await deps.events.sendUserMessage({
-            spaceId: context.actor.spaceId,
-            threadId: target.threadId,
-            botId: target.botId,
-            userId: context.actor.userId,
-            authorUserId: context.actor.userId,
-            blocks: [{ kind: "text", text: input.text }],
-            prompt: input.text,
-            trigger: "follow_up",
-            clientNonce: input.clientNonce,
-          });
-          if (sent.taskId && sent.runId) {
-            await deps.jobs.enqueue(runContinueJob(sent.runId)).catch((error) => {
-              getLogger().error("follow-up enqueue", error);
-            });
-          }
-          return { ok: true as const };
-        }
-        const committed = await deps.prisma.$transaction(async (tx) => {
-          if (input.clientNonce) {
-            const existing = await tx.message.findUnique({
-              where: {
-                threadId_clientNonce: { threadId: target.threadId, clientNonce: input.clientNonce },
-              },
-            });
-            if (existing) return null;
-          }
-          await lockSpaceGroup(tx, context.actor, target.groupId);
-          const group = await tx.chatGroup.findFirst({
-            where: {
-              id: target.groupId,
-              archivedAt: null,
-              thread: { id: target.threadId },
-            },
-            include: { members: { orderBy: [{ createdAt: "asc" }, { botId: "asc" }] } },
-          });
-          const botId = group?.members[0]?.botId;
-          if (!botId) throw new IsolationError();
-          const blocks = [{ kind: "text" as const, text: input.text }];
-          const message = await createThreadMessageInTransaction(tx, {
-            threadId: target.threadId,
-            role: "user",
-            authorUserId: context.actor.userId,
-            blocks,
-            clientNonce: input.clientNonce,
-          });
-          const author = await loadMessageAuthor(tx, context.actor.userId);
-          const active = await tx.run.findFirst({
-            where: {
-              threadId: target.threadId,
-              botId,
-              status: { in: [...QUEUE_HOLDING_RUN_STATUSES] },
-            },
-            select: { id: true, userId: true },
-          });
-          let run: { id: string } | null = null;
-          let joinedRunId: string | null = null;
-          if (!active) {
-            const task = await tx.task.create({
-              data: {
-                spaceId: context.actor.spaceId,
-                botId,
-                threadId: target.threadId,
-                userId: context.actor.userId,
-                prompt: input.text,
-                status: "queued",
-              },
-            });
-            run = await tx.run.create({
-              data: {
-                spaceId: context.actor.spaceId,
-                botId,
-                threadId: target.threadId,
-                taskId: task.id,
-                userId: context.actor.userId,
-                status: "queued",
-                trigger: "follow_up",
-                sourceMessageId: message.id,
-              },
-              select: { id: true },
-            });
-            await tx.message.update({ where: { id: message.id }, data: { runId: run.id } });
-          } else {
-            // Another person's message waits for a run of its own, which acts with their
-            // accounts, rather than joining the one under way.
-            const ownRunId = active.userId === context.actor.userId ? active.id : null;
-            await tx.steeringMessage.create({
-              data: { messageId: message.id, botId, userId: context.actor.userId, runId: ownRunId },
-            });
-            if (ownRunId) {
-              await tx.message.update({ where: { id: message.id }, data: { runId: ownRunId } });
-            }
-            joinedRunId = ownRunId;
-          }
-          const event = await appendEventInTransaction(tx, {
-            spaceId: context.actor.spaceId,
-            threadId: target.threadId,
-            botId,
-            type: "thread.message.created",
-            runId: run?.id ?? joinedRunId ?? undefined,
-            payload: { messageId: message.id, role: "user", blocks, author },
-          });
-          await touchGroupUpdatedAt(tx, target.groupId);
-          return { runId: run?.id, eventSeq: event.seq, message };
-        });
-        if (committed) {
-          deps.analytics?.capture(
-            context.actor.userId,
-            { name: "message_sent", trigger: "follow_up" },
-            { id: committed.message.id, at: committed.message.createdAt },
-          );
-          await deps.events.notify(target.threadId, committed.eventSeq).catch((error) => {
-            getLogger().error("group follow-up realtime notification", error);
-          });
-          if (committed.runId) {
-            await deps.jobs.enqueue(runContinueJob(committed.runId)).catch((error) => {
-              getLogger().error("group follow-up enqueue", error);
-            });
-          }
-        }
-        return { ok: true as const };
-      }),
-      answerCall: callsEnabled.threads.answerCall.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
-        if (target.kind !== "bot") throw new IsolationError();
-        const answered = await settleCallRequest(deps, {
-          threadId: target.threadId,
-          callId: input.callId,
-          from: ["ringing"],
-          status: "answered",
-        });
-        if (answered?.status !== "answered")
-          throw new ORPCError("CONFLICT", { message: "This call is no longer ringing." });
-        return { opening: answered.opening, reason: answered.reason };
-      }),
-      declineCall: callsEnabled.threads.declineCall.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
-        if (target.kind !== "bot") throw new IsolationError();
-        const declined = await settleCallRequest(deps, {
-          threadId: target.threadId,
-          callId: input.callId,
-          from: ["ringing"],
-          status: input.outcome,
-        });
-        if (declined?.status !== input.outcome)
-          throw new ORPCError("CONFLICT", { message: "This call is no longer ringing." });
-        return { ok: true as const };
-      }),
-      endCall: callsEnabled.threads.endCall.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
-        if (target.kind !== "bot") throw new IsolationError();
-        await assertTeachingSendAllowed(deps.prisma, context.actor.spaceId, target.botId);
-        const { botId, threadId } = target;
-        // The bot's own call: its card keeps how long the user stayed on.
-        await settleCallRequest(deps, {
-          threadId,
-          callId: input.callId,
-          from: ["answered"],
-          ...(input.durationSeconds === undefined
-            ? {}
-            : { durationSeconds: input.durationSeconds }),
-        });
-        const blocks = [
-          {
-            kind: "voice_call" as const,
-            callId: input.callId,
-            title: "",
-            farewell: "",
-            ...(input.durationSeconds === undefined
-              ? {}
-              : { durationSeconds: input.durationSeconds }),
-          },
-        ];
-        const committed = await deps.prisma
-          .$transaction(async (tx) => {
-            // A late provider hang-up is harmless when the call never produced a
-            // user utterance; do not create a phantom marker or follow-up run.
-            const userUtterance = await tx.message.findFirst({
-              where: {
-                threadId,
-                role: "user",
-                clientNonce: { startsWith: `${CALL_CLIENT_NONCE_PREFIX}${input.callId}:` },
-              },
-              select: { id: true },
-            });
-            if (!userUtterance) return null;
-            // The marker's deterministic nonce is the idempotency key: the unique
-            // (threadId, clientNonce) index rejects a second hang-up, concurrent or not.
-            const message = await createThreadMessageInTransaction(tx, {
-              threadId,
-              role: "bot",
-              botId,
-              blocks,
-              clientNonce: callMarkerClientNonce(input.callId),
-            });
-            await appendEventInTransaction(tx, {
-              spaceId: context.actor.spaceId,
-              threadId,
-              botId,
-              type: "thread.message.created",
-              payload: { messageId: message.id, role: "bot", blocks, callId: input.callId },
-            });
-            const task = await tx.task.create({
-              data: {
-                spaceId: context.actor.spaceId,
-                botId,
-                threadId,
-                userId: context.actor.userId,
-                prompt: HANG_UP_PROMPT,
-                status: "queued",
-              },
-            });
-            const run = await tx.run.create({
-              data: {
-                spaceId: context.actor.spaceId,
-                botId,
-                threadId,
-                taskId: task.id,
-                userId: context.actor.userId,
-                status: "queued",
-                trigger: "call_end",
-                clientNonce: callClientNonce(input.callId),
-              },
-              select: { id: true },
-            });
-            const ended = await appendEventInTransaction(tx, {
-              spaceId: context.actor.spaceId,
-              threadId,
-              botId,
-              type: "thread.call.ended",
-              runId: run.id,
-              payload: {
-                botId,
-                threadId,
-                callId: input.callId,
-                title: "",
-                farewell: "",
-                messageId: message.id,
-              },
-            });
-            return { runId: run.id, eventSeq: ended.seq };
-          })
-          .catch((error) => {
-            if (!isUniqueViolation(error)) throw error;
-            return null;
-          });
-        if (!committed) return { ok: true as const };
-        await deps.events.notify(threadId, committed.eventSeq).catch((error) => {
-          getLogger().error("call end realtime notification", error);
-        });
-        // The queued run is durable; a missed wake is repaired by the reconciler.
-        await deps.jobs.enqueue(runContinueJob(committed.runId)).catch((error) => {
-          getLogger().error("call end enqueue", error);
-        });
-        return { ok: true as const };
-      }),
       answer: authed.threads.answer.handler(async ({ context, input }) => {
         const target = await resolveThreadTarget(deps.prisma, context.actor, input);
         const answered = await deps.events
@@ -654,7 +374,6 @@ export function threadsRoutes(ctx: RouterContext) {
             messageId: input.messageId,
             answeredByUserId: context.actor.userId,
             answer: input.answer,
-            clientNonce: input.clientNonce,
             fields: input.fields,
             username: input.username,
             remember: input.remember,

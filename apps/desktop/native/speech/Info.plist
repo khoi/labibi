@@ -8,8 +8,8 @@
     <key>CFBundleName</key>
     <string>Labradoodle</string>
     <key>NSSpeechRecognitionUsageDescription</key>
-    <string>Labradoodle turns what you say into text for dictation and voice calls with your bots.</string>
+    <string>Labradoodle turns what you say into text for dictation.</string>
     <key>NSMicrophoneUsageDescription</key>
-    <string>Labradoodle uses the microphone for dictation and voice calls with your bots.</string>
+    <string>Labradoodle uses the microphone for dictation.</string>
   </dict>
 </plist>

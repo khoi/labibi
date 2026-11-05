@@ -17,8 +17,7 @@ the Electron desktop app (which hosts the web UI) and mobile bot settings.
 
 ## Which runs can use the bot management tools
 
-Only runs you started can use them: a message you sent, a follow-up to your message, or the end of
-a call. Runs started by another bot's message, a messaging channel, a spawn, tickets, a webhook or a
+Only runs you started can use them: a message you sent or a follow-up to your message. Runs started by another bot's message, a messaging channel, a spawn, a webhook or a
 routine cannot use the bot management tools, including `list_fleet`. `update_bot` remains available
 for changes to the calling bot, but cannot target another bot.
 
