@@ -6,7 +6,6 @@ export function identityLabels(): IdentityLabels {
     bot: t("Bot"),
     group: t("Group"),
     space: t("Space"),
-    chats: t("Chats"),
     routine: t("Routine"),
     member: t("Member"),
     subagent: t("subagent"),

@@ -117,7 +117,6 @@ describe.skipIf(!databaseAvailable)("offline Pi computer approval", () => {
         const bot = await rpc<{ id: string }>(handles.app, cookie, "bots/create", {
           name: "Computer fixture",
           title: "",
-          description: "",
           instructions: "Complete the computer task.",
           notifyOnFinish: false,
         });

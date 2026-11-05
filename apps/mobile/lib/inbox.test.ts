@@ -55,8 +55,6 @@ function bot(id: string, name: string, preview: string) {
     notifyOnFinish: true,
     threadId: `thread-${id}`,
     status: "idle",
-    pinned: false,
-    sectionId: null,
     archivedAt: null,
     unread: false,
     updatedAt: now.toISOString(),

@@ -96,7 +96,6 @@ async function createOrReuseFirstBot(): Promise<{ id: string }> {
   if (existing) return { id: existing.id };
   const created = await rpc.bots.create({
     name: FIRST_BOT_NAME,
-    description: "",
     instructions: "",
     notifyOnFinish: true,
   });
@@ -513,15 +512,8 @@ export function OnboardingPage() {
     setError(null);
     try {
       const bot = await ensureFirstBot();
-      // Onboarding continues conversationally in the thread: greeting first,
-      // then the focus choice (immediate for the first bot).
-      const started = await rpc.onboarding
-        .start({ botId: bot.id })
-        .then(() => true)
-        .catch(() => false);
-      if (started) {
-        await rpc.onboarding.promptFocus({ botId: bot.id }).catch(() => undefined);
-      }
+      // Onboarding continues conversationally in the thread with the focus choice.
+      await rpc.onboarding.promptFocus({ botId: bot.id }).catch(() => undefined);
       navigate(`/app/${bot.id}`);
     } catch (err) {
       createStartedRef.current = false;

@@ -98,29 +98,18 @@ export async function seedIosScreenshotFixture(input: {
   const researcher = await ensureBot(input.apiUrl, populated.headers, bots, {
     name: "Researcher",
     title: "Product research",
-    description: "Finds evidence and keeps fixture notes organized.",
+    instructions: "Finds evidence and keeps fixture notes organized.",
   });
   const writer = await ensureBot(input.apiUrl, populated.headers, bots, {
     name: "Writer",
     title: "Clear writing",
-    description: "Turns research into concise drafts.",
+    instructions: "Turns research into concise drafts.",
   });
   const support = await ensureBot(input.apiUrl, populated.headers, bots, {
     name: "Support",
     title: "Customer support",
-    description: "Prepares friendly customer replies.",
+    instructions: "Prepares friendly customer replies.",
   });
-  const archived = await rpc<BotRow[]>(input.apiUrl, populated.headers, "bots/listArchived");
-  if (!archived.some((bot) => bot.name === "Archived fixture")) {
-    const created = await rpc<BotRow>(input.apiUrl, populated.headers, "bots/create", {
-      name: "Archived fixture",
-      title: "Archived",
-      description: "A recoverable archived bot.",
-      instructions: "Remain archived.",
-      notifyOnFinish: true,
-    });
-    await rpc(input.apiUrl, populated.headers, "bots/archive", { botId: created.id });
-  }
 
   const groups = await rpc<GroupRow[]>(input.apiUrl, populated.headers, "groups/list");
   let group = groups.find((item) => item.name === "Launch team");
@@ -434,15 +423,11 @@ async function ensureBot(
   apiUrl: string,
   headers: Record<string, string>,
   bots: BotRow[],
-  profile: { name: string; title: string; description: string },
+  profile: { name: string; title: string; instructions: string },
 ) {
   const existing = bots.find((bot) => bot.name === profile.name);
   if (existing) return existing;
-  return rpc<BotRow>(apiUrl, headers, "bots/create", {
-    ...profile,
-    instructions: profile.description,
-    notifyOnFinish: true,
-  });
+  return rpc<BotRow>(apiUrl, headers, "bots/create", { ...profile, notifyOnFinish: true });
 }
 
 async function ensureThreadCopy(

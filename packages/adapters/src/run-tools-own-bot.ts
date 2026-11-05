@@ -1,6 +1,4 @@
-import type { AdapterContext } from "@labradoodle/adapter-kit";
-import type { MessageBlock } from "@labradoodle/contracts";
-import { BotSettingsValuesSchema, isAttachmentImageMimeType } from "@labradoodle/contracts";
+import { BotSettingsValuesSchema } from "@labradoodle/contracts";
 import {
   appendEventInTransaction,
   commitBotUpdate,
@@ -9,7 +7,6 @@ import {
   writeBotInstructions,
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
-import { attachedImageArtifactIds, resolveUpdateBotAvatar } from "./bot-avatar.js";
 import type { ExecutorDeps } from "./executor-deps.js";
 import {
   listDefaultVoices,
@@ -67,7 +64,7 @@ async function commitOwnInstructions(
     if (!undoVersionId) return null;
     const bot = await tx.bot.findUniqueOrThrow({
       where: { id: botId },
-      select: { name: true, description: true },
+      select: { name: true },
     });
     return appendEventInTransaction(tx, {
       spaceId: run.spaceId,
@@ -75,7 +72,7 @@ async function commitOwnInstructions(
       botId,
       runId,
       type: "bot.updated",
-      payload: { botId, name: bot.name, description: bot.description },
+      payload: { botId, name: bot.name },
     });
   }, THREAD_LOCK_TRANSACTION_OPTIONS);
   if (committed && "error" in committed) return committed;
@@ -114,9 +111,7 @@ export const ownBotTools: ToolHandlers = {
       where: { id: bot.id },
       select: {
         name: true,
-        description: true,
         instructions: true,
-        color: true,
         notifyOnFinish: true,
         modelProvider: true,
         modelId: true,
@@ -162,7 +157,7 @@ export const ownBotTools: ToolHandlers = {
     );
     // The profile goes first, so a rejected field leaves everything else unchanged for a retry.
     const updated = Object.values(profile).some(argumentGiven)
-      ? await updateOwnBotFromTool(deps, run, thread.id, bot, profile, context)
+      ? await updateOwnBotFromTool(deps, run, thread.id, bot, profile)
       : undefined;
     if (updated && "error" in updated) return call.finish(updated);
     if (
@@ -228,65 +223,17 @@ export const ownBotTools: ToolHandlers = {
 /** update_bot on the calling bot's own profile. */
 async function updateOwnBotFromTool(
   deps: ExecutorDeps,
-  run: { id: string; spaceId: string; userId: string; sourceMessageId: string | null },
+  run: { id: string; spaceId: string },
   threadId: string,
-  bot: { id: string; name: string },
+  bot: { id: string },
   args: Record<string, unknown>,
-  context: AdapterContext,
 ) {
   const parsed = parseUpdateBotPatch(args);
   if ("error" in parsed) return parsed;
-  const patch = parsed.patch;
-  const wantsImage = args.artifact_id !== undefined || args.use_attached_image === true;
-  let sourceImageArtifactIds: string[] = [];
-  if (wantsImage && run.sourceMessageId) {
-    const source = await deps.prisma.message.findUnique({
-      where: { id: run.sourceMessageId },
-      select: { blocks: true, threadId: true },
-    });
-    if (source?.threadId === threadId) {
-      sourceImageArtifactIds = attachedImageArtifactIds(source.blocks as MessageBlock[]);
-    }
-  }
-  const avatar = await resolveUpdateBotAvatar({
-    color: args.color,
-    artifactId: args.artifact_id,
-    useAttachedImage: args.use_attached_image,
-    sourceImageArtifactIds,
-    loadArtifact: async (id) => {
-      if (!deps.artifacts) return null;
-      const row = await deps.prisma.artifact.findFirst({
-        where: { id, spaceId: run.spaceId },
-        select: { mimeType: true, storageKey: true },
-      });
-      if (!row || !isAttachmentImageMimeType(row.mimeType)) return null;
-      try {
-        return await deps.artifacts.get(row.storageKey, context);
-      } catch {
-        return null;
-      }
-    },
-  });
-  if ("error" in avatar && avatar.error !== "missing") {
-    return { error: avatar.error };
-  }
-  if ("color" in avatar) patch.color = avatar.color;
-  if (Object.keys(patch).length === 0) {
-    return {
-      error:
-        "Provide at least one of name, description, notifyOnFinish, color, artifact_id, or use_attached_image.",
-    };
-  }
   const updated = await deps.prisma.bot.update({
     where: { id: bot.id },
-    data: patch,
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      color: true,
-      notifyOnFinish: true,
-    },
+    data: parsed.patch,
+    select: { id: true, name: true, notifyOnFinish: true },
   });
   try {
     await deps.events.append({
@@ -295,11 +242,7 @@ async function updateOwnBotFromTool(
       botId: bot.id,
       runId: run.id,
       type: "bot.updated",
-      payload: {
-        botId: updated.id,
-        name: updated.name,
-        description: updated.description,
-      },
+      payload: { botId: updated.id, name: updated.name },
     });
   } catch (error) {
     getLogger().error("bot.updated notification", error);
@@ -308,8 +251,6 @@ async function updateOwnBotFromTool(
     ok: true,
     botId: updated.id,
     name: updated.name,
-    description: updated.description,
-    avatar: updated.color.startsWith("data:image/") ? "image" : updated.color,
     notifyOnFinish: updated.notifyOnFinish,
   };
 }

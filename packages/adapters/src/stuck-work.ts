@@ -38,7 +38,7 @@ type StuckCandidate = {
   botId: string;
   userId: string;
   taskId: string;
-  bot: { name: string; color: string; avatarSet: string; notifyOnFinish: boolean };
+  bot: { name: string; color: string; notifyOnFinish: boolean };
   thread: { groupId: string | null };
 };
 
@@ -95,7 +95,7 @@ export async function reconcileStuckWork(deps: {
       botId: true,
       userId: true,
       taskId: true,
-      bot: { select: { name: true, color: true, avatarSet: true, notifyOnFinish: true } },
+      bot: { select: { name: true, color: true, notifyOnFinish: true } },
       thread: { select: { groupId: true } },
     },
   });

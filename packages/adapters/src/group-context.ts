@@ -13,7 +13,7 @@ export async function loadGroupContext(
       members: {
         where: { bot: { archivedAt: null } },
         include: {
-          bot: { select: { id: true, name: true, description: true } },
+          bot: { select: { id: true, name: true } },
         },
         orderBy: { createdAt: "asc" },
       },

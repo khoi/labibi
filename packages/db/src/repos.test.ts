@@ -2,7 +2,6 @@ import type { Actor } from "@labradoodle/contracts";
 import { describe, expect, it, vi } from "vitest";
 import type { PrismaClient } from "./client.js";
 import { createRepos } from "./repos.js";
-import { IsolationError } from "./scope.js";
 
 const actor: Actor = {
   userId: "user-1",
@@ -17,13 +16,9 @@ const baseBot = {
   userId: "user-1",
   name: "Test Bot",
   title: "",
-  description: "",
   instructions: "",
   color: "#000",
   notifyOnFinish: true,
-  pinned: false,
-  position: 0,
-  sectionId: null,
   archivedAt: null,
   memoryScope: null as string | null,
   createdAt: new Date("2026-08-19T00:00:00.000Z"),
@@ -47,26 +42,6 @@ function reposFor(memoryScope: string | null) {
 }
 
 describe("createRepos.listBots", () => {
-  it.each([undefined, "organic", "rakazo"])(
-    "preserves appearance metadata on reload (set=%s)",
-    async (avatarSet) => {
-      const rows = ["#8B5CF6", "#8B5CF6::shape_3", "data:image/png;base64,aGVsbG8="].map(
-        (color, index) => ({ ...baseBot, id: `bot-${index}`, color, avatarSet }),
-      );
-      const prisma = {
-        bot: { findMany: vi.fn(async () => rows) },
-        run: { findMany: vi.fn(async () => []) },
-        $queryRaw: vi.fn(async () => []),
-      };
-      const bots = await createRepos(prisma as unknown as PrismaClient).listBots(actor);
-      expect(
-        bots.map((bot) => ({ id: bot.id, color: bot.color, avatarSet: bot.avatarSet })),
-      ).toEqual(
-        rows.map((row) => ({ id: row.id, color: row.color, avatarSet: avatarSet ?? "organic" })),
-      );
-    },
-  );
-
   it("surfaces a failed foreground run and clears the signal after recovery", async () => {
     const findMany = vi.fn(async () => [baseBot]);
     const queryRaw = vi.fn(async () => [] as unknown[]);
@@ -356,10 +331,7 @@ describe("createRepos.listSpaceBotsForSpaces", () => {
         spaceId: "ws-2",
         name: "Support",
         color: "#123456",
-        avatarSet: "organic",
         notifyOnFinish: false,
-        pinned: true,
-        sectionId: null,
         updatedAt: new Date("2026-08-20T00:00:00.000Z"),
         thread: {
           id: "thread-2",
@@ -398,10 +370,7 @@ describe("createRepos.listSpaceBotsForSpaces", () => {
         name: "Support",
         title: "",
         color: "#123456",
-        avatarSet: "organic",
         notifyOnFinish: false,
-        pinned: true,
-        sectionId: null,
         unread: true,
         preview: "Waiting for a reply",
         status: "running",
@@ -419,46 +388,7 @@ describe("createRepos.listSpaceBotsForSpaces", () => {
       }),
     );
     expect(query.where).toEqual(expect.objectContaining({ spaceId: { in: ["ws-2"] } }));
-    expect(query.select).not.toHaveProperty("description");
     expect(query.select).not.toHaveProperty("instructions");
     expect(query.select).not.toHaveProperty("computer");
-  });
-});
-
-describe("createRepos.reorderBots", () => {
-  function reorderRepos(ids: string[]) {
-    const update = vi.fn().mockResolvedValue({});
-    const tx = {
-      bot: {
-        findMany: vi.fn().mockResolvedValue(ids.map((id) => ({ id }))),
-        update,
-      },
-    };
-    const prisma = {
-      $transaction: vi.fn((run: (client: typeof tx) => Promise<void>) => run(tx)),
-    };
-    return { repos: createRepos(prisma as unknown as PrismaClient), update };
-  }
-
-  it("writes each owned bot's requested position", async () => {
-    const { repos, update } = reorderRepos(["bot-1", "bot-2"]);
-    await repos.reorderBots(actor, ["bot-2", "bot-1"]);
-    expect(update).toHaveBeenNthCalledWith(1, {
-      where: { id: "bot-2" },
-      data: { position: 0 },
-    });
-    expect(update).toHaveBeenNthCalledWith(2, {
-      where: { id: "bot-1" },
-      data: { position: 1 },
-    });
-  });
-
-  it("rejects partial or foreign bot lists before writing", async () => {
-    const { repos, update } = reorderRepos(["bot-1", "bot-2"]);
-    await expect(repos.reorderBots(actor, ["bot-1"])).rejects.toBeInstanceOf(IsolationError);
-    await expect(repos.reorderBots(actor, ["bot-1", "foreign"])).rejects.toBeInstanceOf(
-      IsolationError,
-    );
-    expect(update).not.toHaveBeenCalled();
   });
 });

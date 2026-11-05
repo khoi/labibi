@@ -110,7 +110,7 @@ describePostgres("a deactivated account's work (PostgreSQL)", () => {
     const dana = await person();
     const helper = await createRepos(system).createBot(
       { userId: dana.userId, spaceId: dana.spaceId, email: "", isDeploymentOwner: false },
-      { name: "Helper", description: "", instructions: "", notifyOnFinish: false },
+      { name: "Helper", instructions: "", notifyOnFinish: false },
     );
     const second = await system.thread.findFirstOrThrow({ where: { botId: helper.id } });
     await run(dana, "queued");

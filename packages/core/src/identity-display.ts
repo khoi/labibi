@@ -6,7 +6,6 @@ export type IdentityLabels = {
   bot: string;
   group: string;
   space: string;
-  chats: string;
   routine: string;
   member: string;
   subagent: string;
@@ -65,7 +64,6 @@ export function displayIdentityResult(
   const bot: Project = (value) => fields(value, { name: label(labels.bot), title: label("") });
   const group: Project = (value) =>
     fields(value, { name: label(labels.group), members: list(member) });
-  const section: Project = (value) => fields(value, { name: label(labels.chats) });
   const routine: Project = (value) => fields(value, { name: label(labels.routine) });
   const thread: Project = (value) =>
     fields(value, {
@@ -82,7 +80,6 @@ export function displayIdentityResult(
       name: label(labels.space),
       bots: list(bot),
       groups: list(group),
-      botSections: list(section),
     });
   const identity: Project = (value) => fields(value, { botName: label(labels.bot) });
   const channel: Project = (value) => fields(value, { name: label(labels.group) });
@@ -91,22 +88,17 @@ export function displayIdentityResult(
     return fields(result, {
       bots: list(bot),
       groups: list(group),
-      archivedBots: list(bot),
-      archivedGroups: list(group),
-      botSections: list(section),
       spaces: list(space),
       routines: list(routine),
       thread,
     });
   if (procedure === "spaces/list") return fields(result, { current: space, spaces: list(space) });
   if (procedure === "spaces/create" || procedure === "spaces/rename") return space(result);
-  if (/^bots\/(list|listArchived)$/.test(procedure)) return list(bot)(result);
-  if (/^bots\/(get|create|update|duplicate|restoreInstructions|setComputer)$/.test(procedure))
+  if (procedure === "bots/list") return list(bot)(result);
+  if (/^bots\/(get|create|update|restoreInstructions|setComputer)$/.test(procedure))
     return bot(result);
-  if (/^groups\/(list|listArchived)$/.test(procedure)) return list(group)(result);
-  if (/^groups\/(get|create|update|duplicate)$/.test(procedure)) return group(result);
-  if (procedure === "botSections/list") return list(section)(result);
-  if (/^botSections\/(create|update)$/.test(procedure)) return section(result);
+  if (procedure === "groups/list") return list(group)(result);
+  if (/^groups\/(get|create|update)$/.test(procedure)) return group(result);
   if (procedure === "routines/list") return list(routine)(result);
   if (procedure === "routines/listForMentions")
     return list((value) => fields(value, { routines: list(routine) }))(result);

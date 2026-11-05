@@ -28,9 +28,7 @@ export function modelLabel(provider: string | null, model: string | null): strin
 
 export type OwnBotSettingsRow = {
   name: string;
-  description: string;
   instructions: string;
-  color: string;
   notifyOnFinish: boolean;
   modelProvider: string | null;
   modelId: string | null;
@@ -44,8 +42,8 @@ const MODELS_PER_PROVIDER = 15;
 /** Largest instructions page a settings read returns; the rest come on request by offset. */
 const INSTRUCTIONS_PAGE_SIZE = 8_000;
 /**
- * Ceiling for the whole serialized result of a paged read. The page competes with the description
- * and JSON escaping for the same budget, so the page shrinks until the result fits — with
+ * Ceiling for the whole serialized result of a paged read. The page competes with the other
+ * settings and JSON escaping for the same budget, so the page shrinks until the result fits — with
  * headroom under the generic tool-result cut.
  */
 const SERIALIZED_PAGE_LIMIT = 10_000;
@@ -85,9 +83,7 @@ export async function readOwnBotSettings(
     paging: { length: number; nextOffset: number | null } | null,
   ) => ({
     name: bot.name,
-    description: bot.description,
     instructions,
-    avatar: bot.color.startsWith("data:image/") ? "image" : bot.color,
     notifyOnFinish: bot.notifyOnFinish,
     model: `${modelLabel(effective.provider, effective.model)}${bot.modelId ? "" : " (default)"}`,
     thinkingLevel: bot.thinkingLevel ?? "default",
@@ -133,7 +129,7 @@ export async function readOwnBotSettings(
   // advance would send the model back to the same offset forever.
   if (end <= instructionsOffset || JSON.stringify(paged(end)).length > SERIALIZED_PAGE_LIMIT) {
     return {
-      error: "Your settings are too large to read your instructions: shorten your description.",
+      error: "Your settings are too large to read your instructions.",
     };
   }
   return paged(end);

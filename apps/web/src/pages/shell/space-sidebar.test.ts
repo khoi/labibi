@@ -7,8 +7,6 @@ function chat(id: string, name: string) {
     name,
     title: "",
     preview: "",
-    pinned: false,
-    sectionId: null,
   };
 }
 
@@ -24,59 +22,10 @@ function space(
     canDelete: options.canDelete ?? false,
     bots: options.bots ?? [chat(`${id}-bot`, "Chief")],
     groups: [],
-    botSections: [],
   };
 }
 
 describe("sidebarGroupsForSpaces", () => {
-  it("keeps an empty space with saved sections openable", () => {
-    const empty = {
-      ...space("space-2", "Support", { canRename: true, bots: [] }),
-      botSections: [{ id: "saved", name: "Archived projects" }],
-    };
-    const groups = sidebarGroupsForSpaces([space("space-1", "Personal"), empty], "");
-    expect(groups.filter((group) => group.spaceId === empty.id)).toEqual([
-      expect.objectContaining({ emptySpaceId: "space-2", title: "Support" }),
-      expect.objectContaining({
-        sectionId: "saved",
-        title: "Support",
-        subtitle: "Archived projects",
-        bots: [],
-        emptySpaceId: undefined,
-      }),
-    ]);
-  });
-
-  it("keeps an empty section deletable when the only space has no chats", () => {
-    const input = {
-      ...space("space-1", "Personal", { bots: [] }),
-      botSections: [{ id: "old", name: "Old ideas" }],
-    };
-    expect(sidebarGroupsForSpaces([input], "")).toEqual([
-      expect.objectContaining({ key: "section:old", sectionId: "old", title: "Old ideas" }),
-    ]);
-    expect(sidebarGroupsForSpaces([input], "Old")).toEqual([]);
-  });
-
-  it("retains empty section and Unassigned drop targets when not searching", () => {
-    const input = {
-      ...space("space-1", "Personal"),
-      bots: [{ ...chat("a", "Alpha"), sectionId: "s1" }],
-      botSections: [
-        { id: "s1", name: "Projects" },
-        { id: "s2", name: "Empty" },
-      ],
-    };
-    expect(sidebarGroupsForSpaces([input], "").map((group) => group.key)).toEqual([
-      "section:s1",
-      "section:s2",
-      "unassigned",
-    ]);
-    expect(sidebarGroupsForSpaces([input], "Alpha").map((group) => group.key)).toEqual([
-      "section:s1",
-    ]);
-  });
-
   it("names the only space on the header that holds its menu", () => {
     const [group] = sidebarGroupsForSpaces([space("space-1", "Personal", { canRename: true })], "");
 
@@ -179,7 +128,7 @@ it("counts unread bots and groups from the sidebar across spaces", () => {
       ...space("first", "First"),
       bots: [
         { ...chat("read", "Read"), unread: false },
-        { ...chat("bot", "Unread bot"), unread: true, pinned: true },
+        { ...chat("bot", "Unread bot"), unread: true },
       ],
       groups: [{ ...chat("group", "Unread group"), unread: true }],
     },

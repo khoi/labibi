@@ -341,7 +341,6 @@ describePiApp("live OpenRouter product journey", () => {
     const botRes = await rpc<{ id: string }>(handles.app, cookie, "bots/create", {
       name: "Chief",
       title: "Chief of staff",
-      description: "Canary",
       instructions: "Reply briefly. Prefer the write_file tool when asked to write a file.",
       notifyOnFinish: true,
     });

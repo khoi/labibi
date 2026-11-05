@@ -101,32 +101,6 @@ export function createHomeStyles() {
       borderRadius: 12,
       backgroundColor: native.fillPressed,
     },
-    pinnedTiles: {
-      flexDirection: "row",
-      flexWrap: "wrap",
-      paddingHorizontal: 8,
-      paddingTop: 4,
-      paddingBottom: 12,
-    },
-    pinnedTile: {
-      width: "33.33%",
-      alignItems: "center",
-      paddingVertical: 8,
-      paddingHorizontal: 4,
-      borderRadius: 16,
-      gap: 4,
-    },
-    pinnedName: {
-      color: native.secondaryLabel,
-      fontSize: 13,
-      fontWeight: "500",
-      textAlign: "center",
-      writingDirection: "auto",
-    },
-    pinnedUnread: {
-      color: native.label,
-      fontWeight: "700",
-    },
     compactRow: {
       paddingHorizontal: COMPACT_INBOX_ROW.padding,
       gap: COMPACT_INBOX_ROW.gap,
@@ -223,7 +197,6 @@ export function createHomeStyles() {
       paddingTop: 12,
       paddingBottom: 4,
     },
-    archivedRow: { flex: 0, width: "100%" },
     sectionTitle: {
       flexShrink: 1,
       color: native.secondaryLabel,

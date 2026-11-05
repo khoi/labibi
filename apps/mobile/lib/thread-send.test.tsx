@@ -17,7 +17,6 @@ vi.mock("./api", () => ({
 }));
 vi.mock("./i18n", () => ({ t: (text: string) => text, useI18n: () => ({ t: (s: string) => s }) }));
 vi.mock("./live-notifications", () => ({ resumeLiveNotifications: async () => undefined }));
-vi.mock("./focus-prompt", () => ({ cancelFocusPrompt: () => undefined }));
 vi.mock("./unsent-sends", () => ({ prepareUnsentSends: async () => undefined }));
 vi.mock("./session", () => ({
   currentSessionGeneration: () => 1,

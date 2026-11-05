@@ -163,7 +163,6 @@ describePostgres("shared space content (PostgreSQL)", () => {
       runAsTenant(actor, () =>
         repos.createBot(actor, {
           name,
-          description: "",
           instructions: "",
           notifyOnFinish: false,
         }),

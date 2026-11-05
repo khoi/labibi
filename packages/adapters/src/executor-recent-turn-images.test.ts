@@ -177,7 +177,6 @@ async function runWithModel(
           id: run.botId,
           name: "Boris",
           color: "blue",
-          avatarSet: "default",
           notifyOnFinish: true,
         },
         thread: { groupId: null },

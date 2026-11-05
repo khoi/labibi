@@ -1,4 +1,4 @@
-import type { AccountItem, Bot, BotSection } from "@labradoodle/contracts";
+import type { AccountItem, Bot } from "@labradoodle/contracts";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,7 +12,6 @@ import {
   Checkbox,
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -179,135 +178,6 @@ export function NewSpaceDialog({
             {saving ? <Trans>Creating…</Trans> : <Trans>Create space</Trans>}
           </Button>
         </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-export function NewBotSectionDialog({
-  bot,
-  onCancel,
-  onConfirm,
-}: {
-  bot: Pick<Bot, "name">;
-  onCancel: () => void;
-  onConfirm: (name: string) => Promise<void>;
-}) {
-  const { t } = useLingui();
-  const nameId = useId();
-  const [name, setName] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  return (
-    <Dialog open onOpenChange={closeUnlessBusy(saving, onCancel)}>
-      <DialogContent showCloseButton={false}>
-        <form
-          className="contents"
-          onSubmit={(event) => {
-            event.preventDefault();
-            const trimmed = name.trim();
-            if (!trimmed || saving) return;
-            setSaving(true);
-            setError(null);
-            void onConfirm(trimmed).catch((err: unknown) => {
-              setError(errorText(err, t`Could not create section`));
-              setSaving(false);
-            });
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle>
-              <Trans>New section</Trans>
-            </DialogTitle>
-            <DialogDescription>
-              <Trans>Create a section and move {bot.name} into it.</Trans>
-            </DialogDescription>
-          </DialogHeader>
-          <label htmlFor={nameId} className="block text-[13.5px] text-foreground/75">
-            <Trans>Name</Trans>
-            <Input
-              id={nameId}
-              maxLength={60}
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              className="mt-2"
-            />
-          </label>
-          {error ? <p className="text-[13.5px] text-destructive">{error}</p> : null}
-          <DialogFooter>
-            <Button type="button" variant="outline" disabled={saving} onClick={onCancel}>
-              <Trans>Cancel</Trans>
-            </Button>
-            <Button type="submit" disabled={saving || !name.trim()}>
-              {saving ? <Trans>Creating…</Trans> : <Trans>Create</Trans>}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-export function RenameBotSectionDialog({
-  section,
-  onCancel,
-  onConfirm,
-}: {
-  section: Pick<BotSection, "name">;
-  onCancel: () => void;
-  onConfirm: (name: string) => Promise<void>;
-}) {
-  const { t } = useLingui();
-  const nameId = useId();
-  const [name, setName] = useState(section.name);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const trimmed = name.trim();
-  const unchanged = trimmed === section.name;
-
-  return (
-    <Dialog open onOpenChange={closeUnlessBusy(saving, onCancel)}>
-      <DialogContent showCloseButton={false} aria-describedby={undefined}>
-        <form
-          className="contents"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (!trimmed || saving || unchanged) return;
-            setSaving(true);
-            setError(null);
-            void onConfirm(trimmed).catch((err: unknown) => {
-              setError(errorText(err, t`Could not rename section`));
-              setSaving(false);
-            });
-          }}
-        >
-          <DialogHeader>
-            <DialogTitle>
-              <Trans>Rename section</Trans>
-            </DialogTitle>
-          </DialogHeader>
-          <label htmlFor={nameId} className="block text-[13.5px] text-foreground/75">
-            <Trans>Name</Trans>
-            <Input
-              id={nameId}
-              maxLength={60}
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              className="mt-2"
-              autoFocus
-            />
-          </label>
-          {error ? <p className="text-[13.5px] text-destructive">{error}</p> : null}
-          <DialogFooter>
-            <Button type="button" variant="outline" disabled={saving} onClick={onCancel}>
-              <Trans>Cancel</Trans>
-            </Button>
-            <Button type="submit" disabled={saving || !trimmed || unchanged}>
-              {saving ? <Trans>Saving…</Trans> : <Trans>Save</Trans>}
-            </Button>
-          </DialogFooter>
-        </form>
       </DialogContent>
     </Dialog>
   );
@@ -503,7 +373,7 @@ export function DeleteItemDialog({
   onConfirm,
 }: {
   item: { name: string };
-  noun: "group" | "page" | "routine" | "section" | "space";
+  noun: "group" | "page" | "routine" | "space";
   title?: React.ReactNode;
   description?: React.ReactNode;
   onCancel: () => void;
@@ -541,11 +411,9 @@ export function DeleteItemDialog({
                       ? t`Could not delete group`
                       : noun === "space"
                         ? t`Could not delete space`
-                        : noun === "section"
-                          ? t`Could not delete section`
-                          : noun === "page"
-                            ? t`Could not delete page`
-                            : t`Could not delete routine`,
+                        : noun === "page"
+                          ? t`Could not delete page`
+                          : t`Could not delete routine`,
                   ),
                 );
                 setDeleting(false);

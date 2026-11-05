@@ -1,6 +1,6 @@
 import * as z from "zod";
 import { AGENT_SECRET_NAME_PATTERN } from "./agent-secret-name.js";
-import { BotAvatarSetSchema, BotAvatarValueSchema } from "./bot-avatar.js";
+import { BotAvatarValueSchema } from "./bot-avatar.js";
 import { DisabledBuiltinToolsSchema } from "./builtin-tools.js";
 import {
   cloudflareGatewayRoutingId,
@@ -35,8 +35,8 @@ export const MemoryScopeSchema = z.enum(["isolated", "shared"]);
 export type MemoryScopeValue = z.infer<typeof MemoryScopeSchema>;
 
 /**
- * Deprecated account-level setting. Per-bot rendering uses avatarSet. Kept for older
- * app versions; the legacy settings endpoint still always reports "organic".
+ * Deprecated account-level setting kept for older app versions; the legacy settings endpoint
+ * still always reports "organic".
  */
 export const AvatarStyleSchema = z.enum(["robot", "organic"]);
 
@@ -107,14 +107,10 @@ export const BotSchema = z.object({
   name: z.string(),
   /** Always empty; installed mobile apps still read it. */
   title: z.string(),
-  description: z.string(),
   instructions: z.string(),
   instructionHistory: z.array(InstructionVersionSchema).optional(),
   color: z.string(),
-  avatarSet: BotAvatarSetSchema.optional(),
   notifyOnFinish: z.boolean(),
-  pinned: z.boolean(),
-  sectionId: Id.nullable(),
   archivedAt: z.string().nullable(),
   unread: z.boolean(),
   memoryScope: MemoryScopeSchema.nullable(),
@@ -150,19 +146,10 @@ export const ChatAlertSchema = z.object({
 });
 export type ChatAlert = z.infer<typeof ChatAlertSchema>;
 
-export const ReorderBotsInput = z.object({
-  botIds: z
-    .array(Id)
-    .min(1)
-    .refine((ids) => new Set(ids).size === ids.length, { error: "botIds must be distinct" }),
-});
-export type ReorderBotsInput = z.infer<typeof ReorderBotsInput>;
-
 export const GroupMemberSchema = z.object({
   botId: Id,
   name: z.string(),
   color: z.string(),
-  avatarSet: BotAvatarSetSchema.optional(),
   status: z.string().optional(),
 });
 export type GroupMember = z.infer<typeof GroupMemberSchema>;
@@ -192,8 +179,6 @@ export const GroupSchema = z.object({
   id: Id,
   spaceId: Id,
   name: z.string(),
-  pinned: z.boolean(),
-  sectionId: Id.nullable(),
   archivedAt: z.string().nullable(),
   members: z.array(GroupMemberSchema),
   threadId: Id,
@@ -222,8 +207,6 @@ export const UpdateGroupInput = z.object({
   botIds: GroupBotIds.optional(),
   /** Reject a membership replacement when another client changed the active roster. */
   expectedBotIds: z.array(Id).max(GROUP_MEMBER_MAX).optional(),
-  pinned: z.boolean().optional(),
-  sectionId: Id.nullable().optional(),
 });
 export type UpdateGroupInput = z.infer<typeof UpdateGroupInput>;
 
@@ -231,17 +214,6 @@ export const GroupDetailSchema = GroupSchema.extend({
   messages: z.array(ThreadMessageSchema).optional(),
 });
 export type GroupDetail = z.infer<typeof GroupDetailSchema>;
-
-export const BotSectionName = z.string().trim().min(1).max(60);
-
-export const BotSectionSchema = z.object({
-  id: Id,
-  name: z.string(),
-  position: z.number().int().nonnegative(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-});
-export type BotSection = z.infer<typeof BotSectionSchema>;
 
 /**
  * A space is a real privacy boundary, not just sidebar organization.
@@ -254,10 +226,7 @@ export const SpaceBotSchema = BotSchema.pick({
   name: true,
   title: true,
   color: true,
-  avatarSet: true,
   notifyOnFinish: true,
-  pinned: true,
-  sectionId: true,
   unread: true,
   preview: true,
   status: true,
@@ -271,8 +240,6 @@ export const SpaceGroupSchema = GroupSchema.pick({
   id: true,
   spaceId: true,
   name: true,
-  pinned: true,
-  sectionId: true,
   members: true,
   preview: true,
   unread: true,
@@ -363,7 +330,6 @@ export const SpaceSchema = z.object({
   bots: z.array(SpaceBotSchema),
   groups: z.array(SpaceGroupSchema),
   externalConversations: z.array(ExternalConversationSchema),
-  botSections: z.array(BotSectionSchema),
 });
 export type Space = z.infer<typeof SpaceSchema>;
 
@@ -411,14 +377,12 @@ export const SpaceNavigationSchema = z.object({
     bots: z.array(BotSchema),
     groups: z.array(GroupSchema),
     externalConversations: z.array(ExternalConversationSchema),
-    botSections: z.array(BotSectionSchema),
   }),
   spaces: z.array(SpaceSchema),
 });
 export type SpaceNavigation = z.infer<typeof SpaceNavigationSchema>;
 
 export const BOT_NAME_MAX_LENGTH = 80;
-export const BOT_DESCRIPTION_MAX_LENGTH = 4000;
 export const BOT_INSTRUCTIONS_MAX_LENGTH = 20000;
 
 export const CreateBotInput = z.object({
@@ -428,12 +392,9 @@ export const CreateBotInput = z.object({
     .regex(/^c[a-z0-9]{24}$/)
     .optional(),
   name: z.string().trim().min(1).max(BOT_NAME_MAX_LENGTH),
-  description: z.string().max(BOT_DESCRIPTION_MAX_LENGTH).default(""),
   instructions: z.string().max(BOT_INSTRUCTIONS_MAX_LENGTH).default(""),
   notifyOnFinish: z.boolean().default(true),
   color: BotAvatarValueSchema.optional(),
-  /** Ignored: a new bot takes its owner's set. Older apps still send one. */
-  avatarSet: BotAvatarSetSchema.optional(),
   /** Organic body family (0-9); the server picks a matching id unless one is reserved. */
   avatarFamily: z.number().int().min(0).max(9).optional(),
   computerMode: ComputerModeSchema.default("team"),
@@ -445,17 +406,12 @@ export const UpdateBotInput = z
   .object({
     botId: Id,
     name: z.string().trim().min(1).max(BOT_NAME_MAX_LENGTH).optional(),
-    description: z.string().trim().max(BOT_DESCRIPTION_MAX_LENGTH).optional(),
     instructions: z.string().trim().max(BOT_INSTRUCTIONS_MAX_LENGTH).optional(),
     expectedInstructions: z.string().max(BOT_INSTRUCTIONS_MAX_LENGTH).optional(),
     /** Ignored; installed mobile apps may still send it. */
     selfUpdateInstructions: z.boolean().optional(),
     notifyOnFinish: z.boolean().optional(),
-    color: BotAvatarValueSchema.optional(),
-    avatarSet: BotAvatarSetSchema.optional(),
-    pinned: z.boolean().optional(),
     memoryScope: MemoryScopeSchema.nullable().optional(),
-    sectionId: Id.nullable().optional(),
     voiceId: z.string().max(120).nullable().optional(),
     autoSpeak: z.boolean().optional(),
     modelProvider: z.string().trim().min(1).max(80).nullable().optional(),
@@ -1926,8 +1882,6 @@ export const MeSchema = z.object({
   /** Whether this account can add stdio MCP servers here. Absent from older servers. */
   mcpStdioEnabled: z.boolean().default(false),
   avatarStyle: AvatarStyleSchema,
-  /** The icon set new and unpinned bots wear. Absent from servers that predate it. */
-  botAvatarSet: BotAvatarSetSchema.optional(),
   /**
    * The user's IANA timezone, or null when unset (bots then see UTC only).
    * Absent from servers that predate it.
@@ -2185,9 +2139,6 @@ export const AppBootstrapSchema = z.object({
   me: MeSchema,
   bots: z.array(BotSchema),
   groups: z.array(GroupSchema),
-  botSections: z.array(BotSectionSchema),
-  archivedBots: z.array(BotSchema),
-  archivedGroups: z.array(GroupSchema),
   thread: ThreadSnapshotSchema.nullable(),
   routines: z.array(RoutineSchema),
   spaces: z.array(SpaceSchema),
@@ -2199,9 +2150,8 @@ export type AppBootstrap = z.infer<typeof AppBootstrapSchema>;
 export const ExportManifestSchema = z.object({
   version: z.literal(1),
   exportedAt: z.string(),
-  bot: BotSchema.pick({ name: true, description: true, instructions: true }).extend({
+  bot: BotSchema.pick({ name: true, instructions: true }).extend({
     color: z.string().optional(),
-    avatarSet: BotAvatarSetSchema.optional(),
   }),
   memory: z.array(z.object({ path: z.string(), content: z.string() })),
   routines: z.array(RoutineSchema.pick({ name: true, prompt: true, crons: true, timezone: true })),

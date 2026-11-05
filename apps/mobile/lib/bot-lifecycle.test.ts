@@ -14,17 +14,10 @@ vi.mock("./i18n", () => ({
 }));
 vi.mock("./user-error", () => ({ errorText: () => "Try again." }));
 
-import { confirmDeleteBot, confirmDeleteGroup, restoreArchivedBot } from "./bot-lifecycle";
+import { confirmDeleteBot, confirmDeleteGroup } from "./bot-lifecycle";
 
 beforeEach(() => vi.clearAllMocks());
-describe("archived bot lifecycle", () => {
-  it("waits for restore and propagates failure instead of opening a writable chat", async () => {
-    rpc.mockResolvedValueOnce({ ok: true });
-    await restoreArchivedBot("bot-fixture");
-    expect(rpc).toHaveBeenCalledWith("bots/restore", { botId: "bot-fixture" });
-    rpc.mockRejectedValueOnce(new Error("offline"));
-    await expect(restoreArchivedBot("bot-fixture")).rejects.toThrow("offline");
-  });
+describe("bot deletion", () => {
   it("cancel never removes a bot, and both deletion choices are destructive", () => {
     confirmDeleteBot({ id: "bot-fixture", name: "Fixture" }, vi.fn());
     expect(rpc).not.toHaveBeenCalled();

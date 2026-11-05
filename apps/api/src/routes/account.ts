@@ -16,7 +16,6 @@ import { approvalModeFromPreference, approvalPreferenceFromMode } from "@labrado
 import { urlSite } from "@labradoodle/core/egress";
 import {
   auditLogOrganization,
-  commitBotUpdate,
   findAutoReviewPreference,
   findDefaultVoiceCredential,
   findModelCredential,
@@ -29,13 +28,11 @@ import {
   Prisma,
   removeApprovalRule,
   runAsSystem,
-  runAsTenant,
   saveApprovalRule,
   saveAutoReviewPreference,
   selectVoicePreference,
   voicePreferenceTarget,
 } from "@labradoodle/db";
-import { getLogger } from "@labradoodle/logging";
 import { ORPCError } from "@orpc/server";
 import { createAccessGrant, listAccessGrants, revokeAccessGrant } from "../access-grants.js";
 import { requireAdmin } from "../admins.js";
@@ -159,66 +156,18 @@ export function accountRoutes(ctx: RouterContext) {
     preferences: {
       update: authed.preferences.update.handler(async ({ context, input }): Promise<Me> => {
         const userId = context.actor.userId;
-        const botAvatarSet = input.botAvatarSet;
         if (input.timezone !== undefined) {
           // The routines that took the account zone keep their local schedule in the new
-          // one, and the other fields commit in the same save. The move's row lock still
-          // waits for any bot creation holding the user row, so no new bot is missed below.
+          // one, and the other fields commit in the same save.
           await changeUserTimezone(deps, userId, input.timezone, {
             ...(input.locale === undefined ? {} : { locale: input.locale }),
-            ...(botAvatarSet === undefined ? {} : { botAvatarSet }),
           });
         } else {
+          // An avatar style from an older app is accepted and ignored: there is only one.
           await deps.prisma.user.update({
             where: { id: userId },
-            // An avatar style from an older app is accepted and ignored: there is only one.
-            data: {
-              ...(input.locale === undefined ? {} : { locale: input.locale }),
-              ...(botAvatarSet === undefined ? {} : { botAvatarSet }),
-            },
+            data: input.locale === undefined ? {} : { locale: input.locale },
           });
-        }
-        if (botAvatarSet !== undefined) {
-          // Every bot of this user not pinned to another set follows the new default, in every
-          // space they own bots in, announced like any edit so other devices redraw it.
-          const bots = await runAsSystem("restyle the user's own bots in all their spaces", () =>
-            deps.prisma.bot.findMany({
-              where: { userId, avatarSetPinned: false, avatarSet: { not: botAvatarSet } },
-              select: { id: true, spaceId: true, thread: { select: { id: true } } },
-            }),
-          );
-          for (const bot of bots) {
-            const threadId = bot.thread?.id;
-            if (!threadId) continue;
-            // A newer save changed the default again: its own pass owns the remaining bots.
-            const current = await deps.prisma.user.findUniqueOrThrow({
-              where: { id: userId },
-              select: { botAvatarSet: true },
-            });
-            if (current.botAvatarSet !== botAvatarSet) break;
-            // The default is saved; a bot that fails here keeps its style until the next save.
-            await runAsTenant({ spaceId: bot.spaceId, userId }, () =>
-              commitBotUpdate({
-                prisma: deps.prisma,
-                notify: (thread, seq) => deps.events.notify(thread, seq),
-                spaceId: bot.spaceId,
-                threadId,
-                botId: bot.id,
-                emitBotUpdated: true,
-                // Pinned since it was listed: leave the owner's choice alone.
-                expectedSettings: { avatarSetPinned: false },
-                // Re-read under lock inside the transaction: a newer save of the
-                // default that lands while this writes owns the bot instead.
-                expectedUserAvatarSet: { userId, botAvatarSet },
-                data: { avatarSet: botAvatarSet },
-              }),
-            ).catch((error) => {
-              if (
-                !(error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025")
-              )
-                getLogger().error("bot style restyle", error);
-            });
-          }
         }
         return meDto(deps, context.actor);
       }),

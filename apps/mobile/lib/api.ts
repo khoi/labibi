@@ -2,7 +2,6 @@ import type {
   AccountSecurity,
   AuthCapabilities,
   Bot,
-  BotSection,
   ComputerStatus,
   Group,
   Me,
@@ -1212,14 +1211,11 @@ export type MobileBot = Pick<
   | "name"
   | "preview"
   | "color"
-  | "avatarSet"
   | "instructionHistory"
   | "notifyOnFinish"
   | "threadId"
-  | "pinned"
   | "status"
   | "threadStatus"
-  | "sectionId"
   | "archivedAt"
   | "unread"
   | "updatedAt"
@@ -1230,8 +1226,6 @@ export type MobileBot = Pick<
   | "autoSpeak"
 > &
   Partial<Pick<Bot, "spaceId" | "instructions">>;
-
-export type MobileBotSection = BotSection;
 
 export type MobileMe = Pick<
   Me,
@@ -1248,7 +1242,6 @@ export type MobileMe = Pick<
   | "needsSignupSurvey"
   | "billingEnabled"
   | "paymentWalletProvider"
-  | "botAvatarSet"
 >;
 
 export type MobileModel = ModelCatalogEntry;
@@ -1262,15 +1255,7 @@ export type MobileMessage = Omit<ThreadMessage, "threadId" | "seq" | "createdAt"
 
 export type MobileGroup = Pick<
   Group,
-  | "id"
-  | "name"
-  | "preview"
-  | "pinned"
-  | "sectionId"
-  | "archivedAt"
-  | "unread"
-  | "updatedAt"
-  | "members"
+  "id" | "name" | "preview" | "archivedAt" | "unread" | "updatedAt" | "members"
 > &
   Partial<Pick<Group, "spaceId">>;
 

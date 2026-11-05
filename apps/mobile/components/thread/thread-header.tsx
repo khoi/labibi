@@ -1,20 +1,15 @@
 import { useNavigation, useRoute, useRouter } from "expo-router";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Alert } from "react-native";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import type { MobileBot } from "../../lib/api";
 import { mobileTokens } from "../../lib/appearance";
-import { notifyArchivedChatsChanged } from "../../lib/archived-chats";
-import { restoreArchivedBot } from "../../lib/bot-lifecycle";
 import { chatTitleRoute } from "../../lib/chat-settings-route";
 import { onConversationCleared } from "../../lib/conversation-cleared";
 import { useI18n } from "../../lib/i18n";
 import { useResolvedAppearance } from "../../lib/native";
 import { useReferral } from "../../lib/referral";
 import { threadEdgeOptions } from "../../lib/thread-edges";
-import { errorText } from "../../lib/user-error";
 import type { ChatTitle } from "../chat-header-title";
 import { publishChatTitle } from "../chat-header-title";
-import { trailingHeaderOptions } from "../sheet-header";
 import { openInvite, threadHeaderRight } from "../thread-header-right";
 
 /**
@@ -56,7 +51,6 @@ export function useThreadHeader({
   // This screen's own route: its header title reads what this screen publishes, by key.
   const route = useRoute();
   const router = useRouter();
-  const [restoring, setRestoring] = useState(false);
   const canInvite = Boolean(useReferral());
 
   const cleared = useRef(onCleared);
@@ -109,13 +103,9 @@ export function useThreadHeader({
           router.push({ pathname: "/group-settings", params: { groupId: groupId ?? "" } }),
         onInvite: canInvite && botId ? openInvite : undefined,
       }),
-      ...(readOnly
-        ? trailingHeaderOptions(t("Restore"), () => void restoreConversation(), restoring)
-        : {}),
     });
   }, [
     readOnly,
-    restoring,
     botId,
     canInvite,
     displayName,
@@ -127,18 +117,4 @@ export function useThreadHeader({
     tokens,
     colorScheme,
   ]);
-
-  async function restoreConversation() {
-    if (!botId || restoring) return;
-    setRestoring(true);
-    try {
-      await restoreArchivedBot(botId);
-      notifyArchivedChatsChanged();
-      router.setParams({ readOnly: "0" });
-    } catch (cause) {
-      Alert.alert(t("Could not restore bot"), errorText(cause, t("Try again.")));
-    } finally {
-      setRestoring(false);
-    }
-  }
 }

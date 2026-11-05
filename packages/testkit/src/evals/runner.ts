@@ -192,8 +192,8 @@ export async function runTrial(
       const bot = await rpc<{ id: string }>(app, cookie, "bots/create", {
         name: "Assistant",
         title: "",
-        description: scenario.group?.roles?.Assistant ?? "",
-        instructions: scenario.group?.instructions?.Assistant ?? "",
+        instructions:
+          scenario.group?.instructions?.Assistant ?? scenario.group?.roles?.Assistant ?? "",
         notifyOnFinish: wakesRoutines(scenario),
       });
       botId = bot.id;
@@ -236,8 +236,7 @@ export async function runTrial(
           const member = await rpc<{ id: string }>(app, cookie, "bots/create", {
             name,
             title: "",
-            description: roles?.[name] ?? "",
-            instructions: scenario.group.instructions?.[name] ?? "",
+            instructions: scenario.group.instructions?.[name] ?? roles?.[name] ?? "",
             notifyOnFinish: false,
           });
           if (roles)
@@ -449,7 +448,6 @@ export async function runTrial(
         select: {
           userId: true,
           name: true,
-          description: true,
           instructions: true,
           color: true,
           notifyOnFinish: true,

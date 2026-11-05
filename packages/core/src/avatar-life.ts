@@ -33,7 +33,7 @@ export function avatarLifeState(
 /**
  * How an avatar is allowed to move:
  * - static: always a picture (the default: headers, profiles, pickers, group faces);
- * - lazy: a picture at rest, moving while its bot is busy (inbox rows, pinned chats);
+ * - lazy: a picture at rest, moving while its bot is busy (inbox rows);
  * - live: blinks at rest too (the call card);
  * - running: always moving (the activity mark in a chat).
  */

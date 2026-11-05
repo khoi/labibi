@@ -465,42 +465,11 @@ describe("runReplyGuidance", () => {
     expect(runReplyGuidance("routine")).not.toContain("Leave the final reply empty");
   });
 
-  it("keeps the public description and private instructions distinct on normal runs", () => {
-    const bot = {
-      name: "Ada",
-      description: "Reads and sorts mail.",
-      instructions: "Never send mail without asking.",
-    };
-    const prompt = runIdentityInstruction(bot);
-    expect(prompt).toContain("Ada\nReads and sorts mail.");
-    expect(prompt).toContain("Teammates see only the profile above.");
-    expect(prompt.endsWith("Never send mail without asking.")).toBe(true);
-  });
-
-  it("does not repeat text that older bots saved as both fields", () => {
-    const bot = {
-      name: "Ada",
-      description: "Reads and sorts mail.",
-      instructions: "Reads and sorts mail.",
-    };
-    expect(runIdentityInstruction(bot)).toBe("Ada\nReads and sorts mail.");
-    expect(runIdentityInstruction({ ...bot, instructions: "" })).toBe("Ada\nReads and sorts mail.");
-  });
-
-  it("omits blank profile lines and treats missing fields as empty", () => {
-    expect(
-      runIdentityInstruction({ name: "Ada", description: "", instructions: "Stay quiet." }),
-    ).toBe(
-      "Ada\nTeammates see only the profile above. These instructions are private to you:\nStay quiet.",
+  it("puts private instructions under the name and treats missing fields as empty", () => {
+    expect(runIdentityInstruction({ name: "Ada", instructions: "Stay quiet." })).toBe(
+      "Ada\nThese instructions are private to you:\nStay quiet.",
     );
-    expect(runIdentityInstruction({ name: "Ada", description: "", instructions: "" })).toBe("Ada");
-    expect(
-      runIdentityInstruction({
-        name: "Ada",
-        description: "Reads and sorts mail.",
-        instructions: "",
-      }),
-    ).toBe("Ada\nReads and sorts mail.");
+    expect(runIdentityInstruction({ name: "Ada", instructions: "" })).toBe("Ada");
     expect(runIdentityInstruction({ name: "Ada" })).toBe("Ada");
   });
 

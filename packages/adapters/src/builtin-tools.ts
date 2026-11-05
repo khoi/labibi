@@ -1209,32 +1209,13 @@ export const builtinAgentTools: ConnectorTool[] = [
   {
     name: "update_bot",
     description:
-      "Read or change your own settings. Call with no fields to read them and the models and thinking levels you can pick. Long instructions come in pages; follow instructionsNextOffset before replacing them. If a read comes back with contextTruncated, it was shortened: say so, do not rewrite. Pass fields to change them, only when the user asks; setting your name, description and first instructions when you have none is fine. Never claim a change without calling this.",
+      "Read or change your own settings. Call with no fields to read them and the models and thinking levels you can pick. Long instructions come in pages; follow instructionsNextOffset before replacing them. If a read comes back with contextTruncated, it was shortened: say so, do not rewrite. Pass fields to change them, only when the user asks; setting your name and first instructions when you have none is fine. Never claim a change without calling this.",
     inputSchema: {
       type: "object",
       properties: {
         name: {
           type: "string",
           description: "Display name shown in the chat header and bot list.",
-        },
-        description: {
-          type: "string",
-          description:
-            "Short public summary of what this bot does. Teammates see it in their bot directory. It does not change your instructions.",
-        },
-        color: {
-          type: "string",
-          description:
-            "Avatar color or encoded shape, e.g. #8B5CF6 or #8B5CF6::shape_3. Do not pass http URLs.",
-        },
-        artifact_id: {
-          type: "string",
-          description:
-            "Image artifact in this space to use as the profile picture. Prefer an image the user attached in this chat.",
-        },
-        use_attached_image: {
-          type: "boolean",
-          description: "Use the latest image attached to this message as the profile picture.",
         },
         // Explained in the update_bot instructions; kept short for the listed-tool budget.
         notifyOnFinish: {

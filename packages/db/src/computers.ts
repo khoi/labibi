@@ -72,8 +72,6 @@ export async function teamComputerUserId(
 }
 type ComputerTx = Pick<Prisma.TransactionClient, "computer" | "$queryRaw">;
 type ComputerClient = ComputerDb & Partial<Pick<PrismaClient, "$transaction" | "$queryRaw">>;
-type RestoreTx = ComputerTx & Pick<Prisma.TransactionClient, "bot">;
-type RestoreClient = ComputerClient & Pick<PrismaClient, "bot">;
 type ExecutionLeaseDb = Pick<PrismaClient, "computerExecutionLease">;
 
 /**
@@ -144,64 +142,6 @@ async function lockUserForComputerQuota(
   await tx.$queryRaw(Prisma.sql`
     SELECT pg_advisory_xact_lock(hashtextextended(${userId}, 1))::text AS "lock"
   `);
-}
-
-/**
- * A restore re-links the bot to its Computer row, which reactivates the quota
- * if that row was only referenced by archived bots (the dedicated case; a team
- * row shared with live bots keeps counting).
- */
-export async function assertComputerQuotaForRestore(
-  prisma: ComputerDb,
-  input: { userId: string; computerId: string },
-): Promise<void> {
-  const limit = resolveMaxComputersPerUser();
-  if (limit <= 0) return;
-  // If another live bot already references this row (a team computer shared
-  // by the user's bots in the space), restoring this bot adds nothing to the count.
-  const alreadyLive = await prisma.computer.count({
-    where: {
-      id: input.computerId,
-      bots: { some: { archivedAt: null } },
-    },
-  });
-  if (alreadyLive > 0) return;
-  const inUse = await countInUseComputersForUser(prisma, input.userId);
-  if (inUse >= limit) throw new ComputerLimitError(limit);
-}
-
-/**
- * Unarchive a bot while holding the same per-user quota lock as create.
- *
- * Concurrent restores of archived bots on distinct computers can both pass an
- * unlocked count when one slot remains; the lock covers count + archivedAt
- * clear so only one of those restores can consume the last slot.
- */
-export async function restoreBotUnderComputerQuota(
-  prisma: RestoreClient,
-  input: { userId: string; botId: string; computerId: string },
-): Promise<void> {
-  const limit = resolveMaxComputersPerUser();
-
-  async function restore(tx: RestoreTx) {
-    if (limit > 0) {
-      await lockUserForComputerQuota(tx, input.userId);
-      await assertComputerQuotaForRestore(tx, input);
-    }
-    await tx.bot.update({ where: { id: input.botId }, data: { archivedAt: null } });
-  }
-
-  if (isTransactionClient(prisma)) {
-    return restore(prisma as RestoreTx);
-  }
-  if (limit <= 0) {
-    await prisma.bot.update({ where: { id: input.botId }, data: { archivedAt: null } });
-    return;
-  }
-  if (typeof prisma.$transaction === "function") {
-    return withTransactionRetry(() => prisma.$transaction!((tx) => restore(tx)));
-  }
-  throw new Error("Computer quota enforcement requires a Prisma transaction");
 }
 
 /** Expire leases as fencing tombstones so the next acquire increments fence. */

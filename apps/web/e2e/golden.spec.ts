@@ -338,7 +338,6 @@ test("takeover, routine, plugins, and export are reachable", async ({ page }, te
     button: "right",
   });
   const botMenu = page.getByRole("menu", { name: "Actions for Chief" });
-  await expect(botMenu.getByRole("menuitem", { name: "Archive" })).toBeVisible();
   await botMenu.getByRole("menuitem", { name: "Delete" }).click();
   await expect(page.getByRole("radio", { name: /Keep memories/ })).toBeChecked();
   await expect(page.getByRole("radio", { name: /Delete memories too/ })).toBeVisible();

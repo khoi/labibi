@@ -45,6 +45,7 @@ export function routinesRoutes(ctx: RouterContext) {
             archivedAt: null,
           },
           select: { id: true },
+          orderBy: { createdAt: "asc" },
         });
         const rows = await deps.prisma.routine.findMany({
           where: { botId: { in: bots.map((bot) => bot.id) }, spaceId: actor.spaceId },

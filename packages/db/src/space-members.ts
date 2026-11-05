@@ -492,7 +492,6 @@ async function departSpace(
             if (id) continuationRunIds.push(id);
           }
 
-          await moveSections(tx, { spaceId, fromUserId: userId, toUserId: ownerId });
           const reassign = { where: { spaceId, userId }, data: { userId: ownerId } };
           await tx.bot.updateMany(reassign);
           await tx.thread.updateMany(reassign);
@@ -600,41 +599,4 @@ async function departSpace(
       ),
     ),
   );
-}
-
-/** Sections are unique per (space, person, name): merge into the owner's same-named one. */
-async function moveSections(
-  tx: Prisma.TransactionClient,
-  input: { spaceId: string; fromUserId: string; toUserId: string },
-): Promise<void> {
-  const [moving, kept] = await Promise.all([
-    tx.botSection.findMany({
-      where: { spaceId: input.spaceId, userId: input.fromUserId },
-      select: { id: true, name: true },
-      orderBy: [{ position: "asc" }, { createdAt: "asc" }],
-    }),
-    tx.botSection.findMany({
-      where: { spaceId: input.spaceId, userId: input.toUserId },
-      select: { id: true, name: true, position: true },
-    }),
-  ]);
-  const keptByName = new Map(kept.map((section) => [section.name, section.id]));
-  let position = Math.max(-1, ...kept.map((section) => section.position));
-  for (const section of moving) {
-    const target = keptByName.get(section.name);
-    if (target) {
-      await tx.bot.updateMany({ where: { sectionId: section.id }, data: { sectionId: target } });
-      await tx.chatGroup.updateMany({
-        where: { sectionId: section.id },
-        data: { sectionId: target },
-      });
-      await tx.botSection.delete({ where: { id: section.id } });
-    } else {
-      position += 1;
-      await tx.botSection.update({
-        where: { id: section.id },
-        data: { userId: input.toUserId, position },
-      });
-    }
-  }
 }

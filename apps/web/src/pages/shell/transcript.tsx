@@ -1,9 +1,4 @@
-import type {
-  BotAvatarSet,
-  LoginFieldInput,
-  MessageReaction,
-  ThreadMessage,
-} from "@labradoodle/contracts";
+import type { LoginFieldInput, MessageReaction, ThreadMessage } from "@labradoodle/contracts";
 import {
   liveActivityLine,
   liveMessageComposing,
@@ -120,9 +115,7 @@ export const Transcript = memo(function Transcript({
   onReact: (message: ThreadMessage, reaction: MessageReaction) => Promise<void>;
   onJumpToMessage: (messageId: string) => void;
   memberName?: (botId: string | undefined) => string | undefined;
-  peerBot: (
-    botId: string,
-  ) => { name?: string; color: string; status?: string; avatarSet?: BotAvatarSet } | undefined;
+  peerBot: (botId: string) => { name?: string; color: string; status?: string } | undefined;
   onRefresh: () => Promise<void>;
   onBotChanged: () => Promise<void>;
   onAddRoutine: (name: string, prompt: string) => void;

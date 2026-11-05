@@ -2,15 +2,7 @@ import type { RpcInput, RpcPath, SpaceBot, SpaceGroup } from "@labradoodle/contr
 import type { Dispatch, SetStateAction } from "react";
 import { useCallback, useState } from "react";
 import { Alert } from "react-native";
-import type { BotOrganizationUpdate } from "../components/bot-organize-modal";
-import type {
-  ApiRequestContext,
-  MobileBot,
-  MobileBotSection,
-  MobileGroup,
-  MobileSpace,
-  RpcArgs,
-} from "./api";
+import type { ApiRequestContext, MobileBot, MobileGroup, RpcArgs } from "./api";
 import {
   captureApiRequestContext,
   currentApiBase,
@@ -18,15 +10,11 @@ import {
   rpc,
   selectedSpaceId,
 } from "./api";
-import { notifyArchivedChatsChanged } from "./archived-chats";
 import { confirmDeleteBot, confirmDeleteGroup } from "./bot-lifecycle";
-import { confirmDeleteSection } from "./confirm-delete-section";
 import { useI18n } from "./i18n";
 import type { InboxChatKind, InboxRowAction } from "./inbox-swipe";
 import { chatTarget, createLatestQueue, unreadOverrideKey } from "./inbox-swipe";
 import { afterChatNotifyChange, dismissThreadNotifications } from "./live-notifications";
-import { removeFromSearchInbox } from "./search-inbox";
-import { promptSectionName } from "./section-name-prompt";
 import { currentSessionGeneration } from "./session";
 import { errorText } from "./user-error";
 
@@ -52,47 +40,36 @@ export async function chatRpc<P extends RpcPath>(
 
 type ListUpdate<T> = Dispatch<SetStateAction<T[]>>;
 
-/** Row actions on inbox chats: read state, pin, archive, delete, organize and sections. */
+/** Row actions on inbox chats: read state, finish notifications and delete. */
 export function useInboxChatActions({
   loadBots,
   setBots,
   setGroups,
-  setSpaces,
-  botSections,
 }: {
   loadBots: () => Promise<unknown>;
   setBots: ListUpdate<MobileBot>;
   setGroups: ListUpdate<MobileGroup>;
-  setSpaces: ListUpdate<MobileSpace>;
-  botSections: MobileBotSection[];
 }) {
   const { t } = useI18n();
   const [unreadOverrides, setUnreadOverrides] = useState<ReadonlyMap<string, boolean>>(
     () => new Map(),
   );
-  // Chats whose archive is in flight, by unreadOverrideKey; hidden until it settles.
-  const [archiving, setArchiving] = useState<ReadonlySet<string>>(() => new Set());
   // One path for the long-press sheet and the swipe actions.
   const [sendReadState] = useState(() => createLatestQueue<boolean>());
-  const updateChat = useCallback(
+  const setNotifyOnFinish = useCallback(
     async (
       kind: InboxChatKind,
       chat: MobileBot | MobileGroup | SpaceBot | SpaceGroup,
-      update: BotOrganizationUpdate,
+      notify: boolean,
     ) => {
-      await chatRpc(chat.spaceId, `${kind}s/update`, { ...chatTarget(kind, chat.id), ...update });
-      if (kind === "bot" && update.notifyOnFinish !== undefined) {
-        await afterChatNotifyChange(
-          currentApiBase(),
-          await loadSessionToken(),
-          selectedSpaceId() ?? "",
-          {
-            botId: chat.id,
-            threadId: "threadId" in chat ? chat.threadId : undefined,
-            notify: update.notifyOnFinish,
-          },
-        );
-      }
+      if (kind !== "bot") return;
+      await chatRpc(chat.spaceId, "bots/update", { botId: chat.id, notifyOnFinish: notify });
+      await afterChatNotifyChange(
+        currentApiBase(),
+        await loadSessionToken(),
+        selectedSpaceId() ?? "",
+        { botId: chat.id, threadId: "threadId" in chat ? chat.threadId : undefined, notify },
+      );
       await loadBots();
     },
     [loadBots],
@@ -152,61 +129,12 @@ export function useInboxChatActions({
         });
         return;
       }
-      // The row goes at the tap. A failure puts it back where it was; a success drops it here
-      // too, so the row stays gone even if the reload after it fails.
-      if (action === "archive") {
-        const key = unreadOverrideKey(kind, chat.id);
-        const settle = () =>
-          setArchiving((current) => {
-            const next = new Set(current);
-            next.delete(key);
-            return next;
-          });
-        setArchiving((current) => new Set(current).add(key));
-        try {
-          await chatRpc(chat.spaceId, `${kind}s/archive`, chatTarget(kind, chat.id));
-          const others = <T extends { id: string }>(chats: T[]) =>
-            chats.filter((item) => item.id !== chat.id);
-          if (kind === "bot") setBots(others);
-          else setGroups(others);
-          setSpaces((current) =>
-            current.map((space) =>
-              kind === "bot"
-                ? { ...space, bots: others(space.bots) }
-                : { ...space, groups: others(space.groups) },
-            ),
-          );
-          removeFromSearchInbox(chat.id);
-          notifyArchivedChatsChanged();
-        } catch (err) {
-          settle();
-          Alert.alert(
-            kind === "bot" ? t("Could not archive bot") : t("Could not update chat"),
-            errorText(err, t("Try again.")),
-          );
-        }
-        try {
-          await loadBots();
-        } finally {
-          settle();
-        }
-        return;
-      }
       // The same confirmation as the chat's own menu; the row goes once the server deletes it.
-      if (action === "delete") {
-        const deleted = () => {
-          notifyArchivedChatsChanged();
-          void loadBots();
-        };
-        if (kind === "bot") confirmDeleteBot({ id: chat.id, name: chat.name }, deleted);
-        else confirmDeleteGroup({ id: chat.id, name: chat.name }, deleted);
-        return;
-      }
-      await updateChat(kind, chat, { pinned: action === "pin" }).catch((err) =>
-        Alert.alert(t("Could not update chat"), errorText(err, t("Try again."))),
-      );
+      const deleted = () => void loadBots();
+      if (kind === "bot") confirmDeleteBot({ id: chat.id, name: chat.name }, deleted);
+      else confirmDeleteGroup({ id: chat.id, name: chat.name }, deleted);
     },
-    [loadBots, sendReadState, t, updateChat],
+    [loadBots, sendReadState, t],
   );
   const botAction = useCallback(
     (action: InboxRowAction, bot: MobileBot | SpaceBot) => void runRowAction("bot", bot, action),
@@ -217,83 +145,20 @@ export function useInboxChatActions({
       void runRowAction("group", group, action),
     [runRowAction],
   );
-  const createSection = useCallback(
-    async (kind: InboxChatKind, chatId: string, name: string, spaceId?: string) => {
-      await chatRpc(spaceId, "botSections/create", { [`${kind}Id`]: chatId, name });
-      await loadBots();
-    },
-    [loadBots],
-  );
-  const renameSection = useCallback(
-    async (sectionId: string, name: string, spaceId?: string) => {
-      await chatRpc(spaceId, "botSections/update", { sectionId, name });
-      await loadBots();
-    },
-    [loadBots],
-  );
   // The iOS row menu changes the chat in place, so failures use the native alert.
-  const organizeFromMenu = useCallback(
-    (
-      kind: InboxChatKind,
-      chat: MobileBot | MobileGroup | SpaceBot | SpaceGroup,
-      update: BotOrganizationUpdate,
-    ) =>
-      void updateChat(kind, chat, update).catch((err) =>
+  const notifyFromMenu = useCallback(
+    (kind: InboxChatKind, chat: MobileBot | MobileGroup | SpaceBot | SpaceGroup, notify: boolean) =>
+      void setNotifyOnFinish(kind, chat, notify).catch((err) =>
         Alert.alert(t("Could not update chat"), errorText(err, t("Try again."))),
       ),
-    [t, updateChat],
-  );
-  const editSectionFromMenu = useCallback(
-    (
-      kind: InboxChatKind,
-      chat: MobileBot | MobileGroup | SpaceBot | SpaceGroup,
-      mode: "create" | "rename",
-    ) => {
-      const current =
-        mode === "rename" ? botSections.find((section) => section.id === chat.sectionId) : null;
-      if (mode === "rename" && !current) return;
-      promptSectionName({
-        title: current ? t("Rename section") : t("New section"),
-        cancelLabel: t("Cancel"),
-        submitLabel: current ? t("Save") : t("Create"),
-        defaultValue: current?.name,
-        onSubmit: (name) =>
-          void (
-            current ? renameSection(current.id, name) : createSection(kind, chat.id, name)
-          ).catch((err) =>
-            Alert.alert(t("Could not update chat"), errorText(err, t("Try again."))),
-          ),
-      });
-    },
-    [botSections, createSection, renameSection, t],
-  );
-
-  const deleteSection = useCallback(
-    (section: { id: string; name: string }) => {
-      confirmDeleteSection(section, t, () => {
-        void (async () => {
-          try {
-            await rpc("botSections/remove", { sectionId: section.id });
-            await loadBots();
-          } catch (err) {
-            Alert.alert(t("Could not delete section"), errorText(err, t("Try again.")));
-          }
-        })();
-      });
-    },
-    [loadBots, t],
+    [t, setNotifyOnFinish],
   );
   return {
     unreadOverrides,
-    archiving,
-    updateChat,
+    setNotifyOnFinish,
     runRowAction,
     botAction,
     groupAction,
-    createSection,
-    renameSection,
-    organizeFromMenu,
-    editSectionFromMenu,
-    deleteSection,
+    notifyFromMenu,
   };
 }

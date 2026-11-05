@@ -82,7 +82,6 @@ export type SettingsGeneralProps = {
   /** The user's saved IANA timezone, or null before one is set. */
   timezone?: string | null;
   onTimezoneChange?: (timezone: string) => Promise<void>;
-  /** The icon set new and unpinned bots wear; absent from servers that predate it. */
   onAccountImported?: () => Promise<void>;
 };
 

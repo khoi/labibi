@@ -180,12 +180,6 @@ export async function captureScreenshot(page: Page, testInfo: TestInfo, name: st
   await testInfo.attach(name, { contentType: "image/png", path: screenshotPath });
 }
 
-export async function openNewBot(page: Page) {
-  await page.getByTestId("create-menu-trigger").click();
-  await page.getByTestId("create-new-bot").click();
-  await expect(page.getByTestId("create-bot-dialog")).toBeVisible();
-}
-
 export async function openNewGroup(page: Page) {
   await page.getByTestId("create-menu-trigger").click();
   await page.getByTestId("create-new-group").click();
@@ -194,19 +188,6 @@ export async function openNewGroup(page: Page) {
 export async function openNewSpace(page: Page) {
   await page.getByTestId("create-menu-trigger").click();
   await page.getByTestId("create-new-space").click();
-}
-
-export async function createBotFromPicker(
-  page: Page,
-  { name = "New Bot" }: { name?: string } = {},
-) {
-  await openNewBot(page);
-  const dialog = page.getByTestId("create-bot-dialog");
-  await dialog.getByPlaceholder("Name your Bot").fill(name);
-  await dialog.getByRole("button", { name: "Create", exact: true }).click();
-  await page.waitForURL(/\/app\/[^/]+$/);
-  await expect(dialog).toBeHidden();
-  await expect(page.getByTestId("side-panel")).toHaveAttribute("data-panel", "closed");
 }
 
 export async function openUserSettings(
@@ -318,7 +299,6 @@ export async function createNamedBot(
   const bot = await rpc<{ id: string; name: string }>(page, "bots/create", {
     name,
     title: "",
-    description: "",
     notifyOnFinish: true,
     computerMode: options.computerMode ?? "team",
   });

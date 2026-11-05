@@ -3,17 +3,10 @@
 Each bot is a teammate with one continuous chat, its own instructions and memory, and a computer to
 work on.
 
-## Create a bot
+## Your bot
 
-Your first bot is created for you when you sign up. To add another, choose **Create** (the **+** at
-the top of the sidebar), then **New bot**. Give it a name and choose **Create**.
-
-Then tell it its job in the chat, in plain words. It asks for anything else it needs, such as a
+Your first bot is created for you when you sign up. Tell it its job in the chat, in plain words. It asks for anything else it needs, such as a
 sign-in or an app to connect.
-
-> [!TIP]
-> One bot per job works best: an inbox bot, a research bot, a bot for one client. Each keeps its own
-> history and memory, so it gets better at that job over time.
 
 ## Talk to it
 
@@ -39,7 +32,7 @@ can answer later.
 
 Click the bot's name at the top of the chat to open its settings.
 
-- **Name** and avatar: pick a shape and color, or upload an image.
+- **Name**.
 - **Notifications**: **When it finishes or needs input**.
 - **Memory**: what the bot has written down. See [Memory](./memory.md).
 
@@ -52,14 +45,12 @@ Under **Advanced**:
   them, or its name, model, thinking, voice and read-aloud; instruction and setting changes
   show **Undo** in the chat. Memory scope stays in Settings, since shared memory changes what the bot can read.
   **Instruction history** lets you restore an earlier version.
-- **How other bots see it**: a short description other bots read when deciding whom to ask.
 - **Tools**: **Disable a tool** the bot should never use.
 - **Export** downloads the bot's setup as a file. **Clear conversation** empties the chat.
 
-## Organize the sidebar
+## The sidebar
 
-Right-click a bot in the sidebar to **Pin** it, **Move to** a section, **Mark as Unread**,
-**Duplicate**, **Archive** or **Delete** it. Archived bots can be restored later.
+Right-click a bot in the sidebar to **Mark as Unread**, **Clear conversation** or **Delete** it.
 
 ## Find things
 

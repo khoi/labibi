@@ -117,7 +117,7 @@ export async function archiveBot(
     }
     await tx.bot.update({
       where: { id: bot.id },
-      data: { archivedAt: bot.archivedAt ?? now, pinned: false },
+      data: { archivedAt: bot.archivedAt ?? now },
     });
   });
   await Promise.allSettled([

@@ -33,11 +33,11 @@ export type CommandPaletteAction = {
 };
 
 function botSearchText(bot: Bot) {
-  return `${bot.name} ${bot.description} ${bot.preview}`.toLowerCase();
+  return `${bot.name} ${bot.preview}`.toLowerCase();
 }
 
 function botSubtitle(bot: Bot) {
-  return bot.description.trim() || bot.preview.trim();
+  return bot.preview.trim();
 }
 
 export function CommandPalette({
@@ -181,12 +181,7 @@ export function CommandPalette({
                   }}
                   className="items-center gap-3 rounded-xl! px-2.5 py-2.5"
                 >
-                  <BotAvatar
-                    color={bot.color}
-                    identity={bot.id}
-                    size={32}
-                    status={bot.status}
-                  />
+                  <BotAvatar color={bot.color} identity={bot.id} size={32} status={bot.status} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium text-foreground" dir="auto">
                       {bot.name}

@@ -5,11 +5,9 @@ import type { ReactNode } from "react";
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type * as OrganizeModule from "../components/bot-organize-modal";
 import type * as SheetModule from "../components/native-sheet";
 import type * as ErrorModule from "../components/run-error-sheet-container";
 
-let BotOrganizeModal: typeof OrganizeModule.BotOrganizeModal;
 let NativeSheet: typeof SheetModule.NativeSheet;
 let useNativeSheet: typeof SheetModule.useNativeSheet;
 let RunErrorSheetContainer: typeof ErrorModule.RunErrorSheetContainer;
@@ -20,7 +18,6 @@ const mocks = vi.hoisted(() => ({
   load: vi.fn(),
   platform: "android",
   sheet: vi.fn(),
-  confirmDelete: vi.fn(),
   modal: vi.fn(),
   keyboardAvoider: vi.fn(),
   viewPositionInWindow: vi.fn(),
@@ -54,16 +51,9 @@ async function loadComponents(gate: Promise<void> = Promise.resolve()) {
     };
   });
   ({ NativeSheet, useNativeSheet } = await import("../components/native-sheet"));
-  ({ BotOrganizeModal } = await import("../components/bot-organize-modal"));
   ({ RunErrorSheetContainer } = await import("../components/run-error-sheet-container"));
 }
 vi.mock("./i18n", () => ({ useI18n: () => ({ t: (text: string) => text }) }));
-vi.mock("./confirm-delete-section", () => ({
-  confirmDeleteSection: (_section: unknown, _t: unknown, confirm: () => void) => {
-    mocks.confirmDelete();
-    confirm();
-  },
-}));
 vi.mock("../components/native-symbol", () => ({ NativeSymbol: () => null }));
 vi.mock("../components/native-action-button", () => ({
   NativeActionButton: ({
@@ -346,179 +336,5 @@ describe("native sheet behavior", () => {
     expect(mocks.styles).toContainEqual({ maxHeight: 552, height: undefined });
     act(() => mocks.listeners.get("keyboardDidHide")?.({ endCoordinates: { height: 0 } }));
     expect(mocks.styles.at(-1)).toEqual({ maxHeight: 852, height: undefined });
-  });
-});
-
-describe("inbox organization actions", () => {
-  async function organize(botOverrides = {}) {
-    const props = {
-      bot: {
-        name: "Sample chat",
-        pinned: false,
-        sectionId: "one",
-        notifyOnFinish: true,
-        ...botOverrides,
-      },
-      sections: [
-        { id: "one", name: "First", position: 0, createdAt: "2026-01-01", updatedAt: "2026-01-01" },
-        {
-          id: "two",
-          name: "Second",
-          position: 1,
-          createdAt: "2026-01-01",
-          updatedAt: "2026-01-01",
-        },
-      ],
-      onClose: vi.fn(),
-      onUpdate: vi.fn().mockResolvedValue(undefined),
-      onCreateSection: vi.fn().mockResolvedValue(undefined),
-      onRenameSection: vi.fn().mockResolvedValue(undefined),
-      onDeleteSection: vi.fn().mockResolvedValue(undefined),
-    };
-    const root = await mount(<BotOrganizeModal {...props} />);
-    const click = async (label: string) => {
-      const button = Array.from(root.element.querySelectorAll("button")).find(
-        (button) => button.textContent === label,
-      );
-      expect(button, label).toBeDefined();
-      await act(async () => button?.click());
-    };
-    return { props, root, click };
-  }
-  it.each(["light", "dark"] as const)(
-    "uses an opaque elevated %s organize surface",
-    async (appearance) => {
-      mocks.appearance = appearance;
-      await organize();
-      expect(mocks.sheet.mock.lastCall?.[0].backgroundStyle.backgroundColor).toBe(
-        tokensForAppearance(appearance).card,
-      );
-      expect(mocks.modal).not.toHaveBeenCalled();
-    },
-  );
-  it("waits for preload without flashing a Modal and keeps Cancel working", async () => {
-    let resolve!: () => void;
-    await loadComponents(
-      new Promise<void>((done) => {
-        resolve = done;
-      }),
-    );
-    const { root, click, props } = await organize();
-    expect(root.element.textContent).toBe("");
-    expect(mocks.modal).not.toHaveBeenCalled();
-    await act(async () => resolve());
-    await click("Cancel");
-    expect(props.onClose).toHaveBeenCalledOnce();
-    expect(mocks.modal).not.toHaveBeenCalled();
-  });
-  it("falls back on import failure with Cancel and request-close intact", async () => {
-    let reject!: (error: Error) => void;
-    await loadComponents(
-      new Promise<void>((_resolve, fail) => {
-        reject = fail;
-      }),
-    );
-    const { click, props } = await organize();
-    expect(mocks.modal).not.toHaveBeenCalled();
-    await act(async () => reject(new Error("Unavailable")));
-    expect(mocks.modal.mock.lastCall?.[0]).toMatchObject({
-      transparent: true,
-      onRequestClose: props.onClose,
-    });
-    await click("Cancel");
-    expect(props.onClose).toHaveBeenCalledOnce();
-  });
-  it.each([
-    ["Pin", { pinned: true }],
-    ["Unpin", { pinned: false }],
-    ["Silence notifications", { notifyOnFinish: false }],
-    ["Resume notifications", { notifyOnFinish: true }],
-    ["Second", { sectionId: "two" }],
-    ["Unassigned", { sectionId: null }],
-  ])("keeps %s working inside the native sheet", async (label, update) => {
-    const { props, click } = await organize({
-      pinned: label === "Unpin",
-      notifyOnFinish: label !== "Resume notifications",
-    });
-    await click(label as string);
-    expect(props.onUpdate).toHaveBeenCalledWith(update);
-    expect(props.onClose).toHaveBeenCalledOnce();
-    expect(mocks.sheet).toHaveBeenCalled();
-  });
-  it("keeps rename inputs and saving connected", async () => {
-    const { props, click, root } = await organize();
-    await click("Rename section");
-    const input = root.element.querySelector("input");
-    expect(input?.value).toBe("First");
-    // Use React's native input setter to exercise the text change event.
-    await act(async () => {
-      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(
-        input,
-        "Updated",
-      );
-      input?.dispatchEvent(new Event("input", { bubbles: true }));
-    });
-    await click("Save");
-    expect(props.onRenameSection).toHaveBeenCalledWith("one", "Updated");
-  });
-  it("keeps creation inputs reachable and deletion confirmed", async () => {
-    const { props, click, root } = await organize();
-    await click("New section");
-    expect(root.element.querySelector("input")).not.toBeNull();
-    expect(root.element.querySelector("input")?.value).toBe("");
-    await act(async () => {
-      const input = root.element.querySelector("input");
-      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(input, "New");
-      input?.dispatchEvent(new Event("input", { bubbles: true }));
-    });
-    await click("Create");
-    expect(props.onCreateSection).toHaveBeenCalledWith("New");
-    const next = await organize();
-    await next.click("Delete section");
-    expect(mocks.confirmDelete).toHaveBeenCalledOnce();
-    expect(next.props.onDeleteSection).toHaveBeenCalledWith("one");
-  });
-  it("presents a native iOS form sheet instead of the custom overlay", async () => {
-    mocks.platform = "ios";
-    await loadComponents();
-    const { props, click } = await organize();
-    expect(mocks.sheet).not.toHaveBeenCalled();
-    const modal = mocks.modal.mock.lastCall?.[0];
-    expect(modal).toMatchObject({
-      presentationStyle: "formSheet",
-      allowSwipeDismissal: true,
-      onRequestClose: props.onClose,
-    });
-    expect(modal.transparent).toBeUndefined();
-    await click("Second");
-    expect(props.onUpdate).toHaveBeenCalledWith({ sectionId: "two" });
-    expect(props.onClose).toHaveBeenCalledOnce();
-  });
-  it("offsets the iOS form sheet by its window position measured when the keyboard shows", async () => {
-    mocks.platform = "ios";
-    await loadComponents();
-    await organize();
-    // The first measurement can fail while the sheet is still being presented.
-    mocks.viewPositionInWindow.mockRejectedValueOnce(new Error("Could not find view for tag"));
-    await act(async () => mocks.keyboardAvoider.mock.lastCall?.[0].onLayout?.());
-    expect(mocks.keyboardAvoider.mock.lastCall?.[0]).toMatchObject({ keyboardVerticalOffset: 0 });
-    mocks.viewPositionInWindow.mockResolvedValueOnce({ x: 0, y: 62, width: 400, height: 938 });
-    await act(async () => mocks.keyboardEvents.get("keyboardWillShow")?.());
-    expect(mocks.viewPositionInWindow).toHaveBeenLastCalledWith(1);
-    expect(mocks.keyboardAvoider.mock.lastCall?.[0]).toMatchObject({
-      behavior: "padding",
-      keyboardVerticalOffset: 62,
-    });
-    expect(mocks.keyboardAvoider.mock.lastCall?.[0].automaticOffset).toBeUndefined();
-  });
-  it("keeps the original fade Modal when native views are unavailable", async () => {
-    mocks.missing = "SlotView";
-    await loadComponents();
-    await organize();
-    expect(mocks.sheet).not.toHaveBeenCalled();
-    expect(mocks.modal.mock.lastCall?.[0]).toMatchObject({
-      transparent: true,
-      animationType: "fade",
-    });
   });
 });

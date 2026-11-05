@@ -6,7 +6,7 @@ and one for home.
 ## Create a space
 
 Choose **Create** (the **+** at the top of the sidebar), then **New private space**. You switch
-to it from the sidebar, and each space has its own bots, groups and sections.
+to it from the sidebar, and each space has its own bots and groups.
 
 Most people only need one. Add a space when work must stay apart: a client, a side project, or
 personal life.

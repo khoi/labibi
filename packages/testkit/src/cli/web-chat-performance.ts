@@ -280,7 +280,6 @@ async function prepareAccount(bench: Bench, sizes: number[]): Promise<Account> {
       const created = await rpc<{ id: string }>(page, "bots/create", {
         name,
         title: "",
-        description: "",
         notifyOnFinish: false,
         computerMode: "team",
       });

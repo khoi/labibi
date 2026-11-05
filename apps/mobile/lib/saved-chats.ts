@@ -2,7 +2,6 @@ import { displayIdentityResult, identitySource } from "@labradoodle/core";
 import { Directory, File, Paths } from "expo-file-system";
 import type {
   MobileBot,
-  MobileBotSection,
   MobileGroup,
   MobileMe,
   MobileSnapshot,
@@ -27,7 +26,6 @@ export type SavedChatsScope = IntegrationsCacheScope & { namespace: string };
 export type SavedInbox = {
   bots: MobileBot[];
   groups: MobileGroup[];
-  botSections: MobileBotSection[];
   spaces: MobileSpace[];
   me: Pick<MobileMe, "userId" | "spaceId" | "name">;
 };
@@ -86,7 +84,6 @@ export function readSavedInbox(scope: SavedChatsScope): SavedInbox | null {
       !inbox ||
       !isRows(inbox.bots) ||
       !isRows(inbox.groups) ||
-      !isRows(inbox.botSections) ||
       !isRows(inbox.spaces) ||
       me?.userId !== scope.userId ||
       typeof me.spaceId !== "string" ||
@@ -114,10 +111,8 @@ export function writeSavedInbox(
           color,
           preview,
           unread,
-          pinned,
           spaceId,
           status,
-          sectionId,
           notifyOnFinish,
           threadId,
           updatedAt,
@@ -128,30 +123,25 @@ export function writeSavedInbox(
             color,
             preview,
             unread,
-            pinned,
             spaceId,
             status,
-            sectionId,
             notifyOnFinish,
             threadId,
             updatedAt,
           }) as MobileBot,
       ),
       groups: navigation.current.groups.slice(0, SAVED_INBOX_ROWS).map(
-        ({ id, name, members, preview, unread, pinned, spaceId, sectionId, updatedAt }) =>
+        ({ id, name, members, preview, unread, spaceId, updatedAt }) =>
           ({
             id,
             name,
             members,
-            sectionId,
             preview,
             unread,
-            pinned,
             spaceId,
             updatedAt,
           }) as MobileGroup,
       ),
-      botSections: navigation.current.botSections.slice(0, SAVED_INBOX_ROWS),
       spaces: navigation.spaces.slice(0, 40).map((space) => ({
         ...space,
         bots: space.bots.slice(0, SAVED_INBOX_ROWS),

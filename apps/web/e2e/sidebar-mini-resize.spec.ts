@@ -10,7 +10,6 @@ test("sidebar rail keeps chats interactive and remembers a dragged width", async
   await completeOnboarding(page);
   const bot = await rpc<{ id: string }>(page, "bots/create", {
     name: "Research",
-    description: "",
     instructions: "",
     notifyOnFinish: true,
     computerMode: "team",
@@ -163,7 +162,6 @@ test("sidebar snaps its layout during a held drag in both directions", async ({
   for (const name of ["Research", "Notes", "Planner"]) {
     await rpc(page, "bots/create", {
       name,
-      description: "",
       instructions: "",
       notifyOnFinish: true,
       computerMode: "team",

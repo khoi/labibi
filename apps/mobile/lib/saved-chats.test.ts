@@ -114,7 +114,6 @@ const bot = {
   notifyOnFinish: true,
   threadId: "thread-bot-a",
   updatedAt: "2026-10-10T12:30:00.000Z",
-  sectionId: "section-a",
 };
 const group = {
   id: "group-a",
@@ -137,7 +136,6 @@ const navigation = {
     ],
     groups: [{ ...group, createdAt: "2026-10-01T09:00:00.000Z" }],
     externalConversations: [],
-    botSections: [],
   },
   spaces: [],
 } as unknown as MobileSpaceNavigation;

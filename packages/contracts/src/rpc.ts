@@ -13,7 +13,6 @@ import {
   ATTACHMENT_COUNT_CEILING,
 } from "./attachments.js";
 import { AuditEventListInputSchema, AuditEventPageSchema } from "./audit-events.js";
-import { BotAvatarSetSchema } from "./bot-avatar.js";
 import {
   BotSecretMetadata,
   BotSecretPutInput,
@@ -46,8 +45,6 @@ import {
   BillingStatusSchema,
   BotMcpServerSchema,
   BotSchema,
-  BotSectionName,
-  BotSectionSchema,
   ByokIntervalSchema,
   ByokTierSchema,
   CapabilityInstallSchema,
@@ -99,7 +96,6 @@ import {
   PluginSubmissionSchema,
   PluginSubmissionStatusSchema,
   REPLY_QUOTE_MAX_LENGTH,
-  ReorderBotsInput,
   ROUTINE_MENTION_BATCH_MAX,
   RoutineSchema,
   ServerUpdateCheckSchema,
@@ -343,8 +339,6 @@ export const appContract = {
         z
           .object({
             avatarStyle: AvatarStyleSchema.optional(),
-            /** Restyles every bot not pinned to another set, and is what new bots get. */
-            botAvatarSet: BotAvatarSetSchema.optional(),
             timezone: TimeZoneSchema.nullable().optional(),
             /** The language the app runs in, so emails can be written in it. */
             locale: AppLocaleSchema.optional(),
@@ -352,7 +346,6 @@ export const appContract = {
           .refine(
             (input) =>
               input.avatarStyle !== undefined ||
-              input.botAvatarSet !== undefined ||
               input.timezone !== undefined ||
               input.locale !== undefined,
             { message: "Nothing to update" },
@@ -545,11 +538,8 @@ export const appContract = {
   },
   bots: {
     list: oc.output(z.array(BotSchema)),
-    listArchived: oc.output(z.array(BotSchema)),
     get: oc.input(botId).output(BotSchema),
     create: oc.input(CreateBotInput).output(BotSchema),
-    duplicate: oc.input(botId).output(BotSchema),
-    reorder: oc.input(ReorderBotsInput).output(z.object({ ok: z.literal(true) })),
     update: oc.input(UpdateBotInput).output(BotSchema),
     restoreInstructions: oc
       .input(
@@ -563,7 +553,6 @@ export const appContract = {
       .output(BotSchema),
     setComputer: oc.input(z.object({ botId: Id, mode: ComputerModeSchema })).output(BotSchema),
     archive: oc.input(botId).output(z.object({ ok: z.literal(true) })),
-    restore: oc.input(botId).output(z.object({ ok: z.literal(true) })),
     remove: oc
       .input(z.object({ botId: Id, deleteMemories: z.boolean().default(false) }))
       .output(z.object({ ok: z.literal(true) })),
@@ -578,25 +567,10 @@ export const appContract = {
   groups: {
     create: oc.input(CreateGroupInput).output(GroupSchema),
     list: oc.output(z.array(GroupSchema)),
-    listArchived: oc.output(z.array(GroupSchema)),
     get: oc.input(groupId).output(GroupDetailSchema),
-    duplicate: oc.input(groupId).output(GroupSchema),
     update: oc.input(UpdateGroupInput).output(GroupSchema),
     archive: oc.input(groupId).output(z.object({ ok: z.literal(true) })),
-    restore: oc.input(groupId).output(z.object({ ok: z.literal(true) })),
     remove: oc.input(groupId).output(z.object({ ok: z.literal(true) })),
-  },
-  botSections: {
-    list: oc.output(z.array(BotSectionSchema)),
-    create: oc.input(threadTarget.safeExtend({ name: BotSectionName })).output(BotSectionSchema),
-    update: oc.input(z.object({ sectionId: Id, name: BotSectionName })).output(BotSectionSchema),
-    remove: oc.input(z.object({ sectionId: Id })).output(
-      z.object({
-        id: Id,
-        releasedBots: z.number().int().nonnegative(),
-        releasedGroups: z.number().int().nonnegative(),
-      }),
-    ),
   },
   threads: {
     head: oc.input(threadTarget).output(
@@ -1034,8 +1008,6 @@ export const appContract = {
   onboarding: {
     /** Record the optional signup survey; an empty submission marks it skipped. */
     signupSurvey: oc.input(SignupSurveySchema).output(z.object({ ok: z.literal(true) })),
-    /** Seed the first-run greeting into the bot's thread (focus card is separate). */
-    start: oc.input(z.object({ botId: Id })).output(z.object({ ok: z.literal(true) })),
     /** Post the focus choice card when the thread is still idle. */
     promptFocus: oc.input(z.object({ botId: Id })).output(z.object({ ok: z.literal(true) })),
     /** Answer the focus choice; posts the app cards. Does not rename the bot. */

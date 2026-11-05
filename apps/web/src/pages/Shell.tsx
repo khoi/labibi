@@ -1,17 +1,14 @@
 import type {
   AgentSkillCatalogEntry,
-  Bot,
   SpaceMemoryConfig,
   ThreadMessage,
   VoiceStatus,
 } from "@labradoodle/contracts";
-import { DEFAULT_NEW_BOT_AVATAR_SET } from "@labradoodle/contracts";
 import {
   answerableAskMessageIds,
   channelMessageSender,
   chatUserBubbleColors,
   dismissableAskMessageIds,
-  groupBotsForSidebar,
   isActive,
   isRunWorking,
   memberName,
@@ -20,11 +17,10 @@ import {
 } from "@labradoodle/core";
 import { fetchFresh, writeSaved } from "@labradoodle/core/query";
 import type { GroupAvatarMember } from "@labradoodle/ui-web";
-import { Button } from "@labradoodle/ui-web";
 import { useIsMobile } from "@labradoodle/ui-web/hooks/use-mobile";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
-import { Keyboard, Lock, Monitor, Moon, Plug, Plus, ScrollText, Sun, Users } from "lucide-react";
+import { Keyboard, Lock, Monitor, Moon, Plug, ScrollText, Sun, Users } from "lucide-react";
 import {
   Suspense,
   useCallback,
@@ -71,7 +67,6 @@ import { errorText } from "../lib/user-error";
 import { HostComputerPrompt } from "./HostComputerPrompt";
 import { RoutineList } from "./RoutineEditor";
 import { useSettingsNavItems } from "./settings-nav";
-import { ArchivedChats } from "./shell/archived-chats";
 import { ChatContextMenu } from "./shell/chat-context-menu";
 import { ChatFindBar } from "./shell/chat-find-bar";
 import { ChatHeader } from "./shell/chat-header";
@@ -80,7 +75,6 @@ import type { CommandPaletteAction } from "./shell/command-palette";
 import { Composer } from "./shell/composer";
 import { ComputerOverlay } from "./shell/computer-overlay";
 import { ComputerPanel } from "./shell/computer-panel";
-import type { CreateBotDialogInput } from "./shell/create-bot-dialog";
 import { KeyboardShortcutsDialog } from "./shell/keyboard-shortcuts-dialog";
 import { ShellDialogs, useShellDialogs } from "./shell/shell-dialogs";
 import { AppOverlays, SettingsOverlays } from "./shell/shell-overlays";
@@ -105,7 +99,7 @@ import { useRoutineEditor } from "./shell/use-routine-editor";
 import { useShellNavigation } from "./shell/use-shell-navigation";
 import { useSidebarExpansion } from "./shell/use-sidebar-expansion";
 import { useSidebarSearch } from "./shell/use-sidebar-search";
-import { useRosterDrop, useSpaceBootstrap, useSpaceRoster } from "./shell/use-space-roster";
+import { useSpaceBootstrap, useSpaceRoster } from "./shell/use-space-roster";
 import { useOpenSpaceChat } from "./shell/use-space-switch";
 import { useThreadState } from "./shell/use-thread-state";
 import { useThreadSync } from "./shell/use-thread-sync";
@@ -158,11 +152,8 @@ function SpaceShell() {
     bots,
     setBots,
     botsRef,
-    botSections,
     spaces,
     setSpaces,
-    archivedBots,
-    archivedGroups,
     initialBotsLoaded,
     initialLoadFailed,
     bootstrapMe,
@@ -289,10 +280,6 @@ function SpaceShell() {
     return rpc.computer.dismissDiskWarning({ botId }).catch(() => undefined);
   };
   useReportedUiLocale(rpc, bootstrapMe?.locale);
-  const cycleBots = useMemo(
-    () => groupBotsForSidebar(bots, botSections).flatMap((group) => group.bots),
-    [bots, botSections],
-  );
   const dialogs = useShellDialogs();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [findOpen, setFindOpen] = useState(false);
@@ -367,8 +354,8 @@ function SpaceShell() {
       }
       const botId =
         shortcut.type === "bot"
-          ? cycleBots[shortcut.index]?.id
-          : cycleBotId(cycleBots, active?.id, shortcut.type === "next-bot" ? 1 : -1);
+          ? bots[shortcut.index]?.id
+          : cycleBotId(bots, active?.id, shortcut.type === "next-bot" ? 1 : -1);
       if (!botId) return false;
       selectBot(botId);
       return true;
@@ -500,7 +487,7 @@ function SpaceShell() {
     () =>
       spaces.length > 0
         ? spaces.map((space) =>
-            space.id === bootstrapMe?.spaceId ? { ...space, bots, groups, botSections } : space,
+            space.id === bootstrapMe?.spaceId ? { ...space, bots, groups } : space,
           )
         : bootstrapMe
           ? [
@@ -513,19 +500,14 @@ function SpaceShell() {
                 canDelete: false,
                 bots,
                 groups,
-                botSections,
               },
             ]
           : [],
-    [bootstrapMe, botSections, bots, groups, spaces],
+    [bootstrapMe, bots, groups, spaces],
   );
   const sidebarGroups = useMemo(
-    () =>
-      sidebarGroupsForSpaces(sidebarSpaces, miniSidebar ? "" : search.query, {
-        pinned: t`Pinned`,
-        unassigned: t`Unassigned`,
-      }),
-    [sidebarSpaces, search.query, miniSidebar, t],
+    () => sidebarGroupsForSpaces(sidebarSpaces, miniSidebar ? "" : search.query),
+    [sidebarSpaces, search.query, miniSidebar],
   );
   // The Dock badge ignores the roster search box: a filter must not hide unread chats.
   const unreadChatCount = useMemo(
@@ -583,7 +565,6 @@ function SpaceShell() {
     return {
       botId: run.botId,
       color: bot?.color ?? FALLBACK_BOT_COLOR,
-      avatarSet: bot?.avatarSet,
       name: bot?.name,
       status: run.status,
     };
@@ -710,15 +691,6 @@ function SpaceShell() {
     restoreRoutine,
     leaveRoutine,
   });
-  const rosterDrop = useRosterDrop({
-    rpc,
-    bots,
-    reorderRosterBot: roster.reorderRosterBot,
-    refreshBots,
-    refreshGroupThread: (id) => refreshGroupThreadRef.current(id),
-    activeGroupId,
-    setSendError: composer.setSendError,
-  });
 
   const openBot = useCallback((id: string) => navigate(`/app/${id}`), [navigate]);
   const setOverlayRef = useRef(setOverlay);
@@ -801,12 +773,6 @@ function SpaceShell() {
     updates: Boolean(desktopBridge()?.update),
   });
   const paletteActions: CommandPaletteAction[] = [
-    {
-      id: "new-bot",
-      label: t`New bot`,
-      icon: Plus,
-      onSelect: () => dialogs.setCreateBotOpen(true),
-    },
     {
       id: "new-group",
       label: t`New group chat`,
@@ -897,21 +863,6 @@ function SpaceShell() {
     await refreshBots(true);
   }
 
-  function openCreatedBot(bot: Bot) {
-    roster.addCreatedBot(bot);
-    navigate(`/app/${bot.id}`);
-    setPanel(null);
-  }
-
-  async function createBot(input: CreateBotDialogInput) {
-    const isFirstBot = botsRef.current.length === 0;
-    const bot = await rpc.bots.create({ ...input, notifyOnFinish: true });
-    openCreatedBot(bot);
-    dialogs.setCreateBotOpen(false);
-    await composer.startFocusPrompt(bot.id, isFirstBot);
-    await refreshBots().catch(() => undefined);
-  }
-
   const contextBot =
     botMenu?.kind === "bot" ? bots.find((bot) => bot.id === botMenu.id) : undefined;
   const contextGroup =
@@ -919,17 +870,12 @@ function SpaceShell() {
   const botMenuContent =
     contextBot || contextGroup ? (
       <ChatContextMenu
-        rpc={rpc}
         bot={contextBot}
         group={contextGroup}
-        sections={botSections}
-        spaceId={bootstrapMe?.spaceId}
         onClose={closeBotMenu}
-        refreshBots={refreshBots}
         read={read}
         dialogs={dialogs}
         openChatSettings={openChatSettings}
-        navigate={navigate}
       />
     ) : null;
   const shell = (
@@ -970,24 +916,15 @@ function SpaceShell() {
         setPanel={setPanel}
         navigate={navigate}
         setNewSpaceOpen={dialogs.setNewSpaceOpen}
-        setCreateBotOpen={dialogs.setCreateBotOpen}
         roster={
           <SidebarRoster
             mini={miniSidebar}
             sidebarGroups={sidebarGroups}
             collapsedSidebarSections={collapsedSidebarSections}
             bootstrapMe={bootstrapMe}
-            botSections={botSections}
-            spaces={spaces}
-            rosterDropKey={rosterDrop.rosterDropKey}
-            setRosterDropKey={rosterDrop.setRosterDropKey}
-            rosterDropAction={rosterDrop.rosterDropAction}
-            applyRosterDrop={rosterDrop.applyRosterDrop}
             openSpaceChat={openSpaceChat}
             spaceMenuAnchor={dialogs.spaceMenuAnchor}
             setSpaceMenu={dialogs.setSpaceMenu}
-            setRenameSectionTarget={dialogs.setRenameSectionTarget}
-            setDeleteSectionTarget={dialogs.setDeleteSectionTarget}
             toggleSidebarSection={toggleSidebarSection}
             inGroup={inGroup}
             active={active}
@@ -995,24 +932,10 @@ function SpaceShell() {
             botsSidebarDensity={botsSidebarDensity}
             dismissedRunErrorIds={composer.dismissedRunErrorIds}
             displayedRunError={composer.displayedRunError}
-            draggedBotId={rosterDrop.draggedBotId}
-            setDraggedBotId={rosterDrop.setDraggedBotId}
             botMenu={botMenu}
             setBotMenu={setBotMenu}
-            reorderRosterBot={roster.reorderRosterBot}
             activeSnapshot={activeSnapshot}
             botMenuContent={botMenuContent}
-          />
-        }
-        archived={
-          <ArchivedChats
-            archivedBots={archivedBots}
-            archivedGroups={archivedGroups}
-            showSpaceSearch={search.showSpaceSearch}
-            rpc={rpc}
-            refreshBots={refreshBots}
-            setDeleteTarget={dialogs.setDeleteTarget}
-            setDeleteGroupTarget={dialogs.setDeleteGroupTarget}
           />
         }
         footerLogos={footerLogos}
@@ -1065,12 +988,7 @@ function SpaceShell() {
             onTogglePanel={toggleChatPanel}
           />
           {!active && !activeGroup && initialBotsLoaded ? (
-            <div className="grid flex-1 place-items-center">
-              <Button onClick={() => dialogs.setCreateBotOpen(true)}>
-                <Plus size={16} aria-hidden="true" />
-                <Trans>New bot</Trans>
-              </Button>
-            </div>
+            <div className="flex-1" />
           ) : (
             <Transcript
               key={activeSnapshot?.threadId}
@@ -1282,8 +1200,6 @@ function SpaceShell() {
           removeSpace={removeSpace}
           openSpaceSettings={openSpaceSettings}
           closeMobileSidebar={() => setMobileSidebarOpen(false)}
-          createBot={createBot}
-          botAvatarSet={bootstrapMe?.botAvatarSet ?? DEFAULT_NEW_BOT_AVATAR_SET}
           discardChatAttachments={composer.discardThreadAttachments}
           clearOpenThread={() => {
             thread.resetHistory();

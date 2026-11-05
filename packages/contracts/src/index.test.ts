@@ -13,7 +13,6 @@ import {
   parseModelContextWindow,
   parseModelMaxImagesPerPrompt,
   parseModelMaxTokens,
-  ReorderBotsInput,
   RunActivityRowSchema,
   RunSchema,
   UpdateBotInput,
@@ -318,9 +317,6 @@ describe("contracts", () => {
   it("normalizes bot names and rejects whitespace-only values at the contract boundary", () => {
     expect(CreateBotInput.parse({ name: "  Chief  " }).name).toBe("Chief");
     expect(UpdateBotInput.parse({ botId: "bot-1", name: "  Atlas  " }).name).toBe("Atlas");
-    expect(
-      UpdateBotInput.parse({ botId: "bot-1", description: "  Concise briefs.  " }).description,
-    ).toBe("Concise briefs.");
     expect(CreateBotInput.safeParse({ name: "   " }).success).toBe(false);
     expect(UpdateBotInput.safeParse({ botId: "bot-1", name: "   " }).success).toBe(false);
   });
@@ -380,12 +376,6 @@ describe("contracts", () => {
         verificationUri: "javascript:alert(1)",
       }).success,
     ).toBe(false);
-  });
-
-  it("requires a distinct, non-empty bot order", () => {
-    expect(ReorderBotsInput.safeParse({ botIds: ["bot-2", "bot-1"] }).success).toBe(true);
-    expect(ReorderBotsInput.safeParse({ botIds: [] }).success).toBe(false);
-    expect(ReorderBotsInput.safeParse({ botIds: ["bot-1", "bot-1"] }).success).toBe(false);
   });
 
   it("accepts a GitHub-only routine trigger", () => {

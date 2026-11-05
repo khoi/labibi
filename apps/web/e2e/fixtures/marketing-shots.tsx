@@ -11,7 +11,6 @@ import type { RoutineDraftState } from "../../src/pages/RoutineEditor";
 import { RoutineEditor } from "../../src/pages/RoutineEditor";
 import { SettingsOverlay } from "../../src/pages/SettingsOverlay";
 import { BotSettings } from "../../src/pages/shell/bot-panel";
-import { CreateBotDialog } from "../../src/pages/shell/create-bot-dialog";
 import "../../src/styles.css";
 
 const demoRpc: Record<string, unknown> = {
@@ -67,12 +66,9 @@ function inboxBot(): Bot {
     spaceId: "space-demo",
     name: "Inbox",
     title: "Sorts the demo inbox",
-    description: "Files routine mail for ada@example.test and leaves the rest for review.",
     instructions: "File routine mail. Ask before sending anything.",
     color: "ink",
     notifyOnFinish: true,
-    pinned: false,
-    sectionId: null,
     archivedAt: null,
     unread: false,
     memoryScope: null,
@@ -93,37 +89,6 @@ function inboxBot(): Bot {
     runErrorId: null,
     disabledBuiltinTools: [],
   };
-}
-
-function CreateShot() {
-  const [ready, setReady] = useState(false);
-  useEffect(() => {
-    let frame = 0;
-    // The dialog renders in a portal, so wait for it before filling it in.
-    const fillWhenOpen = () => {
-      const name = document.querySelector<HTMLInputElement>('input[placeholder="Name your Bot"]');
-      if (!name) {
-        frame = requestAnimationFrame(fillWhenOpen);
-        return;
-      }
-      fill(name, "Inbox");
-      document.querySelector<HTMLButtonElement>('button[aria-label="Shape 1"]')?.click();
-      document.querySelector<HTMLButtonElement>('button[aria-label="Color #A97EFE"]')?.click();
-      setReady(true);
-    };
-    fillWhenOpen();
-    return () => cancelAnimationFrame(frame);
-  }, []);
-  return (
-    <main data-ready={ready ? "true" : "false"} className="min-h-screen bg-background">
-      <CreateBotDialog onCreate={async () => undefined} onCancel={() => undefined} />
-    </main>
-  );
-}
-
-function fill(element: HTMLInputElement, value: string) {
-  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(element, value);
-  element.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
 function ModelShot() {
@@ -314,7 +279,7 @@ function SubscriptionShot() {
   );
 }
 
-const view = new URLSearchParams(location.search).get("view") ?? "create";
+const view = new URLSearchParams(location.search).get("view") ?? "model";
 
 if (view === "subscription") {
   demoRpc.me = subscriptionMe;
@@ -325,16 +290,14 @@ if (view === "subscription") {
 
 void bootstrapI18n("en").then(() => {
   const shot =
-    view === "model" ? (
-      <ModelShot />
-    ) : view === "routine" ? (
+    view === "routine" ? (
       <RoutineShot />
     ) : view === "approval" ? (
       <ApprovalShot />
     ) : view === "subscription" ? (
       <SubscriptionShot />
     ) : (
-      <CreateShot />
+      <ModelShot />
     );
   createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>

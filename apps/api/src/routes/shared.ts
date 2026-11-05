@@ -12,7 +12,6 @@ import {
   attachmentMaxBytes,
   attachmentMaxCount,
   canonicalPiProviderId,
-  resolveBotAvatarSet,
 } from "@labradoodle/contracts";
 import { isAdmin } from "../admins.js";
 import { effectiveSandboxProvider } from "../computer-provider-config.js";
@@ -35,7 +34,6 @@ export async function meDto(deps: RouterDeps, actor: Actor): Promise<Me> {
         name: true,
         timezone: true,
         locale: true,
-        botAvatarSet: true,
         signupSurvey: { select: { userId: true } },
       },
     }),
@@ -76,7 +74,6 @@ export async function meDto(deps: RouterDeps, actor: Actor): Promise<Me> {
         allowedCommands: deps.env.mcpStdioAllowedCommands,
       }),
     avatarStyle: "organic",
-    botAvatarSet: resolveBotAvatarSet(user.botAvatarSet),
     timezone: user.timezone ?? null,
     locale: user.locale ?? null,
     billingEnabled: Boolean(deps.billing),

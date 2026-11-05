@@ -29,9 +29,7 @@ export const AnalyticsScreenInput = z
   .strict();
 export const AnalyticsBotSetting = z.enum([
   "name",
-  "description",
   "instructions",
-  "avatar",
   "notifications",
   "memory",
   "voice",

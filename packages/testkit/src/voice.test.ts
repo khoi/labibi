@@ -116,7 +116,6 @@ describeVoice("voice credentials and speech HTTP", () => {
     const bot = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "Speaker",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });

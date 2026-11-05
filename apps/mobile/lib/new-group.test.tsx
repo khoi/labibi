@@ -256,27 +256,6 @@ async function pickPair() {
   await click("Next");
 }
 
-it("keeps each selected bot's icon set in the name-step group preview", async () => {
-  const looks = bots.map((bot, index) => ({
-    ...bot,
-    color: index === 0 ? "#10B981" : "#8B5CF6",
-    avatarSet: index === 0 ? "rakazo" : "organic",
-  }));
-  rpc.mockImplementation(async (procedure: string) =>
-    procedure === "bots/list" ? looks : { id: "group-1", name: "Created" },
-  );
-  await start();
-  await pickPair();
-  expect(groupPreview).toHaveBeenLastCalledWith(
-    expect.objectContaining({
-      members: [
-        { botId: "bot-2", color: "#8B5CF6", avatarSet: "organic" },
-        { botId: "bot-1", color: "#10B981", avatarSet: "rakazo" },
-      ],
-    }),
-  );
-});
-
 it("adds and removes chips, hides picked and archived bots, and clears filters on pick", async () => {
   rpc.mockResolvedValue([
     ...bots,

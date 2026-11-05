@@ -33,6 +33,7 @@ vi.mock("@lingui/react/macro", () => {
   return { useLingui: () => ({ t }), Trans: ({ children }: { children: ReactNode }) => children };
 });
 vi.mock("@labradoodle/ui-web", () => ({
+  BotAvatar: () => <span />,
   SectionHeading: ({
     variant: _variant,
     ...props
@@ -95,22 +96,6 @@ vi.mock("@labradoodle/ui-web", () => ({
     <div {...props} />
   ),
 }));
-vi.mock("./avatar-studio-popover", () => ({
-  AvatarStudioPopover: ({
-    value,
-    onChange,
-  }: {
-    value: string;
-    onChange: (value: string) => void;
-  }) => (
-    <button
-      type="button"
-      aria-label="Avatar color"
-      data-color={value}
-      onClick={() => onChange(value === "blue" ? "ink" : "blue")}
-    />
-  ),
-}));
 vi.mock("../KnowledgeSection", () => ({
   KnowledgeSection: () => <h3>Memory and skills</h3>,
 }));
@@ -122,18 +107,15 @@ import { BotSettings } from "./bot-panel";
 
 const longInstructions = "I".repeat(4_000);
 
-function bot(description = "Billing", overrides: Partial<Bot> = {}): Bot {
+function bot(overrides: Partial<Bot> = {}): Bot {
   return {
     id: "bot-1",
     spaceId: "space-1",
     name: "Ada",
     title: "Helper",
-    description,
     instructions: longInstructions,
     color: "ink",
     notifyOnFinish: true,
-    pinned: false,
-    sectionId: null,
     archivedAt: null,
     unread: false,
     memoryScope: null,
@@ -166,7 +148,6 @@ const onSave = vi.fn(
 const onExport = vi.fn(async () => undefined);
 
 async function render(
-  description = "Billing",
   overrides: Partial<Bot> = {},
   memoryProviderConfigured = false,
   focusModel = 0,
@@ -177,7 +158,7 @@ async function render(
         <BotSettings
           onOpenConnections={() => undefined}
           focusModel={focusModel}
-          bot={bot(description, overrides)}
+          bot={bot(overrides)}
           memoryProviderConfigured={memoryProviderConfigured}
           onSave={onSave}
           onExport={onExport}
@@ -189,16 +170,14 @@ async function render(
   await act(async () => new Promise((resolve) => setTimeout(resolve, 0)));
 }
 
-function descriptionField(): HTMLTextAreaElement {
-  const textarea =
-    container.querySelector<HTMLTextAreaElement>('textarea[id$="-description"]') ??
-    container.querySelector("textarea");
-  if (!textarea) throw new Error("Missing description field");
+function instructionsField(): HTMLTextAreaElement {
+  const textarea = container.querySelector("textarea");
+  if (!textarea) throw new Error("Missing instructions field");
   return textarea;
 }
 
-async function setDescription(value: string) {
-  const textarea = descriptionField();
+async function setInstructions(value: string) {
+  const textarea = instructionsField();
   await act(async () => {
     Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")?.set?.call(
       textarea,
@@ -241,7 +220,7 @@ it("shows the profile and the Advanced tab's controls", async () => {
   vi.mocked(rpc.voice.voices).mockResolvedValueOnce([
     { id: "fixture-voice", label: "Fixture voice" },
   ]);
-  await render("Billing", {}, true);
+  await render({}, true);
   expect(container.querySelector('[data-testid="bot-profile-header"]')?.textContent).toContain(
     "Ada",
   );
@@ -337,7 +316,7 @@ describe("BotSettings model choices", () => {
 
 describe("BotSettings thinking options", () => {
   it("preserves saved thinking on a profile save when options are hidden", async () => {
-    await render("Billing", {
+    await render({
       modelProvider: "openai-compatible",
       modelId: "beta",
       thinkingLevel: "high",
@@ -370,7 +349,7 @@ describe("BotSettings thinking options", () => {
         thinkingLevels: ["off", "low", "high"],
       },
     ]);
-    await render("Billing", { modelProvider: "openai-compatible", modelId: "beta" });
+    await render({ modelProvider: "openai-compatible", modelId: "beta" });
     await act(async () => {
       await Promise.resolve();
     });
@@ -402,57 +381,6 @@ describe("BotSettings bot management saves", () => {
   });
 });
 
-describe("BotSettings description saves", () => {
-  it("leaves instructions off a save that does not edit the description", async () => {
-    await render();
-    await clickSave();
-    expect(onSave.mock.calls[0]?.[0]).not.toHaveProperty("description");
-    expect(onSave.mock.calls[0]?.[0]).not.toHaveProperty("instructions");
-  });
-
-  it("does not resend instructions when the bot prop stays on the old description", async () => {
-    await render();
-    await setDescription("Invoices");
-    await clickSave();
-    expect(onSave.mock.calls[0]?.[0]).toMatchObject({
-      description: "Invoices",
-    });
-    expect(onSave.mock.lastCall?.[0]).not.toHaveProperty("instructions");
-
-    // The parent still passes the description from when the panel opened.
-    await render();
-    await clickSave();
-    expect(onSave).toHaveBeenCalledTimes(2);
-    expect(onSave.mock.calls[1]?.[0]).not.toHaveProperty("description");
-    expect(onSave.mock.calls[1]?.[0]).not.toHaveProperty("instructions");
-  });
-
-  it("still saves a description edited back to the stale prop value", async () => {
-    await render();
-    await setDescription("Invoices");
-    await clickSave();
-    await render();
-    await setDescription("Billing");
-    await clickSave();
-    expect(onSave.mock.calls[1]?.[0]).toMatchObject({
-      description: "Billing",
-    });
-    expect(onSave.mock.lastCall?.[0]).not.toHaveProperty("instructions");
-  });
-
-  it("keeps the previous description as the baseline when a save fails", async () => {
-    onSave.mockRejectedValueOnce(new Error("offline"));
-    await render();
-    await setDescription("Invoices");
-    await clickSave();
-    await clickSave();
-    expect(onSave.mock.calls[1]?.[0]).toMatchObject({
-      description: "Invoices",
-    });
-    expect(onSave.mock.lastCall?.[0]).not.toHaveProperty("instructions");
-  });
-});
-
 describe("instruction settings refresh", () => {
   it("refreshes a saved field against its latest baseline before the parent catches up", async () => {
     const initial = bot();
@@ -460,18 +388,18 @@ describe("instruction settings refresh", () => {
     await act(async () => {
       root.render(<InstructionSettings bot={initial} />);
     });
-    await setDescription("Saved edit");
+    await setInstructions("Saved edit");
     await act(async () => {
-      descriptionField().dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+      instructionsField().dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
     });
     await act(async () => {
       root.render(<InstructionSettings bot={{ ...initial, instructions: "External update" }} />);
     });
-    expect(descriptionField().value).toBe("External update");
-    await setDescription("Fresh edit");
+    expect(instructionsField().value).toBe("External update");
+    await setInstructions("Fresh edit");
     vi.mocked(rpc.bots.update).mockResolvedValueOnce({ ...initial, instructions: "Fresh edit" });
     await act(async () => {
-      descriptionField().dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+      instructionsField().dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
     });
     expect(rpc.bots.update).toHaveBeenLastCalledWith({
       botId: initial.id,
@@ -484,13 +412,13 @@ describe("instruction settings refresh", () => {
     await act(async () => {
       root.render(<InstructionSettings bot={initial} />);
     });
-    await setDescription("Unsaved instructions");
+    await setInstructions("Unsaved instructions");
     await act(async () => {
       root.render(
         <InstructionSettings bot={{ ...initial, updatedAt: "2026-09-02T00:00:00.000Z" }} />,
       );
     });
-    expect(descriptionField().value).toBe("Unsaved instructions");
+    expect(instructionsField().value).toBe("Unsaved instructions");
   });
   it("saves the original draft baseline after a newer instruction refresh", async () => {
     const initial = bot();
@@ -501,14 +429,14 @@ describe("instruction settings refresh", () => {
     await act(async () => {
       root.render(<InstructionSettings bot={initial} />);
     });
-    await setDescription("Unsaved instructions");
+    await setInstructions("Unsaved instructions");
     await act(async () => {
       root.render(
         <InstructionSettings bot={{ ...initial, instructions: "Newer saved instructions" }} />,
       );
     });
     await act(async () => {
-      descriptionField().dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+      instructionsField().dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
     });
     expect(rpc.bots.update).toHaveBeenCalledWith({
       botId: initial.id,
@@ -530,32 +458,32 @@ describe("instruction settings refresh", () => {
     await act(async () => {
       root.render(<InstructionSettings bot={initial} />);
     });
-    await setDescription("Unsaved instructions");
+    await setInstructions("Unsaved instructions");
     await act(async () => {
-      descriptionField().dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+      instructionsField().dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
     });
     const reload = [...container.querySelectorAll("button")].find(
       (button) => button.textContent === "Reload",
     );
     if (!reload) throw new Error("Missing reload action");
-    expect(descriptionField().value).toBe("Unsaved instructions");
+    expect(instructionsField().value).toBe("Unsaved instructions");
     await act(async () => {
-      descriptionField().dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+      instructionsField().dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
     });
     expect(rpc.bots.update).toHaveBeenCalledTimes(1);
     await act(async () => {
       reload.click();
     });
-    expect(descriptionField().value).toBe("Unsaved instructions");
+    expect(instructionsField().value).toBe("Unsaved instructions");
     expect(container.textContent).toContain("Reload");
     await act(async () => {
       reload.click();
     });
-    expect(descriptionField().value).toBe("Newer saved instructions");
+    expect(instructionsField().value).toBe("Newer saved instructions");
     vi.mocked(rpc.bots.update).mockResolvedValueOnce({ ...initial, instructions: "Fresh draft" });
-    await setDescription("Fresh draft");
+    await setInstructions("Fresh draft");
     await act(async () => {
-      descriptionField().dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+      instructionsField().dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
     });
     expect(rpc.bots.update).toHaveBeenLastCalledWith({
       botId: initial.id,
@@ -573,7 +501,7 @@ describe("instruction settings refresh", () => {
         <InstructionSettings bot={{ ...initial, instructions: "Approved replacement" }} />,
       );
     });
-    expect(descriptionField().value).toBe("Approved replacement");
+    expect(instructionsField().value).toBe("Approved replacement");
   });
 });
 
@@ -592,7 +520,7 @@ it("cancels an inline name edit", async () => {
 });
 
 it("focuses the model control for a model deep link", async () => {
-  await render("", {}, false, 1);
+  await render({}, false, 1);
   expect(document.activeElement?.id.endsWith("-model")).toBe(true);
 });
 
@@ -650,33 +578,19 @@ it.each([{ isComposing: true }, { keyCode: 229 }])(
   },
 );
 
-it.each(["color", "notifyOnFinish"])(
-  "restores the last accepted %s after an automatic save fails",
-  async (field) => {
-    await render();
-    const control = () =>
-      container.querySelector<HTMLButtonElement>(
-        field === "color" ? '[aria-label="Avatar color"]' : 'button[id$="-notify-finish"]',
-      )!;
-    const value = () => control().getAttribute(field === "color" ? "data-color" : "aria-checked");
-    await act(async () => control().click());
-    expect(value()).toBe(field === "color" ? "blue" : "false");
-    onSave.mockRejectedValueOnce(new Error("offline"));
-    await act(async () => control().click());
-    expect(value()).toBe(field === "color" ? "blue" : "false");
-    expect(container.textContent).toContain("offline");
-    expect(
-      [...container.querySelectorAll("button")].some((node) => node.textContent === "Save"),
-    ).toBe(false);
-  },
-);
-
-it("saves a color change back to the initial value after a successful automatic save", async () => {
+it("restores the last accepted notifyOnFinish after an automatic save fails", async () => {
   await render();
-  const control = () => container.querySelector<HTMLButtonElement>('[aria-label="Avatar color"]')!;
+  const control = () => container.querySelector<HTMLButtonElement>('button[id$="-notify-finish"]')!;
+  const value = () => control().getAttribute("aria-checked");
   await act(async () => control().click());
+  expect(value()).toBe("false");
+  onSave.mockRejectedValueOnce(new Error("offline"));
   await act(async () => control().click());
-  expect(onSave.mock.lastCall?.[0]).toHaveProperty("color", "ink");
+  expect(value()).toBe("false");
+  expect(container.textContent).toContain("offline");
+  expect(
+    [...container.querySelectorAll("button")].some((node) => node.textContent === "Save"),
+  ).toBe(false);
 });
 
 describe("BotSettings cached data", () => {
@@ -692,19 +606,17 @@ describe("BotSettings cached data", () => {
     expect(rpc.voice.voices).toHaveBeenCalledTimes(1);
   });
 
-  it("follows a newer bot in fields not edited and keeps the ones that were", async () => {
-    await render("Billing", { computerMode: "team" });
-    await setDescription("Invoices");
-    await render("Remote edit", {
+  it("follows a newer bot in fields not edited", async () => {
+    await render({ computerMode: "team" });
+    await render({
       name: "Grace",
       computerMode: "dedicated",
       updatedAt: "2026-09-02T00:00:00.000Z",
     });
     expect(container.querySelector('[aria-label="Edit name"]')?.textContent).toBe("Grace");
-    expect(descriptionField().value).toBe("Invoices");
     await clickSave();
     const patch = onSave.mock.lastCall?.[0];
-    expect(patch).toMatchObject({ description: "Invoices", computerMode: "dedicated" });
+    expect(patch).toMatchObject({ computerMode: "dedicated" });
     expect(patch).not.toHaveProperty("name");
   });
 });

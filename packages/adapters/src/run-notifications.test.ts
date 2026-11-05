@@ -34,7 +34,7 @@ function deps({
       routine: { findUnique: async () => null },
       run: {
         findFirst: async () => ({
-          bot: { id: "bot-1", name: "Scout", color: "#000000", avatarSet: "", notifyOnFinish },
+          bot: { id: "bot-1", name: "Scout", color: "#000000", notifyOnFinish },
           thread: { groupId },
         }),
       },

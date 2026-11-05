@@ -107,7 +107,7 @@
     "id": "workspace",
     "title": "Workspace",
     "flow": "flows/workspace.yaml",
-    "screens": ["approvals", "vault", "archived-bots", "space", "space-members"]
+    "screens": ["approvals", "vault", "space", "space-members"]
   },
   {
     "id": "messaging",

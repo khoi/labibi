@@ -124,7 +124,6 @@ export function useComposerMentions({
           id: bot.id,
           name: bot.name,
           color: bot.color,
-          avatarSet: bot.avatarSet,
         })),
         groups: groups.map((group) => ({ id: group.id, name: group.name })),
         routines: mentionRoutines.map((routine) => ({

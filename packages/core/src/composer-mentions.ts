@@ -1,4 +1,4 @@
-import type { BotAvatarSet, Connection, ConnectionCatalogItem } from "@labradoodle/contracts";
+import type { Connection, ConnectionCatalogItem } from "@labradoodle/contracts";
 import type { CronLabels } from "./cron.js";
 import { ENGLISH_CRON_LABELS, formatCron } from "./cron.js";
 import { displayName } from "./display-name.js";
@@ -18,7 +18,6 @@ export type ComposerMention = {
   ranges?: ComposerMentionRange[];
   subtitle?: string;
   color?: string;
-  avatarSet?: BotAvatarSet;
   /** Owning bot for routine chips (test-run lands on that bot). */
   botId?: string;
   /** Connected connection row id when kind is connector + connected. */
@@ -30,7 +29,6 @@ export type MentionPickerBot = {
   id: string;
   name: string;
   color?: string;
-  avatarSet?: BotAvatarSet;
 };
 export type MentionPickerGroup = { id: string; name: string };
 export type MentionPickerRoutine = {
@@ -391,7 +389,6 @@ export function buildComposerMentionOptions(input: {
       name,
       subtitle: "Bot",
       color: bot.color,
-      avatarSet: bot.avatarSet,
     });
   }
 

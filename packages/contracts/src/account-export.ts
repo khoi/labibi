@@ -50,24 +50,12 @@ const json = z.json();
 
 export const AccountExportRecordSchema = z.discriminatedUnion("type", [
   z.object({
-    type: z.literal("bot_section"),
-    id: Id,
-    name: z.string(),
-    position: z.number().int(),
-    createdAt: IsoDate,
-  }),
-  z.object({
     type: z.literal("bot"),
     id: Id,
     name: z.string(),
-    description: z.string(),
     instructions: z.string(),
     color: z.string(),
-    avatarSet: z.string(),
     notifyOnFinish: z.boolean(),
-    pinned: z.boolean(),
-    position: z.number().int(),
-    sectionId: Id.nullable(),
     archivedAt: IsoDate.nullable(),
     memoryScope: z.string().nullable(),
     voiceId: z.string().nullable(),
@@ -84,8 +72,6 @@ export const AccountExportRecordSchema = z.discriminatedUnion("type", [
     type: z.literal("chat_group"),
     id: Id,
     name: z.string(),
-    pinned: z.boolean(),
-    sectionId: Id.nullable(),
     archivedAt: IsoDate.nullable(),
     botIds: z.array(Id),
     createdAt: IsoDate,

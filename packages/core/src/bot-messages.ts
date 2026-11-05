@@ -1,5 +1,3 @@
-import { BOT_DESCRIPTION_MAX_LENGTH } from "@labradoodle/contracts";
-import { truncatePlainText } from "./markdown-plain.js";
 import { escapePromptData } from "./prompt-data.js";
 
 /**
@@ -16,13 +14,9 @@ export function botMessageMaxHops(): number {
   return Number.isInteger(raw) && raw >= 1 ? raw : DEFAULT_BOT_MESSAGE_MAX_HOPS;
 }
 
-/** Cap total description characters across the rendered teammate directory. */
-export const BOT_DIRECTORY_DESCRIPTIONS_MAX_LENGTH = 8_000;
-
 export interface BotAddress {
   id: string;
   name: string;
-  description?: string;
 }
 
 /** The hop a delivery gets when the sender was itself woken at `sourceHop`. */
@@ -34,30 +28,8 @@ export function botMessageHopExhausted(hop: number): boolean {
   return hop > botMessageMaxHops();
 }
 
-/**
- * Format `- name (id: …)` roster lines with the same escaping and description
- * budget used by the teammate directory and group member list.
- */
 export function formatBotRosterLines(bots: readonly BotAddress[]): string[] {
-  let descriptionBudget = BOT_DIRECTORY_DESCRIPTIONS_MAX_LENGTH;
-  return bots.map((bot) => {
-    const name = escapeDirectoryField(bot.name.trim());
-    const rawDescription = bot.description?.trim();
-    let description: string | undefined;
-    if (rawDescription && descriptionBudget > 0) {
-      // Charge the budget after escaping — &/< /> / newlines expand.
-      let escaped = escapeDirectoryField(
-        truncatePlainText(rawDescription, BOT_DESCRIPTION_MAX_LENGTH),
-      );
-      if (escaped.length > descriptionBudget)
-        escaped = truncatePlainText(escaped, descriptionBudget);
-      if (escaped.length > 0) {
-        descriptionBudget -= escaped.length;
-        description = escaped;
-      }
-    }
-    return `- ${name} (id: ${bot.id})${description ? `: ${description}` : ""}`;
-  });
+  return bots.map((bot) => `- ${escapeDirectoryField(bot.name.trim())} (id: ${bot.id})`);
 }
 
 /**

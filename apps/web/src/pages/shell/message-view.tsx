@@ -1,10 +1,5 @@
 import { ChatMarkdown, LinkifiedText } from "@labradoodle/chat-ui/web";
-import type {
-  BotAvatarSet,
-  LoginFieldInput,
-  MessageReaction,
-  ThreadMessage,
-} from "@labradoodle/contracts";
+import type { LoginFieldInput, MessageReaction, ThreadMessage } from "@labradoodle/contracts";
 import { isToolActivityBlock, otherAuthor } from "@labradoodle/core";
 import { BotAvatar, Button, cn, resolvePersonaColorDef } from "@labradoodle/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
@@ -92,9 +87,7 @@ export const MessageView = memo(function MessageView({
   ) => Promise<void>;
   speakerName?: string;
   memberName?: (botId: string | undefined) => string | undefined;
-  peerBot: (
-    botId: string,
-  ) => { name?: string; color: string; status?: string; avatarSet?: BotAvatarSet } | undefined;
+  peerBot: (botId: string) => { name?: string; color: string; status?: string } | undefined;
   replyParent?: ThreadMessage;
   onJumpToMessage?: (messageId: string) => void;
   onRefresh: () => Promise<void>;

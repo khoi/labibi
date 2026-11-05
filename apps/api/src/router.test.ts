@@ -156,7 +156,6 @@ describe("account preferences", () => {
     return {
       update,
       updateMany,
-      botFindMany,
       routines,
       deps,
       actor,
@@ -373,31 +372,6 @@ describe("account preferences", () => {
     await expect(response.json()).resolves.toEqual({
       json: expect.objectContaining({ avatarStyle: "organic" }),
     });
-  });
-
-  it("saves the bot style and restyles only bots not pinned to another set", async () => {
-    const { update, botFindMany, actor, handler } = preferencesDeps("organic");
-
-    const response = await handle(
-      handler,
-      new Request("http://127.0.0.1/rpc/preferences/update", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ json: { botAvatarSet: "rakazo" } }),
-      }),
-      { prefix: "/rpc", context: { actor } },
-    );
-
-    expect(response.status).toBe(200);
-    expect(update).toHaveBeenCalledWith({
-      where: { id: "user-1" },
-      data: { botAvatarSet: "rakazo" },
-    });
-    expect(botFindMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { userId: "user-1", avatarSetPinned: false, avatarSet: { not: "rakazo" } },
-      }),
-    );
   });
 
   it("rejects avatar styles outside robot|organic", async () => {
@@ -6783,15 +6757,10 @@ describe("bot model auth on save", () => {
       userId: actor.userId,
       name: "Ada",
       title: "",
-      description: "",
       instructions: "",
       color: "ink",
       notifyOnFinish: true,
-      pinned: false,
-      position: 0,
-      sectionId: null,
       archivedAt: null,
-      parentBotId: null,
       memoryScope: null,
       createdAt: now,
       updatedAt: now,
@@ -6803,7 +6772,6 @@ describe("bot model auth on save", () => {
       teamChatAmbientEnabled: false,
       teamChatRules: "",
       webhookSecretId: null,
-      spawnKey: null,
       thread: { id: "thread-1", unread: false, messages: [], runs: [] },
       computer: null,
       runs: [],
@@ -6844,7 +6812,6 @@ describe("bot model auth on save", () => {
       id: bot.id,
       name: "Ada renamed",
       title: bot.title,
-      description: bot.description,
     }));
     const tx = {
       $queryRaw: vi.fn(async () => []),
@@ -6999,158 +6966,6 @@ describe("bot model auth on save", () => {
         message: "Settings changed; review the current settings first.",
       }),
     });
-  });
-});
-
-describe("bot restore computer quota", () => {
-  function fixture(archivedBot: { archivedAt: Date | null } | null, inUse = 0) {
-    const bot = archivedBot
-      ? {
-          ...archivedBot,
-          id: "bot-archived",
-          computerId: "computer-archived",
-          computer: { id: "computer-archived" },
-          userId: "user-1",
-        }
-      : null;
-    const botApi = {
-      findFirst: vi.fn(async () => bot),
-      update: vi.fn(async () => ({})),
-    };
-    const computer = {
-      count: vi.fn(async (args: { where: { id?: string } }) => (args.where.id ? 0 : inUse)),
-    };
-    const $queryRaw = vi.fn(async () => [{ lock: "1" }]);
-    const prisma = {
-      bot: botApi,
-      computer,
-      $queryRaw,
-      $transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) =>
-        callback({ $queryRaw, computer, bot: botApi }),
-      ),
-    };
-    const handler = new RPCHandler(
-      createRouter({ prisma, env: { sandboxProvider: "fake" } } as unknown as RouterDeps),
-    );
-    const call = async () =>
-      handle(
-        handler,
-        new Request("http://127.0.0.1/rpc/bots/restore", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ json: { botId: "bot-archived" } }),
-        }),
-        {
-          prefix: "/rpc",
-          context: {
-            actor: {
-              spaceId: "space-1",
-              userId: "user-1",
-              email: "user@rakazo.test",
-              isDeploymentOwner: true,
-            },
-          },
-        },
-      );
-    return { prisma, call };
-  }
-
-  it("archives, creates, then restores is refused when the restore would exceed the cap", async () => {
-    process.env.SANDBOX_MAX_COMPUTERS_PER_USER = "1";
-    const { prisma, call } = fixture({ archivedAt: new Date() }, 1);
-    const response = await call();
-    expect(response.status).toBe(400);
-    expect(prisma.bot.update).not.toHaveBeenCalled();
-  });
-
-  it("restores normally when the user is below the cap or the computer is already live", async () => {
-    process.env.SANDBOX_MAX_COMPUTERS_PER_USER = "1";
-    const { prisma, call } = fixture({ archivedAt: new Date() }, 0);
-    const response = await call();
-    expect(response.status).toBe(200);
-    expect(prisma.bot.update).toHaveBeenCalledWith({
-      where: { id: "bot-archived" },
-      data: { archivedAt: null },
-    });
-  });
-
-  it("does not enforce anything when the cap is unset", async () => {
-    const { prisma, call } = fixture({ archivedAt: new Date() }, 99);
-    const response = await call();
-    expect(response.status).toBe(200);
-    expect(prisma.bot.update).toHaveBeenCalledOnce();
-  });
-});
-
-describe("group restore with archived bots", () => {
-  function fixture(archivedBots: Array<{ id: string; computerId: string | null }>, inUse = 0) {
-    const bot = { update: vi.fn(async () => ({})) };
-    const chatGroup = { update: vi.fn(async () => ({})) };
-    const tx = {
-      bot,
-      chatGroup,
-      chatGroupMember: { findMany: vi.fn(async () => archivedBots.map((item) => ({ bot: item }))) },
-      computer: {
-        count: vi.fn(async (args: { where: { id?: string } }) => (args.where.id ? 0 : inUse)),
-      },
-      $queryRaw: vi.fn(async () => [{ id: "group-1", lock: "1" }]),
-    };
-    const prisma = {
-      $transaction: vi.fn(async (callback: (client: unknown) => Promise<unknown>) => callback(tx)),
-    };
-    const handler = new RPCHandler(
-      createRouter({ prisma, env: { sandboxProvider: "fake" } } as unknown as RouterDeps),
-    );
-    const call = async () =>
-      handle(
-        handler,
-        new Request("http://rakazo.test/rpc/groups/restore", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ json: { groupId: "group-1" } }),
-        }),
-        {
-          prefix: "/rpc",
-          context: {
-            actor: {
-              spaceId: "space-1",
-              userId: "user-1",
-              email: "user@example.test",
-              isDeploymentOwner: true,
-            },
-          },
-        },
-      );
-    return { tx, call };
-  }
-
-  it("brings the group's archived bots back before the group, so it can be opened again", async () => {
-    const { tx, call } = fixture([
-      { id: "bot-a", computerId: "computer-a" },
-      { id: "bot-b", computerId: null },
-    ]);
-    const response = await call();
-    expect(response.status).toBe(200);
-    expect(tx.bot.update.mock.calls).toEqual([
-      [{ where: { id: "bot-a" }, data: { archivedAt: null } }],
-      [{ where: { id: "bot-b" }, data: { archivedAt: null } }],
-    ]);
-    expect(tx.chatGroup.update).toHaveBeenCalledWith({
-      where: { id: "group-1" },
-      data: { archivedAt: null },
-    });
-    expect(tx.chatGroup.update.mock.invocationCallOrder[0]).toBeGreaterThan(
-      tx.bot.update.mock.invocationCallOrder[1]!,
-    );
-  });
-
-  it("refuses with the quota error and restores nothing when a bot's computer has no room", async () => {
-    process.env.SANDBOX_MAX_COMPUTERS_PER_USER = "1";
-    const { tx, call } = fixture([{ id: "bot-a", computerId: "computer-a" }], 1);
-    const response = await call();
-    expect(response.status).toBe(400);
-    expect(tx.bot.update).not.toHaveBeenCalled();
-    expect(tx.chatGroup.update).not.toHaveBeenCalled();
   });
 });
 
@@ -7820,15 +7635,10 @@ describe("openai-compatible enabled models", () => {
       userId: actor.userId,
       name: "Ada",
       title: "",
-      description: "",
       instructions: "",
       color: "ink",
       notifyOnFinish: true,
-      pinned: false,
-      position: 0,
-      sectionId: null,
       archivedAt: null,
-      parentBotId: null,
       memoryScope: null,
       createdAt: now,
       updatedAt: now,
@@ -7840,7 +7650,6 @@ describe("openai-compatible enabled models", () => {
       teamChatAmbientEnabled: false,
       teamChatRules: "",
       webhookSecretId: null,
-      spawnKey: null,
       thread: { id: "thread-1", unread: false, messages: [], runs: [] },
       computer: null,
       runs: [],
@@ -8942,20 +8751,14 @@ describe("export.bot", () => {
     return home;
   }
 
-  async function exportManifest(
-    scope: "team" | "dedicated",
-    home: LocalAgentHomeStore,
-    appearance?: { color: string; avatarSet?: "organic" | "rakazo" },
-  ) {
+  async function exportManifest(scope: "team" | "dedicated", home: LocalAgentHomeStore) {
     const prisma = {
       bot: {
         findFirst: vi.fn().mockResolvedValue({
           id: "bot-1",
           name: "Writer",
           title: "",
-          description: "",
           instructions: "",
-          ...appearance,
           thread: { id: "thread-1" },
           computer: { id: "computer-1", scope, homeKey: "home-1" },
         }),
@@ -8982,17 +8785,6 @@ describe("export.bot", () => {
   async function exportFiles(scope: "team" | "dedicated", home: LocalAgentHomeStore) {
     return (await exportManifest(scope, home)).files.sort((a, b) => a.path.localeCompare(b.path));
   }
-
-  it.each(["#8B5CF6::shape_3", "data:image/png;base64,aGVsbG8="])(
-    "exports the selected set and untouched avatar value (%s)",
-    async (color) => {
-      const manifest = await exportManifest("team", await homeWith({}), {
-        color,
-        avatarSet: "rakazo",
-      });
-      expect(manifest.bot).toMatchObject({ color, avatarSet: "rakazo" });
-    },
-  );
 
   it("exports only the bot's own folder from a Team Computer", async () => {
     const home = await homeWith({

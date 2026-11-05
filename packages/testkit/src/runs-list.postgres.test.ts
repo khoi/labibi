@@ -45,14 +45,12 @@ describeRunsList("runs.list activity tracker", () => {
     const alpha = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "Alpha",
       title: "Alpha",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
     const beta = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "Beta",
       title: "Beta",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -83,7 +81,6 @@ describeRunsList("runs.list activity tracker", () => {
     const ownerBot = await rpc<{ id: string }>(app, ownerCookie, "bots/create", {
       name: "OwnerBot",
       title: "OwnerBot",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -101,14 +98,12 @@ describeRunsList("runs.list activity tracker", () => {
     const archivedBot = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "Archived",
       title: "Archived",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
     const visibleBot = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "Visible",
       title: "Visible",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -138,14 +133,12 @@ describeRunsList("runs.list activity tracker", () => {
     const botA = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "Worker",
       title: "Worker",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
     const botB = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "Helper",
       title: "Helper",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });

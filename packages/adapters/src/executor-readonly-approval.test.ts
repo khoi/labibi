@@ -83,10 +83,7 @@ function fixture({
   trigger = "user",
   secrets = [] as string[],
   prompt = "Read the item",
-  bot = {
-    name: "Assistant",
-    description: "Test assistant",
-  },
+  bot = { name: "Assistant" },
   shutdownSignal,
   builtin = false,
   disabledBuiltinTools = [],
@@ -142,7 +139,7 @@ function fixture({
   trigger?: string;
   secrets?: string[];
   prompt?: string;
-  bot?: { name: string; description: string };
+  bot?: { name: string };
   shutdownSignal?: AbortSignal;
 } = {}) {
   let taskPrompt = prompt;
@@ -332,7 +329,6 @@ function fixture({
         id: run.botId,
         userId: botUserId,
         name: bot.name,
-        description: bot.description,
         color: "#8B5CF6",
         notifyOnFinish: true,
         modelProvider: null,
@@ -346,7 +342,6 @@ function fixture({
       update: vi.fn(async ({ data }: { data: Record<string, unknown> }) => ({
         id: run.botId,
         name: bot.name,
-        description: bot.description,
         color: "#8B5CF6",
         notifyOnFinish: true,
         ...Object.assign(instructionState, data),
@@ -429,7 +424,6 @@ function fixture({
     },
     taughtSkill: { findMany: vi.fn(async () => []), findFirst: vi.fn(async () => null) },
     chatGroup: { findMany: vi.fn(async () => []) },
-    botSection: { findMany: vi.fn(async () => []) },
     vaultCredential: { findMany: vi.fn(async () => []) },
     agentSkill: { findMany: vi.fn(async () => []) },
     spaceSettingOverride: {
@@ -1182,16 +1176,13 @@ describe("connector read-only metadata and approval enforcement", () => {
         autoReview: true,
         secrets: ["super-secret-token"],
         prompt: "Send mail with super-secret-token",
-        bot: {
-          name: "Mail",
-          description: "Uses super-secret-token",
-        },
+        bot: { name: "Mail super-secret-token" },
       });
       await f.run();
       expect(reviewMock).toHaveBeenCalledWith(
         expect.objectContaining({
           userTask: "Send mail with [redacted]",
-          botDescription: "Mail\nUses [redacted]",
+          botDescription: "Mail [redacted]",
         }),
         expect.objectContaining({ runId: "run-1" }),
       );
@@ -2482,7 +2473,7 @@ describe("Auto Review of new sites", () => {
       connectorKind: expect.any(String),
       args: { url: "https://attacker.test/?q=x" },
       userTask: "Read https://docs.example.com/guide",
-      botDescription: "Assistant\nTest assistant",
+      botDescription: "Assistant",
       matchingRules: [],
       newSite: true,
     });

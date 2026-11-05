@@ -1,9 +1,9 @@
 import type { Actor, Group, GroupMember, SpaceGroup } from "@labradoodle/contracts";
-import { GROUP_MEMBER_MAX, GROUP_MEMBER_MIN, resolveBotAvatarSet } from "@labradoodle/contracts";
+import { GROUP_MEMBER_MAX, GROUP_MEMBER_MIN } from "@labradoodle/contracts";
 import { displayName } from "@labradoodle/core";
 import { cancelRunsInTransaction } from "./cancel-runs.js";
 import type { Prisma, PrismaClient } from "./client.js";
-import { expireComputerExecutionLeases, restoreBotUnderComputerQuota } from "./computers.js";
+import { expireComputerExecutionLeases } from "./computers.js";
 import { transientRunEventsWhere } from "./events.js";
 import { deletePageShareSecrets } from "./page-shares.js";
 import { withNewestThreadMessages } from "./preview-messages.js";
@@ -15,15 +15,12 @@ import {
   previewFromBlocks,
   primaryActiveRun,
 } from "./thread-listing.js";
-import { withTransactionRetry } from "./transaction-retry.js";
 
 type GroupRecord = {
   id: string;
   spaceId: string;
   userId: string;
   name: string;
-  pinned: boolean;
-  sectionId: string | null;
   archivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
@@ -37,16 +34,12 @@ type GroupRecord = {
       id: string;
       name: string;
       color: string;
-      avatarSet?: string;
       runs: Array<{ status: string }>;
     };
   }>;
 };
 
-type SpaceGroupRecord = Pick<
-  GroupRecord,
-  "id" | "spaceId" | "name" | "pinned" | "sectionId" | "updatedAt" | "members"
-> & {
+type SpaceGroupRecord = Pick<GroupRecord, "id" | "spaceId" | "name" | "updatedAt" | "members"> & {
   thread: {
     unread: boolean;
     messages: Array<{ blocks: unknown }>;
@@ -58,7 +51,6 @@ function mapGroupMembers(members: GroupRecord["members"]): GroupMember[] {
     botId: member.bot.id,
     name: member.bot.name,
     color: member.bot.color,
-    avatarSet: resolveBotAvatarSet(member.bot.avatarSet),
     status: primaryActiveRun(member.bot.runs)?.status ?? "idle",
   }));
 }
@@ -70,8 +62,6 @@ function mapGroup(group: GroupRecord): Group {
     id: group.id,
     spaceId: group.spaceId,
     name: group.name,
-    pinned: group.pinned,
-    sectionId: group.sectionId,
     archivedAt: group.archivedAt?.toISOString() ?? null,
     members: mapGroupMembers(group.members),
     threadId: group.thread.id,
@@ -88,8 +78,6 @@ function mapSpaceGroup(group: SpaceGroupRecord): SpaceGroup {
     id: group.id,
     spaceId: group.spaceId,
     name: group.name,
-    pinned: group.pinned,
-    sectionId: group.sectionId,
     members: mapGroupMembers(group.members),
     preview: previewFromBlocks(group.thread.messages[0]?.blocks),
     unread: group.thread.unread,
@@ -118,7 +106,7 @@ async function assertSpaceBots(
       spaceId: actor.spaceId,
       archivedAt: null,
     },
-    select: { id: true, name: true, color: true, avatarSet: true },
+    select: { id: true, name: true, color: true },
   });
   if (bots.length !== unique.length) throw new IsolationError();
   const botsById = new Map(bots.map((bot) => [bot.id, bot]));
@@ -129,7 +117,6 @@ async function assertSpaceBots(
       botId: bot.id,
       name: bot.name,
       color: bot.color,
-      avatarSet: resolveBotAvatarSet(bot.avatarSet),
     };
   });
 }
@@ -160,21 +147,9 @@ const groupInclude = {
           id: true,
           name: true,
           color: true,
-          avatarSet: true,
           runs: activeRunSelection,
         },
       },
-    },
-    orderBy: groupMemberOrder,
-  },
-} as const;
-
-// Every member, archived bots included, so a group that can't be opened still names its bots.
-const archivedGroupInclude = {
-  thread: groupInclude.thread,
-  members: {
-    include: {
-      bot: { select: { ...groupInclude.members.include.bot.select, archivedAt: true } },
     },
     orderBy: groupMemberOrder,
   },
@@ -190,7 +165,6 @@ const groupTargetInclude = {
           id: true,
           name: true,
           color: true,
-          avatarSet: true,
           runs: activeRunSelection,
         },
       },
@@ -309,8 +283,6 @@ export function createGroupRepos(prisma: PrismaClient) {
           id: true,
           spaceId: true,
           name: true,
-          pinned: true,
-          sectionId: true,
           updatedAt: true,
           thread: {
             select: {
@@ -320,7 +292,7 @@ export function createGroupRepos(prisma: PrismaClient) {
           },
           members: groupInclude.members,
         },
-        orderBy: [{ pinned: "desc" }, { updatedAt: "desc" }],
+        orderBy: { updatedAt: "desc" },
       }),
       1,
     );
@@ -329,38 +301,8 @@ export function createGroupRepos(prisma: PrismaClient) {
       .map((group) => mapSpaceGroup(group));
   }
 
-  /**
-   * Archived groups, and groups left with too few active bots to open, whatever their member
-   * count: this is the only list they appear in, so it's where they're restored.
-   */
-  async function listArchivedGroups(actor: Actor): Promise<Group[]> {
-    const groups = await withNewestThreadMessages(
-      prisma,
-      await prisma.chatGroup.findMany({
-        where: {
-          spaceId: actor.spaceId,
-          OR: [
-            { archivedAt: { not: null } },
-            { members: { some: { bot: { archivedAt: { not: null } } } } },
-          ],
-        },
-        include: archivedGroupInclude,
-        orderBy: [{ pinned: "desc" }, { updatedAt: "desc" }],
-      }),
-      1,
-    );
-    return groups
-      .filter(
-        (group) =>
-          group.archivedAt !== null ||
-          !hasMinimumActiveMembers(group.members.filter((member) => !member.bot.archivedAt)),
-      )
-      .map((group) => mapGroup(group as GroupRecord));
-  }
-
   return {
-    async listGroups(actor: Actor, options: { archived?: boolean } = {}): Promise<Group[]> {
-      if (options.archived) return listArchivedGroups(actor);
+    async listGroups(actor: Actor): Promise<Group[]> {
       const groups = await withNewestThreadMessages(
         prisma,
         await prisma.chatGroup.findMany({
@@ -369,7 +311,7 @@ export function createGroupRepos(prisma: PrismaClient) {
             archivedAt: null,
           },
           include: groupInclude,
-          orderBy: [{ pinned: "desc" }, { updatedAt: "desc" }],
+          orderBy: { updatedAt: "desc" },
         }),
         1,
       );
@@ -449,8 +391,6 @@ export function createGroupRepos(prisma: PrismaClient) {
         name?: string;
         botIds?: string[];
         expectedBotIds?: string[];
-        pinned?: boolean;
-        sectionId?: string | null;
       },
     ): Promise<{ group: Group; cancelledRunIds: string[]; computers: RunTeardownTarget[] }> {
       const members = input.botIds ? await assertSpaceBots(prisma, actor, input.botIds) : undefined;
@@ -527,11 +467,7 @@ export function createGroupRepos(prisma: PrismaClient) {
         }
         await tx.chatGroup.update({
           where: { id: input.groupId },
-          data: {
-            updatedAt: new Date(),
-            pinned: input.pinned,
-            sectionId: input.sectionId,
-          },
+          data: { updatedAt: new Date() },
         });
         const loaded = await tx.chatGroup.findFirstOrThrow({
           where: { id: input.groupId },
@@ -584,7 +520,7 @@ export function createGroupRepos(prisma: PrismaClient) {
 
         await tx.chatGroup.update({
           where: { id: groupId },
-          data: { archivedAt: now, pinned: false },
+          data: { archivedAt: now },
         });
 
         return { cancelledRunIds: runIds, computers: targets };
@@ -603,35 +539,6 @@ export function createGroupRepos(prisma: PrismaClient) {
           executionLeaseExpiresAt: null,
         },
       });
-    },
-
-    /**
-     * A group needs its bots to open, so its archived bots come back with it, each within its
-     * computer's quota and all in one transaction: one that doesn't fit leaves everything archived.
-     */
-    async restoreGroup(actor: Actor, groupId: string) {
-      await withTransactionRetry(() =>
-        prisma.$transaction(async (tx) => {
-          await lockSpaceGroup(tx, actor, groupId);
-          const archived = await tx.chatGroupMember.findMany({
-            where: { groupId, bot: { archivedAt: { not: null } } },
-            select: { bot: { select: { id: true, userId: true, computerId: true } } },
-            orderBy: groupMemberOrder,
-          });
-          for (const { bot } of archived) {
-            if (bot.computerId) {
-              await restoreBotUnderComputerQuota(tx, {
-                userId: bot.userId,
-                botId: bot.id,
-                computerId: bot.computerId,
-              });
-            } else {
-              await tx.bot.update({ where: { id: bot.id }, data: { archivedAt: null } });
-            }
-          }
-          await tx.chatGroup.update({ where: { id: groupId }, data: { archivedAt: null } });
-        }),
-      );
     },
 
     async removeGroup(actor: Actor, groupId: string) {

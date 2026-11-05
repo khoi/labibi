@@ -170,7 +170,7 @@ describePostgres("directory provisioning over SCIM (PostgreSQL)", () => {
     const membership = await system.spaceMember.findFirstOrThrow({ where: { userId: ada.id } });
     const bot = await createRepos(system).createBot(
       { userId: ada.id, spaceId: membership.spaceId, email: address, isDeploymentOwner: false },
-      { name: "Helper", description: "", instructions: "", notifyOnFinish: false },
+      { name: "Helper", instructions: "", notifyOnFinish: false },
     );
     const thread = await system.thread.findFirstOrThrow({ where: { botId: bot.id } });
     const { screenGeneration } = await system.bot.findUniqueOrThrow({ where: { id: bot.id } });

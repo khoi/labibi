@@ -10,8 +10,6 @@ describe("listSpaceGroupsForSpaces", () => {
         id: "group-1",
         spaceId: "workspace-2",
         name: "Support crew",
-        pinned: true,
-        sectionId: null,
         updatedAt: new Date("2026-08-20T00:00:00.000Z"),
         thread: {
           id: "thread-1",
@@ -54,15 +52,12 @@ describe("listSpaceGroupsForSpaces", () => {
         id: "group-1",
         spaceId: "workspace-2",
         name: "Support crew",
-        pinned: true,
-        sectionId: null,
         members: [
-          { botId: "bot-1", name: "Triage", color: "#111", avatarSet: "organic", status: "idle" },
+          { botId: "bot-1", name: "Triage", color: "#111", status: "idle" },
           {
             botId: "bot-2",
             name: "Responder",
             color: "#222",
-            avatarSet: "organic",
             status: "running",
           },
         ],
@@ -302,7 +297,7 @@ describe("archiveGroup", () => {
     expect(computerUpdateMany).not.toHaveBeenCalled();
     expect(groupUpdate).toHaveBeenCalledWith({
       where: { id: "group-1" },
-      data: expect.objectContaining({ pinned: false, archivedAt: expect.any(Date) }),
+      data: expect.objectContaining({ archivedAt: expect.any(Date) }),
     });
   });
 
@@ -445,8 +440,6 @@ describe("createGroup", () => {
       spaceId: "workspace-1",
       userId: "user-1",
       name: "Support crew",
-      pinned: false,
-      sectionId: null,
       archivedAt: null,
       createdAt: new Date("2026-10-10T00:00:00.000Z"),
       updatedAt: new Date("2026-10-10T00:00:00.000Z"),
@@ -511,7 +504,7 @@ describe("createGroup", () => {
   });
 });
 
-describe("listGroups archived", () => {
+describe("listGroups", () => {
   const actor = {
     spaceId: "space-1",
     userId: "user-1",
@@ -526,8 +519,6 @@ describe("listGroups archived", () => {
     spaceId: "space-1",
     userId: "user-1",
     name: id,
-    pinned: false,
-    sectionId: null,
     archivedAt: archived ? new Date("2026-10-20T00:00:00.000Z") : null,
     createdAt: new Date("2026-10-01T00:00:00.000Z"),
     updatedAt: new Date("2026-10-20T00:00:00.000Z"),
@@ -545,36 +536,6 @@ describe("listGroups archived", () => {
       } as unknown as PrismaClient),
     };
   }
-
-  it("lists every archived group and every group its archived bots left unopenable", async () => {
-    const { findMany, repos: groupRepos } = repos([
-      group("archived-with-archived-bots", true, [member("a", true), member("b", true)]),
-      group("archived-with-active-bots", true, [member("h"), member("i")]),
-      group("left-with-one-bot", false, [member("c"), member("d", true)]),
-      group("still-openable", false, [member("e"), member("f"), member("g", true)]),
-    ]);
-    const listed = await groupRepos.listGroups(actor, { archived: true });
-    expect(listed.map((item) => [item.id, item.archivedAt !== null])).toEqual([
-      ["archived-with-archived-bots", true],
-      ["archived-with-active-bots", true],
-      ["left-with-one-bot", false],
-    ]);
-    // Archived bots stay listed, so the group still names who is in it.
-    expect(listed[0]!.members.map((item) => item.botId)).toEqual(["a", "b"]);
-    expect(listed[2]!.members.map((item) => item.botId)).toEqual(["c", "d"]);
-    const query = findMany.mock.calls[0]![0] as {
-      where: unknown;
-      include: { members: { where?: unknown } };
-    };
-    expect(query.where).toEqual({
-      spaceId: "space-1",
-      OR: [
-        { archivedAt: { not: null } },
-        { members: { some: { bot: { archivedAt: { not: null } } } } },
-      ],
-    });
-    expect(query.include.members.where).toBeUndefined();
-  });
 
   it("keeps the active list to groups with enough active bots", async () => {
     const { findMany, repos: groupRepos } = repos([

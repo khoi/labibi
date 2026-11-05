@@ -2,12 +2,11 @@ import { notificationAvatarSource } from "@labradoodle/core";
 import { expect, it, vi } from "vitest";
 import { notificationIdentity } from "./notification-identity.js";
 
-it.each(["organic", "rakazo"])("creates a bounded JPEG for the %s avatar", async (avatarSet) => {
+it("creates a bounded JPEG for the avatar", async () => {
   const identity = await notificationIdentity({
     id: "agent-1",
     name: "Head of Marketing",
     color: "#14b8a6",
-    avatarSet,
   });
   expect(identity.name).toBe("Head of Marketing");
   const bytes = Buffer.from(identity.avatar!, "base64");

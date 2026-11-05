@@ -3,14 +3,12 @@
 import type { Root } from "react-dom/client";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import type { MobileBot, MobileGroup, MobileSpace } from "./api";
+import type { MobileBot, MobileGroup } from "./api";
 import { rpc } from "./api";
-import { notifyArchivedChatsChanged } from "./archived-chats";
 import { confirmDeleteBot, confirmDeleteGroup } from "./bot-lifecycle";
 import type { InboxRowAction } from "./inbox-swipe";
-import { applyUnreadOverrides, withoutArchiving } from "./inbox-swipe";
+import { applyUnreadOverrides } from "./inbox-swipe";
 import { afterChatNotifyChange, dismissThreadNotifications } from "./live-notifications";
-import { removeFromSearchInbox } from "./search-inbox";
 import { useInboxChatActions } from "./use-inbox-chat-actions";
 
 const session = vi.hoisted(() => ({ space: "space-a", generation: 1, alert: vi.fn() }));
@@ -27,9 +25,7 @@ vi.mock("./api", () => ({
   rpc: vi.fn(),
   selectedSpaceId: () => session.space,
 }));
-vi.mock("./archived-chats", () => ({ notifyArchivedChatsChanged: vi.fn() }));
 vi.mock("./bot-lifecycle", () => ({ confirmDeleteBot: vi.fn(), confirmDeleteGroup: vi.fn() }));
-vi.mock("./confirm-delete-section", () => ({ confirmDeleteSection: vi.fn() }));
 vi.mock("./i18n", () => {
   const i18n = { t: (text: string) => text };
   return { useI18n: () => i18n };
@@ -38,8 +34,6 @@ vi.mock("./live-notifications", () => ({
   afterChatNotifyChange: vi.fn(async () => {}),
   dismissThreadNotifications: vi.fn(async () => {}),
 }));
-vi.mock("./search-inbox", () => ({ removeFromSearchInbox: vi.fn() }));
-vi.mock("./section-name-prompt", () => ({ promptSectionName: vi.fn() }));
 vi.mock("./session", () => ({ currentSessionGeneration: () => session.generation }));
 vi.mock("./user-error", () => ({ errorText: (_error: unknown, fallback: string) => fallback }));
 
@@ -67,10 +61,6 @@ async function handlers(
   const lists = {
     bots: [{ id: "b1", unread: false }] as MobileBot[],
     groups: [{ id: "g1", unread: true }] as MobileGroup[],
-    spaces: [
-      { id: "space-a", bots: [{ id: "b1" }], groups: [{ id: "g1" }] },
-      { id: "space-b", bots: [{ id: "x" }], groups: [{ id: "x" }] },
-    ] as MobileSpace[],
   };
   const update =
     <K extends keyof typeof lists>(key: K) =>
@@ -84,8 +74,6 @@ async function handlers(
       loadBots,
       setBots: update("bots"),
       setGroups: update("groups"),
-      setSpaces: update("spaces"),
-      botSections: [],
     });
     return null;
   }
@@ -99,24 +87,17 @@ async function handlers(
     state: Object.defineProperties(lists, {
       // The hook's own state, as last rendered.
       overrides: { get: () => current().unreadOverrides },
-      archiving: { get: () => current().archiving },
-    }) as typeof lists & {
-      overrides: ReadonlyMap<string, boolean>;
-      archiving: ReadonlySet<string>;
-    },
+    }) as typeof lists & { overrides: ReadonlyMap<string, boolean> },
     runRowAction: (kind: "bot" | "group", chat: Chat, action: InboxRowAction) =>
       current().runRowAction(kind, chat as MobileBot, action),
-    updateChat: (
-      kind: "bot" | "group",
-      chat: Chat,
-      change: { pinned?: boolean; notifyOnFinish?: boolean },
-    ) => current().updateChat(kind, chat as MobileBot, change),
+    setNotifyOnFinish: (kind: "bot" | "group", chat: Chat, notify: boolean) =>
+      current().setNotifyOnFinish(kind, chat as MobileBot, notify),
   };
 }
 
 it("reports a saved bot mute even when its inbox row has no thread id", async () => {
   const actions = await handlers(async () => undefined);
-  await actions.updateChat("bot", { id: "b1", spaceId: "space-a" }, { notifyOnFinish: false });
+  await actions.setNotifyOnFinish("bot", { id: "b1", spaceId: "space-a" }, false);
   expect(afterChatNotifyChange).toHaveBeenCalledExactlyOnceWith("", null, "space-a", {
     botId: "b1",
     threadId: undefined,
@@ -129,7 +110,7 @@ it("does not report a bot mute when the server save fails", async () => {
     throw new Error("offline");
   });
   await expect(
-    actions.updateChat("bot", { id: "b1", spaceId: "space-a" }, { notifyOnFinish: false }),
+    actions.setNotifyOnFinish("bot", { id: "b1", spaceId: "space-a" }, false),
   ).rejects.toThrow("offline");
   expect(afterChatNotifyChange).not.toHaveBeenCalled();
 });
@@ -247,18 +228,6 @@ it("rolls a failed read change back and uses the native alert", async () => {
 });
 
 it.each([
-  ["bot", "archive", "bots/archive", { botId: "x" }],
-  ["group", "archive", "groups/archive", { groupId: "x" }],
-  ["bot", "pin", "bots/update", { botId: "x", pinned: true }],
-  ["group", "unpin", "groups/update", { groupId: "x", pinned: false }],
-] as const)("%s %s calls %s and refreshes the inbox", async (kind, action, procedure, input) => {
-  const h = await handlers(async () => ({ ok: true }));
-  await h.runRowAction(kind, { id: "x" }, action);
-  expect(vi.mocked(rpc).mock.calls).toEqual([[procedure, input]]);
-  expect(h.loadBots).toHaveBeenCalledTimes(1);
-});
-
-it.each([
   ["bot", confirmDeleteBot],
   ["group", confirmDeleteGroup],
 ] as const)(
@@ -275,87 +244,6 @@ it.each([
   },
 );
 
-it("hides an archived chat at the tap and keeps it hidden from a reload until it settles", async () => {
-  let finish!: (value: unknown) => void;
-  const h = await handlers(() => new Promise((resolve) => (finish = resolve)));
-  let finishReload!: () => void;
-  const reload = new Promise<void>((resolve) => (finishReload = resolve));
-  h.loadBots.mockImplementation(async () => {
-    await reload;
-    h.state.bots = h.state.bots.filter((bot) => bot.id !== "b1");
-  });
-  h.state.bots = [
-    { id: "b0", unread: false },
-    ...h.state.bots,
-    { id: "b2", unread: false },
-  ] as MobileBot[];
-  const polledBots = [...h.state.bots];
-  const pending = h.runRowAction("bot", { id: "b1" }, "archive");
-  await vi.waitFor(() => expect(h.state.archiving).toEqual(new Set(["bot:b1"])));
-  // A poll that still lists the chat doesn't bring the row back while the archive runs.
-  expect(withoutArchiving("bot", h.state.bots, h.state.archiving).map((bot) => bot.id)).toEqual([
-    "b0",
-    "b2",
-  ]);
-  await vi.waitFor(() => expect(rpc).toHaveBeenCalledTimes(1));
-  finish({ ok: true });
-  await vi.waitFor(() => expect(h.loadBots).toHaveBeenCalledTimes(1));
-  expect(h.state.bots.map((bot) => bot.id)).toEqual(["b0", "b2"]);
-  // A poll replaces the stored list while the post-archive reload is still pending.
-  h.state.bots = polledBots;
-  expect(h.state.archiving).toEqual(new Set(["bot:b1"]));
-  expect(withoutArchiving("bot", h.state.bots, h.state.archiving).map((bot) => bot.id)).toEqual([
-    "b0",
-    "b2",
-  ]);
-  finishReload();
-  await pending;
-  expect(h.state.bots.map((bot) => bot.id)).toEqual(["b0", "b2"]);
-  expect(h.state.spaces[0]!.bots).toEqual([]);
-  expect(h.loadBots).toHaveBeenCalledTimes(1);
-  expect(notifyArchivedChatsChanged).toHaveBeenCalledTimes(1);
-  await vi.waitFor(() => expect(h.state.archiving.size).toBe(0));
-  expect(session.alert).not.toHaveBeenCalled();
-});
-
-it("keeps an archived chat gone when the reload after the archive fails", async () => {
-  const h = await handlers(async () => ({ ok: true }));
-  // loadBots reports a failed load by resolving false and leaves the list as it was.
-  h.loadBots.mockImplementation(async () => false);
-  await h.runRowAction("group", { id: "g1" }, "archive");
-  expect(h.state.groups).toEqual([]);
-  await vi.waitFor(() => expect(h.state.archiving.size).toBe(0));
-});
-
-it("puts a chat back in its place when the archive fails", async () => {
-  const h = await handlers(async () => {
-    throw new Error("offline");
-  });
-  h.state.bots = [
-    { id: "b0", unread: false },
-    ...h.state.bots,
-    { id: "b2", unread: false },
-  ] as MobileBot[];
-  await h.runRowAction("bot", { id: "b1" }, "archive");
-  await vi.waitFor(() => expect(h.state.archiving.size).toBe(0));
-  expect(withoutArchiving("bot", h.state.bots, h.state.archiving).map((bot) => bot.id)).toEqual([
-    "b0",
-    "b1",
-    "b2",
-  ]);
-  expect(notifyArchivedChatsChanged).not.toHaveBeenCalled();
-  expect(session.alert).toHaveBeenCalledWith("Could not archive bot", "Try again.");
-  expect(h.loadBots).toHaveBeenCalledTimes(1);
-});
-
-it("archives a chat from another space in that space", async () => {
-  const h = await handlers(async () => ({ ok: true }));
-  await h.runRowAction("group", { id: "x", spaceId: "space-b" }, "archive");
-  expect(vi.mocked(rpc).mock.calls[0]?.[2]).toMatchObject({
-    requestContext: { headers: { "x-rakazo-space-id": "space-b" } },
-  });
-});
-
 it("marks a chat from another space read in that space", async () => {
   const h = await handlers(async () => ({ ok: true }));
   await h.runRowAction("bot", { id: "x", spaceId: "space-b" }, "read");
@@ -366,11 +254,11 @@ it("marks a chat from another space read in that space", async () => {
 
 it("updates a chat from another space in that space without switching", async () => {
   const h = await handlers(async () => ({ ok: true }));
-  await h.updateChat("bot", { id: "x", spaceId: "space-b" }, { pinned: false });
+  await h.setNotifyOnFinish("bot", { id: "x", spaceId: "space-b" }, false);
   expect(vi.mocked(rpc).mock.calls).toEqual([
     [
       "bots/update",
-      { botId: "x", pinned: false },
+      { botId: "x", notifyOnFinish: false },
       {
         requestContext: {
           apiBase: "",
@@ -383,30 +271,3 @@ it("updates a chat from another space in that space without switching", async ()
   ]);
   expect(h.loadBots).toHaveBeenCalledTimes(1);
 });
-
-it("names the archive failure for bots", async () => {
-  const h = await handlers(async () => {
-    throw new Error("nope");
-  });
-  await h.runRowAction("bot", { id: "x" }, "archive");
-  await h.runRowAction("group", { id: "x" }, "pin");
-  expect(session.alert.mock.calls.map(([title]) => title)).toEqual([
-    "Could not archive bot",
-    "Could not update chat",
-  ]);
-  expect(notifyArchivedChatsChanged).not.toHaveBeenCalled();
-  expect(removeFromSearchInbox).not.toHaveBeenCalled();
-});
-
-it.each(["bot", "group"] as const)(
-  "updates the archived count once a %s is archived",
-  async (kind) => {
-    const h = await handlers(async () => ({ ok: true }));
-    await h.runRowAction(kind, { id: "x" }, "archive");
-    // Search stops offering it at once, before the inbox reloads.
-    expect(removeFromSearchInbox).toHaveBeenCalledWith("x");
-    expect(notifyArchivedChatsChanged).toHaveBeenCalledOnce();
-    await h.runRowAction(kind, { id: "x" }, "pin");
-    expect(notifyArchivedChatsChanged).toHaveBeenCalledOnce();
-  },
-);

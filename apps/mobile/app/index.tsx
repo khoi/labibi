@@ -23,12 +23,11 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BotOrganizeModal } from "../components/bot-organize-modal";
 import { HomeErrorState } from "../components/home-error-state";
 import { createHomeStyles } from "../components/home-styles";
 import { ActivitySection } from "../components/inbox-activity";
 import { InboxHeader } from "../components/inbox-header";
-import { InboxListFooter, SWIPE_ROWS, useInboxRenderItem } from "../components/inbox-render-item";
+import { useInboxRenderItem } from "../components/inbox-render-item";
 import { CompactRowsContext, SelectedChatContext } from "../components/inbox-rows";
 import { OrganizationTitleMenu } from "../components/organization-menu";
 import { PickChatPane } from "../components/pick-chat-pane";
@@ -36,7 +35,7 @@ import { useUnreadJumpPills } from "../components/unread-jump-overlay";
 import { fetchSpaceActivity } from "../lib/activity";
 import { loadActivityMode, saveActivityMode } from "../lib/activity-mode";
 import { readableGutters } from "../lib/adaptive-layout";
-import type { MobileBot, MobileBotSection, MobileGroup, MobileMe, MobileSpace } from "../lib/api";
+import type { MobileBot, MobileGroup, MobileMe, MobileSpace } from "../lib/api";
 import {
   currentApiBase,
   loadSessionToken,
@@ -57,25 +56,23 @@ import { explicitSignInRoute } from "../lib/auth-routing";
 import { AvatarViewportScope, createAvatarViewport } from "../lib/avatar-life";
 import { isPaywallShown } from "../lib/billing";
 import type { CreateAction } from "../lib/create-chooser";
-import { createInboxBot } from "../lib/create-inbox-bot";
 import { useHeaderHeightIfAny } from "../lib/floating-header";
 import { useForegroundPoll } from "../lib/foreground-poll";
 import { getActiveUiLocale, t, useI18n } from "../lib/i18n";
 import { retainInboxValue } from "../lib/inbox-retention";
-import type { InboxItem, InboxSpace, PinnedChat } from "../lib/inbox-spaces";
+import type { InboxItem, InboxSpace } from "../lib/inbox-spaces";
 import {
   canDeleteInboxSpace,
   deleteSpaceTitle,
   inboxHasNoChats,
   inboxItemKey,
-  inboxNeedsCreateHint,
   inboxSignal,
   removeInboxSpace,
   retryInboxSpaceFallback,
   selectInboxSpace,
   spaceInboxItems,
 } from "../lib/inbox-spaces";
-import { applyUnreadOverrides, withoutArchiving } from "../lib/inbox-swipe";
+import { applyUnreadOverrides } from "../lib/inbox-swipe";
 import { mobileLogoAvatarActivity } from "../lib/logo-avatar-activity";
 import { native, useThemedStyles } from "../lib/native";
 import { iosAtLeast } from "../lib/native-controls";
@@ -86,8 +83,6 @@ import {
   subscribeOrganizationSwitch,
   useOrganizations,
 } from "../lib/organizations";
-import type { OrganizeTarget } from "../lib/organize-target";
-import { findOrganizeTarget } from "../lib/organize-target";
 import { offerPasskeyOnce } from "../lib/passkey";
 import { ACTIVITY_POLL_INTERVAL_MS, INBOX_POLL_INTERVAL_MS } from "../lib/poll-cadence";
 import { registerPushToken } from "../lib/push";
@@ -100,10 +95,9 @@ import {
   subscribeSessionGeneration,
 } from "../lib/session";
 import { useSplitView } from "../lib/split-view";
-import { useArchivedCount } from "../lib/use-archived-count";
 import { useCollapsedSections } from "../lib/use-collapsed-sections";
 import { useHomeHeader } from "../lib/use-home-header";
-import { chatRpc, useInboxChatActions } from "../lib/use-inbox-chat-actions";
+import { useInboxChatActions } from "../lib/use-inbox-chat-actions";
 import { useInboxDay } from "../lib/use-inbox-day";
 import { usePublishSearchInbox } from "../lib/use-publish-search-inbox";
 import type { LoadFailureKind } from "../lib/user-error";
@@ -170,7 +164,6 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
   const day = useInboxDay();
   const [bots, setBots] = useState<MobileBot[]>([]);
   const [groups, setGroups] = useState<MobileGroup[]>([]);
-  const [botSections, setBotSections] = useState<MobileBotSection[]>([]);
   const [spaces, setSpaces] = useState<MobileSpace[]>([]);
   const [me, setMe] = useState<Pick<MobileMe, "userId" | "spaceId" | "name"> | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -183,8 +176,6 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
   const [hasSession, setHasSession] = useState(false);
   const [returningUser, setReturningUser] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [organizeTarget, setOrganizeTarget] = useState<OrganizeTarget | null>(null);
-  const organizeRequestId = useRef(0);
   const [activityMode, setActivityMode] = useState(false);
   const [activity, setActivity] = useState<{ active: RunActivityRow[]; recent: RunActivityRow[] }>({
     active: [],
@@ -193,7 +184,6 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
   const activityRequestId = useRef(0);
   const inboxRequestId = useRef(0);
   const inboxLoaded = useRef(false);
-  const creatingBotRef = useRef(false);
   const spaceActionRef = useRef<{ busy: boolean; recoveryId: string | null }>({
     busy: false,
     recoveryId: null,
@@ -281,7 +271,6 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
           .catch(() => undefined);
       }
       setBots((current) => retainInboxValue(current, navigation.current.bots));
-      setBotSections((current) => retainInboxValue(current, navigation.current.botSections));
       setGroups((current) => retainInboxValue(current, navigation.current.groups));
       setSpaces((current) => retainInboxValue(current, navigation.spaces));
       setMe((current) => retainInboxValue(current, nextMe));
@@ -361,7 +350,6 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
     void loadSavedInbox().then((saved) => {
       if (cancelled || !saved || inboxLoaded.current) return;
       setBots(saved.bots);
-      setBotSections(saved.botSections);
       setGroups(saved.groups);
       setSpaces(saved.spaces);
       setMe(saved.me);
@@ -375,19 +363,11 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
   // the chat route owns focus.
   useForegroundPoll(loadBots, INBOX_POLL_INTERVAL_MS, hasSession && (embedded || isFocused));
 
-  const archivedCount = useArchivedCount(me?.spaceId, hasSession);
-  const {
-    unreadOverrides,
-    archiving,
-    updateChat,
-    botAction,
-    groupAction,
-    createSection,
-    renameSection,
-    organizeFromMenu,
-    editSectionFromMenu,
-    deleteSection,
-  } = useInboxChatActions({ loadBots, setBots, setGroups, setSpaces, botSections });
+  const { unreadOverrides, botAction, groupAction, notifyFromMenu } = useInboxChatActions({
+    loadBots,
+    setBots,
+    setGroups,
+  });
 
   const loadActivity = useCallback(async () => {
     if (spaceActionRef.current.busy || spaceActionRef.current.recoveryId) return;
@@ -423,32 +403,18 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
   );
 
   const visible = useMemo(
-    () => withoutArchiving("bot", applyUnreadOverrides("bot", bots, unreadOverrides), archiving),
-    [bots, unreadOverrides, archiving],
+    () => applyUnreadOverrides("bot", bots, unreadOverrides),
+    [bots, unreadOverrides],
   );
   const visibleGroups = useMemo(
-    () =>
-      withoutArchiving("group", applyUnreadOverrides("group", groups, unreadOverrides), archiving),
-    [groups, unreadOverrides, archiving],
-  );
-  const shownSpaces = useMemo(
-    () =>
-      archiving.size === 0
-        ? spaces
-        : spaces.map((space) => ({
-            ...space,
-            bots: withoutArchiving("bot", space.bots, archiving),
-            groups: withoutArchiving("group", space.groups, archiving),
-          })),
-    [spaces, archiving],
+    () => applyUnreadOverrides("group", groups, unreadOverrides),
+    [groups, unreadOverrides],
   );
   const inboxSpaces = useMemo(
     () =>
-      shownSpaces.length > 0
-        ? shownSpaces.map((space) =>
-            space.id === me?.spaceId
-              ? { ...space, bots: visible, groups: visibleGroups, botSections }
-              : space,
+      spaces.length > 0
+        ? spaces.map((space) =>
+            space.id === me?.spaceId ? { ...space, bots: visible, groups: visibleGroups } : space,
           )
         : me
           ? [
@@ -459,66 +425,30 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
                 hasContent: true,
                 bots: visible,
                 groups: visibleGroups,
-                botSections,
               },
             ]
           : [],
-    [shownSpaces, me, visible, visibleGroups, botSections, t, locale],
+    [spaces, me, visible, visibleGroups, t, locale],
   );
   usePublishSearchInbox(inboxSpaces, me !== null);
-  const listData = useMemo((): InboxItem[] => {
-    // Only bot threads support importing shares; use the same rows for every target.
-    if (onShareSelect)
-      return spaceInboxItems(
-        inboxSpaces
-          .filter((space) => space.bots.length > 0)
-          .map((space) => ({ ...space, groups: [] })),
-        collapsed,
-      );
-    // Android pins sit above the list; iOS keeps rows with native swipe and context menus.
-    const otherSpaces = shownSpaces.filter((space) => space.id !== me?.spaceId);
-    const pinned: PinnedChat[] = [
-      ...[...visible, ...otherSpaces.flatMap((space) => space.bots)]
-        .filter((bot) => bot.pinned)
-        .map((bot) => ({ kind: "bot" as const, bot })),
-      ...[...visibleGroups, ...otherSpaces.flatMap((space) => space.groups)]
-        .filter((group) => group.pinned)
-        .map((group) => ({ kind: "group" as const, group })),
-    ];
-    const sidebarSpaces = inboxSpaces.map((space) => ({
-      ...space,
-      bots: space.bots.filter((bot) => SWIPE_ROWS || !bot.pinned),
-      groups: space.groups.filter((group) => SWIPE_ROWS || !group.pinned),
-    }));
-    const items: InboxItem[] = spaceInboxItems(sidebarSpaces, collapsed, me?.spaceId);
-    return !SWIPE_ROWS && pinned.length > 0 ? [{ type: "pinned", chats: pinned }, ...items] : items;
-  }, [
-    inboxSpaces,
-    collapsed,
-    me?.spaceId,
-    shownSpaces,
-    visible,
-    visibleGroups,
-    locale,
-    onShareSelect,
-  ]);
+  const listData = useMemo(
+    (): InboxItem[] =>
+      // Only bot threads support importing shares; use the same rows for every target.
+      spaceInboxItems(
+        onShareSelect
+          ? inboxSpaces
+              .filter((space) => space.bots.length > 0)
+              .map((space) => ({ ...space, groups: [] }))
+          : inboxSpaces,
+      ),
+    [inboxSpaces, onShareSelect],
+  );
   const badgeCount = me ? unreadChatCount(inboxSpaces) : null;
   useEffect(() => {
     if (badgeCount === null || badgeLoad === null) return;
     void syncInboxAppBadge(badgeCount, badgeLoad.generation);
   }, [badgeCount, badgeLoad]);
   const initials = accountDisplay(me ?? {}, t("You")).initial ?? "?";
-  const organizeSpace = organizeTarget
-    ? organizeTarget.spaceId === me?.spaceId
-      ? { bots, groups, botSections }
-      : spaces.find((space) => space.id === organizeTarget.spaceId)
-    : undefined;
-  const organizeChat = organizeTarget
-    ? organizeTarget.kind === "bot"
-      ? (organizeSpace?.bots.find((bot) => bot.id === organizeTarget.id) ?? organizeTarget.chat)
-      : (organizeSpace?.groups.find((group) => group.id === organizeTarget.id) ??
-        organizeTarget.chat)
-    : null;
   const insets = useSafeAreaInsets();
   // An unfolded or tablet window keeps the inbox in a centred column.
   const windowWidth = useWindowDimensions().width;
@@ -606,7 +536,6 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
           const saved = await loadSavedInbox().catch(() => null);
           if (saved?.me.spaceId === spaceId) {
             setBots(saved.bots);
-            setBotSections(saved.botSections);
             setGroups(saved.groups);
             setMe(saved.me);
           }
@@ -685,27 +614,13 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
     [deleteInboxSpace, t],
   );
 
-  const createQuickBot = useCallback(async () => {
-    if (creatingBotRef.current || spaceActionRef.current.busy || spaceActionRef.current.recoveryId)
-      return;
-    creatingBotRef.current = true;
-    try {
-      await createInboxBot({ refreshBots, openChat });
-    } catch (err) {
-      setError(errorText(err, t("Could not create bot")));
-    } finally {
-      creatingBotRef.current = false;
-    }
-  }, [openChat, refreshBots, t]);
-
   const runCreateAction = useCallback(
     (action: CreateAction) => {
       if (spaceActionRef.current.busy || spaceActionRef.current.recoveryId) return;
-      if (action === "bot") void createQuickBot();
-      else if (action === "group") router.push("/new-group");
+      if (action === "group") router.push("/new-group");
       else router.push("/new-space");
     },
-    [createQuickBot, router],
+    [router],
   );
 
   const organizations = useOrganizations(hasSession && !onShareSelect).data;
@@ -745,46 +660,6 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
     },
     [openChat],
   );
-  const organize = useCallback(
-    async (kind: "bot" | "group", chat: MobileBot | MobileGroup | SpaceBot | SpaceGroup) => {
-      const requestId = ++organizeRequestId.current;
-      const generation = currentSessionGeneration();
-      const apiBase = currentApiBase();
-      const isCurrent = () =>
-        requestId === organizeRequestId.current &&
-        generation === currentSessionGeneration() &&
-        apiBase === currentApiBase();
-      let target: OrganizeTarget | null;
-      try {
-        target = await findOrganizeTarget(
-          kind,
-          chat,
-          { currentSpaceId: me?.spaceId, current: { bots, groups, botSections }, spaces },
-          isCurrent,
-        );
-      } catch (err) {
-        if (isCurrent()) Alert.alert(t("Could not load bots"), errorText(err, t("Try again.")));
-        return;
-      }
-      if (!target) return;
-      setOrganizeTarget(target);
-      void loadBots();
-    },
-    [bots, groups, botSections, spaces, me?.spaceId, loadBots, t],
-  );
-  const organizeBot = useCallback(
-    (bot: MobileBot | SpaceBot) => {
-      void organize("bot", bot);
-    },
-    [organize],
-  );
-  const organizeGroup = useCallback(
-    (group: MobileGroup | SpaceGroup) => {
-      void organize("group", group);
-    },
-    [organize],
-  );
-
   const [avatarViewport] = useState(createAvatarViewport);
   const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) =>
     avatarViewport.update(viewableItems.map((token) => token.key)),
@@ -792,23 +667,17 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
   const renderItem = useInboxRenderItem({
     appearance,
     botAction,
-    botSections,
     chooseInboxSpace,
     confirmDeleteSpace,
     day,
-    deleteSection,
-    editSectionFromMenu,
     groupAction,
     spaceId: me?.spaceId,
     openBot,
     openGroup,
-    organizeBot,
-    organizeFromMenu,
-    organizeGroup,
+    notifyFromMenu,
     spaceBusy,
     spaceRecoveryId,
     sharing: !!onShareSelect,
-    toggleCollapsed,
   });
 
   if (!ready) {
@@ -905,19 +774,7 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
                       onRetry={() => void refreshBots()}
                       onSignIn={() => void signInAgain()}
                     />
-                  ) : (
-                    <Text style={styles.empty}>
-                      {me && !onShareSelect ? t("Tap + to create a bot") : null}
-                    </Text>
-                  )
-                }
-                ListFooterComponent={
-                  <InboxListFooter
-                    createHint={
-                      !onShareSelect && !showLoadFailure && inboxNeedsCreateHint(listData)
-                    }
-                    archivedCount={onShareSelect ? 0 : archivedCount}
-                  />
+                  ) : null
                 }
                 renderItem={renderItem}
               />
@@ -928,27 +785,6 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
           </View>
         </CompactRowsContext.Provider>
       </SelectedChatContext.Provider>
-      {organizeChat && organizeTarget ? (
-        <BotOrganizeModal
-          bot={organizeChat}
-          sections={organizeSpace?.botSections ?? organizeTarget.sections}
-          onClose={() => {
-            organizeRequestId.current += 1;
-            setOrganizeTarget(null);
-          }}
-          onUpdate={(update) => updateChat(organizeTarget.kind, organizeChat, update)}
-          onCreateSection={(name) =>
-            createSection(organizeTarget.kind, organizeChat.id, name, organizeTarget.spaceId)
-          }
-          onRenameSection={(sectionId, name) =>
-            renameSection(sectionId, name, organizeTarget.spaceId)
-          }
-          onDeleteSection={async (sectionId) => {
-            await chatRpc(organizeTarget.spaceId, "botSections/remove", { sectionId });
-            await loadBots();
-          }}
-        />
-      ) : null}
     </View>
   );
 }

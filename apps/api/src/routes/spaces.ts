@@ -136,7 +136,6 @@ export function spacesRoutes(ctx: RouterContext) {
             bots: [],
             groups: [],
             externalConversations: [],
-            botSections: [],
           };
         }),
       ),
@@ -332,13 +331,11 @@ export function spacesRoutes(ctx: RouterContext) {
     },
     bootstrap: authed.bootstrap.handler(async ({ context, input }) => {
       const actor = context.actor;
-      const [me, navigation, archivedBots, archivedGroups] = await Promise.all([
+      const [me, navigation] = await Promise.all([
         meDto(deps, actor),
         spaceNavigationDto(deps, actor, repos, groupRepos),
-        repos.listBots(actor, { archived: true }),
-        groupRepos.listGroups(actor, { archived: true }),
       ]);
-      const { bots, groups, botSections } = navigation.current;
+      const { bots, groups } = navigation.current;
       const requested = bots.find((bot) => bot.id === input.botId);
       const botSpaceId =
         input.botId && !requested
@@ -357,9 +354,6 @@ export function spacesRoutes(ctx: RouterContext) {
         me,
         bots,
         groups,
-        botSections,
-        archivedBots,
-        archivedGroups,
         thread,
         routines,
         spaces: navigation.spaces,
@@ -416,7 +410,6 @@ async function memberSpaceNavigation(
     currentGroups,
     inactiveBots,
     inactiveGroups,
-    botSections,
     externalConversations,
     contentBots,
     contentGroups,
@@ -425,7 +418,6 @@ async function memberSpaceNavigation(
     groupRepos.listGroups(actor),
     repos.listSpaceBotsForSpaces(inactiveSpaceIds),
     groupRepos.listSpaceGroupsForSpaces(inactiveSpaceIds),
-    repos.listBotSectionsForSpaces(spaceIds),
     createExternalConversationRepos(deps.prisma).listForSpaces(spaceIds),
     // Active-only navigation lists miss archived content in other spaces; count any
     // bot/group in the actor's spaces (including another member's) so a shared
@@ -450,10 +442,8 @@ async function memberSpaceNavigation(
   if (!currentMembership) throw new IsolationError();
   const botsBySpace = partitionBySpace([...currentBots, ...inactiveBots]);
   const groupsBySpace = partitionBySpace([...currentGroups, ...inactiveGroups]);
-  const sectionsBySpace = partitionBySpace(botSections);
   const botsFor = (spaceId: string) => botsBySpace.get(spaceId) ?? [];
   const groupsFor = (spaceId: string) => groupsBySpace.get(spaceId) ?? [];
-  const sectionsFor = (spaceId: string) => sectionsBySpace.get(spaceId) ?? [];
   const staleClaimBefore = new Date(Date.now() - SPACE_DELETION_CLAIM_TIMEOUT_MS);
 
   return {
@@ -465,7 +455,6 @@ async function memberSpaceNavigation(
       externalConversations: externalConversations.filter(
         (conversation) => conversation.spaceId === actor.spaceId,
       ),
-      botSections: sectionsFor(actor.spaceId),
     },
     spaces: memberships.map((membership) => {
       const spaceBots = botsFor(membership.spaceId);
@@ -491,10 +480,7 @@ async function memberSpaceNavigation(
           name: bot.name,
           title: "",
           color: bot.color,
-          avatarSet: bot.avatarSet,
           notifyOnFinish: bot.notifyOnFinish,
-          pinned: bot.pinned,
-          sectionId: bot.sectionId,
           unread: bot.unread,
           preview: bot.preview,
           status: bot.status,
@@ -506,8 +492,6 @@ async function memberSpaceNavigation(
           id: group.id,
           spaceId: group.spaceId,
           name: group.name,
-          pinned: group.pinned,
-          sectionId: group.sectionId,
           members: group.members,
           preview: group.preview,
           unread: group.unread,
@@ -516,7 +500,6 @@ async function memberSpaceNavigation(
         externalConversations: externalConversations.filter(
           (conversation) => conversation.spaceId === membership.spaceId,
         ),
-        botSections: sectionsFor(membership.spaceId),
       };
     }),
   };

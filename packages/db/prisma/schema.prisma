@@ -32,8 +32,6 @@ model User {
   createdAt                   DateTime                     @default(now())
   updatedAt                   DateTime                     @updatedAt
   avatarStyle                 String                       @default("organic")
-  /// The icon set this user's bots wear unless one is pinned to another: "organic" or "rakazo".
-  botAvatarSet                String                       @default("organic")
   /// IANA timezone such as "Pacific/Auckland". Null until set; bots then get UTC only.
   timezone                    String?
   /// The app language last chosen, such as "es" or "pt-BR". Null until an app reports it;
@@ -68,7 +66,6 @@ model User {
   payments                    Payment[]
   secrets                     Secret[]
   mcpServers                  McpServer[]
-  botSections                 BotSection[]
   actionApprovalRules         ActionApprovalRule[]
   actionAutoReviewPreferences ActionAutoReviewPreference[]
   modelRoleChoices            UserModelRoleChoice[]
@@ -572,7 +569,6 @@ model Space {
   memberships                 SpaceMember[]
   invites                     SpaceInvite[]
   bots                        Bot[]
-  botSections                 BotSection[]
   botDeletions                BotDeletion[]
   threads                     Thread[]
   events                      Event[]
@@ -889,18 +885,10 @@ model Bot {
   space             Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   userId            String
   name              String
-  description       String            @default("")
   instructions      String            @default("")
   instructionHistory Json @default("[]")
   color             String
-  avatarSet         String            @default("organic")
-  /// True once the owner picks this bot a set other than their default; the default no longer moves it.
-  avatarSetPinned   Boolean           @default(false)
   notifyOnFinish    Boolean           @default(true)
-  pinned            Boolean           @default(false)
-  position          Int               @default(0)
-  sectionId         String?
-  section           BotSection?       @relation(fields: [sectionId], references: [id], onDelete: SetNull)
   archivedAt        DateTime?
   memoryScope       String?
   createdAt         DateTime          @default(now())
@@ -934,30 +922,11 @@ model Bot {
 
   externalConversations ExternalConversation[]
 
-  @@index([spaceId, userId, archivedAt, pinned, updatedAt])
-  @@index([sectionId])
+  @@index([spaceId, userId, archivedAt, updatedAt])
   @@index([computerId])
   @@map("bots")
   messagingInstallations MessagingInstallation[]
   messagingInstallSessions MessagingInstallSession[]
-}
-
-model BotSection {
-  id        String      @id @default(cuid())
-  spaceId   String
-  space     Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name      String
-  position  Int         @default(0)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  bots      Bot[]
-  groups    ChatGroup[]
-
-  @@unique([spaceId, userId, name])
-  @@index([spaceId, userId, position, createdAt])
-  @@map("bot_sections")
 }
 
 model BotDeletion {
@@ -979,9 +948,6 @@ model ChatGroup {
   space      Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   userId     String
   name       String
-  pinned     Boolean           @default(false)
-  sectionId  String?
-  section    BotSection?       @relation(fields: [sectionId], references: [id], onDelete: SetNull)
   archivedAt DateTime?
   createdAt  DateTime          @default(now())
   updatedAt  DateTime          @updatedAt
@@ -990,8 +956,7 @@ model ChatGroup {
   artifacts  Artifact[]
   pages      Page[]
 
-  @@index([spaceId, userId, archivedAt, pinned, updatedAt])
-  @@index([sectionId])
+  @@index([spaceId, userId, archivedAt, updatedAt])
   @@map("chat_groups")
 }
 

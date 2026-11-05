@@ -114,7 +114,6 @@ describe.skipIf(!enabled)("earlier files through history tools", () => {
       const bot = await rpc<{ id: string }>("bots/create", {
         name: "Files fixture",
         title: "",
-        description: "",
         instructions: "",
         notifyOnFinish: false,
       });

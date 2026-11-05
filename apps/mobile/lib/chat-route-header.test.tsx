@@ -67,12 +67,6 @@ it("declares a group chat's settings button, which opens the group's settings", 
   });
 });
 
-it("declares an archived chat's Restore button in place of the gift", () => {
-  const options = header({ botId: "bot-1", readOnly: "1" }, alone, true);
-  expect(options.headerTitle).toBeTypeOf("function");
-  expect(rightItems(options)).toEqual([{ type: "button", label: "Restore" }]);
-});
-
 it("beside the chat list, declares the sidebar button in place of the back button", () => {
   const options = header({ botId: "bot-1" }, { split: true, inboxHidden: false });
   expect(options.headerBackVisible).toBe(false);

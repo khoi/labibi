@@ -84,6 +84,7 @@ describe("routine mention batch endpoint", () => {
     expect(h.findBots).toHaveBeenCalledExactlyOnceWith({
       where: { id: { in: ids }, spaceId: actor.spaceId, archivedAt: null },
       select: { id: true },
+      orderBy: { createdAt: "asc" },
     });
     expect(h.findRoutines).toHaveBeenCalledExactlyOnceWith({
       where: { botId: { in: ids }, spaceId: actor.spaceId },

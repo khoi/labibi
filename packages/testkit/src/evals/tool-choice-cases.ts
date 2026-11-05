@@ -23,22 +23,6 @@ export const TOOL_CHOICE_DEFINITIONS: ToolChoiceCase[] = [
     expect: { bot: { name: "~atlas" } },
   },
   {
-    id: "settings-description",
-    area: "settings",
-    kind: "guard",
-    purpose: "Set its one-line description when asked.",
-    prompt: "Set your description to: Tracks our weekly product metrics.",
-    expect: { bot: { description: "~weekly product metrics" } },
-  },
-  {
-    id: "settings-color",
-    area: "settings",
-    kind: "guard",
-    purpose: "Change its profile color when asked.",
-    prompt: "Change your profile color to green.",
-    expect: { calls: [{ tool: "update_bot", args: { color: "*" } }] },
-  },
-  {
     id: "settings-notifications-off",
     area: "settings",
     kind: "guard",

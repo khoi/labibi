@@ -29,7 +29,7 @@ async function runNotice(
 ): Promise<{
   enabled: boolean;
   groupId: string | null;
-  bot?: { id: string; name: string; color: string; avatarSet: string };
+  bot?: { id: string; name: string; color: string };
 }> {
   // A routine carries its own notify setting, which decides on its failures.
   const routine = routineId
@@ -43,7 +43,7 @@ async function runNotice(
       userId: run.userId,
     },
     select: {
-      bot: { select: { id: true, name: true, color: true, avatarSet: true, notifyOnFinish: true } },
+      bot: { select: { id: true, name: true, color: true, notifyOnFinish: true } },
       thread: { select: { groupId: true } },
     },
   });

@@ -249,7 +249,6 @@ describeWithDatabase("structured @ mention targets", () => {
           rpc<{ id: string }>(app, cookie, "bots/create", {
             name: botName,
             title: "",
-            description: "",
             instructions: "",
             notifyOnFinish: true,
           });
@@ -382,7 +381,6 @@ describeWithDatabase("structured @ mention targets", () => {
     const bot = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "Chief",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -409,14 +407,12 @@ describeWithDatabase("structured @ mention targets", () => {
     const botA = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "BotA",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
     const botB = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "BotB",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -450,14 +446,12 @@ describeWithDatabase("structured @ mention targets", () => {
     const botA = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "BotA",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
     const botB = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "BotB",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -483,21 +477,18 @@ describeWithDatabase("structured @ mention targets", () => {
     const botA = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "MemberA",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
     const botB = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "MemberB",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
     const outsider = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "Outsider",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -534,14 +525,12 @@ describeWithDatabase("structured @ mention targets", () => {
     const bobBot = await rpc<{ id: string }>(app, bob, "bots/create", {
       name: "BobBot",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
     const adaBotB = await rpc<{ id: string }>(app, ada, "bots/create", {
       name: "AdaBotB",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });

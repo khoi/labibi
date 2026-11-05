@@ -313,15 +313,6 @@ describePostgres("shared spaces: invites and membership (PostgreSQL)", () => {
     const home = await sharedSpace(owner, "Home");
     await call(invitee.actor, "spaces/invites/accept", { token: await invite(owner, home) });
 
-    const ownerSection = await system.botSection.create({
-      data: { spaceId: home, userId: owner.id, name: "Family", position: 0 },
-    });
-    const mergedSection = await system.botSection.create({
-      data: { spaceId: home, userId: invitee.id, name: "Family" },
-    });
-    const movedSection = await system.botSection.create({
-      data: { spaceId: home, userId: invitee.id, name: "Trips" },
-    });
     const computer = await system.computer.create({
       data: {
         spaceId: home,
@@ -347,12 +338,11 @@ describePostgres("shared spaces: invites and membership (PostgreSQL)", () => {
         userId: invitee.id,
         name: "Planner",
         color: "test",
-        sectionId: mergedSection.id,
         computerId: computer.id,
       },
     });
     const group = await system.chatGroup.create({
-      data: { spaceId: home, userId: invitee.id, name: "Weekend", sectionId: movedSection.id },
+      data: { spaceId: home, userId: invitee.id, name: "Weekend" },
     });
     const routine = await system.routine.create({
       data: {
@@ -426,11 +416,10 @@ describePostgres("shared spaces: invites and membership (PostgreSQL)", () => {
 
     await expect(system.bot.findUniqueOrThrow({ where: { id: bot.id } })).resolves.toMatchObject({
       userId: owner.id,
-      sectionId: ownerSection.id,
     });
     await expect(
       system.chatGroup.findUniqueOrThrow({ where: { id: group.id } }),
-    ).resolves.toMatchObject({ userId: owner.id, sectionId: movedSection.id });
+    ).resolves.toMatchObject({ userId: owner.id });
     await expect(
       system.routine.findUniqueOrThrow({ where: { id: routine.id } }),
     ).resolves.toMatchObject({
@@ -440,12 +429,6 @@ describePostgres("shared spaces: invites and membership (PostgreSQL)", () => {
       watchState: null,
       accountFailures: 0,
     });
-    await expect(
-      system.botSection.findUnique({ where: { id: mergedSection.id } }),
-    ).resolves.toBeNull();
-    await expect(
-      system.botSection.findUniqueOrThrow({ where: { id: movedSection.id } }),
-    ).resolves.toMatchObject({ userId: owner.id, position: 1 });
 
     const leftover = { spaceId: home, userId: invitee.id };
     // The computer goes with the bot, so it no longer counts toward the member's limit.

@@ -2,13 +2,9 @@ import type { AnalyticsBotSetting, UpdateBotInput } from "@labradoodle/contracts
 
 type Field = Exclude<keyof UpdateBotInput, "botId">;
 
-// Pinning and sections are sidebar organization, not settings.
 const SETTINGS: Partial<Record<Field, AnalyticsBotSetting>> = {
   name: "name",
-  description: "description",
   instructions: "instructions",
-  color: "avatar",
-  avatarSet: "avatar",
   notifyOnFinish: "notifications",
   memoryScope: "memory",
   voiceId: "voice",

@@ -115,19 +115,6 @@ async function* spaceRecords(
   tenant: Tenant,
   written: Written,
 ): AsyncGenerator<AccountExportRecord> {
-  const sections = await prisma.botSection.findMany({
-    where: tenant,
-    orderBy: [{ position: "asc" }, { createdAt: "asc" }, { id: "asc" }],
-  });
-  for (const section of sections)
-    yield {
-      type: "bot_section",
-      id: section.id,
-      name: section.name,
-      position: section.position,
-      createdAt: iso(section.createdAt),
-    };
-
   const bots = await prisma.bot.findMany({
     where: tenant,
     orderBy: [{ createdAt: "asc" }, { id: "asc" }],
@@ -140,14 +127,9 @@ async function* spaceRecords(
       type: "bot",
       id: bot.id,
       name: bot.name,
-      description: bot.description,
       instructions: bot.instructions,
       color: bot.color,
-      avatarSet: bot.avatarSet,
       notifyOnFinish: bot.notifyOnFinish,
-      pinned: bot.pinned,
-      position: bot.position,
-      sectionId: bot.sectionId,
       archivedAt: isoOrNull(bot.archivedAt),
       memoryScope: bot.memoryScope,
       voiceId: bot.voiceId,
@@ -173,8 +155,6 @@ async function* spaceRecords(
       type: "chat_group",
       id: group.id,
       name: group.name,
-      pinned: group.pinned,
-      sectionId: group.sectionId,
       archivedAt: isoOrNull(group.archivedAt),
       botIds: group.members.flatMap((member) => (botIds.has(member.botId) ? [member.botId] : [])),
       createdAt: iso(group.createdAt),

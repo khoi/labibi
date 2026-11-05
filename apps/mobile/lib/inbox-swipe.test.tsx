@@ -6,14 +6,12 @@ import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { InboxSwipeRowProps } from "../components/inbox-swipe-row";
 import { InboxSwipeRow } from "../components/inbox-swipe-row.ios";
-import type { MobileBotSection } from "./api";
 import type { InboxRowAction } from "./inbox-swipe";
 import {
   applyUnreadOverrides,
   chatTarget,
   createLatestQueue,
-  inboxRowActionList,
-  inboxRowActions,
+  inboxReadAction,
   unreadOverrideKey,
 } from "./inbox-swipe";
 
@@ -168,17 +166,11 @@ afterEach(() => {
 
 describe("inbox row actions", () => {
   it.each([
-    [{ unread: true, pinned: false }, "read", ["archive", "pin"]],
-    [{ unread: false, pinned: false }, "unread", ["archive", "pin"]],
-    [{ unread: true, pinned: true }, "read", ["archive", "unpin"]],
-    [{ unread: false, pinned: true }, "unread", ["archive", "unpin"]],
-  ] as const)(
-    "offers read state leading and archive, then pin trailing for %o",
-    (chat, leading, trailing) => {
-      expect(inboxRowActions(chat)).toEqual({ leading, trailing });
-      expect(inboxRowActionList(chat)).toEqual([leading, ...trailing]);
-    },
-  );
+    [{ unread: true }, "read"],
+    [{ unread: false }, "unread"],
+  ] as const)("offers the opposite read state for %o", (chat, action) => {
+    expect(inboxReadAction(chat)).toBe(action);
+  });
 
   it("targets bots and groups by their own id", () => {
     expect(chatTarget("bot", "b1")).toEqual({ botId: "b1" });
@@ -247,30 +239,22 @@ describe("latest queue", () => {
 });
 
 describe("iOS swipe row", () => {
-  const sections = [
-    { id: "s1", name: "Work" },
-    { id: "s2", name: "Home" },
-  ] as MobileBotSection[];
-
   function render(
     row: Partial<InboxSwipeRowProps> & { key?: string } = {},
     preview: InboxSwipeRowProps["preview"] = { title: "Ada", message: "Hi", avatar: <i /> },
   ) {
     const key = row.key ?? "bot:1";
     const onAction = vi.fn<(action: InboxRowAction) => void>();
-    const onOrganize = vi.fn<InboxSwipeRowProps["onOrganize"]>();
-    const onEditSection = vi.fn<InboxSwipeRowProps["onEditSection"]>();
+    const onNotifyChange = vi.fn<InboxSwipeRowProps["onNotifyChange"]>();
     const container = document.createElement("div");
     const root = createRoot(container);
     act(() =>
       root.render(
         <InboxSwipeRow
           rowKey={key}
-          sections={sections}
           preview={preview}
           onAction={onAction}
-          onOrganize={onOrganize}
-          onEditSection={onEditSection}
+          onNotifyChange={onNotifyChange}
           {...row}
         >
           <span>{key}</span>
@@ -281,7 +265,7 @@ describe("iOS swipe row", () => {
     const items = find('[data-ui="ContextMenu.Items"]')!;
     const press = (label: string) =>
       act(() => items.querySelector<HTMLElement>(`[data-label="${label}"]`)!.click());
-    return { container, find, items, press, onAction, onOrganize, onEditSection, root };
+    return { container, find, items, press, onAction, onNotifyChange, root };
   }
 
   const entry = (item: Element) => [
@@ -294,33 +278,23 @@ describe("iOS swipe row", () => {
       .filter((child) => child.getAttribute("data-ui"))
       .map(entry);
 
-  it("uses system swipe actions with a full swipe only on the read toggle", () => {
-    const { container, onAction, root } = render({ unread: true, pinned: true });
+  it("uses a system swipe action for the read toggle", () => {
+    const { container, onAction, root } = render({ unread: true });
     expect(swift.groups).toEqual([
       { edge: "leading", allowsFullSwipe: undefined, labels: ["Mark as Read"] },
-      { edge: "trailing", allowsFullSwipe: false, labels: ["Archive", "Unpin"] },
     ]);
     const buttons = Array.from(
       container.querySelectorAll<HTMLElement>('[data-ui="SwipeActions.Actions"] > button'),
     );
-    expect(buttons.map(entry)).toEqual([
-      ["Mark as Read", "checkmark.message.fill", null],
-      // Not destructive: SwiftUI would remove the row at the tap, and a failed archive left a gap.
-      ["Archive", "eye.slash", null],
-      ["Unpin", "pin.slash", null],
-    ]);
+    expect(buttons.map(entry)).toEqual([["Mark as Read", "checkmark.message.fill", null]]);
     expect(JSON.parse(buttons[0]!.dataset.modifiers!)).toContainEqual({
       name: "tint",
       value: { semantic: ["systemBlue"] },
     });
-    expect(JSON.parse(buttons[1]!.dataset.modifiers!)).toContainEqual({
-      name: "tint",
-      value: { semantic: ["systemRed"] },
-    });
     act(() => {
       for (const button of buttons) button.click();
     });
-    expect(onAction.mock.calls).toEqual([["read"], ["archive"], ["unpin"]]);
+    expect(onAction.mock.calls).toEqual([["read"]]);
     act(() => root.unmount());
   });
 
@@ -341,82 +315,36 @@ describe("iOS swipe row", () => {
     act(() => root.unmount());
   });
 
-  it("offers read state, pin, notifications, move, then archive and delete last for a bot", () => {
-    const { items, find, root } = render({
-      unread: true,
-      pinned: false,
-      notifyOnFinish: true,
-      sectionId: "s1",
-    });
+  it("offers read state, notifications, then delete for a bot", () => {
+    const { items, root } = render({ unread: true, notifyOnFinish: true });
     expect(entries(items)).toEqual([
       ["Mark as Read", "checkmark.message.fill", null],
-      ["Pin", "pin", null],
       ["Silence notifications", "bell.slash", null],
-      ["Move to", "folder", null],
-      ["Archive", "eye.slash", null],
       ["Delete…", "trash", "destructive"],
     ]);
     // Menu items keep their titles; only the swipe buttons are icon-only.
     for (const button of items.querySelectorAll<HTMLElement>("button")) {
       expect(button.dataset.modifiers ?? "[]").toBe("[]");
     }
-    expect(entries(find('[data-ui="Menu"]')!)).toEqual([
-      ["Work", "true", null],
-      ["Home", "false", null],
-      ["Unassigned", "false", null],
-      ["New section", "folder.badge.plus", null],
-      ["Rename section", "pencil", null],
-    ]);
     act(() => root.unmount());
   });
 
-  it("offers a group's actions without notifications or renaming outside a section", () => {
-    const { items, find, root } = render({ key: "group:1", unread: false, pinned: true });
-    expect(entries(items).map(([label]) => label)).toEqual([
-      "Mark as Unread",
-      "Unpin",
-      "Move to",
-      "Archive",
-      "Delete…",
-    ]);
-    expect(items.querySelector('[data-label="Archive"]')?.getAttribute("data-role")).toBeNull();
-    expect(items.querySelector('[data-label="Delete…"]')?.getAttribute("data-role")).toBe(
-      "destructive",
-    );
-    expect(entries(find('[data-ui="Menu"]')!)).toEqual([
-      ["Work", "false", null],
-      ["Home", "false", null],
-      ["Unassigned", "true", null],
-      ["New section", "folder.badge.plus", null],
-    ]);
+  it("offers a group's actions without notifications", () => {
+    const { items, root } = render({ key: "group:1", unread: false });
+    expect(entries(items).map(([label]) => label)).toEqual(["Mark as Unread", "Delete…"]);
     act(() => root.unmount());
   });
 
-  it("runs menu items through the swipe and organize paths", () => {
-    const { press, onAction, onOrganize, onEditSection, root } = render({
+  it("runs menu items through the swipe and notification paths", () => {
+    const { press, onAction, onNotifyChange, root } = render({
       unread: false,
-      pinned: false,
       notifyOnFinish: false,
-      sectionId: "s1",
     });
     press("Mark as Unread");
-    press("Pin");
     press("Resume notifications");
-    press("Work");
-    press("Home");
-    press("Unassigned");
-    press("New section");
-    press("Rename section");
-    press("Archive");
     press("Delete…");
-    expect(onAction.mock.calls).toEqual([["unread"], ["pin"], ["archive"], ["delete"]]);
-    // Choosing the current section again changes nothing.
-    expect(onOrganize.mock.calls).toEqual([
-      [{ notifyOnFinish: true }],
-      [{ sectionId: "s2" }],
-      [{ sectionId: null }],
-    ]);
-    expect(onEditSection.mock.calls).toEqual([["create"], ["rename"]]);
+    expect(onAction.mock.calls).toEqual([["unread"], ["delete"]]);
+    expect(onNotifyChange.mock.calls).toEqual([[true]]);
     act(() => root.unmount());
   });
 

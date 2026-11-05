@@ -119,7 +119,6 @@ describe.skipIf(!databaseAvailable)("group history keeps roles and speakers", ()
         const bot = await rpc<{ id: string }>(handles.app, cookie, "bots/create", {
           name,
           title: "",
-          description: "",
           instructions: "Answer in one sentence.",
           notifyOnFinish: false,
         });

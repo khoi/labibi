@@ -1,9 +1,5 @@
 import type { BillingStatus } from "@labradoodle/contracts";
-import {
-  BOT_COLORS,
-  DEFAULT_NEW_BOT_AVATAR_SET,
-  INVITED_TRIAL_WEEKS,
-} from "@labradoodle/contracts";
+import { BOT_COLORS, INVITED_TRIAL_WEEKS } from "@labradoodle/contracts";
 import {
   BotAvatar,
   Button,

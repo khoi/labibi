@@ -22,7 +22,6 @@ test("compact bot sidebar hides previews and preserves roster status accessibly"
   const selectedBotId = activeBotId(page);
   const previewBot = await rpc<{ id: string }>(page, "bots/create", {
     name: "Compact Sample",
-    description: "",
     instructions: "",
     notifyOnFinish: true,
     computerMode: "team",
@@ -109,7 +108,6 @@ test("compact bot sidebar hides previews and preserves roster status accessibly"
   await previewRow.press("Enter");
   await expect(page).toHaveURL(new RegExp(`/app/${previewBot.id}$`));
   await expect(previewRow).toHaveAttribute("aria-current", "page");
-  await expect(previewRow).toHaveAttribute("aria-keyshortcuts", "Alt+ArrowUp Alt+ArrowDown");
 
   const composer = page.locator('textarea[name="chat-message"]');
   try {

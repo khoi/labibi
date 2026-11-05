@@ -167,9 +167,7 @@ export default function NewGroup() {
               <View style={{ alignItems: "center", marginTop: 24, marginBottom: 32 }}>
                 <GroupAvatar
                   size={120}
-                  members={picked
-                    .slice(0, 3)
-                    .map((bot) => ({ botId: bot.id, color: bot.color, avatarSet: bot.avatarSet }))}
+                  members={picked.slice(0, 3).map((bot) => ({ botId: bot.id, color: bot.color }))}
                 />
               </View>
               <TextInput

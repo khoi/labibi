@@ -1,7 +1,6 @@
 import { Alert } from "react-native";
 import type { ApiRequestContext } from "./api";
 import { rpc } from "./api";
-import { notifyArchivedChatsChanged } from "./archived-chats";
 import { notifyConversationCleared } from "./conversation-cleared";
 import { t } from "./i18n";
 import { removeFromSearchInbox } from "./search-inbox";
@@ -66,16 +65,6 @@ export function confirmDeleteGroup(group: { id: string; name: string }, onDelete
           ),
     },
   ]);
-}
-
-export async function restoreArchivedBot(botId: string): Promise<void> {
-  await rpc("bots/restore", { botId });
-}
-
-export async function archiveBot(botId: string): Promise<void> {
-  await rpc("bots/archive", { botId });
-  removeFromSearchInbox(botId);
-  notifyArchivedChatsChanged();
 }
 
 export function confirmClearConversation(botId: string) {

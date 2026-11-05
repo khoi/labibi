@@ -8,12 +8,10 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { useInboxRenderItem } from "../components/inbox-render-item";
 import { BotRow } from "../components/inbox-rows";
 import type { MobileBot } from "./api";
-import { createInboxBot } from "./create-inbox-bot";
 import { formatThreadTime } from "./inbox";
 import { retainInboxValue } from "./inbox-retention";
 import type { InboxItem, InboxSpace } from "./inbox-spaces";
-import { inboxItemKey, spaceInboxItems } from "./inbox-spaces";
-import { useCollapsedSections } from "./use-collapsed-sections";
+import { inboxItemKey } from "./inbox-spaces";
 import { useInboxDay } from "./use-inbox-day";
 import { usePublishSearchInbox } from "./use-publish-search-inbox";
 
@@ -164,7 +162,6 @@ vi.mock("./search-inbox", () => ({
   searchInboxSession: ui.searchInboxSession,
   isSearchInboxSession: () => ui.sameSession,
 }));
-vi.mock("./focus-prompt", () => ({ allowFocusPrompt: vi.fn(), scheduleFocusPrompt: vi.fn() }));
 vi.mock("../components/bot-avatar", () => ({
   BotAvatar: ({
     identity,
@@ -193,21 +190,15 @@ const action = vi.fn();
 const callbacks = {
   appearance: "light" as const,
   botAction: action,
-  botSections: [],
   chooseInboxSpace: action,
   confirmDeleteSpace: action,
-  deleteSection: action,
-  editSectionFromMenu: action,
   groupAction: action,
   openBot: action,
   openGroup: action,
-  organizeBot: action,
-  organizeFromMenu: action,
-  organizeGroup: action,
+  notifyFromMenu: action,
   sharing: false,
   spaceBusy: false,
   spaceRecoveryId: null,
-  toggleCollapsed: action,
 };
 
 let onRenderItem: ((renderItem: unknown) => void) | undefined;
@@ -370,15 +361,7 @@ it("renders saved bot rows without a notification setting", () => {
   ] as MobileBot[];
   render(
     bots.map((bot) => (
-      <BotRow
-        key={bot.id}
-        bot={bot}
-        day={0}
-        onPress={action}
-        sections={[]}
-        onOrganize={action}
-        onEditSection={action}
-      />
+      <BotRow key={bot.id} bot={bot} day={0} onPress={action} onNotifyChange={action} />
     )),
   );
   expect(rowLabels()).toEqual([
@@ -411,15 +394,7 @@ it("says working only while the bot works, and shows nothing beside the time", (
   );
   render(
     bots.map((bot) => (
-      <BotRow
-        key={bot.id}
-        bot={bot}
-        day={0}
-        onPress={action}
-        sections={[]}
-        onOrganize={action}
-        onEditSection={action}
-      />
+      <BotRow key={bot.id} bot={bot} day={0} onPress={action} onNotifyChange={action} />
     )),
   );
   // A "Needs you" computer card or an ask card is the state; the row must not claim work.
@@ -431,117 +406,6 @@ it("says working only while the bot works, and shows nothing beside the time", (
     "HelperHi",
     "HelperHi",
   ]);
-});
-
-it("ties the pinned tiles' avatars to the pinned row, so they freeze when it scrolls away", () => {
-  const bot = { id: "bot-p", name: "Pinned", preview: "", pinned: true } as MobileBot;
-  render(<List items={[{ type: "pinned", chats: [{ kind: "bot", bot }] }]} />);
-  expect(container.querySelector('[data-row="pinned"] b[data-identity="bot-p"]')).not.toBeNull();
-});
-
-it("collapses a section from its heading and keeps the choice for the account", async () => {
-  ui.loadCollapsedSections.mockReset().mockResolvedValue(null);
-  ui.saveCollapsedSections.mockReset();
-  function SectionList({ spaces, me }: { spaces: InboxSpace[]; me: { userId: string } }) {
-    const { collapsed, toggleCollapsed, loaded } = useCollapsedSections(me.userId);
-    const renderItem = useInboxRenderItem({ ...callbacks, toggleCollapsed, day: 0, spaceId });
-    // The inbox waits for the saved choice, so a collapsed section never draws open first.
-    if (!loaded) return null;
-    return spaceInboxItems(spaces, collapsed, spaceId).map((item) =>
-      cloneElement(renderItem({ item }), { key: inboxItemKey(item) }),
-    );
-  }
-  const spaceId = "space-1";
-  const work = {
-    id: "work",
-    name: "Work",
-    position: 0,
-    createdAt: "2026-01-01T00:00:00.000Z",
-    updatedAt: "2026-01-01T00:00:00.000Z",
-  };
-  const spaces = [
-    {
-      id: spaceId,
-      name: "Personal",
-      isDefault: true,
-      hasContent: true,
-      botSections: [work],
-      groups: [],
-      bots: [
-        { id: "bot-a", name: "Alpha", preview: "", sectionId: "work" },
-        { id: "bot-b", name: "Beta", preview: "", sectionId: "work" },
-        { id: "bot-c", name: "Gamma", preview: "", sectionId: null },
-      ],
-    },
-  ] as unknown as InboxSpace[];
-  const userOne = { userId: "user-1" };
-  const heading = () => container.querySelector("button")!;
-  const names = () =>
-    Array.from(container.querySelectorAll("b[data-identity]"), (row) =>
-      row.getAttribute("data-identity"),
-    );
-  await act(async () => root.render(<SectionList spaces={spaces} me={userOne} />));
-  expect(ui.loadCollapsedSections).toHaveBeenCalledTimes(1);
-  expect(heading().getAttribute("aria-label")).toBe("Collapse Work");
-  expect(heading().getAttribute("aria-expanded")).toBe("true");
-  expect(heading().hasAttribute("data-value")).toBe(false);
-  expect(heading().textContent).toBe("Work");
-  // Every heading is a full tap target, with or without the section "…" menu beside it.
-  expect(heading().dataset.minHeight).toBe("44");
-  expect(names()).toEqual(["bot-a", "bot-b", "bot-c"]);
-
-  ui.chevronTargets = [];
-  act(() => heading().click());
-  expect(heading().getAttribute("aria-label")).toBe("Expand Work");
-  expect(heading().getAttribute("aria-expanded")).toBe("false");
-  expect(heading().getAttribute("data-value")).toBe("2");
-  expect(heading().textContent).toBe("Work2");
-  // The chevron turns back to point right.
-  expect(ui.chevronTargets).toEqual([0]);
-  expect(names()).toEqual(["bot-c"]);
-  expect(ui.saveCollapsedSections).toHaveBeenLastCalledWith(
-    "user-1",
-    new Set(["space-1:section:work"]),
-  );
-
-  act(() => heading().click());
-  expect(heading().getAttribute("aria-label")).toBe("Collapse Work");
-  expect(names()).toEqual(["bot-a", "bot-b", "bot-c"]);
-  expect(ui.saveCollapsedSections).toHaveBeenLastCalledWith("user-1", new Set());
-
-  // Quick taps save once per committed state, the final one last.
-  act(() => {
-    heading().click();
-    heading().click();
-    heading().click();
-  });
-  expect(heading().getAttribute("aria-label")).toBe("Expand Work");
-  expect(ui.saveCollapsedSections).toHaveBeenLastCalledWith(
-    "user-1",
-    new Set(["space-1:section:work"]),
-  );
-  act(() => root.unmount());
-
-  // A relaunch draws the account's collapsed sections folded from the first frame.
-  ui.loadCollapsedSections.mockResolvedValueOnce({
-    userId: "user-1",
-    keys: new Set(["space-1:section:work"]),
-  });
-  ui.avatars = [];
-  ui.chevronStarts = [];
-  root = createRoot(container);
-  await act(async () => root.render(<SectionList spaces={spaces} me={userOne} />));
-  expect(heading().getAttribute("aria-label")).toBe("Expand Work");
-  expect(names()).toEqual(["bot-c"]);
-  expect(ui.avatars).not.toContain("bot-a");
-  // Work's chevron mounts pointing right (no fold animation); Unassigned's mounts turned down.
-  expect(ui.chevronStarts.slice(0, 2)).toEqual([0, 90]);
-
-  // Another account on this device starts expanded; the saved account keeps its choice.
-  render(<SectionList spaces={spaces} me={{ userId: "user-2" }} />);
-  expect(names()).toEqual(["bot-a", "bot-b", "bot-c"]);
-  render(<SectionList spaces={spaces} me={userOne} />);
-  expect(names()).toEqual(["bot-c"]);
 });
 
 it("waits for a saved or live inbox before publishing a remounted session's search roster", () => {
@@ -597,7 +461,7 @@ it("offers every space heading's Members and Settings, and Delete only where the
       type: "heading",
       key: id,
       title: name,
-      space: { id, name, isDefault: !canDelete, canDelete, bots: [], groups: [], botSections: [] },
+      space: { id, name, isDefault: !canDelete, canDelete, bots: [], groups: [] },
     }) as unknown as InboxItem;
   render(
     <List
@@ -623,150 +487,4 @@ it("offers every space heading's Members and Settings, and Delete only where the
   });
   act(() => ui.menus[1]!.onPressAction({ nativeEvent: { event: "delete" } }));
   expect(confirmDeleteSpace).toHaveBeenCalledWith(expect.objectContaining({ id: "space-work" }));
-});
-
-it("asks for a model instead of making the first bot when the account has none", async () => {
-  let me: Promise<unknown> = Promise.resolve({ needsModel: true });
-  let bots: unknown[] = [];
-  ui.push.mockReset();
-  ui.alert.mockReset();
-  ui.rpc.mockReset().mockImplementation(async (method: string) => {
-    if (method === "me") return me;
-    return method === "bots/list" ? bots : { id: "bot-new", name: "New Bot" };
-  });
-  const openChat = vi.fn();
-  const create = () => createInboxBot({ refreshBots: async () => undefined, openChat });
-  const buttons = () =>
-    ui.alert.mock.lastCall?.[2] as { text: string; onPress?: () => void }[] | undefined;
-  const select = (spaceId: string) => {
-    ui.spaceId = spaceId;
-    ui.spaceSeq++;
-  };
-
-  await create();
-  expect(ui.alert).toHaveBeenCalledWith("Add an AI model to keep chatting", undefined, [
-    expect.objectContaining({ text: "Not Now" }),
-    expect.objectContaining({ text: "Add model" }),
-  ]);
-  buttons()?.[0]?.onPress?.();
-  expect(ui.push).not.toHaveBeenCalled();
-  buttons()?.[1]?.onPress?.();
-  expect(ui.push).toHaveBeenCalledWith("/(settings)/models");
-  expect(ui.rpc).not.toHaveBeenCalledWith("bots/create", expect.anything());
-  expect(openChat).not.toHaveBeenCalled();
-
-  // A read that lands after a switch of account or Space neither asks nor creates there.
-  ui.alert.mockReset();
-  const answers = [
-    () => Promise.resolve({ needsModel: true }),
-    () => Promise.resolve({ needsModel: false }),
-    () => Promise.reject(new Error("down")),
-  ];
-  for (const answer of answers) {
-    const leaves = [
-      () => (ui.sameSession = false),
-      () => select("space-b"),
-      // A fallback after the Space is deleted elsewhere changes it without a selection.
-      () => (ui.spaceId = "space-c"),
-      // Back in A, the answer may still be B's: each read follows the Space selected when sent.
-      () => {
-        select("space-b");
-        select("space-a");
-      },
-    ];
-    for (const leave of leaves) {
-      let land!: () => void;
-      me = new Promise<void>((resolve) => (land = resolve)).then(answer);
-      const moved = create();
-      leave();
-      land();
-      await moved;
-      ui.sameSession = true;
-      select("space-a");
-    }
-  }
-  expect(ui.alert).not.toHaveBeenCalled();
-  expect(ui.rpc).not.toHaveBeenCalledWith("bots/create", expect.anything());
-  expect(openChat).not.toHaveBeenCalled();
-
-  // Once a model is connected, or when `me` can't be read, Create makes the bot as before.
-  for (const answer of [
-    Promise.resolve({ needsModel: false }),
-    Promise.reject(new Error("down")),
-  ]) {
-    me = answer;
-    ui.rpc.mockClear();
-    openChat.mockClear();
-    await create();
-    expect(ui.rpc).toHaveBeenCalledWith("bots/create", expect.anything());
-    expect(openChat).toHaveBeenCalledTimes(1);
-  }
-
-  // A list that fails isn't known to be empty, so Create makes the bot without asking.
-  me = Promise.resolve({ needsModel: true });
-  ui.rpc.mockClear();
-  openChat.mockClear();
-  const listed = ui.rpc.getMockImplementation();
-  ui.rpc.mockImplementation(async (method: string, ...rest: unknown[]) =>
-    method === "bots/list" ? Promise.reject(new Error("down")) : listed?.(method, ...rest),
-  );
-  await create();
-  ui.rpc.mockImplementation(listed!);
-  expect(ui.rpc).not.toHaveBeenCalledWith("me");
-  expect(ui.alert).not.toHaveBeenCalled();
-  expect(ui.rpc).toHaveBeenCalledWith("bots/create", expect.anything());
-  expect(openChat).toHaveBeenCalledTimes(1);
-
-  // A later bot opens its chat, where the missing-model send error offers Add model.
-  bots = [{ id: "bot-1" }];
-  ui.rpc.mockClear();
-  await create();
-  expect(ui.rpc).toHaveBeenCalledWith("bots/create", expect.anything());
-  expect(ui.alert).not.toHaveBeenCalled();
-  // Nor is a later bot made in the Space switched to while the list loaded.
-  ui.rpc.mockClear();
-  const moved = create();
-  select("space-b");
-  await moved;
-  select("space-a");
-  expect(ui.rpc).not.toHaveBeenCalledWith("bots/create", expect.anything());
-});
-
-it("adds a bot made from the inbox's Create menu to the inbox roster before opening its chat", async () => {
-  const bot = { id: "bot-new", name: "New Bot", spaceId: "space-a" };
-  const askedIn = { generation: 7, apiBase: "http://api.test" };
-  const calls: string[] = [];
-  ui.rpc.mockReset().mockImplementation(async (method: string) => {
-    calls.push(method);
-    // A server that predates `needsModel` leaves it out of `me`.
-    if (method === "me") return {};
-    return method === "bots/create" ? bot : [];
-  });
-  ui.searchInboxSession.mockReset().mockImplementation(() => {
-    calls.push("session");
-    return askedIn;
-  });
-  ui.addToSearchInbox
-    .mockReset()
-    .mockImplementation((item: unknown, session: unknown) =>
-      calls.push(`roster ${JSON.stringify(item)} ${JSON.stringify(session)}`),
-    );
-  await createInboxBot({
-    refreshBots: async () => undefined,
-    openChat: (destination) => calls.push(`open ${JSON.stringify(destination)}`),
-  });
-  // The server gives the bot the account's set, so the inbox sends none.
-  expect(ui.rpc).toHaveBeenCalledWith(
-    "bots/create",
-    expect.not.objectContaining({ avatarSet: expect.anything() }),
-  );
-  // The session is taken before the requests, so a bot that lands after a switch is dropped.
-  expect(calls.slice(0, 6)).toEqual([
-    "session",
-    "bots/list",
-    "me",
-    "bots/create",
-    `roster ${JSON.stringify({ kind: "bot", bot })} ${JSON.stringify(askedIn)}`,
-    `open ${JSON.stringify({ pathname: "/thread", params: { botId: bot.id, name: bot.name } })}`,
-  ]);
 });

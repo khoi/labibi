@@ -38,13 +38,6 @@ name: Workspace
     timeout: 3000
 - takeScreenshot: 06-vault-new-card
 - tapOn: "Cancel"
-- openLink: "rakazo:///archived-bots"
-- extendedWaitUntil:
-    visible: ".*Archived fixture.*"
-    timeout: 15000
-- waitForAnimationToEnd:
-    timeout: 3000
-- takeScreenshot: 07-archived-bots
 - openLink: "rakazo:///space?spaceId=${RAKAZO_SCREENSHOT_TEAM_SPACE_ID}"
 - extendedWaitUntil:
     visible: ".*Customize.*"

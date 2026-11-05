@@ -53,19 +53,13 @@ const retiredBoardRecords = [
 
 function sourceRecords(): AccountExportRecord[] {
   return [
-    { type: "bot_section", id: "src-section", name: "Work", position: 0, createdAt: at },
     {
       type: "bot",
       id: "src-bot-child",
       name: "Scout",
-      description: "Finds things",
       instructions: "Be brief.",
       color: "#3EC5A8",
-      avatarSet: "organic",
       notifyOnFinish: false,
-      pinned: true,
-      position: 1,
-      sectionId: "src-section",
       archivedAt: null,
       // Its parent comes later in the file.
       memoryScope: null,
@@ -83,14 +77,9 @@ function sourceRecords(): AccountExportRecord[] {
       type: "bot",
       id: "src-bot-parent",
       name: "Chief",
-      description: "",
       instructions: "",
       color: "#F5A03C",
-      avatarSet: "rakazo",
       notifyOnFinish: true,
-      pinned: false,
-      position: 0,
-      sectionId: null,
       archivedAt: null,
       memoryScope: null,
       voiceId: null,
@@ -107,8 +96,6 @@ function sourceRecords(): AccountExportRecord[] {
       type: "chat_group",
       id: "src-group",
       name: "Crew",
-      pinned: false,
-      sectionId: null,
       archivedAt: null,
       botIds: ["src-bot-child", "src-bot-parent"],
       createdAt: at,
@@ -404,10 +391,7 @@ describePostgres("account import (PostgreSQL)", () => {
     const parent = bots.find((bot) => bot.name === "Chief")!;
     expect(bots).toHaveLength(2);
     expect(bots.every((bot) => bot.userId === userId && !bot.id.startsWith("src-"))).toBe(true);
-    expect(child.pinned).toBe(true);
     expect(child.disabledBuiltinTools).toEqual(["browser"]);
-    const section = await system.botSection.findFirstOrThrow({ where: { spaceId } });
-    expect(child.sectionId).toBe(section.id);
     expect(child.computer).not.toBeNull();
 
     const thread = child.thread!;

@@ -16,7 +16,6 @@ import { currentApiBase, loadSessionToken, rpc, selectedSpaceId } from "./api";
 import { findSwitchTarget } from "./bot-switch";
 import { chatSettingsRoute } from "./chat-settings-route";
 import { subscribeComposerOffer } from "./composer-offer";
-import { cancelFocusPrompt } from "./focus-prompt";
 import { useI18n } from "./i18n";
 import { resumeLiveNotifications } from "./live-notifications";
 import { takePageReply } from "./pages";
@@ -230,8 +229,7 @@ export function useThreadSend({
   }
 
   function afterDelivered(attempt: SendAttempt) {
-    const { initialBotTarget, botTarget, groupTarget, reroutedToGroup, plan } = attempt.payload;
-    if (initialBotTarget) cancelFocusPrompt(initialBotTarget);
+    const { botTarget, groupTarget, reroutedToGroup, plan } = attempt.payload;
     const generation = currentSessionGeneration();
     const apiBase = currentApiBase();
     const spaceId = selectedSpaceId();

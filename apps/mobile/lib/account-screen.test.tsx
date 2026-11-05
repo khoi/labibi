@@ -198,10 +198,6 @@ vi.mock("./appearance", () => ({
   mobileTokens: () => ({}),
   setAppearancePreference: vi.fn(),
 }));
-vi.mock("./archived-chats", () => ({
-  archivedChatCounts: () => ({ bots: 0, groups: 0 }),
-  loadArchivedChats: vi.fn(async () => ({ bots: [], groups: [] })),
-}));
 vi.mock("./auth-routing", () => ({ replaceWithSignIn: vi.fn() }));
 vi.mock("./delete-account-prompt", () => ({ promptAccountDeletion: vi.fn() }));
 vi.mock("./i18n", () => {

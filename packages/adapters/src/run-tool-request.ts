@@ -419,13 +419,9 @@ const OWNER_SETTINGS = ["model", "thinkingLevel", "voice", "readAloud"];
 const OWN_FIELDS = new Set([
   ...OWNER_SETTINGS,
   "name",
-  "description",
   "instructions",
   "instructions_offset",
   "instructionsOffset",
-  "color",
-  "artifact_id",
-  "use_attached_image",
   "notifyOnFinish",
   "notify_on_finish",
 ]);

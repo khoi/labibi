@@ -7,7 +7,6 @@ import { glassHeaderOptions } from "../components/glass-title";
 import { NativeActionButton } from "../components/native-action-button";
 import type { MobileBot, MobileGroup } from "../lib/api";
 import { rpc } from "../lib/api";
-import { notifyArchivedChatsChanged } from "../lib/archived-chats";
 import { confirmDeleteGroup } from "../lib/bot-lifecycle";
 import { useI18n } from "../lib/i18n";
 import { native, useMobileTokens } from "../lib/native";
@@ -63,10 +62,7 @@ export default function GroupSettingsScreen() {
 
   function remove() {
     if (!groupId || !group) return;
-    confirmDeleteGroup({ id: groupId, name: group.name }, () => {
-      notifyArchivedChatsChanged();
-      router.replace("/");
-    });
+    confirmDeleteGroup({ id: groupId, name: group.name }, () => router.replace("/"));
   }
 
   return (

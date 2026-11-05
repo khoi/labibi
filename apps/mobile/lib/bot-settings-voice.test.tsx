@@ -13,8 +13,6 @@ import { afterChatNotifyChange } from "./live-notifications";
 
 const mocks = vi.hoisted(() => ({
   instructions: "",
-  description: "",
-  avatarSet: undefined as "organic" | "rakazo" | undefined,
   focus: undefined as string | undefined,
   os: "ios",
   work: [] as unknown[],
@@ -89,10 +87,8 @@ vi.mock("./api", () => ({
         name: "Fixture",
         title: "",
         instructions: mocks.instructions,
-        description: mocks.description,
         instructionHistory: mocks.history,
         color: BOT_COLORS[0],
-        avatarSet: mocks.avatarSet,
         autoSpeak: false,
         computerMode: "team",
       };
@@ -263,13 +259,6 @@ vi.mock("./i18n", () => {
   return { t, useI18n: () => ({ t }) };
 });
 vi.mock("../components/bot-avatar", () => ({ BotAvatar: () => null }));
-vi.mock("./bot-avatar-edit", () => ({
-  avatarColor: (value: string) => value,
-  avatarShape: () => null,
-  isAvatarPhoto: () => false,
-  withAvatarColor: (_value: string, color: string) => color,
-  withAvatarShape: (value: string) => value,
-}));
 vi.mock("../components/native-segmented-control", () => ({
   NativeSegmentedControl: ({
     options,
@@ -359,13 +348,11 @@ describe("bot settings device voice menu", () => {
   let root: Root;
   let container: HTMLDivElement;
   beforeEach(() => {
-    mocks.avatarSet = undefined;
     vi.clearAllMocks();
     mocks.loadBot.mockReset();
     vi.mocked(Notifications.getPresentedNotificationsAsync).mockResolvedValue([]);
     mocks.focus = undefined;
     mocks.instructions = "";
-    mocks.description = "";
     mocks.os = "ios";
     mocks.work = [];
     mocks.history = [];
@@ -468,21 +455,6 @@ describe("bot settings device voice menu", () => {
     expect(mocks.rpc).toHaveBeenCalledWith("threads/clear", { botId: "bot-fixture" });
   });
 
-  it("opens avatar controls from the header and closes the sheet", async () => {
-    await render();
-    expect(container.textContent).not.toContain("Shape");
-    await act(async () =>
-      container.querySelector<HTMLButtonElement>('[aria-label="Edit avatar"]')!.click(),
-    );
-    expect(container.textContent).toContain("Shape");
-    await act(async () =>
-      [...container.querySelectorAll("button")]
-        .find((button) => button.textContent === "Done")!
-        .click(),
-    );
-    expect(container.textContent).not.toContain("Shape");
-  });
-
   it("expands Advanced for a native model deep link", async () => {
     mocks.focus = "model";
     await act(async () => root.render(<BotSettingsScreen />));
@@ -542,9 +514,8 @@ describe("bot settings device voice menu", () => {
 
   it("sizes multiline editors from an unconstrained copy of their loaded content", async () => {
     mocks.instructions = "First line\nSecond line\nThird line\nFourth line\nFifth line";
-    mocks.description = mocks.instructions;
     await render();
-    for (const label of ["Instructions", "How other bots see it"]) {
+    for (const label of ["Instructions"]) {
       const input = container.querySelector<HTMLElement>(`[aria-label="${label}"]`)!;
       const style = Object.assign({}, ...JSON.parse(input.dataset.style!).flat(Infinity));
       expect(style).toMatchObject({ position: "absolute", top: 0, bottom: 0, lineHeight: 22 });

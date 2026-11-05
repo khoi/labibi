@@ -95,12 +95,8 @@ function builtinParameters(tool: ConnectorTool) {
   if (tool.name === "update_bot") {
     return Type.Object({
       name: Type.Optional(Type.String()),
-      description: Type.Optional(Type.String()),
       instructions: Type.Optional(Type.String()),
       instructions_offset: Type.Optional(Type.Integer({ minimum: 0 })),
-      color: Type.Optional(Type.String()),
-      artifact_id: Type.Optional(Type.String()),
-      use_attached_image: Type.Optional(Type.Boolean()),
       notifyOnFinish: Type.Optional(Type.Boolean()),
       model: Type.Optional(Type.String()),
       thinkingLevel: Type.Optional(stringEnum(ThinkingLevelSchema.options, {})),
@@ -259,17 +255,8 @@ function fieldOptions(definition: Record<string, unknown>): FieldOptions {
     : {};
 }
 
-const UPDATE_BOT_STRING_ARGS = [
-  "name",
-  "description",
-  "color",
-  "artifact_id",
-  "model",
-  "thinkingLevel",
-  "voice",
-  "instructions",
-] as const;
-const UPDATE_BOT_FLAG_ARGS = ["use_attached_image", "readAloud"] as const;
+const UPDATE_BOT_STRING_ARGS = ["name", "model", "thinkingLevel", "voice", "instructions"] as const;
+const UPDATE_BOT_FLAG_ARGS = ["readAloud"] as const;
 
 /**
  * Keeps only the `update_bot` arguments a model sent, coerced to their declared types.

@@ -1,4 +1,3 @@
-import type { BotAvatarSet } from "@labradoodle/contracts";
 import { avatarPhotoDot } from "@labradoodle/core";
 import { MAX_FONT_SCALE, typeScale } from "@labradoodle/ui-tokens";
 import { useEffect, useState } from "react";
@@ -23,7 +22,6 @@ import { BotAvatar } from "./bot-avatar";
 export type ActivityMarkBot = {
   id: string;
   color: string;
-  avatarSet?: BotAvatarSet;
   status?: string;
   composing?: boolean;
 };

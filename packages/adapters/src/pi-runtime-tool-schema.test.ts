@@ -440,21 +440,4 @@ describe("update_bot parameters", () => {
     });
     expect(() => parseConnectorToolArgs(schema, { notifyOnFinish: "false" })).toThrow();
   });
-
-  it("still accepts avatar fields from the calling bot", () => {
-    const tool = builtinAgentTools.find((entry) => entry.name === "update_bot");
-    expect(tool).toBeTruthy();
-    const schema = JSON.parse(JSON.stringify(parametersFor(tool!))) as Record<string, unknown>;
-    expect(
-      parseConnectorToolArgs(schema, {
-        color: "#8B5CF6",
-        artifact_id: "art-1",
-        use_attached_image: true,
-      }),
-    ).toEqual({
-      color: "#8B5CF6",
-      artifact_id: "art-1",
-      use_attached_image: true,
-    });
-  });
 });

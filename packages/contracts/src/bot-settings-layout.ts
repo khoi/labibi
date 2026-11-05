@@ -9,7 +9,6 @@ export const BOT_SETTINGS_SECTIONS = {
     "readAloud",
     "voice",
     "instructions",
-    "description",
     "disabledTools",
     "credentials",
     "skills",

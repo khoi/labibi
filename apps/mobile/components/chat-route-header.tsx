@@ -8,7 +8,6 @@ import { threadEdgeOptions } from "../lib/thread-edges";
 import type { ChatTitleParams } from "./chat-header-title";
 import { ChatHeaderTitle } from "./chat-header-title";
 import { NativeSymbol } from "./native-symbol";
-import { trailingHeaderOptions } from "./sheet-header";
 import { openInvite, threadHeaderRight } from "./thread-header-right";
 
 /**
@@ -48,8 +47,6 @@ export function chatRouteHeader(
       onInvite: canInvite && botId ? openInvite : undefined,
     }),
     ...threadHeaderLeft({ split, inboxHidden, foldActive, t, color }),
-    // An archived chat offers Restore; the open chat gives it its action.
-    ...(readOnly ? trailingHeaderOptions(t("Restore"), () => undefined) : {}),
   };
 }
 

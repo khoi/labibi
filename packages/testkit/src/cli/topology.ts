@@ -51,7 +51,6 @@ async function main() {
     const bot = await rpc<{ id: string }>(baseUrl, cookie, "bots/create", {
       name: "Topology",
       title: "Topology smoke bot",
-      description: "Exercises the production-shaped test topology",
       instructions: "Use the file tool when asked to write a file.",
       notifyOnFinish: false,
     });

@@ -322,35 +322,21 @@ async function seedFixture(app: App, prisma: PrismaClient) {
   const researcher = await rpc<{ id: string }>(app, cookie, "bots/create", {
     name: "Researcher",
     title: "Product research",
-    description: "Finds evidence and keeps fixture notes organized.",
     instructions: "Find evidence and summarize it clearly.",
     notifyOnFinish: true,
   });
   const writer = await rpc<{ id: string }>(app, cookie, "bots/create", {
     name: "Writer",
     title: "Clear writing",
-    description: "Turns research into concise drafts.",
     instructions: "Write concise drafts from the available evidence.",
     notifyOnFinish: true,
   });
   const support = await rpc<{ id: string }>(app, cookie, "bots/create", {
     name: "Support",
     title: "Customer support",
-    description: "Prepares friendly customer replies.",
     instructions: "Prepare accurate and friendly customer replies.",
     notifyOnFinish: false,
   });
-  const archived = await rpc<{ id: string }>(app, cookie, "bots/create", {
-    name: "Archived fixture",
-    title: "Archived",
-    description: "A recoverable archived bot for account screenshots.",
-    instructions: "Remain archived.",
-    notifyOnFinish: true,
-  });
-  await rpc(app, cookie, "bots/archive", { botId: archived.id });
-  for (const botId of [writer.id, support.id]) {
-    await rpc(app, cookie, "bots/update", { botId, pinned: true });
-  }
 
   const group = await rpc<{ id: string }>(app, cookie, "groups/create", {
     name: "Launch team",

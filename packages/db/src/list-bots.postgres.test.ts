@@ -127,7 +127,7 @@ describePostgres("listBots sidebar previews (PostgreSQL)", () => {
           taskId: task.id,
           userId: owner.userId,
           status: "completed",
-          trigger: "bot_message",
+          trigger: "tickets",
         },
       });
       await seedThread(longBot.threadId, 40);
@@ -206,26 +206,5 @@ describePostgres("listBots sidebar previews (PostgreSQL)", () => {
     const fallbackWindows = 1;
     expect(rowCount).toBeGreaterThanOrEqual(window * 2 + 5);
     expect(rowCount).toBeLessThanOrEqual(window * threads + window * fallbackWindows);
-  });
-
-  it("keeps an archived bot on the archived roster with the same preview", async () => {
-    const actor = actorFor(owner);
-    const short = await asSystem(prisma).bot.findFirstOrThrow({
-      where: { spaceId: owner.spaceId, userId: owner.userId, name: "Short" },
-    });
-    await asSystem(prisma).bot.update({
-      where: { id: short.id },
-      data: { archivedAt: new Date() },
-    });
-
-    const [active, archived] = await runAsTenant(owner, () => {
-      const repos = createRepos(prisma);
-      return Promise.all([repos.listBots(actor), repos.listBots(actor, { archived: true })]);
-    });
-    expect(active.map((bot) => bot.name)).toEqual(["Long", "Peer"]);
-    expect(archived.find((bot) => bot.name === "Short")).toMatchObject({
-      preview: "Message 4",
-      updatedAt: shortUpdatedAt,
-    });
   });
 });

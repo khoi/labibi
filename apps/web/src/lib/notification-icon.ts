@@ -1,11 +1,11 @@
 import { notificationAvatarSource } from "@labradoodle/core";
 
-type AvatarBot = { id: string; color: string; avatarSet?: string | null };
+type AvatarBot = { id: string; color: string };
 
 const ICON_SIZE = 96;
 const icons = new Map<string, { key: string; icon?: string }>();
 
-const avatarKey = (bot: AvatarBot) => `${bot.avatarSet ?? ""}\n${bot.color}`;
+const avatarKey = (bot: AvatarBot) => bot.color;
 
 // Chromium and Electron do not reliably draw SVG notification icons.
 function rasterize(svgUrl: string): Promise<string | undefined> {

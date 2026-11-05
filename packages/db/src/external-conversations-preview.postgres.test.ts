@@ -161,7 +161,6 @@ describePostgres("team-chat conversation previews (PostgreSQL)", () => {
     const botA = await runAsTenant(actorA, () =>
       createRepos(prisma).createBot(actorA, {
         name: "Bridge A",
-        description: "",
         instructions: "",
         notifyOnFinish: true,
       }),
@@ -169,7 +168,6 @@ describePostgres("team-chat conversation previews (PostgreSQL)", () => {
     const botB = await runAsTenant(actorB, () =>
       createRepos(prisma).createBot(actorB, {
         name: "Bridge B",
-        description: "",
         instructions: "",
         notifyOnFinish: true,
       }),

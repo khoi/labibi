@@ -22,7 +22,6 @@ import {
   AccountExportManifestSchema,
   AccountExportRecordSchema,
   attachmentSizeLabel,
-  resolveBotAvatarSet,
 } from "@labradoodle/contracts";
 import { organicAvatarFamily } from "@labradoodle/core";
 import {
@@ -524,18 +523,6 @@ class AccountImporter implements ArchiveSink {
       return id;
     };
     switch (record.type) {
-      case "bot_section":
-        await prisma.botSection.create({
-          data: {
-            id: newId(),
-            spaceId,
-            userId,
-            name: record.name,
-            position: record.position,
-            createdAt: new Date(record.createdAt),
-          },
-        });
-        return;
       case "bot":
         return this.importBot(record);
       case "chat_group": {
@@ -546,8 +533,6 @@ class AccountImporter implements ArchiveSink {
             spaceId,
             userId,
             name: record.name,
-            pinned: record.pinned,
-            sectionId: space.optional(record.sectionId),
             archivedAt: date(record.archivedAt),
             createdAt: new Date(record.createdAt),
           },
@@ -730,11 +715,9 @@ class AccountImporter implements ArchiveSink {
     if (space.ids.has(record.id)) throw unreadable();
     const bot = await this.repos.createBot(space.actor, {
       name: record.name,
-      description: record.description,
       instructions: record.instructions,
       notifyOnFinish: record.notifyOnFinish,
       color: record.color,
-      avatarSet: resolveBotAvatarSet(record.avatarSet),
       // Bot ids pick the avatar shape; keep the look the bot had.
       avatarFamily: organicAvatarFamily(record.id),
       modelProvider: record.modelProvider,
@@ -745,9 +728,6 @@ class AccountImporter implements ArchiveSink {
         await tx.bot.update({
           where: { id: botId },
           data: {
-            pinned: record.pinned,
-            position: record.position,
-            sectionId: space.optional(record.sectionId),
             archivedAt: date(record.archivedAt),
             memoryScope: record.memoryScope,
             voiceId: record.voiceId,

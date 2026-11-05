@@ -2,7 +2,6 @@ import type { SandboxProvider } from "@labradoodle/adapter-kit";
 import type { Actor } from "@labradoodle/contracts";
 import type { ThreadEvents } from "@labradoodle/db";
 import {
-  appendEventInTransaction,
   createDb,
   createGroupRepos,
   createRepos,
@@ -16,7 +15,7 @@ import { resolveThreadTarget, stopThreadRuns, threadSnapshot } from "./thread-ta
 const enabled = process.env.VERIFY_DATABASE === "1" && Boolean(process.env.DATABASE_URL);
 
 describe.skipIf(!enabled)("working bot visibility (PostgreSQL)", () => {
-  it("prioritizes running work everywhere, keeps delegated DM progress silent, and stops it", async () => {
+  it("prioritizes running work everywhere and stops it", async () => {
     const { prisma, pool } = createDb(process.env.DATABASE_URL!);
     const identity = await runAsSystem("test fixture", () =>
       provisionMessagingIdentity(
@@ -33,7 +32,7 @@ describe.skipIf(!enabled)("working bot visibility (PostgreSQL)", () => {
       await runAsTenant(actor, async () => {
         const repos = createRepos(prisma);
         const groups = createGroupRepos(prisma);
-        const input = { title: "", description: "", instructions: "", notifyOnFinish: true };
+        const input = { title: "", instructions: "", notifyOnFinish: true };
         const bot = await repos.createBot(actor, { ...input, name: "Research Helper" });
         const peer = await repos.createBot(actor, { ...input, name: "Writing Helper" });
         const group = await groups.createGroup(actor, {
@@ -41,7 +40,6 @@ describe.skipIf(!enabled)("working bot visibility (PostgreSQL)", () => {
           botIds: [bot.id, peer.id],
         });
         const target = await resolveThreadTarget(prisma, actor, { botId: bot.id });
-        const groupTarget = await resolveThreadTarget(prisma, actor, { groupId: group.id });
         const scope = {
           spaceId: actor.spaceId,
           userId: actor.userId,
@@ -56,21 +54,13 @@ describe.skipIf(!enabled)("working bot visibility (PostgreSQL)", () => {
             ...scope,
             taskId: task.id,
             status: "running",
-            trigger: "bot_message",
+            trigger: "user",
             createdAt: new Date(Date.now() - 1000),
           },
         });
         const queued = await prisma.run.create({
           data: { ...scope, taskId: task.id, status: "queued", trigger: "user" },
         });
-        await prisma.$transaction((tx) =>
-          appendEventInTransaction(tx, {
-            ...scope,
-            runId: running.id,
-            type: "thread.progress",
-            payload: { text: "Inspecting sample files" },
-          }),
-        );
         const assertRosterStatus = async (status: string) => {
           expect((await repos.listBots(actor)).find((row) => row.id === bot.id)?.status).toBe(
             status,
@@ -105,31 +95,6 @@ describe.skipIf(!enabled)("working bot visibility (PostgreSQL)", () => {
         expect(snapshot.activeRuns).toEqual(
           expect.arrayContaining([expect.objectContaining({ id: running.id })]),
         );
-        expect(snapshot.messages.flatMap((message) => message.blocks)).not.toContainEqual(
-          expect.objectContaining({ kind: "progress", text: "Inspecting sample files" }),
-        );
-        // Peer work and failures remain silent in groups.
-        const peerRun = await prisma.run.create({
-          data: {
-            ...scope,
-            taskId: task.id,
-            threadId: groupTarget.threadId,
-            status: "running",
-            trigger: "bot_message",
-          },
-        });
-        expect(await threadSnapshot({ prisma }, groupTarget)).toMatchObject({
-          run: null,
-          activeRuns: [],
-        });
-        await prisma.run.update({
-          where: { id: peerRun.id },
-          data: { status: "failed", error: "Sample failure" },
-        });
-        expect(await threadSnapshot({ prisma }, groupTarget)).toMatchObject({
-          run: null,
-          activeRuns: [],
-        });
         await prisma.run.update({ where: { id: running.id }, data: { status: "completed" } });
         // Background work must not override queued conversational work.
         await prisma.run.create({

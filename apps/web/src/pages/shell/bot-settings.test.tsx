@@ -30,6 +30,7 @@ vi.mock("@lingui/react/macro", () => {
   return { useLingui: () => ({ t }), Trans: ({ children }: { children: ReactNode }) => children };
 });
 vi.mock("@labradoodle/ui-web", () => ({
+  BotAvatar: () => <span />,
   SectionHeading: ({ variant, ...props }: ComponentProps<"h3"> & { variant?: string }) => (
     <h3 data-variant={variant} {...props} />
   ),
@@ -83,7 +84,6 @@ vi.mock("@labradoodle/ui-web", () => ({
   ),
 }));
 vi.mock("../KnowledgeSection", () => ({ KnowledgeSection: () => null }));
-vi.mock("./avatar-studio-popover", () => ({ AvatarStudioPopover: () => null }));
 
 import { BotSettings } from "./bot-panel";
 
@@ -92,12 +92,9 @@ const bot = {
   spaceId: "space-1",
   name: "Ada",
   title: "Helper",
-  description: "Helps",
   instructions: "Helps",
   color: "ink",
   notifyOnFinish: true,
-  pinned: false,
-  sectionId: null,
   archivedAt: null,
   unread: false,
   memoryScope: null,

@@ -122,10 +122,7 @@ export async function querySpaceSearch(
     where: {
       spaceId: actor.spaceId,
       archivedAt: null,
-      OR: [
-        { name: { contains: likeQuery, mode: "insensitive" } },
-        { description: { contains: likeQuery, mode: "insensitive" } },
-      ],
+      name: { contains: likeQuery, mode: "insensitive" },
     },
     take: CONVERSATION_HIT_LIMIT,
   });
@@ -137,7 +134,7 @@ export async function querySpaceSearch(
         botId: bot.id,
         botName: bot.name,
         title: bot.name,
-        snippet: bot.description || displayName(bot.name, ""),
+        snippet: displayName(bot.name, ""),
       },
       CONVERSATION_HIT_LIMIT * 2,
     );
@@ -145,7 +142,7 @@ export async function querySpaceSearch(
 
   // Only groups that can actually be opened: not archived, and still holding
   // enough active-member bots (archiving bots can empty a group below the
-  // minimum — those land on the Archived list instead of opening).
+  // minimum).
   const openableGroups = await prisma.$queryRaw<Array<{ id: string }>>(
     Prisma.sql`
       SELECT g.id FROM chat_groups g

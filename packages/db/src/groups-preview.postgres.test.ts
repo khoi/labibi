@@ -150,7 +150,6 @@ describePostgres("group sidebar previews (PostgreSQL)", () => {
     return runAsTenant(who, async () => {
       const created = await createRepos(prisma).createBot(who, {
         name,
-        description: "",
         instructions: "",
         notifyOnFinish: true,
       });
@@ -299,27 +298,5 @@ describePostgres("group sidebar previews (PostgreSQL)", () => {
       },
     ]);
     expect(rowCount).toBeLessThanOrEqual(listed.length);
-  });
-
-  it("keeps the newest preview after the group is archived", async () => {
-    const groups = createGroupRepos(prisma);
-    await runAsTenant(owner, () => groups.archiveGroup(actor, gamma.id));
-    const { result: archived, rowCount } = await messageRowsDuring("listArchivedGroups", () =>
-      runAsTenant(owner, () => groups.listGroups(actor, { archived: true })),
-    );
-    const stored = await runAsTenant(owner, () =>
-      prisma.chatGroup.findUniqueOrThrow({ where: { id: gamma.id } }),
-    );
-    expect(archived.find((group) => group.id === gamma.id)).toMatchObject({
-      preview: gamma.preview,
-      unread: gamma.unread,
-      updatedAt: stored.updatedAt.toISOString(),
-    });
-    expect(rowCount).toBeLessThanOrEqual(1);
-    const active = await runAsTenant(owner, () => groups.listGroups(actor));
-    expect(active.map((group) => [group.name, group.preview])).toEqual([
-      [alpha.name, alpha.preview],
-      [beta.name, beta.preview],
-    ]);
   });
 });

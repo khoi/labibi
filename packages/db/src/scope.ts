@@ -9,14 +9,6 @@ export class IsolationError extends Error {
   }
 }
 
-/** Unique (spaceId, userId, name) collision when renaming a bot section. */
-export class BotSectionNameConflictError extends Error {
-  constructor(message = "Section name already used") {
-    super(message);
-    this.name = "BotSectionNameConflictError";
-  }
-}
-
 /**
  * The actor for a request. Without a chosen Space, a session opens the organization it was
  * first given, which is the one the user was last active in, so its requests never drift

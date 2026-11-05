@@ -88,8 +88,8 @@ export type EvalCase = {
   computerFiles?: Array<{ path: string; content: string | Uint8Array }>;
   /**
    * Run the case in a group thread with these other member bots, named as history authors. With
-   * `roles`, every member (the subject as "Assistant" too) gets that description, any
-   * `instructions` given for it, and the eval model, so any of them can answer.
+   * `roles`, every member (the subject as "Assistant" too) gets the `instructions` given for it,
+   * or else its role as instructions, and the eval model, so any of them can answer.
    */
   group?: {
     members: string[];

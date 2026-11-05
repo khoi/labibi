@@ -542,7 +542,6 @@ describeIntegration("reusable credential lifecycle", () => {
       const bot = await rpc<{ id: string }>(seeded.cookie, "bots/create", {
         name: "Executor login-replace 2",
         title: "",
-        description: "",
         instructions: "",
         notifyOnFinish: false,
       });
@@ -652,7 +651,6 @@ describeIntegration("reusable credential lifecycle", () => {
     const bot = await rpc<{ id: string }>(cookie, "bots/create", {
       name: `Executor ${label}`,
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: false,
     });

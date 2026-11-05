@@ -1,11 +1,7 @@
-import { groupBotsForSidebar } from "@labradoodle/core";
-
 type SidebarChat = {
   id: string;
   name: string;
   preview?: string | null;
-  pinned: boolean;
-  sectionId: string | null;
 };
 
 type SidebarSpace<TBot extends SidebarChat, TGroup extends SidebarChat> = {
@@ -16,7 +12,6 @@ type SidebarSpace<TBot extends SidebarChat, TGroup extends SidebarChat> = {
   shared?: boolean;
   bots: readonly TBot[];
   groups: readonly TGroup[];
-  botSections: readonly { id: string; name: string }[];
 };
 
 function spaceHeaderMenu(space: { canRename?: boolean; canDelete?: boolean }, hostsMenu: boolean) {
@@ -41,103 +36,47 @@ export async function commitSpaceRename(input: {
 export function sidebarGroupsForSpaces<TBot extends SidebarChat, TGroup extends SidebarChat>(
   spaces: readonly SidebarSpace<TBot, TGroup>[],
   query: string,
-  labels?: { pinned: string; unassigned: string },
 ) {
   const needle = query.toLowerCase();
+  const matches = (chat: SidebarChat) =>
+    `${chat.name} ${chat.preview ?? ""}`.toLowerCase().includes(needle);
   const showSpaceNames = spaces.length > 1;
   return spaces.flatMap((space) => {
-    const visibleBots = space.bots.filter((bot) =>
-      `${bot.name} ${bot.preview ?? ""}`.toLowerCase().includes(needle),
-    );
-    const visibleGroups = space.groups.filter((group) =>
-      `${group.name} ${group.preview ?? ""}`.toLowerCase().includes(needle),
-    );
-    const grouped = groupBotsForSidebar(
-      [
-        ...visibleBots.map((chat) => ({ kind: "bot" as const, chat })),
-        ...visibleGroups.map((chat) => ({ kind: "group" as const, chat })),
-      ].map((item) => ({
-        ...item,
-        id: item.chat.id,
-        pinned: item.chat.pinned,
-        sectionId: item.chat.sectionId,
-      })),
-      space.botSections,
-      { labels },
-    );
-    // Keep destinations visible after their last bot is dragged out. Search
-    // still hides empty lists, and spaces without sections keep their old layout.
-    if (!needle && space.botSections.length > 0 && grouped.length > 0) {
-      for (const section of space.botSections) {
-        const key = `section:${section.id}`;
-        if (!grouped.some((group) => group.key === key)) {
-          grouped.push({ key, title: section.name, bots: [] });
-        }
-      }
-      if (!grouped.some((group) => group.key === "unassigned")) {
-        grouped.push({ key: "unassigned", title: labels?.unassigned ?? "Unassigned", bots: [] });
-      }
-      const order = [
-        "pinned",
-        ...space.botSections.map((section) => `section:${section.id}`),
-        "unassigned",
-      ];
-      grouped.sort((a, b) => order.indexOf(a.key) - order.indexOf(b.key));
-    }
-    const sections = grouped.map((group, index) => ({
-      ...group,
-      sectionId: group.key.startsWith("section:") ? group.key.slice("section:".length) : null,
-      key: showSpaceNames ? `space:${space.id}:${group.key}` : group.key,
-      // A header holding the space menu is never blank, even for the only space.
-      title: showSpaceNames ? space.name : index === 0 && !group.title ? space.name : group.title,
-      subtitle: showSpaceNames && group.title ? group.title : undefined,
+    const chats = [
+      ...space.bots.filter(matches).map((chat) => ({ kind: "bot" as const, id: chat.id, chat })),
+      ...space.groups
+        .filter(matches)
+        .map((chat) => ({ kind: "group" as const, id: chat.id, chat })),
+    ];
+    const header = {
       showLock: showSpaceNames,
       shared: space.shared === true,
-      emptySpaceId: undefined as string | undefined,
       spaceId: space.id,
       spaceName: space.name,
-      ...spaceHeaderMenu(space, index === 0),
-    }));
-    if (sections.length > 0) return sections;
+      title: space.name,
+      ...spaceHeaderMenu(space, true),
+    };
+    if (chats.length > 0)
+      return [
+        {
+          ...header,
+          key: showSpaceNames ? `space:${space.id}:chats` : "chats",
+          bots: chats,
+          emptySpaceId: undefined as string | undefined,
+        },
+      ];
     // Keep empty spaces selectable; chat clicks are the only switch control.
     if (needle && (space.bots.length > 0 || space.groups.length > 0)) return [];
-    // Saved sections stay listed under the placeholder so they can still be
-    // renamed or deleted after their last chat leaves.
-    const emptySections = needle
-      ? []
-      : space.botSections.map((section) => ({
-          key: showSpaceNames ? `space:${space.id}:section:${section.id}` : `section:${section.id}`,
-          title: showSpaceNames ? space.name : section.name,
-          subtitle: showSpaceNames ? section.name : undefined,
-          bots: [] as (typeof sections)[number]["bots"],
-          sectionId: section.id as string | null,
-          showLock: showSpaceNames,
-          shared: space.shared === true,
-          emptySpaceId: undefined as string | undefined,
-          spaceId: space.id,
-          spaceName: space.name,
-          ...spaceHeaderMenu(space, false),
-        }));
     // A lone space is the selected one, so its settings stay in the account menu too.
     const lone = !showSpaceNames && !space.canRename && !space.canDelete;
-    if (lone && (needle || emptySections.length > 0)) {
-      return emptySections;
-    }
+    if (lone && needle) return [];
     return [
       {
+        ...header,
         key: showSpaceNames ? `space:${space.id}:empty` : `space:${space.id}:actions`,
-        title: space.name,
-        subtitle: undefined,
-        bots: [],
-        sectionId: null,
-        showLock: showSpaceNames,
-        shared: space.shared === true,
+        bots: [] as typeof chats,
         emptySpaceId: showSpaceNames ? space.id : undefined,
-        spaceId: space.id,
-        spaceName: space.name,
-        ...spaceHeaderMenu(space, true),
       },
-      ...emptySections,
     ];
   });
 }

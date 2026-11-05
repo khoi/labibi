@@ -8,7 +8,6 @@ const outDir = join(repoRoot, "apps/www/public/graphics/chat");
 const chrome = process.env.CHROME_PATH ?? "/usr/bin/google-chrome";
 const port = 5173;
 const shots = [
-  ["create", "create-bot.png"],
   ["approval", "approval.png"],
   ["model", "model.png"],
   ["routine", "routine.png"],

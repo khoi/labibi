@@ -13,7 +13,6 @@ export * from "./avatar-motion.js";
 export * from "./avatar-shape.js";
 export * from "./bot-avatar-colors.js";
 export * from "./bot-messages.js";
-export * from "./bot-sections.js";
 export * from "./bot-sender-name.js";
 export * from "./client-id.js";
 export * from "./cloud-agent.js";

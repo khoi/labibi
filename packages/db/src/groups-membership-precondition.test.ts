@@ -16,8 +16,6 @@ function fixture(activeIds: string[]) {
     spaceId: actor.spaceId,
     userId: actor.userId,
     name: "Team",
-    pinned: false,
-    sectionId: null,
     archivedAt: null,
     createdAt: new Date(0),
     updatedAt: new Date(0),

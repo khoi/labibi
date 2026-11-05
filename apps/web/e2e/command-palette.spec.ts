@@ -11,7 +11,6 @@ test("command palette switches bots and runs actions", async ({ page }, testInfo
   const chiefId = activeBotId(page);
   const researcher = await rpc<{ id: string }>(page, "bots/create", {
     name: "Researcher",
-    description: "Finds sources and writes briefs.",
     instructions: "",
     notifyOnFinish: true,
     computerMode: "team",

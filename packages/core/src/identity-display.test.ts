@@ -7,7 +7,6 @@ const labels = {
   bot: "Бот",
   group: "Группа",
   space: "Пространство",
-  chats: "Чаты",
   routine: "Задача",
   member: "Участник",
   subagent: "субагент",

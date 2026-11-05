@@ -96,18 +96,6 @@ async function post(
 /** Sentinel answerId for a focus card the user dismissed without choosing. */
 export const FOCUS_DISMISSED_ANSWER_ID = "_dismissed";
 
-export async function startOnboarding(
-  deps: OnboardingDeps,
-  actor: Actor,
-  botId: string,
-): Promise<void> {
-  const { thread } = await requireBotThread(deps, actor, botId);
-  const existing = await deps.prisma.message.count({ where: { threadId: thread.id } });
-  if (existing > 0) return;
-  // The focus card is posted later via promptFocus so non-first bots can wait ~10s for
-  // free typing, or skip if the user already engaged.
-}
-
 /** A focus card, or a question the bot asked itself; either way the thread already asks. */
 function messageHasChoiceOrAsk(blocks: MessageBlock[]): boolean {
   return blocks.some((block) => block.kind === "choice" || block.kind === "ask");

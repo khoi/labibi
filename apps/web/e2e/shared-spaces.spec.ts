@@ -106,7 +106,6 @@ test("an owner invites someone by link and both see the space's members", async 
   const planner = await post<{ id: string }>("bots/create", {
     name: "Planner",
     title: "",
-    description: "",
     notifyOnFinish: true,
     computerMode: "team",
     color: "#2A92FE",

@@ -1,11 +1,11 @@
-import type { Bot, BotAvatarSet, BotSection, Group, Space } from "@labradoodle/contracts";
+import type { Bot, Group, Space } from "@labradoodle/contracts";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@labradoodle/ui-web";
-import { Trans, useLingui } from "@lingui/react/macro";
+import { useLingui } from "@lingui/react/macro";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Settings, Trash2 } from "lucide-react";
 import type { ComponentProps, RefObject } from "react";
@@ -17,20 +17,15 @@ import type { createSpaceRpc } from "../../lib/rpc";
 import { selectSpace } from "../../lib/rpc";
 import type { CommandPaletteAction } from "./command-palette";
 import { CommandPalette } from "./command-palette";
-import type { CreateBotDialogInput } from "./create-bot-dialog";
-import { CreateBotDialog } from "./create-bot-dialog";
 import {
   ClearConversationDialog,
   DeleteBotDialog,
   DeleteItemDialog,
   DeleteSpaceDialog,
-  NewBotSectionDialog,
   NewSpaceDialog,
-  RenameBotSectionDialog,
 } from "./dialogs";
 
 type ChatTarget = { kind: "bot"; chat: Bot } | { kind: "group"; chat: Group };
-type SectionTarget = { section: BotSection; spaceId: string };
 
 /** Which of the shell's dialogs and menus are open, and on what. */
 export function useShellDialogs() {
@@ -49,11 +44,7 @@ export function useShellDialogs() {
   }, [spaceMenu]);
   const closeSpaceMenu = useCallback(() => setSpaceMenu(null), []);
   const [clearTarget, setClearTarget] = useState<ChatTarget | null>(null);
-  const [newSectionTarget, setNewSectionTarget] = useState<ChatTarget | null>(null);
-  const [renameSectionTarget, setRenameSectionTarget] = useState<SectionTarget | null>(null);
-  const [deleteSectionTarget, setDeleteSectionTarget] = useState<SectionTarget | null>(null);
   const [newSpaceOpen, setNewSpaceOpen] = useState(false);
-  const [createBotOpen, setCreateBotOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   return {
     deleteTarget,
@@ -68,16 +59,8 @@ export function useShellDialogs() {
     closeSpaceMenu,
     clearTarget,
     setClearTarget,
-    newSectionTarget,
-    setNewSectionTarget,
-    renameSectionTarget,
-    setRenameSectionTarget,
-    deleteSectionTarget,
-    setDeleteSectionTarget,
     newSpaceOpen,
     setNewSpaceOpen,
-    createBotOpen,
-    setCreateBotOpen,
     commandPaletteOpen,
     setCommandPaletteOpen,
   };
@@ -100,8 +83,6 @@ export function ShellDialogs({
   removeSpace,
   openSpaceSettings,
   closeMobileSidebar,
-  createBot,
-  botAvatarSet,
   clearOpenThread,
   discardChatAttachments,
   deleteRoutineDialogProps,
@@ -116,13 +97,10 @@ export function ShellDialogs({
   alive: RefObject<boolean>;
   navigate: (path: string) => void;
   setPanel: (panel: Panel) => void;
-  refreshBots: (includeArchived?: boolean) => Promise<void>;
+  refreshBots: (mayBeEmpty?: boolean) => Promise<void>;
   removeSpace: (spaceId: string) => Promise<void>;
   openSpaceSettings: (spaceId: string) => void;
   closeMobileSidebar: () => void;
-  createBot: (input: CreateBotDialogInput) => Promise<void>;
-  /** The account's set, which a new bot takes. */
-  botAvatarSet: BotAvatarSet;
   clearOpenThread: () => void;
   /** Drops a deleted chat's pending attachments with their previews. */
   discardChatAttachments: (threadKey: string) => void;
@@ -142,16 +120,8 @@ export function ShellDialogs({
     closeSpaceMenu,
     clearTarget,
     setClearTarget,
-    newSectionTarget,
-    setNewSectionTarget,
-    renameSectionTarget,
-    setRenameSectionTarget,
-    deleteSectionTarget,
-    setDeleteSectionTarget,
     newSpaceOpen,
     setNewSpaceOpen,
-    createBotOpen,
-    setCreateBotOpen,
     commandPaletteOpen,
     setCommandPaletteOpen,
   } = dialogs;
@@ -260,57 +230,6 @@ export function ShellDialogs({
         />
       ) : null}
 
-      {newSectionTarget ? (
-        <NewBotSectionDialog
-          bot={newSectionTarget.chat}
-          onCancel={() => setNewSectionTarget(null)}
-          onConfirm={async (name) => {
-            await rpc.botSections.create(
-              newSectionTarget.kind === "bot"
-                ? { botId: newSectionTarget.chat.id, name }
-                : { groupId: newSectionTarget.chat.id, name },
-            );
-            setNewSectionTarget(null);
-            await refreshBots();
-          }}
-        />
-      ) : null}
-
-      {renameSectionTarget ? (
-        <RenameBotSectionDialog
-          section={renameSectionTarget.section}
-          onCancel={() => setRenameSectionTarget(null)}
-          onConfirm={async (name) => {
-            await rpc.botSections.update(
-              {
-                sectionId: renameSectionTarget.section.id,
-                name,
-              },
-              { context: { spaceId: renameSectionTarget.spaceId } },
-            );
-            setRenameSectionTarget(null);
-            await refreshBots();
-          }}
-        />
-      ) : null}
-
-      {deleteSectionTarget ? (
-        <DeleteItemDialog
-          item={deleteSectionTarget.section}
-          noun="section"
-          description={<Trans>Its bots and groups are kept and leave the section.</Trans>}
-          onCancel={() => setDeleteSectionTarget(null)}
-          onConfirm={async () => {
-            await rpc.botSections.remove(
-              { sectionId: deleteSectionTarget.section.id },
-              { context: { spaceId: deleteSectionTarget.spaceId } },
-            );
-            setDeleteSectionTarget(null);
-            await refreshBots();
-          }}
-        />
-      ) : null}
-
       <CommandPalette
         open={commandPaletteOpen}
         onOpenChange={setCommandPaletteOpen}
@@ -334,13 +253,6 @@ export function ShellDialogs({
           },
         }))}
       />
-
-      {createBotOpen ? (
-        <CreateBotDialog
-          onCancel={() => setCreateBotOpen(false)}
-          onCreate={createBot}
-        />
-      ) : null}
 
       {newSpaceOpen ? (
         <NewSpaceDialog

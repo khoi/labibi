@@ -1,15 +1,5 @@
-import type {
-  AppBootstrap,
-  Bot,
-  BotSection,
-  ComputerStatus,
-  Group,
-  Me,
-  Space,
-  ThreadSnapshot,
-} from "@labradoodle/contracts";
-import { isRetryableError, reorderBotTo } from "@labradoodle/core";
-import { useLingui } from "@lingui/react/macro";
+import type { AppBootstrap, Bot, ComputerStatus, Group, Me, Space } from "@labradoodle/contracts";
+import { isRetryableError } from "@labradoodle/core";
 import { replaceEqualDeep } from "@tanstack/react-query";
 import type { RefObject } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -20,16 +10,13 @@ import { markOnce } from "../../lib/performance";
 import type { ChatTarget } from "../../lib/query";
 import { lastChatKey, queryClient, seedOnLeave, spaceSeedKey } from "../../lib/query";
 import type { createSpaceRpc } from "../../lib/rpc";
-import { errorText } from "../../lib/user-error";
-import type { RosterDropTarget } from "./roster-drop";
-import { resolveRosterDrop } from "./roster-drop";
 import type { useShellNavigation } from "./use-shell-navigation";
 import { firstThreadRoute } from "./use-shell-navigation";
 import type { ThreadState } from "./use-thread-state";
 
 type Navigation = ReturnType<typeof useShellNavigation>;
 
-/** The space's bots, groups, sections and spaces, refreshed while the shell is open. */
+/** The space's bots, groups and spaces, refreshed while the shell is open. */
 export function useSpaceRoster({
   rpc,
   seed,
@@ -49,72 +36,40 @@ export function useSpaceRoster({
   const [bots, setBots] = useState<Bot[]>(seed?.bots ?? []);
   const botsRef = useRef(bots);
   botsRef.current = bots;
-  const botOrderEpochRef = useRef(0);
-  const pendingBotOrderRef = useRef<string[] | null>(null);
-  const savingBotOrderRef = useRef(false);
-  const [botSections, setBotSections] = useState<BotSection[]>(seed?.botSections ?? []);
   const [spaces, setSpaces] = useState<Space[]>(seed?.spaces ?? []);
-  const [archivedBots, setArchivedBots] = useState<Bot[]>(seed?.archivedBots ?? []);
-  const [archivedGroups, setArchivedGroups] = useState<Group[]>(seed?.archivedGroups ?? []);
   const [initialBotsLoaded, setInitialBotsLoaded] = useState(Boolean(seed));
   // A failed first load falls back to the shell, whose polling and footer can still recover.
   const [initialLoadFailed, setInitialLoadFailed] = useState(false);
   const [bootstrapMe, setBootstrapMe] = useState<Me | null | undefined>(seed?.me);
   const botsRefreshEpoch = useRef(0);
   const botsRefreshApplied = useRef(0);
-  const archivedBotsRefreshEpoch = useRef(0);
   const botsRefreshInFlight = useRef(0);
   const routeBotId = useRef<string | undefined>(botId);
   routeBotId.current = botId;
   const routeGroupId = useRef<string | undefined>(groupId);
   routeGroupId.current = groupId;
 
+  /** `mayBeEmpty` checks for onboarding after a change that can remove the last chat. */
   const refreshBots = useCallback(
-    async (includeArchived = false, replaceBotOrder = false) => {
+    async (mayBeEmpty = false) => {
       markOnce("rk:renderer:bots-request-start");
       const request = ++botsRefreshEpoch.current;
-      const botOrderEpoch = botOrderEpochRef.current;
-      const preserveBotOrder = savingBotOrderRef.current || pendingBotOrderRef.current !== null;
-      const archivedRequest = includeArchived ? ++archivedBotsRefreshEpoch.current : null;
       botsRefreshInFlight.current += 1;
       try {
-        const [navigation, archived, archivedGroupList] = await Promise.all([
-          rpc.spaces.list(),
-          includeArchived ? rpc.bots.listArchived() : Promise.resolve(null),
-          includeArchived ? rpc.groups.listArchived() : Promise.resolve(null),
-        ]);
-        const { bots: list, botSections: sections, groups: groupList } = navigation.current;
+        const navigation = await rpc.spaces.list();
+        const { bots: list, groups: groupList } = navigation.current;
         markOnce("rk:renderer:bots-response");
-        const botsFresh = request === botsRefreshEpoch.current;
-        const archivedFresh =
-          archivedRequest != null && archivedRequest === archivedBotsRefreshEpoch.current;
-        // A newer non-archived refresh can win the bots epoch while an older
-        // includeArchived request still owns archivedBotsRefreshEpoch — apply
-        // whichever slices are still current.
-        if (!botsFresh && !archivedFresh) return;
+        if (request !== botsRefreshEpoch.current) return;
         // The roster is polled; keeping unchanged values lets an unchanged poll skip rendering.
-        if (archivedFresh && archived)
-          setArchivedBots((previous) => replaceEqualDeep(previous, archived));
-        if (archivedFresh && archivedGroupList)
-          setArchivedGroups((previous) => replaceEqualDeep(previous, archivedGroupList));
-        if (!botsFresh) return;
-        if (
-          botOrderEpoch === botOrderEpochRef.current &&
-          (replaceBotOrder || (!preserveBotOrder && !savingBotOrderRef.current))
-        ) {
-          setBots((previous) => replaceEqualDeep(previous, list));
-        }
-        setBotSections((previous) => replaceEqualDeep(previous, sections));
+        setBots((previous) => replaceEqualDeep(previous, list));
         setGroups((previous) => replaceEqualDeep(previous, groupList));
         setSpaces((previous) => replaceEqualDeep(previous, navigation.spaces));
         setInitialBotsLoaded(true);
         botsRefreshApplied.current = request;
         if (
-          includeArchived &&
+          mayBeEmpty &&
           list.length === 0 &&
-          archived?.length === 0 &&
           groupList.length === 0 &&
-          archivedGroupList?.length === 0 &&
           !navigation.spaces.some((space) => space.hasContent)
         ) {
           // Only the very first bot everywhere needs onboarding. An empty
@@ -141,47 +96,6 @@ export function useSpaceRoster({
     [navigate],
   );
 
-  const flushBotOrder = useCallback(async () => {
-    if (savingBotOrderRef.current) return;
-    savingBotOrderRef.current = true;
-    try {
-      while (pendingBotOrderRef.current) {
-        const botIds = pendingBotOrderRef.current;
-        pendingBotOrderRef.current = null;
-        try {
-          await rpc.bots.reorder({ botIds });
-        } catch {
-          // Keep a newer order queued during this failed save; only roll back
-          // when nothing else is pending.
-          if (pendingBotOrderRef.current === null) {
-            await refreshBots(false, true).catch(() => undefined);
-          }
-        }
-      }
-    } finally {
-      savingBotOrderRef.current = false;
-      // A reorder may have arrived while saving=true and returned early.
-      if (pendingBotOrderRef.current) {
-        void flushBotOrder();
-      }
-    }
-  }, [refreshBots]);
-  const reorderRosterBot = useCallback(
-    (sourceId: string, targetId: string, groupBotIds: string[]) => {
-      if (!groupBotIds.includes(sourceId) || !groupBotIds.includes(targetId)) return;
-      const current = botsRef.current;
-      const reordered = reorderBotTo(current, sourceId, targetId);
-      if (reordered === current) return;
-      const next = [...reordered];
-      botOrderEpochRef.current += 1;
-      botsRef.current = next;
-      setBots(next);
-      pendingBotOrderRef.current = next.map((bot) => bot.id);
-      void flushBotOrder();
-    },
-    [flushBotOrder],
-  );
-
   /** Shows a bot created here at once: a roster requested before creation may omit it. */
   function addCreatedBot(bot: Bot) {
     botsRefreshEpoch.current += 1;
@@ -196,14 +110,8 @@ export function useSpaceRoster({
     bots,
     setBots,
     botsRef,
-    botSections,
     spaces,
     setSpaces,
-    archivedBots,
-    setArchivedBots,
-    archivedGroups,
-    setArchivedGroups,
-    setBotSections,
     initialBotsLoaded,
     setInitialBotsLoaded,
     initialLoadFailed,
@@ -215,7 +123,6 @@ export function useSpaceRoster({
     routeBotId,
     routeGroupId,
     refreshBots,
-    reorderRosterBot,
     addCreatedBot,
   };
 }
@@ -263,12 +170,6 @@ export function useSpaceBootstrap({
     setBots,
     groups,
     setGroups,
-    botSections,
-    setBotSections,
-    archivedBots,
-    setArchivedBots,
-    archivedGroups,
-    setArchivedGroups,
     spaces,
     setSpaces,
     setInitialBotsLoaded,
@@ -304,9 +205,6 @@ export function useSpaceBootstrap({
     me: bootstrapMe,
     bots,
     groups,
-    botSections,
-    archivedBots,
-    archivedGroups,
     spaces,
   };
   useLayoutEffect(() => {
@@ -357,9 +255,6 @@ export function useSpaceBootstrap({
         const applyBotLists = appliedAtStart === botsRefreshApplied.current;
         if (applyBotLists) {
           setBots(bootstrap.bots);
-          setBotSections(bootstrap.botSections);
-          setArchivedBots(bootstrap.archivedBots);
-          setArchivedGroups(bootstrap.archivedGroups);
           setGroups(groupList);
           setSpaces(bootstrap.spaces);
           setInitialBotsLoaded(true);
@@ -394,9 +289,7 @@ export function useSpaceBootstrap({
         }
         if (
           bootstrap.bots.length === 0 &&
-          bootstrap.archivedBots.length === 0 &&
           groupList.length === 0 &&
-          bootstrap.archivedGroups.length === 0 &&
           !bootstrap.spaces.some((space) => space.hasContent)
         ) {
           navigate("/onboarding", { replace: true });
@@ -448,75 +341,4 @@ export function useSpaceBootstrap({
       document.removeEventListener("visibilitychange", refreshVisibleBots);
     };
   }, []);
-}
-
-/** Dragging a bot in the roster: reorder it, move it to a section, or add it to a group. */
-export function useRosterDrop({
-  rpc,
-  bots,
-  reorderRosterBot,
-  refreshBots,
-  refreshGroupThread,
-  activeGroupId,
-  setSendError,
-}: {
-  rpc: ReturnType<typeof createSpaceRpc>;
-  bots: Bot[];
-  reorderRosterBot: SpaceRoster["reorderRosterBot"];
-  refreshBots: () => Promise<void>;
-  refreshGroupThread: (groupId: string) => Promise<ThreadSnapshot>;
-  activeGroupId: RefObject<string | undefined>;
-  setSendError: (error: string | null) => void;
-}) {
-  const { t } = useLingui();
-  const [draggedBotId, setDraggedBotId] = useState<string | null>(null);
-  const [rosterDropKey, setRosterDropKey] = useState<string | null>(null);
-  // Drags only act on bots of the active space; other spaces are read-only here.
-  const draggedBot = draggedBotId ? bots.find((bot) => bot.id === draggedBotId) : undefined;
-  const rosterDropAction = useCallback(
-    (target: RosterDropTarget, sameList: boolean) =>
-      draggedBot ? resolveRosterDrop({ dragged: draggedBot, target, sameList }) : null,
-    [draggedBot],
-  );
-  const applyRosterDrop = useCallback(
-    (target: RosterDropTarget, sameList: boolean, groupBotIds: string[]) => {
-      const action = rosterDropAction(target, sameList);
-      setDraggedBotId(null);
-      setRosterDropKey(null);
-      if (!action || !draggedBot) return;
-      setSendError(null);
-      if (action.action === "reorder") {
-        reorderRosterBot(draggedBot.id, action.targetBotId, groupBotIds);
-        return;
-      }
-      const request =
-        action.action === "move"
-          ? rpc.bots.update({ botId: draggedBot.id, sectionId: action.sectionId })
-          : rpc.groups.update({
-              groupId: action.groupId,
-              botIds: action.botIds,
-              expectedBotIds: action.botIds.filter((id) => id !== draggedBot.id),
-            });
-      void request
-        .then(async () => {
-          await refreshBots();
-          if (action.action === "join" && activeGroupId.current === action.groupId) {
-            await refreshGroupThread(action.groupId);
-          }
-        })
-        .catch((error) => {
-          setSendError(errorText(error, t`Could not save`));
-          void refreshBots().catch(() => undefined);
-        });
-    },
-    [draggedBot, refreshBots, reorderRosterBot, rosterDropAction, t],
-  );
-  return {
-    draggedBotId,
-    setDraggedBotId,
-    rosterDropKey,
-    setRosterDropKey,
-    rosterDropAction,
-    applyRosterDrop,
-  };
 }

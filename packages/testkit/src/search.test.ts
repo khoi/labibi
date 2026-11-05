@@ -39,9 +39,8 @@ describeSearch("workspace search", () => {
   it("finds bots, messages, files, links, and routines within the workspace", async () => {
     const cookie = await signup(app, `search-${stamp}@rakazo.test`, "Search User");
     const bot = await rpc<{ id: string }>(app, cookie, "bots/create", {
-      name: "Finder",
+      name: "Fixture Finder",
       title: "Finder",
-      description: "search fixture",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -113,7 +112,6 @@ describeSearch("workspace search", () => {
     const bot = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "Literal Finder",
       title: "Literal Finder",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -142,7 +140,6 @@ describeSearch("workspace search", () => {
     const ownerBot = await rpc<{ id: string }>(app, ownerCookie, "bots/create", {
       name: "OwnerOnly",
       title: "OwnerOnly",
-      description: "private fixture token",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -160,14 +157,12 @@ describeSearch("workspace search", () => {
     const botA = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "Alpha",
       title: "Alpha",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
     const botB = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "Beta",
       title: "Beta",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });

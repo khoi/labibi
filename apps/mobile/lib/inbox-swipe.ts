@@ -1,30 +1,15 @@
 export type InboxChatKind = "bot" | "group";
-export type InboxRowAction = "read" | "unread" | "archive" | "pin" | "unpin" | "delete";
+export type InboxRowAction = "read" | "unread" | "delete";
 
 export const INBOX_ROW_ACTIONS = {
   read: { label: "Mark as Read", systemImage: "checkmark.message.fill" },
   unread: { label: "Mark as Unread", systemImage: "message.badge.filled.fill" },
-  archive: { label: "Archive", systemImage: "eye.slash" },
-  pin: { label: "Pin", systemImage: "pin" },
-  unpin: { label: "Unpin", systemImage: "pin.slash" },
   delete: { label: "Delete…", systemImage: "trash" },
 } as const satisfies Record<InboxRowAction, { label: string; systemImage: string }>;
 
-/** Swipe right toggles read state; swipe left offers Archive outermost, then Pin. */
-export function inboxRowActions(chat: { unread?: boolean; pinned?: boolean }): {
-  leading: InboxRowAction;
-  trailing: InboxRowAction[];
-} {
-  return {
-    leading: chat.unread ? "read" : "unread",
-    trailing: ["archive", chat.pinned ? "unpin" : "pin"],
-  };
-}
-
-/** Every row action, as offered to screen readers. */
-export function inboxRowActionList(chat: { unread?: boolean; pinned?: boolean }) {
-  const { leading, trailing } = inboxRowActions(chat);
-  return [leading, ...trailing];
+/** Swipe right toggles read state. */
+export function inboxReadAction(chat: { unread?: boolean }): InboxRowAction {
+  return chat.unread ? "read" : "unread";
 }
 
 export function chatTarget(kind: InboxChatKind, id: string) {
@@ -33,16 +18,6 @@ export function chatTarget(kind: InboxChatKind, id: string) {
 
 export function unreadOverrideKey(kind: InboxChatKind, id: string) {
   return `${kind}:${id}`;
-}
-
-/** Leaves out chats being archived: the row goes at the tap, and a poll can't bring it back. */
-export function withoutArchiving<T extends { id: string }>(
-  kind: InboxChatKind,
-  chats: T[],
-  archiving: ReadonlySet<string>,
-): T[] {
-  if (archiving.size === 0) return chats;
-  return chats.filter((chat) => !archiving.has(unreadOverrideKey(kind, chat.id)));
 }
 
 /** Shows read state the user just changed until its request settles, so a poll can't undo it. */

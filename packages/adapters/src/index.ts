@@ -9,7 +9,6 @@ export * from "./aws-kms-key-provider.js";
 export * from "./background-job-handlers.js";
 export * from "./billing-emulator.js";
 export * from "./boat-sandbox.js";
-export * from "./bot-avatar.js";
 export * from "./bot-lifecycle.js";
 export {
   defaultVaultItemTitle,

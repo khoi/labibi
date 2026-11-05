@@ -28,7 +28,7 @@ function candidate(status: "queued" | "waiting_input" | "waiting_takeover", hour
     botId: "bot-1",
     userId: "user-1",
     taskId: "task-1",
-    bot: { name: "Ada", color: "blue", avatarSet: "organic", notifyOnFinish: true },
+    bot: { name: "Ada", color: "blue", notifyOnFinish: true },
     thread: { groupId: null as string | null },
   };
 }

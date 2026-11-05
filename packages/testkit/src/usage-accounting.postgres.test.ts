@@ -137,7 +137,6 @@ describe.skipIf(!enabled)("persisted Pi usage accounting", () => {
       const bot = await rpc<{ id: string }>("bots/create", {
         name: "Usage fixture",
         title: "",
-        description: "",
         instructions: "Complete the synthetic task.",
         notifyOnFinish: false,
       });

@@ -630,14 +630,12 @@ describeIntegration("run executor lifecycle", () => {
     const botA = await rpc<{ id: string }>(cookie, "bots/create", {
       name: "Group lead",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: false,
     });
     const botB = await rpc<{ id: string }>(cookie, "bots/create", {
       name: "Group helper",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: false,
     });
@@ -1324,7 +1322,6 @@ describeIntegration("run executor lifecycle", () => {
     const bot = await rpc<{ id: string }>(cookie, "bots/create", {
       name: `Executor ${label}`,
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: false,
     });

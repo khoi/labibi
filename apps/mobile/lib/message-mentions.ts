@@ -1,5 +1,4 @@
 import { plainTextLinkParts } from "@labradoodle/chat-ui/native";
-import type { BotAvatarSet } from "@labradoodle/contracts";
 import type { MentionTextPart } from "@labradoodle/core";
 import { displayName, splitMentionText } from "@labradoodle/core";
 import type { ReactNode } from "react";
@@ -12,7 +11,7 @@ export const MessageMentionsContext = createContext<((id: string) => ReactNode) 
 
 /** A group member a sent message can name with `@Name`, or everyone in the group. */
 export type UserMentionTarget =
-  | { kind: "bot"; id: string; name: string; color: string; avatarSet?: BotAvatarSet }
+  | { kind: "bot"; id: string; name: string; color: string }
   | { kind: "everyone"; id: "everyone"; name: "everyone" };
 
 /** Who a sent message's `@Name` can refer to; absent outside groups. */
@@ -30,7 +29,7 @@ export const UserMentionsContext = createContext<
  * one was meant.
  */
 export function userMentionTargets(
-  members: readonly { botId: string; name: string; color: string; avatarSet?: BotAvatarSet }[],
+  members: readonly { botId: string; name: string; color: string }[],
 ): UserMentionTarget[] {
   const named = members.map((member) => ({ member, name: displayName(member.name, "Bot") }));
   const everyone = members.length >= 2;
@@ -44,7 +43,6 @@ export function userMentionTargets(
       id: member.botId,
       name,
       color: member.color,
-      avatarSet: member.avatarSet,
     }));
   if (everyone) targets.unshift({ kind: "everyone", id: "everyone", name: "everyone" });
   return targets;

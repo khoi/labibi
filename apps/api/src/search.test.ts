@@ -220,7 +220,7 @@ it("searches for the characters the user typed, not SQL wildcards", async () => 
   const { prisma } = fixture(0);
   await querySpaceSearch(prisma as unknown as PrismaClient, actor, "50%_off");
 
-  const botFilter = prisma.bot.findMany.mock.calls[0]?.[0]?.where?.OR?.[0]?.name;
+  const botFilter = prisma.bot.findMany.mock.calls[0]?.[0]?.where?.name;
   expect(botFilter?.contains).toBe("50\\%\\_off");
 
   const groupFilter = prisma.chatGroup.findMany.mock.calls[0]?.[0]?.where?.name;
@@ -238,7 +238,7 @@ it("JSON-escapes backslashes only for the message scan", async () => {
   const { prisma } = fixture(0);
   await querySpaceSearch(prisma as unknown as PrismaClient, actor, String.raw`back\slash`);
 
-  const botFilter = prisma.bot.findMany.mock.calls[0]?.[0]?.where?.OR?.[0]?.name;
+  const botFilter = prisma.bot.findMany.mock.calls[0]?.[0]?.where?.name;
   expect(botFilter?.contains).toBe(String.raw`back\\slash`);
   const groupFilter = prisma.chatGroup.findMany.mock.calls[0]?.[0]?.where?.name;
   expect(groupFilter?.contains).toBe(String.raw`back\\slash`);
@@ -250,11 +250,10 @@ it("JSON-escapes backslashes only for the message scan", async () => {
   }
 });
 
-it("guards name-derived snippets while preserving descriptions", async () => {
+it("guards name-derived snippets", async () => {
   const { prisma } = fixture(0);
   prisma.bot.findMany.mockResolvedValue([
-    { id: "bot-1", name: "__TestTok1__", title: "", description: "" },
-    { id: "bot-2", name: "__TestTok2__", title: "", description: "Keep __TestTok2__ literal" },
+    { id: "bot-1", name: "__TestTok1__", title: "" },
   ] as never);
   prisma.chatGroup.findMany.mockResolvedValue([
     { id: "group-1", name: "__TestTok1__", _count: { members: 2 } },
@@ -265,5 +264,4 @@ it("guards name-derived snippets while preserving descriptions", async () => {
       .filter((hit) => hit.botId === "bot-1" || hit.groupId === "group-1")
       .map((hit) => hit.snippet),
   ).toEqual(["", ""]);
-  expect(hits.find((hit) => hit.botId === "bot-2")?.snippet).toBe("Keep __TestTok2__ literal");
 });

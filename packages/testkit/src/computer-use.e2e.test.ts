@@ -99,7 +99,6 @@ describeLive("real model and sandbox computer journey", () => {
     const bot = await rpc<{ id: string }>(handles.app, cookie, "bots/create", {
       name: "Operator",
       title: "Computer acceptance test",
-      description: "Uses the visible desktop and its tools.",
       instructions:
         "This is an acceptance test. Follow the requested computer tool sequence exactly and do not claim a visual action succeeded until its result is visible.",
       notifyOnFinish: false,

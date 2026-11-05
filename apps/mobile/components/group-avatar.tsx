@@ -1,4 +1,3 @@
-import type { BotAvatarSet } from "@labradoodle/contracts";
 import { memo } from "react";
 import type { ViewStyle } from "react-native";
 import { StyleSheet, Text, View } from "react-native";
@@ -10,7 +9,6 @@ export interface GroupAvatarMember {
   botId?: string;
   name?: string;
   color: string;
-  avatarSet?: BotAvatarSet;
   status?: string;
 }
 

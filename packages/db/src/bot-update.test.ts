@@ -11,12 +11,9 @@ import { writeBotInstructions } from "./bot-instructions.js";
 import { botProfileLabelsChanged, commitBotUpdate } from "./bot-update.js";
 
 describe("botProfileLabelsChanged", () => {
-  it("is true when name, description, or color is present", () => {
+  it("is true when the name is present", () => {
     expect(botProfileLabelsChanged({})).toBe(false);
     expect(botProfileLabelsChanged({ name: "SEO" })).toBe(true);
-    expect(botProfileLabelsChanged({ description: "Helps with SEO" })).toBe(true);
-    expect(botProfileLabelsChanged({ color: "#8B5CF6::shape_1" })).toBe(true);
-    expect(botProfileLabelsChanged({ avatarSet: "rakazo" })).toBe(true);
   });
 });
 
@@ -51,7 +48,7 @@ describe("commitBotUpdate", () => {
   it.each([false, true])(
     "publishes a restore atomically after taking the thread lock (undo=%s)",
     async (undo) => {
-      const updated = { id: "bot-1", name: "Chief", description: "" };
+      const updated = { id: "bot-1", name: "Chief" };
       const tx = {
         $queryRaw: vi.fn().mockResolvedValue([]),
         bot: { update: vi.fn().mockResolvedValue(updated) },
@@ -101,7 +98,6 @@ describe("commitBotUpdate", () => {
     const updated = {
       id: "bot-1",
       name: "SEO Strategist",
-      description: "Helps with keyword research",
     };
     const botUpdate = vi.fn().mockResolvedValue(updated);
     const tx = { $queryRaw: vi.fn().mockResolvedValue([]), bot: { update: botUpdate } };
@@ -142,7 +138,6 @@ describe("commitBotUpdate", () => {
       payload: {
         botId: "bot-1",
         name: "SEO Strategist",
-        description: "Helps with keyword research",
       },
     });
     expect(notify).toHaveBeenCalledWith("thread-1", 9);
@@ -158,7 +153,6 @@ describe("commitBotUpdate", () => {
           update: vi.fn().mockResolvedValue({
             id: "bot-1",
             name: "SEO",
-            description: "",
           }),
         },
       }),
@@ -187,87 +181,10 @@ describe("commitBotUpdate", () => {
     expect(prisma.bot.update).not.toHaveBeenCalled();
   });
 
-  it("skips the write, the event and the notify when the default avatar set moved on", async () => {
-    const botUpdate = vi.fn();
-    const tx = {
-      $queryRaw: vi.fn(async (strings: TemplateStringsArray) =>
-        strings.join("").includes("FOR SHARE")
-          ? [{ botAvatarSet: "organic" }]
-          : ([{ id: "thread-1" }] as Array<unknown>),
-      ),
-      bot: { update: botUpdate },
-    };
-    const notify = vi.fn();
-    const appendEvent = vi.fn();
-
-    await expect(
-      commitBotUpdate(
-        {
-          prisma: {
-            $transaction: async (run: (client: typeof tx) => Promise<unknown>) => run(tx),
-          } as never,
-          notify,
-          spaceId: "space-1",
-          threadId: "thread-1",
-          botId: "bot-1",
-          data: { avatarSet: "rakazo" },
-          emitBotUpdated: true,
-          expectedUserAvatarSet: { userId: "user-1", botAvatarSet: "rakazo" },
-        },
-        appendEvent,
-      ),
-    ).resolves.toBeNull();
-
-    expect(botUpdate).not.toHaveBeenCalled();
-    expect(appendEvent).not.toHaveBeenCalled();
-    expect(notify).not.toHaveBeenCalled();
-  });
-
-  it("writes the bot when the default avatar set still matches under the lock", async () => {
-    const updated = { id: "bot-1", name: "Chief", description: "" };
-    const botUpdate = vi.fn().mockResolvedValue(updated);
-    const tx = {
-      $queryRaw: vi.fn(async (strings: TemplateStringsArray) =>
-        strings.join("").includes("FOR SHARE")
-          ? [{ botAvatarSet: "rakazo" }]
-          : ([{ id: "thread-1" }] as Array<unknown>),
-      ),
-      bot: { update: botUpdate },
-    };
-    const notify = vi.fn().mockResolvedValue(undefined);
-    const appendEvent = vi.fn().mockResolvedValue({ seq: 4 });
-
-    await expect(
-      commitBotUpdate(
-        {
-          prisma: {
-            $transaction: async (run: (client: typeof tx) => Promise<unknown>) => run(tx),
-          } as never,
-          notify,
-          spaceId: "space-1",
-          threadId: "thread-1",
-          botId: "bot-1",
-          data: { avatarSet: "rakazo" },
-          emitBotUpdated: true,
-          expectedUserAvatarSet: { userId: "user-1", botAvatarSet: "rakazo" },
-        },
-        appendEvent,
-      ),
-    ).resolves.toEqual(updated);
-
-    // The default is read before the thread lock and before the bot row.
-    const queries = tx.$queryRaw.mock.calls.map(([strings]) => strings.join(""));
-    expect(queries[0]).toContain("FOR SHARE");
-    expect(queries[1]).toContain("threads");
-    expect(botUpdate).toHaveBeenCalledOnce();
-    expect(notify).toHaveBeenCalledWith("thread-1", 4);
-  });
-
   it("updates without an event when profile labels are unchanged", async () => {
     const update = vi.fn().mockResolvedValue({
       id: "bot-1",
       name: "Chief",
-      description: "",
     });
     const prisma = {
       $transaction: vi.fn(),
@@ -284,7 +201,7 @@ describe("commitBotUpdate", () => {
           spaceId: "space-1",
           threadId: "thread-1",
           botId: "bot-1",
-          data: { pinned: true },
+          data: { notifyOnFinish: false },
           emitBotUpdated: false,
         },
         appendEvent,
@@ -299,7 +216,7 @@ describe("commitBotUpdate", () => {
 });
 
 it("normalizes generated name tokens before updating a bot", async () => {
-  const update = vi.fn().mockResolvedValue({ id: "bot-1", name: "Bot", description: "" });
+  const update = vi.fn().mockResolvedValue({ id: "bot-1", name: "Bot" });
   await commitBotUpdate({
     prisma: { bot: { update } } as never,
     notify: vi.fn(),
@@ -313,9 +230,7 @@ it("normalizes generated name tokens before updating a bot", async () => {
 });
 
 it("preserves readable numbered bot names on writes", async () => {
-  const update = vi
-    .fn()
-    .mockResolvedValue({ id: "bot-1", name: "CustomerSupportBot2026", description: "" });
+  const update = vi.fn().mockResolvedValue({ id: "bot-1", name: "CustomerSupportBot2026" });
   await commitBotUpdate({
     prisma: { bot: { update } } as never,
     notify: vi.fn(),

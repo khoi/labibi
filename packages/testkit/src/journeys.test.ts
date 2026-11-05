@@ -107,7 +107,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Writer",
       title: "Writer",
-      description: "Writes files",
       instructions: "Write files.",
     });
     await waitForDatabase(
@@ -203,7 +202,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Shell user",
       title: "Shell user",
-      description: "Uses the shell",
       instructions: "Help.",
     });
     await waitForDatabase(
@@ -233,7 +231,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Shell user",
       title: "Shell user",
-      description: "Uses the shell",
       instructions: "Help.",
     });
     await waitForDatabase(
@@ -262,7 +259,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Shell user",
       title: "Shell user",
-      description: "Uses the shell",
       instructions: "Help.",
     });
     await waitForDatabase(
@@ -286,7 +282,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Chief",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -342,21 +337,18 @@ describeJourneys("required product journeys", () => {
     const chief = await rpc<Bot>(app, ada, "bots/create", {
       name: "Chief",
       title: "Chief of staff",
-      description: "Keeps work moving",
       instructions: "",
       notifyOnFinish: true,
     });
     const coder = await rpc<Bot>(app, ada, "bots/create", {
       name: "Coder",
       title: "Engineer",
-      description: "Writes code",
       instructions: "",
       notifyOnFinish: true,
     });
     const bobBot = await rpc<Bot>(app, bob, "bots/create", {
       name: "Chief",
       title: "Chief of staff",
-      description: "Bob's bot",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -374,88 +366,6 @@ describeJourneys("required product journeys", () => {
     expect(bobList.map((b) => b.id)).not.toContain(chief.id);
     const forbidden = await raw(app, bob, "bots/get", { botId: chief.id });
     expect(forbidden.status).toBeGreaterThanOrEqual(400);
-
-    const pinned = await rpc<Bot>(app, ada, "bots/update", { botId: coder.id, pinned: true });
-    expect(pinned.pinned).toBe(true);
-    const [section, concurrentSection] = await Promise.all([
-      rpc<{ id: string; name: string }>(app, ada, "botSections/create", {
-        botId: chief.id,
-        name: "Planning",
-      }),
-      rpc<{ id: string; name: string }>(app, ada, "botSections/create", {
-        botId: coder.id,
-        name: "Planning",
-      }),
-    ]);
-    expect(section.name).toBe("Planning");
-    expect(concurrentSection.id).toBe(section.id);
-    expect(await rpc<Array<{ id: string }>>(app, ada, "botSections/list")).toEqual([
-      expect.objectContaining({ id: section.id }),
-    ]);
-    expect(
-      (await rpc<Bot[]>(app, ada, "bots/list")).find((bot) => bot.id === chief.id)?.sectionId,
-    ).toBe(section.id);
-    expect(
-      (await rpc<Bot[]>(app, ada, "bots/list")).find((bot) => bot.id === coder.id)?.sectionId,
-    ).toBe(section.id);
-    const foreignSection = await raw(app, bob, "bots/update", {
-      botId: bobBot.id,
-      sectionId: section.id,
-    });
-    expect(foreignSection.status).toBeGreaterThanOrEqual(400);
-    expect(await rpc<unknown[]>(app, bob, "botSections/list")).toEqual([]);
-    const renamed = await rpc<{ id: string; name: string }>(app, ada, "botSections/update", {
-      sectionId: section.id,
-      name: "Delivery",
-    });
-    expect(renamed).toMatchObject({ id: section.id, name: "Delivery" });
-    expect(await rpc<Array<{ id: string; name: string }>>(app, ada, "botSections/list")).toEqual([
-      expect.objectContaining({ id: section.id, name: "Delivery" }),
-    ]);
-    await rpc<{ id: string; name: string }>(app, ada, "botSections/create", {
-      botId: coder.id,
-      name: "Archive",
-    });
-    const renameClash = await raw(app, ada, "botSections/update", {
-      sectionId: section.id,
-      name: "Archive",
-    });
-    expect(renameClash.status).toBe(409);
-    const foreignRename = await raw(app, bob, "botSections/update", {
-      sectionId: section.id,
-      name: "Stolen",
-    });
-    expect(foreignRename.status).toBeGreaterThanOrEqual(400);
-    expect(await rpc<Array<{ id: string; name: string }>>(app, ada, "botSections/list")).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: section.id, name: "Delivery" })]),
-    );
-    const foreignDelete = await raw(app, bob, "botSections/remove", { sectionId: section.id });
-    expect(foreignDelete.status).toBeGreaterThanOrEqual(400);
-    expect(await rpc(app, ada, "botSections/remove", { sectionId: section.id })).toEqual({
-      id: section.id,
-      releasedBots: 1,
-      releasedGroups: 0,
-    });
-    expect(
-      (await rpc<Array<{ id: string }>>(app, ada, "botSections/list")).map((item) => item.id),
-    ).not.toContain(section.id);
-    expect(
-      (await rpc<Bot[]>(app, ada, "bots/list")).find((bot) => bot.id === chief.id)?.sectionId,
-    ).toBeNull();
-    const duplicate = await rpc<Bot>(app, ada, "bots/duplicate", { botId: chief.id });
-    expect(duplicate).toMatchObject({
-      name: "Chief copy",
-      title: chief.title,
-      description: chief.description,
-      instructions: chief.instructions,
-      notifyOnFinish: chief.notifyOnFinish,
-      color: chief.color,
-      pinned: false,
-      sectionId: null,
-      unread: false,
-    });
-    expect(duplicate.id).not.toBe(chief.id);
-    expect((await rpc<Bot[]>(app, ada, "bots/list"))[0]?.id).toBe(coder.id);
 
     await sendAndWait(
       app,
@@ -517,7 +427,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Keeper",
       title: "Memory",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -696,14 +605,12 @@ describeJourneys("required product journeys", () => {
     const writer = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Writer",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
     const researcher = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Researcher",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -750,7 +657,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Chief",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -774,7 +680,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Chief",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -817,7 +722,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Chief",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -859,7 +763,6 @@ describeJourneys("required product journeys", () => {
       rpc<Bot>(app, cookie, "bots/create", {
         name,
         title: "",
-        description: "",
         instructions: "",
         notifyOnFinish: true,
       });
@@ -907,7 +810,6 @@ describeJourneys("required product journeys", () => {
       const bot = await rpc<Bot>(app, cookie, "bots/create", {
         name: "Chief",
         title: "",
-        description: "",
         instructions: "",
         notifyOnFinish: true,
       });
@@ -991,14 +893,12 @@ describeJourneys("required product journeys", () => {
     const writer = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Writer",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
     const researcher = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Researcher",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -1026,14 +926,12 @@ describeJourneys("required product journeys", () => {
     const writer = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Writer",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
     const researcher = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Researcher",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -1177,21 +1075,18 @@ describeJourneys("required product journeys", () => {
     const writer = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Writer",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
     const researcher = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Researcher",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
     const analyst = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Analyst",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -1339,7 +1234,6 @@ describeJourneys("required product journeys", () => {
     const peer = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Peer",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: false,
     });
@@ -1461,7 +1355,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Sequencer",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: false,
     });
@@ -1528,7 +1421,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Chief",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -1553,7 +1445,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Chief",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -1585,7 +1476,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Chief",
       title: "",
-      description: "",
       instructions: "Be useful",
       notifyOnFinish: true,
     });
@@ -1605,7 +1495,6 @@ describeJourneys("required product journeys", () => {
     const other = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Other",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -1633,14 +1522,12 @@ describeJourneys("required product journeys", () => {
     const keep = await rpc<Bot>(app, ada, "bots/create", {
       name: "Keep",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
     const gone = await rpc<Bot>(app, ada, "bots/create", {
       name: "Gone",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
       computerMode: "dedicated",
@@ -1648,7 +1535,6 @@ describeJourneys("required product journeys", () => {
     const forget = await rpc<Bot>(app, ada, "bots/create", {
       name: "Forget",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -1698,14 +1584,8 @@ describeJourneys("required product journeys", () => {
 
     await rpc(app, ada, "bots/archive", { botId: gone.id });
     expect((await rpc<Bot[]>(app, ada, "bots/list")).map((bot) => bot.id)).not.toContain(gone.id);
-    expect((await rpc<Bot[]>(app, ada, "bots/listArchived")).map((bot) => bot.id)).toContain(
-      gone.id,
-    );
     expect(await prisma.artifact.findUnique({ where: { id: goneArtifact.id } })).not.toBeNull();
     expect(existsSync(home)).toBe(true);
-
-    await rpc(app, ada, "bots/restore", { botId: gone.id });
-    expect((await rpc<Bot[]>(app, ada, "bots/list")).map((bot) => bot.id)).toContain(gone.id);
 
     await rpc(app, ada, "bots/remove", { botId: gone.id, deleteMemories: false });
     const list = await rpc<Bot[]>(app, ada, "bots/list");
@@ -1746,7 +1626,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Temporary",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -1773,7 +1652,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Chief",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -1796,7 +1674,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Chief",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -1826,14 +1703,9 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Chief",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
-    await rpc(app, cookie, "bots/update", { botId: bot.id, description: "Updated chief" });
-    expect((await rpc<Bot>(app, cookie, "bots/get", { botId: bot.id })).description).toBe(
-      "Updated chief",
-    );
 
     const asked = await rpc<{ runId: string }>(app, cookie, "threads/send", {
       botId: bot.id,
@@ -1930,7 +1802,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Chief",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -1982,7 +1853,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Chief",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -2129,7 +1999,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Teacher",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -2220,7 +2089,6 @@ describeJourneys("required product journeys", () => {
       const bot = await rpc<Bot>(app, cookie, "bots/create", {
         name: "Timer",
         title: "",
-        description: "",
         instructions: "",
         notifyOnFinish: true,
       });
@@ -2246,7 +2114,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Chief",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -2309,7 +2176,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Chief",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -2458,7 +2324,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Chief",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -2631,7 +2496,6 @@ describeJourneys("required product journeys", () => {
     const bot = await rpc<Bot>(app, cookie, "bots/create", {
       name: "Once Bot",
       title: "",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -2709,71 +2573,6 @@ describeJourneys("required product journeys", () => {
       prisma.routine.findUniqueOrThrow({ where: { id: routine.id } }),
     ).resolves.toMatchObject({ active: false, nextRunAt: null, lastRunAt: null });
     await expect(prisma.run.count({ where: { routineId: routine.id } })).resolves.toBe(0);
-  });
-
-  it("24: chat creates a space only after explicit approval", async () => {
-    const cookie = await signup(app, `space-chat-j-${stamp}@rakazo.test`, "Space Chat");
-    const me = await rpc<Me>(app, cookie, "me");
-    const bot = await rpc<Bot>(app, cookie, "bots/create", {
-      name: "Chief",
-      title: "",
-      description: "",
-      instructions: "",
-      notifyOnFinish: true,
-    });
-    const membershipsBefore = await prisma.spaceMember.count({ where: { userId: me.userId } });
-    const sent = await rpc<{ runId: string }>(app, cookie, "threads/send", {
-      botId: bot.id,
-      text: "create a space named Customer support",
-    });
-    const waiting = await waitFor(
-      app,
-      cookie,
-      bot.id,
-      (snap) => snap.run?.id === sent.runId && snap.run.status === "waiting_input",
-    );
-    const approval = JSON.stringify(waiting.messages);
-    expect(approval).toContain("Create space");
-    expect(approval).toContain("Customer support");
-    expect(approval).toContain("Cancel");
-    expect(approval).not.toContain("Always allow this tool");
-    expect(await prisma.spaceMember.count({ where: { userId: me.userId } })).toBe(
-      membershipsBefore,
-    );
-
-    await answerPendingApproval(app, cookie, bot.id, sent.runId, "allow", waiting);
-    await waitFor(
-      app,
-      cookie,
-      bot.id,
-      (snap) => !snap.run || ["completed", "failed", "cancelled"].includes(snap.run.status),
-    );
-    const navigation = await rpc<{ spaces: Array<{ name: string }> }>(app, cookie, "spaces/list");
-    expect(navigation.spaces.map((space) => space.name)).toContain("Customer support");
-    expect(await prisma.spaceMember.count({ where: { userId: me.userId } })).toBe(
-      membershipsBefore + 1,
-    );
-
-    const denied = await rpc<{ runId: string }>(app, cookie, "threads/send", {
-      botId: bot.id,
-      text: "create a space named Finance",
-    });
-    const deniedWaiting = await waitFor(
-      app,
-      cookie,
-      bot.id,
-      (snap) => snap.run?.id === denied.runId && snap.run.status === "waiting_input",
-    );
-    await answerPendingApproval(app, cookie, bot.id, denied.runId, "deny", deniedWaiting);
-    await waitFor(
-      app,
-      cookie,
-      bot.id,
-      (snap) => !snap.run || ["completed", "failed", "cancelled"].includes(snap.run.status),
-    );
-    expect(await prisma.spaceMember.count({ where: { userId: me.userId } })).toBe(
-      membershipsBefore + 1,
-    );
   });
 });
 

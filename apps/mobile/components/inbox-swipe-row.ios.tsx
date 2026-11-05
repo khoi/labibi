@@ -1,14 +1,4 @@
-import {
-  Button,
-  ContextMenu,
-  Divider,
-  Host,
-  List,
-  Menu,
-  RNHostView,
-  SwipeActions,
-  Toggle,
-} from "@expo/ui/swift-ui";
+import { Button, ContextMenu, Host, List, RNHostView, SwipeActions } from "@expo/ui/swift-ui";
 import {
   contentShape,
   labelStyle,
@@ -25,7 +15,7 @@ import { useState } from "react";
 import { PlatformColor, useWindowDimensions, View } from "react-native";
 import { useI18n } from "../lib/i18n";
 import type { InboxRowAction } from "../lib/inbox-swipe";
-import { INBOX_ROW_ACTIONS, inboxRowActions } from "../lib/inbox-swipe";
+import { INBOX_ROW_ACTIONS, inboxReadAction } from "../lib/inbox-swipe";
 import { native, useResolvedAppearance } from "../lib/native";
 import { InboxChatPreview } from "./inbox-chat-preview";
 import type { InboxSwipeRowProps } from "./inbox-swipe-row";
@@ -42,14 +32,10 @@ let lastRowHeight = 0;
 export function InboxSwipeRow({
   rowKey,
   unread,
-  pinned,
   notifyOnFinish,
-  sectionId,
-  sections,
   preview,
   onAction,
-  onOrganize,
-  onEditSection,
+  onNotifyChange,
   children,
 }: InboxSwipeRowProps) {
   const { t } = useI18n();
@@ -57,7 +43,7 @@ export function InboxSwipeRow({
   const window = useWindowDimensions();
   const [width, setWidth] = useState(window.width);
   const [height, setHeight] = useState(() => rowHeights.get(rowKey) ?? lastRowHeight);
-  const actions = inboxRowActions({ unread, pinned });
+  const readAction = inboxReadAction({ unread });
 
   function button(action: InboxRowAction, swipe = true) {
     const { label, systemImage } = INBOX_ROW_ACTIONS[action];
@@ -66,28 +52,11 @@ export function InboxSwipeRow({
         key={action}
         label={t(label)}
         systemImage={systemImage}
-        // A swipe button is never given the destructive role, which makes SwiftUI remove the
-        // row at the tap even when the request then fails; Archive is red by its tint instead.
         role={!swipe && action === "delete" ? "destructive" : undefined}
-        modifiers={
-          swipe
-            ? [
-                labelStyle("iconOnly"),
-                ...(action === "read" || action === "unread"
-                  ? [tint(PlatformColor("systemBlue"))]
-                  : action === "archive"
-                    ? [tint(PlatformColor("systemRed"))]
-                    : []),
-              ]
-            : undefined
-        }
+        modifiers={swipe ? [labelStyle("iconOnly"), tint(PlatformColor("systemBlue"))] : undefined}
         onPress={() => onAction(action)}
       />
     );
-  }
-
-  function moveTo(id: string | null) {
-    if (id !== (sectionId ?? null)) onOrganize({ sectionId: id });
   }
 
   return (
@@ -129,51 +98,18 @@ export function InboxSwipeRow({
                 <InboxChatPreview {...preview} />
               </ContextMenu.Preview>
               <ContextMenu.Items>
-                {button(actions.leading, false)}
-                {button(pinned ? "unpin" : "pin", false)}
+                {button(readAction, false)}
                 {notifyOnFinish === undefined ? null : (
                   <Button
                     label={notifyOnFinish ? t("Silence notifications") : t("Resume notifications")}
                     systemImage={notifyOnFinish ? "bell.slash" : "bell"}
-                    onPress={() => onOrganize({ notifyOnFinish: !notifyOnFinish })}
+                    onPress={() => onNotifyChange(!notifyOnFinish)}
                   />
                 )}
-                <Menu label={t("Move to")} systemImage="folder">
-                  {sections.map((section) => (
-                    <Toggle
-                      key={section.id}
-                      label={section.name}
-                      isOn={sectionId === section.id}
-                      onIsOnChange={() => moveTo(section.id)}
-                    />
-                  ))}
-                  <Toggle
-                    label={t("Unassigned")}
-                    isOn={sectionId == null}
-                    onIsOnChange={() => moveTo(null)}
-                  />
-                  <Divider />
-                  <Button
-                    label={t("New section")}
-                    systemImage="folder.badge.plus"
-                    onPress={() => onEditSection("create")}
-                  />
-                  {sections.some((section) => section.id === sectionId) ? (
-                    <Button
-                      label={t("Rename section")}
-                      systemImage="pencil"
-                      onPress={() => onEditSection("rename")}
-                    />
-                  ) : null}
-                </Menu>
-                {button("archive", false)}
                 {button("delete", false)}
               </ContextMenu.Items>
             </ContextMenu>
-            <SwipeActions.Actions edge="leading">{button(actions.leading)}</SwipeActions.Actions>
-            <SwipeActions.Actions edge="trailing" allowsFullSwipe={false}>
-              {actions.trailing.map((action) => button(action))}
-            </SwipeActions.Actions>
+            <SwipeActions.Actions edge="leading">{button(readAction)}</SwipeActions.Actions>
           </SwipeActions>
         </List>
       </Host>

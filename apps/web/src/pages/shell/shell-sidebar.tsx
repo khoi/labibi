@@ -58,9 +58,7 @@ export function ShellSidebar({
   setPanel,
   navigate,
   setNewSpaceOpen,
-  setCreateBotOpen,
   roster,
-  archived,
   footerLogos,
   user,
   navLinks,
@@ -86,9 +84,7 @@ export function ShellSidebar({
   setPanel: (panel: Panel) => void;
   navigate: (path: string) => void;
   setNewSpaceOpen: (open: boolean) => void;
-  setCreateBotOpen: (open: boolean) => void;
   roster: ReactNode;
-  archived: ReactNode;
   footerLogos: Array<{ name: string; logo?: string | null }>;
   user: User | undefined;
   navLinks: NavLink[];
@@ -173,7 +169,6 @@ export function ShellSidebar({
           setPanel={setPanel}
           navigate={navigate}
           setNewSpaceOpen={setNewSpaceOpen}
-          setCreateBotOpen={setCreateBotOpen}
         />
         {mini ||
         !(
@@ -272,7 +267,6 @@ export function ShellSidebar({
               {roster}
             </>
           )}
-          <div className={mini ? "hidden" : "contents"}>{archived}</div>
         </div>
         <div className={mini ? "hidden" : "contents"}>
           <PasskeyOffer />

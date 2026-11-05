@@ -43,9 +43,7 @@ function deps(): BotSettingsDeps {
 
 const bot = {
   name: "Scout",
-  description: "Finds papers",
   instructions: "Cite sources.",
-  color: "#8B5CF6",
   notifyOnFinish: true,
   modelProvider: null,
   modelId: null,
@@ -77,7 +75,6 @@ describe("readOwnBotSettings", () => {
     expect(settings).toMatchObject({
       name: "Scout",
       instructions: "Cite sources.",
-      avatar: "#8B5CF6",
       notifyOnFinish: true,
       model: "Google: Gemini 3.8 Flash (default)",
       thinkingLevel: "default",
@@ -116,7 +113,6 @@ describe("readOwnBotSettings", () => {
   it("shrinks pages until the whole serialized result fits, whole characters only", async () => {
     const long = {
       ...bot,
-      description: '"\\\n\t'.repeat(1_000),
       instructions: 'x"\n\\😀'.repeat(3_300),
     };
     type Page = Awaited<ReturnType<typeof readSettings>>;
@@ -136,8 +132,8 @@ describe("readOwnBotSettings", () => {
     expect(pages.map((page) => page.instructions).join("")).toBe(long.instructions);
   });
 
-  it("pages short instructions when escaping and the description overflow the result", async () => {
-    const heavy = { ...bot, description: "d".repeat(4_000), instructions: '"\n'.repeat(2_500) };
+  it("pages short instructions when escaping overflows the result", async () => {
+    const heavy = { ...bot, instructions: '"\n'.repeat(2_500) };
     let text = "";
     let offset: number | null | undefined = 0;
     while (typeof offset === "number") {
@@ -148,14 +144,6 @@ describe("readOwnBotSettings", () => {
       offset = page.instructionsNextOffset;
     }
     expect(text).toBe(heavy.instructions);
-  });
-
-  it("refuses a read when the rest of the settings leave no room for instructions", async () => {
-    const crowded = { ...bot, description: '"'.repeat(6_000), instructions: "x".repeat(19_000) };
-    const settings = await readOwnBotSettings(deps(), scope, crowded);
-    expect(settings).toEqual({
-      error: "Your settings are too large to read your instructions: shorten your description.",
-    });
   });
 
   it("returns longer instructions whole while the result still fits", async () => {

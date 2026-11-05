@@ -50,13 +50,7 @@ import {
   mcpAssignmentDto,
   mcpServerDto,
 } from "../mcp-servers.js";
-import {
-  chooseFocus,
-  dismissFocus,
-  markAppConnected,
-  promptFocus,
-  startOnboarding,
-} from "../onboarding.js";
+import { chooseFocus, dismissFocus, markAppConnected, promptFocus } from "../onboarding.js";
 import { installPlugin, lockPluginInstalls, setPluginParts } from "../plugin-installs.js";
 import {
   approvedPluginEntries,
@@ -1020,10 +1014,6 @@ export function mcpRoutes(ctx: RouterContext) {
           // The first save's time keeps a resubmission a duplicate of the same event.
           { id: context.actor.userId, at: saved.createdAt },
         );
-        return { ok: true as const };
-      }),
-      start: authed.onboarding.start.handler(async ({ context, input }) => {
-        await startOnboarding(onboardingDeps, context.actor, input.botId);
         return { ok: true as const };
       }),
       promptFocus: authed.onboarding.promptFocus.handler(async ({ context, input }) => {

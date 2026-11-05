@@ -261,7 +261,6 @@ describe.skipIf(!enabled)("history retrieval through executor", () => {
       const bot = await rpc<{ id: string }>("bots/create", {
         name: "History fixture",
         title: "",
-        description: "",
         instructions: "Inspect original history without revealing credentials.",
         notifyOnFinish: false,
       });

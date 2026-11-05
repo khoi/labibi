@@ -1,7 +1,7 @@
 import type { UsageOperationKind } from "@labradoodle/adapter-kit";
 import { resolveBotWorkspacePath } from "@labradoodle/adapters";
 import type { ExportManifest } from "@labradoodle/contracts";
-import { attachmentMaxBytes, resolveBotAvatarSet } from "@labradoodle/contracts";
+import { attachmentMaxBytes } from "@labradoodle/contracts";
 import { AttachmentValidationError } from "@labradoodle/core";
 import { IsolationError, LISTED_ARTIFACT, parseComputerMode } from "@labradoodle/db";
 import { ORPCError } from "@orpc/server";
@@ -233,10 +233,8 @@ export function contentRoutes(ctx: RouterContext) {
           exportedAt: new Date().toISOString(),
           bot: {
             name: bot.name,
-            description: bot.description,
             instructions: bot.instructions,
             color: bot.color,
-            avatarSet: resolveBotAvatarSet(bot.avatarSet),
           },
           memory: memory.map((m) => ({ path: m.path, content: m.content })),
           routines: routines.map((r) => ({

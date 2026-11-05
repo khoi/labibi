@@ -42,7 +42,7 @@ describePostgres("the operator's account status command (PostgreSQL)", { timeout
     });
     const bot = await createRepos(system).createBot(
       { userId: user.id, spaceId, email, isDeploymentOwner: false },
-      { name: "Helper", description: "", instructions: "", notifyOnFinish: false },
+      { name: "Helper", instructions: "", notifyOnFinish: false },
     );
     const thread = await system.thread.findFirstOrThrow({ where: { botId: bot.id } });
     const ids = { userId: user.id, spaceId, botId: bot.id, threadId: thread.id };

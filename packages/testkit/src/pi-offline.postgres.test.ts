@@ -99,7 +99,6 @@ describe.skipIf(!databaseAvailable)("offline Pi product journey", () => {
       const bot = await rpc<{ id: string }>(handles.app, cookie, "bots/create", {
         name: "File fixture",
         title: "",
-        description: "",
         instructions: "Complete the task.",
         notifyOnFinish: false,
       });

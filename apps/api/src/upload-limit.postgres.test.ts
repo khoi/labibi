@@ -66,7 +66,6 @@ it.skipIf(!databaseUrl)(
       const bot = await call("bots/create", {
         name: "Upload fixture",
         title: "",
-        description: "",
         instructions: "Keep files.",
         notifyOnFinish: false,
       });

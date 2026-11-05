@@ -49,7 +49,6 @@ describeAttachments("chat attachments", () => {
     const bot = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "Attacher",
       title: "Attacher",
-      description: "tests attachments",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -156,7 +155,6 @@ describeAttachments("chat attachments", () => {
     const bot = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "Attacher",
       title: "Attacher",
-      description: "tests attach_file",
       instructions: "",
       notifyOnFinish: true,
     });
@@ -224,7 +222,6 @@ describeAttachments("chat attachments", () => {
     const otherBot = await rpc<{ id: string }>(app, cookie, "bots/create", {
       name: "Other",
       title: "Other",
-      description: "",
       instructions: "",
       notifyOnFinish: true,
     });

@@ -10,7 +10,7 @@ const MAX_CACHED_AVATARS = 1000;
  */
 const avatars = new Map<string, { key: string; avatar: Promise<string | undefined> }>();
 
-async function renderAvatar(bot: { id: string; color: string; avatarSet?: string | null }) {
+async function renderAvatar(bot: { id: string; color: string }) {
   const source = notificationAvatarSource(bot);
   const comma = source.indexOf(",");
   const bytes = source.startsWith("data:image/svg+xml,")
@@ -27,15 +27,8 @@ async function renderAvatar(bot: { id: string; color: string; avatarSet?: string
 }
 
 /** Small enough to travel inside a push without exposing an authenticated avatar URL. */
-export async function notificationIdentity(bot: {
-  id: string;
-  name: string;
-  color: string;
-  avatarSet?: string | null;
-}) {
-  const key = createHash("sha256")
-    .update(`${bot.avatarSet ?? ""}\n${bot.color}`)
-    .digest("base64url");
+export async function notificationIdentity(bot: { id: string; name: string; color: string }) {
+  const key = createHash("sha256").update(bot.color).digest("base64url");
   let cached = avatars.get(bot.id);
   if (cached?.key !== key) {
     cached = {

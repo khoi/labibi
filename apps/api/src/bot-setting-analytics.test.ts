@@ -4,7 +4,6 @@ import { changedBotSettings } from "./bot-setting-analytics.js";
 const bot = {
   id: "bot-1",
   name: "Chief",
-  description: "Runs the day",
   instructions: "Be brief.",
   color: "#8B5CF6",
   notifyOnFinish: true,
@@ -19,7 +18,6 @@ describe("changedBotSettings", () => {
       changedBotSettings(bot, {
         botId: bot.id,
         name: "Chief",
-        color: "#8B5CF6",
         notifyOnFinish: true,
         disabledBuiltinTools: ["web_search"],
       }),
@@ -31,21 +29,16 @@ describe("changedBotSettings", () => {
       changedBotSettings(bot, {
         botId: bot.id,
         instructions: "Be thorough.",
-        color: "#000000",
-        avatarSet: "rakazo",
+        notifyOnFinish: false,
         modelProvider: "openai",
         modelId: "gpt",
       }),
-    ).toEqual(["instructions", "avatar", "model"]);
+    ).toEqual(["instructions", "notifications", "model"]);
   });
 
   it("counts a provider change that keeps the model id", () => {
     expect(
       changedBotSettings(bot, { botId: bot.id, modelProvider: "openrouter", modelId: "claude" }),
     ).toEqual(["model"]);
-  });
-
-  it("leaves sidebar organization out", () => {
-    expect(changedBotSettings(bot, { botId: bot.id, pinned: true, sectionId: null })).toEqual([]);
   });
 });

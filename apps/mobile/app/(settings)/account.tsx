@@ -49,7 +49,6 @@ import {
   setAppearancePreference,
 } from "../../lib/appearance";
 import { useApprovalSettings } from "../../lib/approval-settings";
-import { archivedChatCounts, loadArchivedChats } from "../../lib/archived-chats";
 import { replaceWithSignIn } from "../../lib/auth-routing";
 import { dateLocaleForUi, useI18n } from "../../lib/i18n";
 import type { LiveNotificationSettings } from "../../lib/live-notifications";
@@ -162,9 +161,6 @@ export default function Account() {
   }, [t]);
   const colorScheme = useResolvedAppearance();
   const trustedSites = useTrustedLinkSites();
-  const [archivedCount, setArchivedCount] = useState(0);
-  // A list that fails to refresh keeps its last count, so a passing error doesn't hide the row.
-  const archivedCounts = useRef({ bots: 0, groups: 0 });
   const [usage, setUsage] = useState<UsageSummary | null>(null);
   // Messaging appears only on servers that have a chat app connected, as on web.
   const [messagingEnabled, setMessagingEnabled] = useState(false);
@@ -261,20 +257,6 @@ export default function Account() {
       ))}
     </SettingsGroup>
   ) : null;
-
-  useFocusEffect(
-    useCallback(() => {
-      let active = true;
-      void loadArchivedChats().then((loaded) => {
-        if (!active) return;
-        archivedCounts.current = archivedChatCounts(archivedCounts.current, loaded);
-        setArchivedCount(archivedCounts.current.bots + archivedCounts.current.groups);
-      });
-      return () => {
-        active = false;
-      };
-    }, []),
-  );
 
   useFocusEffect(
     useCallback(() => {
@@ -748,18 +730,6 @@ export default function Account() {
             ) : null}
           </SettingsGroup>
         </View>
-
-        {archivedCount > 0 ? (
-          <SettingsGroup>
-            <SettingsRow
-              accessibilityRole="button"
-              chevron="right"
-              onPress={() => router.push("/archived-bots")}
-              title={t("Archived")}
-              value={String(archivedCount)}
-            />
-          </SettingsGroup>
-        ) : null}
 
         <View style={styles.about}>
           <AppMark />
