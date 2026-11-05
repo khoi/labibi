@@ -17,14 +17,14 @@ import type {
   ScreenRequest,
   TerminalRequest,
   WorkspaceExportLimits,
-} from "@rakazo/adapter-kit";
+} from "@labradoodle/adapter-kit";
 import {
   SandboxRateLimitError,
   SandboxUnavailableError,
   WorkspaceTooLargeError,
-} from "@rakazo/adapter-kit";
-import { boundedSandboxCommandTimeoutMs } from "@rakazo/core";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/adapter-kit";
+import { boundedSandboxCommandTimeoutMs } from "@labradoodle/core";
+import { getLogger } from "@labradoodle/logging";
 import { normalizeWorkspacePath, shellQuote, workspacePath } from "./computer-support.js";
 import { PORTABLE_TRANSFER_BATCH_BYTES } from "./computer-workspace.js";
 import {
@@ -177,7 +177,7 @@ export class BoxdSandboxProvider implements SandboxProvider {
       ...(this.org ? { org: this.org } : {}),
       // Bots run untrusted code: no boxd credentials inside, and no route to other machines.
       isolated: true,
-      // Rakazo's idle sleep stops the computer; boxd's own counts only network traffic and would
+      // Labradoodle's idle sleep stops the computer; boxd's own counts only network traffic and would
       // freeze a long command that prints nothing.
       config: { autoSuspendTimeout: 0 },
     };

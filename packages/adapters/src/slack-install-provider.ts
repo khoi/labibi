@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import type { MessagingInstallProvider } from "@rakazo/adapter-kit";
-import { readBoundedJsonResponse } from "@rakazo/core";
+import type { MessagingInstallProvider } from "@labradoodle/adapter-kit";
+import { readBoundedJsonResponse } from "@labradoodle/core";
 import {
   ChatSdkMessagingSurface,
   MESSAGING_WEBHOOK_MAX_BODY_BYTES,

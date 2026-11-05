@@ -713,13 +713,13 @@ msgstr "Permitir la comunicación entre bots de distintos espacios"
 msgid "Allow in this space"
 msgstr ""
 
+#: src/lib/dictation.ts
+msgid "Allow Labradoodle to use Speech Recognition and the microphone in System Settings."
+msgstr "Permite que Labradoodle use el reconocimiento de voz y el micrófono en Ajustes del Sistema."
+
 #: src/components/AskCard.tsx
 msgid "Allow once"
 msgstr "Permitir una vez"
-
-#: src/lib/dictation.ts
-msgid "Allow Rakazo to use Speech Recognition and the microphone in System Settings."
-msgstr "Permite que Rakazo use el reconocimiento de voz y el micrófono en Ajustes del Sistema."
 
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 msgid "Allow writing"
@@ -766,8 +766,8 @@ msgid "An API key is stored for this provider, not a subscription sign-in."
 msgstr "Hay una clave de API guardada para este proveedor, no un inicio de sesión por suscripción."
 
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
-msgid "An existing Honcho peer to read from. Rakazo never writes to it."
-msgstr "Un peer existente de Honcho del que leer. Rakazo nunca escribe en él."
+msgid "An existing Honcho peer to read from. Labradoodle never writes to it."
+msgstr "Un peer existente de Honcho del que leer. Labradoodle nunca escribe en él."
 
 #: src/lib/agent-import-errors.ts
 msgid "An imported API key could not be checked. Try again."
@@ -1417,8 +1417,8 @@ msgstr "Elegir carpeta"
 
 #: src/components/ModelCredits.tsx
 #: src/components/SubscriptionGate.tsx
-msgid "Choose how to use Rakazo"
-msgstr "Elige cómo usar Rakazo"
+msgid "Choose how to use Labradoodle"
+msgstr "Elige cómo usar Labradoodle"
 
 #: src/components/vault/VaultItemEditor.tsx
 msgid "City"
@@ -1737,8 +1737,8 @@ msgstr "Conecta primero el proveedor de este modelo."
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
-msgid "Connect your own API key in Models or choose Rakazo credits in Billing."
-msgstr "Conecta tu propia clave de API en Modelos o elige créditos de Rakazo en Facturación."
+msgid "Connect your own API key in Models or choose Labradoodle credits in Billing."
+msgstr "Conecta tu propia clave de API en Modelos o elige créditos de Labradoodle en Facturación."
 
 #: src/components/ComputerDeviceSettings.tsx
 #: src/components/integrations/IntegrationSetup.tsx
@@ -2503,8 +2503,8 @@ msgid "Create space"
 msgstr "Crear space"
 
 #: src/pages/Auth.tsx
-msgid "Create your Rakazo"
-msgstr "Crea tu Rakazo"
+msgid "Create your Labradoodle"
+msgstr "Crea tu Labradoodle"
 
 #: src/components/AskCard.tsx
 msgid "Created"
@@ -2981,7 +2981,7 @@ msgid "Ends {day}"
 msgstr "Termina el {day}"
 
 #: src/components/GitHubStarPrompt.tsx
-msgid "Enjoying Rakazo?"
+msgid "Enjoying Labradoodle?"
 msgstr ""
 
 #: src/lib/user-error.ts
@@ -3486,8 +3486,8 @@ msgid "How to check"
 msgstr "Cómo comprobar"
 
 #: src/components/SignupSurvey.tsx
-msgid "How will you use Rakazo?"
-msgstr "¿Cómo usarás Rakazo?"
+msgid "How will you use Labradoodle?"
+msgstr "¿Cómo usarás Labradoodle?"
 
 #: src/pages/shell/computer-release-actions.tsx
 msgid "I’m done"
@@ -3713,6 +3713,15 @@ msgstr ""
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Label"
 msgstr "Etiqueta"
+
+#: src/pages/AccountSettingsOverlay.tsx
+#: src/pages/shell/avatar-studio-popover.tsx
+msgid "Labradoodle"
+msgstr "Labradoodle"
+
+#: src/pages/Onboarding.tsx
+msgid "Labradoodle credits"
+msgstr "Créditos de Labradoodle"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Language"
@@ -4529,8 +4538,8 @@ msgid "Not imported"
 msgstr "No importado"
 
 #: src/pages/shell/import-status.ts
-msgid "Not in Rakazo's catalog"
-msgstr "No está en el catálogo de Rakazo"
+msgid "Not in Labradoodle's catalog"
+msgstr "No está en el catálogo de Labradoodle"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Not in the plugin catalog"
@@ -4543,12 +4552,12 @@ msgstr "Ahora no"
 
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/import-status.ts
-msgid "Not supported in Rakazo"
-msgstr "No compatible con Rakazo"
+msgid "Not supported in Labradoodle"
+msgstr "No compatible con Labradoodle"
 
 #: src/pages/shell/agent-import.tsx
-msgid "Not used by Rakazo"
-msgstr "Rakazo no lo usa"
+msgid "Not used by Labradoodle"
+msgstr "Labradoodle no lo usa"
 
 #: src/components/McpServerHealthLine.tsx
 msgid "Not working"
@@ -4682,6 +4691,11 @@ msgstr "¿Abrir enlace externo?"
 msgid "Open in full window"
 msgstr "Abrir en ventana completa"
 
+#: src/components/pages/PublicPageShell.tsx
+#: src/pages/SharedPage.tsx
+msgid "Open Labradoodle"
+msgstr "Abrir Labradoodle"
+
 #: src/components/pages/SharePopover.tsx
 msgid "Open link"
 msgstr "Abrir enlace"
@@ -4689,11 +4703,6 @@ msgstr "Abrir enlace"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "Abrir navegación"
-
-#: src/components/pages/PublicPageShell.tsx
-#: src/pages/SharedPage.tsx
-msgid "Open Rakazo"
-msgstr "Abrir Rakazo"
 
 #: src/pages/ScratchpadSection.tsx
 msgid "Open work"
@@ -4870,8 +4879,8 @@ msgid "Paste a replacement key"
 msgstr "Pega una clave de reemplazo"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
-msgid "Paste the OpenAI-compatible address from your server. Rakazo adds /v1 if needed."
-msgstr "Pega la dirección compatible con OpenAI de tu servidor. Rakazo agrega /v1 si es necesario."
+msgid "Paste the OpenAI-compatible address from your server. Labradoodle adds /v1 if needed."
+msgstr "Pega la dirección compatible con OpenAI de tu servidor. Labradoodle agrega /v1 si es necesario."
 
 #: src/pages/shell/agent-import.tsx
 msgid "Paste the reply"
@@ -5061,18 +5070,9 @@ msgstr "Solicitud de incorporación"
 msgid "Queued"
 msgstr "En cola"
 
-#: src/pages/AccountSettingsOverlay.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Rakazo"
-msgstr "Rakazo"
-
-#: src/pages/Onboarding.tsx
-msgid "Rakazo credits"
-msgstr "Créditos de Rakazo"
-
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
-msgid "rakazo-shared and IDs starting with bot- are reserved for Rakazo."
-msgstr "rakazo-shared y los ID que empiezan con bot- están reservados para Rakazo."
+msgid "rakazo-shared and IDs starting with bot- are reserved for Labradoodle."
+msgstr "rakazo-shared y los ID que empiezan con bot- están reservados para Labradoodle."
 
 #: src/pages/shell/message-hover-actions.tsx
 msgid "React"
@@ -5492,8 +5492,8 @@ msgstr "Volver a la llamada con {0}"
 
 #: src/pages/McpOAuthCallback.tsx
 #: src/pages/SlackInstallCallback.tsx
-msgid "Return to Rakazo"
-msgstr "Volver a Rakazo"
+msgid "Return to Labradoodle"
+msgstr "Volver a Labradoodle"
 
 #: src/lib/model-connection-preflight.ts
 msgid "Review provider settings and test again."
@@ -5970,8 +5970,8 @@ msgid "Sign in at <0>{0}</0>, then paste the code here."
 msgstr "Inicia sesión en <0>{0}</0> y pega el código aquí."
 
 #: src/pages/Auth.tsx
-msgid "Sign in to Rakazo"
-msgstr "Inicia sesión en Rakazo"
+msgid "Sign in to Labradoodle"
+msgstr "Inicia sesión en Labradoodle"
 
 #: src/lib/user-error.ts
 msgid "Sign in to your existing account to link SSO"
@@ -6601,8 +6601,8 @@ msgid "This server's tool result does not fit the model. Turn off Keep tool resu
 msgstr ""
 
 #: src/pages/model-settings/connection-controls.tsx
-msgid "This subscription sign-in is not available in Rakazo yet. Use a deployment credential or choose another provider."
-msgstr "Este inicio de sesión por suscripción aún no está disponible en Rakazo. Usa una credencial de despliegue o elige otro proveedor."
+msgid "This subscription sign-in is not available in Labradoodle yet. Use a deployment credential or choose another provider."
+msgstr "Este inicio de sesión por suscripción aún no está disponible en Labradoodle. Usa una credencial de despliegue o elige otro proveedor."
 
 #: src/pages/Artifacts.tsx
 msgid "This week"
@@ -6906,16 +6906,16 @@ msgid "Use in this bot"
 msgstr "Usar en este bot"
 
 #: src/components/ModelCredits.tsx
+msgid "Use Labradoodle credits"
+msgstr "Usar créditos de Labradoodle"
+
+#: src/components/ModelCredits.tsx
 msgid "Use my subscription or API key"
 msgstr "Usar mi suscripción o clave de API"
 
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Use Protected input for passwords."
 msgstr "Usa Entrada protegida para las contraseñas."
-
-#: src/components/ModelCredits.tsx
-msgid "Use Rakazo credits"
-msgstr "Usar créditos de Rakazo"
 
 #: src/pages/model-settings/space-bots-model.tsx
 msgid "Use space default"
@@ -7062,8 +7062,8 @@ msgid "Weekends"
 msgstr "Fines de semana"
 
 #: src/components/SignupSurvey.tsx
-msgid "Welcome to Rakazo"
-msgstr "Te damos la bienvenida a Rakazo"
+msgid "Welcome to Labradoodle"
+msgstr "Te damos la bienvenida a Labradoodle"
 
 #: src/pages/shell/dialogs.tsx
 msgid "What about its memories?"
@@ -7074,8 +7074,8 @@ msgid "What can this space use?"
 msgstr "¿Qué puede usar este espacio?"
 
 #: src/components/SignupSurvey.tsx
-msgid "What do you most want Rakazo to help with?"
-msgstr "¿Con qué quieres que Rakazo te ayude más?"
+msgid "What do you most want Labradoodle to help with?"
+msgstr "¿Con qué quieres que Labradoodle te ayude más?"
 
 #: src/pages/shell/message-cards.tsx
 msgid "What do you want me on first?"

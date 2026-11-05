@@ -1,10 +1,10 @@
+import type { AppContract, ProductEvent } from "@labradoodle/contracts";
+import { CLIENT_BUILD_HEADER, formatClientBuild } from "@labradoodle/contracts";
+import { displayIdentityEvent, displayIdentityResult } from "@labradoodle/core";
+import { clientCorrelationHeaders, responseCorrelation } from "@labradoodle/logging/monitoring";
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import type { ContractRouterClient } from "@orpc/contract";
-import type { AppContract, ProductEvent } from "@rakazo/contracts";
-import { CLIENT_BUILD_HEADER, formatClientBuild } from "@rakazo/contracts";
-import { displayIdentityEvent, displayIdentityResult } from "@rakazo/core";
-import { clientCorrelationHeaders, responseCorrelation } from "@rakazo/logging/monitoring";
 import { authClient } from "./auth";
 import { CLIENT_BUILD } from "./client-build";
 import { i18n } from "./i18n";

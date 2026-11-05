@@ -1,8 +1,8 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import type { SecretStore } from "@rakazo/adapter-kit";
-import type { PrismaClient } from "@rakazo/db";
-import { Prisma, runAsSystem } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+import type { SecretStore } from "@labradoodle/adapter-kit";
+import type { PrismaClient } from "@labradoodle/db";
+import { Prisma, runAsSystem } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import { deleteSecretBestEffort } from "./secret-store-factory.js";
 
 type Candidate = { id: string; ciphertext: string };

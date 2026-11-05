@@ -1,5 +1,5 @@
-import type { AgentUsage, ModelUsageLookup } from "@rakazo/adapter-kit";
-import { readBoundedJsonResponse } from "@rakazo/core";
+import type { AgentUsage, ModelUsageLookup } from "@labradoodle/adapter-kit";
+import { readBoundedJsonResponse } from "@labradoodle/core";
 import { z } from "zod";
 
 /** Attribution is restricted to OpenRouter inference endpoints, never compatible/custom hosts. */
@@ -18,8 +18,8 @@ export function openRouterInferenceFetch(fetcher: typeof fetch, userId?: string)
           ? input.headers
           : undefined,
     );
-    headers.set("HTTP-Referer", "https://rakazo.com");
-    headers.set("X-OpenRouter-Title", "Rakazo");
+    headers.set("HTTP-Referer", "https://labradoodle.com");
+    headers.set("X-OpenRouter-Title", "Labradoodle");
     const body = init?.body ?? (input instanceof Request ? await input.clone().text() : undefined);
     if (typeof body !== "string") throw new Error("OpenRouter inference requires a JSON body");
     const payload = JSON.parse(body);

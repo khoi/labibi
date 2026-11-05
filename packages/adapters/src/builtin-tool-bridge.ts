@@ -1,5 +1,5 @@
-import type { ConnectorTool } from "@rakazo/adapter-kit";
-import { FLEET_TOOL_NAMES } from "@rakazo/contracts";
+import type { ConnectorTool } from "@labradoodle/adapter-kit";
+import { FLEET_TOOL_NAMES } from "@labradoodle/contracts";
 import type { CatalogEntry } from "./lazy-tool-catalog.js";
 import {
   catalogEntries,

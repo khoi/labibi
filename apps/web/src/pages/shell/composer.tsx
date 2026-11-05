@@ -1,6 +1,5 @@
-import { useLingui } from "@lingui/react/macro";
-import type { AgentSkillCatalogEntry, ThreadMessage } from "@rakazo/contracts";
-import type { ComposerMention, ComposerMentionRange, SlashActionId } from "@rakazo/core";
+import type { AgentSkillCatalogEntry, ThreadMessage } from "@labradoodle/contracts";
+import type { ComposerMention, ComposerMentionRange, SlashActionId } from "@labradoodle/core";
 import {
   bindComposerMention,
   clampMentionHighlightIndex,
@@ -16,8 +15,9 @@ import {
   serializeComposerPrompt,
   truncateSlashDescription,
   updateComposerMentionBindings,
-} from "@rakazo/core";
-import { Button } from "@rakazo/ui-web";
+} from "@labradoodle/core";
+import { Button } from "@labradoodle/ui-web";
+import { useLingui } from "@lingui/react/macro";
 import { ArrowUp, Box, Paperclip, Plus, Settings, Square, X } from "lucide-react";
 import type { ClipboardEvent, ComponentProps, DragEvent, RefObject } from "react";
 import {

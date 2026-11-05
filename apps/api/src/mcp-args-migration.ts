@@ -1,7 +1,7 @@
-import type { SecretStore } from "@rakazo/adapter-kit";
-import { persistPreparedSecret } from "@rakazo/adapters";
-import type { PrismaClient } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+import type { SecretStore } from "@labradoodle/adapter-kit";
+import { persistPreparedSecret } from "@labradoodle/adapters";
+import type { PrismaClient } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import { serverSecretSpace } from "./availability.js";
 import type { McpSecretMaterial } from "./mcp-material.js";
 import { legacyMcpArgs } from "./mcp-material.js";

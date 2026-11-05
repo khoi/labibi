@@ -1,8 +1,7 @@
 import { randomUUID } from "node:crypto";
-import { ORPCError } from "@orpc/server";
-import type { AdapterContext, SandboxProvider } from "@rakazo/adapter-kit";
-import { computerControlExpireJobKey } from "@rakazo/adapter-kit";
-import type { ComputerExecutionLease } from "@rakazo/adapters";
+import type { AdapterContext, SandboxProvider } from "@labradoodle/adapter-kit";
+import { computerControlExpireJobKey } from "@labradoodle/adapter-kit";
+import type { ComputerExecutionLease } from "@labradoodle/adapters";
 import {
   acquireComputerExecutionLease,
   applyTeachingDesktopInput,
@@ -37,25 +36,26 @@ import {
   takeoverLeaseMs,
   toComputerRef,
   touchRunningComputer,
-} from "@rakazo/adapters";
-import type { Actor, ComputerReleaseReason, ComputerStatus } from "@rakazo/contracts";
+} from "@labradoodle/adapters";
+import type { Actor, ComputerReleaseReason, ComputerStatus } from "@labradoodle/contracts";
 import {
   attachmentMaxBytes,
   attachmentSizeLabel,
   ComputerCommandSchema,
   foldComputerCommands,
-} from "@rakazo/contracts";
-import { ACTIVE_RUN_STATUSES, scrollDirection } from "@rakazo/core";
-import { addScreenProxyCapability } from "@rakazo/core/node/screen-capability";
-import type { ComputerRunEnd, PrismaClient } from "@rakazo/db";
+} from "@labradoodle/contracts";
+import { ACTIVE_RUN_STATUSES, scrollDirection } from "@labradoodle/core";
+import { addScreenProxyCapability } from "@labradoodle/core/node/screen-capability";
+import type { ComputerRunEnd, PrismaClient } from "@labradoodle/db";
 import {
   createRepos,
   expireComputerExecutionLeases,
   IsolationError,
   parseComputerMode,
   recordComputerRunEnd,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
+import { ORPCError } from "@orpc/server";
 import { scrollPoint } from "../computer-input.js";
 import {
   executionBlocksUserTakeover,

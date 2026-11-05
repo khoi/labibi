@@ -3,8 +3,8 @@ import type {
   ConnectorCall,
   ConnectorEvent,
   ConnectorTool,
-} from "@rakazo/adapter-kit";
-import { ComposioConnector, FakeComposioClient } from "@rakazo/adapters";
+} from "@labradoodle/adapter-kit";
+import { ComposioConnector, FakeComposioClient } from "@labradoodle/adapters";
 import { CUSTOMER_SUPPORT_PROVIDERS, CUSTOMER_SUPPORT_TOOLS } from "./service-contract.js";
 
 export const INBOX = [

@@ -7,10 +7,10 @@ import {
   migrateLocalPushTokens,
   PrismaPushTokenStore,
   unwrapEnvFromKeyManager,
-} from "@rakazo/adapters";
-import { resolveEncryptionKey } from "@rakazo/core";
-import { loadRootEnv } from "@rakazo/core/node/load-root-env";
-import { createDb } from "@rakazo/db";
+} from "@labradoodle/adapters";
+import { resolveEncryptionKey } from "@labradoodle/core";
+import { loadRootEnv } from "@labradoodle/core/node/load-root-env";
+import { createDb } from "@labradoodle/db";
 
 loadRootEnv();
 await unwrapEnvFromKeyManager();

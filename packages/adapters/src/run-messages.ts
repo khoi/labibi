@@ -1,12 +1,12 @@
-import type { MessageBlock } from "@rakazo/contracts";
-import { callIdFromClientNonce, isBackgroundRunTrigger, redactSecrets } from "@rakazo/core";
-import type { Prisma, RunLease } from "@rakazo/db";
+import type { MessageBlock } from "@labradoodle/contracts";
+import { callIdFromClientNonce, isBackgroundRunTrigger, redactSecrets } from "@labradoodle/core";
+import type { Prisma, RunLease } from "@labradoodle/db";
 import {
   appendEventInTransaction,
   createThreadMessageInTransaction,
   withTransactionRetry,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import type { ExecutorDeps } from "./executor-deps.js";
 
 /** Deps for one attempt: its run's history writes carry the lease, so a superseded attempt cannot write. */

@@ -1,12 +1,12 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import {
   credentialIssue,
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
   signupRequiresEmailVerification,
   suggestEmailCorrection,
-} from "@rakazo/core";
-import { Button, Input, InputOTP, InputOTPGroup, InputOTPSlot, Label } from "@rakazo/ui-web";
+} from "@labradoodle/core";
+import { Button, Input, InputOTP, InputOTPGroup, InputOTPSlot, Label } from "@labradoodle/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Server } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -60,9 +60,9 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
     sent || codeStep ? (
       <Trans>Check your email</Trans>
     ) : mode === "in" ? (
-      <Trans>Sign in to Rakazo</Trans>
+      <Trans>Sign in to Labradoodle</Trans>
     ) : mode === "up" ? (
-      <Trans>Create your Rakazo</Trans>
+      <Trans>Create your Labradoodle</Trans>
     ) : (
       <Trans>Reset your password</Trans>
     );

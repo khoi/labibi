@@ -1,6 +1,6 @@
+import type { AccountSecurity } from "@labradoodle/contracts";
+import { Button, Input, Label } from "@labradoodle/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { AccountSecurity } from "@rakazo/contracts";
-import { Button, Input, Label } from "@rakazo/ui-web";
 import { useEffect, useState } from "react";
 import { fetchAccountSecurity, requestAccountDeletionCode } from "../lib/account-security";
 import { authClient } from "../lib/auth";

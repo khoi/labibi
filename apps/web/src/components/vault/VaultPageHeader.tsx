@@ -1,5 +1,5 @@
+import { Button } from "@labradoodle/ui-web";
 import { useLingui } from "@lingui/react/macro";
-import { Button } from "@rakazo/ui-web";
 import { ArrowLeft } from "lucide-react";
 import type { ReactNode } from "react";
 

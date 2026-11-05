@@ -1,8 +1,8 @@
+import type { SearchHit } from "@labradoodle/contracts";
+import { searchHitListKey } from "@labradoodle/core";
+import { Button } from "@labradoodle/ui-web";
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
-import type { SearchHit } from "@rakazo/contracts";
-import { searchHitListKey } from "@rakazo/core";
-import { Button } from "@rakazo/ui-web";
 
 export function SpaceSearchResults({
   hits,

@@ -1,8 +1,8 @@
-import { BillingEmulator } from "@rakazo/adapters";
-import type { Actor } from "@rakazo/contracts";
-import { BYOK_TIERS } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
-import { asSystem, billingAccountForOrganization, createDb } from "@rakazo/db";
+import { BillingEmulator } from "@labradoodle/adapters";
+import type { Actor } from "@labradoodle/contracts";
+import { BYOK_TIERS } from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
+import { asSystem, billingAccountForOrganization, createDb } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createBillingService, INVITED_TRIAL_DAYS, TRIAL_DAYS } from "./billing.js";
 

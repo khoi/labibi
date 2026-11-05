@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   DEFAULT_LOCAL_WEB_URL,
   desktopStackImageTag,
-  isRakazoHealth,
+  isLabradoodleHealth,
   managedLocalOpenUrl,
   maySendDesktopStackToken,
   normalizeServerUrl,
@@ -25,13 +25,15 @@ describe("server address normalization", () => {
     expect(normalizeServerUrl("127.0.0.1:5173")).toBe("http://127.0.0.1:5173");
     expect(normalizeServerUrl("localhost:5173")).toBe("http://localhost:5173");
     expect(normalizeServerUrl("192.168.1.20:3100")).toBe("http://192.168.1.20:3100");
-    expect(normalizeServerUrl("rakazo.example.com")).toBe("https://rakazo.example.com");
+    expect(normalizeServerUrl("labradoodle.example.com")).toBe("https://labradoodle.example.com");
   });
 
   it("keeps an explicit secure scheme and port but stores only the origin", () => {
-    expect(normalizeServerUrl("https://rakazo.example.com")).toBe("https://rakazo.example.com");
-    expect(normalizeServerUrl("https://rakazo.example.com:8443/team")).toBe(
-      "https://rakazo.example.com:8443",
+    expect(normalizeServerUrl("https://labradoodle.example.com")).toBe(
+      "https://labradoodle.example.com",
+    );
+    expect(normalizeServerUrl("https://labradoodle.example.com:8443/team")).toBe(
+      "https://labradoodle.example.com:8443",
     );
   });
 
@@ -44,7 +46,7 @@ describe("server address normalization", () => {
   });
 
   it("rejects cleartext public servers but permits private-network development", () => {
-    expect(normalizeServerUrl("http://rakazo.example.com")).toBeNull();
+    expect(normalizeServerUrl("http://labradoodle.example.com")).toBeNull();
     expect(normalizeServerUrl("http://10.0.0.8:3100")).toBe("http://10.0.0.8:3100");
     expect(normalizeServerUrl("http://[fd00::1]:3100")).toBe("http://[fd00::1]:3100");
     expect(normalizeServerUrl("100.101.102.103:3100")).toBe("http://100.101.102.103:3100");
@@ -58,19 +60,19 @@ describe("server address normalization", () => {
     expect(normalizeServerUrl("http://[fd00:ec2::254]")).toBeNull();
     // fd::1 is 00fd::1, not unique-local.
     expect(normalizeServerUrl("http://[fd::1]:3100")).toBeNull();
-    // HTTPS to link-local still normalizes; the health probe must match Rakazo.
+    // HTTPS to link-local still normalizes; the health probe must match Labradoodle.
     expect(normalizeServerUrl("https://169.254.169.254")).toBe("https://169.254.169.254");
   });
 
   it.each(["", "   ", "not a url", "ftp://example.com", "file:///etc/passwd", "http://"])(
-    "rejects an address that cannot reach a Rakazo server (%s)",
+    "rejects an address that cannot reach a Labradoodle server (%s)",
     (value) => {
       expect(normalizeServerUrl(value)).toBeNull();
     },
   );
 
   it("rejects embedded credentials rather than writing them to disk", () => {
-    expect(normalizeServerUrl("https://user:secret@rakazo.example.com")).toBeNull();
+    expect(normalizeServerUrl("https://user:secret@labradoodle.example.com")).toBeNull();
   });
 });
 
@@ -87,13 +89,15 @@ describe("managed local open URL", () => {
   it("rejects a different loopback origin even when both are local", () => {
     expect(managedLocalOpenUrl("http://127.0.0.1:5199", DEFAULT_LOCAL_WEB_URL)).toBeNull();
     expect(managedLocalOpenUrl("http://localhost:5173", DEFAULT_LOCAL_WEB_URL)).toBeNull();
-    expect(managedLocalOpenUrl("https://rakazo.example.com", DEFAULT_LOCAL_WEB_URL)).toBeNull();
+    expect(
+      managedLocalOpenUrl("https://labradoodle.example.com", DEFAULT_LOCAL_WEB_URL),
+    ).toBeNull();
   });
 });
 
 describe("desktop stack token transport", () => {
   it("allows HTTPS and loopback HTTP only", () => {
-    expect(maySendDesktopStackToken("https://rakazo.example.com")).toBe(true);
+    expect(maySendDesktopStackToken("https://labradoodle.example.com")).toBe(true);
     expect(maySendDesktopStackToken("http://127.0.0.1:5173")).toBe(true);
     expect(maySendDesktopStackToken("http://localhost:5173")).toBe(true);
     expect(maySendDesktopStackToken("http://10.0.0.8:5173")).toBe(false);
@@ -103,7 +107,7 @@ describe("desktop stack token transport", () => {
 
 describe("saved setup", () => {
   it("round-trips through the on-disk format", () => {
-    const setup = { mode: "existing", serverUrl: "https://rakazo.example.com" } as const;
+    const setup = { mode: "existing", serverUrl: "https://labradoodle.example.com" } as const;
     expect(parseStoredSetup(serializeSetup(setup))).toEqual(setup);
   });
 
@@ -137,7 +141,7 @@ describe("saved setup", () => {
     });
   });
 
-  it("saves Rakazo Cloud as an existing server under the exact origin setup matches", () => {
+  it("saves Labradoodle Cloud as an existing server under the exact origin setup matches", () => {
     // The setup window recognizes a saved Cloud choice by comparing against this constant.
     expect(normalizeServerUrl(RAKAZO_CLOUD_URL)).toBe(RAKAZO_CLOUD_URL);
     expect(parseSetupInput({ mode: "existing", serverUrl: RAKAZO_CLOUD_URL })).toEqual({
@@ -153,18 +157,22 @@ describe("server request headers", () => {
   const access = { "CF-Access-Client-Id": "id.access", "CF-Access-Client-Secret": "secret" };
   const setup = {
     mode: "existing",
-    serverUrl: "https://rakazo.example.com",
+    serverUrl: "https://labradoodle.example.com",
     headers: access,
   } as const;
 
   it("saves headers for an existing server and drops an empty set", () => {
     expect(parseStoredSetup(serializeSetup(setup))).toEqual(setup);
     expect(
-      parseSetupInput({ mode: "existing", serverUrl: "https://rakazo.example.com", headers: {} }),
-    ).toEqual({ mode: "existing", serverUrl: "https://rakazo.example.com" });
+      parseSetupInput({
+        mode: "existing",
+        serverUrl: "https://labradoodle.example.com",
+        headers: {},
+      }),
+    ).toEqual({ mode: "existing", serverUrl: "https://labradoodle.example.com" });
   });
 
-  it("refuses headers Rakazo owns and headers for a new local instance", () => {
+  it("refuses headers Labradoodle owns and headers for a new local instance", () => {
     expect(parseSetupInput({ ...setup, headers: { Cookie: "a=b" } })).toBeNull();
     expect(parseSetupInput({ ...setup, headers: "x: y" })).toBeNull();
     expect(
@@ -173,18 +181,20 @@ describe("server request headers", () => {
   });
 
   it("adds them only to the saved server, websockets included", () => {
-    expect(serverHeadersFor("https://rakazo.example.com/rpc/me", setup)).toEqual(access);
-    expect(serverHeadersFor("wss://rakazo.example.com/novnc/websockify", setup)).toEqual(access);
-    expect(serverHeadersFor("https://rakazo.example.com.evil/rpc", setup)).toEqual({});
-    expect(serverHeadersFor("http://rakazo.example.com/rpc", setup)).toEqual({});
+    expect(serverHeadersFor("https://labradoodle.example.com/rpc/me", setup)).toEqual(access);
+    expect(serverHeadersFor("wss://labradoodle.example.com/novnc/websockify", setup)).toEqual(
+      access,
+    );
+    expect(serverHeadersFor("https://labradoodle.example.com.evil/rpc", setup)).toEqual({});
+    expect(serverHeadersFor("http://labradoodle.example.com/rpc", setup)).toEqual({});
     expect(serverHeadersFor("https://accounts.example.com/", setup)).toEqual({});
     expect(serverHeadersFor("not a url", setup)).toEqual({});
-    expect(serverHeadersFor("https://rakazo.example.com/", null)).toEqual({});
+    expect(serverHeadersFor("https://labradoodle.example.com/", null)).toEqual({});
   });
 });
 
 describe("startup target", () => {
-  const saved = { mode: "existing", serverUrl: "https://rakazo.example.com" } as const;
+  const saved = { mode: "existing", serverUrl: "https://labradoodle.example.com" } as const;
 
   it("runs setup on a first launch", () => {
     expect(resolveStartupTarget({})).toEqual({ kind: "setup" });
@@ -193,7 +203,7 @@ describe("startup target", () => {
   it("opens the saved instance on later launches", () => {
     expect(resolveStartupTarget({ saved })).toEqual({
       kind: "app",
-      url: "https://rakazo.example.com",
+      url: "https://labradoodle.example.com",
       source: "saved",
     });
   });
@@ -237,8 +247,8 @@ describe("bundled renderer eligibility", () => {
     expect(servesBundledRenderer("http://rakazo.localhost:5173", true)).toBe(true);
     expect(servesBundledRenderer(DEFAULT_LOCAL_WEB_URL, false)).toBe(false);
     expect(servesBundledRenderer("http://127.0.0.1:3100", false)).toBe(false);
-    expect(servesBundledRenderer("https://rakazo.example.com", true)).toBe(false);
-    expect(servesBundledRenderer("https://rakazo.example.com:8443", true)).toBe(false);
+    expect(servesBundledRenderer("https://labradoodle.example.com", true)).toBe(false);
+    expect(servesBundledRenderer("https://labradoodle.example.com:8443", true)).toBe(false);
     expect(servesBundledRenderer("http://192.168.1.20:3100", true)).toBe(false);
     expect(servesBundledRenderer("http://10.0.0.8:3100", true)).toBe(false);
     expect(servesBundledRenderer("http://rakazo.local:3100", true)).toBe(false);
@@ -265,11 +275,11 @@ describe("remote-content isolation", () => {
   });
 });
 
-describe("Rakazo health response", () => {
+describe("Labradoodle health response", () => {
   it("requires the public RPC health contract", () => {
-    expect(isRakazoHealth({ json: { ok: true, version: "0.1.0" } })).toBe(true);
-    expect(isRakazoHealth({ json: { ok: true } })).toBe(false);
-    expect(isRakazoHealth({ ok: true, version: "0.1.0" })).toBe(false);
+    expect(isLabradoodleHealth({ json: { ok: true, version: "0.1.0" } })).toBe(true);
+    expect(isLabradoodleHealth({ json: { ok: true } })).toBe(false);
+    expect(isLabradoodleHealth({ ok: true, version: "0.1.0" })).toBe(false);
   });
 });
 

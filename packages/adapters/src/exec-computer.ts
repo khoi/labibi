@@ -8,9 +8,9 @@ import type {
   ComputerRef,
   PortableFile,
   ProcessEvent,
-} from "@rakazo/adapter-kit";
-import { boundedSandboxCommandTimeoutMs } from "@rakazo/core";
-import { COMPUTER_CACHE_ENV } from "@rakazo/core/node/desktop-runtime";
+} from "@labradoodle/adapter-kit";
+import { boundedSandboxCommandTimeoutMs } from "@labradoodle/core";
+import { COMPUTER_CACHE_ENV } from "@labradoodle/core/node/desktop-runtime";
 import { normalizeWorkspacePath, shellQuote, workspacePath } from "./computer-support.js";
 import { sandboxCommandArgv } from "./sandbox-command-environment.js";
 import {
@@ -242,7 +242,7 @@ export class ExecComputer {
     try {
       const staged = await this.collect(
         computer,
-        ["bash", "-c", 'umask 077; cat > "$1"', "rakazo-export-list", listPath],
+        ["bash", "-c", 'umask 077; cat > "$1"', "labradoodle-export-list", listPath],
         context,
         1024 * 1024,
         Readable.from([list]),

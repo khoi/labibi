@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto";
-import type { HistoryReadInput, HistorySearchInput } from "@rakazo/contracts";
+import type { HistoryReadInput, HistorySearchInput } from "@labradoodle/contracts";
 import {
   ATTACHMENT_MAX_COUNT,
   HISTORY_ATTACHMENTS_PER_RESPONSE,
   HistoryQueriesSchema,
-} from "@rakazo/contracts";
-import { attachmentComputerPath, shortenedTextLength, textBoundary } from "@rakazo/core";
+} from "@labradoodle/contracts";
+import { attachmentComputerPath, shortenedTextLength, textBoundary } from "@labradoodle/core";
 import type { PrismaClient } from "./client.js";
 import { Prisma } from "./client.js";
 import { searchTerms } from "./content-crypto.js";

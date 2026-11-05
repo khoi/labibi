@@ -1,4 +1,4 @@
-import { notificationAvatarSource } from "@rakazo/core";
+import { notificationAvatarSource } from "@labradoodle/core";
 import { renderToString } from "react-dom/server";
 import { expect, it } from "vitest";
 import { BotAvatar } from "./bot-avatar.js";

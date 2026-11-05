@@ -6,16 +6,16 @@ import type {
   JobPublisher,
   SandboxProvider,
   SecretStore,
-} from "@rakazo/adapter-kit";
-import { routineJobKey, runContinueJob, runJobKey } from "@rakazo/adapter-kit";
-import type { Actor, Bot, ComputerMode } from "@rakazo/contracts";
+} from "@labradoodle/adapter-kit";
+import { routineJobKey, runContinueJob, runJobKey } from "@labradoodle/adapter-kit";
+import type { Actor, Bot, ComputerMode } from "@labradoodle/contracts";
 import {
   BOT_DESCRIPTION_MAX_LENGTH,
   BOT_INSTRUCTIONS_MAX_LENGTH,
   GROUP_MEMBER_MIN,
-} from "@rakazo/contracts";
-import { ACTIVE_RUN_STATUSES } from "@rakazo/core";
-import type { Prisma, PrismaClient } from "@rakazo/db";
+} from "@labradoodle/contracts";
+import { ACTIVE_RUN_STATUSES } from "@labradoodle/core";
+import type { Prisma, PrismaClient } from "@labradoodle/db";
 import {
   cancelRunsInTransaction,
   clearEndedRunState,
@@ -27,8 +27,8 @@ import {
   legacyTeamHomeKey,
   recordComputerRunEnd,
   withTransactionRetry,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import { BrowserStoppedReleaseError } from "./computer-screens.js";
 import { toComputerRef } from "./computer-support.js";
 import {

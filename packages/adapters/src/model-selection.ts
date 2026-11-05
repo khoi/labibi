@@ -1,13 +1,17 @@
-import type { SecretStore } from "@rakazo/adapter-kit";
-import { SecretStoreUnavailableError } from "@rakazo/adapter-kit";
-import type { Actor } from "@rakazo/contracts";
+import type { SecretStore } from "@labradoodle/adapter-kit";
+import { SecretStoreUnavailableError } from "@labradoodle/adapter-kit";
+import type { Actor } from "@labradoodle/contracts";
 import {
   canonicalPiProviderId,
   selectCompatibleModelCredential,
   usableModelId,
-} from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
-import { chooseModelCredential, findModelCredential, findModelCredentialById } from "@rakazo/db";
+} from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
+import {
+  chooseModelCredential,
+  findModelCredential,
+  findModelCredentialById,
+} from "@labradoodle/db";
 import { resolveDeploymentModel } from "./deployment-model.js";
 import { modelCredentialDto } from "./model-connect.js";
 import { compatibleModelSeesImages, modelAcceptsImageInput } from "./model-vision.js";

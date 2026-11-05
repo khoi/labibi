@@ -1,12 +1,12 @@
-import type { ComputerMode, ComputerReleaseReason } from "@rakazo/contracts";
-import type { ScreenPageState } from "@rakazo/core";
+import type { ComputerMode, ComputerReleaseReason } from "@labradoodle/contracts";
+import type { ScreenPageState } from "@labradoodle/core";
 import {
   createScreenReconnect,
   displayName,
   isRetryableError,
   screenProbeUrl,
   waitForScreenPage,
-} from "@rakazo/core";
+} from "@labradoodle/core";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import type { RefObject } from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";

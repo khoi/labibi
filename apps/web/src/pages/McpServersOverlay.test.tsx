@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import type { McpServer } from "@rakazo/contracts";
-import { MCP_OAUTH_CLIENT_REQUIRED } from "@rakazo/contracts";
+import type { McpServer } from "@labradoodle/contracts";
+import { MCP_OAUTH_CLIENT_REQUIRED } from "@labradoodle/contracts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactElement, ReactNode } from "react";
 import { act } from "react";
@@ -48,7 +48,7 @@ vi.mock("@lingui/react/macro", () => ({
       parts.reduce((text, part, i) => text + (i ? String(values[i - 1]) : "") + part, ""),
   }),
 }));
-vi.mock("@rakazo/ui-web", async () => {
+vi.mock("@labradoodle/ui-web", async () => {
   const { cloneElement, createElement } = await import("react");
   const container = ({ children }: { children: ReactNode }) => createElement("div", null, children);
   return Object.fromEntries([
@@ -714,7 +714,7 @@ it("links callback mismatches in MCP settings to the shared recovery guide", asy
     await vi.waitFor(() => expect(connectButton()).toBeDefined());
     await act(async () => connectButton()?.click());
     expect(host.querySelector('[role="alert"] a')?.getAttribute("href")).toBe(
-      "https://rakazo.com/docs/troubleshooting/#mcp-oauth-redirect-mismatch",
+      "https://labradoodle.com/docs/troubleshooting/#mcp-oauth-redirect-mismatch",
     );
     expect(connectButton()?.disabled).toBe(false);
   } finally {

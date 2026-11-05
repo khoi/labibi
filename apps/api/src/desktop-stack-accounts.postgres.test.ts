@@ -1,8 +1,8 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { FakeSandboxProvider } from "@rakazo/adapters";
-import { runAsSystem } from "@rakazo/db";
+import { FakeSandboxProvider } from "@labradoodle/adapters";
+import { runAsSystem } from "@labradoodle/db";
 import { expect, it } from "vitest";
 import { createApp } from "./app.js";
 

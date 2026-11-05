@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import type { ComputerStatus } from "@rakazo/contracts";
+import type { ComputerStatus } from "@labradoodle/contracts";
 import type { ReactNode } from "react";
 import { act, createElement, Fragment, useEffect } from "react";
 import type { Root } from "react-dom/client";
@@ -428,7 +428,10 @@ describe("computer screen", () => {
     const view = await render();
     act(() =>
       screens.onMessage?.({
-        nativeEvent: { data: JSON.stringify({ rakazoScreen: "connected" }), url: screens.source },
+        nativeEvent: {
+          data: JSON.stringify({ rakazoScreen: "connected" }),
+          url: screens.source,
+        },
       }),
     );
     token = "second";

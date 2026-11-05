@@ -3,12 +3,12 @@ import type {
   MessagingInboundAttachment,
   MessagingInboundMessage,
   SandboxProvider,
-} from "@rakazo/adapter-kit";
-import { messagingDeliverJob, runContinueJob } from "@rakazo/adapter-kit";
-import { insertOutboundRows } from "@rakazo/adapters";
-import type { MessageBlock } from "@rakazo/contracts";
-import { ATTACHMENT_MAX_COUNT, isAttachmentAudioMimeType } from "@rakazo/contracts";
-import type { MessagingCommand } from "@rakazo/core";
+} from "@labradoodle/adapter-kit";
+import { messagingDeliverJob, runContinueJob } from "@labradoodle/adapter-kit";
+import { insertOutboundRows } from "@labradoodle/adapters";
+import type { MessageBlock } from "@labradoodle/contracts";
+import { ATTACHMENT_MAX_COUNT, isAttachmentAudioMimeType } from "@labradoodle/contracts";
+import type { MessagingCommand } from "@labradoodle/core";
 import {
   displayName,
   messageBlockForArtifact,
@@ -16,7 +16,7 @@ import {
   parseMessagingCommand,
   promptTextForAttachments,
   sanitizeMessagingLabel,
-} from "@rakazo/core";
+} from "@labradoodle/core";
 import type {
   MessagingIdentityRequest,
   Prisma,
@@ -24,15 +24,15 @@ import type {
   ProvisionedMessagingIdentity,
   SignupPolicyEnv,
   ThreadEvents,
-} from "@rakazo/db";
+} from "@labradoodle/db";
 import {
   createThreadMessage,
   crossSpaceCommunicationAllowed,
   normalizeMessagingLinkCode,
   redeemMessagingLinkCode,
   THREAD_LOCK_TRANSACTION_OPTIONS,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import type { MessagingReceipts } from "./messaging-receipts.js";
 import {
   MESSAGE_ROUTING_REARMED_REASON,
@@ -905,7 +905,7 @@ async function handleChannelEvent(
         idempotencyKey: `intro:${channel.id}`,
         kind: "intro",
         threadId: channel.threadId,
-        body: "Hi. This line hosts Rakazo personal agents. Some people in this group haven't messaged it yet; send any message to this line first if you want your own agent here.",
+        body: "Hi. This line hosts Labradoodle personal agents. Some people in this group haven't messaged it yet; send any message to this line first if you want your own agent here.",
       },
     ]);
     await deps.prisma.messagingChannel.update({
@@ -999,7 +999,7 @@ async function queueInvite(
         idempotencyKey: `invite:${channel.id}:${identity.id}`,
         kind: "dm",
         identityId: identity.id,
-        body: `"${name}" was linked to your Rakazo agent. Reply YES to let your agent join the conversation there, or NO to stay out.`,
+        body: `"${name}" was linked to your Labradoodle agent. Reply YES to let your agent join the conversation there, or NO to stay out.`,
       },
     ],
     skipDuplicates: true,

@@ -6,8 +6,8 @@ import type {
   AutoReviewRequest,
   AutoReviewResult,
   DecisionProvider,
-} from "@rakazo/adapter-kit";
-import { DecisionProviderError } from "@rakazo/adapter-kit";
+} from "@labradoodle/adapter-kit";
+import { DecisionProviderError } from "@labradoodle/adapter-kit";
 import {
   AUTO_REVIEW_ASK,
   AUTO_REVIEW_PASS,

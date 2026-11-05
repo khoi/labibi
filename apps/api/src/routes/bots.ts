@@ -1,6 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { ORPCError } from "@orpc/server";
-import { runContinueJob } from "@rakazo/adapter-kit";
+import { runContinueJob } from "@labradoodle/adapter-kit";
 import {
   archiveBot,
   checkpointAndStopComputer,
@@ -20,17 +19,17 @@ import {
   storeBotSecret,
   toComputerRef,
   validateBotModelChange,
-} from "@rakazo/adapters";
+} from "@labradoodle/adapters";
 import type {
   Actor,
   Bot,
   BotSecretMetadata,
   SettingsScope,
   VaultPutInput,
-} from "@rakazo/contracts";
-import { BotSecretAuth, resolveBotAvatarSet } from "@rakazo/contracts";
-import { ACTIVE_RUN_STATUSES, displayName } from "@rakazo/core";
-import type { Prisma } from "@rakazo/db";
+} from "@labradoodle/contracts";
+import { BotSecretAuth, resolveBotAvatarSet } from "@labradoodle/contracts";
+import { ACTIVE_RUN_STATUSES, displayName } from "@labradoodle/core";
+import type { Prisma } from "@labradoodle/db";
 import {
   BotSectionNameConflictError,
   botProfileLabelsChanged,
@@ -45,8 +44,9 @@ import {
   SpaceDeletionInProgressError,
   settingsTarget,
   THREAD_LOCK_TRANSACTION_OPTIONS,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
+import { ORPCError } from "@orpc/server";
 import type { AgentImportServices } from "../agent-import.js";
 import { agentImportSetupState, createImportedBot, previewAgentImport } from "../agent-import.js";
 import { deleteAgentSecret, listAgentSecrets, putAgentSecret } from "../agent-secrets.js";

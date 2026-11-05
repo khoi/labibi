@@ -30,7 +30,7 @@ import type {
   StreamedPortableFile,
   TerminalRequest,
   WorkspaceExportLimits,
-} from "@rakazo/adapter-kit";
+} from "@labradoodle/adapter-kit";
 import {
   SandboxDamagedError,
   SandboxRateLimitError,
@@ -38,10 +38,10 @@ import {
   SandboxUnavailableError,
   SandboxUnresponsiveError,
   WorkspaceTooLargeError,
-} from "@rakazo/adapter-kit";
-import type { ComputerSize } from "@rakazo/contracts";
-import { boundedSandboxCommandTimeoutMs } from "@rakazo/core";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/adapter-kit";
+import type { ComputerSize } from "@labradoodle/contracts";
+import { boundedSandboxCommandTimeoutMs } from "@labradoodle/core";
+import { getLogger } from "@labradoodle/logging";
 import {
   BoatApiError,
   BoatRequestGate,

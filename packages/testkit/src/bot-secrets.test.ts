@@ -1,11 +1,11 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { AgentRuntimeEvent } from "@rakazo/adapter-kit";
-import { EncryptedSecretStore, ScriptedAgentRuntime } from "@rakazo/adapters";
-import type { createApp } from "@rakazo/api/app";
-import { resolveEncryptionKey } from "@rakazo/core";
-import { answerRunInput, runAsSystem, runAsTenant } from "@rakazo/db";
+import type { AgentRuntimeEvent } from "@labradoodle/adapter-kit";
+import { EncryptedSecretStore, ScriptedAgentRuntime } from "@labradoodle/adapters";
+import type { createApp } from "@labradoodle/api/app";
+import { resolveEncryptionKey } from "@labradoodle/core";
+import { answerRunInput, runAsSystem, runAsTenant } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { discardBotIntroFromCreate } from "./discard-bot-intro.js";
 import { asSystem } from "./system-db.js";
@@ -33,7 +33,7 @@ describeIntegration("reusable credential lifecycle", () => {
   });
 
   beforeAll(async () => {
-    const { createApp } = await import("@rakazo/api/app");
+    const { createApp } = await import("@labradoodle/api/app");
     handles = await createApp({
       databaseUrl: process.env.DATABASE_URL!,
       dataDir,

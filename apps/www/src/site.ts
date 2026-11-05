@@ -1,9 +1,9 @@
-export const SITE_NAME = "Rakazo";
-export const SITE_URL = "https://rakazo.com";
+export const SITE_NAME = "Labradoodle";
+export const SITE_URL = "https://labradoodle.com";
 export const SITE_DESCRIPTION =
-  "Rakazo is an open source Grok Bot alternative for persistent AI teammates that do real work. Your keys, your model, your machine.";
+  "Labradoodle is an open source Grok Bot alternative for persistent AI teammates that do real work. Your keys, your model, your machine.";
 
-export const APP_URL = "https://app.rakazo.com";
+export const APP_URL = "https://app.labradoodle.com";
 export const PLUGIN_SUBMISSIONS_URL = `${APP_URL}/api/v1/plugin-submissions`;
 export const INTEGRATION_CLAIMS_URL = `${APP_URL}/api/v1/integration-claims`;
 export const CATALOG_URL =

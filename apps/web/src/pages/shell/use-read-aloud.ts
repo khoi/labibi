@@ -1,6 +1,6 @@
-import type { Bot, ThreadMessage, ThreadSnapshot } from "@rakazo/contracts";
-import { speechFromBlocks } from "@rakazo/core";
-import { toast } from "@rakazo/ui-web";
+import type { Bot, ThreadMessage, ThreadSnapshot } from "@labradoodle/contracts";
+import { speechFromBlocks } from "@labradoodle/core";
+import { toast } from "@labradoodle/ui-web";
 import type { RefObject } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { speaker } from "../../lib/tts";

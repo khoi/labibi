@@ -1,6 +1,6 @@
-import type { AdapterContext, ComputerRef, SandboxProvider } from "@rakazo/adapter-kit";
-import type { PrismaClient } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+import type { AdapterContext, ComputerRef, SandboxProvider } from "@labradoodle/adapter-kit";
+import type { PrismaClient } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import { usesNativeShell } from "./native-shell.js";
 
 const MEASURE_TIMEOUT_MS = 5_000;

@@ -1,9 +1,9 @@
-import { MCP_OAUTH_REDIRECT_MISMATCH } from "@rakazo/contracts";
+import { MCP_OAUTH_REDIRECT_MISMATCH } from "@labradoodle/contracts";
 
 /** Only reviewed, public documentation links belong here; never use URLs from an error body. */
 const ERROR_GUIDES: Readonly<Record<string, string>> = {
   [MCP_OAUTH_REDIRECT_MISMATCH]:
-    "https://rakazo.com/docs/troubleshooting/#mcp-oauth-redirect-mismatch",
+    "https://labradoodle.com/docs/troubleshooting/#mcp-oauth-redirect-mismatch",
 };
 
 /** A stable error code opts into troubleshooting without depending on message wording. */

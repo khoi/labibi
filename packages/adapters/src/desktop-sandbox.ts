@@ -28,8 +28,8 @@ import type {
   ScreenRequest,
   ScreenSession,
   WorkspaceDirectoryRequest,
-} from "@rakazo/adapter-kit";
-import { boundedSandboxCommandTimeoutMs } from "@rakazo/core";
+} from "@labradoodle/adapter-kit";
+import { boundedSandboxCommandTimeoutMs } from "@labradoodle/core";
 import {
   applyPlaceholderAction,
   boundedComputerActions,

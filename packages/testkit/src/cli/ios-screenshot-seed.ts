@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
-import type { BotSecretDestination, MessageBlock } from "@rakazo/contracts";
-import { encodeCardSecret, encodeContactSecret, encodeLoginSecret } from "@rakazo/contracts";
-import { allocateTicketNumber, createDb, createThreadMessage, ensureBoard } from "@rakazo/db";
-import { pageViewerCode } from "@rakazo/page-kit/compile";
+import type { BotSecretDestination, MessageBlock } from "@labradoodle/contracts";
+import { encodeCardSecret, encodeContactSecret, encodeLoginSecret } from "@labradoodle/contracts";
+import { allocateTicketNumber, createDb, createThreadMessage, ensureBoard } from "@labradoodle/db";
+import { pageViewerCode } from "@labradoodle/page-kit/compile";
 import { PNG } from "pngjs";
 import { sessionCookieHeader } from "../index.js";
 

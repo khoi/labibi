@@ -6,8 +6,8 @@ import type {
   DecisionProviderOptions,
   DecisionRequest,
   DecisionResult,
-} from "@rakazo/adapter-kit";
-import { DecisionProviderError } from "@rakazo/adapter-kit";
+} from "@labradoodle/adapter-kit";
+import { DecisionProviderError } from "@labradoodle/adapter-kit";
 import { z } from "zod";
 import { decisionModel } from "./decision-models.js";
 import { readBodyCapped } from "./web-ssrf.js";

@@ -1,5 +1,12 @@
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  Kbd,
+  KbdGroup,
+} from "@labradoodle/ui-web";
 import { useLingui } from "@lingui/react/macro";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, Kbd, KbdGroup } from "@rakazo/ui-web";
 import type { ShortcutHost } from "./shell-shortcuts";
 
 type Row = { label: string; keys: string[][] };

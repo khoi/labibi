@@ -1,8 +1,8 @@
-import type { AdapterContext, JobPublisher, SandboxProvider } from "@rakazo/adapter-kit";
-import { computerControlExpireJob, runContinueJob } from "@rakazo/adapter-kit";
-import type { PrismaClient, ThreadEvents } from "@rakazo/db";
-import { recordComputerRunEnd } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+import type { AdapterContext, JobPublisher, SandboxProvider } from "@labradoodle/adapter-kit";
+import { computerControlExpireJob, runContinueJob } from "@labradoodle/adapter-kit";
+import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
+import { recordComputerRunEnd } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import { toComputerRef } from "./computer-support.js";
 import { isSandboxGoneError } from "./sandbox-errors.js";
 

@@ -5,14 +5,14 @@ import { chmod, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { createInterface } from "node:readline";
-import type { AdapterContext } from "@rakazo/adapter-kit";
-import { normalizeWorkspacePath, resolveBotWorkspacePath } from "@rakazo/adapters";
+import type { AdapterContext } from "@labradoodle/adapter-kit";
+import { normalizeWorkspacePath, resolveBotWorkspacePath } from "@labradoodle/adapters";
 import type {
   AccountExportManifest,
   AccountExportRecord,
   AccountImportResult,
   Actor,
-} from "@rakazo/contracts";
+} from "@labradoodle/contracts";
 import {
   ACCOUNT_EXPORT_FORMAT,
   ACCOUNT_EXPORT_MANIFEST_PATH,
@@ -23,8 +23,8 @@ import {
   AccountExportRecordSchema,
   attachmentSizeLabel,
   resolveBotAvatarSet,
-} from "@rakazo/contracts";
-import { organicAvatarFamily } from "@rakazo/core";
+} from "@labradoodle/contracts";
+import { organicAvatarFamily } from "@labradoodle/core";
 import {
   createRepos,
   createSpaceForMember,
@@ -34,10 +34,10 @@ import {
   runAsSystem,
   runAsTenant,
   SpaceLimitError,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
-import { pageViewerCode } from "@rakazo/page-kit/compile";
-import { checkPageSource } from "@rakazo/page-kit/validate";
+} from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
+import { pageViewerCode } from "@labradoodle/page-kit/compile";
+import { checkPageSource } from "@labradoodle/page-kit/validate";
 import { Unzip, UnzipInflate } from "fflate";
 import type { Hono } from "hono";
 import { cancelBody } from "./http-body.js";
@@ -71,7 +71,7 @@ export class AccountImportError extends Error {
   }
 }
 
-const unreadable = () => new AccountImportError("The file is not a readable Rakazo export.");
+const unreadable = () => new AccountImportError("The file is not a readable Labradoodle export.");
 const invalidEntry = () => new AccountImportError("The export contains an unexpected file.");
 const outOfOrder = () => new AccountImportError("The export's files are out of order.");
 const missingRecord = () => new AccountImportError("The export refers to a missing record.");
@@ -1022,7 +1022,7 @@ function parseManifest(bytes: Uint8Array): AccountExportManifest {
   const manifest = AccountExportManifestSchema.safeParse(parsed);
   if (manifest.success) return manifest.data;
   if (version !== ACCOUNT_EXPORT_VERSION)
-    throw new AccountImportError("This export is from a newer version of Rakazo.");
+    throw new AccountImportError("This export is from a newer version of Labradoodle.");
   throw unreadable();
 }
 

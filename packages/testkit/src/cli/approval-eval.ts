@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import type { AutoReviewProvider, ModelCallObserver } from "@rakazo/adapter-kit";
-import { ModelConnectInputSchema } from "@rakazo/contracts";
-import { loadRootEnv } from "@rakazo/core/node/load-root-env";
+import type { AutoReviewProvider, ModelCallObserver } from "@labradoodle/adapter-kit";
+import { ModelConnectInputSchema } from "@labradoodle/contracts";
+import { loadRootEnv } from "@labradoodle/core/node/load-root-env";
 import type { ApprovalCaseResult } from "../evals/approval.js";
 import {
   APPROVAL_CASES,

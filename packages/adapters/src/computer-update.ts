@@ -1,10 +1,10 @@
-import type { AdapterContext } from "@rakazo/adapter-kit";
-import { computerControlExpireJobKey, SandboxAllowanceUsedError } from "@rakazo/adapter-kit";
-import type { ComputerUpdate } from "@rakazo/contracts";
-import { ComputerUpdateSchema } from "@rakazo/contracts";
-import { ACTIVE_RUN_STATUSES } from "@rakazo/core";
-import type { Prisma, PrismaClient, ThreadEvents } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+import type { AdapterContext } from "@labradoodle/adapter-kit";
+import { computerControlExpireJobKey, SandboxAllowanceUsedError } from "@labradoodle/adapter-kit";
+import type { ComputerUpdate } from "@labradoodle/contracts";
+import { ComputerUpdateSchema } from "@labradoodle/contracts";
+import { ACTIVE_RUN_STATUSES } from "@labradoodle/core";
+import type { Prisma, PrismaClient, ThreadEvents } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import {
   enqueueTakeoverContinuation,
   isIdleOwnComputerTakeover,

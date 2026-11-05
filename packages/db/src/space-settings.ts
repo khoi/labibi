@@ -1,5 +1,5 @@
-import type { SettingsScope, SpaceSetting } from "@rakazo/contracts";
-import { SpaceSettingSchema } from "@rakazo/contracts";
+import type { SettingsScope, SpaceSetting } from "@labradoodle/contracts";
+import { SpaceSettingSchema } from "@labradoodle/contracts";
 import type { PrismaClient } from "./client.js";
 import { Prisma } from "./client.js";
 import { withTransactionRetry } from "./transaction-retry.js";

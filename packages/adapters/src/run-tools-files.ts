@@ -1,5 +1,5 @@
-import { ATTACHMENT_MAX_BYTES } from "@rakazo/contracts";
-import { inferAttachmentMimeType, isBackgroundRunTrigger } from "@rakazo/core";
+import { ATTACHMENT_MAX_BYTES } from "@labradoodle/contracts";
+import { inferAttachmentMimeType, isBackgroundRunTrigger } from "@labradoodle/core";
 import { resolveBotWorkspacePath } from "./computer-support.js";
 import { desktopGuardApplies, desktopProtectionGuardMessage } from "./desktop-command-guard.js";
 import { protectedActivateScriptWriteRefusal } from "./desktop-guard-words.js";

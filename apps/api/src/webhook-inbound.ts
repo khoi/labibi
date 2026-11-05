@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto";
-import type { JobPublisher, SecretStore } from "@rakazo/adapter-kit";
-import { runContinueJob, SecretStoreUnavailableError } from "@rakazo/adapter-kit";
-import { inboundRoutineModelPin } from "@rakazo/adapters";
-import type { MessageBlock } from "@rakazo/contracts";
-import { escapePromptData, inboundRoutineBlock, messageBlockForArtifact } from "@rakazo/core";
-import type { PrismaClient } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+import type { JobPublisher, SecretStore } from "@labradoodle/adapter-kit";
+import { runContinueJob, SecretStoreUnavailableError } from "@labradoodle/adapter-kit";
+import { inboundRoutineModelPin } from "@labradoodle/adapters";
+import type { MessageBlock } from "@labradoodle/contracts";
+import { escapePromptData, inboundRoutineBlock, messageBlockForArtifact } from "@labradoodle/core";
+import type { PrismaClient } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 
 export const WEBHOOK_MAX_BODY_BYTES = 64 * 1024;
 export const WEBHOOK_SECRET_KIND = "webhook";

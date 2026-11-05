@@ -63,8 +63,8 @@ describe.skipIf(!databaseAvailable)("recall eval through the product", () => {
       const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-recall-eval-"));
       let evidence: Evidence | undefined;
       try {
-        const { createApp } = await import("@rakazo/api/app");
-        const { PiAgentRuntime } = await import("@rakazo/adapters");
+        const { createApp } = await import("@labradoodle/api/app");
+        const { PiAgentRuntime } = await import("@labradoodle/adapters");
         const result = await runTrial(
           {
             ...scenario,

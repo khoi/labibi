@@ -446,7 +446,7 @@ describe("serenity verbs", () => {
     const server = fakeSerenityFetch(() => ({
       content: [{ type: "text", text: JSON.stringify({ id: "fact-1", status: "inserted" }) }],
     }));
-    const result = await rememberSerenity("Use metric units.", "rakazo", LOOPBACK, {
+    const result = await rememberSerenity("Use metric units.", "labradoodle", LOOPBACK, {
       entity: "rakazo-bot/bot-1",
       operationKey: "rakazo:abc",
       network: { fetch: server.fetch },
@@ -467,7 +467,7 @@ describe("serenity verbs", () => {
       fact: `Fact ${index}`,
       kind: "preference",
       entity_slug: "bot-1",
-      provenance: "rakazo",
+      provenance: "labradoodle",
       valid_until: null,
       visibility: "world",
     }));
@@ -492,7 +492,7 @@ describe("serenity verbs", () => {
     const server = fakeSerenityFetch(() => ({}));
     const result = await rememberSerenity(
       "é".repeat(MAX_SERENITY_FACT_BYTES / 2 + 1),
-      "rakazo",
+      "labradoodle",
       LOOPBACK,
       { network: { fetch: server.fetch } },
     );
@@ -555,7 +555,7 @@ describe("serenity verbs", () => {
         },
       ],
     }));
-    const remembered = await rememberSerenity("Use metric units.", "rakazo", LOOPBACK, {
+    const remembered = await rememberSerenity("Use metric units.", "labradoodle", LOOPBACK, {
       network: { fetch: statusEcho.fetch },
     });
     expect(remembered.ok).toBe(true);

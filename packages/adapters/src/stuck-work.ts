@@ -1,6 +1,10 @@
-import type { JobPublisher, NotificationMessage, NotificationProvider } from "@rakazo/adapter-kit";
-import { runContinueJob } from "@rakazo/adapter-kit";
-import type { StuckWorkStatus } from "@rakazo/core";
+import type {
+  JobPublisher,
+  NotificationMessage,
+  NotificationProvider,
+} from "@labradoodle/adapter-kit";
+import { runContinueJob } from "@labradoodle/adapter-kit";
+import type { StuckWorkStatus } from "@labradoodle/core";
 import {
   isStuckWorkStatus,
   STUCK_WORK_NOTICE,
@@ -10,15 +14,15 @@ import {
   stuckWorkDueAfterMs,
   stuckWorkReminder,
   stuckWorkStoppedNotification,
-} from "@rakazo/core";
-import type { Prisma, PrismaClient, ThreadEvents } from "@rakazo/db";
+} from "@labradoodle/core";
+import type { Prisma, PrismaClient, ThreadEvents } from "@labradoodle/db";
 import {
   appendEventInTransaction,
   expireStuckRun,
   THREAD_LOCK_TRANSACTION_OPTIONS,
   withTransactionRetry,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import { ExpoPushProvider } from "./expo-push.js";
 import { notificationIdentity } from "./notification-identity.js";
 import { publishChatAlert } from "./run-notifications.js";

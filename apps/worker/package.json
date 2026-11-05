@@ -1,5 +1,5 @@
 {
-  "name": "@rakazo/worker",
+  "name": "@labradoodle/worker",
   "version": "0.1.0",
   "license": "Apache-2.0",
   "type": "module",
@@ -11,12 +11,12 @@
     "test": "vitest run --root ../.. apps/worker/src"
   },
   "dependencies": {
-    "@rakazo/adapter-kit": "workspace:*",
-    "@rakazo/adapters": "workspace:*",
-    "@rakazo/core": "workspace:*",
-    "@rakazo/db": "workspace:*",
-    "@rakazo/logging": "workspace:*",
-    "@rakazo/memory": "workspace:*"
+    "@labradoodle/adapter-kit": "workspace:*",
+    "@labradoodle/adapters": "workspace:*",
+    "@labradoodle/core": "workspace:*",
+    "@labradoodle/db": "workspace:*",
+    "@labradoodle/logging": "workspace:*",
+    "@labradoodle/memory": "workspace:*"
   },
   "devDependencies": {
     "typescript": "7.0.2",

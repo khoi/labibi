@@ -1,5 +1,5 @@
-import type { PrismaClient } from "@rakazo/db";
-import { asSystem, createDb, runAsSystem, runAsTenant } from "@rakazo/db";
+import type { PrismaClient } from "@labradoodle/db";
+import { asSystem, createDb, runAsSystem, runAsTenant } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { changeUserTimezone, createScheduleFromTool } from "./schedule-tools.js";
 

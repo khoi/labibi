@@ -27,9 +27,9 @@ import type {
   ScreenRequest,
   ScreenSession,
   TerminalRequest,
-} from "@rakazo/adapter-kit";
-import { abortableDelay, boundedSandboxCommandTimeoutMs } from "@rakazo/core";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/adapter-kit";
+import { abortableDelay, boundedSandboxCommandTimeoutMs } from "@labradoodle/core";
+import { getLogger } from "@labradoodle/logging";
 import { screenSessionKey } from "./computer-screens.js";
 import { normalizeWorkspacePath, shellQuote, workspacePath } from "./computer-support.js";
 import { PORTABLE_TRANSFER_BATCH_BYTES } from "./computer-workspace.js";

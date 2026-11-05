@@ -1,4 +1,3 @@
-import { useLingui } from "@lingui/react/macro";
 import type {
   AppBootstrap,
   Bot,
@@ -8,8 +7,9 @@ import type {
   Me,
   Space,
   ThreadSnapshot,
-} from "@rakazo/contracts";
-import { isRetryableError, reorderBotTo } from "@rakazo/core";
+} from "@labradoodle/contracts";
+import { isRetryableError, reorderBotTo } from "@labradoodle/core";
+import { useLingui } from "@lingui/react/macro";
 import { replaceEqualDeep } from "@tanstack/react-query";
 import type { RefObject } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";

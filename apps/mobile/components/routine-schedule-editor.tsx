@@ -1,11 +1,11 @@
-import type { CronFreq, CronPreset, CronUnit } from "@rakazo/core";
+import type { CronFreq, CronPreset, CronUnit } from "@labradoodle/core";
 import {
   CRON_FREQS,
   clampIntervalAmount,
   cronFromPreset,
   cronIntervalAmounts,
   localizedClock,
-} from "@rakazo/core";
+} from "@labradoodle/core";
 import { useI18n } from "../lib/i18n";
 import { MenuPicker } from "./menu-picker";
 import { SettingsGroup, SettingsInputRow } from "./settings-group";

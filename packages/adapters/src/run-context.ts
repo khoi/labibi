@@ -7,13 +7,13 @@ import type {
   SandboxProvider,
   SemanticMemoryProvider,
   WebProvider,
-} from "@rakazo/adapter-kit";
-import type { ComputerMode, MessageBlock } from "@rakazo/contracts";
-import { createStreamingRedactor } from "@rakazo/core";
-import { toolEffectIdempotencyKey } from "@rakazo/core/node/approval-effect-key";
-import type { Bot, Computer, effectiveMemoryScope, Run, Task, Thread } from "@rakazo/db";
-import { dropRunTurnCheckpoint, saveRunTurnCheckpoint } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/adapter-kit";
+import type { ComputerMode, MessageBlock } from "@labradoodle/contracts";
+import { createStreamingRedactor } from "@labradoodle/core";
+import { toolEffectIdempotencyKey } from "@labradoodle/core/node/approval-effect-key";
+import type { Bot, Computer, effectiveMemoryScope, Run, Task, Thread } from "@labradoodle/db";
+import { dropRunTurnCheckpoint, saveRunTurnCheckpoint } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import type {
   ApprovalPausedToolResult,
   ApprovedEffectReplayQueue,

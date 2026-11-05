@@ -4,13 +4,13 @@ import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { serve } from "@hono/node-server";
+import type { createApp } from "@labradoodle/api/app";
+import { abortableDelay, RESPONSE_STREAMING_STORAGE_KEY } from "@labradoodle/core";
+import { loadRootEnv } from "@labradoodle/core/node/load-root-env";
+import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
+import { createThreadEvents, createThreadMessage, runAsSystem } from "@labradoodle/db";
 import type { Browser, BrowserContext, CDPSession, Page } from "@playwright/test";
 import { chromium } from "@playwright/test";
-import type { createApp } from "@rakazo/api/app";
-import { abortableDelay, RESPONSE_STREAMING_STORAGE_KEY } from "@rakazo/core";
-import { loadRootEnv } from "@rakazo/core/node/load-root-env";
-import type { PrismaClient, ThreadEvents } from "@rakazo/db";
-import { createThreadEvents, createThreadMessage, runAsSystem } from "@rakazo/db";
 import type { NumericSummary } from "../performance-report.js";
 import {
   parseTcpPort,
@@ -122,12 +122,12 @@ async function benchmark() {
       dataDir: path.join(temporaryRoot, "data"),
     });
     Object.assign(process.env, env);
-    if (!skipBuild) run("pnpm", ["--filter", "@rakazo/web", "build"], env);
+    if (!skipBuild) run("pnpm", ["--filter", "@labradoodle/web", "build"], env);
     migrateDatabase(env);
 
     const [{ InMemoryRealtimeFanout }, { createApp }] = await Promise.all([
-      import("@rakazo/adapters"),
-      import("@rakazo/api/app"),
+      import("@labradoodle/adapters"),
+      import("@labradoodle/api/app"),
     ]);
     // Shared with the event writer below, so streamed updates reach the app's subscribers.
     const realtime = new InMemoryRealtimeFanout();

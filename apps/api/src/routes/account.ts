@@ -1,4 +1,3 @@
-import { ORPCError } from "@orpc/server";
 import {
   changeUserTimezone,
   effectiveModelRole,
@@ -7,14 +6,20 @@ import {
   loadUserIncomingCalls,
   PushSessionEndedError,
   settleCallRequest,
-} from "@rakazo/adapters";
-import type { ActionApprovalRule, Actor, ChatAlert, Me, SettingsScope } from "@rakazo/contracts";
+} from "@labradoodle/adapters";
+import type {
+  ActionApprovalRule,
+  Actor,
+  ChatAlert,
+  Me,
+  SettingsScope,
+} from "@labradoodle/contracts";
 import {
   approvalModeFromPreference,
   approvalPreferenceFromMode,
   callRequestClientNonce,
-} from "@rakazo/core";
-import { urlSite } from "@rakazo/core/egress";
+} from "@labradoodle/core";
+import { urlSite } from "@labradoodle/core/egress";
 import {
   auditLogOrganization,
   commitBotUpdate,
@@ -35,8 +40,9 @@ import {
   saveAutoReviewPreference,
   selectVoicePreference,
   voicePreferenceTarget,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
+import { ORPCError } from "@orpc/server";
 import { createAccessGrant, listAccessGrants, revokeAccessGrant } from "../access-grants.js";
 import { requireAdmin } from "../admins.js";
 import { aiConsentStatus, allowAiConsent } from "../ai-consent.js";

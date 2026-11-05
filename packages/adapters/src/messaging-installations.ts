@@ -5,11 +5,11 @@ import type {
   MessagingInstallationStore,
   MessagingInstallProvider,
   SecretStore,
-} from "@rakazo/adapter-kit";
-import type { Actor, MessagingInstallationSummary } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
-import { IsolationError, runAsSystem } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/adapter-kit";
+import type { Actor, MessagingInstallationSummary } from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
+import { IsolationError, runAsSystem } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import { credentialDigest } from "./credential-digest.js";
 import { installationSenderAddress } from "./installed-messaging-surface.js";
 

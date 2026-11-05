@@ -1,7 +1,6 @@
-import { Plural, Trans, useLingui } from "@lingui/react/macro";
-import type { ThinkingLevel } from "@rakazo/contracts";
-import { isOllamaCloudBaseUrl } from "@rakazo/contracts";
-import { compatibleThinkingLevels, toggleEnabledModelId } from "@rakazo/core";
+import type { ThinkingLevel } from "@labradoodle/contracts";
+import { isOllamaCloudBaseUrl } from "@labradoodle/contracts";
+import { compatibleThinkingLevels, toggleEnabledModelId } from "@labradoodle/core";
 import {
   Button,
   Checkbox,
@@ -12,7 +11,8 @@ import {
   ModelThinkingOptions,
   NativeSelect,
   NativeSelectOption,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { ModelPreflightFeedback } from "../../components/ModelConnectionPreflightNotice";
 import { ModelHeadersEditor } from "../../components/ModelHeadersEditor";
 import { useListSearch } from "../../lib/use-list-search";
@@ -153,7 +153,7 @@ export function CompatibleModelFields({
           summary={<Trans>Setup help</Trans>}
         >
           <p className="mt-1">
-            {t`Paste the OpenAI-compatible address from your server. Rakazo adds /v1 if needed.`}
+            {t`Paste the OpenAI-compatible address from your server. Labradoodle adds /v1 if needed.`}
           </p>
         </Disclosure>
       ) : null}

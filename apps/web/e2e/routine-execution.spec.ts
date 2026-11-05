@@ -1,5 +1,5 @@
+import type { Routine, RoutineHistory } from "@labradoodle/contracts";
 import { expect, test } from "@playwright/test";
-import type { Routine, RoutineHistory } from "@rakazo/contracts";
 import {
   activeBotId,
   captureScreenshot,

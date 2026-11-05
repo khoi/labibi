@@ -175,8 +175,8 @@ export const PL_MESSAGES: Record<string, string> = {
   "Your model provider": "Twój dostawca modelu",
   "Connect a model in Settings before running bots.":
     "Przed uruchomieniem botów połącz model w Ustawieniach.",
-  "Connect your own API key in Models or choose Rakazo credits in Billing.":
-    "Połącz własny klucz API w Modelach lub wybierz środki Rakazo w Rozliczeniach.",
+  "Connect your own API key in Models or choose Labradoodle credits in Billing.":
+    "Połącz własny klucz API w Modelach lub wybierz środki Labradoodle w Rozliczeniach.",
   "The model provider returned an error.": "Dostawca modelu zwrócił błąd.",
   "{provider} is rate limiting requests. Try again shortly.":
     "{provider} ogranicza liczbę żądań. Spróbuj ponownie za chwilę.",
@@ -242,8 +242,8 @@ export const PL_MESSAGES: Record<string, string> = {
   "Chat Settings": "Ustawienia czatu",
   "Configure a plugin catalog on the server to connect apps.":
     "Skonfiguruj katalog wtyczek na serwerze, aby łączyć aplikacje.",
-  "Paste the OpenAI-compatible address from your server. Rakazo adds /v1 if needed.":
-    "Wklej ze swojego serwera adres zgodny z OpenAI. Rakazo doda /v1, jeśli będzie potrzebne.",
+  "Paste the OpenAI-compatible address from your server. Labradoodle adds /v1 if needed.":
+    "Wklej ze swojego serwera adres zgodny z OpenAI. Labradoodle doda /v1, jeśli będzie potrzebne.",
   "Settings: General": "Ustawienia: Ogólne",
   "Settings: Usage": "Ustawienia: Użycie",
   "Sign-in did not return a session": "Logowanie nie zwróciło sesji",
@@ -284,9 +284,9 @@ export const PL_MESSAGES: Record<string, string> = {
   "Reset your password": "Zresetuj swoje hasło",
   "Send reset link": "Wyślij link do resetowania",
   Server: "Serwer",
-  "Sign in to Rakazo": "Zaloguj się do Rakazo",
+  "Sign in to Labradoodle": "Zaloguj się do Labradoodle",
   "Sign up": "Zarejestruj się",
-  "Sign up for Rakazo": "Zarejestruj się w Rakazo",
+  "Sign up for Labradoodle": "Zarejestruj się w Labradoodle",
   "Use a custom server": "Użyj własnego serwera",
   "Use default server": "Użyj domyślnego serwera",
   Activity: "Aktywność",
@@ -633,8 +633,8 @@ export const PL_MESSAGES: Record<string, string> = {
   "Supports images": "Obsługuje obrazy",
   "Supports thinking": "Obsługuje rozumowanie",
   "Then paste the code here.": "Następnie wklej kod tutaj.",
-  "This subscription sign-in is not available in Rakazo yet. Use a deployment credential or choose another provider.":
-    "To logowanie przez subskrypcję nie jest jeszcze dostępne w Rakazo. Użyj danych uwierzytelniających wdrożenia lub wybierz innego dostawcę.",
+  "This subscription sign-in is not available in Labradoodle yet. Use a deployment credential or choose another provider.":
+    "To logowanie przez subskrypcję nie jest jeszcze dostępne w Labradoodle. Użyj danych uwierzytelniających wdrożenia lub wybierz innego dostawcę.",
   "Use a found model": "Użyj znalezionego modelu",
   "Waiting for sign-in…": "Oczekiwanie na logowanie…",
   "exact-model-id": "dokladny-identyfikator-modelu",
@@ -901,7 +901,7 @@ export const PL_MESSAGES: Record<string, string> = {
   "Enter a server URL": "Wpisz adres serwera",
   "Public servers need https://. HTTP only works on your local network.":
     "Publiczne serwery wymagają https://. HTTP działa tylko w sieci lokalnej.",
-  "That URL did not look like a Rakazo server": "Ten adres nie wskazuje na serwer Rakazo",
+  "That URL did not look like a Labradoodle server": "Ten adres nie wskazuje na serwer Labradoodle",
   "That URL is missing a host": "W tym adresie brakuje hosta",
   "That doesn’t look like a URL": "To nie wygląda na adres URL",
   "Use an http or https URL": "Użyj adresu http lub https",
@@ -970,7 +970,7 @@ export const PL_MESSAGES: Record<string, string> = {
   "AI models": "Modele AI",
   Memory: "Pamięć",
   "Privacy policies": "Polityki prywatności",
-  Rakazo: "Rakazo",
+  Labradoodle: "Labradoodle",
   "Withdraw all permissions": "Cofnij wszystkie zgody",
   "Withdraw all permissions?": "Cofnąć wszystkie zgody?",
   "New mobile actions won't send data to these services. Runs already in progress and routines keep going until you stop them.":
@@ -1117,14 +1117,14 @@ export const PL_MESSAGES: Record<string, string> = {
   Subscribe: "Subskrybuj",
   "Monthly credits expire at renewal. Top-ups do not expire.":
     "Miesięczne środki wygasają przy odnowieniu. Doładowania nie wygasają.",
-  "Use Rakazo credits": "Użyj środków Rakazo",
+  "Use Labradoodle credits": "Użyj środków Labradoodle",
   "Choose a plan": "Wybierz plan",
   "Change plan": "Zmień plan",
   "Current plan": "Obecny plan",
   Plan: "Plan",
   None: "Brak",
   "Free trial": "Bezpłatny okres próbny",
-  "Rakazo credits": "Środki Rakazo",
+  "Labradoodle credits": "Środki Labradoodle",
   "Free until": "Bezpłatnie do",
   Ends: "Kończy się",
   Renews: "Odnawia się",
@@ -1161,7 +1161,7 @@ export const PL_MESSAGES: Record<string, string> = {
   "Your free trial has started": "Twój bezpłatny okres próbny się rozpoczął",
   "Free until {date}": "Bezpłatnie do {date}",
   "Connect your AI": "Połącz swoje AI",
-  "Start using Rakazo": "Zacznij korzystać z Rakazo",
+  "Start using Labradoodle": "Zacznij korzystać z Labradoodle",
   "1 unread": "1 nieprzeczytana",
   "{count} unread": "Nieprzeczytane: {count}",
   "{count} need attention": "Wymagają uwagi: {count}",
@@ -1169,11 +1169,11 @@ export const PL_MESSAGES: Record<string, string> = {
   "{label}, below": "{label}, poniżej",
   Work: "Praca",
   Both: "Oba",
-  "How will you use Rakazo?": "Jak będziesz korzystać z Rakazo?",
-  "What do you most want Rakazo to help with?": "W czym Rakazo ma Ci najbardziej pomóc?",
+  "How will you use Labradoodle?": "Jak będziesz korzystać z Labradoodle?",
+  "What do you most want Labradoodle to help with?": "W czym Labradoodle ma Ci najbardziej pomóc?",
   "How big is your team?": "Jak duży jest Twój zespół?",
   "How did you hear about us?": "Skąd o nas wiesz?",
-  "Welcome to Rakazo": "Witaj w Rakazo",
+  "Welcome to Labradoodle": "Witaj w Labradoodle",
   Messaging: "Komunikatory",
   Unlink: "Odłącz",
   "Connect a chat app": "Połącz komunikator",

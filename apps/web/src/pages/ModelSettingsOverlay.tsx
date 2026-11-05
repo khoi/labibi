@@ -1,5 +1,4 @@
-import { Trans, useLingui } from "@lingui/react/macro";
-import type { SettingsScope } from "@rakazo/contracts";
+import type { SettingsScope } from "@labradoodle/contracts";
 import {
   compatibleConnectionName,
   connectionDisplayName,
@@ -7,8 +6,8 @@ import {
   OLLAMA_CLOUD_BASE_URL,
   OPENAI_COMPATIBLE_PROVIDER_ID,
   savedCompatibleEndpointMatches,
-} from "@rakazo/contracts";
-import { popularModelProvidersFirst } from "@rakazo/core";
+} from "@labradoodle/contracts";
+import { popularModelProvidersFirst } from "@labradoodle/core";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +25,8 @@ import {
   DialogTitle,
   ModelThinkingOptions,
   Spinner,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ModelCredential } from "../lib/model-auth";

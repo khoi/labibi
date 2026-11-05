@@ -1,0 +1,3 @@
+<resources>
+  <style name="LabradoodleIncomingCallTheme" parent="android:style/Theme.DeviceDefault.DayNight" />
+</resources>

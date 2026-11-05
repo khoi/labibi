@@ -1,6 +1,5 @@
-import { Trans, useLingui } from "@lingui/react/macro";
-import type { Bot, Group, NavLink } from "@rakazo/contracts";
-import { accountDisplay } from "@rakazo/core";
+import type { Bot, Group, NavLink } from "@labradoodle/contracts";
+import { accountDisplay } from "@labradoodle/core";
 import {
   Button,
   InputGroup,
@@ -8,7 +7,8 @@ import {
   InputGroupButton,
   InputGroupInput,
   Sidebar,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Search, SlidersHorizontal } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";

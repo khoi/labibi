@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
-import { isBuildId } from "@rakazo/contracts/client-build";
-import { webDarkTokens } from "@rakazo/ui-tokens";
+import { isBuildId } from "@labradoodle/contracts/client-build";
+import { webDarkTokens } from "@labradoodle/ui-tokens";
 import type { Plugin, Rolldown } from "vite";
 import { CACHE_PREFIX } from "./service-worker.js";
 
@@ -17,8 +17,8 @@ export function webManifest() {
   }));
   return {
     id: "/",
-    name: "Rakazo",
-    short_name: "Rakazo",
+    name: "Labradoodle",
+    short_name: "Labradoodle",
     description: "Your team of always-on agents.",
     start_url: "/",
     scope: "/",

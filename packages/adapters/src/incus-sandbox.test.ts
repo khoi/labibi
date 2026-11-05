@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { PeerCertificate } from "node:tls";
 import { rootCertificates } from "node:tls";
-import type { AdapterContext, ComputerRef, ProcessEvent } from "@rakazo/adapter-kit";
+import type { AdapterContext, ComputerRef, ProcessEvent } from "@labradoodle/adapter-kit";
 import { describe, expect, it, vi } from "vitest";
 import { encodeTarEntry } from "./exec-computer.js";
 import type {
@@ -308,7 +308,7 @@ describe("IncusSandboxProvider", () => {
         });
         return {};
       }
-      if (command.includes("rakazo-export-list")) {
+      if (command.includes("labradoodle-export-list")) {
         exportedNames = input.toString().split("\0").filter(Boolean);
         return {};
       }

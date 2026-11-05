@@ -1,6 +1,6 @@
+import type { Bot, Routine, ThinkingLevel, ThreadSnapshot } from "@labradoodle/contracts";
+import { cronFromPreset } from "@labradoodle/core";
 import { useLingui } from "@lingui/react/macro";
-import type { Bot, Routine, ThinkingLevel, ThreadSnapshot } from "@rakazo/contracts";
-import { cronFromPreset } from "@rakazo/core";
 import type { ComponentProps, Dispatch, RefObject, SetStateAction } from "react";
 import { useCallback, useRef, useState } from "react";
 import { localTimezone } from "../../lib/local-timezone";

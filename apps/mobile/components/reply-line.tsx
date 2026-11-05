@@ -1,6 +1,6 @@
-import type { ReplyPreview } from "@rakazo/contracts";
-import { isPageOriginReply, replyLabel } from "@rakazo/core";
-import { typeScale } from "@rakazo/ui-tokens";
+import type { ReplyPreview } from "@labradoodle/contracts";
+import { isPageOriginReply, replyLabel } from "@labradoodle/core";
+import { typeScale } from "@labradoodle/ui-tokens";
 import { Pressable, Text } from "react-native";
 import { mobileTokens } from "../lib/appearance";
 import type { MobileArtifactTarget } from "../lib/artifact-open";

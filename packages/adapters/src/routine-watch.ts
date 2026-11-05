@@ -9,20 +9,20 @@ import type {
   PaymentWalletProvider,
   SandboxProvider,
   SecretStore,
-} from "@rakazo/adapter-kit";
-import { routineJobKey, routineWakeupJob } from "@rakazo/adapter-kit";
-import type { RoutineWatch, RoutineWatchState } from "@rakazo/contracts";
-import { RoutineWatchSchema, RoutineWatchStateSchema } from "@rakazo/contracts";
-import type { ActionApprovalRule } from "@rakazo/core";
-import { connectorKindFromToolName, redactSecrets, watchToolRefusal } from "@rakazo/core";
-import type { ComputerMode, PrismaClient, ThreadEvents } from "@rakazo/db";
+} from "@labradoodle/adapter-kit";
+import { routineJobKey, routineWakeupJob } from "@labradoodle/adapter-kit";
+import type { RoutineWatch, RoutineWatchState } from "@labradoodle/contracts";
+import { RoutineWatchSchema, RoutineWatchStateSchema } from "@labradoodle/contracts";
+import type { ActionApprovalRule } from "@labradoodle/core";
+import { connectorKindFromToolName, redactSecrets, watchToolRefusal } from "@labradoodle/core";
+import type { ComputerMode, PrismaClient, ThreadEvents } from "@labradoodle/db";
 import {
   appendEventInTransaction,
   createThreadMessageInTransaction,
   listApprovalRules,
   parseComputerMode,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import { loadLoginPasswordRedactions, shellCommandEnvironment } from "./bot-secrets.js";
 import { scheduleComputerSleep } from "./computer-idle.js";
 import { ComputerBusyError, provisionComputer } from "./computer-lifecycle.js";

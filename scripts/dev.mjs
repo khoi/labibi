@@ -44,7 +44,12 @@ const MANAGED = {
   runtime: "rakazo_dev",
   database: "rakazo",
 };
-const SERVICES = ["@rakazo/api", "@rakazo/worker", "@rakazo/web", "@rakazo/sandbox-supervisor"];
+const SERVICES = [
+  "@labradoodle/api",
+  "@labradoodle/worker",
+  "@labradoodle/web",
+  "@labradoodle/sandbox-supervisor",
+];
 
 const fileEnv = existsSync(path.join(root, ".env"))
   ? dotenv.parse(readFileSync(path.join(root, ".env")))
@@ -356,7 +361,7 @@ function generateClientIfStale(env) {
   const schema = path.join(dbPackage, "prisma/schema.prisma");
   if (existsSync(client) && statSync(client).mtimeMs >= statSync(schema).mtimeMs) return;
   log("Generating the Prisma client");
-  runPnpm(["--filter", "@rakazo/db", "generate"], {
+  runPnpm(["--filter", "@labradoodle/db", "generate"], {
     cwd: root,
     env,
     stdio: "inherit",

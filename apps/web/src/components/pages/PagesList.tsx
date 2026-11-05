@@ -1,8 +1,7 @@
-import { Trans, useLingui } from "@lingui/react/macro";
-import { PageIcon } from "@rakazo/chat-ui/web";
-import type { PageSummary } from "@rakazo/contracts";
-import { PAGE_TITLE_MAX_LENGTH } from "@rakazo/contracts";
-import { uniquePages } from "@rakazo/core";
+import { PageIcon } from "@labradoodle/chat-ui/web";
+import type { PageSummary } from "@labradoodle/contracts";
+import { PAGE_TITLE_MAX_LENGTH } from "@labradoodle/contracts";
+import { uniquePages } from "@labradoodle/core";
 import {
   Button,
   DropdownMenu,
@@ -11,7 +10,8 @@ import {
   DropdownMenuTrigger,
   SectionHeading,
   Spinner,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Globe, MoreHorizontal, Search } from "lucide-react";
 import { useDeferredValue, useState } from "react";

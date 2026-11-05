@@ -1,4 +1,8 @@
-import type { AutoReviewProvider, AutoReviewRequest, AutoReviewResult } from "@rakazo/adapter-kit";
+import type {
+  AutoReviewProvider,
+  AutoReviewRequest,
+  AutoReviewResult,
+} from "@labradoodle/adapter-kit";
 import type { EvalPricing, MeasuredCall } from "./measurement.js";
 import { measureCalls } from "./measurement.js";
 

@@ -1,14 +1,14 @@
 import { randomUUID } from "node:crypto";
-import type { BackgroundJob } from "@rakazo/adapter-kit";
-import { ONCE_ROUTINE_CRON } from "@rakazo/core";
-import type { Prisma, PrismaClient } from "@rakazo/db";
+import type { BackgroundJob } from "@labradoodle/adapter-kit";
+import { ONCE_ROUTINE_CRON } from "@labradoodle/core";
+import type { Prisma, PrismaClient } from "@labradoodle/db";
 import {
   appendEvent,
   asSystem,
   createDb,
   provisionMessagingIdentity,
   runAsSystem,
-} from "@rakazo/db";
+} from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { createRunExecutor } from "./executor.js";
 import { findPendingRoutineTick, routineTimerNonce } from "./routine-coalescing.js";

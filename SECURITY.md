@@ -2,7 +2,7 @@
 
 ## Reporting vulnerabilities
 
-Email **security@rakazo.com** only. Do not open public GitHub issues for security bugs.
+Email **security@labradoodle.com** only. Do not open public GitHub issues for security bugs.
 
 Please include:
 
@@ -14,12 +14,12 @@ We will acknowledge your report and work on a fix. Please do not file a public i
 
 ## Other contact
 
-- General support: **support@rakazo.com**
-- Maintainer: **elie@rakazo.com**
+- General support: **support@labradoodle.com**
+- Maintainer: **elie@labradoodle.com**
 
 ## Scope
 
-This policy covers the Rakazo self-hosted product in **this repository**.
+This policy covers the Labradoodle self-hosted product in **this repository**.
 
 Out of scope:
 

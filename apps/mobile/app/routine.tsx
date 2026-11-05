@@ -1,5 +1,5 @@
-import type { Routine } from "@rakazo/contracts";
-import { defaultCronPreset } from "@rakazo/core";
+import type { Routine } from "@labradoodle/contracts";
+import { defaultCronPreset } from "@labradoodle/core";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, BackHandler, ScrollView, Text, View } from "react-native";

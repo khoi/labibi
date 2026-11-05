@@ -1,12 +1,12 @@
-import type { AgentRunRequest, AgentRuntimeEvent } from "@rakazo/adapter-kit";
-import type { MessageBlock } from "@rakazo/contracts";
-import type { AppendEventInput, Prisma } from "@rakazo/db";
+import type { AgentRunRequest, AgentRuntimeEvent } from "@labradoodle/adapter-kit";
+import type { MessageBlock } from "@labradoodle/contracts";
+import type { AppendEventInput, Prisma } from "@labradoodle/db";
 import {
   appendEventInTransaction,
   createThreadMessageInTransaction,
   partialReplyClientNonce,
   RunHistoryWriteError,
-} from "@rakazo/db";
+} from "@labradoodle/db";
 import { describe, expect, it, vi } from "vitest";
 import { PARTIAL_REPLY_NOTE } from "./automated-messages.js";
 import { loadBotMessageContext, returnBotMessageOutcome } from "./bot-messages.js";

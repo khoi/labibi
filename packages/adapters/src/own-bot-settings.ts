@@ -1,9 +1,9 @@
-import type { AdapterContext, SecretStore } from "@rakazo/adapter-kit";
-import { VoiceAccountError } from "@rakazo/adapter-kit";
-import type { Actor, BotSettingsValues, VoiceInfo } from "@rakazo/contracts";
-import { ThinkingLevelSchema } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
-import { findDefaultVoiceCredential } from "@rakazo/db";
+import type { AdapterContext, SecretStore } from "@labradoodle/adapter-kit";
+import { VoiceAccountError } from "@labradoodle/adapter-kit";
+import type { Actor, BotSettingsValues, VoiceInfo } from "@labradoodle/contracts";
+import { ThinkingLevelSchema } from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
+import { findDefaultVoiceCredential } from "@labradoodle/db";
 import type { FleetPrepareDeps } from "./fleet-tools.js";
 import { modelLabel } from "./fleet-tools.js";
 import { connectedModelChoices, echoedQuery, resolveModelChoice, words } from "./model-choice.js";

@@ -1,9 +1,9 @@
-import { VoiceAccountError } from "@rakazo/adapter-kit";
-import * as adapters from "@rakazo/adapters";
-import type { Actor } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
-import * as db from "@rakazo/db";
-import { createLogger, createTestSink, installLogger } from "@rakazo/logging";
+import { VoiceAccountError } from "@labradoodle/adapter-kit";
+import * as adapters from "@labradoodle/adapters";
+import type { Actor } from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
+import * as db from "@labradoodle/db";
+import { createLogger, createTestSink, installLogger } from "@labradoodle/logging";
 import { Hono } from "hono";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { VoiceDeps } from "./voice.js";

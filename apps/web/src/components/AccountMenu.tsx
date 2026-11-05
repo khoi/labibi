@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import {
   Button,
   Dialog,
@@ -14,7 +13,8 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { CircleUserRound } from "lucide-react";
 import { useState } from "react";
 import { authClient } from "../lib/auth";

@@ -1,5 +1,11 @@
 // @vitest-environment jsdom
-import type { Bot, ComputerStatus, Me, ThreadMessage, ThreadSnapshot } from "@rakazo/contracts";
+import type {
+  Bot,
+  ComputerStatus,
+  Me,
+  ThreadMessage,
+  ThreadSnapshot,
+} from "@labradoodle/contracts";
 import { act } from "react";
 import type { Root } from "react-dom/client";
 import { createRoot } from "react-dom/client";

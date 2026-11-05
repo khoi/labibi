@@ -8,16 +8,16 @@ import type {
   ComputerRef,
   JobPublisher,
   SandboxProvider,
-} from "@rakazo/adapter-kit";
+} from "@labradoodle/adapter-kit";
 import {
   SandboxAllowanceUsedError,
   SandboxDamagedError,
   SandboxSizeUnavailableError,
   SandboxUnresponsiveError,
-} from "@rakazo/adapter-kit";
-import type * as Db from "@rakazo/db";
-import type { PrismaClient, ThreadEvents } from "@rakazo/db";
-import { clearThread, planComputerSize } from "@rakazo/db";
+} from "@labradoodle/adapter-kit";
+import type * as Db from "@labradoodle/db";
+import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
+import { clearThread, planComputerSize } from "@labradoodle/db";
 import { describe, expect, it, vi } from "vitest";
 import {
   acquireComputerExecutionLease,
@@ -38,7 +38,7 @@ import { LocalAgentHomeStore } from "./home.js";
 import { SandboxUnsafeStopError } from "./sandbox-errors.js";
 
 // The plan's size is read from billing, which these Prisma doubles do not model.
-vi.mock("@rakazo/db", async (importOriginal) => ({
+vi.mock("@labradoodle/db", async (importOriginal) => ({
   ...(await importOriginal<typeof Db>()),
   planComputerSize: vi.fn(async () => "standard"),
 }));

@@ -1,7 +1,7 @@
-import { runJobKey } from "@rakazo/adapter-kit";
-import type { RunStatus } from "@rakazo/contracts";
-import { isActive } from "@rakazo/core";
-import type { PrismaClient } from "@rakazo/db";
+import { runJobKey } from "@labradoodle/adapter-kit";
+import type { RunStatus } from "@labradoodle/contracts";
+import { isActive } from "@labradoodle/core";
+import type { PrismaClient } from "@labradoodle/db";
 import { asSystem } from "./system-db.js";
 
 type App = { request: (input: string, init?: RequestInit) => Response | Promise<Response> };

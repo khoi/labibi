@@ -1,7 +1,7 @@
-import type { BackgroundJob, BackgroundJobHandlers } from "@rakazo/adapter-kit";
-import { messagingDeliverJob, routineWakeupJob } from "@rakazo/adapter-kit";
-import type { PrismaClient } from "@rakazo/db";
-import { createPool, currentDbContext, runAsTenant } from "@rakazo/db";
+import type { BackgroundJob, BackgroundJobHandlers } from "@labradoodle/adapter-kit";
+import { messagingDeliverJob, routineWakeupJob } from "@labradoodle/adapter-kit";
+import type { PrismaClient } from "@labradoodle/db";
+import { createPool, currentDbContext, runAsTenant } from "@labradoodle/db";
 import { Pool } from "pg";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {

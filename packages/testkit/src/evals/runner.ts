@@ -1,15 +1,15 @@
 import { randomUUID } from "node:crypto";
-import type { AgentRuntime, JobPublisher, NotificationProvider } from "@rakazo/adapter-kit";
-import { runJobKey } from "@rakazo/adapter-kit";
+import type { AgentRuntime, JobPublisher, NotificationProvider } from "@labradoodle/adapter-kit";
+import { runJobKey } from "@labradoodle/adapter-kit";
 import {
   CapturingNotificationProvider,
   MessagingTeamChatEmulator,
   messageBot,
-} from "@rakazo/adapters";
-import type { MessageBlock, ModelConnectInput, RunStatus } from "@rakazo/contracts";
-import { ACTIVE_RUN_STATUSES, attachmentComputerPath, isTerminal } from "@rakazo/core";
-import type { createDb } from "@rakazo/db";
-import { createThreadEvents } from "@rakazo/db";
+} from "@labradoodle/adapters";
+import type { MessageBlock, ModelConnectInput, RunStatus } from "@labradoodle/contracts";
+import { ACTIVE_RUN_STATUSES, attachmentComputerPath, isTerminal } from "@labradoodle/core";
+import type { createDb } from "@labradoodle/db";
+import { createThreadEvents } from "@labradoodle/db";
 import { discardBotIntroRun } from "../discard-bot-intro.js";
 import { sessionCookieHeader } from "../index.js";
 import { asSystem } from "../system-db.js";

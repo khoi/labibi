@@ -1,7 +1,7 @@
-import type { ArtifactStore } from "@rakazo/adapter-kit";
-import type { Actor } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
-import { asSystem, createDb, IsolationError, runAsTenant } from "@rakazo/db";
+import type { ArtifactStore } from "@labradoodle/adapter-kit";
+import type { Actor } from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
+import { asSystem, createDb, IsolationError, runAsTenant } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createOwnedArtifact } from "./artifacts.js";
 

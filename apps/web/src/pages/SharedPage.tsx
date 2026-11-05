@@ -1,7 +1,7 @@
+import type { SharedPage } from "@labradoodle/contracts";
+import { pageShareTokenFromSlug, SHARED_PAGE_PATH_PREFIX } from "@labradoodle/contracts";
+import { Button, buttonVariants, Spinner } from "@labradoodle/ui-web";
 import { Trans } from "@lingui/react/macro";
-import type { SharedPage } from "@rakazo/contracts";
-import { pageShareTokenFromSlug, SHARED_PAGE_PATH_PREFIX } from "@rakazo/contracts";
-import { Button, buttonVariants, Spinner } from "@rakazo/ui-web";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -56,7 +56,7 @@ function SharedPageBody() {
             <Trans>The owner may have turned off its link or deleted it.</Trans>
           </p>
           <a href="/" className={`${buttonVariants({ variant: "outline", size: "sm" })} mt-1`}>
-            <Trans>Open Rakazo</Trans>
+            <Trans>Open Labradoodle</Trans>
           </a>
         </div>
       </main>

@@ -9,20 +9,20 @@ import type {
   BillingProvider,
   BillingSubscriptionSnapshot,
   BillingSubscriptionStatus,
-} from "@rakazo/adapter-kit";
+} from "@labradoodle/adapter-kit";
 import {
   BillingCheckoutCompletedError,
   BillingCustomerNotFoundError,
   BillingNoMonthlyCreditsError,
-} from "@rakazo/adapter-kit";
-import type { BillingCancellationReason, ByokTier } from "@rakazo/contracts";
+} from "@labradoodle/adapter-kit";
+import type { BillingCancellationReason, ByokTier } from "@labradoodle/contracts";
 import {
   BILLING_CANCELLATION_REASONS,
   BYOK_TIERS,
   ByokTierSchema,
   ModelCreditAmountSchema,
-} from "@rakazo/contracts";
-import { readBoundedJsonResponse } from "@rakazo/core";
+} from "@labradoodle/contracts";
+import { readBoundedJsonResponse } from "@labradoodle/core";
 import { z } from "zod";
 
 export const STRIPE_API_VERSION = "2026-09-30.endive";
@@ -221,7 +221,7 @@ export class StripeBillingProvider implements BillingProvider {
                 price: await this.recurringPrice(
                   `rakazo_monthly_credits_${input.amountCents}`,
                   input.amountCents,
-                  "Rakazo monthly model credits",
+                  "Labradoodle monthly model credits",
                 ),
               }
             : {
@@ -229,7 +229,7 @@ export class StripeBillingProvider implements BillingProvider {
                 price_data: {
                   currency: "usd",
                   unit_amount: input.amountCents,
-                  product_data: { name: "Rakazo model credits" },
+                  product_data: { name: "Labradoodle model credits" },
                 },
               },
         ],
@@ -263,7 +263,7 @@ export class StripeBillingProvider implements BillingProvider {
           price: await this.recurringPrice(
             `rakazo_monthly_credits_${amountCents}`,
             amountCents,
-            "Rakazo monthly model credits",
+            "Labradoodle monthly model credits",
           ),
           quantity: 1,
         },
@@ -363,8 +363,8 @@ export class StripeBillingProvider implements BillingProvider {
         : `${BYOK_PRICE_KEY_PREFIX}${tier}_${period}_${amountCents}`,
       amountCents,
       tier === "standard"
-        ? "Rakazo own-key plan"
-        : `Rakazo own-key plan (${BYOK_TIERS[tier].name})`,
+        ? "Labradoodle own-key plan"
+        : `Labradoodle own-key plan (${BYOK_TIERS[tier].name})`,
       interval,
     );
   }

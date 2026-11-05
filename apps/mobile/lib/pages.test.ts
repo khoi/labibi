@@ -1,4 +1,4 @@
-import type { PageDetail } from "@rakazo/contracts";
+import type { PageDetail } from "@labradoodle/contracts";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("./api", () => ({ rpc: vi.fn() }));
@@ -88,28 +88,28 @@ describe("reducePageShare", () => {
     const reopened = reducePageShare(state, {
       type: "loaded",
       visibility: "link",
-      shareUrl: "https://rakazo.example/p/voice-old",
+      shareUrl: "https://labradoodle.example/p/voice-old",
     });
-    expect(pageShareLink(reopened)).toBe("https://rakazo.example/p/voice-old");
+    expect(pageShareLink(reopened)).toBe("https://labradoodle.example/p/voice-old");
     state = reducePageShare(state, { type: "choose", visibility: "link" });
     expect(state.pending).toBe("link");
     expect(pageShareLink(state)).toBeNull();
     state = reducePageShare(state, {
       type: "saved",
       visibility: "link",
-      shareUrl: "https://rakazo.example/p/voice-abc",
+      shareUrl: "https://labradoodle.example/p/voice-abc",
     });
-    expect(pageShareLink(state)).toBe("https://rakazo.example/p/voice-abc");
+    expect(pageShareLink(state)).toBe("https://labradoodle.example/p/voice-abc");
     state = reducePageShare(state, { type: "choose", visibility: "private" });
     expect(pageShareLink(state)).toBeNull();
     // Not saved: the server, asked again, still has the link on.
     state = reducePageShare(state, {
       type: "failed",
       visibility: "private",
-      actual: { visibility: "link", shareUrl: "https://rakazo.example/p/voice-abc" },
+      actual: { visibility: "link", shareUrl: "https://labradoodle.example/p/voice-abc" },
     });
     expect(state).toMatchObject({ visibility: "link", error: true, pending: null });
-    expect(pageShareLink(state)).toBe("https://rakazo.example/p/voice-abc");
+    expect(pageShareLink(state)).toBe("https://labradoodle.example/p/voice-abc");
   });
 
   it("ignores a late answer for a choice the user already changed", () => {
@@ -118,7 +118,7 @@ describe("reducePageShare", () => {
     const late = reducePageShare(state, {
       type: "saved",
       visibility: "link",
-      shareUrl: "https://rakazo.example/p/x",
+      shareUrl: "https://labradoodle.example/p/x",
     });
     expect(late).toBe(state);
     expect(reducePageShare(state, { type: "failed", visibility: "link", actual: null })).toBe(

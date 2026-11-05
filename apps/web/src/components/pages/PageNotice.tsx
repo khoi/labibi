@@ -1,5 +1,5 @@
+import { Button } from "@labradoodle/ui-web";
 import { Trans } from "@lingui/react/macro";
-import { Button } from "@rakazo/ui-web";
 import { PageTileIcon } from "./page-icon";
 
 /** Why a page is not showing where it should, and what the user can do next. */

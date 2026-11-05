@@ -1,7 +1,7 @@
-import { useNativeLinkConfirm } from "@rakazo/chat-ui/native";
-import type { PageDetail } from "@rakazo/contracts";
-import { pageCopyRequest, pageCopyResult, pageLinkRequest, pageReplyText } from "@rakazo/core";
-import { webTokensForAppearance } from "@rakazo/ui-tokens";
+import { useNativeLinkConfirm } from "@labradoodle/chat-ui/native";
+import type { PageDetail } from "@labradoodle/contracts";
+import { pageCopyRequest, pageCopyResult, pageLinkRequest, pageReplyText } from "@labradoodle/core";
+import { webTokensForAppearance } from "@labradoodle/ui-tokens";
 import * as Clipboard from "expo-clipboard";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";

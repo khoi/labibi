@@ -1,6 +1,11 @@
+import type { CronLabels, CronUnit } from "@labradoodle/core";
+import {
+  ENGLISH_CRON_LABELS,
+  localizedClock,
+  polishInterval,
+  russianInterval,
+} from "@labradoodle/core";
 import { t } from "@lingui/core/macro";
-import type { CronLabels, CronUnit } from "@rakazo/core";
-import { ENGLISH_CRON_LABELS, localizedClock, polishInterval, russianInterval } from "@rakazo/core";
 
 export function cronUnitLabel(unit: CronUnit): string {
   switch (unit) {

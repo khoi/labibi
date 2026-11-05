@@ -6,13 +6,13 @@ import path from "node:path";
 import { performance } from "node:perf_hooks";
 import { brotliCompressSync, gzipSync } from "node:zlib";
 import { serve } from "@hono/node-server";
+import type { createApp } from "@labradoodle/api/app";
+import { abortableDelay } from "@labradoodle/core";
+import { loadRootEnv } from "@labradoodle/core/node/load-root-env";
+import type { PrismaClient } from "@labradoodle/db";
+import { createThreadMessage } from "@labradoodle/db";
 import type { ElectronApplication, Page } from "@playwright/test";
 import { _electron as electron, expect } from "@playwright/test";
-import type { createApp } from "@rakazo/api/app";
-import { abortableDelay } from "@rakazo/core";
-import { loadRootEnv } from "@rakazo/core/node/load-root-env";
-import type { PrismaClient } from "@rakazo/db";
-import { createThreadMessage } from "@rakazo/db";
 import type { PerformanceReport } from "../performance-report.js";
 import {
   PERFORMANCE_REPORT_SCHEMA_VERSION,
@@ -73,7 +73,7 @@ try {
   if (!skipBuild) buildProductionArtifacts(benchmarkEnv);
   migrateDatabase(benchmarkEnv);
 
-  const { createApp } = await import("@rakazo/api/app");
+  const { createApp } = await import("@labradoodle/api/app");
   handles = await createApp({ databaseUrl, prisma: undefined });
   server = serve({
     fetch: (request) => handles!.app.fetch(request),
@@ -172,14 +172,14 @@ function performanceEnvironment(databaseUrl: string): NodeJS.ProcessEnv {
 }
 
 function buildProductionArtifacts(env: NodeJS.ProcessEnv) {
-  run("pnpm", ["--filter", "@rakazo/desktop", "pack:dir"], env);
+  run("pnpm", ["--filter", "@labradoodle/desktop", "pack:dir"], env);
 }
 
 async function packagedExecutable() {
   const out = path.join(desktopRoot, "out");
-  const candidates = process.platform === "darwin" ? await findNamed(out, "Rakazo.app") : [];
+  const candidates = process.platform === "darwin" ? await findNamed(out, "Labradoodle.app") : [];
   if (process.platform === "darwin" && candidates[0]) {
-    return path.join(candidates[0], "Contents/MacOS/Rakazo");
+    return path.join(candidates[0], "Contents/MacOS/Labradoodle");
   }
   const desktopRequire = createRequire(path.join(desktopRoot, "package.json"));
   return desktopRequire("electron") as string;
@@ -699,7 +699,7 @@ function environmentFingerprint(versions: { electron?: string; chrome?: string }
 
 async function measureBundles() {
   const web = await directorySize(path.join(webRoot, "dist"));
-  const applications = await findNamed(path.join(desktopRoot, "out"), "Rakazo.app");
+  const applications = await findNamed(path.join(desktopRoot, "out"), "Labradoodle.app");
   const desktop = applications[0] ? await directorySize(applications[0]) : null;
   return { web, desktop };
 }
@@ -752,7 +752,7 @@ function summarizeReport(
 
 function renderMarkdown(report: PerformanceReport) {
   const summary = report.summary;
-  return `# Rakazo desktop performance — ${report.label}
+  return `# Labradoodle desktop performance — ${report.label}
 
 - Commit: \`${report.environment.gitSha.slice(0, 12)}\`
 - Platform: ${report.environment.platform}/${report.environment.arch}

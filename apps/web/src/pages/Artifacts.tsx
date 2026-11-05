@@ -1,10 +1,8 @@
-import { t } from "@lingui/core/macro";
-import { Trans, useLingui } from "@lingui/react/macro";
-import { ChatMarkdown } from "@rakazo/chat-ui/web";
-import type { Artifact, Bot } from "@rakazo/contracts";
-import { artifactPreviewKind } from "@rakazo/contracts";
-import { artifactTypeLabel } from "@rakazo/core";
-import { writeSaved } from "@rakazo/core/query";
+import { ChatMarkdown } from "@labradoodle/chat-ui/web";
+import type { Artifact, Bot } from "@labradoodle/contracts";
+import { artifactPreviewKind } from "@labradoodle/contracts";
+import { artifactTypeLabel } from "@labradoodle/core";
+import { writeSaved } from "@labradoodle/core/query";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,7 +21,9 @@ import {
   Spinner,
   ToggleGroup,
   ToggleGroupItem,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { t } from "@lingui/core/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { skipToken, useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronLeft,

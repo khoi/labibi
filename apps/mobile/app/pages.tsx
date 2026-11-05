@@ -1,6 +1,6 @@
-import { PageIcon } from "@rakazo/chat-ui/native";
-import type { PageSummary } from "@rakazo/contracts";
-import { PAGE_TITLE_MAX_LENGTH } from "@rakazo/contracts";
+import { PageIcon } from "@labradoodle/chat-ui/native";
+import type { PageSummary } from "@labradoodle/contracts";
+import { PAGE_TITLE_MAX_LENGTH } from "@labradoodle/contracts";
 import * as Clipboard from "expo-clipboard";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";

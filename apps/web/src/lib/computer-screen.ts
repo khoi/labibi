@@ -1,6 +1,6 @@
+import { isLocalhostOrLoopbackIp } from "@labradoodle/contracts";
+import { COMPUTER_SCREEN_PATH } from "@labradoodle/contracts/content-security-policy";
 import { t } from "@lingui/core/macro";
-import { isLocalhostOrLoopbackIp } from "@rakazo/contracts";
-import { COMPUTER_SCREEN_PATH } from "@rakazo/contracts/content-security-policy";
 import { errorText } from "./user-error";
 
 export interface ComputerScreenResult {
@@ -133,7 +133,10 @@ export function screenFrameMessage(data: unknown): ScreenFrameMessage | null {
   const { rakazoScreen, detail } = data as Record<string, unknown>;
   if (typeof rakazoScreen !== "string" || !SCREEN_FRAME_STATES.has(rakazoScreen)) return null;
   const text = typeof detail === "string" ? detail.trim().slice(0, 200) : "";
-  return { rakazoScreen: rakazoScreen as ScreenFrameState, ...(text ? { detail: text } : {}) };
+  return {
+    rakazoScreen: rakazoScreen as ScreenFrameState,
+    ...(text ? { detail: text } : {}),
+  };
 }
 
 /** Whether a report shows the page got past loading; a page stalled there is still silent. */

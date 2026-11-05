@@ -1,11 +1,11 @@
 import { createHash, createHmac } from "node:crypto";
-import { SecretStoreUnavailableError } from "@rakazo/adapter-kit";
+import { SecretStoreUnavailableError } from "@labradoodle/adapter-kit";
 import {
   ComposedSecretStore,
   EncryptedSecretStore,
   GithubWebhookEmulator,
   InfisicalSecretStore,
-} from "@rakazo/adapters";
+} from "@labradoodle/adapters";
 import { Hono } from "hono";
 import { describe, expect, it, vi } from "vitest";
 import { infisicalFake } from "../../../packages/adapters/src/secret-store-fake.js";
@@ -558,7 +558,7 @@ describe("inbound webhook HTTP route", () => {
           return new Promise(() => undefined);
         },
       });
-      const request = new Request("https://rakazo.example.test/webhook", {
+      const request = new Request("https://labradoodle.example.test/webhook", {
         method: "POST",
         headers:
           kind === "declared"

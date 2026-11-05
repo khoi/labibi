@@ -1,5 +1,4 @@
-import { Trans, useLingui } from "@lingui/react/macro";
-import type { SpaceMemoryConfig } from "@rakazo/contracts";
+import type { SpaceMemoryConfig } from "@labradoodle/contracts";
 import {
   Button,
   Dialog,
@@ -12,7 +11,8 @@ import {
   NativeSelectOption,
   Spinner,
   Toggle,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { XIcon } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { SETTINGS_CONTENT_WIDTH } from "../components/SettingsRows";

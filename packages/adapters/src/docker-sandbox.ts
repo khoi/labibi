@@ -16,15 +16,15 @@ import type {
   ScreenRequest,
   ScreenSession,
   TerminalRequest,
-} from "@rakazo/adapter-kit";
-import { INVALID_BROWSER_REQUEST, SandboxRequestRejectedError } from "@rakazo/adapter-kit";
+} from "@labradoodle/adapter-kit";
+import { INVALID_BROWSER_REQUEST, SandboxRequestRejectedError } from "@labradoodle/adapter-kit";
 import {
   boundedSandboxCommandTimeoutMs,
   cancelResponseBody,
   requestDeadline,
   resolveSupervisorToken,
-} from "@rakazo/core";
-import { outgoingCorrelationHeaders } from "@rakazo/logging";
+} from "@labradoodle/core";
+import { outgoingCorrelationHeaders } from "@labradoodle/logging";
 import {
   boundedComputerActions,
   clampRounded,

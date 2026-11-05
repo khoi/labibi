@@ -1,5 +1,10 @@
-import type { CronLabels, CronUnit } from "@rakazo/core";
-import { ENGLISH_CRON_LABELS, localizedClock, polishInterval, russianInterval } from "@rakazo/core";
+import type { CronLabels, CronUnit } from "@labradoodle/core";
+import {
+  ENGLISH_CRON_LABELS,
+  localizedClock,
+  polishInterval,
+  russianInterval,
+} from "@labradoodle/core";
 import { getActiveUiLocale, t } from "./i18n";
 import type { UiLocale } from "./ui-locale";
 

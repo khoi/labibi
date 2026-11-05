@@ -1,11 +1,10 @@
-import { Trans, useLingui } from "@lingui/react/macro";
-import type { AccountSecurity, BotAvatarSet, UsageSummary } from "@rakazo/contracts";
+import type { AccountSecurity, BotAvatarSet, UsageSummary } from "@labradoodle/contracts";
 import {
   accountDisplay,
   displayName,
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
-} from "@rakazo/core";
+} from "@labradoodle/core";
 import {
   Button,
   Field,
@@ -18,7 +17,7 @@ import {
   Switch,
   ToggleGroup,
   ToggleGroupItem,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
 import {
   Table,
   TableBody,
@@ -26,7 +25,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@rakazo/ui-web/components/ui/table";
+} from "@labradoodle/ui-web/components/ui/table";
+import { Trans, useLingui } from "@lingui/react/macro";
 import type { RefObject } from "react";
 import { useId, useRef, useState, useSyncExternalStore } from "react";
 import { AccountAccess, LinkSsoRow } from "../components/AccountAccess";
@@ -332,7 +332,7 @@ export function GeneralSettingsPanels({
                     value="rakazo"
                     className="text-[13px] aria-pressed:bg-background aria-pressed:shadow-sm"
                   >
-                    <Trans>Rakazo</Trans>
+                    <Trans>Labradoodle</Trans>
                   </ToggleGroupItem>
                 </ToggleGroup>
                 {botStyleError ? (

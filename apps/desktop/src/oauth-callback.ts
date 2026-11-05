@@ -1,4 +1,4 @@
-import type { RakazoDesktopOAuthCallback } from "@rakazo/contracts";
+import type { LabradoodleDesktopOAuthCallback } from "@labradoodle/contracts";
 
 export type OAuthCallbackFromOptions = {
   /** SSO callbacks must reach the API, including a loopback API on a separate port. */
@@ -17,7 +17,7 @@ export const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
 export function oauthCallbackFrom(
   url: string,
   options: OAuthCallbackFromOptions = {},
-): RakazoDesktopOAuthCallback | undefined {
+): LabradoodleDesktopOAuthCallback | undefined {
   if (options.frameName === "rakazo-sso-oauth") return undefined;
   let target: URL;
   try {

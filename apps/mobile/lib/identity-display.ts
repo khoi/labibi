@@ -1,4 +1,4 @@
-import type { IdentityLabels } from "@rakazo/core";
+import type { IdentityLabels } from "@labradoodle/core";
 import { t } from "./i18n";
 
 export function identityLabels(): IdentityLabels {

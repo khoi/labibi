@@ -1,7 +1,7 @@
-import { ChatMarkdown } from "@rakazo/chat-ui/native";
-import type { PeerConversation } from "@rakazo/core";
-import { displayName, loadPeerHistory, peerConversations } from "@rakazo/core";
-import { typeScale } from "@rakazo/ui-tokens";
+import { ChatMarkdown } from "@labradoodle/chat-ui/native";
+import type { PeerConversation } from "@labradoodle/core";
+import { displayName, loadPeerHistory, peerConversations } from "@labradoodle/core";
+import { typeScale } from "@labradoodle/ui-tokens";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {

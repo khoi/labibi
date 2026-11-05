@@ -1,5 +1,5 @@
-import type { MessageBlock } from "@rakazo/contracts";
-import { speechFromBlocks } from "@rakazo/core";
+import type { MessageBlock } from "@labradoodle/contracts";
+import { speechFromBlocks } from "@labradoodle/core";
 
 const IN_PROGRESS_RUN_STATUSES = new Set(["running", "queued", "leased"]);
 

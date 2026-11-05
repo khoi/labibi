@@ -5,8 +5,8 @@ import type {
   ArtifactStore,
   ComputerRef,
   SandboxProvider,
-} from "@rakazo/adapter-kit";
-import type { ComputerMode, MessageBlock } from "@rakazo/contracts";
+} from "@labradoodle/adapter-kit";
+import type { ComputerMode, MessageBlock } from "@labradoodle/contracts";
 import {
   ARTIFACT_DESCRIPTION_MAX_LENGTH,
   ARTIFACT_NAME_MAX_LENGTH,
@@ -14,16 +14,16 @@ import {
   ATTACHMENT_MAX_COUNT,
   attachmentSizeLabel,
   HISTORY_ATTACHMENTS_PER_RESPONSE,
-} from "@rakazo/contracts";
+} from "@labradoodle/contracts";
 import {
   attachmentComputerPath,
   inferAttachmentMimeType,
   messageBlockForArtifact,
   validateAttachmentMimeType,
-} from "@rakazo/core";
-import type { Artifact, Prisma, PrismaClient } from "@rakazo/db";
-import { withResolvedArtifactVersion } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/core";
+import type { Artifact, Prisma, PrismaClient } from "@labradoodle/db";
+import { withResolvedArtifactVersion } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import { resolveBotWorkspacePath } from "./computer-support.js";
 
 export type MaterializedThreadFile = {

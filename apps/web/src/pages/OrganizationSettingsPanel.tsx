@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,7 +11,8 @@ import {
   Field,
   FieldLabel,
   Input,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Plus } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { CreateOrganizationDialog } from "../components/CreateOrganizationDialog";

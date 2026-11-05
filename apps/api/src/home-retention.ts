@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
-import type { TransactionalEmailProvider } from "@rakazo/adapter-kit";
-import type { HomeDeletionReason } from "@rakazo/auth";
-import { emailLocale, homeDeletionEmail } from "@rakazo/auth";
-import type { PrismaClient } from "@rakazo/db";
-import { hasModelAccess, needsBillingPortal, Prisma, runAsSystem } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+import type { TransactionalEmailProvider } from "@labradoodle/adapter-kit";
+import type { HomeDeletionReason } from "@labradoodle/auth";
+import { emailLocale, homeDeletionEmail } from "@labradoodle/auth";
+import type { PrismaClient } from "@labradoodle/db";
+import { hasModelAccess, needsBillingPortal, Prisma, runAsSystem } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const PLAN_ENDED_DAYS = 30;

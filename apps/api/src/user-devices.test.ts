@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events";
-import type { UserDeviceSocket } from "@rakazo/adapters";
+import type { UserDeviceSocket } from "@labradoodle/adapters";
 import {
   hashUserDeviceToken,
   USER_DEVICE_DISCONNECT_PATH,
@@ -7,9 +7,9 @@ import {
   UserDeviceHub,
   UserDevices,
   userDeviceForwardSecret,
-} from "@rakazo/adapters";
-import type { PrismaClient } from "@rakazo/db";
-import { installSecurityEventStore } from "@rakazo/db";
+} from "@labradoodle/adapters";
+import type { PrismaClient } from "@labradoodle/db";
+import { installSecurityEventStore } from "@labradoodle/db";
 import { Hono } from "hono";
 import { afterEach, describe, expect, it } from "vitest";
 import { endUserDeviceSession, mountUserDeviceRoutes } from "./user-devices.js";

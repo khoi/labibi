@@ -1,7 +1,6 @@
-import { ORPCError } from "@orpc/server";
-import type { JobPublisher, ProductAnalytics, SandboxProvider } from "@rakazo/adapter-kit";
-import { runContinueJob } from "@rakazo/adapter-kit";
-import { cancelComputerRunWork, screenLeaseIdForRun, toComputerRef } from "@rakazo/adapters";
+import type { JobPublisher, ProductAnalytics, SandboxProvider } from "@labradoodle/adapter-kit";
+import { runContinueJob } from "@labradoodle/adapter-kit";
+import { cancelComputerRunWork, screenLeaseIdForRun, toComputerRef } from "@labradoodle/adapters";
 import type {
   Actor,
   GroupMember,
@@ -9,12 +8,12 @@ import type {
   MessageReaction,
   ReplyPreview,
   ThreadSnapshot,
-} from "@rakazo/contracts";
+} from "@labradoodle/contracts";
 import {
   GROUP_MEMBER_MIN,
   MessageBlock as MessageBlockSchema,
   resolveBotAvatarSet,
-} from "@rakazo/contracts";
+} from "@labradoodle/contracts";
 import {
   ACTIVE_RUN_STATUSES,
   BACKGROUND_RUN_TRIGGERS,
@@ -30,9 +29,9 @@ import {
   resolveGroupTargetBotIds,
   runFailureError,
   runReadsThreadHistory,
-} from "@rakazo/core";
-import { deriveMessageQuote, messageReplyPreview } from "@rakazo/core/message-quote";
-import type { Prisma, PrismaClient, ThreadEvents } from "@rakazo/db";
+} from "@labradoodle/core";
+import { deriveMessageQuote, messageReplyPreview } from "@labradoodle/core/message-quote";
+import type { Prisma, PrismaClient, ThreadEvents } from "@labradoodle/db";
 import {
   answerWaitingRunWithTextInTransaction,
   appendEventInTransaction,
@@ -49,8 +48,9 @@ import {
   THREAD_LOCK_TRANSACTION_OPTIONS,
   touchGroupUpdatedAt,
   transientRunEventsWhere,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
+import { ORPCError } from "@orpc/server";
 import {
   buildSendPrompt,
   buildUserMessageBlocks,

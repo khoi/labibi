@@ -1,6 +1,10 @@
-import { t } from "@lingui/core/macro";
-import type { BotAvatarSet, ProductEvent, ThreadMessage, ThreadSnapshot } from "@rakazo/contracts";
-import type { CallExchange } from "@rakazo/core";
+import type {
+  BotAvatarSet,
+  ProductEvent,
+  ThreadMessage,
+  ThreadSnapshot,
+} from "@labradoodle/contracts";
+import type { CallExchange } from "@labradoodle/core";
 import {
   CALL_FAREWELL_TIMEOUT_MS,
   callClientNonce,
@@ -18,7 +22,8 @@ import {
   speechFromBlocks,
   spokenDecision,
   spokenMemory,
-} from "@rakazo/core";
+} from "@labradoodle/core";
+import { t } from "@lingui/core/macro";
 import { getGlobalBroadcastChannel } from "better-auth/client";
 import { useSyncExternalStore } from "react";
 import { pickUp } from "./call-pickup.js";

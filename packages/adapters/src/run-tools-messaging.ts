@@ -1,4 +1,4 @@
-import { isBackgroundRunTrigger, redactSecrets } from "@rakazo/core";
+import { isBackgroundRunTrigger, redactSecrets } from "@labradoodle/core";
 import {
   connectAgent,
   messageConnectedAgent,

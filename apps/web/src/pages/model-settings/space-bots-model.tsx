@@ -1,6 +1,5 @@
-import { Plural, Trans } from "@lingui/react/macro";
-import type { Bot } from "@rakazo/contracts";
-import { botsWithOwnModel } from "@rakazo/core";
+import type { Bot } from "@labradoodle/contracts";
+import { botsWithOwnModel } from "@labradoodle/core";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,7 +10,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   Button,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { Plural, Trans } from "@lingui/react/macro";
 import { useCallback, useEffect, useState } from "react";
 import { useSpaceRpc } from "../../lib/space-rpc";
 

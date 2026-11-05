@@ -52,7 +52,7 @@ test("ordinary accounts can add personal MCP connections without server setup", 
   await expect(page.getByRole("alert")).toContainText(message);
   await expect(page.getByRole("link", { name: "Troubleshoot", exact: true })).toHaveAttribute(
     "href",
-    "https://rakazo.com/docs/troubleshooting/#mcp-oauth-redirect-mismatch",
+    "https://labradoodle.com/docs/troubleshooting/#mcp-oauth-redirect-mismatch",
   );
   await captureScreenshot(page, testInfo, "personal-mcp-callback-mismatch");
   await page.route("**/rpc/mcp/oauth/begin", (route) =>

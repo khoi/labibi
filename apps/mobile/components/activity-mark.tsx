@@ -1,6 +1,6 @@
-import type { BotAvatarSet } from "@rakazo/contracts";
-import { avatarPhotoDot } from "@rakazo/core";
-import { MAX_FONT_SCALE, typeScale } from "@rakazo/ui-tokens";
+import type { BotAvatarSet } from "@labradoodle/contracts";
+import { avatarPhotoDot } from "@labradoodle/core";
+import { MAX_FONT_SCALE, typeScale } from "@labradoodle/ui-tokens";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import type { SharedValue } from "react-native-reanimated";

@@ -1,4 +1,4 @@
-import type { DesktopUpdateState } from "@rakazo/contracts";
+import type { DesktopUpdateState } from "@labradoodle/contracts";
 import { t } from "./i18n.js";
 import { SignatureUnreachableError } from "./linux-update-signature.js";
 import { reportDesktopError } from "./monitoring.js";
@@ -87,7 +87,10 @@ export function classifyUpdaterFailure(error: unknown): UpdaterFailure {
     return { kind: "offline", message: null };
   }
   if (READ_ONLY.some((needle) => text.includes(needle))) {
-    return { kind: "read-only", message: t("Move Rakazo to Applications to install updates.") };
+    return {
+      kind: "read-only",
+      message: t("Move Labradoodle to Applications to install updates."),
+    };
   }
   // Ahead of signatures: a full disk also leaves ditto unable to read the archive's signature.
   if (DISK_FULL.some((needle) => text.includes(needle))) {
@@ -96,7 +99,9 @@ export function classifyUpdaterFailure(error: unknown): UpdaterFailure {
   if (SIGNATURE.some((needle) => text.includes(needle))) {
     return {
       kind: "signature",
-      message: t("This update could not be verified. Reinstall Rakazo from a trusted download."),
+      message: t(
+        "This update could not be verified. Reinstall Labradoodle from a trusted download.",
+      ),
     };
   }
   return {

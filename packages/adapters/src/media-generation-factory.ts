@@ -1,4 +1,4 @@
-import type { MediaGenerationProvider } from "@rakazo/adapter-kit";
+import type { MediaGenerationProvider } from "@labradoodle/adapter-kit";
 import {
   FakeMediaGenerationProvider,
   FalMediaGenerationProvider,

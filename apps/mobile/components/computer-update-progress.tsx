@@ -1,6 +1,6 @@
-import type { ComputerUpdate } from "@rakazo/contracts";
-import { COMPUTER_UPDATE_STAGES } from "@rakazo/contracts";
-import { computerUpdateNeedsAttention, computerUpdateStages } from "@rakazo/core";
+import type { ComputerUpdate } from "@labradoodle/contracts";
+import { COMPUTER_UPDATE_STAGES } from "@labradoodle/contracts";
+import { computerUpdateNeedsAttention, computerUpdateStages } from "@labradoodle/core";
 import { usePathname } from "expo-router";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View } from "react-native";

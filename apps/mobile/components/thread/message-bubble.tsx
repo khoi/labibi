@@ -1,14 +1,18 @@
-import { ChatMarkdown, MarkdownLongPressContext, withBlockMentions } from "@rakazo/chat-ui/native";
-import type { LoginFieldInput, MessageBlock } from "@rakazo/contracts";
-import { artifactPreviewKind, isAttachmentAudioMimeType } from "@rakazo/contracts";
-import type { ChildBotBlock, PeerExchange } from "@rakazo/core";
+import {
+  ChatMarkdown,
+  MarkdownLongPressContext,
+  withBlockMentions,
+} from "@labradoodle/chat-ui/native";
+import type { LoginFieldInput, MessageBlock } from "@labradoodle/contracts";
+import { artifactPreviewKind, isAttachmentAudioMimeType } from "@labradoodle/contracts";
+import type { ChildBotBlock, PeerExchange } from "@labradoodle/core";
 import {
   formatFileSize,
   isApprovalAskBlock,
   memberName,
   selectedAskActionLabel,
-} from "@rakazo/core";
-import { fontWeight, typeScale } from "@rakazo/ui-tokens";
+} from "@labradoodle/core";
+import { fontWeight, typeScale } from "@labradoodle/ui-tokens";
 import type { ComponentProps } from "react";
 import { memo, useContext, useMemo, useState } from "react";
 import type { TextProps } from "react-native";

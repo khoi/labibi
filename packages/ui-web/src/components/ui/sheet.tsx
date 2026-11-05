@@ -1,6 +1,6 @@
 import { Dialog as SheetPrimitive } from "@base-ui/react/dialog";
-import { Button } from "@rakazo/ui-web/components/ui/button";
-import { cn } from "@rakazo/ui-web/lib/utils";
+import { Button } from "@labradoodle/ui-web/components/ui/button";
+import { cn } from "@labradoodle/ui-web/lib/utils";
 import { XIcon } from "lucide-react";
 import type * as React from "react";
 

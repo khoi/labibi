@@ -13,9 +13,9 @@ import type {
   SecretPutOptions,
   SecretRecord,
   SecretStore,
-} from "@rakazo/adapter-kit";
-import { SecretStoreUnavailableError } from "@rakazo/adapter-kit";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/adapter-kit";
+import { SecretStoreUnavailableError } from "@labradoodle/adapter-kit";
+import { getLogger } from "@labradoodle/logging";
 import { SecretChanges } from "./secret-changes.js";
 
 const VERSION_PREFIX = "v2:";

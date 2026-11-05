@@ -8,16 +8,16 @@ import type {
   PurchaseCredentialKind,
   PurchaseSnapshot,
   PurchaseStatus,
-} from "@rakazo/adapter-kit";
+} from "@labradoodle/adapter-kit";
 import {
   PaymentWalletDisconnected,
   PaymentWalletRequestRejected,
   purchasePollJob,
-} from "@rakazo/adapter-kit";
-import type { PurchaseCardField } from "@rakazo/contracts";
-import { PurchaseIdInput, PurchaseRequestInput } from "@rakazo/contracts";
-import type { Purchase } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/adapter-kit";
+import type { PurchaseCardField } from "@labradoodle/contracts";
+import { PurchaseIdInput, PurchaseRequestInput } from "@labradoodle/contracts";
+import type { Purchase } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import { cardRedactionForms } from "./bot-secrets.js";
 import type { PaymentWalletDeps } from "./payment-wallets.js";
 import { withPaymentWalletCredential } from "./payment-wallets.js";

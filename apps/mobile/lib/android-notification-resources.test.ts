@@ -7,7 +7,7 @@ import { UI_LOCALES } from "./ui-locale";
 const resources = resolve(
   dirname(fileURLToPath(import.meta.url)),
   "..",
-  "modules/rakazo-notifications/android/src/main/res",
+  "modules/labradoodle-notifications/android/src/main/res",
 );
 const keys = [
   "rakazo_channel_live",

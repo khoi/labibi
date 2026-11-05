@@ -1,7 +1,11 @@
-import type { ConnectorProvider, JobPublisher } from "@rakazo/adapter-kit";
-import { routineJobKey, routineWakeupJob } from "@rakazo/adapter-kit";
-import type { RoutineWatch } from "@rakazo/contracts";
-import { ROUTINE_WATCH_MIN_MINUTES, RoutineWatchSchema, TimeZoneSchema } from "@rakazo/contracts";
+import type { ConnectorProvider, JobPublisher } from "@labradoodle/adapter-kit";
+import { routineJobKey, routineWakeupJob } from "@labradoodle/adapter-kit";
+import type { RoutineWatch } from "@labradoodle/contracts";
+import {
+  ROUTINE_WATCH_MIN_MINUTES,
+  RoutineWatchSchema,
+  TimeZoneSchema,
+} from "@labradoodle/contracts";
 import {
   cronFromPreset,
   formatCron,
@@ -13,10 +17,10 @@ import {
   unevenInterval,
   wallClock,
   zonedDateTime,
-} from "@rakazo/core";
-import type { Prisma, PrismaClient, ThreadEvents } from "@rakazo/db";
-import { runAsSystemInTransaction } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/core";
+import type { Prisma, PrismaClient, ThreadEvents } from "@labradoodle/db";
+import { runAsSystemInTransaction } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 
 import { localDateTime } from "./current-time.js";
 import { validateRoutineWatch } from "./routine-watch.js";

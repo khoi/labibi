@@ -14,13 +14,13 @@ import type {
   SandboxProvider,
   ScreenRequest,
   ScreenSession,
-} from "@rakazo/adapter-kit";
-import { boundedSandboxCommandTimeoutMs } from "@rakazo/core";
+} from "@labradoodle/adapter-kit";
+import { boundedSandboxCommandTimeoutMs } from "@labradoodle/core";
 import {
   browserProfilePathForScreen,
   DEFAULT_DESKTOP_ENV,
   quiesceBrowserProfilesCommand,
-} from "@rakazo/core/node/desktop-runtime";
+} from "@labradoodle/core/node/desktop-runtime";
 import { computerIdleSleepEnabled, sandboxIdleMs } from "./computer-idle.js";
 import { screenSessionKey } from "./computer-screens.js";
 import {

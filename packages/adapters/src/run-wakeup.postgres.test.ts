@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
-import type { BackgroundJobHandlers, JobPublisher } from "@rakazo/adapter-kit";
-import { runContinueJob } from "@rakazo/adapter-kit";
-import { stuckWorkStatusMessage } from "@rakazo/core";
-import type { PrismaClient } from "@rakazo/db";
+import type { BackgroundJobHandlers, JobPublisher } from "@labradoodle/adapter-kit";
+import { runContinueJob } from "@labradoodle/adapter-kit";
+import { stuckWorkStatusMessage } from "@labradoodle/core";
+import type { PrismaClient } from "@labradoodle/db";
 import {
   appendEvent,
   appendEventInTransaction,
@@ -14,8 +14,8 @@ import {
   provisionMessagingIdentity,
   runAsSystem,
   runAsTenant,
-} from "@rakazo/db";
-import { createLogger, createTestSink, installLogger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import { createLogger, createTestSink, installLogger } from "@labradoodle/logging";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { InMemoryRealtimeFanout } from "./realtime.js";
 import { RunJobPublisher, RunStarter, RunWorkerHost } from "./run-wakeup.js";

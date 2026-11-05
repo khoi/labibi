@@ -1,5 +1,5 @@
+import type { ComputerUpdate } from "@labradoodle/contracts";
 import { expect, test } from "@playwright/test";
-import type { ComputerUpdate } from "@rakazo/contracts";
 import {
   activeBotId,
   captureScreenshot,

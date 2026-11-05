@@ -1,5 +1,5 @@
-import { runContinueJob } from "@rakazo/adapter-kit";
-import type { BotMessageIntent, MessageBlock } from "@rakazo/contracts";
+import { runContinueJob } from "@labradoodle/adapter-kit";
+import type { BotMessageIntent, MessageBlock } from "@labradoodle/contracts";
 import {
   BOT_MESSAGE_MAX_LENGTH,
   botMessageContext,
@@ -8,15 +8,15 @@ import {
   clampBotMessage,
   nextBotMessageHop,
   resolveBotAddress,
-} from "@rakazo/core";
-import type { PrismaClient } from "@rakazo/db";
+} from "@labradoodle/core";
+import type { PrismaClient } from "@labradoodle/db";
 import {
   appendEventInTransaction,
   createThreadMessageInTransaction,
   THREAD_LOCK_TRANSACTION_OPTIONS,
   withTransactionRetry,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import type { ExecutorDeps } from "./executor-deps.js";
 import { runLeaseFor } from "./run-messages.js";
 

@@ -1,5 +1,4 @@
-import { Plural, Trans, useLingui } from "@lingui/react/macro";
-import type { ModelHeaderRow, ThinkingLevel } from "@rakazo/contracts";
+import type { ModelHeaderRow, ThinkingLevel } from "@labradoodle/contracts";
 import {
   CLOUDFLARE_AI_GATEWAY_PROVIDER_ID,
   cloudflareModelRouting,
@@ -18,7 +17,7 @@ import {
   parseModelContextWindow,
   parseModelMaxImagesPerPrompt,
   parseModelMaxTokens,
-} from "@rakazo/contracts";
+} from "@labradoodle/contracts";
 import {
   COMPATIBLE_THINKING_LEVELS,
   clampCatalogThinkingLevel,
@@ -26,7 +25,7 @@ import {
   initialModelProbeState,
   pickCatalogModelId,
   popularModelProvidersFirst,
-} from "@rakazo/core";
+} from "@labradoodle/core";
 import {
   Button,
   Input,
@@ -38,7 +37,8 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { Check, Copy } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -68,7 +68,7 @@ import { errorText } from "../lib/user-error";
 import { CompatibleKeyField } from "./model-settings/compatible-key-field";
 
 const CUSTOM_MODEL_OPTION = "__rakazo_custom_model__";
-/** Rakazo credits sit among the providers as the one choice that needs no account of its own. */
+/** Labradoodle credits sit among the providers as the one choice that needs no account of its own. */
 const CREDITS_OPTION = "__rakazo_credits__";
 /** A provider whose catalog entry offers both sign-in and a key appears once per way to connect. */
 type ProviderAuth = "sign-in" | "key";
@@ -282,7 +282,7 @@ export function OnboardingPage() {
       return providerDisplayName(id, byId.get(id)?.providerName ?? id, auth);
     };
     const main = [
-      ...(billingEnabled ? [{ value: CREDITS_OPTION, label: t`Rakazo credits` }] : []),
+      ...(billingEnabled ? [{ value: CREDITS_OPTION, label: t`Labradoodle credits` }] : []),
       ...MAIN_PROVIDER_OPTIONS.filter((option) => byId.has(option.provider)).map((option) => ({
         value: providerOptionValue(option.provider, option.auth),
         label: optionLabel(option.provider, option.auth),

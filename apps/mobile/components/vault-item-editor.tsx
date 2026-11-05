@@ -1,5 +1,5 @@
-import type { ContactFields, VaultKind, VaultRevealed } from "@rakazo/contracts";
-import { commandVariableName } from "@rakazo/contracts";
+import type { ContactFields, VaultKind, VaultRevealed } from "@labradoodle/contracts";
+import { commandVariableName } from "@labradoodle/contracts";
 import type { ReactNode } from "react";
 import { useRef, useState } from "react";
 import type { TextInputProps } from "react-native";

@@ -1,6 +1,6 @@
-import { withConnectionName } from "@rakazo/contracts";
-import type { ChatModelChoice } from "@rakazo/core";
-import { groupModelChoices, modelChoiceSearchText } from "@rakazo/core";
+import { withConnectionName } from "@labradoodle/contracts";
+import type { ChatModelChoice } from "@labradoodle/core";
+import { groupModelChoices, modelChoiceSearchText } from "@labradoodle/core";
 import { useNavigation } from "expo-router";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import type { ViewToken } from "react-native";

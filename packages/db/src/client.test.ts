@@ -1,4 +1,4 @@
-import { createLogger, createTestSink, installLogger } from "@rakazo/logging";
+import { createLogger, createTestSink, installLogger } from "@labradoodle/logging";
 import type { Pool, PoolClient } from "pg";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {

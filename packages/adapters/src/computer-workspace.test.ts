@@ -14,9 +14,9 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { CommandRequest, ComputerRef, SandboxProvider } from "@rakazo/adapter-kit";
-import { SandboxDamagedError } from "@rakazo/adapter-kit";
-import type { PrismaClient } from "@rakazo/db";
+import type { CommandRequest, ComputerRef, SandboxProvider } from "@labradoodle/adapter-kit";
+import { SandboxDamagedError } from "@labradoodle/adapter-kit";
+import type { PrismaClient } from "@labradoodle/db";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   checkpointAndStopComputer,

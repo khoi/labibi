@@ -1,5 +1,9 @@
-import { Trans, useLingui } from "@lingui/react/macro";
-import type { CardSecretValue, ContactFields, LoginFieldInput, VaultKind } from "@rakazo/contracts";
+import type {
+  CardSecretValue,
+  ContactFields,
+  LoginFieldInput,
+  VaultKind,
+} from "@labradoodle/contracts";
 import {
   BotSecretName,
   CardSecretValue as CardSecretValueSchema,
@@ -12,7 +16,7 @@ import {
   encodeLoginSecret,
   LoginSecretValue,
   parseCardExpiry,
-} from "@rakazo/contracts";
+} from "@labradoodle/contracts";
 import {
   Button,
   Dialog,
@@ -24,7 +28,8 @@ import {
   NativeSelect,
   NativeSelectOption,
   Switch,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import type { ComponentProps, ReactNode } from "react";
 import { useId, useRef, useState } from "react";
 import type { VaultAuth } from "./kinds";

@@ -1,10 +1,10 @@
 # Mobile builds and store releases
 
-Rakazo's public repository does not contain production App Store Connect,
+Labradoodle's public repository does not contain production App Store Connect,
 Google Play, Apple team, or private EAS submission identifiers. Those values
 belong in the release operator's private configuration.
 
-Self-hosters normally do not need to publish their own mobile app: the Rakazo
+Self-hosters normally do not need to publish their own mobile app: the Labradoodle
 client can select a compatible server from the sign-in screen. If you distribute
 your own branded build, use your own Expo and store accounts.
 
@@ -17,7 +17,7 @@ your own branded build, use your own Expo and store accounts.
 4. Keep store application IDs, team IDs, signing credentials, API keys, and
    review-account credentials out of Git.
 5. Before a native iOS or Android build, run
-   `pnpm --filter @rakazo/mobile exec expo install --check`. Attachment pickers
+   `pnpm --filter @labradoodle/mobile exec expo install --check`. Attachment pickers
    and other Expo native modules must match the SDK (SDK 57 needs
    `expo-image-picker@~57.0.11`, not 17.x). Use `pnpm exec expo install --fix`
    from `apps/mobile` if that check fails.
@@ -62,7 +62,7 @@ alone.
 
 ## Android APK
 
-Android users should install [Rakazo from Google Play](https://play.google.com/store/apps/details?id=com.rakazo.app).
+Android users should install [Labradoodle from Google Play](https://play.google.com/store/apps/details?id=com.rakazo.app).
 For manual installation, an APK remains available.
 `release-mobile` publishes it, or run the `release-android-apk` workflow from
 `main` on its own. It builds the `android-apk` EAS profile, signed with the

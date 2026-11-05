@@ -1,7 +1,7 @@
-import type { AgentUsage, ModelUsageLookup } from "@rakazo/adapter-kit";
-import type { PrismaClient } from "@rakazo/db";
-import { expireModelCredits, hasFinalModelCost, recordUsage, runAsSystem } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+import type { AgentUsage, ModelUsageLookup } from "@labradoodle/adapter-kit";
+import type { PrismaClient } from "@labradoodle/db";
+import { expireModelCredits, hasFinalModelCost, recordUsage, runAsSystem } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 
 /** Bounded, leased recovery. Missing evidence is flagged rather than converted into free usage. */
 export function createModelCreditReconciler(deps: {

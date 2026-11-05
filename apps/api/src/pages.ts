@@ -1,11 +1,17 @@
 import { createHash, randomBytes } from "node:crypto";
-import type { SecretStore } from "@rakazo/adapter-kit";
-import { forgetPageShareSecrets } from "@rakazo/adapters";
-import type { Actor, PageDetail, PageSummary, PageVisibility, SharedPage } from "@rakazo/contracts";
-import { pageShareTokenFromSlug, pageShareUrl } from "@rakazo/contracts";
-import type { PageShareSecret, PrismaClient } from "@rakazo/db";
-import { IsolationError, Prisma, runAsSystem } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+import type { SecretStore } from "@labradoodle/adapter-kit";
+import { forgetPageShareSecrets } from "@labradoodle/adapters";
+import type {
+  Actor,
+  PageDetail,
+  PageSummary,
+  PageVisibility,
+  SharedPage,
+} from "@labradoodle/contracts";
+import { pageShareTokenFromSlug, pageShareUrl } from "@labradoodle/contracts";
+import type { PageShareSecret, PrismaClient } from "@labradoodle/db";
+import { IsolationError, Prisma, runAsSystem } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 
 const PAGE_SHARE_SECRET_KIND = "page_share";
 const DEFAULT_LIST_LIMIT = 30;

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { SCREEN_RECONNECT_STABLE_MS } from "@rakazo/core";
+import { SCREEN_RECONNECT_STABLE_MS } from "@labradoodle/core";
 import type { ComponentProps, ReactNode } from "react";
 import { act } from "react";
 import type { Root } from "react-dom/client";
@@ -14,7 +14,7 @@ vi.mock("@lingui/react/macro", () => ({
     t: (parts: TemplateStringsArray, ...values: unknown[]) => String.raw(parts, ...values),
   }),
 }));
-vi.mock("@rakazo/ui-web", () => ({
+vi.mock("@labradoodle/ui-web", () => ({
   Button: (props: ComponentProps<"button">) => <button type="button" {...props} />,
   Spinner: () => null,
 }));

@@ -1,5 +1,5 @@
+import type { BillingStatus } from "@labradoodle/contracts";
 import { t } from "@lingui/core/macro";
-import type { BillingStatus } from "@rakazo/contracts";
 
 type Price = NonNullable<BillingStatus["price"]>;
 

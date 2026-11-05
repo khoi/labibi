@@ -1,9 +1,9 @@
-import type { AdapterContext, JobPublisher } from "@rakazo/adapter-kit";
-import { cloudAgentPollJob } from "@rakazo/adapter-kit";
-import { cloudAgentBlockFromPayload } from "@rakazo/core";
-import type { CloudAgent, PrismaClient, ThreadEvents } from "@rakazo/db";
-import { appendEventInTransaction, createThreadMessageInTransaction } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+import type { AdapterContext, JobPublisher } from "@labradoodle/adapter-kit";
+import { cloudAgentPollJob } from "@labradoodle/adapter-kit";
+import { cloudAgentBlockFromPayload } from "@labradoodle/core";
+import type { CloudAgent, PrismaClient, ThreadEvents } from "@labradoodle/db";
+import { appendEventInTransaction, createThreadMessageInTransaction } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import type { CloudAgentConnection } from "./cloud-agent-factory.js";
 import { cloudAgentsEnabled } from "./cloud-agent-factory.js";
 import { cloudAgentLaunchSchema, cloudAgentReplySchema } from "./cloud-agent-tools.js";

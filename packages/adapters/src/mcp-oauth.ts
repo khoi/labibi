@@ -1,5 +1,17 @@
 import { randomUUID } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
+import type { SecretStore } from "@labradoodle/adapter-kit";
+import { SecretStoreUnavailableError } from "@labradoodle/adapter-kit";
+import {
+  isLocalhostOrLoopbackIp,
+  MCP_OAUTH_CLIENT_REQUIRED,
+  mcpOAuthEnvReferences,
+  parseMcpOAuthAuthorizationParams,
+} from "@labradoodle/contracts";
+import { readBoundedResponseBytes } from "@labradoodle/core";
+import type { Prisma, PrismaClient } from "@labradoodle/db";
+import { availableInSpace, itemSecretIn, runAsSystem } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import type {
   OAuthClientProvider,
   OAuthDiscoveryState,
@@ -18,18 +30,6 @@ import type {
   OAuthClientMetadata,
   OAuthTokens,
 } from "@modelcontextprotocol/sdk/shared/auth.js";
-import type { SecretStore } from "@rakazo/adapter-kit";
-import { SecretStoreUnavailableError } from "@rakazo/adapter-kit";
-import {
-  isLocalhostOrLoopbackIp,
-  MCP_OAUTH_CLIENT_REQUIRED,
-  mcpOAuthEnvReferences,
-  parseMcpOAuthAuthorizationParams,
-} from "@rakazo/contracts";
-import { readBoundedResponseBytes } from "@rakazo/core";
-import type { Prisma, PrismaClient } from "@rakazo/db";
-import { availableInSpace, itemSecretIn, runAsSystem } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
 import { sanitizeConnectorError } from "./connector-safety.js";
 import { MCP_DYNAMIC_REGISTRATION_UNSUPPORTED, needsMcpOAuthClient } from "./mcp-server-health.js";
 import { secureFetch, validateUrl, withEndpointOriginFallback } from "./mcp-transport.js";
@@ -392,7 +392,7 @@ export class StoredMcpOAuthProvider implements OAuthClientProvider {
     const applicationType = hostname === "localhost" || hostname === "127.0.0.1" ? "native" : "web";
     return {
       redirect_uris: [redirectUri],
-      client_name: "Rakazo",
+      client_name: "Labradoodle",
       grant_types: ["authorization_code", "refresh_token"],
       response_types: ["code"],
       token_endpoint_auth_method: "none",

@@ -1,15 +1,60 @@
 {
   "redirects": [
     {
-      "source": "/",
-      "has": [{ "type": "host", "value": { "eq": "www.rakazo.com" } }],
-      "destination": "https://rakazo.com/",
+      "source": "/blog/openclaw-vs-hermes-vs-rakazo/",
+      "destination": "/blog/openclaw-vs-hermes-vs-labradoodle/",
       "statusCode": 301
     },
     {
       "source": "/:path*",
-      "has": [{ "type": "host", "value": { "eq": "www.rakazo.com" } }],
-      "destination": "https://rakazo.com/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": {
+            "eq": "rakazo.com"
+          }
+        }
+      ],
+      "destination": "https://labradoodle.com/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": {
+            "eq": "www.rakazo.com"
+          }
+        }
+      ],
+      "destination": "https://labradoodle.com/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": {
+            "eq": "www.labradoodle.com"
+          }
+        }
+      ],
+      "destination": "https://labradoodle.com/",
+      "statusCode": 301
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": {
+            "eq": "www.labradoodle.com"
+          }
+        }
+      ],
+      "destination": "https://labradoodle.com/:path*",
       "statusCode": 301
     },
     {

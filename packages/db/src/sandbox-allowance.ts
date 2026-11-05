@@ -1,10 +1,10 @@
-import type { ByokTier, ComputerSize } from "@rakazo/contracts";
+import type { ByokTier, ComputerSize } from "@labradoodle/contracts";
 import {
   BYOK_TIERS,
   ByokTierSchema,
   CREDITS_SANDBOX_ALLOWANCE_PERCENT,
   TRIAL_SANDBOX_ALLOWANCE_CENTS,
-} from "@rakazo/contracts";
+} from "@labradoodle/contracts";
 import type { PrismaClient } from "./client.js";
 import { runAsSystem } from "./row-security.js";
 

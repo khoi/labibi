@@ -1,12 +1,12 @@
 import { randomUUID } from "node:crypto";
-import type { PrismaClient } from "@rakazo/db";
+import type { PrismaClient } from "@labradoodle/db";
 import {
   appendEvent,
   asSystem,
   createDb,
   provisionMessagingIdentity,
   runAsSystem,
-} from "@rakazo/db";
+} from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createRunExecutor } from "./executor.js";
 

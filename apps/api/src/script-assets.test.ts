@@ -1,10 +1,10 @@
-import { PAGE_RUNTIME_PATH } from "@rakazo/core";
-import { buildPageRuntime } from "@rakazo/page-kit/runtime-build";
+import { PAGE_RUNTIME_PATH } from "@labradoodle/core";
+import { buildPageRuntime } from "@labradoodle/page-kit/runtime-build";
 import { Hono } from "hono";
 import { describe, expect, it, vi } from "vitest";
 import { DIAGRAM_SCRIPT_PATH, mountScriptAssets } from "./script-assets.js";
 
-vi.mock(import("@rakazo/page-kit/runtime-build"), async (actual) => ({
+vi.mock(import("@labradoodle/page-kit/runtime-build"), async (actual) => ({
   buildPageRuntime: vi.fn((await actual()).buildPageRuntime),
 }));
 

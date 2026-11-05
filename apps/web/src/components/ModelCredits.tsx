@@ -1,5 +1,4 @@
-import { Trans, useLingui } from "@lingui/react/macro";
-import type { BillingStatus, ByokInterval, ByokTier } from "@rakazo/contracts";
+import type { BillingStatus, ByokInterval, ByokTier } from "@labradoodle/contracts";
 import {
   ByokIntervalSchema,
   ByokTierSchema,
@@ -10,7 +9,7 @@ import {
   DEFAULT_MONTHLY_CREDIT_AMOUNT,
   MODEL_CREDIT_AMOUNTS,
   ModelCreditAmountSchema,
-} from "@rakazo/contracts";
+} from "@labradoodle/contracts";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,7 +37,8 @@ import {
   SelectValue,
   ToggleGroup,
   ToggleGroupItem,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -296,7 +296,7 @@ export function CreditChoice({
         <AccountMenu disabled={pending} signingOut={signingOut} onLogOut={() => void logOut()} />
       )}
       <h1 className="text-heading1 font-medium">
-        <Trans>Choose how to use Rakazo</Trans>
+        <Trans>Choose how to use Labradoodle</Trans>
       </h1>
       <div className="grid gap-4 min-[480px]:grid-cols-2">
         <Card>
@@ -835,7 +835,7 @@ export function ModelCreditsSettings({
             })
           }
         >
-          <Trans>Use Rakazo credits</Trans>
+          <Trans>Use Labradoodle credits</Trans>
         </Button>
       ) : null}
       {status.canManage && status.funding !== "byok" && (!recurring || status.cancelAtPeriodEnd) ? (

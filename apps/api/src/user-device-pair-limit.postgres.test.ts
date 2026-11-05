@@ -1,9 +1,9 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { EmailEmulator, FakeSandboxProvider, USER_DEVICE_LIMIT } from "@rakazo/adapters";
-import { USER_DEVICE_PAIR_PATH } from "@rakazo/contracts";
-import { runAsSystem } from "@rakazo/db";
+import { EmailEmulator, FakeSandboxProvider, USER_DEVICE_LIMIT } from "@labradoodle/adapters";
+import { USER_DEVICE_PAIR_PATH } from "@labradoodle/contracts";
+import { runAsSystem } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { sessionCookieHeader } from "../../../packages/testkit/src/index.js";
 import type { AppHandles } from "./app.js";

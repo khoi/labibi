@@ -1,7 +1,7 @@
-import { ChatMarkdown } from "@rakazo/chat-ui/native";
-import type { MessageBlock } from "@rakazo/contracts";
-import { cloudAgentHttpsUrl, displayName as safeDisplayName } from "@rakazo/core";
-import { typeScale } from "@rakazo/ui-tokens";
+import { ChatMarkdown } from "@labradoodle/chat-ui/native";
+import type { MessageBlock } from "@labradoodle/contracts";
+import { cloudAgentHttpsUrl, displayName as safeDisplayName } from "@labradoodle/core";
+import { typeScale } from "@labradoodle/ui-tokens";
 import { useEffect, useRef, useState } from "react";
 import { Linking, Pressable, Text, View } from "react-native";
 import Animated, {

@@ -1,11 +1,15 @@
-import { listPiCatalog } from "@rakazo/adapters";
-import type { Actor, AnalyticsErrorKind, AnalyticsModelConnectMethod } from "@rakazo/contracts";
+import { listPiCatalog } from "@labradoodle/adapters";
+import type {
+  Actor,
+  AnalyticsErrorKind,
+  AnalyticsModelConnectMethod,
+} from "@labradoodle/contracts";
 import {
   canonicalPiProviderId,
   MODEL_KEY_REJECTED_ERROR,
   OPENAI_COMPATIBLE_PROVIDER_ID,
-} from "@rakazo/contracts";
-import { normalizeRunError } from "@rakazo/core";
+} from "@labradoodle/contracts";
+import { normalizeRunError } from "@labradoodle/core";
 import type { RouterDeps } from "./router.js";
 import { modelSetup } from "./routes/shared.js";
 

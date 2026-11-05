@@ -1,4 +1,4 @@
-import type { MemoryDocument } from "@rakazo/contracts";
+import type { MemoryDocument } from "@labradoodle/contracts";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text } from "react-native";

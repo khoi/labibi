@@ -81,7 +81,7 @@ jobs:
         timeout-minutes: 5
         # Skip --with-deps: GitHub ubuntu-latest already has Chromium's OS libraries,
         # and apt-get against azure.archive.ubuntu.com can stall until the job timeout.
-        run: pnpm --filter @rakazo/web exec playwright install chromium
+        run: pnpm --filter @labradoodle/web exec playwright install chromium
       - name: Install agent-browser
         if: steps.areas.outputs.e2e != 'false'
         timeout-minutes: 2
@@ -100,7 +100,7 @@ jobs:
       # Runs after product e2e so shared apps/web/test-results is not wiped by the product run.
       - name: Capture marketing homepage screenshots
         if: matrix.shard == 1 && always() && (steps.playwright_tests.outcome == 'success' || steps.playwright_tests.outcome == 'failure')
-        run: pnpm --filter @rakazo/www e2e
+        run: pnpm --filter @labradoodle/www e2e
       - name: Upload shard results
         if: always() && steps.areas.outputs.e2e != 'false'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

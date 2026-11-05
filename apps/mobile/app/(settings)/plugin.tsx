@@ -5,14 +5,14 @@ import type {
   McpServer,
   PluginPart,
   PluginPreview,
-} from "@rakazo/contracts";
-import { PluginPreviewSchema } from "@rakazo/contracts";
+} from "@labradoodle/contracts";
+import { PluginPreviewSchema } from "@labradoodle/contracts";
 import {
   catalogItemKey,
   connectCatalogItem,
   installedPluginParts,
   isCatalogItemConnected,
-} from "@rakazo/core";
+} from "@labradoodle/core";
 import type { NativeStackNavigationOptions } from "expo-router";
 import {
   Redirect,

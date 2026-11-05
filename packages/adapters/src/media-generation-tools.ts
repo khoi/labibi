@@ -3,11 +3,11 @@ import type {
   GeneratedMedia,
   MediaGenerationProvider,
   MediaVideoJob,
-} from "@rakazo/adapter-kit";
-import { MediaGenerationError } from "@rakazo/adapter-kit";
-import type { MessageBlock } from "@rakazo/contracts";
-import { messageBlockForArtifact } from "@rakazo/core";
-import type { ExternalEffect, Prisma, PrismaClient } from "@rakazo/db";
+} from "@labradoodle/adapter-kit";
+import { MediaGenerationError } from "@labradoodle/adapter-kit";
+import type { MessageBlock } from "@labradoodle/contracts";
+import { messageBlockForArtifact } from "@labradoodle/core";
+import type { ExternalEffect, Prisma, PrismaClient } from "@labradoodle/db";
 import { z } from "zod";
 import { mediaPromptSchema, validateGeneratedMedia } from "./media-generation-provider.js";
 

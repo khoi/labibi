@@ -1,11 +1,11 @@
-import type { LoginFieldInput, MessageReaction } from "@rakazo/contracts";
-import type { SlashActionId } from "@rakazo/core";
+import type { LoginFieldInput, MessageReaction } from "@labradoodle/contracts";
+import type { SlashActionId } from "@labradoodle/core";
 import {
   attachmentsForThread,
   newClientId,
   pageReply,
   resolveComposerSendPlan,
-} from "@rakazo/core";
+} from "@labradoodle/core";
 import { useNavigation, useRouter } from "expo-router";
 import type { RefObject } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";

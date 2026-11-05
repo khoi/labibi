@@ -1,8 +1,6 @@
-import { t } from "@lingui/core/macro";
-import { Trans } from "@lingui/react/macro";
-import type { BotAvatarSet } from "@rakazo/contracts";
-import { resolveBotAvatarSet } from "@rakazo/contracts";
-import { SHIPPED_BOT_AVATAR_SHAPE_KEYS } from "@rakazo/core";
+import type { BotAvatarSet } from "@labradoodle/contracts";
+import { resolveBotAvatarSet } from "@labradoodle/contracts";
+import { SHIPPED_BOT_AVATAR_SHAPE_KEYS } from "@labradoodle/core";
 import {
   BOT_AVATAR_COLORS,
   BotAvatar,
@@ -21,8 +19,10 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@rakazo/ui-web";
-import { Button } from "@rakazo/ui-web/components/ui/button";
+} from "@labradoodle/ui-web";
+import { Button } from "@labradoodle/ui-web/components/ui/button";
+import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 import { Check, Pencil, Upload, X } from "lucide-react";
 import type { ClipboardEvent, DragEvent } from "react";
 import { useRef, useState } from "react";
@@ -74,7 +74,7 @@ export function BotLookPicker({
               <Trans>Original</Trans>
             </TabsTrigger>
             <TabsTrigger value="rakazo" className="flex-1">
-              <Trans>Rakazo</Trans>
+              <Trans>Labradoodle</Trans>
             </TabsTrigger>
           </TabsList>
         </Tabs>

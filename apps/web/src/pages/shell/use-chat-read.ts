@@ -1,6 +1,6 @@
-import type { Bot, Group } from "@rakazo/contracts";
-import type { ReadBoundary } from "@rakazo/core";
-import { createChatQueues, settleReadBoundary } from "@rakazo/core";
+import type { Bot, Group } from "@labradoodle/contracts";
+import type { ReadBoundary } from "@labradoodle/core";
+import { createChatQueues, settleReadBoundary } from "@labradoodle/core";
 import type { Dispatch, SetStateAction } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { autoReadStillWanted } from "../../lib/auto-read";

@@ -1,5 +1,5 @@
+import type { RunActivityRow } from "@labradoodle/contracts";
 import { t } from "@lingui/core/macro";
-import type { RunActivityRow } from "@rakazo/contracts";
 import { describe, expect, it, vi } from "vitest";
 import {
   activityFiltersActive,

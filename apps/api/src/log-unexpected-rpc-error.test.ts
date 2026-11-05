@@ -1,5 +1,3 @@
-import { ORPCError, onError, os } from "@orpc/server";
-import { RPCHandler } from "@orpc/server/fetch";
 import {
   SandboxAllowanceUsedError,
   SandboxDamagedError,
@@ -7,11 +5,13 @@ import {
   SandboxUnavailableError,
   SandboxUnresponsiveError,
   VoiceAccountError,
-} from "@rakazo/adapter-kit";
-import { MODEL_IMAGE_INPUT_ERROR } from "@rakazo/core";
-import { IsolationError } from "@rakazo/db";
-import { createLogger, createTestSink, installLogger } from "@rakazo/logging";
-import { requestLogging } from "@rakazo/logging/hono";
+} from "@labradoodle/adapter-kit";
+import { MODEL_IMAGE_INPUT_ERROR } from "@labradoodle/core";
+import { IsolationError } from "@labradoodle/db";
+import { createLogger, createTestSink, installLogger } from "@labradoodle/logging";
+import { requestLogging } from "@labradoodle/logging/hono";
+import { ORPCError, onError, os } from "@orpc/server";
+import { RPCHandler } from "@orpc/server/fetch";
 import { Hono } from "hono";
 import { afterEach, describe, expect, it } from "vitest";
 import { handleRpcError, logUnexpectedRpcError } from "./app.js";

@@ -1,4 +1,4 @@
-import { ComputerStatusSchema } from "@rakazo/contracts";
+import { ComputerStatusSchema } from "@labradoodle/contracts";
 import { describe, expect, it } from "vitest";
 import { executionBlocksUserTakeover, toComputerStatus } from "./computer-status.js";
 

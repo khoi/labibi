@@ -1,4 +1,4 @@
-import type { AvatarMotionMode, AvatarPoke, LogoAvatarActivity } from "@rakazo/core";
+import type { AvatarMotionMode, AvatarPoke, LogoAvatarActivity } from "@labradoodle/core";
 import {
   avatarPokeFrame,
   LOGO_AVATAR_BODY_Y,
@@ -12,7 +12,7 @@ import {
   logoAvatarFrame,
   logoAvatarPaint,
   logoAvatarTraits,
-} from "@rakazo/core";
+} from "@labradoodle/core";
 import type { ReactNode } from "react";
 import { useEffect, useId, useMemo } from "react";
 import { Pressable } from "react-native";

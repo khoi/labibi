@@ -1,26 +1,26 @@
-import type { AdapterContext, AgentHomeStore, ArtifactStore } from "@rakazo/adapter-kit";
-import { resolveBotWorkspacePath } from "@rakazo/adapters";
-import type { Auth } from "@rakazo/auth";
+import type { AdapterContext, AgentHomeStore, ArtifactStore } from "@labradoodle/adapter-kit";
+import { resolveBotWorkspacePath } from "@labradoodle/adapters";
+import type { Auth } from "@labradoodle/auth";
 import type {
   AccountExportExecutables,
   AccountExportManifest,
   AccountExportRecord,
-} from "@rakazo/contracts";
+} from "@labradoodle/contracts";
 import {
   ACCOUNT_EXPORT_FORMAT,
   ACCOUNT_EXPORT_MANIFEST_PATH,
   ACCOUNT_EXPORT_MAX_HOME_FILE_BYTES,
   ACCOUNT_EXPORT_VERSION,
   accountExportPaths,
-} from "@rakazo/contracts";
-import type { AccountExportSource, PrismaClient } from "@rakazo/db";
+} from "@labradoodle/contracts";
+import type { AccountExportSource, PrismaClient } from "@labradoodle/db";
 import {
   parseComputerMode,
   readAccountExport,
   runAsTenant,
   runGeneratorAsTenant,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import { Zip, ZipDeflate } from "fflate";
 import type { Hono } from "hono";
 
@@ -198,7 +198,7 @@ async function* iterate<T>(items: AsyncIterable<T>): AsyncGenerator<T> {
 }
 
 export function accountExportFilename(now = new Date()): string {
-  return `rakazo-export-${now.toISOString().slice(0, 10)}.zip`;
+  return `labradoodle-export-${now.toISOString().slice(0, 10)}.zip`;
 }
 
 /**

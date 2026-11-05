@@ -1,4 +1,4 @@
-import { pageKitPalette } from "@rakazo/ui-tokens";
+import { pageKitPalette } from "@labradoodle/ui-tokens";
 import type { ReactNode } from "react";
 import { useEffect, useId, useState } from "react";
 import { openViaHost } from "./inline.js";

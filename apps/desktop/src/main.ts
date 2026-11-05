@@ -3,15 +3,15 @@ import { randomBytes } from "node:crypto";
 import { existsSync } from "node:fs";
 import { readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { HostScreen } from "@rakazo/adapters/host-screen";
-import { startUserDeviceClient } from "@rakazo/adapters/user-device-client";
+import type { HostScreen } from "@labradoodle/adapters/host-screen";
+import { startUserDeviceClient } from "@labradoodle/adapters/user-device-client";
 import type {
   DesktopMenuCommand,
   DesktopReachability,
   DesktopSetup,
-  RakazoDesktopDevice,
-} from "@rakazo/contracts";
-import { parseServerHeaders } from "@rakazo/contracts";
+  LabradoodleDesktopDevice,
+} from "@labradoodle/contracts";
+import { parseServerHeaders } from "@labradoodle/contracts";
 import type { Session } from "electron";
 import {
   app,
@@ -86,7 +86,7 @@ import { installSessionPermissions } from "./session-permissions.js";
 import {
   DEFAULT_LOCAL_WEB_URL,
   desktopStackImageTag,
-  isRakazoHealth,
+  isLabradoodleHealth,
   managedLocalOpenUrl,
   maySendDesktopStackToken,
   normalizeServerUrl,
@@ -112,6 +112,8 @@ import {
   warmWindowTtlMs,
 } from "./window-options.js";
 
+const APP_DISPLAY_NAME = "Labradoodle";
+app.setName("Rakazo");
 process.setSourceMapsEnabled(true);
 installDesktopEarlyErrorReporting();
 
@@ -686,7 +688,7 @@ async function runMenuUpdateCheck() {
       : dialog.showMessageBox(options);
   if (state.phase === "ready") {
     const { response } = await alert({
-      message: t("Rakazo {version} is ready to install.", {
+      message: t("Labradoodle {version} is ready to install.", {
         version: state.availableVersion ?? "",
       }),
       buttons: [t("Restart"), t("Later")],
@@ -712,7 +714,7 @@ async function runMenuUpdateCheck() {
     });
   } else if (state.phase === "idle") {
     await alert({
-      message: t("Rakazo is up to date."),
+      message: t("Labradoodle is up to date."),
       detail: t("Version {version}", { version: state.currentVersion }),
     });
   }
@@ -774,7 +776,7 @@ function installApplicationMenu() {
   };
   const changeServer: Electron.MenuItemConstructorOptions = {
     id: "change-rakazo-server",
-    label: t("Change Rakazo Server…"),
+    label: t("Change Labradoodle Server…"),
     accelerator: "CmdOrCtrl+Shift+K",
     click: () => showSetupWindow(),
   };
@@ -884,9 +886,9 @@ function installApplicationMenu() {
     process.platform === "darwin"
       ? [
           {
-            label: app.name,
+            label: APP_DISPLAY_NAME,
             submenu: [
-              { role: "about", label: t("About {name}", { name: app.name }) },
+              { role: "about", label: t("About {name}", { name: APP_DISPLAY_NAME }) },
               openSettings,
               checkForUpdates,
               { type: "separator" },
@@ -895,11 +897,11 @@ function installApplicationMenu() {
               changeServer,
               stopStack,
               { type: "separator" },
-              { role: "hide", label: t("Hide {name}", { name: app.name }) },
+              { role: "hide", label: t("Hide {name}", { name: APP_DISPLAY_NAME }) },
               { role: "hideOthers", label: t("Hide Others") },
               { role: "unhide", label: t("Show All") },
               { type: "separator" },
-              { role: "quit", label: t("Quit {name}", { name: app.name }) },
+              { role: "quit", label: t("Quit {name}", { name: APP_DISPLAY_NAME }) },
             ],
           },
           {
@@ -959,7 +961,7 @@ function installApplicationMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
-/** Setup IPC must only answer the setup window, never a connected Rakazo server. */
+/** Setup IPC must only answer the setup window, never a connected Labradoodle server. */
 function fromSetupWindow(event: Pick<Electron.IpcMainInvokeEvent, "sender">) {
   return (
     setupWindow !== null && !setupWindow.isDestroyed() && event.sender === setupWindow.webContents
@@ -990,7 +992,7 @@ async function probeServer(
         ok: false,
         status: response.status,
         url,
-        error: t("That address redirects elsewhere. Enter the final Rakazo server address."),
+        error: t("That address redirects elsewhere. Enter the final Labradoodle server address."),
       };
     }
     if (!response.ok) {
@@ -1002,12 +1004,12 @@ async function probeServer(
       };
     }
     const health = await readProbeJson(response);
-    if (!isRakazoHealth(health)) {
+    if (!isLabradoodleHealth(health)) {
       return {
         ok: false,
         status: response.status,
         url,
-        error: t("That address did not respond like a Rakazo server."),
+        error: t("That address did not respond like a Labradoodle server."),
       };
     }
     return {
@@ -1343,6 +1345,7 @@ if (!hasSingleInstanceLock) {
 }
 
 app.whenReady().then(async () => {
+  app.setAboutPanelOptions({ applicationName: APP_DISPLAY_NAME });
   if (!hasSingleInstanceLock) return;
   installSessionPermissions(session.defaultSession, permissionTarget);
   const userDataDir = app.getPath("userData");
@@ -1569,7 +1572,7 @@ app.whenReady().then(async () => {
       ? origin
       : null;
   };
-  const deviceState = async (origin: string | null): Promise<RakazoDesktopDevice | null> => {
+  const deviceState = async (origin: string | null): Promise<LabradoodleDesktopDevice | null> => {
     const state = origin === null ? null : userDevices?.state(origin);
     return state ? { ...state, name: await deviceName() } : null;
   };
@@ -1698,7 +1701,7 @@ app.whenReady().then(async () => {
         if (managedUrl === null || !(await localStack.matchesDesiredStack())) {
           return {
             ok: false,
-            error: t("The app-managed Rakazo services are not ready. Retry setup."),
+            error: t("The app-managed Labradoodle services are not ready. Retry setup."),
           };
         }
         openSetup = { mode: "new", serverUrl: managedUrl };

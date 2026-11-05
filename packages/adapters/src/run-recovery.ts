@@ -1,6 +1,6 @@
-import { isTerminal } from "@rakazo/core";
-import type { PrismaClient } from "@rakazo/db";
-import { expireComputerExecutionLeases } from "@rakazo/db";
+import { isTerminal } from "@labradoodle/core";
+import type { PrismaClient } from "@labradoodle/db";
+import { expireComputerExecutionLeases } from "@labradoodle/db";
 import { EXECUTION_LEASE_MS } from "./computer-lifecycle.js";
 
 type RecoveryRun = { id: string; botId: string; bot: { computerId: string | null } };

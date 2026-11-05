@@ -1,6 +1,6 @@
-import type { ThreadSnapshot } from "@rakazo/contracts";
-import type { LogoAvatarActivitySnapshot } from "@rakazo/core";
-import { createLogoAvatarActivityStore } from "@rakazo/core";
+import type { ThreadSnapshot } from "@labradoodle/contracts";
+import type { LogoAvatarActivitySnapshot } from "@labradoodle/core";
+import { createLogoAvatarActivityStore } from "@labradoodle/core";
 
 const projection = createLogoAvatarActivityStore();
 const snapshots = new Map<string, { value: LogoAvatarActivitySnapshot; order: number }>();

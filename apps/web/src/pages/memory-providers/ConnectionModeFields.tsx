@@ -1,5 +1,5 @@
+import { Field, FieldLabel, Input, Toggle } from "@labradoodle/ui-web";
 import { Trans } from "@lingui/react/macro";
-import { Field, FieldLabel, Input, Toggle } from "@rakazo/ui-web";
 import { useId } from "react";
 
 export type ConnectionMode = "cloud" | "local";

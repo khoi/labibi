@@ -5,19 +5,19 @@ import type {
   MessagingOutboundAttachment,
   MessagingOutboundStatus,
   MessagingSurface,
-} from "@rakazo/adapter-kit";
-import { messagingDeliverJob, runContinueJob } from "@rakazo/adapter-kit";
-import type { MessageBlock } from "@rakazo/contracts";
-import { botMessageHopExhausted, nextBotMessageHop, pageLinksAsTitles } from "@rakazo/core";
-import type { Prisma, PrismaClient, ThreadEvents } from "@rakazo/db";
+} from "@labradoodle/adapter-kit";
+import { messagingDeliverJob, runContinueJob } from "@labradoodle/adapter-kit";
+import type { MessageBlock } from "@labradoodle/contracts";
+import { botMessageHopExhausted, nextBotMessageHop, pageLinksAsTitles } from "@labradoodle/core";
+import type { Prisma, PrismaClient, ThreadEvents } from "@labradoodle/db";
 import {
   appendEventInTransaction,
   CrossSpaceCommunicationBlockedError,
   createThreadMessageInTransaction,
   crossSpaceCommunicationAllowed,
   runAsSystem,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import { MessagingSendError } from "./chat-sdk-surface.js";
 import { splitOutboundBody } from "./messaging-platforms.js";
 

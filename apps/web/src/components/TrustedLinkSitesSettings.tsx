@@ -1,5 +1,5 @@
+import { Button } from "@labradoodle/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Button } from "@rakazo/ui-web";
 import { useState } from "react";
 import { useTrustedLinkSites } from "../lib/trusted-link-sites";
 import { errorText } from "../lib/user-error";

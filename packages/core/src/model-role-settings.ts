@@ -3,8 +3,8 @@ import type {
   ModelRoleChoice,
   ModelRoleSettings,
   ModelRoleView,
-} from "@rakazo/contracts";
-import { modelRoleChoiceKey } from "@rakazo/contracts";
+} from "@labradoodle/contracts";
+import { modelRoleChoiceKey } from "@labradoodle/contracts";
 
 export interface ModelRoleTransport {
   load(): Promise<ModelRoleView>;

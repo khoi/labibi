@@ -3,10 +3,10 @@ import type {
   ArtifactStore,
   JobPublisher,
   MediaGenerationProvider,
-} from "@rakazo/adapter-kit";
-import { mediaPollJob, runContinueJob } from "@rakazo/adapter-kit";
-import type { Prisma, PrismaClient, ThreadEvents } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/adapter-kit";
+import { mediaPollJob, runContinueJob } from "@labradoodle/adapter-kit";
+import type { Prisma, PrismaClient, ThreadEvents } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import { generateMediaFromTool, MEDIA_JOB_KIND } from "./media-generation-tools.js";
 import { persistMessageInTransaction } from "./run-messages.js";
 import { attachWorkspaceFileToThread } from "./thread-artifacts.js";

@@ -10,13 +10,13 @@ import type {
   StreamedPortableFile,
   WorkspaceDirectoryRequest,
   WorkspaceExportLimits,
-} from "@rakazo/adapter-kit";
-import { WorkspaceTooLargeError } from "@rakazo/adapter-kit";
-import type { ComputerMode } from "@rakazo/contracts";
-import { parseScreenLeaseId } from "@rakazo/core";
-import { browserProfilePathForScreen } from "@rakazo/core/node/desktop-runtime";
-import type { PrismaClient } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/adapter-kit";
+import { WorkspaceTooLargeError } from "@labradoodle/adapter-kit";
+import type { ComputerMode } from "@labradoodle/contracts";
+import { parseScreenLeaseId } from "@labradoodle/core";
+import { browserProfilePathForScreen } from "@labradoodle/core/node/desktop-runtime";
+import type { PrismaClient } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import { normalizeWorkspacePath, teamBotWorkspaceDirectory } from "./computer-support.js";
 import { createStagingDirectory, LocalAgentHomeStore } from "./home.js";
 import { isSandboxDamagedError } from "./sandbox-errors.js";

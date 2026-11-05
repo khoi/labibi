@@ -1,5 +1,5 @@
-import type { SpeechLocale } from "@rakazo/core";
-import { speechLocaleTag } from "@rakazo/core";
+import type { SpeechLocale } from "@labradoodle/core";
+import { speechLocaleTag } from "@labradoodle/core";
 import { File, Paths } from "expo-file-system";
 import { getLocales } from "expo-localization";
 import type * as ExpoSpeech from "expo-speech";

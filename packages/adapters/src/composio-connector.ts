@@ -12,10 +12,10 @@ import type {
   ConnectorProvider,
   ConnectorTool,
   ManagedConnectorProvider,
-} from "@rakazo/adapter-kit";
-import { ConnectorAuthUnavailableError } from "@rakazo/adapter-kit";
-import { humanizeToolName } from "@rakazo/core";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/adapter-kit";
+import { ConnectorAuthUnavailableError } from "@labradoodle/adapter-kit";
+import { humanizeToolName } from "@labradoodle/core";
+import { getLogger } from "@labradoodle/logging";
 import { COMPOSIO_MULTI_EXECUTE_TOOL, composioToolBatch } from "./composio-batch.js";
 import type { ToolkitDirectoryEntry } from "./composio-catalog-cache.js";
 import {

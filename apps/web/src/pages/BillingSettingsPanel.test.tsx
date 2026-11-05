@@ -16,7 +16,7 @@ vi.mock("@lingui/react/macro", () => {
     ),
   };
 });
-vi.mock("@rakazo/ui-web", () => {
+vi.mock("@labradoodle/ui-web", () => {
   const Button = ({
     variant: _variant,
     size: _size,

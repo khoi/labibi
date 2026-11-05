@@ -10,7 +10,7 @@ import type {
   ModelRoleSettings as Settings,
   SettingsScope,
   ThinkingLevel,
-} from "@rakazo/contracts";
+} from "@labradoodle/contracts";
 import {
   backupChoiceKey,
   canonicalPiProviderId,
@@ -20,8 +20,8 @@ import {
   modelRoleChoiceKey,
   OPENAI_COMPATIBLE_PROVIDER_ID,
   withConnectionName,
-} from "@rakazo/contracts";
-import { createModelRoleSettings, modelRoleListPatch } from "@rakazo/core";
+} from "@labradoodle/contracts";
+import { createModelRoleSettings, modelRoleListPatch } from "@labradoodle/core";
 import type { Href } from "expo-router";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";

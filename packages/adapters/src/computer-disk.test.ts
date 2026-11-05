@@ -3,8 +3,8 @@ import type {
   ComputerRef,
   ProcessEvent,
   SandboxProvider,
-} from "@rakazo/adapter-kit";
-import type { PrismaClient } from "@rakazo/db";
+} from "@labradoodle/adapter-kit";
+import type { PrismaClient } from "@labradoodle/db";
 import { describe, expect, it, vi } from "vitest";
 import {
   diskNoteInstruction,

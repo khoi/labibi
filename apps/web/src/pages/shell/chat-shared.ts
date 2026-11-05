@@ -1,6 +1,6 @@
+import type { ThreadMessage } from "@labradoodle/contracts";
+import { previewMessageText as previewText } from "@labradoodle/core";
 import { t } from "@lingui/core/macro";
-import type { ThreadMessage } from "@rakazo/contracts";
-import { previewMessageText as previewText } from "@rakazo/core";
 
 export type PendingAttachment = {
   id: string;

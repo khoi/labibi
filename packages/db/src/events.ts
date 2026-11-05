@@ -1,4 +1,4 @@
-import type { ProductAnalytics, RealtimeFanout } from "@rakazo/adapter-kit";
+import type { ProductAnalytics, RealtimeFanout } from "@labradoodle/adapter-kit";
 import type {
   BotSecretDestination,
   ChatAlert,
@@ -6,7 +6,7 @@ import type {
   MessageBlock,
   OneTimeCodeTarget,
   ProductEvent,
-} from "@rakazo/contracts";
+} from "@labradoodle/contracts";
 import {
   AnalyticsTrigger,
   BOT_INSTRUCTIONS_MAX_LENGTH,
@@ -17,7 +17,7 @@ import {
   MessageBlock as MessageBlockSchema,
   normalizeOneTimeCode,
   ThreadActivityPayloadSchema,
-} from "@rakazo/contracts";
+} from "@labradoodle/contracts";
 import {
   ACTIVE_RUN_STATUSES,
   blocksToAgentHistoryText,
@@ -37,10 +37,10 @@ import {
   SITE_SENDING_TOOLS,
   STEERING_CONTINUATION_PROMPT,
   sanitizeJsonValue,
-} from "@rakazo/core";
-import { urlSite } from "@rakazo/core/egress";
-import { approvalEffectKey } from "@rakazo/core/node/approval-effect-key";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/core";
+import { urlSite } from "@labradoodle/core/egress";
+import { approvalEffectKey } from "@labradoodle/core/node/approval-effect-key";
+import { getLogger } from "@labradoodle/logging";
 import { saveApprovalRule, storedBatchActions } from "./approval-settings.js";
 import { cancelRunsInTransaction } from "./cancel-runs.js";
 import { createChatAlerts } from "./chat-alerts.js";

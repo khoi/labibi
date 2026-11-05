@@ -1,12 +1,10 @@
-import { i18n } from "@lingui/core";
-import { useLingui } from "@lingui/react/macro";
 import type {
   BotAvatarSet,
   LoginFieldInput,
   MessageReaction,
   ThreadMessage,
-} from "@rakazo/contracts";
-import type { ChildBotBlock, FoldedTranscript } from "@rakazo/core";
+} from "@labradoodle/contracts";
+import type { ChildBotBlock, FoldedTranscript } from "@labradoodle/core";
 import {
   expandPeerReplies,
   groupVoiceChats,
@@ -19,9 +17,11 @@ import {
   timeSeparatorIds,
   unreadDividerMessageId,
   voiceChatHoldsMessage,
-} from "@rakazo/core";
-import type { GroupAvatarMember } from "@rakazo/ui-web";
-import { Button, cn, Spinner } from "@rakazo/ui-web";
+} from "@labradoodle/core";
+import type { GroupAvatarMember } from "@labradoodle/ui-web";
+import { Button, cn, Spinner } from "@labradoodle/ui-web";
+import { i18n } from "@lingui/core";
+import { useLingui } from "@lingui/react/macro";
 import { ArrowDown } from "lucide-react";
 import type { CSSProperties, RefObject } from "react";
 import {

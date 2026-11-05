@@ -1,6 +1,10 @@
-import type { DurableMemoryScope, SecretStore, SemanticMemoryProvider } from "@rakazo/adapter-kit";
-import type { PrismaClient } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+import type {
+  DurableMemoryScope,
+  SecretStore,
+  SemanticMemoryProvider,
+} from "@labradoodle/adapter-kit";
+import type { PrismaClient } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import {
   createHonchoProvider,
   HONCHO_PROVIDER_ID,

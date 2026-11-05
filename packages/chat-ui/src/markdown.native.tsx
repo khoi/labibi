@@ -1,5 +1,11 @@
-import type { ColorTokens, ResolvedAppearance } from "@rakazo/ui-tokens";
-import { darkTokens, fontWeight, MAX_FONT_SCALE, pageIconBars, typeScale } from "@rakazo/ui-tokens";
+import type { ColorTokens, ResolvedAppearance } from "@labradoodle/ui-tokens";
+import {
+  darkTokens,
+  fontWeight,
+  MAX_FONT_SCALE,
+  pageIconBars,
+  typeScale,
+} from "@labradoodle/ui-tokens";
 import type {
   ASTNode,
   MarkdownStyleMap,

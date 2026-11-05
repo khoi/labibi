@@ -1,15 +1,15 @@
-import { ORPCError } from "@orpc/server";
-import type { SecretStore } from "@rakazo/adapter-kit";
+import type { SecretStore } from "@labradoodle/adapter-kit";
 import {
   classifyMemoryProviderSettings,
   MemoryProviderPrivateEndpointRequiredError,
   memoryProviderRequiresPrivateEndpoint,
   prepareMemoryProviderConnection,
   toStringRecord,
-} from "@rakazo/adapters";
-import type { Actor } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
-import { findSpaceMemoryConfig, Prisma } from "@rakazo/db";
+} from "@labradoodle/adapters";
+import type { Actor } from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
+import { findSpaceMemoryConfig, Prisma } from "@labradoodle/db";
+import { ORPCError } from "@orpc/server";
 import { withSerializableRetry } from "./serializable-retry.js";
 
 export interface MemoryProviderConfigDeps {

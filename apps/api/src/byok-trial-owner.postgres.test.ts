@@ -1,10 +1,10 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { ArtifactStore, JobPublisher } from "@rakazo/adapter-kit";
-import { BillingEmulator } from "@rakazo/adapters";
-import type { Actor } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
+import type { ArtifactStore, JobPublisher } from "@labradoodle/adapter-kit";
+import { BillingEmulator } from "@labradoodle/adapters";
+import type { Actor } from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
 import {
   asSystem,
   billingAccountForOrganization,
@@ -13,7 +13,7 @@ import {
   FREE_MONTH_DAYS,
   keepOrganizationTrialUse,
   ownerHadTrial,
-} from "@rakazo/db";
+} from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { deleteOrganization } from "./account-deletion.js";
 import { createBillingService, TRIAL_DAYS } from "./billing.js";

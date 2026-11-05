@@ -1,8 +1,11 @@
 import { createHash, timingSafeEqual } from "node:crypto";
-import { hasActiveComputerControl } from "@rakazo/adapters";
-import { openScreenCapability, SCREEN_TARGET_ENDPOINT } from "@rakazo/core/node/screen-capability";
-import type { PrismaClient } from "@rakazo/db";
-import { runAsSystem } from "@rakazo/db";
+import { hasActiveComputerControl } from "@labradoodle/adapters";
+import {
+  openScreenCapability,
+  SCREEN_TARGET_ENDPOINT,
+} from "@labradoodle/core/node/screen-capability";
+import type { PrismaClient } from "@labradoodle/db";
+import { runAsSystem } from "@labradoodle/db";
 import type { Hono } from "hono";
 import { requestBodyLimit } from "./request-body-limit.js";
 

@@ -3,8 +3,8 @@ import { link, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import type { Exec, V1Pod } from "@kubernetes/client-node";
-import type { AdapterContext, ComputerRef, ProcessEvent } from "@rakazo/adapter-kit";
-import { shellQuote } from "@rakazo/core/node/desktop-runtime";
+import type { AdapterContext, ComputerRef, ProcessEvent } from "@labradoodle/adapter-kit";
+import { shellQuote } from "@labradoodle/core/node/desktop-runtime";
 import { describe, expect, it, vi } from "vitest";
 import { encodeTarEntry, TarReader } from "./exec-computer.js";
 import type { KubernetesSandboxSdk } from "./kubernetes-sandbox.js";
@@ -103,7 +103,7 @@ describe("KubernetesSandboxProvider", () => {
               executable: command[write + 2] === "700",
             });
           } else {
-            expect(command).toContain("rakazo-export-list");
+            expect(command).toContain("labradoodle-export-list");
             exportedNames = content.toString().split("\0").filter(Boolean);
           }
           finish();

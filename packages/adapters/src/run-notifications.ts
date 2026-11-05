@@ -1,15 +1,15 @@
-import type { NotificationMessage } from "@rakazo/adapter-kit";
-import type { MessageBlock } from "@rakazo/contracts";
+import type { NotificationMessage } from "@labradoodle/adapter-kit";
+import type { MessageBlock } from "@labradoodle/contracts";
 import {
   isBackgroundRunTrigger,
   plainTextFromMarkdown,
   redactSecrets,
   truncatedPlainText,
   truncatePlainText,
-} from "@rakazo/core";
-import type { PrismaClient, ThreadEvents } from "@rakazo/db";
-import { countUnreadInboxChats } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/core";
+import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
+import { countUnreadInboxChats } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import type { ExecutorDeps } from "./executor-deps.js";
 import { notificationIdentity } from "./notification-identity.js";
 

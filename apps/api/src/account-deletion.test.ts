@@ -1,14 +1,14 @@
-import type * as Db from "@rakazo/db";
+import type * as Db from "@labradoodle/db";
 import {
   claimOrganizationForDeletion,
   deleteClaimedSpace,
   recordAuditEvent,
   setOrganizationDeletionLease,
-} from "@rakazo/db";
+} from "@labradoodle/db";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { deleteOrganization } from "./account-deletion.js";
 
-vi.mock("@rakazo/db", async (importOriginal) => ({
+vi.mock("@labradoodle/db", async (importOriginal) => ({
   ...(await importOriginal<typeof Db>()),
   claimOrganizationForDeletion: vi.fn(),
   keepOrganizationTrialUse: vi.fn(async () => undefined),

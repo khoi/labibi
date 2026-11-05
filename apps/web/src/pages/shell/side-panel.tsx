@@ -1,12 +1,12 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type {
   AgentSkillCatalogEntry,
   Bot,
   ComputerStatus,
   Group,
   ThreadSnapshot,
-} from "@rakazo/contracts";
-import { Button } from "@rakazo/ui-web";
+} from "@labradoodle/contracts";
+import { Button } from "@labradoodle/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { X } from "lucide-react";
 import type { ComponentProps, Dispatch, ReactNode, SetStateAction } from "react";
 import { ComputerMaintenanceActions } from "../../components/ComputerMaintenanceActions";

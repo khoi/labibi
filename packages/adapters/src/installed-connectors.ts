@@ -6,9 +6,9 @@ import type {
   ConnectorProvider,
   ConnectorTool,
   SecretStore,
-} from "@rakazo/adapter-kit";
-import type { PrismaClient } from "@rakazo/db";
-import { availableInSpace, itemSecretIn } from "@rakazo/db";
+} from "@labradoodle/adapter-kit";
+import type { PrismaClient } from "@labradoodle/db";
+import { availableInSpace, itemSecretIn } from "@labradoodle/db";
 import { parse as parseYaml } from "yaml";
 import { z } from "zod";
 import {

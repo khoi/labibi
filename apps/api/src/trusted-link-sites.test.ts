@@ -1,6 +1,6 @@
+import type { Actor } from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
 import { createRouterClient } from "@orpc/server";
-import type { Actor } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
 import { describe, expect, it } from "vitest";
 import type { RouterDeps } from "./router.js";
 import { createRouter } from "./router.js";

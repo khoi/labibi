@@ -1,10 +1,16 @@
-import type { Board, Ticket, TicketComment, TicketPriority, TicketStatus } from "@rakazo/contracts";
+import type {
+  Board,
+  Ticket,
+  TicketComment,
+  TicketPriority,
+  TicketStatus,
+} from "@labradoodle/contracts";
 import {
   parseTicketRef,
   TicketPrioritySchema,
   TicketStatusSchema,
   ticketRef,
-} from "@rakazo/contracts";
+} from "@labradoodle/contracts";
 import type {
   Board as BoardRow,
   Prisma,

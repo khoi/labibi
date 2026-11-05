@@ -8,8 +8,10 @@ import {
 } from "./src/agent-content.js";
 
 const VARY_HEADER = "Accept, Accept-Encoding";
-const APEX_ORIGIN = "https://rakazo.com";
-const WWW_HOST = "www.rakazo.com";
+const APEX_ORIGIN = "https://labradoodle.com";
+const REDIRECT_HOSTS = new Set(["www.labradoodle.com", "rakazo.com", "www.rakazo.com"]);
+const LEGACY_BLOG_PATH = "/blog/openclaw-vs-hermes-vs-rakazo/";
+const BLOG_PATH = "/blog/openclaw-vs-hermes-vs-labradoodle/";
 
 export const config = {
   matcher: ["/((?!api|_astro|.*\\..*).*)", "/sitemap.xml"],
@@ -25,8 +27,9 @@ function permanentRedirect(location: string): Response {
 export default function middleware(request: Request): Response {
   const url = new URL(request.url);
 
-  if (url.hostname.toLowerCase() === WWW_HOST) {
-    const destination = new URL(`${url.pathname}${url.search}`, APEX_ORIGIN);
+  if (REDIRECT_HOSTS.has(url.hostname.toLowerCase()) || url.pathname === LEGACY_BLOG_PATH) {
+    const pathname = url.pathname === LEGACY_BLOG_PATH ? BLOG_PATH : url.pathname;
+    const destination = new URL(`${pathname}${url.search}`, APEX_ORIGIN);
     return permanentRedirect(destination.toString());
   }
 

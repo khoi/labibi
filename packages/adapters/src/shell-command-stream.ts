@@ -1,5 +1,5 @@
-import type { ProcessEvent } from "@rakazo/adapter-kit";
-import { redactSecrets } from "@rakazo/core";
+import type { ProcessEvent } from "@labradoodle/adapter-kit";
+import { redactSecrets } from "@labradoodle/core";
 import { redactShellStreams } from "./agent-environment.js";
 import { automated } from "./automated-messages.js";
 import { shortenPlainText } from "./context-selection.js";

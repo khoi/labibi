@@ -1,5 +1,5 @@
+import type { TicketPriority } from "@labradoodle/contracts";
 import { useLingui } from "@lingui/react/macro";
-import type { TicketPriority } from "@rakazo/contracts";
 import { useMemo } from "react";
 
 export function useTicketPriorityLabels(): Record<TicketPriority, string> {

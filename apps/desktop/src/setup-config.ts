@@ -1,13 +1,13 @@
 import { createHash } from "node:crypto";
-import type { DesktopSetup, DesktopStackProbeResponse } from "@rakazo/contracts";
-import { parseServerHeaders } from "@rakazo/contracts";
-import { isLoopbackHost, isPrivateNetworkHost } from "@rakazo/contracts/network-host";
+import type { DesktopSetup, DesktopStackProbeResponse } from "@labradoodle/contracts";
+import { parseServerHeaders } from "@labradoodle/contracts";
+import { isLoopbackHost, isPrivateNetworkHost } from "@labradoodle/contracts/network-host";
 import { t } from "./i18n.js";
 
 /** Managed desktop origin; development keeps its usual web/API ports. */
 export const DEFAULT_LOCAL_WEB_URL = "http://127.0.0.1:45173";
-/** Hosted Rakazo; setup saves it as an `existing` server so it opens like any other. */
-export const RAKAZO_CLOUD_URL = "https://app.rakazo.com";
+/** Hosted Labradoodle; setup saves it as an `existing` server so it opens like any other. */
+export const RAKAZO_CLOUD_URL = "https://app.labradoodle.com";
 export const PROBE_RESPONSE_LIMIT_BYTES = 64 * 1024;
 
 export const SETUP_FILE_NAME = "setup.json";
@@ -19,9 +19,9 @@ export type StartupTarget =
 const SCHEME = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//;
 
 /**
- * Accepts what a person would actually type ("localhost:5173", "rakazo.example.com")
+ * Accepts what a person would actually type ("localhost:5173", "labradoodle.example.com")
  * and returns a canonical http(s) origin, or null when the input can never
- * securely address a Rakazo server.
+ * securely address a Labradoodle server.
  */
 export function normalizeServerUrl(input: string): string | null {
   const trimmed = input.trim();
@@ -46,7 +46,7 @@ export function normalizeServerUrl(input: string): string | null {
   // Public login cookies and API traffic must never cross a cleartext connection.
   if (url.protocol === "http:" && !isPrivateNetworkHost(url.hostname)) return null;
 
-  // Rakazo serves its renderer, RPC, and auth routes from one origin. Keeping a
+  // Labradoodle serves its renderer, RPC, and auth routes from one origin. Keeping a
   // user-supplied path would make the setup probe and the loaded app disagree.
   return url.origin;
 }
@@ -176,7 +176,7 @@ export function servesBundledRenderer(targetUrl: string, managedLocalStack: bool
   }
 }
 
-/** Each Rakazo origin gets its own persistent cookie and storage partition. */
+/** Each Labradoodle origin gets its own persistent cookie and storage partition. */
 export function sessionPartitionForServerUrl(targetUrl: string): string | null {
   try {
     const url = new URL(targetUrl);
@@ -199,7 +199,7 @@ export function safeExternalUrl(targetUrl: string): string | null {
   }
 }
 
-export function isRakazoHealth(value: unknown): boolean {
+export function isLabradoodleHealth(value: unknown): boolean {
   if (typeof value !== "object" || value === null) return false;
   const json = (value as { json?: unknown }).json;
   return (

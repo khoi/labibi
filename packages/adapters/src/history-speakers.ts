@@ -1,6 +1,6 @@
-import type { MessageBlock } from "@rakazo/contracts";
-import { botMessageContext } from "@rakazo/core";
-import type { PrismaClient } from "@rakazo/db";
+import type { MessageBlock } from "@labradoodle/contracts";
+import { botMessageContext } from "@labradoodle/core";
+import type { PrismaClient } from "@labradoodle/db";
 
 /** What the model reads for the one human of a group thread: never their real name. */
 export const USER_SPEAKER = "User";

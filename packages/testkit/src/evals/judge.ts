@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import type { AgentRunModel, AgentRunRequest, AgentRuntime } from "@rakazo/adapter-kit";
-import { parseModelJson } from "@rakazo/adapters/model-json";
+import type { AgentRunModel, AgentRunRequest, AgentRuntime } from "@labradoodle/adapter-kit";
+import { parseModelJson } from "@labradoodle/adapters/model-json";
 import { z } from "zod";
 
 export type JudgeInput = { rubric: string; evidence: unknown };

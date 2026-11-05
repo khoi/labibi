@@ -1,5 +1,5 @@
-import { SHARED_PAGE_PATH_PREFIX } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
+import { SHARED_PAGE_PATH_PREFIX } from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
 import type { Context, Hono } from "hono";
 import { readSharedPage } from "./pages.js";
 import { throttleKey, windowCounter } from "./window-counter.js";

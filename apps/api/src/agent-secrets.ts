@@ -1,20 +1,20 @@
-import { ORPCError } from "@orpc/server";
-import type { SecretStore } from "@rakazo/adapter-kit";
+import type { SecretStore } from "@labradoodle/adapter-kit";
 import {
   forgetBotSecret,
   getBotSecretMetadata,
   listBotSecretMetadata,
   storeBotSecret,
-} from "@rakazo/adapters";
-import type { Actor } from "@rakazo/contracts";
+} from "@labradoodle/adapters";
+import type { Actor } from "@labradoodle/contracts";
 import {
   AGENT_SECRET_NAME_PATTERN,
   BotSecretAuth,
   BotSecretName,
   commandVariableName,
   commandVariableProblem,
-} from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
+} from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
+import { ORPCError } from "@orpc/server";
 import { mapBotSecretInputError } from "./routes/bots.js";
 
 type AgentSecretDeps = {

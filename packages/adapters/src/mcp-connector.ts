@@ -1,6 +1,26 @@
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type {
+  AdapterContext,
+  ConnectorCall,
+  ConnectorEvent,
+  ConnectorProvider,
+  ConnectorTool,
+  SecretStore,
+} from "@labradoodle/adapter-kit";
+import { SecretStoreUnavailableError } from "@labradoodle/adapter-kit";
+import type { McpOAuthEnvField } from "@labradoodle/contracts";
+import {
+  isLocalhostOrLoopbackIp,
+  mcpOAuthEnvReferences,
+  resolveMcpOAuthEnv,
+  resolveMcpOAuthFileTemplate,
+} from "@labradoodle/contracts";
+import type { McpServer, PrismaClient, ThreadEvents } from "@labradoodle/db";
+import { availableInSpace, itemSecretIn } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
+import { sanitizedError } from "@labradoodle/logging/monitoring";
 import { UnauthorizedError } from "@modelcontextprotocol/sdk/client/auth.js";
 import { StreamableHTTPError } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import {
@@ -10,26 +30,6 @@ import {
   TooManyRequestsError,
 } from "@modelcontextprotocol/sdk/server/auth/errors.js";
 import { McpError } from "@modelcontextprotocol/sdk/types.js";
-import type {
-  AdapterContext,
-  ConnectorCall,
-  ConnectorEvent,
-  ConnectorProvider,
-  ConnectorTool,
-  SecretStore,
-} from "@rakazo/adapter-kit";
-import { SecretStoreUnavailableError } from "@rakazo/adapter-kit";
-import type { McpOAuthEnvField } from "@rakazo/contracts";
-import {
-  isLocalhostOrLoopbackIp,
-  mcpOAuthEnvReferences,
-  resolveMcpOAuthEnv,
-  resolveMcpOAuthFileTemplate,
-} from "@rakazo/contracts";
-import type { McpServer, PrismaClient, ThreadEvents } from "@rakazo/db";
-import { availableInSpace, itemSecretIn } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
-import { sanitizedError } from "@rakazo/logging/monitoring";
 import { catalogToolPrefix } from "./approval-effect.js";
 import { composioToolBatch } from "./composio-batch.js";
 import {

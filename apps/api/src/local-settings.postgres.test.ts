@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { LOCAL_COMPUTER_HOST_PATH, LOCAL_SETTINGS_TOKEN_HEADER } from "@rakazo/contracts";
-import { asSystem, bootstrapUserSpace, createDb, runAsSystem } from "@rakazo/db";
+import { LOCAL_COMPUTER_HOST_PATH, LOCAL_SETTINGS_TOKEN_HEADER } from "@labradoodle/contracts";
+import { asSystem, bootstrapUserSpace, createDb, runAsSystem } from "@labradoodle/db";
 import { Hono } from "hono";
 import { expect, it } from "vitest";
 import { mountLocalComputerHost } from "./local-settings.js";

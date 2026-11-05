@@ -1,6 +1,6 @@
-import type { AppBootstrap } from "@rakazo/contracts";
-import { ATTACHMENT_MAX_BYTES, attachmentMaxBytes } from "@rakazo/contracts";
-import { displayIdentityResult } from "@rakazo/core";
+import type { AppBootstrap } from "@labradoodle/contracts";
+import { ATTACHMENT_MAX_BYTES, attachmentMaxBytes } from "@labradoodle/contracts";
+import { displayIdentityResult } from "@labradoodle/core";
 import { initialBootstrapTarget } from "./bootstrap-target";
 import { identityLabels } from "./identity-display";
 import { markOnce } from "./performance";

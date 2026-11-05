@@ -1,11 +1,11 @@
-import type { AdapterContext, PurchaseSnapshot, PurchaseStatus } from "@rakazo/adapter-kit";
+import type { AdapterContext, PurchaseSnapshot, PurchaseStatus } from "@labradoodle/adapter-kit";
 import {
   PaymentWalletDisconnected,
   PaymentWalletRequestRejected,
   runContinueJob,
-} from "@rakazo/adapter-kit";
-import type { Purchase } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/adapter-kit";
+import type { Purchase } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import type { PurchaseDeps } from "./purchase-service.js";
 import {
   enqueuePurchasePoll,

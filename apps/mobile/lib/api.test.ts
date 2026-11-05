@@ -2,12 +2,12 @@ import { getArtifactById } from "./artifacts";
 
 vi.mock("./ai-consent", () => ({ promptAiConsent: vi.fn() }));
 
-import type { RpcInput } from "@rakazo/contracts";
+import type { RpcInput } from "@labradoodle/contracts";
 import {
   dismissableAskMessageIds,
   isServerUnreachable,
   withLiveStreamingProgress,
-} from "@rakazo/core";
+} from "@labradoodle/core";
 import * as SecureStore from "expo-secure-store";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { promptAiConsent } from "./ai-consent";

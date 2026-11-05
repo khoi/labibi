@@ -4,9 +4,9 @@ import {
   createAgentHomeStore,
   ObjectAgentHomeStore,
   unwrapEnvFromKeyManager,
-} from "@rakazo/adapters";
-import { loadRootEnv } from "@rakazo/core/node/load-root-env";
-import { createDb } from "@rakazo/db";
+} from "@labradoodle/adapters";
+import { loadRootEnv } from "@labradoodle/core/node/load-root-env";
+import { createDb } from "@labradoodle/db";
 
 loadRootEnv();
 await unwrapEnvFromKeyManager();

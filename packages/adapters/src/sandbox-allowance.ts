@@ -1,7 +1,7 @@
-import type { ComputerRef, SandboxProvider } from "@rakazo/adapter-kit";
-import { SANDBOX_HOURLY_COST_MICROS } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
-import { MICROS_PER_DOLLAR, sandboxAllowancePlan, sandboxRunHours } from "@rakazo/db";
+import type { ComputerRef, SandboxProvider } from "@labradoodle/adapter-kit";
+import { SANDBOX_HOURLY_COST_MICROS } from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
+import { MICROS_PER_DOLLAR, sandboxAllowancePlan, sandboxRunHours } from "@labradoodle/db";
 
 type AllowanceDeps = { prisma: PrismaClient; sandbox: SandboxProvider };
 

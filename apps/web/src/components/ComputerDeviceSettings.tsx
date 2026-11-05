@@ -1,6 +1,6 @@
+import type { LabradoodleDesktop, UserDeviceSummary } from "@labradoodle/contracts";
+import { Button, Label, Switch } from "@labradoodle/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { RakazoDesktop, UserDeviceSummary } from "@rakazo/contracts";
-import { Button, Label, Switch } from "@rakazo/ui-web";
 import { Trash2 } from "lucide-react";
 import { useCallback, useEffect, useId, useState } from "react";
 import { desktopBridge } from "../lib/desktop";
@@ -12,7 +12,7 @@ type ThisComputer = { allowed: boolean; setAllowed: (allowed: boolean) => Promis
 
 /** A remote server pairs this computer; the app-managed local stack runs bots on it directly. */
 async function thisComputerAccess(
-  desktop: RakazoDesktop | undefined,
+  desktop: LabradoodleDesktop | undefined,
 ): Promise<ThisComputer | null> {
   const device = desktop?.device;
   const paired = await device?.state().catch(() => null);

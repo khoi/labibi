@@ -1,4 +1,4 @@
-import { displayName } from "@rakazo/core";
+import { displayName } from "@labradoodle/core";
 export type VoiceCallStatus = { ready: boolean; transcribe: boolean };
 
 export type VoiceCallPlan =

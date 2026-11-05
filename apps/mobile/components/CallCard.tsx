@@ -1,5 +1,5 @@
-import { accountDisplay } from "@rakazo/core";
-import { typeScale } from "@rakazo/ui-tokens";
+import { accountDisplay } from "@labradoodle/core";
+import { typeScale } from "@labradoodle/ui-tokens";
 import { AudioModule } from "expo-audio";
 import { useKeepAwake } from "expo-keep-awake";
 import { useRouter } from "expo-router";

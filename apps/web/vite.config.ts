@@ -6,9 +6,8 @@ import https from "node:https";
 import net from "node:net";
 import path from "node:path";
 import tls from "node:tls";
-import { lingui } from "@lingui/vite-plugin";
-import type { DesktopStackProbeResponse } from "@rakazo/contracts";
-import { buildIdAt } from "@rakazo/contracts/client-build";
+import type { DesktopStackProbeResponse } from "@labradoodle/contracts";
+import { buildIdAt } from "@labradoodle/contracts/client-build";
 import {
   appContentSecurityPolicy,
   COMPUTER_SCREEN_PREFIX,
@@ -17,11 +16,12 @@ import {
   contentSecurityPolicyFor,
   parseContentSecuritySources,
   parseCrispWebsiteId,
-} from "@rakazo/contracts/content-security-policy";
+} from "@labradoodle/contracts/content-security-policy";
 import {
   safeScreenProxyResponseHeaders,
   stripSensitiveHandshakeHeaders,
-} from "@rakazo/core/node/screen-proxy-response";
+} from "@labradoodle/core/node/screen-proxy-response";
+import { lingui } from "@lingui/vite-plugin";
 import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";

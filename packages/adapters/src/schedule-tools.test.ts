@@ -1,5 +1,5 @@
-import { routineWakeupJob } from "@rakazo/adapter-kit";
-import { ONCE_ROUTINE_CRON } from "@rakazo/core";
+import { routineWakeupJob } from "@labradoodle/adapter-kit";
+import { ONCE_ROUTINE_CRON } from "@labradoodle/core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   cancelScheduleFromTool,

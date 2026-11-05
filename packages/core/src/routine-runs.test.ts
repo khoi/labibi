@@ -1,4 +1,4 @@
-import type { RoutineRun } from "@rakazo/contracts";
+import type { RoutineRun } from "@labradoodle/contracts";
 import { describe, expect, it } from "vitest";
 import {
   formatCompactDuration,

@@ -1,5 +1,5 @@
-import type { MessageBlock } from "@rakazo/contracts";
-import { isToolActivityBlock } from "@rakazo/core";
+import type { MessageBlock } from "@labradoodle/contracts";
+import { isToolActivityBlock } from "@labradoodle/core";
 
 /**
  * Keep mid-turn progress beats short; prefer a few high-signal updates. Mid-turn

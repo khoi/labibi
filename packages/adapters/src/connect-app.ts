@@ -1,12 +1,12 @@
-import type { AdapterContext, ManagedConnectorProvider } from "@rakazo/adapter-kit";
-import type { MessageBlock } from "@rakazo/contracts";
-import { appConnectCard, matchAppCatalog, matchesAppConnection } from "@rakazo/core";
-import type { PrismaClient, ThreadEvents } from "@rakazo/db";
+import type { AdapterContext, ManagedConnectorProvider } from "@labradoodle/adapter-kit";
+import type { MessageBlock } from "@labradoodle/contracts";
+import { appConnectCard, matchAppCatalog, matchesAppConnection } from "@labradoodle/core";
+import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
 import {
   appendEventInTransaction,
   createThreadMessageInTransaction,
   THREAD_LOCK_TRANSACTION_OPTIONS,
-} from "@rakazo/db";
+} from "@labradoodle/db";
 
 const RECENT_MESSAGES = 50;
 

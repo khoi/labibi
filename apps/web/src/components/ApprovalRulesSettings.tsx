@@ -1,13 +1,13 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type {
   ActionApprovalRule,
   ActionAutoReviewSettings,
   ApprovalMode,
   SettingsScope,
-} from "@rakazo/contracts";
-import { humanizeToolName, toolNameFromLabel } from "@rakazo/core";
-import { writeSaved } from "@rakazo/core/query";
-import { Button, Input, ToggleGroup, ToggleGroupItem } from "@rakazo/ui-web";
+} from "@labradoodle/contracts";
+import { humanizeToolName, toolNameFromLabel } from "@labradoodle/core";
+import { writeSaved } from "@labradoodle/core/query";
+import { Button, Input, ToggleGroup, ToggleGroupItem } from "@labradoodle/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";

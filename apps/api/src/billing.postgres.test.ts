@@ -1,8 +1,8 @@
-import type { ProductAnalytics } from "@rakazo/adapter-kit";
-import { BillingEmulator } from "@rakazo/adapters";
-import type { Actor, AnalyticsEvent } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
-import { billingAccountForOrganization, createBillingAccount, createDb } from "@rakazo/db";
+import type { ProductAnalytics } from "@labradoodle/adapter-kit";
+import { BillingEmulator } from "@labradoodle/adapters";
+import type { Actor, AnalyticsEvent } from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
+import { billingAccountForOrganization, createBillingAccount, createDb } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   BILLING_RETURN_PATH,

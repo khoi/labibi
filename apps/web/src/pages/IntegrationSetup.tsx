@@ -1,6 +1,6 @@
+import type { Bot } from "@labradoodle/contracts";
+import { NativeSelect, NativeSelectOption, Spinner } from "@labradoodle/ui-web";
 import { useLingui } from "@lingui/react/macro";
-import type { Bot } from "@rakazo/contracts";
-import { NativeSelect, NativeSelectOption, Spinner } from "@rakazo/ui-web";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IntegrationSetup } from "../components/integrations/IntegrationSetup";

@@ -1,5 +1,5 @@
-import type { SearchHit, SpaceBot, SpaceGroup } from "@rakazo/contracts";
-import { dedupeSearchHits, searchHitListKey } from "@rakazo/core";
+import type { SearchHit, SpaceBot, SpaceGroup } from "@labradoodle/contracts";
+import { dedupeSearchHits, searchHitListKey } from "@labradoodle/core";
 import type { MobileBot, MobileGroup } from "./api";
 import { t } from "./i18n";
 import { filterBots } from "./inbox";

@@ -2,9 +2,9 @@ import { execSync } from "node:child_process";
 import { globSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { createApp } from "@rakazo/api/app";
-import { loadRootEnv } from "@rakazo/core/node/load-root-env";
-import type { runAsSystem as RunAsSystem } from "@rakazo/db";
+import type { createApp } from "@labradoodle/api/app";
+import { loadRootEnv } from "@labradoodle/core/node/load-root-env";
+import type { runAsSystem as RunAsSystem } from "@labradoodle/db";
 import { createModelConnectionFixtureFetch } from "../model-connection-fixture.js";
 import { PluginMarketplaceFixture } from "../plugin-marketplace-fixture.js";
 import { startPostgres } from "./postgres.js";
@@ -115,7 +115,7 @@ async function main() {
     }
     process.env.CI = "1";
 
-    execSync("pnpm --filter @rakazo/db generate", { stdio: "inherit", env: process.env });
+    execSync("pnpm --filter @labradoodle/db generate", { stdio: "inherit", env: process.env });
     execSync("pnpm db:migrate", { stdio: "inherit", env: process.env });
 
     if (integration) {
@@ -171,9 +171,9 @@ async function main() {
       { createApp },
       { drainUnscopedDatabaseAccess, runAsSystem },
     ] = await Promise.all([
-      import("@rakazo/adapters"),
-      import("@rakazo/api/app"),
-      import("@rakazo/db"),
+      import("@labradoodle/adapters"),
+      import("@labradoodle/api/app"),
+      import("@labradoodle/db"),
     ]);
     const { serve } = await import("@hono/node-server");
     const thirdParties = new ThirdPartyConnectorEmulator();
@@ -242,7 +242,7 @@ async function main() {
           "pnpm",
           [
             "--filter",
-            "@rakazo/web",
+            "@labradoodle/web",
             "exec",
             "playwright",
             "test",

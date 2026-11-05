@@ -13,9 +13,9 @@ import type {
   TerminalRequest,
   WorkspaceDirectoryRequest,
   WorkspaceExportLimits,
-} from "@rakazo/adapter-kit";
-import type { PrismaClient } from "@rakazo/db";
-import { runAsSystem } from "@rakazo/db";
+} from "@labradoodle/adapter-kit";
+import type { PrismaClient } from "@labradoodle/db";
+import { runAsSystem } from "@labradoodle/db";
 import { cancelComputerRunWork, probeBackgroundWork, providerKeepsHome } from "./computer-idle.js";
 import {
   computerProviderDescriptor,

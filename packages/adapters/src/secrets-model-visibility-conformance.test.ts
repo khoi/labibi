@@ -1,6 +1,6 @@
-import type { AdapterContext } from "@rakazo/adapter-kit";
-import type { BotSecretDestination } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
+import type { AdapterContext } from "@labradoodle/adapter-kit";
+import type { BotSecretDestination } from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildApprovalAskBlock } from "./approval-ask.js";
 import { redactToolArgsForReview } from "./auto-review.js";

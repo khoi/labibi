@@ -1,15 +1,15 @@
-import { t } from "@lingui/core/macro";
-import { Trans, useLingui } from "@lingui/react/macro";
-import { ChatMarkdown } from "@rakazo/chat-ui/web";
-import type { LoginFieldInput, ThreadMessage } from "@rakazo/contracts";
-import { BOT_INSTRUCTIONS_MAX_LENGTH } from "@rakazo/contracts";
+import { ChatMarkdown } from "@labradoodle/chat-ui/web";
+import type { LoginFieldInput, ThreadMessage } from "@labradoodle/contracts";
+import { BOT_INSTRUCTIONS_MAX_LENGTH } from "@labradoodle/contracts";
 import {
   isApprovalAskBlock,
   isSecretAskBlock,
   resolveAskChoice,
   selectedAskActionLabel,
-} from "@rakazo/core";
-import { Button, Input, Textarea } from "@rakazo/ui-web";
+} from "@labradoodle/core";
+import { Button, Input, Textarea } from "@labradoodle/ui-web";
+import { t } from "@lingui/core/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Check } from "lucide-react";
 import { useState } from "react";
 import type { RpcClient } from "../lib/rpc";

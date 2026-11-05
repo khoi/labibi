@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH, readResponseWithin } from "@rakazo/core";
+import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH, readResponseWithin } from "@labradoodle/core";
 import type { BetterAuthPlugin } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 

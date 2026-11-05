@@ -1,12 +1,12 @@
 export const BRAND_KIT_PATH = "/brand/";
-export const WORDMARK_SVG_PATH = "/brand/kit/rakazo-wordmark.svg";
+export const WORDMARK_SVG_PATH = "/brand/kit/labradoodle-wordmark.svg";
 
 export const BRAND_LOGOS = [
   {
     name: "Logo",
-    file: "/brand/kit/rakazo-logo.png",
-    preview: "/brand/kit/rakazo-logo-preview.webp",
-    format: "PNG · 1712 × 576",
+    file: "/brand/kit/labradoodle-logo.png",
+    preview: "/brand/kit/labradoodle-logo-preview.webp",
+    format: "PNG · 2947 × 576",
   },
   {
     name: "Wordmark",
@@ -16,14 +16,14 @@ export const BRAND_LOGOS = [
   },
   {
     name: "App icon",
-    file: "/brand/kit/rakazo-icon.png",
-    preview: "/brand/kit/rakazo-icon-preview.webp",
+    file: "/brand/kit/labradoodle-icon.png",
+    preview: "/brand/kit/labradoodle-icon-preview.webp",
     format: "PNG · 1024 × 1024",
   },
   {
     name: "Mascot",
-    file: "/brand/kit/rakazo-mascot.png",
-    preview: "/brand/kit/rakazo-mascot-preview.webp",
+    file: "/brand/kit/labradoodle-mascot.png",
+    preview: "/brand/kit/labradoodle-mascot-preview.webp",
     format: "PNG · 700 × 700",
   },
 ] as const;

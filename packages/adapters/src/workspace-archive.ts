@@ -5,8 +5,8 @@ import type {
   PortableFile,
   StreamedPortableFile,
   WorkspaceExportLimits,
-} from "@rakazo/adapter-kit";
-import { WorkspaceTooLargeError } from "@rakazo/adapter-kit";
+} from "@labradoodle/adapter-kit";
+import { WorkspaceTooLargeError } from "@labradoodle/adapter-kit";
 import { normalizeWorkspacePath } from "./computer-support.js";
 
 const BLOCK = 512;

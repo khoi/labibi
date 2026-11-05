@@ -1,7 +1,11 @@
+import type {
+  AgentImportSetupItem,
+  AgentImportSetupState,
+  MessageBlock,
+} from "@labradoodle/contracts";
+import { isRetiredImportSetup } from "@labradoodle/core";
+import { Button } from "@labradoodle/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { AgentImportSetupItem, AgentImportSetupState, MessageBlock } from "@rakazo/contracts";
-import { isRetiredImportSetup } from "@rakazo/core";
-import { Button } from "@rakazo/ui-web";
 import { Check } from "lucide-react";
 import { useEffect, useState } from "react";
 import { BuiCard, SuccessPop } from "../../components/ai/primitives";
@@ -15,7 +19,7 @@ export type ImportSetupTarget =
   | { kind: "routine"; routineId: string };
 
 /**
- * Needs Rakazo cannot check from its own data: what a skill declares, and a program or local
+ * Needs Labradoodle cannot check from its own data: what a skill declares, and a program or local
  * paths a stdio server relies on. Such rows are never shown as done.
  */
 function isVerifiable(item: AgentImportSetupItem): boolean {

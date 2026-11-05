@@ -1,6 +1,6 @@
-import type { Routine, RpcInput } from "@rakazo/contracts";
-import type { CronPreset } from "@rakazo/core";
-import { cronFromPreset, isOneShotRoutineCrons, presetFromCron } from "@rakazo/core";
+import type { Routine, RpcInput } from "@labradoodle/contracts";
+import type { CronPreset } from "@labradoodle/core";
+import { cronFromPreset, isOneShotRoutineCrons, presetFromCron } from "@labradoodle/core";
 import { routineTriggerNames } from "./routine";
 
 /**

@@ -1,18 +1,18 @@
-import type { JobPublisher } from "@rakazo/adapter-kit";
-import { runContinueJob } from "@rakazo/adapter-kit";
+import type { JobPublisher } from "@labradoodle/adapter-kit";
+import { runContinueJob } from "@labradoodle/adapter-kit";
 import {
   ACTIVE_RUN_STATUSES,
   escapePromptData,
   ONCE_ROUTINE_CRON,
   truncatePlainText,
-} from "@rakazo/core";
-import type { Prisma, PrismaClient } from "@rakazo/db";
+} from "@labradoodle/core";
+import type { Prisma, PrismaClient } from "@labradoodle/db";
 import {
   STRATEGIC_INITIATIVE_NONCE_PREFIX,
   spaceHasModelAccess,
   THREAD_LOCK_TRANSACTION_OPTIONS,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import { isUniqueViolation } from "./run-messages.js";
 import { modelCreditBillingEnabled } from "./run-model.js";
 

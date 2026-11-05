@@ -1,11 +1,11 @@
-import type { ThreadMessage } from "@rakazo/contracts";
-import type { ThreadScrollState } from "@rakazo/core";
+import type { ThreadMessage } from "@labradoodle/contracts";
+import type { ThreadScrollState } from "@labradoodle/core";
 import {
   expandPeerReplies,
   foldPeerReplies,
   peerExchangeLines,
   reconcileThreadScrollState,
-} from "@rakazo/core";
+} from "@labradoodle/core";
 import { describe, expect, it } from "vitest";
 import {
   isOwnThreadMessage,

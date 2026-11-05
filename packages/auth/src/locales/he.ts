@@ -1,67 +1,68 @@
 export const HE_MESSAGES: Record<string, string> = {
   "Hi {name},": "היי {name},",
   "Hi there,": "היי,",
-  "Verify your Rakazo email": "אימות כתובת האימייל שלך ב-Rakazo",
+  "Verify your Labradoodle email": "אימות כתובת האימייל שלך ב-Labradoodle",
   "Verify email": "אימות האימייל",
-  "Then return to Rakazo to sign in.": "אחר כך אפשר לחזור ל-Rakazo כדי להתחבר.",
+  "Then return to Labradoodle to sign in.": "אחר כך אפשר לחזור ל-Labradoodle כדי להתחבר.",
   "This link expires in one hour. If you did not register, ignore this email.":
     "הקישור יפוג בעוד שעה. אם לא נרשמת, אפשר להתעלם מהאימייל הזה.",
-  "Your Rakazo sign-in code": "קוד ההתחברות שלך ל-Rakazo",
-  "Enter this code to sign in to Rakazo:": "יש להזין את הקוד הזה כדי להתחבר ל-Rakazo:",
+  "Your Labradoodle sign-in code": "קוד ההתחברות שלך ל-Labradoodle",
+  "Enter this code to sign in to Labradoodle:": "יש להזין את הקוד הזה כדי להתחבר ל-Labradoodle:",
   "This code expires in ten minutes. If you did not request it, ignore this email.":
     "הקוד יפוג בעוד עשר דקות. אם לא ביקשת אותו, אפשר להתעלם מהאימייל הזה.",
-  "Reset your Rakazo password": "איפוס הסיסמה שלך ב-Rakazo",
-  "Reset your Rakazo password:": "איפוס הסיסמה שלך ב-Rakazo:",
+  "Reset your Labradoodle password": "איפוס הסיסמה שלך ב-Labradoodle",
+  "Reset your Labradoodle password:": "איפוס הסיסמה שלך ב-Labradoodle:",
   "Reset password": "איפוס סיסמה",
   "This link expires in one hour. If you did not request this, you can ignore this email.":
     "הקישור יפוג בעוד שעה. אם לא ביקשת זאת, אפשר להתעלם מהאימייל הזה.",
-  "Confirm Rakazo account deletion": "אישור מחיקת החשבון שלך ב-Rakazo",
-  "Enter this code in Rakazo to delete your account:":
-    "יש להזין את הקוד הזה ב-Rakazo כדי למחוק את החשבון שלך:",
+  "Confirm Labradoodle account deletion": "אישור מחיקת החשבון שלך ב-Labradoodle",
+  "Enter this code in Labradoodle to delete your account:":
+    "יש להזין את הקוד הזה ב-Labradoodle כדי למחוק את החשבון שלך:",
   "This code expires in ten minutes. If you did not request deletion, ignore this email.":
     "הקוד יפוג בעוד עשר דקות. אם לא ביקשת למחוק את החשבון, אפשר להתעלם מהאימייל הזה.",
-  "Your Rakazo confirmation code": "קוד האישור שלך ל-Rakazo",
-  "Enter this code in Rakazo to confirm it's you:":
-    "יש להזין את הקוד הזה ב-Rakazo כדי לאשר שזה באמת את/ה:",
-  "Welcome to Rakazo": "ברוכים הבאים ל-Rakazo",
-  "Thanks for signing up for Rakazo.": "תודה שנרשמת ל-Rakazo.",
-  "Rakazo also has apps for": "ל-Rakazo יש גם אפליקציות עבור",
+  "Your Labradoodle confirmation code": "קוד האישור שלך ל-Labradoodle",
+  "Enter this code in Labradoodle to confirm it's you:":
+    "יש להזין את הקוד הזה ב-Labradoodle כדי לאשר שזה באמת את/ה:",
+  "Welcome to Labradoodle": "ברוכים הבאים ל-Labradoodle",
+  "Thanks for signing up for Labradoodle.": "תודה שנרשמת ל-Labradoodle.",
+  "Labradoodle also has apps for": "ל-Labradoodle יש גם אפליקציות עבור",
   "Questions or ideas?": "שאלות או רעיונות?",
   "Join us on Discord": "הצטרפו אלינו ב-Discord",
-  "Rakazo is open source. If you like it,": "Rakazo הוא קוד פתוח. אם הוא מוצא חן בעיניך,",
+  "Labradoodle is open source. If you like it,": "Labradoodle הוא קוד פתוח. אם הוא מוצא חן בעיניך,",
   "a star on GitHub": "כוכב ב-GitHub",
   "helps others find it.": "עוזר לאחרים למצוא אותו.",
   "Want to run it on your own servers?": "רוצה להריץ אותו על השרתים שלך?",
-  "Self-host Rakazo": "אירוח עצמי של Rakazo",
+  "Self-host Labradoodle": "אירוח עצמי של Labradoodle",
   "Have any questions? Reply to this email.": "יש שאלות? אפשר להשיב לאימייל הזה.",
   Unsubscribe: "ביטול המינוי",
   "Invite a friend": "הזמנת חבר",
-  "Invite a friend to Rakazo: they get {weeks} weeks free, and you earn a free month when they start a qualifying subscription with a new card.":
-    "אפשר להזמין חבר ל-Rakazo: הוא מקבל {weeks} שבועות בחינם, ואתם מקבלים חודש חינם כשהוא מתחיל מינוי מתאים עם כרטיס חדש.",
-  "Open Rakazo": "פתיחת Rakazo",
+  "Invite a friend to Labradoodle: they get {weeks} weeks free, and you earn a free month when they start a qualifying subscription with a new card.":
+    "אפשר להזמין חבר ל-Labradoodle: הוא מקבל {weeks} שבועות בחינם, ואתם מקבלים חודש חינם כשהוא מתחיל מינוי מתאים עם כרטיס חדש.",
+  "Open Labradoodle": "פתיחת Labradoodle",
   "and choose Invite friends for your link.": "ובחירה ב״הזמנת חברים״ כדי לקבל את הקישור שלך.",
   "Have any questions? Just reply to this email.": "יש שאלות? פשוט משיבים לאימייל הזה.",
-  "If you're enjoying Rakazo,": "אם Rakazo מוצא חן בעיניך,",
+  "If you're enjoying Labradoodle,": "אם Labradoodle מוצא חן בעיניך,",
   "give us a star on GitHub": "נשמח לכוכב ב-GitHub",
-  "We received your Rakazo plugin": "קיבלנו את הפלאגין שלך ל-Rakazo",
-  "Thanks for submitting a plugin to the Rakazo marketplace.": "תודה ששלחת פלאגין לחנות של Rakazo.",
+  "We received your Labradoodle plugin": "קיבלנו את הפלאגין שלך ל-Labradoodle",
+  "Thanks for submitting a plugin to the Labradoodle marketplace.":
+    "תודה ששלחת פלאגין לחנות של Labradoodle.",
   "We review every submission and will email you when it's done.":
     "אנחנו בודקים כל הגשה ונשלח לך אימייל כשנסיים.",
   "If you did not submit a plugin, ignore this email.":
     "אם לא שלחת פלאגין, אפשר להתעלם מהאימייל הזה.",
-  "{name} is in the Rakazo marketplace": "{name} נמצא בחנות של Rakazo",
-  "Your Rakazo plugin submission: {name}": "הגשת הפלאגין שלך ל-Rakazo: {name}",
-  "{name} is now listed in the Rakazo plugin marketplace.":
-    "{name} מופיע עכשיו בחנות הפלאגינים של Rakazo.",
-  "We couldn't list {name} in the Rakazo plugin marketplace.":
-    "לא הצלחנו לפרסם את {name} בחנות הפלאגינים של Rakazo.",
-  "Confirm your Rakazo page claim": "אשר את בקשת הבעלות על הדף שלך ב-Rakazo",
+  "{name} is in the Labradoodle marketplace": "{name} נמצא בחנות של Labradoodle",
+  "Your Labradoodle plugin submission: {name}": "הגשת הפלאגין שלך ל-Labradoodle: {name}",
+  "{name} is now listed in the Labradoodle plugin marketplace.":
+    "{name} מופיע עכשיו בחנות הפלאגינים של Labradoodle.",
+  "We couldn't list {name} in the Labradoodle plugin marketplace.":
+    "לא הצלחנו לפרסם את {name} בחנות הפלאגינים של Labradoodle.",
+  "Confirm your Labradoodle page claim": "אשר את בקשת הבעלות על הדף שלך ב-Labradoodle",
   "Confirm claim": "אישור הבקשה",
   "We review every claim once it's confirmed and will email you when it's done.":
     "אנחנו בודקים כל בקשה לאחר שהיא מאושרת ונשלח לך אימייל כשנסיים.",
   "This link expires in one day. If you did not claim a page, ignore this email.":
     "הקישור הזה יפוג בעוד יום אחד. אם לא ביקשת בעלות על דף, התעלם מהאימייל הזה.",
-  "Your Rakazo page claim: {name}": "בקשת הבעלות שלך על דף ב-Rakazo: {name}",
+  "Your Labradoodle page claim: {name}": "בקשת הבעלות שלך על דף ב-Labradoodle: {name}",
   "Your changes to the {name} page are approved.": "השינויים שלך בדף {name} אושרו.",
   "We couldn't approve your changes to the {name} page.":
     "לא הצלחנו לאשר את השינויים שלך בדף {name}.",

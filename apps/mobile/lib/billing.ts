@@ -1,5 +1,5 @@
-import type { BillingStatus } from "@rakazo/contracts";
-import { MOBILE_BILLING_CALLBACK_URL } from "@rakazo/contracts";
+import type { BillingStatus } from "@labradoodle/contracts";
+import { MOBILE_BILLING_CALLBACK_URL } from "@labradoodle/contracts";
 import { Linking } from "react-native";
 import { rpc } from "./api";
 

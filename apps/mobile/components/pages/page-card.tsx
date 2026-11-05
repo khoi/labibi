@@ -1,6 +1,6 @@
-import { PageIcon } from "@rakazo/chat-ui/native";
-import type { MessageBlock, PageDetail } from "@rakazo/contracts";
-import { pageCardSuperseded } from "@rakazo/core";
+import { PageIcon } from "@labradoodle/chat-ui/native";
+import type { MessageBlock, PageDetail } from "@labradoodle/contracts";
+import { pageCardSuperseded } from "@labradoodle/core";
 import { useRouter } from "expo-router";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";

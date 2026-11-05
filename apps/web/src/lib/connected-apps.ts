@@ -1,5 +1,5 @@
-import type { Connection, ConnectionCatalogItem } from "@rakazo/contracts";
-import { matchFeaturedConnectorId } from "@rakazo/core";
+import type { Connection, ConnectionCatalogItem } from "@labradoodle/contracts";
+import { matchFeaturedConnectorId } from "@labradoodle/core";
 
 function isFamiliarApp(item: ConnectionCatalogItem) {
   return (

@@ -1,7 +1,7 @@
-import type { AgentRunRequest, ComputerRef } from "@rakazo/adapter-kit";
-import { SandboxRateLimitError, SandboxUnresponsiveError } from "@rakazo/adapter-kit";
-import type { MessageBlock } from "@rakazo/contracts";
-import { createLogger, createTestSink, installLogger } from "@rakazo/logging";
+import type { AgentRunRequest, ComputerRef } from "@labradoodle/adapter-kit";
+import { SandboxRateLimitError, SandboxUnresponsiveError } from "@labradoodle/adapter-kit";
+import type { MessageBlock } from "@labradoodle/contracts";
+import { createLogger, createTestSink, installLogger } from "@labradoodle/logging";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type * as ComputerLifecycleModule from "./computer-lifecycle.js";
 import { createRunExecutor } from "./executor.js";

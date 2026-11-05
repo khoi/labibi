@@ -1,5 +1,5 @@
+import type { ModelCredential } from "@labradoodle/contracts";
 import { plural, t } from "@lingui/core/macro";
-import type { ModelCredential } from "@rakazo/contracts";
 
 type ModelPreflightOutcome =
   | "timeout"

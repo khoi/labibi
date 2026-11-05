@@ -1,14 +1,14 @@
 import type { Socket } from "node:net";
-import { unwrapEnvFromKeyManager } from "@rakazo/adapters";
-import { loadRootEnv } from "@rakazo/core/node/load-root-env";
-import { stopOnShutdownSignals } from "@rakazo/core/node/shutdown-signals";
+import { unwrapEnvFromKeyManager } from "@labradoodle/adapters";
+import { loadRootEnv } from "@labradoodle/core/node/load-root-env";
+import { stopOnShutdownSignals } from "@labradoodle/core/node/shutdown-signals";
 
 loadRootEnv();
 await unwrapEnvFromKeyManager();
 
 import { serve } from "@hono/node-server";
-import { SERVICE_NAMES } from "@rakazo/logging";
-import { createRootLogger } from "@rakazo/logging/axiom";
+import { SERVICE_NAMES } from "@labradoodle/logging";
+import { createRootLogger } from "@labradoodle/logging/axiom";
 import { createApp } from "./app.js";
 import { loadEnv } from "./env.js";
 

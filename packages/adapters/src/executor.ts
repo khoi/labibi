@@ -1,13 +1,17 @@
-import type { AgentRunRequest, ComputerRef, SemanticMemoryProvider } from "@rakazo/adapter-kit";
+import type {
+  AgentRunRequest,
+  ComputerRef,
+  SemanticMemoryProvider,
+} from "@labradoodle/adapter-kit";
 import {
   DEFAULT_CONTEXT_STRATEGY,
   isModelCredentialRejected,
   runContinueJob,
   SandboxUnavailableError,
   SandboxUnresponsiveError,
-} from "@rakazo/adapter-kit";
-import type { MessageBlock, ModelRoleChoice, RunStatus } from "@rakazo/contracts";
-import { disabledBuiltinToolSet } from "@rakazo/contracts";
+} from "@labradoodle/adapter-kit";
+import type { MessageBlock, ModelRoleChoice, RunStatus } from "@labradoodle/contracts";
+import { disabledBuiltinToolSet } from "@labradoodle/contracts";
 import {
   assertTransition,
   botMessageAllowsSilence,
@@ -31,8 +35,8 @@ import {
   renderBotDirectory,
   userRunError,
   userTurnMessageForRun,
-} from "@rakazo/core";
-import type { ThreadEvents } from "@rakazo/db";
+} from "@labradoodle/core";
+import type { ThreadEvents } from "@labradoodle/db";
 import {
   availableInSpace,
   effectiveMemoryScope,
@@ -47,9 +51,9 @@ import {
   settleReleasedTakeoverCards,
   spaceHasModelAccess,
   teamChatRunFromOwner,
-} from "@rakazo/db";
-import { enrichLogContext, getLogger } from "@rakazo/logging";
-import { sanitizedError } from "@rakazo/logging/monitoring";
+} from "@labradoodle/db";
+import { enrichLogContext, getLogger } from "@labradoodle/logging";
+import { sanitizedError } from "@labradoodle/logging/monitoring";
 import { formatAgentEnvironmentInstruction } from "./agent-environment.js";
 import { createApprovedEffectReplayQueue } from "./approval-effect.js";
 import { PARTIAL_REPLY_NOTE } from "./automated-messages.js";
@@ -2043,7 +2047,7 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
           redactSecrets(text, runSecrets),
         );
         // An outage at the computer provider is retried like any setup failure, but is not a
-        // Rakazo bug to report.
+        // Labradoodle bug to report.
         const providerOutage =
           setupError instanceof SandboxUnavailableError ||
           setupError instanceof SandboxUnresponsiveError;

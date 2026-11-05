@@ -1,6 +1,4 @@
 import { hostname } from "node:os";
-import { ORPCError, onError } from "@orpc/server";
-import { RPCHandler } from "@orpc/server/fetch";
 import type {
   AgentContextStrategy,
   AgentRuntime,
@@ -14,7 +12,7 @@ import type {
   RealtimeFanout,
   SandboxProvider,
   TransactionalEmailProvider,
-} from "@rakazo/adapter-kit";
+} from "@labradoodle/adapter-kit";
 import {
   SandboxAllowanceUsedError,
   SandboxDamagedError,
@@ -22,7 +20,7 @@ import {
   SandboxUnavailableError,
   SandboxUnresponsiveError,
   VoiceAccountError,
-} from "@rakazo/adapter-kit";
+} from "@labradoodle/adapter-kit";
 import type {
   ComposioProvider,
   ConnectorRegistry,
@@ -30,7 +28,7 @@ import type {
   PluginTextReader,
   RemoteConnectorDependencies,
   UserDeviceGateway,
-} from "@rakazo/adapters";
+} from "@labradoodle/adapters";
 import {
   applyMessagingOutboundStatus,
   auditLogConfig,
@@ -104,16 +102,16 @@ import {
   userDeviceInternalAddress,
   verifyModelServesAgents,
   withSecretPersistence,
-} from "@rakazo/adapters";
-import { createAuth, isBlockedAuthPath, loopbackTwinOrigins } from "@rakazo/auth";
-import type { Actor, AuthCapabilities } from "@rakazo/contracts";
+} from "@labradoodle/adapters";
+import { createAuth, isBlockedAuthPath, loopbackTwinOrigins } from "@labradoodle/auth";
+import type { Actor, AuthCapabilities } from "@labradoodle/contracts";
 import {
   isLocalhostOrLoopbackIp,
   PLUGIN_SUBMISSIONS_PATH,
   SERVER_BUILD_HEADER,
-} from "@rakazo/contracts";
-import { encryptionKeyWarning, signupPolicyFromEnv } from "@rakazo/core";
-import type { Pool, PrismaClient } from "@rakazo/db";
+} from "@labradoodle/contracts";
+import { encryptionKeyWarning, signupPolicyFromEnv } from "@labradoodle/core";
+import type { Pool, PrismaClient } from "@labradoodle/db";
 import {
   configureProviderTransactionPool,
   createBoardEvents,
@@ -134,17 +132,19 @@ import {
   runAsSystem,
   securityEventRetentionDays,
   verifyContentKeys,
-} from "@rakazo/db";
-import type { Logger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import type { Logger } from "@labradoodle/logging";
 import {
   createServiceLogger,
   enrichLogContext,
   getLogger,
   installLogger,
   SERVICE_NAMES,
-} from "@rakazo/logging";
-import { markExpectedFailure, requestLogging } from "@rakazo/logging/hono";
-import { MarkdownMemoryStore } from "@rakazo/memory";
+} from "@labradoodle/logging";
+import { markExpectedFailure, requestLogging } from "@labradoodle/logging/hono";
+import { MarkdownMemoryStore } from "@labradoodle/memory";
+import { ORPCError, onError } from "@orpc/server";
+import { RPCHandler } from "@orpc/server/fetch";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { deleteAccountContent, finishStalledOrganizationDeletions } from "./account-deletion.js";

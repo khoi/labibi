@@ -1,21 +1,21 @@
-import { ORPCError } from "@orpc/server";
-import type { AdapterContext, ConnectorCatalogItem } from "@rakazo/adapter-kit";
-import { ConnectorAuthUnavailableError } from "@rakazo/adapter-kit";
+import type { AdapterContext, ConnectorCatalogItem } from "@labradoodle/adapter-kit";
+import { ConnectorAuthUnavailableError } from "@labradoodle/adapter-kit";
 import {
   pickReusableConnection,
   planLiveConnectionSync,
   prepareManagedConnectorForTransaction,
   sanitizeComposioError,
-} from "@rakazo/adapters";
-import type { Actor } from "@rakazo/contracts";
-import type { Prisma, PrismaClient } from "@rakazo/db";
+} from "@labradoodle/adapters";
+import type { Actor } from "@labradoodle/contracts";
+import type { Prisma, PrismaClient } from "@labradoodle/db";
 import {
   IsolationError,
   ProviderTransactionBusyError,
   recordSecurityEvent,
   runProviderTransaction,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
+import { ORPCError } from "@orpc/server";
 import { connectionCreatedEvent } from "../security-audit.js";
 import type { RouterContext } from "./context.js";
 

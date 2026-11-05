@@ -713,13 +713,13 @@ msgstr ""
 msgid "Allow in this space"
 msgstr ""
 
+#: src/lib/dictation.ts
+msgid "Allow Labradoodle to use Speech Recognition and the microphone in System Settings."
+msgstr ""
+
 #: src/components/AskCard.tsx
 msgid "Allow once"
 msgstr "한 번 허용"
-
-#: src/lib/dictation.ts
-msgid "Allow Rakazo to use Speech Recognition and the microphone in System Settings."
-msgstr ""
 
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 msgid "Allow writing"
@@ -766,8 +766,8 @@ msgid "An API key is stored for this provider, not a subscription sign-in."
 msgstr "이 서비스에는 구독 로그인이 아니라 API 키가 저장되어 있습니다."
 
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
-msgid "An existing Honcho peer to read from. Rakazo never writes to it."
-msgstr "데이터를 읽어올 기존 Honcho 피어입니다. Rakazo는 이 피어에 데이터를 쓰지 않습니다."
+msgid "An existing Honcho peer to read from. Labradoodle never writes to it."
+msgstr "데이터를 읽어올 기존 Honcho 피어입니다. Labradoodle는 이 피어에 데이터를 쓰지 않습니다."
 
 #: src/lib/agent-import-errors.ts
 msgid "An imported API key could not be checked. Try again."
@@ -1417,7 +1417,7 @@ msgstr "폴더 선택"
 
 #: src/components/ModelCredits.tsx
 #: src/components/SubscriptionGate.tsx
-msgid "Choose how to use Rakazo"
+msgid "Choose how to use Labradoodle"
 msgstr ""
 
 #: src/components/vault/VaultItemEditor.tsx
@@ -1737,8 +1737,8 @@ msgstr "먼저 이 모델의 제공자를 연결하세요."
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
-msgid "Connect your own API key in Models or choose Rakazo credits in Billing."
-msgstr "AI 모델에서 자체 API 키를 연결하거나 결제에서 Rakazo 크레딧을 선택하세요."
+msgid "Connect your own API key in Models or choose Labradoodle credits in Billing."
+msgstr "AI 모델에서 자체 API 키를 연결하거나 결제에서 Labradoodle 크레딧을 선택하세요."
 
 #: src/components/ComputerDeviceSettings.tsx
 #: src/components/integrations/IntegrationSetup.tsx
@@ -2503,8 +2503,8 @@ msgid "Create space"
 msgstr "스페이스 만들기"
 
 #: src/pages/Auth.tsx
-msgid "Create your Rakazo"
-msgstr "Rakazo 계정 만들기"
+msgid "Create your Labradoodle"
+msgstr "Labradoodle 계정 만들기"
 
 #: src/components/AskCard.tsx
 msgid "Created"
@@ -2981,7 +2981,7 @@ msgid "Ends {day}"
 msgstr ""
 
 #: src/components/GitHubStarPrompt.tsx
-msgid "Enjoying Rakazo?"
+msgid "Enjoying Labradoodle?"
 msgstr ""
 
 #: src/lib/user-error.ts
@@ -3486,7 +3486,7 @@ msgid "How to check"
 msgstr "완료 확인 방법"
 
 #: src/components/SignupSurvey.tsx
-msgid "How will you use Rakazo?"
+msgid "How will you use Labradoodle?"
 msgstr ""
 
 #: src/pages/shell/computer-release-actions.tsx
@@ -3713,6 +3713,15 @@ msgstr ""
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Label"
 msgstr "레이블"
+
+#: src/pages/AccountSettingsOverlay.tsx
+#: src/pages/shell/avatar-studio-popover.tsx
+msgid "Labradoodle"
+msgstr "Labradoodle"
+
+#: src/pages/Onboarding.tsx
+msgid "Labradoodle credits"
+msgstr ""
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Language"
@@ -4529,8 +4538,8 @@ msgid "Not imported"
 msgstr "가져오지 않음"
 
 #: src/pages/shell/import-status.ts
-msgid "Not in Rakazo's catalog"
-msgstr "Rakazo 카탈로그에 없음"
+msgid "Not in Labradoodle's catalog"
+msgstr "Labradoodle 카탈로그에 없음"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Not in the plugin catalog"
@@ -4543,12 +4552,12 @@ msgstr "나중에"
 
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/import-status.ts
-msgid "Not supported in Rakazo"
-msgstr "Rakazo에서 지원하지 않음"
+msgid "Not supported in Labradoodle"
+msgstr "Labradoodle에서 지원하지 않음"
 
 #: src/pages/shell/agent-import.tsx
-msgid "Not used by Rakazo"
-msgstr "Rakazo에서 사용하지 않음"
+msgid "Not used by Labradoodle"
+msgstr "Labradoodle에서 사용하지 않음"
 
 #: src/components/McpServerHealthLine.tsx
 msgid "Not working"
@@ -4682,6 +4691,11 @@ msgstr "외부 링크를 열까요?"
 msgid "Open in full window"
 msgstr "전체 창으로 열기"
 
+#: src/components/pages/PublicPageShell.tsx
+#: src/pages/SharedPage.tsx
+msgid "Open Labradoodle"
+msgstr "Labradoodle 열기"
+
 #: src/components/pages/SharePopover.tsx
 msgid "Open link"
 msgstr "링크 열기"
@@ -4689,11 +4703,6 @@ msgstr "링크 열기"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "메뉴 열기"
-
-#: src/components/pages/PublicPageShell.tsx
-#: src/pages/SharedPage.tsx
-msgid "Open Rakazo"
-msgstr "Rakazo 열기"
 
 #: src/pages/ScratchpadSection.tsx
 msgid "Open work"
@@ -4870,8 +4879,8 @@ msgid "Paste a replacement key"
 msgstr "새 API 키를 붙여넣으세요"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
-msgid "Paste the OpenAI-compatible address from your server. Rakazo adds /v1 if needed."
-msgstr "서버의 OpenAI 호환 주소를 붙여넣으세요. 필요하면 Rakazo가 /v1을 추가합니다."
+msgid "Paste the OpenAI-compatible address from your server. Labradoodle adds /v1 if needed."
+msgstr "서버의 OpenAI 호환 주소를 붙여넣으세요. 필요하면 Labradoodle가 /v1을 추가합니다."
 
 #: src/pages/shell/agent-import.tsx
 msgid "Paste the reply"
@@ -5061,17 +5070,8 @@ msgstr "풀 리퀘스트"
 msgid "Queued"
 msgstr "대기 중"
 
-#: src/pages/AccountSettingsOverlay.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Rakazo"
-msgstr "Rakazo"
-
-#: src/pages/Onboarding.tsx
-msgid "Rakazo credits"
-msgstr ""
-
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
-msgid "rakazo-shared and IDs starting with bot- are reserved for Rakazo."
+msgid "rakazo-shared and IDs starting with bot- are reserved for Labradoodle."
 msgstr ""
 
 #: src/pages/shell/message-hover-actions.tsx
@@ -5492,8 +5492,8 @@ msgstr ""
 
 #: src/pages/McpOAuthCallback.tsx
 #: src/pages/SlackInstallCallback.tsx
-msgid "Return to Rakazo"
-msgstr "Rakazo로 돌아가기"
+msgid "Return to Labradoodle"
+msgstr "Labradoodle로 돌아가기"
 
 #: src/lib/model-connection-preflight.ts
 msgid "Review provider settings and test again."
@@ -5970,8 +5970,8 @@ msgid "Sign in at <0>{0}</0>, then paste the code here."
 msgstr "<0>{0}</0>에서 로그인한 다음 코드를 여기에 붙여넣으세요."
 
 #: src/pages/Auth.tsx
-msgid "Sign in to Rakazo"
-msgstr "Rakazo 로그인"
+msgid "Sign in to Labradoodle"
+msgstr "Labradoodle 로그인"
 
 #: src/lib/user-error.ts
 msgid "Sign in to your existing account to link SSO"
@@ -6601,8 +6601,8 @@ msgid "This server's tool result does not fit the model. Turn off Keep tool resu
 msgstr ""
 
 #: src/pages/model-settings/connection-controls.tsx
-msgid "This subscription sign-in is not available in Rakazo yet. Use a deployment credential or choose another provider."
-msgstr "이 구독 로그인 방식은 아직 Rakazo에서 지원되지 않습니다. 서버에 설정된 인증 정보를 사용하거나 다른 서비스를 선택하세요."
+msgid "This subscription sign-in is not available in Labradoodle yet. Use a deployment credential or choose another provider."
+msgstr "이 구독 로그인 방식은 아직 Labradoodle에서 지원되지 않습니다. 서버에 설정된 인증 정보를 사용하거나 다른 서비스를 선택하세요."
 
 #: src/pages/Artifacts.tsx
 msgid "This week"
@@ -6906,15 +6906,15 @@ msgid "Use in this bot"
 msgstr ""
 
 #: src/components/ModelCredits.tsx
+msgid "Use Labradoodle credits"
+msgstr ""
+
+#: src/components/ModelCredits.tsx
 msgid "Use my subscription or API key"
 msgstr ""
 
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Use Protected input for passwords."
-msgstr ""
-
-#: src/components/ModelCredits.tsx
-msgid "Use Rakazo credits"
 msgstr ""
 
 #: src/pages/model-settings/space-bots-model.tsx
@@ -7062,7 +7062,7 @@ msgid "Weekends"
 msgstr "주말"
 
 #: src/components/SignupSurvey.tsx
-msgid "Welcome to Rakazo"
+msgid "Welcome to Labradoodle"
 msgstr ""
 
 #: src/pages/shell/dialogs.tsx
@@ -7074,7 +7074,7 @@ msgid "What can this space use?"
 msgstr ""
 
 #: src/components/SignupSurvey.tsx
-msgid "What do you most want Rakazo to help with?"
+msgid "What do you most want Labradoodle to help with?"
 msgstr ""
 
 #: src/pages/shell/message-cards.tsx

@@ -1,6 +1,5 @@
-import { Trans, useLingui } from "@lingui/react/macro";
-import type { PageVisibility } from "@rakazo/contracts";
-import { accountDisplay } from "@rakazo/core";
+import type { PageVisibility } from "@labradoodle/contracts";
+import { accountDisplay } from "@labradoodle/core";
 import {
   Button,
   Popover,
@@ -9,7 +8,8 @@ import {
   PopoverTrigger,
   RadioGroup,
   RadioGroupItem,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { ArrowUpRight, Check, Globe, Lock, Share } from "lucide-react";
 import type { ReactNode } from "react";
 import { useCopyText } from "../../lib/copy-text";

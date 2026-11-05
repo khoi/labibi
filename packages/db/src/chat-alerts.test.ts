@@ -1,4 +1,4 @@
-import type { ChatAlert } from "@rakazo/contracts";
+import type { ChatAlert } from "@labradoodle/contracts";
 import { describe, expect, it } from "vitest";
 import { createChatAlerts } from "./chat-alerts.js";
 

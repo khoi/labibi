@@ -1,6 +1,6 @@
-import type { MessageBlock } from "@rakazo/contracts";
-import { appConnectedInput, waitForConnection } from "@rakazo/core";
-import { fontWeight, typeScale } from "@rakazo/ui-tokens";
+import type { MessageBlock } from "@labradoodle/contracts";
+import { appConnectedInput, waitForConnection } from "@labradoodle/core";
+import { fontWeight, typeScale } from "@labradoodle/ui-tokens";
 import { useEffect, useRef, useState } from "react";
 import type { ViewProps } from "react-native";
 import { Linking, Text, View } from "react-native";

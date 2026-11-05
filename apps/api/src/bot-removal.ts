@@ -1,6 +1,6 @@
-import { destroyBot } from "@rakazo/adapters";
-import type { Actor } from "@rakazo/contracts";
-import type { createRepos } from "@rakazo/db";
+import { destroyBot } from "@labradoodle/adapters";
+import type { Actor } from "@labradoodle/contracts";
+import type { createRepos } from "@labradoodle/db";
 import type { RouterDeps } from "./router.js";
 
 export function createBotRemoval(deps: RouterDeps, repos: ReturnType<typeof createRepos>) {

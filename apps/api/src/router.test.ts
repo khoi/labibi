@@ -1,17 +1,14 @@
 import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { InferRouterInitialContext } from "@orpc/server";
-import { createRouterClient } from "@orpc/server";
-import { RPCHandler } from "@orpc/server/fetch";
-import type { ManagedConnectorProvider } from "@rakazo/adapter-kit";
+import type { ManagedConnectorProvider } from "@labradoodle/adapter-kit";
 import {
   ConnectorAuthUnavailableError,
   routineWakeupJob,
   SecretStoreUnavailableError,
-} from "@rakazo/adapter-kit";
-import type { McpOAuthSummary } from "@rakazo/adapters";
-import * as adapters from "@rakazo/adapters";
+} from "@labradoodle/adapter-kit";
+import type { McpOAuthSummary } from "@labradoodle/adapters";
+import * as adapters from "@labradoodle/adapters";
 import {
   COMPUTER_SCREEN_UNAVAILABLE,
   CodexCatalogCache,
@@ -28,22 +25,25 @@ import {
   parseModelSecret,
   screenLeaseIdForRun,
   serializeModelSecret,
-} from "@rakazo/adapters";
-import type { Actor, Bot, ProductEvent } from "@rakazo/contracts";
+} from "@labradoodle/adapters";
+import type { Actor, Bot, ProductEvent } from "@labradoodle/contracts";
 import {
   CONNECTOR_AUTH_UNAVAILABLE,
   MCP_OAUTH_CLIENT_REQUIRED,
   MODEL_KEY_FORMAT_ERROR,
   REPLY_QUOTE_MAX_LENGTH,
-} from "@rakazo/contracts";
-import { openScreenCapability } from "@rakazo/core/node/screen-capability";
-import type { PrismaClient } from "@rakazo/db";
+} from "@labradoodle/contracts";
+import { openScreenCapability } from "@labradoodle/core/node/screen-capability";
+import type { PrismaClient } from "@labradoodle/db";
 import {
   AnswerTooLongError,
   configureProviderTransactionPool,
   runProviderTransaction,
-} from "@rakazo/db";
-import { createLogger, createTestSink, installLogger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import { createLogger, createTestSink, installLogger } from "@labradoodle/logging";
+import type { InferRouterInitialContext } from "@orpc/server";
+import { createRouterClient } from "@orpc/server";
+import { RPCHandler } from "@orpc/server/fetch";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { mainRole, withModelRoles } from "../../../packages/adapters/src/testing/model-roles.js";
 import type { RouterDeps } from "./router.js";
@@ -9540,7 +9540,7 @@ describe("export.bot", () => {
   });
 
   async function homeWith(files: Record<string, string | Uint8Array>) {
-    const root = await mkdtemp(path.join(tmpdir(), "rakazo-export-"));
+    const root = await mkdtemp(path.join(tmpdir(), "labradoodle-export-"));
     roots.push(root);
     const home = new LocalAgentHomeStore(root);
     for (const [file, content] of Object.entries(files)) {

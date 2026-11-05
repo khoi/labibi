@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 
+import type { AgentSkillCatalogEntry, ThreadMessage } from "@labradoodle/contracts";
+import type { ComposerMention } from "@labradoodle/core";
+import { MODEL_REQUIRED_SEND_ERROR, resolveComposerSendPlan } from "@labradoodle/core";
 import { i18n } from "@lingui/core";
-import type { AgentSkillCatalogEntry, ThreadMessage } from "@rakazo/contracts";
-import type { ComposerMention } from "@rakazo/core";
-import { MODEL_REQUIRED_SEND_ERROR, resolveComposerSendPlan } from "@rakazo/core";
 import type { ComponentProps, ReactNode } from "react";
 import { act, createRef } from "react";
 import type { Root } from "react-dom/client";

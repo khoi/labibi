@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
-import type { JobPublisher, NotificationProvider } from "@rakazo/adapter-kit";
-import { callExpireJob } from "@rakazo/adapter-kit";
-import type { IncomingBotCall, MessageBlock } from "@rakazo/contracts";
-import { resolveBotAvatarSet } from "@rakazo/contracts";
-import type { CallRequestBlock } from "@rakazo/core";
+import type { JobPublisher, NotificationProvider } from "@labradoodle/adapter-kit";
+import { callExpireJob } from "@labradoodle/adapter-kit";
+import type { IncomingBotCall, MessageBlock } from "@labradoodle/contracts";
+import { resolveBotAvatarSet } from "@labradoodle/contracts";
+import type { CallRequestBlock } from "@labradoodle/core";
 import {
   CALL_CLIENT_NONCE_PREFIX,
   callIdFromClientNonce,
@@ -12,15 +12,15 @@ import {
   callRequestClientNonce,
   phoneCallSettings,
   ringingCall,
-} from "@rakazo/core";
-import type { Prisma, PrismaClient, ThreadEvents } from "@rakazo/db";
+} from "@labradoodle/core";
+import type { Prisma, PrismaClient, ThreadEvents } from "@labradoodle/db";
 import {
   appendEventInTransaction,
   createThreadMessageInTransaction,
   runAsSystem,
   THREAD_LOCK_TRANSACTION_OPTIONS,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import type { ExecutorDeps } from "./executor-deps.js";
 import { isUniqueViolation, publishMessage, runLeaseFor } from "./run-messages.js";
 

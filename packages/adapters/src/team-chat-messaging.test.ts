@@ -1,4 +1,4 @@
-import type { MessagingInboundMessage, MessagingSurface } from "@rakazo/adapter-kit";
+import type { MessagingInboundMessage, MessagingSurface } from "@labradoodle/adapter-kit";
 import { describe, expect, it, vi } from "vitest";
 import {
   createMessagingTeamChatHistory,
@@ -89,7 +89,9 @@ describe("toTeamChatInbound", () => {
   });
 
   it("treats @mentions as mention when kind is omitted", () => {
-    expect(toTeamChatInbound(baseEvent({ content: "hey @rakazo look" }))?.kind).toBe("mention");
+    expect(toTeamChatInbound(baseEvent({ content: "hey @labradoodle look" }))?.kind).toBe(
+      "mention",
+    );
   });
 });
 

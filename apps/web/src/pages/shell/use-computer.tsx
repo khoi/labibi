@@ -1,4 +1,3 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type {
   Bot,
   ComputerReleaseReason,
@@ -6,14 +5,15 @@ import type {
   Me,
   Run,
   ThreadSnapshot,
-} from "@rakazo/contracts";
+} from "@labradoodle/contracts";
 import {
   createScreenReconnects,
   isRetryableError,
   screenProbeUrl,
   waitForScreenPage,
-} from "@rakazo/core";
-import { Button, Spinner } from "@rakazo/ui-web";
+} from "@labradoodle/core";
+import { Button, Spinner } from "@labradoodle/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import type { RefObject } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ComputerMaintenanceActions } from "../../components/ComputerMaintenanceActions";

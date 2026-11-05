@@ -25,7 +25,7 @@ describe.skipIf(!databaseAvailable)("group eval tool budget", () => {
     let memberCalls = 0;
     const isMember = (request: ModelEmulatorRequest) =>
       JSON.stringify(request.messages).includes("member-keeps-searching");
-    const { createDb, asSystem } = await import("@rakazo/db");
+    const { createDb, asSystem } = await import("@labradoodle/db");
     const db = createDb(process.env.DATABASE_URL!);
     const system = asSystem(db.prisma);
     const subjectRunDone = async () => {
@@ -102,7 +102,7 @@ describe.skipIf(!databaseAvailable)("group eval tool budget", () => {
     const previousRunCap = process.env.MAX_TOOL_CALLS_PER_TURN;
     process.env.MAX_TOOL_CALLS_PER_TURN = "0";
     try {
-      const { createApp } = await import("@rakazo/api/app");
+      const { createApp } = await import("@labradoodle/api/app");
       const result = await runTrial(scenario, 1, {
         connection: {
           provider: model.model.provider,

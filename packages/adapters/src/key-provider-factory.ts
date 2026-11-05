@@ -1,10 +1,10 @@
-import type { KeyProvider } from "@rakazo/adapter-kit";
+import type { KeyProvider } from "@labradoodle/adapter-kit";
 import {
   LocalKeyProvider,
   lazyKeyProvider,
   masterKeysFromEnv,
   withLocalMasterKeys,
-} from "@rakazo/db";
+} from "@labradoodle/db";
 import { AwsKmsKeyProvider, awsKmsConfigFromEnv } from "./aws-kms-key-provider.js";
 import { isWrappedEnvValue, unwrapEnv } from "./wrapped-env.js";
 

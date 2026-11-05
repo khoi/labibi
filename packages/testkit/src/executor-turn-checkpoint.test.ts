@@ -1,5 +1,5 @@
-import type { AgentRunModel } from "@rakazo/adapter-kit";
-import { APPROVED_ACTION_NOT_RUN_ERROR, isConversationalRun } from "@rakazo/core";
+import type { AgentRunModel } from "@labradoodle/adapter-kit";
+import { APPROVED_ACTION_NOT_RUN_ERROR, isConversationalRun } from "@labradoodle/core";
 import { describe, expect, it, vi } from "vitest";
 import type * as ComputerLifecycle from "../../adapters/src/computer-lifecycle.js";
 import { createRunExecutor } from "../../adapters/src/executor.js";

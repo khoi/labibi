@@ -1,14 +1,7 @@
 import { lookup } from "node:dns/promises";
 import type { LookupFunction } from "node:net";
 import { isDeepStrictEqual } from "node:util";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import {
-  StreamableHTTPClientTransport,
-  StreamableHTTPError,
-} from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import type { RequestOptions } from "@modelcontextprotocol/sdk/shared/protocol.js";
-import type { Tool } from "@modelcontextprotocol/sdk/types.js";
-import type { ConnectorTool } from "@rakazo/adapter-kit";
+import type { ConnectorTool } from "@labradoodle/adapter-kit";
 import {
   ipVersion,
   isCloudMetadataAddress,
@@ -19,8 +12,15 @@ import {
   isLoopbackAddress,
   isNonPublicAddress,
   normalizeHost,
-} from "@rakazo/contracts";
-import { cancelResponseBody } from "@rakazo/core";
+} from "@labradoodle/contracts";
+import { cancelResponseBody } from "@labradoodle/core";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import {
+  StreamableHTTPClientTransport,
+  StreamableHTTPError,
+} from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import type { RequestOptions } from "@modelcontextprotocol/sdk/shared/protocol.js";
+import type { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { Agent } from "undici";
 import { composioToolBatch } from "./composio-batch.js";
 import { sensitiveQueryParameter } from "./connector-http.js";
@@ -279,7 +279,7 @@ async function withRemoteMcpClient<T>(
     },
     fetch: async (input, init) => limitMcpResponseBody(await safeFetch(input, init), init?.headers),
   });
-  const client = new Client({ name: "rakazo", version: "0.1.0" }, { capabilities: {} });
+  const client = new Client({ name: "labradoodle", version: "0.1.0" }, { capabilities: {} });
   try {
     await client.connect(transport, { signal, timeout: MCP_TIMEOUT_MS });
     return await run(client, signal);
@@ -474,7 +474,7 @@ export class RemoteMcpSessionCache {
         return limitMcpResponseBody(response, init?.headers);
       },
     });
-    const client = new Client({ name: "rakazo", version: "0.1.0" }, { capabilities: {} });
+    const client = new Client({ name: "labradoodle", version: "0.1.0" }, { capabilities: {} });
     const session: ScopedMcpSession = {
       key,
       client,

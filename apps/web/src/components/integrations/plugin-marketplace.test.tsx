@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import type { CapabilityInstall, McpServer } from "@rakazo/contracts";
+import type { CapabilityInstall, McpServer } from "@labradoodle/contracts";
 import type { ComponentProps, ReactNode } from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
@@ -30,7 +30,7 @@ vi.mock("../../lib/rpc", () => ({
   },
 }));
 vi.mock("../../lib/mcp-connect", () => ({ connectMcpOauth: api.connect }));
-vi.mock("@rakazo/chat-ui/web", () => ({
+vi.mock("@labradoodle/chat-ui/web", () => ({
   useLinkFavicon: () => ({ icon: null, unusable: () => undefined }),
 }));
 vi.mock("@lingui/react/macro", () => ({
@@ -40,7 +40,7 @@ vi.mock("@lingui/react/macro", () => ({
   Trans: ({ children }: { children: ReactNode }) => children,
   Plural: ({ value, other }: { value: number; other: string }) => other.replace("#", `${value}`),
 }));
-vi.mock("@rakazo/ui-web", () => {
+vi.mock("@labradoodle/ui-web", () => {
   const Container = ({ children, summary }: { children?: ReactNode; summary?: ReactNode }) => (
     <div>
       {summary}
@@ -210,7 +210,7 @@ describe("plugin detail", () => {
     await click("Sign in");
     const alert = container.querySelector('[role="alert"]');
     expect(alert?.querySelector("a")?.getAttribute("href")).toBe(
-      "https://rakazo.com/docs/troubleshooting/#mcp-oauth-redirect-mismatch",
+      "https://labradoodle.com/docs/troubleshooting/#mcp-oauth-redirect-mismatch",
     );
     api.connect.mockRejectedValue(new Error("Could not sign in"));
     await click("Sign in");

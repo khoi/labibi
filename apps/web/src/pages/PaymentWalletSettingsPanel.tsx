@@ -1,6 +1,5 @@
-import { Trans, useLingui } from "@lingui/react/macro";
-import type { PaymentWalletStatus } from "@rakazo/contracts";
-import { writeSaved } from "@rakazo/core/query";
+import type { PaymentWalletStatus } from "@labradoodle/contracts";
+import { writeSaved } from "@labradoodle/core/query";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,7 +9,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   Button,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
 import { useState } from "react";

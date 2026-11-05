@@ -1,7 +1,7 @@
-import type { TransactionalEmailProvider } from "@rakazo/adapter-kit";
-import { emailLocale, referralEmail } from "@rakazo/auth";
-import { ActorSchema } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
+import type { TransactionalEmailProvider } from "@labradoodle/adapter-kit";
+import { emailLocale, referralEmail } from "@labradoodle/auth";
+import { ActorSchema } from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
 import { unsubscribeUrl } from "./marketing-email.js";
 
 const HOUR_MS = 60 * 60 * 1000;

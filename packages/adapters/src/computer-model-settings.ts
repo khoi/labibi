@@ -1,8 +1,8 @@
-import type { AgentRunModel } from "@rakazo/adapter-kit";
-import { isModelCredentialRejected } from "@rakazo/adapter-kit";
-import type { PrismaClient } from "@rakazo/db";
-import { appliedModelRole } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+import type { AgentRunModel } from "@labradoodle/adapter-kit";
+import { isModelCredentialRejected } from "@labradoodle/adapter-kit";
+import type { PrismaClient } from "@labradoodle/db";
+import { appliedModelRole } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import { computerTarget } from "./pi-runtime-computer-mode.js";
 import { isTerminalModelSetupError } from "./run-model.js";
 import { restoreTurnCheckpoint } from "./turn-checkpoint.js";

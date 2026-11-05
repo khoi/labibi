@@ -1,10 +1,10 @@
-import { t } from "@lingui/core/macro";
 import {
   CLIENT_UPDATE_REQUIRED_STATUS,
   compareBuilds,
   SERVER_BUILD_HEADER,
-} from "@rakazo/contracts";
-import { toast } from "@rakazo/ui-web";
+} from "@labradoodle/contracts";
+import { toast } from "@labradoodle/ui-web";
+import { t } from "@lingui/core/macro";
 import { getSnapshot as activeCall } from "./call-session";
 import { CLIENT_BUILD } from "./client-build";
 import {

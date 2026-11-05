@@ -1,8 +1,8 @@
-import type { SandboxProvider } from "@rakazo/adapter-kit";
-import type { ByokTier } from "@rakazo/contracts";
-import { SANDBOX_HOURLY_COST_MICROS } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
-import { planComputerSize } from "@rakazo/db";
+import type { SandboxProvider } from "@labradoodle/adapter-kit";
+import type { ByokTier } from "@labradoodle/contracts";
+import { SANDBOX_HOURLY_COST_MICROS } from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
+import { planComputerSize } from "@labradoodle/db";
 import { describe, expect, it, vi } from "vitest";
 import {
   sandboxAllowance,

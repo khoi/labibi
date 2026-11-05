@@ -6,9 +6,9 @@ import type {
   JobPublisher,
   NotificationMessage,
   NotificationProvider,
-} from "@rakazo/adapter-kit";
-import { pushReceiptJob } from "@rakazo/adapter-kit";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/adapter-kit";
+import { pushReceiptJob } from "@labradoodle/adapter-kit";
+import { getLogger } from "@labradoodle/logging";
 import type { IncomingCallPush, VoipPushProvider } from "./apns-voip.js";
 import { combineSignals } from "./connector-safety.js";
 import { credentialDigest } from "./credential-digest.js";

@@ -1,8 +1,8 @@
+import type { LinkFavicons } from "@labradoodle/chat-ui/web";
+import { LinkFaviconsContext, RemoteImagesContext } from "@labradoodle/chat-ui/web";
+import { analyticsScreen } from "@labradoodle/core";
+import { Button } from "@labradoodle/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
-import type { LinkFavicons } from "@rakazo/chat-ui/web";
-import { LinkFaviconsContext, RemoteImagesContext } from "@rakazo/chat-ui/web";
-import { analyticsScreen } from "@rakazo/core";
-import { Button } from "@rakazo/ui-web";
 import {
   Suspense,
   useEffect,

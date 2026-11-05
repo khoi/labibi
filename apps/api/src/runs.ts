@@ -1,13 +1,13 @@
-import type { Actor, RunActivityRow } from "@rakazo/contracts";
-import { MessageBlock } from "@rakazo/contracts";
+import type { Actor, RunActivityRow } from "@labradoodle/contracts";
+import { MessageBlock } from "@labradoodle/contracts";
 import {
   ACTIVE_RUN_STATUSES,
   BACKGROUND_RUN_TRIGGERS,
   botMessageContext,
   displayName,
   truncatePlainText,
-} from "@rakazo/core";
-import type { PrismaClient } from "@rakazo/db";
+} from "@labradoodle/core";
+import type { PrismaClient } from "@labradoodle/db";
 
 const RECENT_LIMIT = 20;
 const TERMINAL_STATUSES = ["completed", "failed", "cancelled"] as const;

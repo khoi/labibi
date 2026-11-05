@@ -1,11 +1,18 @@
-import { Trans, useLingui } from "@lingui/react/macro";
-import type { ComputerProviderSettings as Settings } from "@rakazo/contracts";
-import { Button, Field, FieldLabel, Input, NativeSelect, NativeSelectOption } from "@rakazo/ui-web";
+import type { ComputerProviderSettings as Settings } from "@labradoodle/contracts";
+import {
+  Button,
+  Field,
+  FieldLabel,
+  Input,
+  NativeSelect,
+  NativeSelectOption,
+} from "@labradoodle/ui-web";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@rakazo/ui-web/components/ui/collapsible";
+} from "@labradoodle/ui-web/components/ui/collapsible";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useId, useState } from "react";
 import { rpc } from "../lib/rpc";
 import { errorText } from "../lib/user-error";

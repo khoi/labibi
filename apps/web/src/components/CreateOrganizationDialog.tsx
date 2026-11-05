@@ -1,4 +1,3 @@
-import { Trans } from "@lingui/react/macro";
 import {
   Button,
   Dialog,
@@ -10,7 +9,8 @@ import {
   FieldError,
   FieldLabel,
   Input,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { Trans } from "@lingui/react/macro";
 import { useId, useState } from "react";
 import { openOrganizationSpace, organizationsQuery } from "../lib/organizations";
 import { queryClient, useQueryUserId } from "../lib/query";

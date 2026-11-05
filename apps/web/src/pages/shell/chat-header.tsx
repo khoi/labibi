@@ -1,6 +1,6 @@
+import type { Bot, Group, ThreadSnapshot } from "@labradoodle/contracts";
+import { BotAvatar, Button, GroupAvatar } from "@labradoodle/ui-web";
 import { useLingui } from "@lingui/react/macro";
-import type { Bot, Group, ThreadSnapshot } from "@rakazo/contracts";
-import { BotAvatar, Button, GroupAvatar } from "@rakazo/ui-web";
 import { Gift, Menu, Phone } from "lucide-react";
 import { useState } from "react";
 import { IconTooltip } from "../../components/IconTooltip";

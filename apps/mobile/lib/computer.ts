@@ -1,7 +1,10 @@
-import type { ComputerMode, ComputerStatus as ContractComputerStatus } from "@rakazo/contracts";
-import { isLocalhostOrLoopbackIp, isPrivateNetworkHost } from "@rakazo/contracts";
-import type { ScreenPageState } from "@rakazo/core";
-import { isRetryableError, SCREEN_PAGE_STATES } from "@rakazo/core";
+import type {
+  ComputerMode,
+  ComputerStatus as ContractComputerStatus,
+} from "@labradoodle/contracts";
+import { isLocalhostOrLoopbackIp, isPrivateNetworkHost } from "@labradoodle/contracts";
+import type { ScreenPageState } from "@labradoodle/core";
+import { isRetryableError, SCREEN_PAGE_STATES } from "@labradoodle/core";
 import { t } from "./i18n";
 
 export const COMPUTER_HEARTBEAT_MS = 60_000;

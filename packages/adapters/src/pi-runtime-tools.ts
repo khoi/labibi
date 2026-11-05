@@ -9,10 +9,10 @@ import type {
   AgentToolExecutionResult,
   ConnectorTool,
   ModelCallObserver,
-} from "@rakazo/adapter-kit";
-import { DEFAULT_CONTEXT_STRATEGY } from "@rakazo/adapter-kit";
-import { FLEET_TOOL_NAMES } from "@rakazo/contracts";
-import { batchActions, humanizeToolName } from "@rakazo/core";
+} from "@labradoodle/adapter-kit";
+import { DEFAULT_CONTEXT_STRATEGY } from "@labradoodle/adapter-kit";
+import { FLEET_TOOL_NAMES } from "@labradoodle/contracts";
+import { batchActions, humanizeToolName } from "@labradoodle/core";
 import {
   isInternalTermination,
   isTerminatingReplyResult,

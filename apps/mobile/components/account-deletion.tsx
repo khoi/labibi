@@ -1,4 +1,4 @@
-import type { AccountSecurity } from "@rakazo/contracts";
+import type { AccountSecurity } from "@labradoodle/contracts";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,

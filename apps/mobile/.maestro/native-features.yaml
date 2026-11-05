@@ -98,7 +98,7 @@ tags:
     timeout: 15000
 - takeScreenshot: "45-sent-attachments"
 
-# Native PDF viewer (rakazo-pdf-view): Share appears only after the file loaded.
+# Native PDF viewer (labradoodle-pdf-view): Share appears only after the file loaded.
 - tapOn: ".*rakazo-fixture.pdf"
 - extendedWaitUntil:
     visible: "Share"
@@ -140,7 +140,7 @@ tags:
     timeout: 10000
 
 # An incoming call rings in the open app, then as a native call notification once the
-# app is in the background (rakazo-notifications IncomingCalls).
+# app is in the background (labradoodle-notifications IncomingCalls).
 - evalScript: ${output.ring = http.get(RAKAZO_DEVICE_CONTROL_URL + '/ring')}
 - assertTrue: ${output.ring.ok}
 - extendedWaitUntil:

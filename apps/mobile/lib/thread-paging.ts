@@ -1,4 +1,8 @@
-import { appendNewerThreadPage, forwardProbeAfterPage, threadWindowMessages } from "@rakazo/core";
+import {
+  appendNewerThreadPage,
+  forwardProbeAfterPage,
+  threadWindowMessages,
+} from "@labradoodle/core";
 import { useState } from "react";
 import type { LayoutChangeEvent, NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 import type { MobileMessage, MobileSnapshot } from "./api";

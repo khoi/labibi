@@ -1,5 +1,5 @@
-import type { Routine } from "@rakazo/contracts";
-import { defaultCronPreset } from "@rakazo/core";
+import type { Routine } from "@labradoodle/contracts";
+import { defaultCronPreset } from "@labradoodle/core";
 import { describe, expect, it, vi } from "vitest";
 import {
   draftFromRoutine,

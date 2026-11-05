@@ -4,9 +4,9 @@ import type {
   ArtifactStore,
   SandboxProvider,
   SecretStore,
-} from "@rakazo/adapter-kit";
-import type { PrismaClient, ThreadEvents } from "@rakazo/db";
-import { createDb, runAsSystem, runAsTenant } from "@rakazo/db";
+} from "@labradoodle/adapter-kit";
+import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
+import { createDb, runAsSystem, runAsTenant } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { createBackgroundJobHandlers } from "./background-job-handlers.js";
 import type { createRunExecutor } from "./executor.js";

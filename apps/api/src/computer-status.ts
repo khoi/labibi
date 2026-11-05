@@ -3,10 +3,10 @@ import {
   computerSupportsUpdate,
   DISK_WARNING_PERCENT,
   diskUsedPercent,
-} from "@rakazo/adapters";
-import type { ComputerStatus } from "@rakazo/contracts";
-import { ACTIVE_RUN_STATUSES, computerScreenSize } from "@rakazo/core";
-import type { PrismaClient } from "@rakazo/db";
+} from "@labradoodle/adapters";
+import type { ComputerStatus } from "@labradoodle/contracts";
+import { ACTIVE_RUN_STATUSES, computerScreenSize } from "@labradoodle/core";
+import type { PrismaClient } from "@labradoodle/db";
 
 /** Mirrors computer.takeover: an execution lease blocks user control unless a takeover is pending. */
 export function executionBlocksUserTakeover(input: {

@@ -131,7 +131,7 @@ vi.mock("../components/native-switch", () => ({
   ),
 }));
 
-import type { LoginFieldInput } from "@rakazo/contracts";
+import type { LoginFieldInput } from "@labradoodle/contracts";
 import { SecretAskSheet } from "../components/secret-ask-sheet";
 
 const onClose = vi.fn();

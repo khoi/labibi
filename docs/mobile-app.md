@@ -11,7 +11,7 @@ You can also choose **Get the mobile app** from the account menu in the web or d
 
 ## Sign in
 
-Sign in with your rakazo.com account. To use your own server instead, tap **Use a custom server** on
+Sign in with your labradoodle.com account. To use your own server instead, tap **Use a custom server** on
 the sign-in screen and enter its address. For a server on your local network, follow
 [Connecting a phone on the same network](./self-host-clients.md#connecting-a-phone-on-the-same-network).
 
@@ -44,5 +44,5 @@ working status while a bot runs.
 
 ## Share to a bot
 
-On Android, share text, images, audio, video, PDFs or files from another app to Rakazo and pick the
+On Android, share text, images, audio, video, PDFs or files from another app to Labradoodle and pick the
 bot to send them to.

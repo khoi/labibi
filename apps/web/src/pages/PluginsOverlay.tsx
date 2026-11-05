@@ -1,4 +1,3 @@
-import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import type {
   CapabilityInstall,
   Connection,
@@ -6,13 +5,13 @@ import type {
   IntegrationCatalogResult,
   IntegrationCatalogSurface,
   PluginMarketplaceEntry,
-} from "@rakazo/contracts";
+} from "@labradoodle/contracts";
 import {
   CONNECTION_LABEL_MAX_LENGTH,
   PluginPreviewSchema,
   SUBMIT_PLUGIN_URL,
-} from "@rakazo/contracts";
-import type { PluginCategory } from "@rakazo/core";
+} from "@labradoodle/contracts";
+import type { PluginCategory } from "@labradoodle/core";
 import {
   buildFeaturedConnectorTiles,
   CONNECTION_CATALOG_PAGE_SIZE,
@@ -29,8 +28,8 @@ import {
   matchesWordPrefixes,
   OTHER_PLUGINS,
   PLUGIN_CATEGORIES,
-} from "@rakazo/core";
-import { fetchFresh, writeSaved } from "@rakazo/core/query";
+} from "@labradoodle/core";
+import { fetchFresh, writeSaved } from "@labradoodle/core/query";
 import {
   Badge,
   Button,
@@ -53,7 +52,8 @@ import {
   NativeSelectOption,
   SectionHeading,
   Spinner,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { queryOptions, skipToken, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowUpRight, ChevronDown, ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 import type { ReactNode } from "react";

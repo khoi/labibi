@@ -1,14 +1,14 @@
 import { hostname } from "node:os";
 import { setTimeout as sleep } from "node:timers/promises";
-import type { JobPublisher, JobWorkerHost } from "@rakazo/adapter-kit";
+import type { JobPublisher, JobWorkerHost } from "@labradoodle/adapter-kit";
 import {
   ComposioConnector,
   IntegrationProviderSettings,
   unwrapEnvFromKeyManager,
-} from "@rakazo/adapters";
-import { phoneCallSettings } from "@rakazo/core";
-import { loadRootEnv } from "@rakazo/core/node/load-root-env";
-import { stopOnShutdownSignals } from "@rakazo/core/node/shutdown-signals";
+} from "@labradoodle/adapters";
+import { phoneCallSettings } from "@labradoodle/core";
+import { loadRootEnv } from "@labradoodle/core/node/load-root-env";
+import { stopOnShutdownSignals } from "@labradoodle/core/node/shutdown-signals";
 import { startWorkerHealth, watchEventLoopStalls } from "./health.js";
 import { createWorkerSecretStore } from "./secret-store.js";
 
@@ -84,8 +84,8 @@ import {
   userDeviceForwardSecret,
   withRunWorker,
   withSecretPersistence,
-} from "@rakazo/adapters";
-import { resolveEncryptionKey, resolveSupervisorToken, uploadSizeFromEnv } from "@rakazo/core";
+} from "@labradoodle/adapters";
+import { resolveEncryptionKey, resolveSupervisorToken, uploadSizeFromEnv } from "@labradoodle/core";
 import {
   createBoardEvents,
   createDb,
@@ -102,10 +102,10 @@ import {
   runAsSystem,
   securityEventRetentionDays,
   verifyContentKeys,
-} from "@rakazo/db";
-import { SERVICE_NAMES } from "@rakazo/logging";
-import { createRootLogger } from "@rakazo/logging/axiom";
-import { MarkdownMemoryStore } from "@rakazo/memory";
+} from "@labradoodle/db";
+import { SERVICE_NAMES } from "@labradoodle/logging";
+import { createRootLogger } from "@labradoodle/logging/axiom";
+import { MarkdownMemoryStore } from "@labradoodle/memory";
 
 const logger = await createRootLogger(SERVICE_NAMES.worker);
 

@@ -1,7 +1,11 @@
-import type { RealtimeFanout } from "@rakazo/adapter-kit";
-import type { MessageBlock } from "@rakazo/contracts";
-import type { StuckWorkStatus } from "@rakazo/core";
-import { ACTIVE_RUN_STATUSES, stuckWorkExpiredNonce, stuckWorkStatusMessage } from "@rakazo/core";
+import type { RealtimeFanout } from "@labradoodle/adapter-kit";
+import type { MessageBlock } from "@labradoodle/contracts";
+import type { StuckWorkStatus } from "@labradoodle/core";
+import {
+  ACTIVE_RUN_STATUSES,
+  stuckWorkExpiredNonce,
+  stuckWorkStatusMessage,
+} from "@labradoodle/core";
 import type { Prisma, PrismaClient } from "./client.js";
 import { expireComputerExecutionLeases } from "./computers.js";
 import {

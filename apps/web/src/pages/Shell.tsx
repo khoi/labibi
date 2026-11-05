@@ -1,12 +1,11 @@
-import { Trans, useLingui } from "@lingui/react/macro";
 import type {
   AgentSkillCatalogEntry,
   Bot,
   SpaceMemoryConfig,
   ThreadMessage,
   VoiceStatus,
-} from "@rakazo/contracts";
-import { DEFAULT_NEW_BOT_AVATAR_SET } from "@rakazo/contracts";
+} from "@labradoodle/contracts";
+import { DEFAULT_NEW_BOT_AVATAR_SET } from "@labradoodle/contracts";
 import {
   answerableAskMessageIds,
   channelMessageSender,
@@ -18,11 +17,12 @@ import {
   isRunWorking,
   memberName,
   newClientId,
-} from "@rakazo/core";
-import { fetchFresh, writeSaved } from "@rakazo/core/query";
-import type { GroupAvatarMember } from "@rakazo/ui-web";
-import { Button } from "@rakazo/ui-web";
-import { useIsMobile } from "@rakazo/ui-web/hooks/use-mobile";
+} from "@labradoodle/core";
+import { fetchFresh, writeSaved } from "@labradoodle/core/query";
+import type { GroupAvatarMember } from "@labradoodle/ui-web";
+import { Button } from "@labradoodle/ui-web";
+import { useIsMobile } from "@labradoodle/ui-web/hooks/use-mobile";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
 import { Keyboard, Lock, Monitor, Moon, Plug, Plus, ScrollText, Sun, Users } from "lucide-react";
 import {

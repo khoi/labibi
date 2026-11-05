@@ -37,7 +37,12 @@ it("copies what its own page asks from the app's frame and answers whether it wo
   // Another window, an oversized text or a non-string never reach the clipboard.
   await send({ type: "rakazo-page:copy", id: "c", text: "spoof", gesture: "k:3" }, window);
   await send({ type: "rakazo-page:copy", id: "d", text: "x".repeat(20_001), gesture: "k:4" });
-  await send({ type: "rakazo-page:copy", id: "e", text: { toString: () => "x" }, gesture: "k:5" });
+  await send({
+    type: "rakazo-page:copy",
+    id: "e",
+    text: { toString: () => "x" },
+    gesture: "k:5",
+  });
 
   expect(writeText.mock.calls).toEqual([["Copy yes"], ["Copy no"]]);
   expect(answers.mock.calls).toEqual([
@@ -153,7 +158,11 @@ it("acts for a page only in an interactive frame, right after the person used th
   expect(replies).toEqual(["Ship it", "Next"]);
 
   // A web link asks first, as a link in chat does.
-  await send({ type: "rakazo-page:open-link", url: "https://example.com/x", gesture: "k:next" });
+  await send({
+    type: "rakazo-page:open-link",
+    url: "https://example.com/x",
+    gesture: "k:next",
+  });
   expect(opened).toHaveBeenCalledTimes(1);
   expect(document.body.textContent).toContain("example.com/x");
   await act(async () => root.unmount());

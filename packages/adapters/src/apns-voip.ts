@@ -1,9 +1,9 @@
 import { createPrivateKey, sign } from "node:crypto";
 import { connect } from "node:http2";
-import type { IncomingCallNotification as IncomingCallPush } from "@rakazo/adapter-kit";
-import { getLogger } from "@rakazo/logging";
+import type { IncomingCallNotification as IncomingCallPush } from "@labradoodle/adapter-kit";
+import { getLogger } from "@labradoodle/logging";
 
-export type { IncomingCallNotification as IncomingCallPush } from "@rakazo/adapter-kit";
+export type { IncomingCallNotification as IncomingCallPush } from "@labradoodle/adapter-kit";
 
 export interface VoipPushProvider {
   send(token: string, call: IncomingCallPush): Promise<"sent" | "invalid" | "unavailable">;

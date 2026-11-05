@@ -2,10 +2,14 @@ import { randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { EncryptedSecretStore, FakeSandboxProvider, withSecretPersistence } from "@rakazo/adapters";
-import type { PrismaClient } from "@rakazo/db";
-import { createDb, runAsSystem } from "@rakazo/db";
-import { createLogger, createTestSink, installLogger } from "@rakazo/logging";
+import {
+  EncryptedSecretStore,
+  FakeSandboxProvider,
+  withSecretPersistence,
+} from "@labradoodle/adapters";
+import type { PrismaClient } from "@labradoodle/db";
+import { createDb, runAsSystem } from "@labradoodle/db";
+import { createLogger, createTestSink, installLogger } from "@labradoodle/logging";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { createApp } from "./app.js";
 import { moveMcpArgsIntoSecrets } from "./mcp-args-migration.js";

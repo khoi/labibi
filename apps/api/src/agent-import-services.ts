@@ -1,10 +1,14 @@
-import type { CodexLiveCatalog } from "@rakazo/adapters";
-import { mcpStdioRefusal, providerCatalogCache, validateBotModelChange } from "@rakazo/adapters";
-import type { Actor } from "@rakazo/contracts";
-import { canonicalPiProviderId, ModelConnectInputSchema } from "@rakazo/contracts";
-import type { createRepos } from "@rakazo/db";
-import { findModelCredential, Prisma } from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+import type { CodexLiveCatalog } from "@labradoodle/adapters";
+import {
+  mcpStdioRefusal,
+  providerCatalogCache,
+  validateBotModelChange,
+} from "@labradoodle/adapters";
+import type { Actor } from "@labradoodle/contracts";
+import { canonicalPiProviderId, ModelConnectInputSchema } from "@labradoodle/contracts";
+import type { createRepos } from "@labradoodle/db";
+import { findModelCredential, Prisma } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import { isAdmin } from "./admins.js";
 import type { AgentImportServices } from "./agent-import.js";
 import type { createMcpServers } from "./mcp-servers.js";

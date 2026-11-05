@@ -1,5 +1,5 @@
+import { Button, Input } from "@labradoodle/ui-web";
 import { useLingui } from "@lingui/react/macro";
-import { Button, Input } from "@rakazo/ui-web";
 import { ChevronDown, ChevronUp, X } from "lucide-react";
 import type { RefObject } from "react";
 import { useEffect, useLayoutEffect, useState } from "react";

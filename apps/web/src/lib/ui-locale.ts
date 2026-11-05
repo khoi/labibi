@@ -1,5 +1,5 @@
-import { AppLocaleSchema } from "@rakazo/contracts";
-import { matchUiLocale } from "@rakazo/core";
+import { AppLocaleSchema } from "@labradoodle/contracts";
+import { matchUiLocale } from "@labradoodle/core";
 
 export const UI_LOCALES = AppLocaleSchema.options;
 

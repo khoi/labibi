@@ -1,5 +1,5 @@
-import type { Bot, ChatAlert, ProductEvent } from "@rakazo/contracts";
-import { isRetryableError, retryDelayMs } from "@rakazo/core";
+import type { Bot, ChatAlert, ProductEvent } from "@labradoodle/contracts";
+import { isRetryableError, retryDelayMs } from "@labradoodle/core";
 import type { RefObject } from "react";
 import { useCallback, useEffect, useRef } from "react";
 import {

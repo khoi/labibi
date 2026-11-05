@@ -1,7 +1,6 @@
-import { Trans, useLingui } from "@lingui/react/macro";
-import type { MessageReaction, ThreadMessage } from "@rakazo/contracts";
-import { canReactToThreadMessage, MESSAGE_REACTIONS } from "@rakazo/contracts";
-import { canMarkMessageUnread } from "@rakazo/core";
+import type { MessageReaction, ThreadMessage } from "@labradoodle/contracts";
+import { canReactToThreadMessage, MESSAGE_REACTIONS } from "@labradoodle/contracts";
+import { canMarkMessageUnread } from "@labradoodle/core";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +9,8 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Copy, MessageSquareDot, MoreHorizontal, Reply, Smile } from "lucide-react";
 import { useState } from "react";
 import { MessageHoverMetadata } from "../../components/MessageHoverMetadata";

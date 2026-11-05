@@ -1,8 +1,8 @@
-import type { AdapterContext, ComputerRef, SandboxProvider } from "@rakazo/adapter-kit";
-import type { ComputerMode } from "@rakazo/contracts";
-import { ATTACHMENT_MAX_BYTES } from "@rakazo/contracts";
-import { redactSecrets } from "@rakazo/core";
-import { getLogger } from "@rakazo/logging";
+import type { AdapterContext, ComputerRef, SandboxProvider } from "@labradoodle/adapter-kit";
+import type { ComputerMode } from "@labradoodle/contracts";
+import { ATTACHMENT_MAX_BYTES } from "@labradoodle/contracts";
+import { redactSecrets } from "@labradoodle/core";
+import { getLogger } from "@labradoodle/logging";
 import { JSDOM } from "jsdom";
 import { displayBotWorkspacePath, resolveBotWorkspacePath } from "./computer-support.js";
 import type { ExecutorDeps } from "./executor-deps.js";

@@ -1,5 +1,4 @@
-import { Trans, useLingui } from "@lingui/react/macro";
-import { modelCatalogSearchText } from "@rakazo/core";
+import { modelCatalogSearchText } from "@labradoodle/core";
 import {
   Command,
   CommandEmpty,
@@ -12,7 +11,8 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import type { ReactElement } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ModelCatalogEntry } from "../../lib/model-auth";

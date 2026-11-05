@@ -1,13 +1,13 @@
-import type { AdapterContext } from "@rakazo/adapter-kit";
+import type { AdapterContext } from "@labradoodle/adapter-kit";
 import {
   destroyBot,
   forgetPageShareSecrets,
   removeAgentHome,
   removeDeletedBotsFromLegacyTeamHome,
   toComputerRef,
-} from "@rakazo/adapters";
-import { anySignal, requestDeadline, withAbort } from "@rakazo/core";
-import type { Prisma } from "@rakazo/db";
+} from "@labradoodle/adapters";
+import { anySignal, requestDeadline, withAbort } from "@labradoodle/core";
+import type { Prisma } from "@labradoodle/db";
 import {
   claimOrganizationForDeletion,
   claimSpacesLeavingWithAccount,
@@ -22,8 +22,8 @@ import {
   runAsSystem,
   SPACE_DELETION_CLAIM_TIMEOUT_MS,
   setOrganizationDeletionLease,
-} from "@rakazo/db";
-import { getLogger } from "@rakazo/logging";
+} from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import type { BillingService } from "./billing.js";
 import type { SpaceDeletionDeps } from "./space-deletion.js";
 

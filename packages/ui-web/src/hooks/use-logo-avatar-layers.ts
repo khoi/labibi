@@ -1,4 +1,4 @@
-import type { LogoAvatarActivity } from "@rakazo/core";
+import type { LogoAvatarActivity } from "@labradoodle/core";
 import type { RefObject } from "react";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 

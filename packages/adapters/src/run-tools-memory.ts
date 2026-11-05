@@ -1,10 +1,10 @@
-import { MEMORY_REVISION_CONFLICT_ERROR } from "@rakazo/adapter-kit";
+import { MEMORY_REVISION_CONFLICT_ERROR } from "@labradoodle/adapter-kit";
 import {
   HistoryReadInputSchema,
   HistorySearchInputSchema,
   MEMORY_INDEX_PATH,
-} from "@rakazo/contracts";
-import { readHistory, searchHistory } from "@rakazo/db";
+} from "@labradoodle/contracts";
+import { readHistory, searchHistory } from "@labradoodle/db";
 import { sharedMemorySaveError } from "./builtin-tools.js";
 import { redactConnectorPayload } from "./connector-safety.js";
 import { MAX_RECALLED_MEMORIES } from "./history-compaction.js";

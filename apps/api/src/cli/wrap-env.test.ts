@@ -1,12 +1,12 @@
 import { randomBytes } from "node:crypto";
 import { Readable } from "node:stream";
-import { unwrapEnv } from "@rakazo/adapters";
-import { LocalKeyProvider } from "@rakazo/db";
+import { unwrapEnv } from "@labradoodle/adapters";
+import { LocalKeyProvider } from "@labradoodle/db";
 import { afterEach, expect, it, vi } from "vitest";
 
 const provider = vi.hoisted(() => ({ current: undefined as unknown }));
-vi.mock("@rakazo/core/node/load-root-env", () => ({ loadRootEnv: () => {} }));
-vi.mock("@rakazo/adapters", async (importOriginal) => ({
+vi.mock("@labradoodle/core/node/load-root-env", () => ({ loadRootEnv: () => {} }));
+vi.mock("@labradoodle/adapters", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   keyManagerFromEnv: () => provider.current,
 }));

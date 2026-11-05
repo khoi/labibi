@@ -1,7 +1,5 @@
-import { t } from "@lingui/core/macro";
-import { Trans, useLingui } from "@lingui/react/macro";
-import type { Bot, Group, RunActivityRow, RunStatus } from "@rakazo/contracts";
-import { activitySections, isRetryableError } from "@rakazo/core";
+import type { Bot, Group, RunActivityRow, RunStatus } from "@labradoodle/contracts";
+import { activitySections, isRetryableError } from "@labradoodle/core";
 import {
   BotAvatar,
   Button,
@@ -15,7 +13,9 @@ import {
   NativeSelectOption,
   SectionHeading,
   Spinner,
-} from "@rakazo/ui-web";
+} from "@labradoodle/ui-web";
+import { t } from "@lingui/core/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";

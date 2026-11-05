@@ -1,8 +1,14 @@
 import { randomUUID } from "node:crypto";
+import type { Actor } from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
+import {
+  allocateTicketNumber,
+  createDb,
+  ensureBoard,
+  runAsSystem,
+  runAsTenant,
+} from "@labradoodle/db";
 import { createRouterClient } from "@orpc/server";
-import type { Actor } from "@rakazo/contracts";
-import type { PrismaClient } from "@rakazo/db";
-import { allocateTicketNumber, createDb, ensureBoard, runAsSystem, runAsTenant } from "@rakazo/db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { RouterDeps } from "./router.js";
 import { createRouter } from "./router.js";

@@ -1,15 +1,15 @@
 /** @jsxRuntime automatic */
-import type { TransactionalEmail } from "@rakazo/adapter-kit";
-import { ANDROID_APP_STORE_URL, IOS_APP_STORE_URL } from "@rakazo/contracts";
+import type { TransactionalEmail } from "@labradoodle/adapter-kit";
+import { ANDROID_APP_STORE_URL, IOS_APP_STORE_URL } from "@labradoodle/contracts";
 import { Link, Text } from "react-email";
 import { emailText, greeting, linkStyle, message } from "./email.js";
 
 const APPS: Readonly<Record<string, string>> = {
   iPhone: IOS_APP_STORE_URL,
   Android: ANDROID_APP_STORE_URL,
-  Mac: "https://rakazo.com/api/download?platform=mac",
-  Windows: "https://rakazo.com/api/download?platform=windows",
-  Linux: "https://rakazo.com/api/download?platform=linux",
+  Mac: "https://labradoodle.com/api/download?platform=mac",
+  Windows: "https://labradoodle.com/api/download?platform=windows",
+  Linux: "https://labradoodle.com/api/download?platform=linux",
 };
 
 export function welcomeEmail(
@@ -21,12 +21,12 @@ export function welcomeEmail(
   return message(
     user.email,
     locale,
-    say("Welcome to Rakazo"),
+    say("Welcome to Labradoodle"),
     <>
       <Text>{greeting(say, user.name)}</Text>
-      <Text>{say("Thanks for signing up for Rakazo.")}</Text>
+      <Text>{say("Thanks for signing up for Labradoodle.")}</Text>
       <Text>
-        {say("Rakazo also has apps for")}{" "}
+        {say("Labradoodle also has apps for")}{" "}
         {/* The language's own list ("A, B, and C", "A, B y C"), with each app a link. */}
         {new Intl.ListFormat(locale, { type: "conjunction" })
           .formatToParts(Object.keys(APPS))
@@ -49,7 +49,7 @@ export function welcomeEmail(
         .
       </Text>
       <Text>
-        {say("Rakazo is open source. If you like it,")}{" "}
+        {say("Labradoodle is open source. If you like it,")}{" "}
         <Link href="https://github.com/elie222/rakazo" style={linkStyle}>
           {say("a star on GitHub")}
         </Link>{" "}
@@ -61,7 +61,7 @@ export function welcomeEmail(
           href="https://github.com/elie222/rakazo/blob/main/docs/self-host.md"
           style={linkStyle}
         >
-          {say("Self-host Rakazo")}
+          {say("Self-host Labradoodle")}
         </Link>
         .
       </Text>

@@ -1,8 +1,8 @@
-import type { MessageBlock } from "@rakazo/contracts";
-import { truncateReplyQuote } from "@rakazo/contracts";
-import { blocksToAgentHistoryText, messageReaction } from "@rakazo/core";
-import { isPageCardMessage } from "@rakazo/core/message-quote";
-import type { PrismaClient } from "@rakazo/db";
+import type { MessageBlock } from "@labradoodle/contracts";
+import { truncateReplyQuote } from "@labradoodle/contracts";
+import { blocksToAgentHistoryText, messageReaction } from "@labradoodle/core";
+import { isPageCardMessage } from "@labradoodle/core/message-quote";
+import type { PrismaClient } from "@labradoodle/db";
 
 type QuotedMessage = {
   id: string;
