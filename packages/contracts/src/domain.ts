@@ -127,8 +127,6 @@ export const BotSchema = z.object({
   modelProvider: z.string().nullable(),
   modelId: z.string().nullable(),
   thinkingLevel: ThinkingLevelSchema.nullable(),
-  teamChatAmbientEnabled: z.boolean(),
-  teamChatRules: z.string(),
   disabledBuiltinTools: z.array(z.string()).default([]),
   webhookConfigured: z.boolean(),
 });
@@ -247,72 +245,6 @@ export const SpaceGroupSchema = GroupSchema.pick({
 });
 export type SpaceGroup = z.infer<typeof SpaceGroupSchema>;
 
-export const TEAM_CHAT_RULES_MAX_LENGTH = 4000;
-export const AutomatedSenderPolicyModeSchema = z.enum(["ignore", "rollup", "action", "user"]);
-export type AutomatedSenderPolicyMode = z.infer<typeof AutomatedSenderPolicyModeSchema>;
-
-export const AutomatedSenderPolicySchema = z
-  .object({
-    name: z.string().trim().min(1).max(120),
-    mode: AutomatedSenderPolicyModeSchema,
-    rollupHours: z.number().int().min(1).max(720).optional(),
-  })
-  .superRefine((policy, ctx) => {
-    if (policy.mode === "rollup" && policy.rollupHours === undefined) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Rollup policies require a frequency",
-        path: ["rollupHours"],
-      });
-    }
-  });
-export type AutomatedSenderPolicy = z.infer<typeof AutomatedSenderPolicySchema>;
-
-export const AutomatedSenderPoliciesSchema = z
-  .record(z.string().trim().min(1).max(200), AutomatedSenderPolicySchema)
-  .refine((policies) => Object.keys(policies).length <= 50, {
-    message: "At most 50 automated sender policies are allowed",
-  });
-export type AutomatedSenderPolicies = z.infer<typeof AutomatedSenderPoliciesSchema>;
-
-export const AutomatedSenderSchema = z.object({
-  id: z.string().min(1).max(200),
-  name: z.string().min(1).max(120),
-});
-export type AutomatedSender = z.infer<typeof AutomatedSenderSchema>;
-
-export const ExternalConversationPolicySchema = z.object({
-  teamChatAmbientEnabled: z.boolean().nullable(),
-  teamChatRules: z.string().max(TEAM_CHAT_RULES_MAX_LENGTH).nullable(),
-  automatedSenderPolicies: AutomatedSenderPoliciesSchema,
-});
-export type ExternalConversationPolicy = z.infer<typeof ExternalConversationPolicySchema>;
-
-export const UpdateExternalConversationPolicyInput = ExternalConversationPolicySchema.extend({
-  externalConversationId: Id,
-});
-export type UpdateExternalConversationPolicyInput = z.infer<
-  typeof UpdateExternalConversationPolicyInput
->;
-
-export const ExternalConversationSchema = z.object({
-  id: Id,
-  spaceId: Id,
-  botId: Id,
-  provider: z.string(),
-  displayName: z.string().nullable(),
-  participantNames: z.array(z.string()),
-  teamChatAmbientEnabled: z.boolean().nullable(),
-  teamChatRules: z.string().nullable(),
-  automatedSenderPolicies: AutomatedSenderPoliciesSchema,
-  automatedSenders: z.array(AutomatedSenderSchema),
-  threadId: Id,
-  preview: z.string(),
-  unread: z.boolean(),
-  updatedAt: z.string(),
-});
-export type ExternalConversation = z.infer<typeof ExternalConversationSchema>;
-
 export const SpaceSchema = z.object({
   id: Id,
   name: z.string(),
@@ -329,7 +261,6 @@ export const SpaceSchema = z.object({
   botCount: z.number().int().nonnegative().optional(),
   bots: z.array(SpaceBotSchema),
   groups: z.array(SpaceGroupSchema),
-  externalConversations: z.array(ExternalConversationSchema),
 });
 export type Space = z.infer<typeof SpaceSchema>;
 
@@ -376,7 +307,6 @@ export const SpaceNavigationSchema = z.object({
     name: z.string(),
     bots: z.array(BotSchema),
     groups: z.array(GroupSchema),
-    externalConversations: z.array(ExternalConversationSchema),
   }),
   spaces: z.array(SpaceSchema),
 });
@@ -417,8 +347,6 @@ export const UpdateBotInput = z
     modelProvider: z.string().trim().min(1).max(80).nullable().optional(),
     modelId: z.string().trim().min(1).max(200).nullable().optional(),
     thinkingLevel: ThinkingLevelSchema.nullable().optional(),
-    teamChatAmbientEnabled: z.boolean().optional(),
-    teamChatRules: z.string().max(TEAM_CHAT_RULES_MAX_LENGTH).optional(),
     disabledBuiltinTools: DisabledBuiltinToolsSchema.optional(),
     /** Write only while these settings still hold, as an undo does. */
     expectedSettings: BotSettingsValuesSchema.optional(),
@@ -493,12 +421,6 @@ export const RoutineSchema = z.object({
   notify: z.boolean(),
   webhookEnabled: z.boolean(),
   githubEnabled: z.boolean(),
-  messageProvider: z
-    .string()
-    .min(1)
-    .max(50)
-    .regex(/^[a-z0-9._-]+$/i)
-    .nullable(),
   /** Null runs this routine on its bot's model. */
   modelProvider: z.string().nullable(),
   modelId: z.string().nullable(),
@@ -527,13 +449,6 @@ export const CreateRoutineInput = z
     active: z.boolean().default(false),
     webhookEnabled: z.boolean().default(false),
     githubEnabled: z.boolean().default(false),
-    messageProvider: z
-      .string()
-      .min(1)
-      .max(50)
-      .regex(/^[a-z0-9._-]+$/i)
-      .nullable()
-      .default(null),
     modelProvider: z.string().trim().min(1).max(80).nullable().default(null),
     modelId: z.string().trim().min(1).max(200).nullable().default(null),
     thinkingLevel: ThinkingLevelSchema.nullable().default(null),
@@ -541,16 +456,10 @@ export const CreateRoutineInput = z
   })
   .superRefine((value, ctx) => {
     routineModelIssues(value, ctx);
-    if (
-      value.crons.length === 0 &&
-      !value.webhookEnabled &&
-      !value.githubEnabled &&
-      !value.messageProvider &&
-      !value.watch
-    ) {
+    if (value.crons.length === 0 && !value.webhookEnabled && !value.githubEnabled && !value.watch) {
       ctx.addIssue({
         code: "custom",
-        message: "Add a schedule, webhook, GitHub, message, or change trigger",
+        message: "Add a schedule, webhook, GitHub, or change trigger",
         path: ["crons"],
       });
     }
@@ -1262,57 +1171,6 @@ export type ComputerStatus = z.infer<typeof ComputerStatusSchema>;
 
 export const ComputerReleaseReasonSchema = z.enum(["done", "skipped"]);
 export type ComputerReleaseReason = z.infer<typeof ComputerReleaseReasonSchema>;
-
-export const MessagingLinkedIdentitySchema = z.object({
-  id: Id,
-  provider: z.string(),
-  address: z.string(),
-  botId: Id,
-  botName: z.string(),
-});
-export type MessagingLinkedIdentity = z.infer<typeof MessagingLinkedIdentitySchema>;
-
-export const MessagingInstallationSummarySchema = z.object({
-  id: Id,
-  provider: z.string(),
-  workspaceName: z.string(),
-  botId: Id,
-  botName: z.string().optional(),
-});
-export type MessagingInstallationSummary = z.infer<typeof MessagingInstallationSummarySchema>;
-export const MessagingInstallationsStatusSchema = z.object({
-  available: z.boolean(),
-  /** A teammate's workspace in this space accepts the user's personal DM link. */
-  personalLinkAvailable: z.boolean().optional(),
-  installations: z.array(MessagingInstallationSummarySchema),
-});
-export type MessagingInstallationsStatus = z.infer<typeof MessagingInstallationsStatusSchema>;
-
-export const MessagingStatusSchema = z.object({
-  enabled: z.boolean(),
-  /** Messaging platforms mounted on this deployment (sendblue, slack, …). */
-  providers: z.array(z.string()),
-  /** Where to send a link code, by provider, for platforms reached through one line. */
-  addresses: z.record(z.string(), z.string()).optional(),
-  /** True when unknown senders auto-provision their own accounts. */
-  openSignup: z.boolean(),
-  /** The caller's linked chat apps, one entry per (provider, address). */
-  identities: z.array(MessagingLinkedIdentitySchema),
-});
-export type MessagingStatus = z.infer<typeof MessagingStatusSchema>;
-
-export const MessagingChannelMembershipSchema = z.object({
-  /** One row per linked identity: the same group can hold two of the caller's. */
-  id: Id,
-  channelId: Id,
-  /** Which of the caller's linked chat apps this membership belongs to. */
-  identityId: Id,
-  provider: z.string(),
-  name: z.string().nullable(),
-  status: z.enum(["invited", "approved", "declined", "left"]),
-  memberCount: z.number().int().nonnegative(),
-});
-export type MessagingChannelMembership = z.infer<typeof MessagingChannelMembershipSchema>;
 
 export const RunSchema = z.object({
   id: Id,

@@ -26,11 +26,6 @@ const payloadSchemas = {
     threadId: z.string().min(1),
     userId: z.string().min(1).optional(),
   }),
-  "messaging.deliver": z.object({ runId: z.string().min(1).optional() }),
-  "messaging.credential-cleanup": z.object({
-    installationId: z.string().min(1),
-    ref: z.string().min(1),
-  }),
   "cloud_agent.poll": z.object({ agentId: z.string().min(1) }),
   "purchase.poll": z.object({ purchaseId: z.string().min(1) }),
   "media.poll": z.object({ jobId: z.string().min(1) }),
@@ -154,15 +149,6 @@ export function historyCompactJobKey(threadId: string): string {
  * provider errors without storming.
  */
 export const HISTORY_COMPACT_MAX_ATTEMPTS = 4;
-
-export function messagingDeliverJob(runId?: string, availableAt?: Date): BackgroundJob {
-  return {
-    name: "messaging.deliver",
-    payload: runId ? { runId } : {},
-    replaceKey: `messaging.deliver:${runId ?? "drain"}`,
-    ...(availableAt ? { availableAt } : {}),
-  };
-}
 
 export function historyCompactJob(threadId: string, userId?: string): BackgroundJob {
   return {

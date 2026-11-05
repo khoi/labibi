@@ -16,19 +16,13 @@ const ENTRIES = [
   "infra/sandboxes/supervisor/src/index.ts",
   "infra/updater/src/index.ts",
 ];
-// @chat-adapter/state-memory is left out: it is the Chat SDK's own in-memory state, which
-// every messaging platform needs, not a vendor.
 const OPTIONAL_VENDORS =
-  /^(@aws-sdk\/.+|@daytona\/sdk|@e2b\/desktop|novita-sandbox|@composio\/core|@stripe\/link-sdk|@chat-adapter\/(slack|telegram|whatsapp)|@boatdev\/sdk|@boxd-sh\/sdk|chat-adapter-sendblue|@axiomhq\/js|@sentry\/node)$/;
+  /^(@aws-sdk\/.+|@daytona\/sdk|@e2b\/desktop|novita-sandbox|@composio\/core|@stripe\/link-sdk|@boatdev\/sdk|@boxd-sh\/sdk|@axiomhq\/js|@sentry\/node)$/;
 // Known static imports still to make lazy. Remove an entry once its SDK loads on demand.
 const PENDING = [
-  "@chat-adapter/slack",
-  "@chat-adapter/telegram",
-  "@chat-adapter/whatsapp",
   "@daytona/sdk",
   "@boatdev/sdk",
   "@boxd-sh/sdk",
-  "chat-adapter-sendblue",
   // The wallet factory imports its module dynamically, but the bundle inlines that module,
   // so the SDK is a static import of every emitted server bundle.
   "@stripe/link-sdk",
@@ -67,8 +61,8 @@ for (const [entry, found] of staticVendors) {
 }
 
 test("every pending vendor SDK is still statically imported somewhere", () => {
-  // Narrower entry points (the supervisor and updater never load the messaging SDKs), so
-  // debt is tracked across all entries, not per entry.
+  // Narrower entry points (the supervisor and updater) never load some SDKs, so debt is
+  // tracked across all entries, not per entry.
   const anywhere = new Set();
   for (const found of staticVendors.values()) {
     for (const name of found) anywhere.add(name);

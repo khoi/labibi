@@ -53,8 +53,6 @@ export function displayMessageBlock(
   switch (block.kind) {
     case "subagent":
       return named({ ...block, name: displayName(block.name, labels.subagent) });
-    case "channel_message":
-      return named({ ...block, fromLabel: displayName(block.fromLabel, labels.member) });
     default:
       return block;
   }

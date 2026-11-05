@@ -33,7 +33,6 @@ function evidence(
     finalStep: 1,
     settings: EMPTY_SETTINGS,
     settingsBefore: EMPTY_SETTINGS,
-    messaging: { originThreadId: null, outbound: [] },
   };
 }
 const failed = (id: string, e: Evidence) =>

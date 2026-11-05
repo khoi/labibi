@@ -13,7 +13,7 @@ import { memo, useContext, useMemo } from "react";
 import type { TextProps } from "react-native";
 import { Alert, Pressable, Text, View } from "react-native";
 import type { MobileBot, MobileMessage, MobileSnapshot } from "../../lib/api";
-import { blockText, messagingProviderLabel } from "../../lib/api";
+import { blockText } from "../../lib/api";
 import { mobileTokens } from "../../lib/appearance";
 import type { MobileArtifactTarget } from "../../lib/artifact-open";
 import { openMobileArtifact } from "../../lib/artifact-open";
@@ -257,25 +257,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
       </View>
     );
   }
-  const channelMessage = message.blocks.find(
-    (block): block is Extract<MessageBlock, { kind: "channel_message" }> =>
-      block.kind === "channel_message",
-  );
-  if (channelMessage) {
-    return (
-      <Pressable
-        {...actionProps}
-        style={{ width: "100%", paddingVertical: 4, alignItems: "center" }}
-      >
-        <Text style={{ color: tokens.mutedForeground, fontSize: 12, textAlign: "center" }}>
-          {messagingProviderLabel(channelMessage.provider, channelMessage.transport)}
-        </Text>
-        <Text style={{ color: tokens.mutedForeground, fontSize: 13.5, textAlign: "center" }}>
-          {channelMessage.fromLabel}: {channelMessage.text}
-        </Text>
-      </Pressable>
-    );
-  }
   const inlineCardCount = appConnectBlocks.length + mcpApprovalBlocks.length;
   if (inlineCardCount > 0 && inlineCardCount === message.blocks.length) {
     return (
@@ -416,14 +397,7 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
     (block) => block.kind === "image" || block.kind === "file",
   );
   const caption = message.blocks
-    .flatMap((block) => {
-      if (block.kind === "channel_message" && block.text) {
-        return [
-          `${block.fromLabel} (${messagingProviderLabel(block.provider, block.transport)}): ${block.text}`,
-        ];
-      }
-      return block.kind === "text" && block.text ? [block.text] : [];
-    })
+    .flatMap((block) => (block.kind === "text" && block.text ? [block.text] : []))
     .join("\n");
   if (attachments.length > 0) {
     const speaker =

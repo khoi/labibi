@@ -73,8 +73,6 @@ function setup(options: Partial<AuthEnv> = {}, hasMembership = true) {
       findMany: vi.fn(async () => []),
     },
     member: { findMany: vi.fn(async () => []) },
-    messagingIdentity: { deleteMany: vi.fn(async () => ({})) },
-    messagingLinkCode: { deleteMany: vi.fn(async () => ({})) },
     userDevice: { updateMany: vi.fn(async () => ({})) },
     passkey: { deleteMany: vi.fn(async () => ({})) },
     account: {

@@ -482,7 +482,7 @@ export interface AgentSteeringMessage {
    * Who sent it. Only the run's own person ("user") is framed as a message to answer; anything
    * else, or no origin, is passed on as a neutral note.
    */
-  origin?: "user" | "member" | "messaging" | "webhook";
+  origin?: "user" | "member" | "webhook";
   /** Persisted history text before attachment paths are appended. */
   historyText?: string;
   images?: AgentInputImage[];
@@ -808,8 +808,6 @@ export interface BackgroundJobPayloads {
   "skill.teaching-expire": { skillId: string };
   /** The bot's call rang out: mark it missed if nobody answered. */
   "history.compact": { threadId: string; userId?: string };
-  "messaging.deliver": { runId?: string };
-  "messaging.credential-cleanup": { installationId: string; ref: string };
   /** Reconcile durable remote-agent intent; scope is loaded from the database. */
   "cloud_agent.poll": { agentId: string };
   "purchase.poll": { purchaseId: string };
@@ -899,152 +897,6 @@ export interface TransactionalEmail {
   html?: string;
   headers?: Record<string, string>;
 }
-
-export type MessagingReceipt = "typing" | "reaction";
-
-export interface MessagingCapabilities {
-  direct: boolean;
-  groups: boolean;
-  receipt: MessagingReceipt | null;
-  /** Sends image and file attachments. Absent means replies go out as text only. */
-  files?: boolean;
-}
-
-/** One messaging platform behind the chat surface (sendblue, slack, …). */
-export interface MessagingPlatformDescriptor {
-  provider: string;
-  capabilities: MessagingCapabilities;
-  /** The line people message to reach this deployment (a phone number), when it has one. */
-  address?: string;
-}
-
-/** Send into an existing conversation, addressed by its opaque thread id. */
-export interface MessagingSendRequest {
-  threadId: string;
-  body: string;
-  /** Stable key so retries of the same logical send can be deduped upstream. */
-  idempotencyKey?: string;
-  /** A file to post as this message; only sent to platforms with the `files` capability. */
-  attachment?: MessagingOutboundAttachment;
-}
-
-/** An outbound file, already read from the artifact store. */
-export interface MessagingOutboundAttachment {
-  name: string;
-  mimeType: string;
-  data: Uint8Array;
-}
-
-export interface MessagingSendResult {
-  handle: string;
-}
-
-/** Provider-neutral inbound message after platform webhook parsing. */
-export type TeamChatMessageKind = "direct" | "mention" | "ambient";
-
-export interface MessagingInboundMessage {
-  type: "message";
-  provider: string;
-  /** Per-message transport when one provider spans multiple networks (for example SMS vs RCS). */
-  transport?: string;
-  /** Provider message id; drives replay-safe client nonces downstream. */
-  handle: string;
-  /** Opaque conversation id — pass back to sendToThread to reply. */
-  threadId: string;
-  /** True for a 1:1 conversation with the deployment's line/bot. */
-  isDirect: boolean;
-  /** Sender address within the provider (E.164, Slack user id, …). */
-  from: string;
-  /** Sender display name when the platform provides one. */
-  fromLabel: string | null;
-  /** Group/channel display name; null for DMs or when unknown. */
-  channelName: string | null;
-  /** Group roster addresses when the platform reports them; often empty. */
-  participants: string[];
-  /**
-   * When the platform says this roster was current, when it reports a time for
-   * the event; a roster older than the newest one already processed for the
-   * channel changes no membership.
-   */
-  rosterAt?: Date;
-  /**
-   * Member departures this event reports one at a time (Telegram service
-   * messages on a platform that sends no roster): addresses that left or were
-   * removed, plus our own bot leaving, which ends every membership because
-   * nothing more can be delivered to that channel.
-   */
-  departures?: { addresses: string[]; botLeft: boolean };
-  content: string;
-  mediaUrl: string | null;
-  /** Files the platform only serves to the bot's credentials (Slack url_private, …). */
-  attachments?: MessagingInboundAttachment[];
-  /** The platform reports that this group message @-mentions the bot. */
-  mentionsBot?: boolean;
-  /** Team-room workspace/team id when the platform reports one (Slack team_id, …). */
-  workspaceId?: string;
-  /** Trusted installation owner, attached only after webhook verification. */
-  installationId?: string;
-  installationSpaceId?: string;
-  installationBotId?: string;
-  /** Stable conversation key within the workspace (channel id, DM key, …). */
-  conversationKey?: string;
-  /** How this message should engage the team-chat bot. */
-  kind?: TeamChatMessageKind;
-  /** Provider thread id for in-channel replies (Slack thread_ts); null for channel root. */
-  replyThreadId?: string | null;
-  senderIsBot?: boolean;
-  /** Display names for room participants when the platform reports them. */
-  participantNames?: string[];
-}
-
-/** An inbound file whose bytes are fetched with the platform's own credentials. */
-export interface MessagingInboundAttachment {
-  name: string;
-  mimeType: string;
-  /** Size the platform reported, when known. */
-  size?: number;
-  fetch: () => Promise<Uint8Array>;
-}
-
-/** Provider-neutral inbound team/external room message for TeamChatBridge. */
-export interface TeamChatInboundMessage {
-  eventId: string;
-  workspaceId: string;
-  kind: TeamChatMessageKind;
-  conversationType?: "im" | "channel" | "group" | "mpim";
-  conversationKey: string;
-  /** Messaging threadId used with sendToThread. */
-  conversationId: string;
-  conversationName?: string;
-  participantNames?: string[];
-  replyThreadId: string | null;
-  senderId: string;
-  senderName: string;
-  senderIsBot?: boolean;
-  content: string;
-  attachments?: MessagingInboundAttachment[];
-}
-
-export interface TeamChatSendRequest {
-  conversationId: string;
-  replyThreadId: string | null;
-  content: string;
-  idempotencyKey?: string;
-}
-
-export interface TeamChatSendResult {
-  handle: string;
-}
-
-/** Provider-neutral outbound delivery status after platform webhook parsing. */
-export interface MessagingOutboundStatus {
-  type: "status";
-  provider: string;
-  handle: string;
-  status: string;
-}
-
-export type MessagingInboundEvent = MessagingInboundMessage | MessagingOutboundStatus;
 
 export interface WebSearchCapabilities {
   search: boolean;

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { BackgroundJob, JobPublisher } from "@labradoodle/adapter-kit";
-import { asSystem, createDb, provisionMessagingIdentity, runAsSystem } from "@labradoodle/db";
+import { asSystem, createDb, provisionTestBot, runAsSystem } from "@labradoodle/db";
 import { Pool } from "pg";
 import { describe, expect, it } from "vitest";
 import { createJobReconciler, createPostgresReconciliationLeadership } from "./job-reconciler.js";
@@ -35,12 +35,12 @@ describePostgres("bounded routine reconciliation (PostgreSQL contract)", () => {
     const db = createDb(databaseUrl!);
     const system = asSystem(db.prisma);
     const address = `reconciler-${randomUUID()}@example.test`;
-    let identity: Awaited<ReturnType<typeof provisionMessagingIdentity>> | undefined;
+    let identity: Awaited<ReturnType<typeof provisionTestBot>> | undefined;
     try {
       identity = await runAsSystem("reconciliation fixture", () =>
-        provisionMessagingIdentity(
+        provisionTestBot(
           db.prisma,
-          { provider: "email", address },
+          { address },
           {
             signupsEnabled: undefined,
             signupAllowlist: undefined,
@@ -89,7 +89,6 @@ describePostgres("bounded routine reconciliation (PostgreSQL contract)", () => {
       );
     } finally {
       if (identity) {
-        await system.messagingIdentity.deleteMany({ where: { address } });
         await system.organization.deleteMany({ where: { id: identity.spaceId } });
         await system.user.deleteMany({ where: { id: identity.userId } });
       }

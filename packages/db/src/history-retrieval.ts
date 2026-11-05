@@ -20,7 +20,6 @@ export interface HistoryScope {
   spaceId: string;
   threadId: string;
   botId: string;
-  channelId?: string;
   /** Executor-only grant: direct human app runs, never external or background runs. */
   allowMyChats?: boolean;
   /** Run start: my_chats excludes later messages so offset pages stay stable. */
@@ -144,7 +143,6 @@ function visible(scope: HistoryScope, myChats = false, targetThreadId?: string):
       SELECT 1 FROM chat_groups g WHERE g.id = t."groupId" AND g."spaceId" = ${scope.spaceId}
         AND g."archivedAt" IS NULL
     )))`;
-  const channel = scope.channelId;
   return Prisma.sql`
     t.id = ${scope.threadId} AND t."spaceId" = ${scope.spaceId}
     AND ${notWaiting}
@@ -156,19 +154,6 @@ function visible(scope: HistoryScope, myChats = false, targetThreadId?: string):
     AND EXISTS (SELECT 1 FROM bots b WHERE b.id = ${scope.botId}
       AND b."spaceId" = ${scope.spaceId}
       AND b."archivedAt" IS NULL)
-    ${
-      channel
-        ? Prisma.sql`AND (
-      (m.role = 'user' AND m.blocks @> ${JSON.stringify([{ kind: "channel_message", channelId: channel }])}::jsonb)
-      OR (m.role = 'bot' AND EXISTS (
-        SELECT 1 FROM runs r JOIN messages source ON source.id = r."sourceMessageId"
-        WHERE r.id = m."runId" AND r."threadId" = t.id
-          AND r."spaceId" = ${scope.spaceId}
-          AND r."botId" = ${scope.botId} AND source."threadId" = t.id
-          AND source.blocks @> ${JSON.stringify([{ kind: "channel_message", channelId: channel }])}::jsonb
-      )))`
-        : Prisma.empty
-    }
   `;
 }
 /** Raw reads bypass the client extension, so decrypt here. */
@@ -323,7 +308,7 @@ export async function searchHistory(
     throw new Error("History query must contain 1 to 500 characters");
   const query = queries[0]!;
   const myChats = input.scope === "my_chats";
-  if (myChats && (!scope.allowMyChats || scope.channelId))
+  if (myChats && !scope.allowMyChats)
     throw new Error("my_chats is available only in direct human app runs; use this_chat.");
   const byOffset = myChats || input.queries !== undefined;
   const limit = Math.min(pageSize(input.limit), 5);
@@ -354,7 +339,7 @@ export async function searchHistory(
           kind === "bot_messages"
             ? Prisma.sql`jsonb_path_exists(m.blocks, '$[*] ? (@.kind == "bot_message_sent" || @.kind == "bot_message_received" || @.kind == "handoff")')`
             : kind === "user_messages"
-              ? Prisma.sql`m.role = 'user' AND jsonb_path_exists(m.blocks, '$[*] ? (@.kind == "text" || @.kind == "channel_message" || @.kind == "file" || @.kind == "image")')`
+              ? Prisma.sql`m.role = 'user' AND jsonb_path_exists(m.blocks, '$[*] ? (@.kind == "text" || @.kind == "file" || @.kind == "image")')`
               : Prisma.sql`m.role = 'bot' AND jsonb_path_exists(m.blocks, '$[*] ? (@.kind == "text")')`,
         ),
         " OR ",
@@ -478,7 +463,7 @@ export async function readHistory(
   input: HistoryReadInput,
 ) {
   const crossThread = input.threadId !== undefined && input.threadId !== scope.threadId;
-  const permitted = !crossThread || (scope.allowMyChats === true && !scope.channelId);
+  const permitted = !crossThread || scope.allowMyChats === true;
   const targetThreadId = input.threadId ?? scope.threadId;
   const authorized = permitted ? visible(scope, crossThread, targetThreadId) : Prisma.sql`FALSE`;
   const limit = Math.min(pageSize(input.limit), 5);
@@ -548,26 +533,14 @@ export async function readHistory(
         : input.runAfterId
           ? { id: { gt: input.runAfterId } }
           : {}),
-      ...(scope.channelId
-        ? {
-            sourceMessage: {
-              threadId: scope.threadId,
-              role: "user",
-              blocks: {
-                array_contains: [{ kind: "channel_message", channelId: scope.channelId }],
-              },
-            },
-          }
-        : {
-            AND: [
-              {
-                OR: [
-                  { sourceMessage: { threadId: scope.threadId } },
-                  { sourceMessageId: null, id: { in: anchoredRunIds } },
-                ],
-              },
-            ],
-          }),
+      AND: [
+        {
+          OR: [
+            { sourceMessage: { threadId: scope.threadId } },
+            { sourceMessageId: null, id: { in: anchoredRunIds } },
+          ],
+        },
+      ],
       OR: [{ sourceMessageId: { in: rows.map((row) => row.id) } }, { id: { in: anchoredRunIds } }],
     },
     select: {

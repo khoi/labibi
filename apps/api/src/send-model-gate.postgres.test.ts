@@ -7,7 +7,7 @@ import {
   createDb,
   createThreadEvents,
   createThreadMessage,
-  provisionMessagingIdentity,
+  provisionTestBot,
   runAsSystem,
 } from "@labradoodle/db";
 import { RPCHandler } from "@orpc/server/fetch";
@@ -39,9 +39,9 @@ describe.skipIf(!enabled)("send model gate with a bot's own model (PostgreSQL)",
   beforeEach(async () => {
     vi.clearAllMocks();
     const identity = await runAsSystem("test fixture", () =>
-      provisionMessagingIdentity(
+      provisionTestBot(
         prisma,
-        { provider: "test", address: `model-gate-${randomUUID()}` },
+        { address: `model-gate-${randomUUID()}` },
         { signupsEnabled: undefined, signupAllowlist: undefined },
       ),
     );
@@ -74,7 +74,6 @@ describe.skipIf(!enabled)("send model gate with a bot's own model (PostgreSQL)",
   });
   afterEach(async () => {
     if (!actor) return;
-    await system.messagingIdentity.deleteMany({ where: { userId: actor.userId } });
     await system.chatGroup.deleteMany({ where: { userId: actor.userId } });
     await system.organization.deleteMany({ where: { id: actor.spaceId } });
     await system.user.deleteMany({ where: { id: actor.userId } });

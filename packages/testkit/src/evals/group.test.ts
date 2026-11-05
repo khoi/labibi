@@ -20,7 +20,6 @@ function evidence(text: string, partial: Partial<Evidence> = {}): Evidence {
     finalStep: 1,
     settings: EMPTY_SETTINGS,
     settingsBefore: EMPTY_SETTINGS,
-    messaging: { originThreadId: null, outbound: [] },
     ...partial,
   };
 }

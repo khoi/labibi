@@ -5,7 +5,7 @@ import {
   ContentKeyRing,
   createDb,
   LocalKeyProvider,
-  provisionMessagingIdentity,
+  provisionTestBot,
   runAsSystem,
 } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -25,9 +25,9 @@ describePostgres("agent home storage records (PostgreSQL)", () => {
     db = createDb(url!);
     system = asSystem(db.prisma);
     identity = await runAsSystem("home storage records fixture", () =>
-      provisionMessagingIdentity(
+      provisionTestBot(
         db.prisma,
-        { provider: "email", address },
+        { address },
         { signupsEnabled: undefined, signupAllowlist: undefined },
       ),
     );
@@ -35,7 +35,6 @@ describePostgres("agent home storage records (PostgreSQL)", () => {
 
   afterAll(async () => {
     if (identity) {
-      await system.messagingIdentity.deleteMany({ where: { address } });
       await system.organization.deleteMany({ where: { id: identity.spaceId } });
       await system.user.deleteMany({ where: { id: identity.userId } });
     }

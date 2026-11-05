@@ -220,7 +220,7 @@ async function main() {
       "Per-call provider reported charge when available, otherwise explicit pricing estimate; unavailable remains null",
     firstResponseDefinition:
       "First persisted streamed text event after run creation, or final bot message if no text streamed; excludes activity/tool-only events. Polling does not define the timestamp.",
-    fixtures: "synthetic services, messaging and fake sandbox",
+    fixtures: "synthetic services and fake sandbox",
     assistedRetries: false,
     limitations: [
       "Does not evaluate browser perception, native recording perception, or real external services.",
@@ -520,11 +520,6 @@ async function main() {
       SMTP_URL: "",
       EMAIL_PROVIDER: "none",
       EMAIL_API_KEY: "",
-      SLACK_BOT_TOKEN: "",
-      TELEGRAM_BOT_TOKEN: "",
-      WHATSAPP_ACCESS_TOKEN: "",
-      LARK_APP_ID: "",
-      SENDBLUE_API_KEY_ID: "",
       CURSOR_API_KEY: "",
       CLOUD_AGENT_PROVIDER: "",
       MODEL_API_KEY: "",
@@ -573,7 +568,7 @@ async function main() {
           connection,
           pricing,
           judge,
-          createApp: async (composio, messaging, witnesses) => {
+          createApp: async (composio, witnesses) => {
             const sandbox = new EvalSandboxProvider();
             let acceptingCalls = true;
             const cacheDecisions: CacheDecisionMeasurement[] = [];
@@ -642,9 +637,7 @@ async function main() {
               agentRuntime: "pi",
               wakeupDriver: "memory",
               composio,
-              messaging,
               ...(wakesRoutines(scenario) ? witnesses : {}),
-              messagingOpenSignup: false,
               defaultProvider: connection.provider,
               defaultModel: connection.modelId!,
               deploymentModelKey: undefined,
@@ -663,12 +656,6 @@ async function main() {
               emailProvider: "none",
               emailApiKey: undefined,
               emailFrom: undefined,
-              sendblueApiKeyId: undefined,
-              sendblueApiSecret: undefined,
-              slackBotToken: undefined,
-              whatsappAccessToken: undefined,
-              telegramBotToken: undefined,
-              larkAppId: undefined,
               mcpStdioEnabled: false,
               mcpStdioAllowedCommands: [],
             });

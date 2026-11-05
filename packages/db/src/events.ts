@@ -28,7 +28,6 @@ import {
   messageBypassesTakeoverWait,
   messageReaction,
   messageSteersRun,
-  messagingChannelId,
   normalizeRunError,
   QUEUE_HOLDING_RUN_STATUSES,
   releasedTakeoverComputerBlocks,
@@ -161,11 +160,8 @@ export interface ClaimedSteeringMessage {
   messageId: string;
   text: string;
   blocks: MessageBlock[];
-  /**
-   * Who sent it: the run's own person (in the app or a connected chat), another member of the
-   * chat, someone else in a connected chat, or a webhook.
-   */
-  origin: "user" | "member" | "messaging" | "webhook";
+  /** Who sent it: the run's own person, another member of the chat, or a webhook. */
+  origin: "user" | "member" | "webhook";
 }
 
 export interface FinalizeRunResult {
@@ -301,13 +297,9 @@ export interface SendUserMessageInput {
   authorUserId?: string;
   blocks: MessageBlock[];
   prompt: string;
-  trigger: "user" | "follow_up" | "webhook" | "messaging";
+  trigger: "user" | "follow_up" | "webhook";
   clientNonce?: string;
   linkMessageToRun?: boolean;
-  /** When false, persist the user message without starting a run (team-chat transcript). */
-  createRun?: boolean;
-  /** When true, start a new run even if the bot is already busy (team-chat delivery). */
-  allowParallelRun?: boolean;
   /** Model every routine in an inbound delivery agreed on. */
   modelPin?: {
     modelProvider: string;
@@ -522,45 +514,23 @@ export async function sendUserMessage(
         clientNonce: input.clientNonce,
       });
       const author = await loadMessageAuthor(tx, input.authorUserId);
-      const createRun = input.createRun !== false;
       // Include the creation intro. It has no tools, so it must not absorb the message, and a
       // second run would overlap it on a dedicated computer. Pending steering waits for the
       // continuation that starts when the intro finishes.
-      const activeRuns =
-        createRun && !input.allowParallelRun
-          ? await tx.run.findMany({
-              where: {
-                threadId: input.threadId,
-                botId: input.botId,
-                status: {
-                  in: [...QUEUE_HOLDING_RUN_STATUSES],
-                },
-              },
-              select: {
-                id: true,
-                taskId: true,
-                trigger: true,
-                status: true,
-                userId: true,
-                sourceMessage: { select: { blocks: true } },
-              },
-            })
-          : [];
-      // A group text never ends the owner's paused app task: it waits for it like any other turn.
-      const fromGroup = hasChannelMessage(input.blocks);
-      const channelId = messagingChannelId(input.blocks);
+      const activeRuns = await tx.run.findMany({
+        where: {
+          threadId: input.threadId,
+          botId: input.botId,
+          status: { in: [...QUEUE_HOLDING_RUN_STATUSES] },
+        },
+        select: { id: true, taskId: true, trigger: true, status: true, userId: true },
+      });
       // A run acts with its sender's accounts, so another person's message waits for a run of
       // their own.
       const steersRun = (run: (typeof activeRuns)[number]) =>
-        run.userId === input.userId &&
-        messageSteersRun(
-          input.trigger,
-          run.trigger,
-          channelId,
-          messagingChannelId(run.sourceMessage?.blocks as MessageBlock[] | undefined),
-        );
+        run.userId === input.userId && messageSteersRun(input.trigger, run.trigger);
       const holdingRuns = activeRuns.filter(
-        (run) => !messageBypassesTakeoverWait(run, fromGroup || steersRun(run)),
+        (run) => !messageBypassesTakeoverWait(run, steersRun(run)),
       );
       // Prefer a run that can take this message, then preserve the conversational queue fallback.
       const busy =
@@ -570,7 +540,7 @@ export async function sendUserMessage(
         null;
       let task = null;
       let run = null;
-      if (createRun && !busy) {
+      if (!busy) {
         task = await tx.task.create({
           data: {
             spaceId: input.spaceId,
@@ -605,18 +575,16 @@ export async function sendUserMessage(
         if (input.linkMessageToRun) {
           await tx.message.update({ where: { id: message.id }, data: { runId: run.id } });
         }
-      } else if (createRun && busy) {
+      } else {
         const held = !steersRun(busy);
         await tx.steeringMessage.create({
           data: {
             messageId: message.id,
             botId: input.botId,
             userId: input.userId,
-            // External deliveries retain their origin and never become app follow-ups.
+            // Webhook deliveries retain their origin and never become app follow-ups.
             runId: held ? null : busy.id,
-            ...(input.trigger === "messaging" || input.trigger === "webhook"
-              ? { originTrigger: input.trigger }
-              : {}),
+            ...(input.trigger === "webhook" ? { originTrigger: input.trigger } : {}),
             ...(input.modelPin
               ? {
                   modelProvider: input.modelPin.modelProvider,
@@ -694,21 +662,9 @@ async function claimSteeringOnce(
         spaceId: true,
         userId: true,
         trigger: true,
-        sourceMessage: { select: { blocks: true } },
       },
     });
     if (!run || run.trigger === "created") return [];
-    const channelId =
-      run.trigger === "messaging"
-        ? messagingChannelId(run.sourceMessage?.blocks as MessageBlock[] | undefined)
-        : undefined;
-    const directMessage = run.trigger === "messaging" && !channelId;
-    // Pending rows from another chat stay for their own continuation.
-    const pendingWhere = directMessage
-      ? { runId: null, originTrigger: "messaging" }
-      : channelId
-        ? { runId: null, originTrigger: "messaging" }
-        : { runId: null, originTrigger: null };
     const steering = await tx.steeringMessage.findMany({
       where: {
         botId: input.botId,
@@ -718,17 +674,9 @@ async function claimSteeringOnce(
         // A routine or webhook turn only takes steering addressed to it; pending user messages
         // wait for the conversational continuation that starts once it finishes.
         OR: isConversationalRun(run.trigger)
-          ? [pendingWhere, { runId: input.runId }]
+          ? [{ runId: null, originTrigger: null }, { runId: input.runId }]
           : [{ runId: input.runId }],
-        message: {
-          threadId: input.threadId,
-          // Private follow-ups remain unclaimed for the existing private continuation.
-          ...(channelId
-            ? { blocks: { array_contains: [{ kind: "channel_message", channelId }] } }
-            : directMessage
-              ? { NOT: { blocks: { array_contains: [{ kind: "channel_message" }] } } }
-              : {}),
-        },
+        message: { threadId: input.threadId },
       },
       include: { message: { select: { blocks: true, seq: true } } },
       orderBy: [{ message: { seq: "asc" } }, { id: "asc" }],
@@ -752,35 +700,6 @@ async function claimSteeringOnce(
       type: "run.steering.claimed",
       payload: { steeringIds: steering.map((item) => item.id), nextMessageSeq },
     });
-    // In a group chat the row's user is the bot's owner, not the sender, so the sender is
-    // matched by the address it wrote from.
-    const groupSenders = steering.flatMap((item) =>
-      (item.message.blocks as MessageBlock[]).filter((block) => block.kind === "channel_message"),
-    );
-    const ownAddresses = new Set(
-      groupSenders.length === 0
-        ? []
-        : (
-            await tx.messagingIdentity.findMany({
-              where: {
-                userId: run.userId,
-                OR: groupSenders.map((block) => ({
-                  provider: block.provider,
-                  address: block.fromAddress,
-                })),
-              },
-              select: { provider: true, address: true },
-            })
-          ).map((identity) => `${identity.provider}:${identity.address}`),
-    );
-    const sentByRunPerson = (item: (typeof steering)[number]) => {
-      const group = (item.message.blocks as MessageBlock[]).find(
-        (block) => block.kind === "channel_message",
-      );
-      return group
-        ? ownAddresses.has(`${group.provider}:${group.fromAddress}`)
-        : item.userId === run.userId;
-    };
     return steering.map((item) => ({
       id: item.id,
       messageId: item.messageId,
@@ -789,11 +708,9 @@ async function claimSteeringOnce(
       origin:
         item.originTrigger === "webhook"
           ? ("webhook" as const)
-          : sentByRunPerson(item)
+          : item.userId === run.userId
             ? ("user" as const)
-            : item.originTrigger === "messaging"
-              ? ("messaging" as const)
-              : ("member" as const),
+            : ("member" as const),
     }));
   }, THREAD_LOCK_TRANSACTION_OPTIONS);
 }
@@ -1978,10 +1895,9 @@ export async function createPendingSteeringRun(
     orderBy: [{ message: { seq: "asc" } }, { id: "asc" }],
   });
   if (pending.length === 0) return null;
-  // One origin per continuation so a group channel and the owner's private chat are not answered
-  // together. The app and the owner's direct line are one private conversation, answered first.
-  // One sender too: the run acts with that person's accounts, and the rest get their own
-  // continuation next.
+  // One origin per continuation so a webhook delivery and the chat are not answered together; the
+  // chat is answered first. One sender too: the run acts with that person's accounts, and the rest
+  // get their own continuation next.
   const origin = pending.some((item) => steeringOrigin(item) === "private")
     ? "private"
     : steeringOrigin(pending[0]!);
@@ -2010,18 +1926,7 @@ export async function createPendingSteeringRun(
       taskId: task.id,
       userId,
       status: "queued",
-      // A private continuation is a follow-up the owner wrote only when every message in it came
-      // from the app; one direct-line delivery keeps it messaging, so it is never owner-started.
-      // Rows queued before origins were recorded are recognized by their channel message.
-      trigger:
-        origin === "webhook"
-          ? "webhook"
-          : origin === "private" &&
-              batch.every(
-                (item) => item.originTrigger === null && !hasChannelMessage(item.message.blocks),
-              )
-            ? "follow_up"
-            : "messaging",
+      trigger: origin === "webhook" ? "webhook" : "follow_up",
       sourceMessageId: source.message.id,
       ...(modelPin ?? {}),
     },
@@ -2057,18 +1962,8 @@ function continuationModelPin(
   };
 }
 
-function hasChannelMessage(blocks: unknown): boolean {
-  return (blocks as MessageBlock[]).some((block) => block.kind === "channel_message");
-}
-
-function steeringOrigin(item: {
-  originTrigger: string | null;
-  message: { blocks: unknown };
-}): string {
-  if (item.originTrigger === "webhook") return "webhook";
-  if (item.originTrigger !== "messaging") return "private";
-  const channelId = messagingChannelId(item.message.blocks as MessageBlock[] | undefined);
-  return channelId ? `channel:${channelId}` : "private";
+function steeringOrigin(item: { originTrigger: string | null }): string {
+  return item.originTrigger === "webhook" ? "webhook" : "private";
 }
 
 export async function appendEventInTransaction(

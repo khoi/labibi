@@ -124,19 +124,6 @@ describePostgres("unread inbox chat count (PostgreSQL)", () => {
     await group(spaceId, 2, true, false, otherUserId);
     await bot(spaceIds[2]!);
     await bot(spaceIds[3]!);
-    const externalBot = await bot(spaceId, userId, false);
-    await asSystem(prisma).externalConversation.create({
-      data: {
-        provider: "fixture",
-        workspaceId: suffix,
-        externalKey: "fixture",
-        conversationId: "fixture",
-        spaceId,
-        botId: externalBot.id,
-        userId,
-        thread: { create: { spaceId, userId, unread: true } },
-      },
-    });
     await expect(
       runAsTenant({ spaceId, userId }, () => countUnreadInboxChats(prisma, { spaceId, userId })),
     ).resolves.toBe(6);

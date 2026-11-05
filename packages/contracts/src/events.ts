@@ -306,18 +306,6 @@ const MessageBlockSchema = z.discriminatedUnion("kind", [
     version: z.number().int().positive(),
     title: z.string().max(PAGE_TITLE_MAX_LENGTH),
   }),
-  z.object({
-    /** A group-chat message delivered into a member bot's own thread. */
-    kind: z.literal("channel_message"),
-    provider: z.string(),
-    /** Per-message network when a provider spans multiple transports. */
-    transport: z.string().optional(),
-    channelId: Id,
-    fromAddress: z.string(),
-    fromLabel: z.string(),
-    text: z.string(),
-    hop: z.number().int().nonnegative().optional(),
-  }),
 ]);
 export const MessageBlock = z.preprocess(retiredCallBlockAsText, MessageBlockSchema);
 export type MessageBlock = z.infer<typeof MessageBlock>;
@@ -437,9 +425,5 @@ export const ThreadMessageSchema = z.object({
 export type ThreadMessage = z.infer<typeof ThreadMessageSchema>;
 
 export function canReactToThreadMessage(message: Pick<ThreadMessage, "id" | "blocks">): boolean {
-  return (
-    !message.id.startsWith("progress:") &&
-    !message.id.startsWith("subagent:") &&
-    !message.blocks.some((block) => block.kind === "channel_message")
-  );
+  return !message.id.startsWith("progress:") && !message.id.startsWith("subagent:");
 }

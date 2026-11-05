@@ -5,7 +5,7 @@ import {
   createDb,
   createGroupRepos,
   createRepos,
-  provisionMessagingIdentity,
+  provisionTestBot,
   runAsSystem,
   runAsTenant,
 } from "@labradoodle/db";
@@ -18,10 +18,9 @@ describe.skipIf(!enabled)("working bot visibility (PostgreSQL)", () => {
   it("prioritizes running work everywhere and stops it", async () => {
     const { prisma, pool } = createDb(process.env.DATABASE_URL!);
     const identity = await runAsSystem("test fixture", () =>
-      provisionMessagingIdentity(
+      provisionTestBot(
         prisma,
         {
-          provider: "sendblue",
           address: `working-fixture-${crypto.randomUUID()}`,
         },
         { signupsEnabled: undefined, signupAllowlist: undefined },

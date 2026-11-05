@@ -1,14 +1,11 @@
-import type { PhotonProjectCredentials, TelegramBotCredentials } from "@labradoodle/adapters";
 import {
   boatApiKeyFromEnv,
   boatApiUrlFromEnv,
   mcpStdioOptionsFromEnv,
-  photonProjectsFromEnv,
   resolveCloudAgentProvider,
   resolveDeploymentModel,
   resolveSandboxProvider,
   secretStoreOptionsFromEnv,
-  telegramBotsFromEnv,
 } from "@labradoodle/adapters";
 import type { OidcConfig } from "@labradoodle/auth";
 import type { MinimumClientBuilds, NavLink } from "@labradoodle/contracts";
@@ -103,10 +100,6 @@ export interface AppEnv {
   pipedreamClientSecret: string | undefined;
   pipedreamProjectId: string | undefined;
   pipedreamEnvironment: "development" | "production";
-  sendblueApiKeyId: string | undefined;
-  sendblueApiSecret: string | undefined;
-  sendblueSigningSecret: string | undefined;
-  sendbluePhoneNumber: string | undefined;
   expoAccessToken: string | undefined;
   smtpUrl: string | undefined;
   emailProvider?: string;
@@ -119,35 +112,6 @@ export interface AppEnv {
   stripeWebhookSecret: string | undefined;
   stripePriceId: string | undefined;
   emailEmulator: boolean;
-  slackClientId?: string;
-  slackClientSecret?: string;
-  slackBotToken: string | undefined;
-  slackSigningSecret: string | undefined;
-  whatsappAccessToken: string | undefined;
-  whatsappPhoneNumberId: string | undefined;
-  whatsappAppSecret: string | undefined;
-  whatsappVerifyToken: string | undefined;
-  telegramBotToken: string | undefined;
-  telegramWebhookSecret: string | undefined;
-  /** Extra named Telegram bots (TELEGRAM_BOT_TOKEN_<NAME>), e.g. one per space. */
-  telegramBots?: TelegramBotCredentials[];
-  larkAppId: string | undefined;
-  larkAppSecret: string | undefined;
-  larkVerificationToken: string | undefined;
-  larkEncryptKey: string | undefined;
-  larkDomain: string | undefined;
-  photonProjectId: string | undefined;
-  photonProjectSecret: string | undefined;
-  photonWebhookSecret: string | undefined;
-  /** Extra named Photon projects (PHOTON_PROJECT_ID_<NAME>), each with its own number. */
-  photonProjects?: PhotonProjectCredentials[];
-  /** Unknown chat senders auto-provision their own accounts when true. */
-  messagingOpenSignup: boolean;
-  /** Bot that owns team/external chat rooms on the messaging surface. */
-  teamChatBotId: string | undefined;
-  /** Optional model override for ambient engagement judging. */
-  teamChatJudgeProvider: string | undefined;
-  teamChatJudgeModel: string | undefined;
   defaultProvider: string;
   defaultModel: string;
   wakeupDriver: string;
@@ -285,10 +249,6 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
     pipedreamProjectId: optional(source.PIPEDREAM_PROJECT_ID),
     pipedreamEnvironment:
       source.PIPEDREAM_ENVIRONMENT === "production" ? "production" : "development",
-    sendblueApiKeyId: optional(source.SENDBLUE_API_KEY_ID),
-    sendblueApiSecret: optional(source.SENDBLUE_API_SECRET),
-    sendblueSigningSecret: optional(source.SENDBLUE_SIGNING_SECRET),
-    sendbluePhoneNumber: optional(source.SENDBLUE_PHONE_NUMBER),
     expoAccessToken: optional(source.EXPO_ACCESS_TOKEN),
     smtpUrl: optional(source.SMTP_URL),
     emailProvider: optional(source.EMAIL_PROVIDER),
@@ -300,30 +260,6 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
     stripeWebhookSecret: optional(source.STRIPE_WEBHOOK_SECRET),
     stripePriceId: optional(source.STRIPE_PRICE_ID),
     emailEmulator: source.EMAIL_EMULATOR === "true" && source.NODE_ENV !== "production",
-    slackClientId: optional(source.SLACK_CLIENT_ID),
-    slackClientSecret: optional(source.SLACK_CLIENT_SECRET),
-    slackBotToken: optional(source.SLACK_BOT_TOKEN),
-    slackSigningSecret: optional(source.SLACK_SIGNING_SECRET),
-    whatsappAccessToken: optional(source.WHATSAPP_ACCESS_TOKEN),
-    whatsappPhoneNumberId: optional(source.WHATSAPP_PHONE_NUMBER_ID),
-    whatsappAppSecret: optional(source.WHATSAPP_APP_SECRET),
-    whatsappVerifyToken: optional(source.WHATSAPP_VERIFY_TOKEN),
-    telegramBotToken: optional(source.TELEGRAM_BOT_TOKEN),
-    telegramWebhookSecret: optional(source.TELEGRAM_WEBHOOK_SECRET_TOKEN),
-    telegramBots: telegramBotsFromEnv(source),
-    larkAppId: optional(source.LARK_APP_ID),
-    larkAppSecret: optional(source.LARK_APP_SECRET),
-    larkVerificationToken: optional(source.LARK_VERIFICATION_TOKEN),
-    larkEncryptKey: optional(source.LARK_ENCRYPT_KEY),
-    larkDomain: optional(source.LARK_DOMAIN),
-    photonProjectId: optional(source.PHOTON_PROJECT_ID),
-    photonProjectSecret: optional(source.PHOTON_PROJECT_SECRET),
-    photonWebhookSecret: optional(source.PHOTON_WEBHOOK_SECRET),
-    photonProjects: photonProjectsFromEnv(source),
-    messagingOpenSignup: source.MESSAGING_OPEN_SIGNUP === "true",
-    teamChatBotId: optional(source.TEAM_CHAT_BOT_ID) ?? optional(source.SLACK_RAKAZO_BOT_ID),
-    teamChatJudgeProvider: optional(source.TEAM_CHAT_JUDGE_PROVIDER),
-    teamChatJudgeModel: optional(source.TEAM_CHAT_JUDGE_MODEL),
     defaultProvider: deploymentModel.provider,
     defaultModel: deploymentModel.model,
     wakeupDriver: source.WAKEUP_DRIVER ?? "graphile",

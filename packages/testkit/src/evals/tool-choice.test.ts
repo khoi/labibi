@@ -24,7 +24,6 @@ function evidence(overrides: Partial<Evidence> = {}): Evidence {
     finalStep: 2,
     settings: EMPTY_SETTINGS,
     settingsBefore: EMPTY_SETTINGS,
-    messaging: { originThreadId: null, outbound: [] },
     ...overrides,
   };
 }

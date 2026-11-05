@@ -7,7 +7,7 @@ import {
   createDb,
   createPendingSteeringRun,
   createThreadMessage,
-  provisionMessagingIdentity,
+  provisionTestBot,
   runAsSystem,
   runAsTenant,
 } from "@labradoodle/db";
@@ -52,9 +52,9 @@ describe.skipIf(!enabled)("typed replies to waiting cards (PostgreSQL)", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     const identity = await runAsSystem("test fixture", () =>
-      provisionMessagingIdentity(
+      provisionTestBot(
         prisma,
-        { provider: "test", address: `typed-reply-${randomUUID()}` },
+        { address: `typed-reply-${randomUUID()}` },
         { signupsEnabled: undefined, signupAllowlist: undefined },
       ),
     );
@@ -93,7 +93,6 @@ describe.skipIf(!enabled)("typed replies to waiting cards (PostgreSQL)", () => {
   });
   afterEach(async () => {
     if (!actor) return;
-    await system.messagingIdentity.deleteMany({ where: { userId: actor.userId } });
     await system.organization.deleteMany({ where: { id: actor.spaceId } });
     await system.user.deleteMany({ where: { id: actor.userId } });
   });

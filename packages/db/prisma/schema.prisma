@@ -88,8 +88,6 @@ model User {
 
   @@unique([email])
   @@map("user")
-  messagingInstallations MessagingInstallation[]
-  messagingInstallSessions MessagingInstallSession[]
 }
 
 /// A row with no answers means the user skipped the survey.
@@ -594,7 +592,6 @@ model Space {
   purchases                   Purchase[]
   feedbackReports             FeedbackReport[]
   botMcpServers              BotMcpServer[]
-  messagingIdentities         MessagingIdentity[]
   actionApprovalRules         ActionApprovalRule[]
   actionAutoReviewPreferences ActionAutoReviewPreference[]
   memoryConfig                SpaceMemoryConfig?
@@ -602,7 +599,6 @@ model Space {
   chatGroups                  ChatGroup[]
   botSecrets                  BotSecret[]
   vaultCredentials            VaultCredential[]
-  externalConversations       ExternalConversation[]
   agentSecrets                AgentSecret[]
   agentSkillSpaces            AgentSkillSpace[]
   mcpServerSpaces             McpServerSpace[]
@@ -612,8 +608,6 @@ model Space {
   @@index([organizationId, createdAt])
   @@index([createdByUserId])
   @@map("spaces")
-  messagingInstallations MessagingInstallation[]
-  messagingInstallSessions MessagingInstallSession[]
 }
 
 /// A space's data encryption key, wrapped by a master key. There is no foreign key:
@@ -904,8 +898,6 @@ model Bot {
   thinkingLevel     String?
   disabledBuiltinTools String[] @default([])
   webhookSecretId   String?
-  teamChatAmbientEnabled Boolean @default(false)
-  teamChatRules          String  @default("")
   routines          Routine[]
   taughtSkills      TaughtSkill[]
   memoryDocuments   MemoryDocument[]
@@ -920,13 +912,10 @@ model Bot {
   groupMembers      ChatGroupMember[]
   botSecrets BotSecret[]
 
-  externalConversations ExternalConversation[]
 
   @@index([spaceId, userId, archivedAt, updatedAt])
   @@index([computerId])
   @@map("bots")
-  messagingInstallations MessagingInstallation[]
-  messagingInstallSessions MessagingInstallSession[]
 }
 
 model BotDeletion {
@@ -981,8 +970,6 @@ model Thread {
   bot                         Bot?       @relation(fields: [botId], references: [id], onDelete: Cascade)
   groupId                     String?    @unique
   group                       ChatGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  externalConversationId      String?    @unique
-  externalConversation        ExternalConversation? @relation(fields: [externalConversationId], references: [id], onDelete: Cascade)
   userId                      String
   createdAt                   DateTime   @default(now())
   nextEventSeq                Int        @default(0)
@@ -1026,7 +1013,6 @@ model Message {
   /// Blind-index search tokens for the encrypted blocks; NULL until the row is encrypted.
   searchTokens     Int[]
   sourceRuns            Run[]             @relation("RunSourceMessage")
-  externalTranscriptFor  ExternalMessage?
   steeringMessages SteeringMessage[]
   createdAt        DateTime  @default(now())
 
@@ -1117,21 +1103,16 @@ model Run {
   // The occurrence a recurring timer run was due at, recorded at its first start only when it started late.
   lateSince            DateTime?
   completedAt          DateTime?
-  messagingMirroredAt  DateTime?
-  teamChatMirroredAt   DateTime?
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
   attempts             Attempt[]
   effects              ExternalEffect[]
   steeringMessages     SteeringMessage[]
-  externalMessage      ExternalMessage?
 
   @@unique([spaceId, clientNonce])
   @@index([status, wakeAt])
   @@index([status, leaseExpiresAt])
   @@index([status, updatedAt, id])
-  @@index([trigger, status, messagingMirroredAt, updatedAt])
-  @@index([trigger, status, teamChatMirroredAt, updatedAt])
   @@index([spaceId, botId])
   @@index([botId, createdAt])
   @@index([taskId])
@@ -1355,7 +1336,6 @@ model Routine {
   notify         Boolean   @default(true)
   webhookEnabled Boolean   @default(false)
   githubEnabled  Boolean   @default(false)
-  messageProvider String?
   modelProvider  String?
   modelId        String?
   thinkingLevel  String?
@@ -1939,97 +1919,6 @@ model BotMcpServer {
   @@map("bot_mcp_servers")
 }
 
-model MessagingIdentity {
-  id                   String    @id @default(cuid())
-  provider             String
-  /// Sender address within the provider: E.164 number, Slack user id, ….
-  address              String
-  /// Opaque provider thread id for the 1:1 conversation; learned on inbound.
-  dmThreadId           String?
-  installationId       String?
-  installation         MessagingInstallation? @relation(fields: [installationId], references: [id], onDelete: Cascade)
-  userId               String
-  spaceId              String
-  space                Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  botId                String    @unique
-  verifiedAt           DateTime?
-  lastInboundAt        DateTime?
-  outboundSinceInbound Int       @default(0)
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
-
-  @@unique([provider, address])
-  @@index([userId])
-  @@index([installationId])
-  @@map("messaging_identities")
-}
-
-model MessagingChannel {
-  id            String              @id @default(cuid())
-  provider      String
-  threadId      String              @unique
-  name          String?
-  introPostedAt DateTime?
-  /// The platform time of the newest roster this channel has processed, so a
-  /// delayed older roster changes no membership.
-  rosterSeenAt  DateTime?
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
-  members       MessagingChannelMember[]
-
-  @@map("messaging_channels")
-}
-
-model MessagingChannelMember {
-  id         String      @id @default(cuid())
-  channelId  String
-  channel    MessagingChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  address    String
-  identityId String?
-  status     String
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-
-  @@unique([channelId, address])
-  @@index([identityId])
-  @@map("messaging_channel_members")
-}
-
-/// Short-lived web-issued code binding a chat address to an existing user+bot.
-model MessagingLinkCode {
-  id        String   @id @default(cuid())
-  code      String   @unique
-  userId    String
-  spaceId   String
-  botId     String
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-
-  @@index([userId])
-  @@map("messaging_link_codes")
-}
-
-model MessagingOutbound {
-  id              String    @id @default(cuid())
-  idempotencyKey  String    @unique
-  kind            String
-  /// DM rows resolve their thread through the identity at drain time.
-  identityId      String?
-  /// Group/intro rows post straight to this provider thread id.
-  threadId        String?
-  body            String
-  status          String    @default("pending")
-  attempts        Int       @default(0)
-  nextAttemptAt   DateTime?
-  providerHandle  String?
-  sourceMessageId String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  @@index([status, nextAttemptAt])
-  @@map("messaging_outbound")
-}
-
 model BotSecret {
   id         String   @id
   userId     String
@@ -2075,65 +1964,6 @@ model VaultCredential {
   @@index([spaceId])
   // Unique index vault_credentials_userId_spaceId_name_key (NULLS NOT DISTINCT) is created in SQL.
   @@map("vault_credentials")
-}
-
-model ExternalConversation {
-  id                       String            @id @default(cuid())
-  provider                 String
-  workspaceId              String
-  externalKey              String
-  conversationId           String
-  displayName              String?
-  participantNames         String[]          @default([])
-  teamChatAmbientEnabled   Boolean?
-  teamChatRules            String?
-  automatedSenderPolicies  Json              @default("{}")
-  spaceId                  String
-  space                    Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  botId                    String
-  bot                      Bot               @relation(fields: [botId], references: [id], onDelete: Cascade)
-  userId                   String
-  thread                   Thread?
-  messages                 ExternalMessage[]
-  createdAt                DateTime          @default(now())
-  updatedAt                DateTime          @updatedAt
-
-  @@unique([provider, workspaceId, externalKey])
-  @@index([spaceId, botId])
-  @@map("external_conversations")
-}
-
-model ExternalMessage {
-  id                     String                @id @default(cuid())
-  externalConversationId String
-  externalConversation   ExternalConversation  @relation(fields: [externalConversationId], references: [id], onDelete: Cascade)
-  providerEventId        String
-  kind                   String                @default("direct")
-  senderId               String
-  senderName             String
-  senderIsBot            Boolean               @default(false)
-  content                String
-  replyThreadId          String?
-  batchContext           String?
-  engagementReason       String?
-  judgedAt               DateTime?
-  status                 String                @default("received")
-  runId                  String?               @unique
-  run                    Run?                  @relation(fields: [runId], references: [id], onDelete: SetNull)
-  threadMessageId        String?               @unique
-  threadMessage          Message?              @relation(fields: [threadMessageId], references: [id], onDelete: SetNull)
-  attempts               Int                   @default(0)
-  nextAttemptAt          DateTime?
-  lastError              String?
-  providerReplyHandle    String?
-  deliveredAt            DateTime?
-  createdAt              DateTime              @default(now())
-  updatedAt              DateTime              @updatedAt
-
-  @@unique([externalConversationId, providerEventId])
-  @@index([status, nextAttemptAt])
-  @@index([externalConversationId, senderIsBot, createdAt])
-  @@map("external_messages")
 }
 
 model AgentSecret {
@@ -2352,42 +2182,6 @@ model UserActionAutoReviewPreference {
   updatedAt     DateTime @updatedAt
 
   @@map("user_action_auto_review_preferences")
-}
-
-model MessagingInstallation {
-  id String @id @default(cuid())
-  provider String
-  workspaceId String
-  workspaceName String
-  spaceId String
-  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  botId String
-  bot Bot @relation(fields: [botId], references: [id], onDelete: Cascade)
-  ciphertext String
-  /// Sender address of the person who installed it, as inbound messages carry it.
-  ownerAddress String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  @@unique([provider, workspaceId])
-  @@index([spaceId, userId])
-  identities MessagingIdentity[]
-  @@map("messaging_installations")
-}
-
-model MessagingInstallSession {
-  id String @id
-  provider String
-  spaceId String
-  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  botId String
-  bot Bot @relation(fields: [botId], references: [id], onDelete: Cascade)
-  expiresAt DateTime
-  @@index([expiresAt])
-  @@map("messaging_install_sessions")
 }
 
 model AgentSkillSpace {

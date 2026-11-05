@@ -116,7 +116,7 @@ describe.skipIf(!databaseAvailable)("group eval tool budget", () => {
         // The trial budget (subject's two calls plus Mika's ongoing ones) trips at
         // Mika's fourth call, in the group wait after the subject's run already ended.
         maxToolCalls: 5,
-        createApp: (composio, messaging) => {
+        createApp: (composio) => {
           const sandbox = new EvalSandboxProvider();
           return createApp({
             sandbox,
@@ -130,8 +130,6 @@ describe.skipIf(!databaseAvailable)("group eval tool budget", () => {
             wakeupDriver: "memory",
             signupsEnabled: "true",
             composio,
-            messaging,
-            messagingOpenSignup: false,
             cloudAgentProvider: "none",
             encryptionKey: "offline-group-eval-encryption-key",
           });

@@ -18,7 +18,6 @@ import {
   mentionedGroupBotIds,
   messageBypassesTakeoverWait,
   messageReaction,
-  parseMessagingCommand,
   projectMessages,
   QUEUE_HOLDING_RUN_STATUSES,
   resolveGroupTargetBotIds,
@@ -1585,7 +1584,8 @@ async function startReactionTurn(
 
 /** A bare "stop" or "stop now" with nothing attached: the owner's Stop, sent as text. */
 export function isStopMessage(input: { text?: string; artifactIds?: string[] }) {
-  return !input.artifactIds?.length && parseMessagingCommand(input.text ?? "") === "stop";
+  const text = (input.text ?? "").trim().toUpperCase().replace(/\s+/g, " ");
+  return !input.artifactIds?.length && /^STOP(?: NOW)?[.!?…]*$/.test(text);
 }
 
 export const STOPPED_BY_MESSAGE_NOTE = "Stopped. Anything already done stays done.";

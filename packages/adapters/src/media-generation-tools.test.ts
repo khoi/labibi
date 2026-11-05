@@ -60,7 +60,6 @@ describe("bot media tools", () => {
       groupId: null,
       trigger: "message",
       semanticMemoryEnabled: false,
-      messagingChannelRun: false,
     };
     const names = (extra = {}) =>
       selectBuiltinToolsForRun({ ...base, ...extra }).map((tool) => tool.name);

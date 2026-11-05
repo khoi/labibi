@@ -146,7 +146,6 @@ function replyBlockText(block: MessageBlock): string {
   switch (block.kind) {
     case "text":
     case "ask":
-    case "channel_message":
     case "computer":
     case "meta":
     case "progress":

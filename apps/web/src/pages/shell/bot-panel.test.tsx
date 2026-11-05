@@ -131,8 +131,6 @@ function bot(overrides: Partial<Bot> = {}): Bot {
     modelProvider: null,
     modelId: null,
     thinkingLevel: null,
-    teamChatAmbientEnabled: false,
-    teamChatRules: "",
     disabledBuiltinTools: [],
     webhookConfigured: false,
     ...overrides,

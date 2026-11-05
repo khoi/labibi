@@ -5,7 +5,6 @@ import {
   choiceCardOptions,
   DISMISSED_CHOICE_ANSWER_ID,
   hasVisibleMessagePresentation,
-  isCenteredAgentEvent,
   messageHasInlineControls,
   messagePresentationSegments,
   quotableMessageSegments,
@@ -13,22 +12,6 @@ import {
 } from "./message-presentation";
 
 describe("mobile message presentation", () => {
-  it("centers channel mirrors", () => {
-    const blocks = [
-      {
-        kind: "channel_message",
-        provider: "sendblue",
-        channelId: "ch-1",
-        fromAddress: "+15551234567",
-        fromLabel: "Alex",
-        text: "Hello from the group",
-      },
-    ] as MessageBlock[];
-
-    for (const block of blocks) expect(isCenteredAgentEvent([block])).toBe(true);
-    expect(isCenteredAgentEvent([{ kind: "text", text: "Hello" }])).toBe(false);
-  });
-
   it("hides completed tool activity", () => {
     const blocks = [
       {

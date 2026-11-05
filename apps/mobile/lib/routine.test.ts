@@ -14,7 +14,6 @@ function routine(partial: Partial<Routine>): Routine {
     notify: true,
     webhookEnabled: false,
     githubEnabled: false,
-    messageProvider: null,
     modelProvider: null,
     modelId: null,
     thinkingLevel: null,

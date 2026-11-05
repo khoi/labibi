@@ -16,7 +16,6 @@ await unwrapEnvFromKeyManager();
 
 import {
   auditLogConfig,
-  ChatSdkMessagingSurface,
   CodexCatalogCache,
   contentKeyProviderFromEnv,
   createAgentHomeStore,
@@ -29,7 +28,6 @@ import {
   createIdleComputerSweeper,
   createJobReconciler,
   createMediaGenerationProvider,
-  createMessagingContextLoader,
   createModelCreditReconciler,
   createPaymentWalletProvider,
   createPostgresReconciliationLeadership,
@@ -47,15 +45,11 @@ import {
   homeStorageSweeper,
   InMemoryJobQueue,
   InstalledConnectorProvider,
-  installedMessaging,
   isComposioEnabled,
-  isMessagingSurfaceEnabled,
   isPipedreamEnabled,
   McpConnector,
   McpOAuthBroker,
   mcpStdioOptionsFromEnv,
-  messagingEnvFromProcess,
-  messagingPlatformsFromEnv,
   PiAgentRuntime,
   PipedreamConnector,
   PostgresRealtimeFanout,
@@ -191,17 +185,6 @@ async function main() {
   const pipedream = isPipedreamEnabled(pipedreamConfig)
     ? new PipedreamConnector(pipedreamConfig)
     : undefined;
-  // Never poll inbound here: Telegram allows a single getUpdates consumer,
-  // and that is the API process, which owns the inbound sink.
-  const messagingPlatforms = messagingPlatformsFromEnv(messagingEnvFromProcess(process.env)).filter(
-    (platform) => platform.provider !== "slack" || !process.env.SLACK_CLIENT_ID,
-  );
-  const legacyMessaging = isMessagingSurfaceEnabled(messagingPlatforms, {
-    deploymentModelConfigured,
-    openSignup: process.env.MESSAGING_OPEN_SIGNUP === "true",
-  })
-    ? new ChatSdkMessagingSurface(messagingPlatforms)
-    : undefined;
   const integrationSettings = new IntegrationProviderSettings(
     prisma,
     secrets,
@@ -234,18 +217,6 @@ async function main() {
   const runs = new RunStarter(realtime, { signal: shutdown.signal });
   const jobs: JobPublisher =
     inMemoryJobs ?? new RunJobPublisher(prisma, new GraphileJobPublisher(pool, prisma), runs);
-  const { messaging } = installedMessaging(
-    prisma,
-    secrets,
-    {
-      slackClientId: process.env.SLACK_CLIENT_ID,
-      slackClientSecret: process.env.SLACK_CLIENT_SECRET,
-      slackSigningSecret: process.env.SLACK_SIGNING_SECRET,
-      apiUrl: process.env.API_URL,
-    },
-    legacyMessaging,
-    jobs,
-  );
   // One provider instance so emulator launches and polls share the same Map.
   const cloudAgent = createCloudAgentConnection();
   const paymentWallet = await createPaymentWalletProvider();
@@ -298,7 +269,6 @@ async function main() {
     notifications,
     jobs,
     events,
-    messaging: messaging ? createMessagingContextLoader(prisma) : undefined,
     web: createWebProvider(),
     cloudAgent,
     // Device sockets live in an API process; the worker forwards to whichever one holds it.
@@ -337,7 +307,6 @@ async function main() {
     memoryProviders,
     deploymentModelKey,
     deploymentModelConfigured,
-    messaging,
     cloudAgent,
     paymentWallet,
     notifications,

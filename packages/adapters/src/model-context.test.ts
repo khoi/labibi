@@ -17,7 +17,6 @@ function typicalBotBudget(contextWindow: number) {
     groupId: null,
     trigger: "user",
     semanticMemoryEnabled: false,
-    messagingChannelRun: false,
   }).map((tool) => ({
     name: tool.name,
     description: tool.description,

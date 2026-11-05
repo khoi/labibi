@@ -218,14 +218,6 @@ export const TOOL_CHOICE_DEFINITIONS: ToolChoiceCase[] = [
   },
   // Questions about Labradoodle itself.
   {
-    id: "help-connect-slack",
-    area: "product-help",
-    kind: "guard",
-    purpose: "Look up how to connect a messaging app instead of guessing.",
-    prompt: "How do I connect you to Slack?",
-    expect: PRODUCT_HELP,
-  },
-  {
     id: "help-credits",
     area: "product-help",
     kind: "guard",

@@ -106,11 +106,6 @@ msgstr "{0} verbinding"
 msgid "{0} GB"
 msgstr "{0} GB"
 
-#. placeholder {0}: sender.name
-#: src/pages/ExternalConversationSettings.tsx
-msgid "{0} handling"
-msgstr "{0} afhandeling"
-
 #. placeholder {0}: updated.name
 #: src/pages/McpServersOverlay.tsx
 msgid "{0} is not working"
@@ -130,11 +125,6 @@ msgstr "{0} KB"
 #: src/components/ArtifactFileCard.tsx
 msgid "{0} MB"
 msgstr "{0} MB"
-
-#. placeholder {0}: sender.name
-#: src/pages/ExternalConversationSettings.tsx
-msgid "{0} rollup hours"
-msgstr "{0} rollup-uren"
 
 #. placeholder {0}: parts.amount
 #: src/components/ArtifactFileCard.tsx
@@ -646,10 +636,6 @@ msgstr "Aan routine toevoegen"
 msgid "Add trigger"
 msgstr "Trigger toevoegen"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Add workspace"
-msgstr "Werkruimte toevoegen"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "Added"
@@ -741,10 +727,6 @@ msgstr "Een keer toegestaan"
 #: src/pages/Auth.tsx
 msgid "Already have an account?"
 msgstr "Heb je al een account?"
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Always act"
-msgstr "Altijd handelen"
 
 #: src/components/AskCard.tsx
 msgid "Always allow {site}"
@@ -855,7 +837,6 @@ msgstr "Goedkeuringsmodel"
 msgid "Approvals"
 msgstr "Goedkeuringen"
 
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
@@ -950,10 +931,6 @@ msgstr "Autoriseer deze server zodat agents zijn tools kunnen gebruiken. Er word
 msgid "Auto"
 msgstr "Auto"
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Automated senders"
-msgstr "Geautomatiseerde afzenders"
-
 #: src/pages/RoutineEditor.tsx
 msgid "Available after the routine is saved"
 msgstr "Beschikbaar zodra de routine is opgeslagen"
@@ -1039,7 +1016,6 @@ msgstr "Live desktop opstarten…"
 
 #: src/lib/identity-display.ts
 #: src/pages/IntegrationSetup.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/Shell.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
@@ -1231,10 +1207,6 @@ msgstr "Chatdetails"
 msgid "Chat Settings"
 msgstr "Chatinstellingen"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Chat with your bot from Slack."
-msgstr "Chat vanuit Slack met je bot."
-
 #: src/lib/localized-provider-hint.ts
 msgid "ChatGPT subscription"
 msgstr ""
@@ -1347,7 +1319,6 @@ msgstr "Bezig met wissen…"
 
 #: src/components/ErrorBoundary.tsx
 #: src/pages/KnowledgeSection.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/chat-find-bar.tsx
@@ -1551,7 +1522,6 @@ msgstr "Bevestig dat de URL vanuit deze browsersessie bereikbaar is en test daar
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 #: src/pages/memory-providers/SupermemorySettingsForm.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/model-settings/role-model-picker.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/shell/message-cards.tsx
@@ -1562,10 +1532,6 @@ msgstr "Verbinden"
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Connect {selectedProviderName}"
 msgstr "{selectedProviderName} verbinden"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Connect a chat app"
-msgstr ""
 
 #: src/pages/Onboarding.tsx
 #: src/pages/shell/composer-error.tsx
@@ -1688,10 +1654,6 @@ msgstr ""
 msgid "Continue with {0}"
 msgstr "Doorgaan met {0}"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Conversations"
-msgstr ""
-
 #: src/components/InviteDialog.tsx
 #: src/components/markdown-copy.tsx
 #: src/components/pages/PublicPageShell.tsx
@@ -1801,7 +1763,6 @@ msgstr "De update kon niet worden voltooid. Probeer het opnieuw."
 
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/SlackInstallCallback.tsx
 msgid "Could not connect"
 msgstr "Verbinden mislukt"
 
@@ -2120,7 +2081,6 @@ msgstr ""
 msgid "Could not run routine"
 msgstr "Routine uitvoeren mislukt"
 
-#: src/pages/ExternalConversationSettings.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
@@ -2266,10 +2226,6 @@ msgstr "Kopiëren lukte niet. Selecteer de link en kopieer hem."
 msgid "Couldn't load grants"
 msgstr ""
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Couldn't load messaging settings"
-msgstr "Berichtinstellingen laden mislukt"
-
 #: src/components/pages/PagesList.tsx
 msgid "Couldn't load pages."
 msgstr "Pagina's konden niet worden geladen."
@@ -2285,10 +2241,6 @@ msgstr "Deze pagina kon niet worden geladen. Probeer het opnieuw."
 #: src/pages/PaymentWalletSettingsPanel.tsx
 msgid "Couldn't load your wallet"
 msgstr ""
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Couldn't update messaging settings"
-msgstr "Berichtinstellingen bijwerken mislukt"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Couldn't update your timezone"
@@ -2425,10 +2377,6 @@ msgstr "Dagelijkse taken"
 #: src/lib/cron.ts
 msgid "days"
 msgstr "dagen"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Decline"
-msgstr "Weigeren"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/model-settings/role-model-picker.tsx
@@ -2587,7 +2535,6 @@ msgstr "Opname weggooien"
 
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/MemorySettingsOverlay.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
@@ -2794,7 +2741,6 @@ msgid "Error"
 msgstr "Fout"
 
 #: src/lib/cron.ts
-#: src/pages/ExternalConversationSettings.tsx
 msgid "Every"
 msgstr "Elke"
 
@@ -2838,10 +2784,6 @@ msgstr "Elk uur"
 msgid "Every hour at :{0}"
 msgstr "Elk uur om :{0}"
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Every message"
-msgstr "Elk bericht"
-
 #: src/lib/cron.ts
 msgid "Every Monday"
 msgstr "Elke maandag"
@@ -2855,10 +2797,6 @@ msgstr "Elke maand"
 #: src/pages/RoutineSchedule.tsx
 msgid "Every week"
 msgstr "Elke week"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Everyone in this bot's space can read the chats it gets from {linkApp}."
-msgstr ""
 
 #: src/components/SharedSpaceRules.tsx
 msgid "Everyone in this space sees all its chats, bots and memory."
@@ -2909,11 +2847,6 @@ msgstr "Gegevens exporteren"
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Export this week's list from the CRM and drop it in the shared folder"
 msgstr "Exporteer de lijst van deze week uit het CRM en zet hem in de gedeelde map"
-
-#: src/pages/ExternalConversationSettings.tsx
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "External conversation"
-msgstr "Extern gesprek"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
@@ -3127,7 +3060,6 @@ msgid "Granting…"
 msgstr ""
 
 #: src/lib/identity-display.ts
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/shell/chat-header.tsx
 #: src/pages/shell/side-panel.tsx
 #: src/pages/SpaceSearch.tsx
@@ -3137,10 +3069,6 @@ msgstr "Groep"
 #: src/pages/GroupPanel.tsx
 msgid "Group settings"
 msgstr "Groepsinstellingen"
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Group updates"
-msgstr "Groepsupdates"
 
 #: src/pages/RoutineEditor.tsx
 msgid "header"
@@ -3213,7 +3141,6 @@ msgid "hour"
 msgstr "uur"
 
 #: src/lib/cron.ts
-#: src/pages/ExternalConversationSettings.tsx
 msgid "hours"
 msgstr "uren"
 
@@ -3244,10 +3171,6 @@ msgstr "Ik ben klaar"
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "If you heard that, voice is ready."
 msgstr "Als je dat hoorde, is de stem klaar."
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Ignore"
-msgstr "Negeren"
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
@@ -3314,10 +3237,6 @@ msgstr "Instructiegeschiedenis"
 #: src/components/InstructionSettings.tsx
 msgid "Instructions"
 msgstr "Instructies"
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Instructions for this room"
-msgstr "Instructies voor deze ruimte"
 
 #: src/components/AskCard.tsx
 msgid "Instructions updated"
@@ -3459,7 +3378,6 @@ msgid "Later"
 msgstr "Later"
 
 #: src/components/SpaceMembersSettings.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 msgid "Leave"
 msgstr "Verlaten"
 
@@ -3493,10 +3411,6 @@ msgstr ""
 #: src/components/pages/SharePopover.tsx
 msgid "Link copied"
 msgstr "Link gekopieerd"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Link DMs"
-msgstr "DM’s koppelen"
 
 #: src/components/AccountAccess.tsx
 msgid "Link SSO"
@@ -3727,10 +3641,6 @@ msgstr "Geheugenbereik"
 msgid "Mentions"
 msgstr "Vermeldingen"
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Mentions only"
-msgstr "Alleen vermeldingen"
-
 #: src/pages/shell/chat-shared.ts
 #: src/pages/shell/composer.tsx
 #: src/pages/SpaceSearch.tsx
@@ -3750,17 +3660,9 @@ msgstr "{activeName} berichten"
 msgid "Message composer"
 msgstr "Berichteditor"
 
-#: src/pages/RoutineEditor.tsx
-msgid "Message event"
-msgstr "Berichtgebeurtenis"
-
 #: src/pages/shell/composer.tsx
 msgid "Message…"
 msgstr "Bericht…"
-
-#: src/pages/settings-nav.ts
-msgid "Messaging"
-msgstr "Berichten"
 
 #: src/lib/dictation.ts
 msgid "Microphone failed"
@@ -4850,10 +4752,6 @@ msgid "Remove header"
 msgstr "Header verwijderen"
 
 #: src/pages/RoutineEditor.tsx
-msgid "Remove message trigger"
-msgstr "Berichttrigger verwijderen"
-
-#: src/pages/RoutineEditor.tsx
 msgid "Remove schedule"
 msgstr "Schema verwijderen"
 
@@ -4901,10 +4799,6 @@ msgstr "Sleutel vervangen"
 msgid "Replaces the login saved for {0}"
 msgstr ""
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Replies to"
-msgstr "Reageert op"
-
 #: src/pages/shell/message-hover-actions.tsx
 #: src/pages/shell/quote-selection-button.tsx
 msgid "Reply"
@@ -4923,16 +4817,11 @@ msgstr "Antwoordt op {0}"
 msgid "Request a new code"
 msgstr "Vraag een nieuwe code aan"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Requests"
-msgstr ""
-
 #: src/pages/shell/message-cards.tsx
 msgid "Research & writing"
 msgstr "Onderzoek & schrijven"
 
 #: src/components/ComputerMaintenanceActions.tsx
-#: src/pages/ExternalConversationSettings.tsx
 msgid "Reset"
 msgstr "Opnieuw instellen"
 
@@ -5023,7 +4912,6 @@ msgid "Retry screen"
 msgstr "Scherm opnieuw proberen"
 
 #: src/pages/McpOAuthCallback.tsx
-#: src/pages/SlackInstallCallback.tsx
 msgid "Return to Labradoodle"
 msgstr "Terug naar Labradoodle"
 
@@ -5100,17 +4988,9 @@ msgstr "Bezig met draaien…"
 msgid "Runs"
 msgstr "Uitvoeringen"
 
-#: src/pages/RoutineEditor.tsx
-msgid "Runs when this bot receives a verified message from this provider."
-msgstr "Draait wanneer deze bot een geverifieerd bericht van deze aanbieder ontvangt."
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Sales & CRM"
 msgstr ""
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Same as {botName}"
-msgstr "Zelfde als {botName}"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Same as main model"
@@ -5128,7 +5008,6 @@ msgstr "zaterdag"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/AccountSettingsOverlay.tsx
-#: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
@@ -5151,7 +5030,6 @@ msgstr "Opslaan in kluis"
 #: src/components/ComputerProviderSettings.tsx
 #: src/components/SecretAskCard.tsx
 #: src/components/teach/SkillDraftCard.tsx
-#: src/pages/ExternalConversationSettings.tsx
 msgid "Saved"
 msgstr "Opgeslagen"
 
@@ -5166,10 +5044,6 @@ msgstr "Opgeslagen. Vernieuw de sleutel om deze te tonen."
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Saving your workspace"
 msgstr "Je werkruimte opslaan"
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Saving..."
-msgstr "Bezig met opslaan..."
 
 #: src/components/SecretAskCard.tsx
 #: src/components/teach/SkillDraftCard.tsx
@@ -5293,14 +5167,6 @@ msgstr "Zelf gehost"
 msgid "Send"
 msgstr "Verzenden"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Send <0>{linkCode}</0> from {linkApp} within 10 minutes."
-msgstr ""
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Send <0>{linkCode}</0> to <1>{linkAddress}</1> from {linkApp} within 10 minutes."
-msgstr ""
-
 #: src/components/AskCard.tsx
 msgid "Send answer"
 msgstr "Antwoord verzenden"
@@ -5361,7 +5227,6 @@ msgid "Set"
 msgstr "Instellen"
 
 #: src/components/SidebarFooter.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/keyboard-shortcuts-dialog.tsx
 #: src/pages/shell/shell-dialogs.tsx
@@ -5540,14 +5405,6 @@ msgstr ""
 #: src/pages/shell/use-composer-actions.ts
 msgid "Skipped {0}"
 msgstr "{0} overgeslagen"
-
-#: src/pages/RoutineEditor.tsx
-msgid "Slack message"
-msgstr "Slack-bericht"
-
-#: src/pages/RoutineEditor.tsx
-msgid "Slack not enabled"
-msgstr "Slack is niet ingeschakeld"
 
 #: src/components/composer/HoldToTalk.tsx
 msgid "Slide up to lock"
@@ -5817,10 +5674,6 @@ msgstr "Team"
 #: src/pages/shell/computer-view.tsx
 msgid "Team Computer"
 msgstr "Teamcomputer"
-
-#: src/pages/RoutineEditor.tsx
-msgid "Teams message"
-msgstr "Teams-bericht"
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "Template"
@@ -6150,10 +6003,6 @@ msgstr ""
 msgid "Transcription response is too large."
 msgstr ""
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Treat like a person"
-msgstr "Behandel als een persoon"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Treg token"
 msgstr "Treg-token"
@@ -6219,10 +6068,6 @@ msgstr "Ongedaan maken"
 #: src/pages/PluginsOverlay.tsx
 msgid "Uninstall"
 msgstr "Verwijderen"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Unlink"
-msgstr "Koppeling verbreken"
 
 #: src/components/pages/PagesList.tsx
 msgid "Unpin"

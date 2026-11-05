@@ -367,20 +367,6 @@ describe("reply target validation", () => {
     ["non-array", {}, null],
     ["ask", [{ kind: "ask", text: "Which release?" }], "Which release?"],
     [
-      "channel message",
-      [
-        {
-          kind: "channel_message",
-          provider: "test",
-          channelId: "channel",
-          fromAddress: "sender",
-          fromLabel: "Sender",
-          text: "Release notes",
-        },
-      ],
-      "Release notes",
-    ],
-    [
       "chart",
       [{ kind: "chart", name: "Release adoption", spec: {}, data: [] }],
       "Release adoption",

@@ -110,7 +110,7 @@ Compose bot homes mount only their own subdirectory of the application volume us
 - [Models](./self-host-models.md): model providers, local models, approvals, media generation and
   voice.
 - [Tools and integrations](./self-host-integrations.md): web search, memory, MCP servers,
-  messaging apps, cloud coding agents and payments.
+  cloud coding agents and payments.
 - [Computer providers](./self-host-sandbox-providers.md) and
   [Docker computers](./self-host-docker-computers.md): where bot computers run and how they are
   limited.

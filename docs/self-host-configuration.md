@@ -11,26 +11,6 @@ common ones with short notes.
 
 Do not commit `.env`. Never put `COMPOSIO_API_KEY`, OpenRouter keys, or provider tokens in git, logs, or chat.
 
-## Settings with names you choose
-
-The Compose files pass the API and worker only the settings each one reads, listed by name, rather than the whole `.env`. A setting whose name you choose, such as `TELEGRAM_BOT_TOKEN_<NAME>` or `PHOTON_PROJECT_ID_<NAME>`, therefore needs its own line: add it under `api` and `worker` `environment` in an override file layered after the base file (and in `RAKAZO_COMPOSE_FILE` when the updater is enabled), with no value so Compose fills it from `.env`. `install-images.sh` names any `.env` setting that no container receives.
-
-```yaml
-# docker-compose.override.yml
-services:
-  api:
-    environment:
-      TELEGRAM_BOT_TOKEN_SUPPORT:
-      TELEGRAM_WEBHOOK_SECRET_TOKEN_SUPPORT:
-  worker:
-    environment:
-      TELEGRAM_BOT_TOKEN_SUPPORT:
-      TELEGRAM_WEBHOOK_SECRET_TOKEN_SUPPORT:
-```
-
-`install-images.sh` layers a `docker-compose.override.yml` next to it automatically. In your own
-commands, add `-f docker-compose.override.yml` after the base file.
-
 ## Core settings
 
 All of these are optional:
@@ -105,14 +85,13 @@ password, and grants it the `rakazo_app` role. When migrations run as a role wit
 `GRANT rakazo_app TO <login>`.
 
 Messages, events, threads, memory, artifacts, secrets, model and voice credentials, skills, bots,
-runs, tasks, routines, connections, MCP servers and sign-ins, computers,
-messaging identities and outbox, external conversations, steering messages, usage and approval
-rules have row-level security. Each signed-in request sees only its Space's
+runs, tasks, routines, connections, MCP servers and sign-ins, computers, steering messages, usage
+and approval rules have row-level security. Each signed-in request sees only its Space's
 rows, plus the user's own account-level credentials. A query that leaves out its Space filter
 returns nothing from other Spaces. A background job that acts for one run, routine, computer,
 skill, thread or cloud agent runs as that row's Space and user, so agent tools get the same
-backstop. Security events are written and read only in system scope. Reconcilers, queue sweeps,
-the messaging outbox drain and webhooks run in a named system scope (`runAsSystem` in
+backstop. Security events are written and read only in system scope. Reconcilers, queue sweeps
+and webhooks run in a named system scope (`runAsSystem` in
 `packages/db`). That scope also sends a key derived from the app login's password, which
 `pnpm db:migrate` registers, so SQL that runs for one Space cannot switch itself into system scope.
 An app login without a password in `DATABASE_URL` has no key, and `pnpm db:migrate` warns. The job queue's tables (`graphile_worker`) hold job metadata, not Space content:

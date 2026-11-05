@@ -3,8 +3,8 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { PrismaClient } from "./client.js";
 import { createDb } from "./client.js";
 import { sendUserMessage } from "./events.js";
-import { provisionMessagingIdentity } from "./messaging.js";
 import { asSystem, runAsSystem, runAsTenant } from "./row-security.js";
+import { provisionTestBot } from "./test-bot.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 const migrationUrl = process.env.DATABASE_MIGRATION_URL ?? databaseUrl;
@@ -55,7 +55,6 @@ function trackSourceRunReads(pool: Pool): SqlRead[] {
 }
 
 describePostgres("replaying a sent message reads its first run (PostgreSQL)", () => {
-  const provider = "sendblue";
   const address = `+1559${String(Date.now()).slice(-7)}`;
   const signup = { signupsEnabled: undefined, signupAllowlist: undefined };
   let prisma: PrismaClient;
@@ -82,7 +81,7 @@ describePostgres("replaying a sent message reads its first run (PostgreSQL)", ()
       await ownerDb.pool.end();
     };
     const provisioned = await runAsSystem("test fixture", () =>
-      provisionMessagingIdentity(prisma, { provider, address }, signup),
+      provisionTestBot(prisma, { address }, signup),
     );
     ({ userId, spaceId, botId, threadId } = provisioned);
     await system.run.updateMany({
@@ -96,7 +95,6 @@ describePostgres("replaying a sent message reads its first run (PostgreSQL)", ()
 
   afterAll(async () => {
     if (prisma && userId) {
-      await system.messagingIdentity.deleteMany({ where: { provider, address } });
       if (spaceId) await system.organization.deleteMany({ where: { id: spaceId } });
       await system.user.deleteMany({ where: { id: userId } });
     }

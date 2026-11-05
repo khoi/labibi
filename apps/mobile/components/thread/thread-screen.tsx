@@ -1,7 +1,6 @@
 import type { AgentSkillCatalogEntry } from "@labradoodle/contracts";
 import {
   buildComposerMentionOptions,
-  channelMessageSender,
   chatUserBubbleColors,
   isRunWaitingOnUser,
   isRunWorking,
@@ -569,9 +568,7 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
             replyTarget={replyTarget}
             replyAuthor={
               replyTarget?.role === "user"
-                ? (otherAuthor(replyTarget.author, userId)?.name ??
-                  channelMessageSender(replyTarget.blocks) ??
-                  t("You"))
+                ? (otherAuthor(replyTarget.author, userId)?.name ?? t("You"))
                 : (memberName(snap?.members, replyTarget?.botId) ?? displayName ?? t("Bot"))
             }
             replyQuote={replyQuote}

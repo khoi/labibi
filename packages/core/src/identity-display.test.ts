@@ -51,16 +51,7 @@ describe("localized identity projections", () => {
   });
   it("covers bootstrap, threads and activity without touching message text or IDs", () => {
     const message = {
-      blocks: [
-        {
-          kind: "channel_message",
-          provider: "fixture",
-          channelId: "channel",
-          fromAddress: "__route__",
-          fromLabel: "__TestTok1__",
-          text: "Keep __TestTok1__ literal",
-        },
-      ],
+      blocks: [{ kind: "text", text: "Keep __TestTok1__ literal" }],
     };
     expect(
       displayIdentityResult(
@@ -78,13 +69,7 @@ describe("localized identity projections", () => {
       thread: {
         messages: [
           {
-            blocks: [
-              {
-                fromLabel: "Участник",
-                fromAddress: "__route__",
-                text: "Keep __TestTok1__ literal",
-              },
-            ],
+            blocks: [{ text: "Keep __TestTok1__ literal" }],
           },
         ],
       },

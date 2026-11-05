@@ -110,7 +110,6 @@ describe("feedback", () => {
         groupId: null,
         trigger,
         semanticMemoryEnabled: false,
-        messagingChannelRun: trigger === "messaging",
       }).some((tool) => tool.name === "feedback");
     expect(offered("user")).toBe(true);
     for (const trigger of ["routine", "webhook", "bot_message"])

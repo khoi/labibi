@@ -8,7 +8,6 @@ import {
   EmailEmulator,
   FakeComposioClient,
   listPiCatalog,
-  MessagingTeamChatEmulator,
   ThirdPartyConnectorEmulator,
 } from "@labradoodle/adapters";
 import { createDb } from "@labradoodle/db";
@@ -66,8 +65,6 @@ export async function startIosScreenshotBackend(input: {
     composio: new ComposioConnector({ client: new FakeComposioClient() }),
     email: new EmailEmulator(),
     billing,
-    // A chat app, so Messaging and its conversations appear.
-    messaging: new MessagingTeamChatEmulator({ provider: "slack" }),
     modelConnectionFetch: createModelConnectionFixtureFetch(listPiCatalog()),
     remoteConnectors: { fetch: marketplace.fetch, resolveHostname: thirdParties.resolveHostname },
     pluginRepoFetcher: marketplace.repo,

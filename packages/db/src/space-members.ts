@@ -563,10 +563,6 @@ async function departSpace(
           await tx.mcpOAuthSession.deleteMany({ where: own });
           await tx.modelOAuthSession.deleteMany({ where: own });
           await tx.connection.deleteMany({ where: own });
-          await tx.messagingIdentity.deleteMany({ where: own });
-          await tx.messagingLinkCode.deleteMany({ where: own });
-          await tx.messagingInstallation.deleteMany({ where: own });
-          await tx.messagingInstallSession.deleteMany({ where: own });
           await tx.actionApprovalRule.deleteMany({ where: { spaceId, createdByUserId: userId } });
           await tx.actionAutoReviewPreference.deleteMany({ where: own });
           await tx.notificationPreference.deleteMany({ where: own });

@@ -170,7 +170,6 @@ export const openai: VoiceProvider = {
         "Talk instead of typing. Hold the mic in the composer, speak, and let go to send. When Labradoodle transcribes on the server, as it does in a phone browser or the desktop app, it uses `gpt-4o-mini-transcribe`.",
         "Hear replies. Choose **Speak this reply** on any message, or turn on **Read replies aloud** in a bot's settings. Replies are spoken with `gpt-4o-mini-tts`.",
         "Give each bot its own voice. Pick from OpenAI's 13 voices per bot, so different bots are easy to tell apart.",
-        "Send voice notes from chat apps. A voice note sent to a bot through Telegram, for example, is transcribed before the bot reads it. See [messaging apps](/docs/messaging-apps/).",
       ],
     },
     {

@@ -30,15 +30,9 @@ describe("run state machine", () => {
     expect(bypasses({ status: "running", trigger: "routine" })).toBe(false);
   });
 
-  it("isolates messaging steering by chat while preserving other triggers", () => {
-    expect(messageSteersRun("messaging", "messaging")).toBe(true);
-    expect(messageSteersRun("messaging", "messaging", "group-1", "group-1")).toBe(true);
-    expect(messageSteersRun("messaging", "messaging", "group-1")).toBe(false);
-    expect(messageSteersRun("messaging", "messaging", undefined, "group-1")).toBe(false);
-    expect(messageSteersRun("messaging", "messaging", "group-1", "group-2")).toBe(false);
-    expect(messageSteersRun("messaging", "user")).toBe(false);
-    expect(messageSteersRun("user", "messaging", undefined, "group-1")).toBe(true);
-    expect(messageSteersRun("webhook", "messaging")).toBe(false);
+  it("keeps webhook deliveries and background turns out of steering", () => {
+    expect(messageSteersRun("user", "user")).toBe(true);
+    expect(messageSteersRun("webhook", "user")).toBe(false);
     expect(messageSteersRun("user", "routine")).toBe(false);
   });
 
@@ -64,7 +58,6 @@ describe("run state machine", () => {
   it("withholds user steering from routine and webhook turns", () => {
     expect(isConversationalRun("user")).toBe(true);
     expect(isConversationalRun("follow_up")).toBe(true);
-    expect(isConversationalRun("messaging")).toBe(true);
     expect(isConversationalRun("routine")).toBe(false);
     expect(isConversationalRun("webhook")).toBe(false);
     expect(isConversationalRun("tickets")).toBe(false);

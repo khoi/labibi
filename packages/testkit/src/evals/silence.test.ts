@@ -36,7 +36,6 @@ function evidence(run: Partial<RoutineEvidence> = {}): Evidence {
     finalStep: 1,
     settings: EMPTY_SETTINGS,
     settingsBefore: EMPTY_SETTINGS,
-    messaging: { originThreadId: null, outbound: [] },
     routineRuns: [routineRun],
   };
 }

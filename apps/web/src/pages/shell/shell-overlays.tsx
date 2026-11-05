@@ -88,7 +88,6 @@ export function SettingsOverlays({
   refetchSession,
   bootstrapMe,
   setBootstrapMe,
-  messagingEnabled,
   memoryConfig,
 }: {
   rpc: ReturnType<typeof createSpaceRpc>;
@@ -107,7 +106,6 @@ export function SettingsOverlays({
   refetchSession: () => Promise<unknown>;
   bootstrapMe: Me | null | undefined;
   setBootstrapMe: (update: (prev: Me | null | undefined) => Me | null | undefined) => void;
-  messagingEnabled: boolean;
   memoryConfig: SpaceMemoryConfig | null | undefined;
 }) {
   // Read when Usage opens; a reopened Usage shows the last summary while it refreshes.
@@ -147,7 +145,6 @@ export function SettingsOverlays({
           onSandboxProviderChange={(sandboxProvider) =>
             setBootstrapMe((prev) => (prev ? { ...prev, sandboxProvider } : prev))
           }
-          messagingEnabled={messagingEnabled}
           paymentWalletProvider={bootstrapMe?.paymentWalletProvider ?? null}
           timezone={bootstrapMe?.timezone ?? null}
           onTimezoneChange={async (timezone) => {

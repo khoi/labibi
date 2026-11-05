@@ -8,16 +8,15 @@ import {
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { PrismaClient } from "./client.js";
 import { createDb } from "./client.js";
-import { provisionMessagingIdentity } from "./messaging.js";
 import { createRepos } from "./repos.js";
 import { asSystem, runAsSystem, runAsTenant } from "./row-security.js";
+import { provisionTestBot } from "./test-bot.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 const describePostgres =
   process.env.VERIFY_DATABASE && databaseUrl ? describe.sequential : describe.skip;
 
 describePostgres("new bot avatars (PostgreSQL)", () => {
-  const provider = "sendblue";
   // A prefix no other test file uses, so parallel files never share this account.
   const address = `+1554${Math.floor(Math.random() * 9_000_000 + 1_000_000)}`;
   let prisma: PrismaClient;
@@ -45,9 +44,9 @@ describePostgres("new bot avatars (PostgreSQL)", () => {
       await db.pool.end();
     };
     owner = await runAsSystem("test fixture", () =>
-      provisionMessagingIdentity(
+      provisionTestBot(
         prisma,
-        { provider, address },
+        { address },
         { signupsEnabled: undefined, signupAllowlist: undefined },
       ),
     );
@@ -56,7 +55,6 @@ describePostgres("new bot avatars (PostgreSQL)", () => {
   afterAll(async () => {
     if (prisma && owner) {
       const system = asSystem(prisma, "test fixture cleanup");
-      await system.messagingIdentity.deleteMany({ where: { provider, address } });
       await system.organization.deleteMany({ where: { id: owner.spaceId } });
       await system.user.deleteMany({ where: { id: owner.userId } });
     }
@@ -141,9 +139,9 @@ describePostgres("new bot avatars (PostgreSQL)", () => {
     );
     const otherAddress = `${address}1`;
     const other = await runAsSystem("test fixture", () =>
-      provisionMessagingIdentity(
+      provisionTestBot(
         prisma,
-        { provider, address: otherAddress },
+        { address: otherAddress },
         { signupsEnabled: undefined, signupAllowlist: undefined },
       ),
     );
@@ -166,7 +164,6 @@ describePostgres("new bot avatars (PostgreSQL)", () => {
       });
     } finally {
       const system = asSystem(prisma, "test fixture cleanup");
-      await system.messagingIdentity.deleteMany({ where: { provider, address: otherAddress } });
       await system.organization.deleteMany({ where: { id: other.spaceId } });
       await system.user.deleteMany({ where: { id: other.userId } });
     }

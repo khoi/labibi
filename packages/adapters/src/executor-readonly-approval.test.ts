@@ -1920,7 +1920,7 @@ describe("own instructions through update_bot", () => {
     expect(f.results[0]).toMatchObject({ error: expect.stringContaining("someone else started") });
     expect(f.effects).toEqual([]);
   });
-  it.each(["webhook", "messaging", "bot_message"])("refuses %s runs", async (trigger) => {
+  it.each(["webhook", "bot_message"])("refuses %s runs", async (trigger) => {
     const f = fixture({ name: "update_bot", builtin: true, trigger });
     f.setCalls([{ args: { instructions: first }, executionId: "call-1" }]);
     await f.run();
@@ -3002,7 +3002,7 @@ describe("user_computer_shell", () => {
       { userDevices: devices().gateway, trigger: "follow_up", sourceRole: "bot" },
     ],
     ["another member's bot", { userDevices: devices().gateway, botUserId: "user-2" }],
-    ...["webhook", "routine", "messaging", "bot_message", "spawn", "tickets", "reaction"].map(
+    ...["webhook", "routine", "bot_message", "spawn", "tickets", "reaction"].map(
       (trigger): [string, Parameters<typeof fixture>[0]] => [
         `a ${trigger} run`,
         { userDevices: devices().gateway, trigger },

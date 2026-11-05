@@ -105,13 +105,7 @@ describe.skipIf(!enabled)("history retrieval through executor", () => {
                 threadId: run.threadId,
                 seq: thread.nextMessageSeq - 1,
                 role: "user",
-                blocks: [
-                  {
-                    kind: "channel_message",
-                    channelId: "synthetic-steering-channel",
-                    text: "Find private history.",
-                  },
-                ],
+                blocks: [{ kind: "text", text: "Find private history." }],
               },
             });
             await historyDb.steeringMessage.create({
@@ -120,7 +114,7 @@ describe.skipIf(!enabled)("history retrieval through executor", () => {
                 messageId: external.id,
                 botId: run.botId,
                 userId: run.userId,
-                originTrigger: "messaging",
+                originTrigger: "webhook",
                 claimedAt: new Date(),
               },
             });

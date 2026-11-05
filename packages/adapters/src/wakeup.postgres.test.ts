@@ -1,5 +1,5 @@
 import type { BackgroundJob, BackgroundJobHandlers } from "@labradoodle/adapter-kit";
-import { messagingDeliverJob, routineWakeupJob } from "@labradoodle/adapter-kit";
+import { routineWakeupJob } from "@labradoodle/adapter-kit";
 import type { PrismaClient } from "@labradoodle/db";
 import { createPool, currentDbContext, runAsTenant } from "@labradoodle/db";
 import { Pool } from "pg";
@@ -35,8 +35,6 @@ function handlers(overrides: Partial<BackgroundJobHandlers> = {}): BackgroundJob
     "computer.control-expire": vi.fn(async () => undefined),
     "skill.teaching-expire": vi.fn(async () => undefined),
     "history.compact": vi.fn(async () => undefined),
-    "messaging.deliver": vi.fn(async () => undefined),
-    "messaging.credential-cleanup": vi.fn(async () => undefined),
     "cloud_agent.poll": vi.fn(async () => undefined),
     "purchase.poll": vi.fn(async () => undefined),
     "media.poll": vi.fn(async () => undefined),
@@ -182,35 +180,6 @@ describePostgres("Graphile background jobs (PostgreSQL contract)", () => {
       await waitFor(() => expect(sleeping).toHaveLength(3));
       await publisher.enqueue(routineWakeupJob("routine-due", new Date()));
       await waitFor(() => expect(woken).toEqual(["routine-due"]));
-    } finally {
-      release.resolve();
-      await host.stop();
-      await publisher.close();
-    }
-  });
-
-  it("runs outgoing message drains in parallel", async () => {
-    const publisher = new GraphileJobPublisher(testPool());
-    const host = createReservedGraphileJobWorkerHost(testPool(), { pollInterval: 25 });
-    const release = deferred();
-    const draining: string[] = [];
-    try {
-      await host.start(
-        handlers({
-          "messaging.deliver": async ({ runId }) => {
-            draining.push(runId ?? "drain");
-            await release.promise;
-          },
-        }),
-      );
-      await publisher.enqueue(messagingDeliverJob("run-first"));
-      await waitFor(() => expect(draining).toEqual(["run-first"]));
-      // The second drain starts while the first is still sending: one slow
-      // conversation must not hold back the rest of the outbox. Order inside a
-      // conversation is kept by the drain's claim, not by a shared queue.
-      await publisher.enqueue(messagingDeliverJob("run-second"));
-      await waitFor(() => expect(draining).toEqual(["run-first", "run-second"]));
-      release.resolve();
     } finally {
       release.resolve();
       await host.stop();

@@ -19,7 +19,6 @@ import type {
   McpConnector,
   McpOAuthBroker,
   MemoryProviderResolver,
-  MessagingInstallations,
   PiOAuthLogins,
   PluginRepoFetcher,
   PluginTextReader,
@@ -42,7 +41,6 @@ import { contentRoutes } from "./routes/content.js";
 import { createRouterContext } from "./routes/context.js";
 import { mcpRoutes } from "./routes/mcp.js";
 import { memoryRoutes } from "./routes/memory.js";
-import { messagingRoutes } from "./routes/messaging.js";
 import { modelsRoutes } from "./routes/models.js";
 import { organizationsRoutes } from "./routes/organizations.js";
 import { pagesRoutes } from "./routes/pages.js";
@@ -98,13 +96,6 @@ export interface RouterDeps {
   pluginMarketplaceRead?: PluginTextReader;
   artifacts: ArtifactStore;
   dataDir: string;
-  messagingInstallations?: MessagingInstallations;
-  messaging?: {
-    enabled: boolean;
-    providers: string[];
-    addresses: Record<string, string>;
-    openSignup: boolean;
-  };
   /** Present only when the deployment bills; self-hosted installs leave it unset. */
   billing?: BillingService;
   email?: TransactionalEmailProvider;
@@ -116,8 +107,6 @@ export interface RouterDeps {
     maxUploadSizeBytes?: number;
     maxAttachmentsPerMessage?: number;
     agentRuntime: string;
-    teamChatJudgeProvider?: string;
-    teamChatJudgeModel?: string;
     defaultProvider: string;
     defaultModel: string;
     deploymentModelConfigured?: boolean;
@@ -153,7 +142,6 @@ export function createRouter(deps: RouterDeps) {
     ...mcpRoutes(ctx),
     ...availabilityRoutes(ctx),
     ...connectionsRoutes(ctx),
-    ...messagingRoutes(ctx),
     ...contentRoutes(ctx),
     ...pagesRoutes(ctx),
     ...paymentWalletRoutes(ctx),

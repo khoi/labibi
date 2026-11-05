@@ -10,10 +10,6 @@ const RAKAZO_DOCS: ReadonlyArray<readonly [topics: string, url: string]> = [
     "Connecting apps and integrations (Gmail, GitHub, MCP tools)",
     "https://labradoodle.com/docs/integrations.md",
   ],
-  [
-    "Slack, Telegram, WhatsApp and other chat apps",
-    "https://labradoodle.com/docs/messaging-apps.md",
-  ],
   ["Routines, schedules and triggers", "https://labradoodle.com/docs/routines.md"],
   [
     "The bot's computer, files, using your own computer",

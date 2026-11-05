@@ -126,14 +126,7 @@ describePostgres("content encryption (PostgreSQL)", () => {
     runAsSystem("test fixture", async () => {
       const blocks: MessageBlock[] = [
         { kind: "text", text: "The launch codeword is MARIGOLD" },
-        {
-          kind: "channel_message",
-          provider: "slack",
-          channelId: "channel-1",
-          fromAddress: "u1",
-          fromLabel: "Grace",
-          text: "Ship on Friday",
-        },
+        { kind: "image", artifactId: "artifact-1", mimeType: "image/png", name: "Ship on Friday" },
       ];
       const message = await createThreadMessage(prisma, { threadId, role: "user", blocks });
       expect(message.blocks).toEqual(blocks);
@@ -144,7 +137,7 @@ describePostgres("content encryption (PostgreSQL)", () => {
       const found = await prisma.message.findMany({
         where: {
           threadId,
-          blocks: { array_contains: [{ kind: "channel_message", channelId: "channel-1" }] },
+          blocks: { array_contains: [{ kind: "image", artifactId: "artifact-1" }] },
         },
         select: { blocks: true },
       });

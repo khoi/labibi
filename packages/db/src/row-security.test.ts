@@ -40,7 +40,7 @@ describe("withRowLevelSecurity", () => {
     const query = vi.fn().mockRejectedValueOnce(deadlock()).mockResolvedValueOnce(["row"]);
 
     const result = runAsTenant({ spaceId: "space-fixture", userId: "user-fixture" }, () =>
-      allOperations({ model: "ExternalConversation", operation: "findMany", args: {}, query }),
+      allOperations({ model: "Thread", operation: "findMany", args: {}, query }),
     );
 
     await expect(result).resolves.toEqual(["row"]);

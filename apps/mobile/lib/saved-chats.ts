@@ -146,7 +146,6 @@ export function writeSavedInbox(
         ...space,
         bots: space.bots.slice(0, SAVED_INBOX_ROWS),
         groups: space.groups.slice(0, SAVED_INBOX_ROWS),
-        externalConversations: [],
       })),
       me: { userId: me.userId, spaceId: me.spaceId, name: me.name },
     };

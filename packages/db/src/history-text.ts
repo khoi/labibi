@@ -13,13 +13,7 @@ export function historyMessageText(blocks: Prisma.JsonValue): string {
   return objectBlocks(blocks)
     .flatMap((block) => {
       if (block.kind === "subagent") return [block.task, block.result ?? ""].filter(Boolean);
-      return [
-        "text",
-        "channel_message",
-        "bot_message_received",
-        "bot_message_sent",
-        "handoff",
-      ].includes(block.kind) &&
+      return ["text", "bot_message_received", "bot_message_sent", "handoff"].includes(block.kind) &&
         "text" in block &&
         typeof block.text === "string"
         ? [block.text]

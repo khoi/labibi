@@ -43,8 +43,6 @@ import {
 import { BUILTIN_AGENT_TOOL_NAMES } from "./run-tool-selection.js";
 import { scheduleCreateRefusal } from "./run-tools-tasks.js";
 import { USER_COMPUTER_TOOLS } from "./run-tools-user-computer.js";
-import { SCHEDULE_TOOL_NAMES } from "./schedule-tools.js";
-import { SKILL_TOOL_NAMES } from "./skill-tools.js";
 import { argumentGiven } from "./update-bot-patch.js";
 import type { VaultCardUse } from "./vault-card-use.js";
 import { cardUseSummary, requestedCardUse, vaultCardUseOf } from "./vault-card-use.js";
@@ -302,20 +300,6 @@ export async function prepareToolRequest(
   const { deps, run } = ctx;
   const { name, executionId, nextApprovedTool } = request;
   let { args } = request;
-  if (
-    (SCHEDULE_TOOL_NAMES.has(name) || SKILL_TOOL_NAMES.has(name)) &&
-    (ctx.source.messagingChannelRun ||
-      (await deps.prisma.steeringMessage.findFirst({
-        where: {
-          runId: ctx.runId,
-          claimedAt: { not: null },
-          message: { blocks: { array_contains: [{ kind: "channel_message" }] } },
-        },
-        select: { id: true },
-      })))
-  ) {
-    return { error: "This tool is unavailable after a shared-channel message." };
-  }
   // Before the gate, so a run that may never reach the user's computer shows no approval card.
   if (USER_COMPUTER_TOOLS.has(name)) {
     if (!ctx.source.userComputerOwner || !deps.userDevices)

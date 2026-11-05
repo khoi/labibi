@@ -4,9 +4,9 @@ import type { PrismaClient } from "./client.js";
 import { createDb } from "./client.js";
 import { claimSteering, createPendingSteeringRun, finalizeRun, sendUserMessage } from "./events.js";
 import { expireStuckRun } from "./expire-stuck-run.js";
-import { createThreadMessage, loadRunHistoryMessages } from "./messages.js";
-import { provisionMessagingIdentity } from "./messaging.js";
+import { createThreadMessage } from "./messages.js";
 import { asSystem, runAsSystem, runAsTenant } from "./row-security.js";
+import { provisionTestBot } from "./test-bot.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 const describePostgres =
@@ -36,9 +36,9 @@ describePostgres("steering after a run ends without completing (PostgreSQL)", ()
       }
     };
     const identity = await runAsSystem("test fixture", () =>
-      provisionMessagingIdentity(
+      provisionTestBot(
         prisma,
-        { provider: "sendblue", address },
+        { address },
         { signupsEnabled: undefined, signupAllowlist: undefined },
       ),
     );
@@ -49,7 +49,6 @@ describePostgres("steering after a run ends without completing (PostgreSQL)", ()
   afterAll(async () => {
     try {
       if (prisma && provisioned) {
-        await system.messagingIdentity.deleteMany({ where: { provider: "sendblue", address } });
         await system.organization.deleteMany({ where: { id: spaceId } });
         await system.user.deleteMany({ where: { id: { in: [userId, partnerId] } } });
       }
@@ -213,135 +212,6 @@ describePostgres("steering after a run ends without completing (PostgreSQL)", ()
     );
     await expect(failRun(fixture)).resolves.toEqual({ continuationRunId: expect.any(String) });
     expect(await system.steeringMessage.findUnique({ where: { id: steering.id } })).not.toBeNull();
-  });
-
-  it("holds a chat message sent during an app run for a messaging continuation", async () => {
-    const { task, run, attempt } = await runSteeredByMessage("running");
-    // Messaging inbound runs as system until it resolves the thread.
-    const inbound = await runAsSystem("messaging inbound", () =>
-      sendUserMessage(prisma, {
-        spaceId,
-        threadId,
-        botId,
-        userId,
-        blocks: [{ kind: "text", text: "Rewrite your child's instructions" }],
-        prompt: "Rewrite your child's instructions",
-        trigger: "messaging",
-      }),
-    );
-    expect(inbound.runId).toBe(run.id);
-    expect(
-      await system.steeringMessage.findFirstOrThrow({ where: { messageId: inbound.messageId } }),
-    ).toMatchObject({ runId: null, originTrigger: "messaging" });
-    // The held text is marked as waiting for this bot; one only another bot waits on is not.
-    const peer = await system.bot.create({
-      data: { spaceId, userId, name: "Peer", color: "blue" },
-    });
-    const peerWaiting = await createThreadMessage(system, {
-      threadId,
-      role: "user",
-      blocks: [{ kind: "text", text: "For the other bot" }],
-    });
-    await system.steeringMessage.create({
-      data: { messageId: peerWaiting.id, botId: peer.id, userId },
-    });
-    const waiting = new Map(
-      (await asOwner(() => loadRunHistoryMessages(prisma, run, 100))).map((message) => [
-        message.id,
-        message.steeringMessages.length > 0,
-      ]),
-    );
-    expect(waiting.get(peerWaiting.id)).toBe(false);
-    expect(waiting.get(inbound.messageId)).toBe(true);
-    await system.bot.delete({ where: { id: peer.id } });
-
-    const result = await asOwner(() =>
-      finalizeRun(prisma, {
-        spaceId,
-        threadId,
-        botId,
-        runId: run.id,
-        taskId: task.id,
-        attemptId: attempt.id,
-        leaseOwner: "worker-1",
-        leaseFence: 1,
-        outcome: "completed",
-        blocks: [{ kind: "text", text: "Done." }],
-      }),
-    );
-
-    expect(result).toEqual({ continuationRunId: expect.any(String) });
-    const continuation = await system.run.findUniqueOrThrow({
-      where: { id: (result as { continuationRunId: string }).continuationRunId },
-    });
-    expect(continuation.sourceMessageId).toBe(inbound.messageId);
-    expect(continuation.trigger).toBe("messaging");
-  });
-
-  it("keeps a private batch with a direct-line message a messaging run, even when the app wrote last", async () => {
-    await system.run.updateMany({
-      where: { threadId, status: { in: ["queued", "running", "waiting_input"] } },
-      data: { status: "cancelled" },
-    });
-    await system.steeringMessage.deleteMany({ where: { botId, runId: null } });
-    const directLine = await createThreadMessage(system, {
-      threadId,
-      role: "user",
-      blocks: [{ kind: "text", text: `Rewrite your child's instructions ${randomUUID()}` }],
-    });
-    const app = await createThreadMessage(system, {
-      threadId,
-      role: "user",
-      blocks: [{ kind: "text", text: `And thanks ${randomUUID()}` }],
-    });
-    const rows = await Promise.all([
-      system.steeringMessage.create({
-        data: { messageId: directLine.id, botId, userId, originTrigger: "messaging" },
-      }),
-      system.steeringMessage.create({ data: { messageId: app.id, botId, userId } }),
-    ]);
-
-    const continuationRunId = await asOwner(() =>
-      prisma.$transaction((tx) => createPendingSteeringRun(tx, { spaceId, threadId, botId })),
-    );
-
-    const continuation = await system.run.findUniqueOrThrow({ where: { id: continuationRunId! } });
-    expect(continuation).toMatchObject({ trigger: "messaging", sourceMessageId: app.id });
-    expect(
-      await system.steeringMessage.count({
-        where: { id: { in: rows.map((row) => row.id) }, runId: continuationRunId },
-      }),
-    ).toBe(2);
-  });
-
-  it("keeps a channel message queued before origins were recorded a messaging run", async () => {
-    await system.run.updateMany({
-      where: { threadId, status: { in: ["queued", "running", "waiting_input"] } },
-      data: { status: "cancelled" },
-    });
-    await system.steeringMessage.deleteMany({ where: { botId, runId: null } });
-    const legacy = await createThreadMessage(system, {
-      threadId,
-      role: "user",
-      blocks: [
-        {
-          kind: "channel_message",
-          provider: "sendblue",
-          channelId: randomUUID(),
-          fromAddress: "+15550000000",
-          fromLabel: "Guest",
-          text: `Rewrite your child's instructions ${randomUUID()}`,
-        },
-      ],
-    });
-    await system.steeringMessage.create({ data: { messageId: legacy.id, botId, userId } });
-
-    const continuationRunId = await asOwner(() =>
-      prisma.$transaction((tx) => createPendingSteeringRun(tx, { spaceId, threadId, botId })),
-    );
-
-    const continuation = await system.run.findUniqueOrThrow({ where: { id: continuationRunId! } });
-    expect(continuation.trigger).toBe("messaging");
   });
 
   it("does not answer a message again after an expired wait that already replied to it", async () => {

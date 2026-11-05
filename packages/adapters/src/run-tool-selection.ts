@@ -5,8 +5,7 @@ import { selectCloudAgentTools } from "./cloud-agent-tools-select.js";
 import { selectMemoryTools } from "./memory-tools.js";
 import { filterImageReturningComputerTools } from "./model-vision.js";
 import { USER_COMPUTER_SCREEN_TOOLS } from "./run-tools-user-computer.js";
-import { filterBuiltinToolsForRun, SCHEDULE_TOOL_NAMES } from "./schedule-tools.js";
-import { SKILL_TOOL_NAMES } from "./skill-tools.js";
+import { filterBuiltinToolsForRun } from "./schedule-tools.js";
 
 export const READ_ONLY_AGENT_TOOLS = new Set([
   "computer_observe",
@@ -48,7 +47,6 @@ export function selectBuiltinToolsForRun(options: {
   paymentWalletEnabled?: boolean;
   mediaImagesEnabled?: boolean;
   mediaVideoEnabled?: boolean;
-  messagingChannelRun: boolean;
   /** Built-in names this bot turned off. Unknown names are ignored. */
   disabledBuiltinTools?: readonly string[];
   /** A follow-up run whose source message the user wrote. */
@@ -85,19 +83,7 @@ export function selectBuiltinToolsForRun(options: {
       (options.userComputer || tool.name !== "user_computer_shell") &&
       ((options.userComputer && options.userComputerScreen) ||
         !USER_COMPUTER_SCREEN_TOOLS.has(tool.name)) &&
-      (options.historyRetrievalEnabled ||
-        !["search_history", "read_history"].includes(tool.name)) &&
-      (!options.messagingChannelRun ||
-        (!SCHEDULE_TOOL_NAMES.has(tool.name) &&
-          !SKILL_TOOL_NAMES.has(tool.name) &&
-          ![
-            "remember",
-            "save_shared_memory",
-            "save_memory",
-            "recall_memory",
-            "forget_memory",
-            "task_catalog",
-          ].includes(tool.name))),
+      (options.historyRetrievalEnabled || !["search_history", "read_history"].includes(tool.name)),
   );
 }
 

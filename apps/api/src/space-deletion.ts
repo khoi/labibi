@@ -45,7 +45,6 @@ export type SpaceDeletionDeps = {
   jobs: JobPublisher;
   artifacts: ArtifactStore;
   dataDir: string;
-  messagingInstallations?: Parameters<typeof destroyBot>[0]["messagingInstallations"];
   /** Removes deleted page links' tokens from a remote secret store. */
   secrets?: Pick<SecretStore, "delete">;
 };

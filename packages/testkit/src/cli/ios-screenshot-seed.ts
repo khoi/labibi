@@ -39,7 +39,6 @@ export interface IosScreenshotFixture {
   archiveId: string;
   videoId: string;
   teamSpaceId: string;
-  conversationId: string;
   /** A bot whose thread shows the cards a bot sends when it needs something. */
   cardsBotId: string;
 }
@@ -292,11 +291,6 @@ export async function seedIosScreenshotFixture(input: {
       botId: researcher.id,
       artifact: notes,
     });
-    const conversation = await ensureTeamConversation(db.prisma, {
-      spaceId: me.spaceId,
-      userId: me.userId,
-      botId: researcher.id,
-    });
     await ensureActivity(db.prisma, {
       threadId: researcher.threadId,
       botId: researcher.id,
@@ -340,7 +334,6 @@ export async function seedIosScreenshotFixture(input: {
       archiveId: archive.id,
       videoId: video.id,
       teamSpaceId: teamSpace.id,
-      conversationId: conversation.id,
       cardsBotId: support.id,
     };
   } finally {
@@ -533,47 +526,6 @@ function chartPng() {
     }
   }
   return PNG.sync.write(png);
-}
-
-/** A chat-app channel the bot answers in, so Messaging lists a conversation to open. */
-async function ensureTeamConversation(
-  prisma: ReturnType<typeof createDb>["prisma"],
-  input: { spaceId: string; userId: string; botId: string },
-) {
-  const key = { provider: "slack", workspaceId: "T-fixture", externalKey: "C-launch" };
-  const existing = await prisma.externalConversation.findUnique({
-    where: { provider_workspaceId_externalKey: key },
-    select: { id: true },
-  });
-  if (existing) return existing;
-  const conversation = await prisma.externalConversation.create({
-    data: {
-      ...key,
-      conversationId: "C-launch",
-      displayName: "#launch",
-      participantNames: ["Dana", "Lee"],
-      spaceId: input.spaceId,
-      botId: input.botId,
-      userId: input.userId,
-    },
-    select: { id: true },
-  });
-  const thread = await prisma.thread.create({
-    data: { spaceId: input.spaceId, userId: input.userId, externalConversationId: conversation.id },
-    select: { id: true },
-  });
-  await createThreadMessage(prisma, {
-    threadId: thread.id,
-    role: "user",
-    blocks: [{ kind: "text", text: "Dana: Is the launch checklist ready?" }],
-  });
-  await createThreadMessage(prisma, {
-    threadId: thread.id,
-    role: "bot",
-    botId: input.botId,
-    blocks: [{ kind: "text", text: "Yes. Two items are left: customer quotes and the changelog." }],
-  });
-  return conversation;
 }
 
 /** A one-page PDF with a heading and two lines, built by hand so no PDF library is needed. */

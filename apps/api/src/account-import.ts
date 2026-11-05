@@ -679,7 +679,6 @@ class AccountImporter implements ArchiveSink {
             // Nothing fires on the new install until its owner turns the routine on.
             active: false,
             notify: record.notify,
-            messageProvider: record.messageProvider,
             modelProvider: record.modelProvider,
             modelId: record.modelId,
             thinkingLevel: record.thinkingLevel,
@@ -732,8 +731,6 @@ class AccountImporter implements ArchiveSink {
             memoryScope: record.memoryScope,
             voiceId: record.voiceId,
             autoSpeak: record.autoSpeak,
-            teamChatAmbientEnabled: record.teamChatAmbientEnabled,
-            teamChatRules: record.teamChatRules,
             createdAt: new Date(record.createdAt),
           },
         });

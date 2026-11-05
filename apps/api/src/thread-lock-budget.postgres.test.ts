@@ -6,7 +6,7 @@ import {
   claimSteering,
   createDb,
   createThreadMessage,
-  provisionMessagingIdentity,
+  provisionTestBot,
   runAsSystem,
   runAsTenant,
 } from "@labradoodle/db";
@@ -50,9 +50,9 @@ describe.skipIf(!enabled)("thread writes behind a long read (PostgreSQL)", () =>
       await db.pool.end();
     };
     const identity = await runAsSystem("test fixture", () =>
-      provisionMessagingIdentity(
+      provisionTestBot(
         prisma,
-        { provider: "test", address },
+        { address },
         { signupsEnabled: undefined, signupAllowlist: undefined },
       ),
     );
@@ -63,7 +63,6 @@ describe.skipIf(!enabled)("thread writes behind a long read (PostgreSQL)", () =>
   afterAll(async () => {
     try {
       if (prisma) {
-        await system.messagingIdentity.deleteMany({ where: { provider: "test", address } });
         await system.organization.deleteMany({ where: { id: spaceId } });
         await system.user.deleteMany({ where: { id: userId } });
       }

@@ -21,7 +21,6 @@ export type WebhookEvents = {
     prompt: string;
     trigger: "webhook";
     clientNonce?: string;
-    allowParallelRun?: boolean;
     modelPin?: {
       modelProvider: string;
       modelId: string;
@@ -247,13 +246,8 @@ export async function loadWebhookTarget(
   };
 }
 
-/** Idempotency key shared by messaging wakes and TeamChat duplicate-skip lookups. */
-export function messagingWakeIdempotencyKey(provider: string, handle: string): string {
-  return `${provider}:${handle}`;
-}
-
 export function inboundDeliveryClientNonce(
-  source: "webhook" | "github" | "messaging",
+  source: "webhook" | "github",
   botId: string,
   idempotencyKey: string,
 ): string {
@@ -273,10 +267,8 @@ export async function deliverWebhookEvent(
       modelId: string | null;
       thinkingLevel: string | null;
     }>;
-    source: "webhook" | "github" | "messaging";
+    source: "webhook" | "github";
     idempotencyKey?: string;
-    /** Messaging wakes share the live chat thread; keep a separate webhook run. */
-    allowParallelRun?: boolean;
   },
 ) {
   const promptText =
@@ -284,11 +276,7 @@ export async function deliverWebhookEvent(
       ? [
           ...input.routines.map(inboundRoutineBlock),
           "",
-          input.source === "github"
-            ? "Inbound GitHub event metadata:"
-            : input.source === "messaging"
-              ? "Inbound messaging event:"
-              : "Inbound webhook payload:",
+          input.source === "github" ? "Inbound GitHub event metadata:" : "Inbound webhook payload:",
           input.prompt,
         ].join("\n")
       : input.prompt;
@@ -310,7 +298,6 @@ export async function deliverWebhookEvent(
     prompt: promptText,
     trigger: "webhook",
     clientNonce,
-    ...(input.allowParallelRun ? { allowParallelRun: true } : {}),
     ...(pin.modelProvider && pin.modelId
       ? {
           modelPin: {

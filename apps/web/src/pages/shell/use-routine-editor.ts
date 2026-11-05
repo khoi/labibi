@@ -25,13 +25,11 @@ export function useRoutineEditor({
   setBots,
   refreshThread,
   setPanel,
-  messageProviders,
 }: {
   rpc: ReturnType<typeof createSpaceRpc>;
   active: Bot | undefined;
   activeBotId: RefObject<string | undefined>;
   timezone: string | null | undefined;
-  messageProviders: string[];
   setBots: Dispatch<SetStateAction<Bot[]>>;
   refreshThread: (botId: string) => Promise<ThreadSnapshot>;
   setPanel: (panel: Panel) => void;
@@ -108,7 +106,6 @@ export function useRoutineEditor({
           typeof window !== "undefined"
             ? `${window.location.origin}/api/v1/bots/${active.id}/github`
             : `/api/v1/bots/${active.id}/github`,
-        messageProviders,
         saving: savingRoutine,
         running: runningRoutine,
         error: routineError,
@@ -126,7 +123,6 @@ export function useRoutineEditor({
             !routineDraft.schedules.length &&
             !routineDraft.webhookEnabled &&
             !routineDraft.githubEnabled &&
-            !routineDraft.messageProvider &&
             !routineDraft.watch
           ) {
             setRoutineError(t`Add a trigger to run this routine.`);
@@ -187,7 +183,6 @@ export function useRoutineEditor({
                   : {}),
                 webhookEnabled: routineDraft.webhookEnabled,
                 githubEnabled: routineDraft.githubEnabled,
-                messageProvider: routineDraft.messageProvider,
                 watch,
                 ...(routineModel.modelProvider !== targetRoutine.modelProvider ||
                 routineModel.modelId !== targetRoutine.modelId ||
@@ -207,7 +202,6 @@ export function useRoutineEditor({
                 notify: true,
                 webhookEnabled: routineDraft.webhookEnabled,
                 githubEnabled: routineDraft.githubEnabled,
-                messageProvider: routineDraft.messageProvider,
                 watch,
                 ...routineModel,
               });

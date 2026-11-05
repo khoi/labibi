@@ -182,7 +182,6 @@ export const cartesia: VoiceProvider = {
       heading: "Limits and gotchas",
       bullets: [
         "No transcription. In a browser without on-device speech recognition, holding the mic shows an error until you switch to Chrome or the desktop app, or connect a provider that transcribes.",
-        "Voice notes sent to a bot through a chat app such as Telegram arrive as audio files without a transcript.",
         "Labradoodle always speaks with `sonic-3`. You can't pick Sonic 3.6 or set emotion, speed or pronunciation from Labradoodle.",
         "Each sentence is generated as a finished clip and played in order, rather than streamed over Cartesia's real-time connection, so a bot starts talking a little later than Sonic alone could.",
         "Labradoodle doesn't clone voices itself. Create the clone in Cartesia first. The picker loads up to 2,000 voices, and voices beyond that can't be chosen.",

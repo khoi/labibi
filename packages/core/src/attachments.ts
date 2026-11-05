@@ -178,8 +178,6 @@ export function blocksToAgentHistoryText(blocks: MessageBlock[]): string {
       if (block.kind === "file") {
         return `[file: ${block.name} (${block.mimeType}, ${block.size} bytes)]`;
       }
-      // Keep attribution: without it a later turn cannot tell which lines came from someone else.
-      if (block.kind === "channel_message") return `[from ${block.fromLabel}] ${block.text}`;
       // Without the answer a later turn sees the question as still open and asks it again.
       if (block.kind === "ask") {
         if (block.status !== "answered" || !block.answer) return block.text;
@@ -312,7 +310,7 @@ export function attachmentsForBot<T extends { botId: string }>(
 export function userTurnMessageForRun<
   T extends { id?: string; role: string; runId?: string | null; blocks: MessageBlock[] },
 >(trigger: string, runId: string, messages: T[], sourceMessageId?: string | null): T | undefined {
-  if (trigger !== "user" && trigger !== "messaging" && trigger !== "reaction") return undefined;
+  if (trigger !== "user" && trigger !== "reaction") return undefined;
   return messages.find(
     (message) =>
       message.role === "user" &&

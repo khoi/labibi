@@ -92,21 +92,14 @@ export function isConversationalRun(trigger: string | null | undefined): boolean
 }
 
 /**
- * Whether a message joins a busy run as steering. A webhook delivery never does, nothing steers a
- * non-conversational run, and a connected chat's message steers only a run started from a connected
- * chat in the same channel (or both in the bot's direct chat); otherwise it waits for its own run.
+ * Whether a message joins a busy run as steering. A webhook delivery never does, and nothing steers
+ * a non-conversational run; otherwise it waits for its own run.
  */
 export function messageSteersRun(
   messageTrigger: string,
   runTrigger: string | null | undefined,
-  messageChannelId?: string,
-  runChannelId?: string,
 ): boolean {
-  if (messageTrigger === "webhook" || !isConversationalRun(runTrigger)) return false;
-  return (
-    messageTrigger !== "messaging" ||
-    (runTrigger === "messaging" && messageChannelId === runChannelId)
-  );
+  return messageTrigger !== "webhook" && isConversationalRun(runTrigger);
 }
 
 /**

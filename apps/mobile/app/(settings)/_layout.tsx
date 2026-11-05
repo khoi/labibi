@@ -110,8 +110,6 @@ export default function SettingsLayout() {
           contentStyle: { backgroundColor: native.groupedPage },
         }}
       />
-      <Stack.Screen name="messaging" options={glassHeaderOptions(t("Messaging"))} />
-      <Stack.Screen name="team-conversation" />
       <Stack.Screen name="integrations" options={glassHeaderOptions(t("Integrations"))} />
       <Stack.Screen name="skills" options={glassHeaderOptions(t("Skills"))} />
       {/* Titled by the screen once the skill loads. */}

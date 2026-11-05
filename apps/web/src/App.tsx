@@ -35,12 +35,7 @@ import {
   sessionRetryDelayMs,
   showSessionUnavailable,
 } from "./lib/session-gate";
-import {
-  MCP_OAUTH_CALLBACK_PATH,
-  newAccountDestination,
-  SLACK_INSTALL_CALLBACK_PATH,
-  signInNext,
-} from "./lib/sign-in-next";
+import { MCP_OAUTH_CALLBACK_PATH, newAccountDestination, signInNext } from "./lib/sign-in-next";
 import { syncLogOutFailure } from "./lib/sign-out";
 import { completeSsoCallback, SSO_CALLBACK_PATH } from "./lib/sso-flow";
 import { IntegrationCallbackPage } from "./pages/IntegrationCallback";
@@ -48,7 +43,6 @@ import { IntegrationSetupPage } from "./pages/IntegrationSetup";
 import { McpOAuthCallbackPage } from "./pages/McpOAuthCallback";
 import { SharedPagePage } from "./pages/SharedPage";
 import { ShellPage } from "./pages/Shell";
-import { SlackInstallCallbackPage } from "./pages/SlackInstallCallback";
 
 const AuthPage = lazyComponent(() => import("./pages/Auth").then((module) => module.AuthPage));
 const PasswordResetPage = lazyComponent(() =>
@@ -212,19 +206,6 @@ function SessionApp() {
                 element={
                   user ? (
                     <McpOAuthCallbackPage />
-                  ) : (
-                    <Navigate
-                      to={`/sign-in?next=${encodeURIComponent(pathname + search)}`}
-                      replace
-                    />
-                  )
-                }
-              />
-              <Route
-                path={SLACK_INSTALL_CALLBACK_PATH}
-                element={
-                  user ? (
-                    <SlackInstallCallbackPage />
                   ) : (
                     <Navigate
                       to={`/sign-in?next=${encodeURIComponent(pathname + search)}`}

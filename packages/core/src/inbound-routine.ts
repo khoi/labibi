@@ -1,6 +1,6 @@
 export type InboundRoutine = { name: string; prompt: string };
 
-/** How an inbound delivery (webhook, GitHub, messaging) quotes a routine it runs. */
+/** How an inbound delivery (webhook, GitHub) quotes a routine it runs. */
 export function inboundRoutineBlock(routine: InboundRoutine): string {
   return `Run routine "${routine.name}":\n${routine.prompt.trim()}`;
 }

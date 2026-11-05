@@ -26,7 +26,6 @@ export const DOCS_NAV = [
       { slug: "approvals", label: "Approvals" },
       { slug: "groups", label: "Groups and teamwork" },
       { slug: "voice-and-calls", label: "Voice" },
-      { slug: "messaging-apps", label: "Chat apps" },
     ],
   },
   {

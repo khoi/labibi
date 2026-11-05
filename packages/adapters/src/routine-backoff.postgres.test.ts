@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { PrismaClient } from "@labradoodle/db";
-import { asSystem, createDb, provisionMessagingIdentity, runAsSystem } from "@labradoodle/db";
+import { asSystem, createDb, provisionTestBot, runAsSystem } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   backOffRoutineAfterAccountError,
@@ -22,9 +22,9 @@ describePostgres("backing off a routine on refused model accounts (PostgreSQL)",
     db = createDb(url!);
     system = asSystem(db.prisma);
     const { userId, spaceId, botId, threadId } = await runAsSystem("routine backoff fixture", () =>
-      provisionMessagingIdentity(
+      provisionTestBot(
         db.prisma,
-        { provider: "email", address },
+        { address },
         { signupsEnabled: undefined, signupAllowlist: undefined },
       ),
     );
@@ -33,7 +33,6 @@ describePostgres("backing off a routine on refused model accounts (PostgreSQL)",
 
   afterAll(async () => {
     if (identity) {
-      await system.messagingIdentity.deleteMany({ where: { address } });
       await system.organization.deleteMany({ where: { id: identity.spaceId } });
       await system.user.deleteMany({ where: { id: identity.userId } });
     }

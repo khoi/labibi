@@ -3,10 +3,10 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { PrismaClient } from "./client.js";
 import { createDb } from "./client.js";
 import { createGroupRepos } from "./groups.js";
-import { provisionMessagingIdentity } from "./messaging.js";
 import { createRepos } from "./repos.js";
 import { asSystem, runAsSystem, runAsTenant } from "./row-security.js";
 import { createSpaceForMember } from "./spaces.js";
+import { provisionTestBot } from "./test-bot.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 const describePostgres =
@@ -73,7 +73,6 @@ interface SeededGroup {
 }
 
 describePostgres("group sidebar previews (PostgreSQL)", () => {
-  const provider = "sendblue";
   const stamp = String(Date.now()).slice(-7);
   const ownerAddress = `+1556${stamp}`;
   const signup = { signupsEnabled: undefined, signupAllowlist: undefined };
@@ -98,7 +97,7 @@ describePostgres("group sidebar previews (PostgreSQL)", () => {
       await db.pool.end();
     };
     const provisioned = await runAsSystem("test fixture", () =>
-      provisionMessagingIdentity(prisma, { provider, address: ownerAddress }, signup),
+      provisionTestBot(prisma, { address: ownerAddress }, signup),
     );
     owner = provisioned;
     actor = {
@@ -135,9 +134,6 @@ describePostgres("group sidebar previews (PostgreSQL)", () => {
 
   afterAll(async () => {
     if (prisma) {
-      await asSystem(prisma).messagingIdentity.deleteMany({
-        where: { provider, address: ownerAddress },
-      });
       if (owner) {
         await asSystem(prisma).organization.deleteMany({ where: { id: owner.spaceId } });
         await asSystem(prisma).user.deleteMany({ where: { id: owner.userId } });

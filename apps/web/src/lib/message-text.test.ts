@@ -25,41 +25,4 @@ describe("copyableMessageText", () => {
     const blocks = [{ kind: "text", text: "Here it is" }, page] as ThreadMessage["blocks"];
     expect(copyableMessageText(message(blocks))).toBe("Here it is");
   });
-
-  it("includes channel messages with their chat attribution", () => {
-    expect(
-      copyableMessageText(
-        message([
-          {
-            kind: "channel_message",
-            provider: "sendblue",
-            transport: "RCS",
-            channelId: "ch-1",
-            fromAddress: "+15551234567",
-            fromLabel: "Alice",
-            text: "dinner at 7?",
-            hop: 0,
-          },
-        ]),
-      ),
-    ).toBe("Alice (RCS): dinner at 7?");
-  });
-
-  it("falls back to the provider label for unknown transport values", () => {
-    expect(
-      copyableMessageText(
-        message([
-          {
-            kind: "channel_message",
-            provider: "sendblue",
-            transport: "email",
-            channelId: "ch-1",
-            fromAddress: "+15551234567",
-            fromLabel: "Alice",
-            text: "hello",
-          },
-        ]),
-      ),
-    ).toBe("Alice (iMessage): hello");
-  });
 });

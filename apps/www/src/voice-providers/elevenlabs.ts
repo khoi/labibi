@@ -203,7 +203,6 @@ export const elevenlabs: VoiceProvider = {
         "Hear replies. Choose **Speak this reply** on any message, or turn on **Read replies aloud** in a bot's settings to hear everything it says.",
         "Give each bot its own voice. The **Voice** next to **Read replies aloud** overrides your default for that bot, so your inbox bot and your sales bot don't sound alike.",
         "Use your own voices. The voice picker lists the voices in your ElevenLabs account, including ones you cloned or saved from its library.",
-        "Send voice notes from chat apps. A voice note sent to a bot through Telegram, for example, is transcribed with ElevenLabs before the bot reads it. See [messaging apps](/docs/messaging-apps/).",
       ],
     },
     {

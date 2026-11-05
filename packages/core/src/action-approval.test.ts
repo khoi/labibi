@@ -176,7 +176,6 @@ describe("isOwnerStartedRun", () => {
     ["follow_up", true, true],
     ["follow_up", false, false],
     ["bot_message", true, false],
-    ["messaging", true, false],
     ["spawn", true, false],
     ["tickets", true, false],
     ["webhook", true, false],
@@ -821,7 +820,7 @@ describe("newSiteOutcome", () => {
   });
 
   it("asks a person about a new site that was not passed", () => {
-    for (const trigger of ["user", "follow_up", "routine", "messaging"]) {
+    for (const trigger of ["user", "follow_up", "routine"]) {
       expect(newSiteOutcome({ trigger, decision: "ask" })).toBe("ask");
     }
   });

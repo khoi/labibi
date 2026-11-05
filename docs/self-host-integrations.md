@@ -1,7 +1,7 @@
 # Tools and integrations
 
 Configure the services bots reach beyond the model: web search, memory, MCP servers, apps,
-messaging, cloud coding agents and payments.
+cloud coding agents and payments.
 
 ## Web search and page reading
 
@@ -123,78 +123,6 @@ API and worker.
 `INTEGRATIONS_CATALOG_URL` points API connector search at an
 [integrations.sh](https://integrations.sh/)-compatible catalog, such as a mirror you host. Give the
 base URL; Labradoodle appends `api/search`.
-
-## Messaging apps
-
-Optional messaging platforms (iMessage through Sendblue or Photon, Slack, WhatsApp, Telegram, Feishu/Lark) mount when their env credentials are set — see `.env.example`. The Lark adapter and official SDK load only when configured. Point a Feishu/Lark bot event subscription at `/api/v1/messaging/webhook/lark` (webhook/HTTP inbound only; do not enable long connection). Personal group linking works on iMessage and Telegram (see the Telegram privacy note below); WhatsApp and Feishu/Lark are direct-only, and Slack channels use workspace installations below. Telegram can run several bots side by side (`TELEGRAM_BOT_TOKEN_<NAME>` plus `TELEGRAM_WEBHOOK_SECRET_TOKEN_<NAME>`), for example one per space, so the same person can chat with a different Labradoodle bot through each. Photon works the same way: each extra project (`PHOTON_PROJECT_ID_<NAME>` plus `PHOTON_PROJECT_SECRET_<NAME>`, and `PHOTON_WEBHOOK_SECRET_<NAME>` for webhooks) gives the person a different number, mounted as provider `photon-<name>`. Photon receives iMessage over an outbound stream from the API, so it works on a server with no public URL; on Photon's shared lines the person texts first, and group chats are not available.
-
-Each platform turns on when its full set of credentials is present on the API and worker.
-Webhooks arrive at `/api/v1/messaging/webhook/<provider>`.
-
-| Platform | Settings |
-| --- | --- |
-| iMessage and SMS (Sendblue) | `SENDBLUE_API_KEY_ID`, `SENDBLUE_API_SECRET`, `SENDBLUE_SIGNING_SECRET`, `SENDBLUE_PHONE_NUMBER` |
-| WhatsApp Business Cloud | `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN` |
-| Telegram | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_WEBHOOK_SECRET_TOKEN` |
-| iMessage (Photon) | `PHOTON_PROJECT_ID`, `PHOTON_PROJECT_SECRET`; `PHOTON_WEBHOOK_SECRET` to receive by webhook instead of the stream; more projects as `PHOTON_PROJECT_ID_<NAME>` plus `PHOTON_PROJECT_SECRET_<NAME>` |
-| Feishu/Lark | `LARK_APP_ID`, `LARK_APP_SECRET`, `LARK_VERIFICATION_TOKEN`; `LARK_ENCRYPT_KEY` when event encryption is on; `LARK_DOMAIN` (`feishu`, the default, or `lark`) |
-| Slack | See below |
-
-Telegram is webhook-only: Telegram sends the secret in `X-Telegram-Bot-Api-Secret-Token`, and the
-worker never long-polls. An extra bot named `<NAME>` (letters and digits) uses the provider
-`telegram-<name>` and the webhook `/api/v1/messaging/webhook/telegram-<name>`; see
-[settings with names you choose](./self-host-configuration.md#settings-with-names-you-choose).
-Telegram groups use personal group linking, like iMessage: each linked member approves their own
-bot, and the per-room listening settings belong to Slack team conversations only. In BotFather
-run `/setprivacy` on the bot and choose **Disable** (or make it a group admin), or the bot only
-receives group messages that mention it. Broadcast channel posts never start runs. For Lark,
-create a custom app with the Bot capability and subscribe it to `im.message.receive_v1`.
-
-People link a chat app to their account from **Messaging** settings. `MESSAGING_OPEN_SIGNUP=true`
-instead gives unknown senders their own chat-only accounts, whose runs use the deployment model.
-
-In rooms, a bot decides whether to answer ambient messages with its own model. To use a separate
-model for that decision, set both `TEAM_CHAT_JUDGE_PROVIDER` and `TEAM_CHAT_JUDGE_MODEL`.
-
-### Slack
-
-For Slack workspace installations, set `SLACK_CLIENT_ID`, `SLACK_CLIENT_SECRET`, and
-`SLACK_SIGNING_SECRET` on the API and worker. Register the OAuth redirect URL
-`https://app.example.com/api/v1/messaging/install/slack/callback` using your public
-API origin (`API_URL`). Enable distribution in the Slack app's Manage Distribution
-settings so other workspaces can install it. Enable Slack Events API delivery to
-`https://app.example.com/api/v1/messaging/webhook/slack`, with `app_mention`,
-`message.im`, `message.channels`, `message.groups`, `message.mpim`, and
-`app_uninstalled`. Enable the app's Messages tab. The install flow requests the
-message/history, channel/user lookup, file read and write, and reaction-write scopes it uses;
-reinstall the Slack app after changing scopes. Socket Mode is not used.
-
-In Messaging settings, select **Connect** on the Slack row. The workspace answers as
-the first bot in your default space, whichever space is open. Each Slack workspace
-belongs to one Labradoodle space and one installation owner; installing it from another
-space is rejected. To DM that bot, use **Link DMs** and send the code in a DM to the
-Slack app. Teammates in the same space can link their own bots the same way.
-Invite the Slack app to channels and mention it to receive replies there. The
-bot's external conversations offer **Mentions only**, **Listen**, and room guidance.
-Workspace setup and personal linking are available on web, desktop and mobile.
-Mobile opens Slack authorization in the system browser; return to the app when it
-finishes. Channel listening settings currently live in the web/desktop interface.
-
-Tokens are encrypted with the configured secret store. Workers resolve the
-installation for every outbound operation, including queued replies; disconnecting
-an installation stops further delivery and unlinks its personal DMs. Slack's signed
-`app_uninstalled` event also removes the installation. Disconnect removes Labradoodle's
-local credentials; remove the app in Slack to revoke Slack's installation itself.
-The installation owner must retain space membership and an active bot. Workspace
-installations require a workspace-level bot token without Slack token rotation;
-Enterprise Grid org-wide installs and rotating tokens are rejected explicitly.
-
-The older `SLACK_BOT_TOKEN` plus `SLACK_SIGNING_SECRET` configuration still supports
-a single workspace. OAuth mode takes precedence when configured; existing static
-Slack identities/conversations must be relinked before using workspace installs.
-`TEAM_CHAT_BOT_ID` only selects a channel bot for the static configuration. It does
-not override workspace installations or personal DMs. Slack tools authorized from
-the Integrations screen are a separate connection from this messaging surface.
 
 ## Cloud coding agents
 

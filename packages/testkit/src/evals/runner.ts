@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { AgentRuntime, JobPublisher, NotificationProvider } from "@labradoodle/adapter-kit";
 import { runJobKey } from "@labradoodle/adapter-kit";
-import { CapturingNotificationProvider, MessagingTeamChatEmulator } from "@labradoodle/adapters";
+import { CapturingNotificationProvider } from "@labradoodle/adapters";
 import type { ModelConnectInput, RunStatus } from "@labradoodle/contracts";
 import { ACTIVE_RUN_STATUSES, attachmentComputerPath, isTerminal } from "@labradoodle/core";
 import type { createDb } from "@labradoodle/db";
@@ -56,7 +56,6 @@ export type TrialOptions = {
   maxToolCalls: number;
   createApp: (
     services: EvalServices,
-    messaging: MessagingTeamChatEmulator,
     witnesses: {
       notifications: CapturingNotificationProvider;
       realtime: SilenceObserver;
@@ -85,10 +84,6 @@ export async function runTrial(
   const started = Date.now();
   const deadline = started + options.timeoutMs;
   const services = new EvalServices();
-  const messaging = new MessagingTeamChatEmulator({
-    provider: "slack",
-    capabilities: { groups: false },
-  });
   scenario.configure?.(services);
   const notifications = new CapturingNotificationProvider();
   const realtime = new SilenceObserver();
@@ -110,9 +105,6 @@ export async function runTrial(
   let approvalPending = false;
   let clarificationPending = false;
   let priorMemory = "";
-  let messagingLinked = false;
-  let messagingAddress = "";
-  let messagingOriginThreadId: string | null = null;
   const secrets = [options.connection.apiKey ?? "", options.connection.baseUrl ?? ""];
   let phase: FailureCategory = "harness";
   const seenTools = new Map<string, { name: string }>();
@@ -159,7 +151,7 @@ export async function runTrial(
     // A forced wake runs now; the agent is told it is the routine's due time instead.
     let clockShiftMs = 0;
     const now = () => new Date(Date.now() + clockShiftMs);
-    handles = await options.createApp(services, messaging, { notifications, realtime, now });
+    handles = await options.createApp(services, { notifications, realtime, now });
     const prisma = asSystem(handles.prisma);
     db = prisma;
     realtime.attach(prisma);
@@ -253,9 +245,6 @@ export async function runTrial(
         });
         group = { ...created, memberIds };
       }
-      messagingLinked = false;
-      messagingAddress = `U-eval-${randomUUID()}`;
-      messaging.resetWitnesses();
       // Ask mode asks before any change, so the write stops at its approval card.
       if (scenario.approvalTool) await rpc(app, cookie, "autoReview/set", { mode: "ask" });
     };
@@ -513,44 +502,6 @@ export async function runTrial(
             where: { id: runId },
             select: { sourceMessageId: true },
           }));
-      } else if ("slack" in step) {
-        if (!messagingLinked) {
-          const link = await rpc<{ code: string }>(app, cookie, "messaging/link/start", { botId });
-          await messaging.emitInbound({
-            isDirect: true,
-            from: messagingAddress,
-            fromLabel: "Teammate",
-            content: link.code,
-          });
-          await poll(async () => (messaging.sent.length > 0 ? true : undefined), deadline);
-          messaging.resetWitnesses();
-          messagingLinked = true;
-        }
-        const inbound = await messaging.emitInbound({
-          isDirect: true,
-          from: messagingAddress,
-          fromLabel: "Teammate",
-          content: step.slack,
-        });
-        messagingOriginThreadId = inbound.threadId;
-        runId = await poll(
-          async () =>
-            (
-              await prisma.run.findFirst({
-                where: {
-                  botId,
-                  sourceMessage: {
-                    is: {
-                      clientNonce: `messaging:${inbound.provider}:${inbound.handle}`,
-                    },
-                  },
-                },
-                orderBy: { createdAt: "desc" },
-                select: { id: true },
-              })
-            )?.id,
-          deadline,
-        );
       } else {
         const routines = await prisma.routine.findMany({ where: { botId } });
         // A follow-up the bot cancelled once its loop closed has nothing left to wake.
@@ -684,9 +635,6 @@ export async function runTrial(
             ? "provider"
             : "product";
         throw new EvalFailure(category, error);
-      }
-      if ("slack" in step && terminal.status === "completed") {
-        await waitForMessagingDelivery(prisma, runId, deadline);
       }
       // Completion is committed before notification delivery. Drain the executor before observing.
       if (wakesRoutines(scenario) && handles.awaitIdle)
@@ -893,10 +841,6 @@ export async function runTrial(
       finalStep,
       settings: await settingsSnapshot(),
       settingsBefore,
-      messaging: {
-        originThreadId: messagingOriginThreadId,
-        outbound: structuredClone(messaging.sent),
-      },
     };
     phase = "harness";
     result.criteria = scenario.grade(evidence);
@@ -1091,37 +1035,6 @@ async function poll<T>(read: () => Promise<T | undefined>, deadline: number): Pr
     await new Promise((resolve) => setTimeout(resolve, 200));
   }
   throw new EvalFailure("incomplete", "Trial time budget exceeded");
-}
-
-async function waitForMessagingDelivery(
-  prisma: EvalApp["prisma"],
-  runId: string,
-  deadline: number,
-): Promise<void> {
-  await poll(
-    async () =>
-      (
-        await prisma.run.findUnique({
-          where: { id: runId },
-          select: { messagingMirroredAt: true },
-        })
-      )?.messagingMirroredAt ?? undefined,
-    deadline,
-  );
-  const messages = await prisma.message.findMany({
-    where: { runId, role: "bot" },
-    select: { id: true },
-  });
-  await poll(async () => {
-    const outbound = await prisma.messagingOutbound.findMany({
-      where: { sourceMessageId: { in: messages.map((message) => message.id) } },
-      select: { status: true, providerHandle: true },
-    });
-    return outbound.length > 0 &&
-      outbound.every((row) => row.providerHandle !== null || row.status === "failed")
-      ? true
-      : undefined;
-  }, deadline);
 }
 
 function actorScopes(actors: readonly EvalActor[]) {

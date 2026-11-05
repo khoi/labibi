@@ -2,10 +2,10 @@ import type { Pool, QueryResult } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { PrismaClient } from "./client.js";
 import { createDb } from "./client.js";
-import { provisionMessagingIdentity } from "./messaging.js";
 import { createRepos } from "./repos.js";
 import { asSystem, runAsSystem, runAsTenant } from "./row-security.js";
 import { createSpaceForMember } from "./spaces.js";
+import { provisionTestBot } from "./test-bot.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 const describePostgres =
@@ -62,9 +62,9 @@ describePostgres("bounded latest bot roster runs (PostgreSQL)", () => {
       await db.pool.end();
     };
     const identity = await runAsSystem("test fixture", () =>
-      provisionMessagingIdentity(
+      provisionTestBot(
         prisma,
-        { provider: "sendblue", address },
+        { address },
         { signupsEnabled: undefined, signupAllowlist: undefined },
       ),
     );
@@ -161,9 +161,6 @@ describePostgres("bounded latest bot roster runs (PostgreSQL)", () => {
   });
   afterAll(async () => {
     if (owner) {
-      await asSystem(prisma).messagingIdentity.deleteMany({
-        where: { provider: "sendblue", address },
-      });
       await asSystem(prisma).organization.deleteMany({
         where: { id: { in: [owner.spaceId, otherSpace] } },
       });

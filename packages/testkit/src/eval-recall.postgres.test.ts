@@ -86,7 +86,7 @@ describe.skipIf(!databaseAvailable)("recall eval through the product", () => {
             timeoutMs: 30_000,
             maxToolCalls: 8,
             judge,
-            createApp: async (composio, messaging) => {
+            createApp: async (composio) => {
               const toolCallObservations: ObservedToolCall[] = [];
               const handles = await createApp({
                 runtime: observeToolCalls(new PiAgentRuntime(), toolCallObservations, []),
@@ -101,7 +101,6 @@ describe.skipIf(!databaseAvailable)("recall eval through the product", () => {
                 wakeupDriver: "memory",
                 signupsEnabled: "true",
                 composio,
-                messaging,
                 encryptionKey: "offline-recall-eval-encryption-key-32-chars",
               });
               return { ...handles, toolCallObservations };

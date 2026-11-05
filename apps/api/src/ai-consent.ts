@@ -162,19 +162,6 @@ export async function aiConsentStatus(
       }),
     );
     selected.push(...roleModels.filter((model) => model !== null));
-    if (deps.env.teamChatJudgeProvider && deps.env.teamChatJudgeModel) {
-      selected.push({
-        provider: deps.env.teamChatJudgeProvider,
-        id: deps.env.teamChatJudgeModel,
-        credential: await findModelCredential(
-          deps.prisma,
-          actor,
-          deps.env.teamChatJudgeProvider,
-          deps.env.teamChatJudgeModel,
-        ),
-        thinkingLevel: null,
-      });
-    }
     const models = [
       ...new Map(
         selected

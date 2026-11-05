@@ -69,8 +69,6 @@ function sourceRecords(): AccountExportRecord[] {
       modelId: null,
       thinkingLevel: null,
       disabledBuiltinTools: ["browser"],
-      teamChatAmbientEnabled: false,
-      teamChatRules: "",
       createdAt: at,
     },
     {
@@ -88,8 +86,6 @@ function sourceRecords(): AccountExportRecord[] {
       modelId: null,
       thinkingLevel: null,
       disabledBuiltinTools: [],
-      teamChatAmbientEnabled: false,
-      teamChatRules: "",
       createdAt: at,
     },
     {
@@ -228,7 +224,6 @@ function sourceRecords(): AccountExportRecord[] {
       timezone: "UTC",
       active: true,
       notify: true,
-      messageProvider: null,
       modelProvider: null,
       modelId: null,
       thinkingLevel: null,

@@ -291,7 +291,6 @@ describe("Pi outgoing provider prefixes", () => {
               workspaceInstruction: "Stable workspace guidance.",
               replyGuidance: "Stable reply guidance.",
               groupContext: `Group context: ${index}`,
-              messagingContext: `Messaging context: ${index}`,
               redactedMemoryContext: `Memory: ${index === 0 ? "first" : "second"}`,
               hasHistoricalContext: true,
               agentEnvironmentInstruction: undefined,

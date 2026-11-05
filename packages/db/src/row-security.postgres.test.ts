@@ -448,50 +448,6 @@ describePostgres("row-level security (PostgreSQL)", () => {
           },
         }),
       );
-      const identity = keep(
-        "messagingIdentity",
-        await o.messagingIdentity.create({
-          data: {
-            provider: "test",
-            address: `addr-${tag}`,
-            userId: t.userId,
-            spaceId: t.spaceId,
-            botId: t.botId,
-          },
-        }),
-      );
-      keep(
-        "messagingOutbound",
-        await o.messagingOutbound.create({
-          data: { idempotencyKey: `rls-${tag}`, kind: "dm", identityId: identity.id, body: "b" },
-        }),
-      );
-      const conversation = keep(
-        "externalConversation",
-        await o.externalConversation.create({
-          data: {
-            provider: "test",
-            workspaceId: "w",
-            externalKey: `k-${tag}`,
-            conversationId: "c",
-            spaceId: t.spaceId,
-            botId: t.botId,
-            userId: t.userId,
-          },
-        }),
-      );
-      keep(
-        "externalMessage",
-        await o.externalMessage.create({
-          data: {
-            externalConversationId: conversation.id,
-            providerEventId: `e-${tag}`,
-            senderId: "s",
-            senderName: "n",
-            content: "c",
-          },
-        }),
-      );
       const message = await o.message.findFirstOrThrow({ where: { threadId: t.threadId } });
       keep(
         "steeringMessage",

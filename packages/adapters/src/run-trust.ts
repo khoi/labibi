@@ -61,21 +61,11 @@ export function createRunTrustLoaders(
     botId: string;
     taskPrompt: string;
     ownerStartedRun: boolean;
-    messagingChannelRun: boolean;
     sourceMessage: { role: string; blocks: unknown } | null;
     connectedPlugins: readonly { provider: string }[];
   },
 ) {
-  const {
-    run,
-    runId,
-    botId,
-    taskPrompt,
-    ownerStartedRun,
-    messagingChannelRun,
-    sourceMessage,
-    connectedPlugins,
-  } = input;
+  const { run, runId, botId, taskPrompt, ownerStartedRun, sourceMessage, connectedPlugins } = input;
   let approvalRulesPromise: Promise<ActionApprovalRule[]> | undefined;
   const loadApprovalRules = () => {
     approvalRulesPromise ??= listApprovalRules(deps.prisma, {
@@ -111,7 +101,7 @@ export function createRunTrustLoaders(
   let ownerWordsPromise: Promise<string> | undefined;
   const loadOwnerWords = () => {
     ownerWordsPromise ??= (async () => {
-      if (ownerStartedRun && !messagingChannelRun && sourceMessage?.role === "user") {
+      if (ownerStartedRun && sourceMessage?.role === "user") {
         return ((sourceMessage.blocks ?? []) as MessageBlock[])
           .flatMap((block) => (block.kind === "text" ? [block.text] : []))
           .join("\n");
@@ -184,19 +174,11 @@ export function createRunTrustLoaders(
       );
     return trustedConnectorsPromise;
   };
-  // Channel and webhook text this run took in mid-turn is not the owner's. Rows queued
-  // before origins were recorded are recognized by their channel message.
+  // Webhook text this run took in mid-turn is not the owner's.
   const receivedOutsideMessage = async () =>
     Boolean(
       await deps.prisma.steeringMessage.findFirst({
-        where: {
-          runId,
-          claimedAt: { not: null },
-          OR: [
-            { originTrigger: { not: null } },
-            { message: { blocks: { array_contains: [{ kind: "channel_message" }] } } },
-          ],
-        },
+        where: { runId, claimedAt: { not: null }, originTrigger: { not: null } },
         select: { id: true },
       }),
     );

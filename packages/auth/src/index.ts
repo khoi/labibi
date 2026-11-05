@@ -371,11 +371,6 @@ export function createAuth(prisma: PrismaClient, env: AuthEnv) {
           const organizationIds = await personalOrganizationIds(prisma, user.id);
 
           await prisma.$transaction(async (tx) => {
-            // Messaging identities are deliberately FK-free, so clear them
-            // here or the unique address would point at a deleted bot forever.
-            await tx.messagingIdentity.deleteMany({
-              where: { userId: user.id },
-            });
             await tx.passkey.deleteMany({ where: { userId: user.id } });
             await tx.organization.deleteMany({
               where: { id: { in: organizationIds } },
@@ -815,8 +810,6 @@ async function revokeUnprovenCredentials(prisma: PrismaClient, userId: string) {
   await prisma.$transaction(async (tx) => {
     await tx.passkey.deleteMany({ where: { userId } });
     await tx.account.deleteMany({ where: { userId, providerId: { not: "credential" } } });
-    await tx.messagingIdentity.deleteMany({ where: { userId } });
-    await tx.messagingLinkCode.deleteMany({ where: { userId } });
     await tx.userDevice.updateMany({
       where: { userId, revokedAt: null },
       data: { revokedAt: new Date() },

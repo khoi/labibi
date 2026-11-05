@@ -81,8 +81,6 @@ export function displayIdentityResult(
       bots: list(bot),
       groups: list(group),
     });
-  const identity: Project = (value) => fields(value, { botName: label(labels.bot) });
-  const channel: Project = (value) => fields(value, { name: label(labels.group) });
   const procedure = path.join("/");
   if (procedure === "bootstrap")
     return fields(result, {
@@ -127,14 +125,6 @@ export function displayIdentityResult(
         });
       }),
     });
-  if (procedure === "messaging/status")
-    return fields(result, {
-      identities: list(identity),
-      channels: list(channel),
-    });
-  if (procedure === "messaging/identities/setBot") return identity(result);
-  if (procedure === "messaging/channels/list") return list(channel)(result);
-  if (procedure === "messaging/channels/respond") return channel(result);
   if (procedure === "computer/status")
     return fields(result, {
       busyBotName: (name) => (name === null ? null : label(labels.bot)(name)),

@@ -128,8 +128,6 @@ function fixture({
       ),
     },
     member: { findMany: vi.fn(async () => []) },
-    messagingIdentity: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-    messagingLinkCode: { deleteMany: vi.fn(async () => ({ count: 0 })) },
     account: { deleteMany: vi.fn(async () => ({ count: 0 })) },
     userDevice: { updateMany: vi.fn(async () => ({ count: 0 })) },
     passkey: {
@@ -1069,8 +1067,6 @@ describe("passkeys", () => {
     expect(f.data.user![0]).toMatchObject({ id: userId, emailVerified: true });
     expect(f.data.passkey).toHaveLength(0);
     expect((await f.signInWithPasskey()).status).toBe(401);
-    expect(f.prisma.messagingIdentity.deleteMany).toHaveBeenCalledWith({ where: { userId } });
-    expect(f.prisma.messagingLinkCode.deleteMany).toHaveBeenCalledWith({ where: { userId } });
     expect(f.prisma.userDevice.updateMany).toHaveBeenCalledWith({
       where: { userId, revokedAt: null },
       data: { revokedAt: expect.any(Date) },

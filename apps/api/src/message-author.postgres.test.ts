@@ -1,13 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { Actor } from "@labradoodle/contracts";
 import type { PrismaClient } from "@labradoodle/db";
-import {
-  asSystem,
-  createDb,
-  provisionMessagingIdentity,
-  runAsSystem,
-  runAsTenant,
-} from "@labradoodle/db";
+import { asSystem, createDb, provisionTestBot, runAsSystem, runAsTenant } from "@labradoodle/db";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { loadMessagePage } from "./thread-message-pages.js";
 import type { ThreadTarget } from "./thread-target.js";
@@ -36,9 +30,9 @@ describe.skipIf(!enabled)("message authors (PostgreSQL)", () => {
   });
   beforeEach(async () => {
     const identity = await runAsSystem("test fixture", () =>
-      provisionMessagingIdentity(
+      provisionTestBot(
         prisma,
-        { provider: "test", address: `message-author-${randomUUID()}` },
+        { address: `message-author-${randomUUID()}` },
         { signupsEnabled: undefined, signupAllowlist: undefined },
       ),
     );
@@ -56,9 +50,6 @@ describe.skipIf(!enabled)("message authors (PostgreSQL)", () => {
   });
   afterEach(async () => {
     if (!actor) return;
-    await system.messagingIdentity.deleteMany({
-      where: { userId: actor.userId },
-    });
     await system.organization.deleteMany({ where: { id: actor.spaceId } });
     await system.user.deleteMany({ where: { id: actor.userId } });
   });

@@ -3,7 +3,7 @@ import type { BackgroundJobHandlers } from "@labradoodle/adapter-kit";
 import {
   HISTORY_COMPACT_MAX_ATTEMPTS,
   historyCompactJob,
-  messagingDeliverJob,
+  runContinueJob,
 } from "@labradoodle/adapter-kit";
 import type { PrismaClient } from "@labradoodle/db";
 import { createLogger, createTestSink, installLogger, wrapJobPayload } from "@labradoodle/logging";
@@ -46,8 +46,6 @@ function handlers(): BackgroundJobHandlers {
     "computer.control-expire": vi.fn(async () => undefined),
     "skill.teaching-expire": vi.fn(async () => undefined),
     "history.compact": vi.fn(async () => undefined),
-    "messaging.deliver": vi.fn(async () => undefined),
-    "messaging.credential-cleanup": vi.fn(async () => undefined),
     "cloud_agent.poll": vi.fn(async () => undefined),
     "purchase.poll": vi.fn(async () => undefined),
     "media.poll": vi.fn(async () => undefined),
@@ -100,7 +98,6 @@ describe("GraphileJobPublisher.enqueue", () => {
   it.each([
     ["user", "run.interactive"],
     ["follow_up", "run.interactive"],
-    ["messaging", "run.interactive"],
     ["created", "run.interactive"],
     ["routine", "run.continue"],
     ["bot_message", "run.continue"],
@@ -147,7 +144,7 @@ describe("GraphileJobPublisher.enqueue", () => {
   it("leaves the queue default when the job sets no cap", async () => {
     const addJob = vi.fn(async (..._args: unknown[]) => undefined);
     const publisher = publisherWith(addJob);
-    await publisher.enqueue(messagingDeliverJob("run-1"));
+    await publisher.enqueue(runContinueJob("run-1"));
     const options = addJob.mock.calls[0]?.[2] as { maxAttempts?: number } | undefined;
     expect(options?.maxAttempts).toBeUndefined();
     await publisher.close();

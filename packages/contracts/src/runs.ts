@@ -16,7 +16,6 @@ export const RUN_TRIGGERS = [
   "call_end",
   "skill",
   "webhook",
-  "messaging",
   "cloud_agent",
   "purchase",
   "media",

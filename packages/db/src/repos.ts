@@ -70,8 +70,6 @@ function mapBot(
     modelProvider?: string | null;
     modelId?: string | null;
     thinkingLevel?: string | null;
-    teamChatAmbientEnabled?: boolean;
-    teamChatRules?: string;
     disabledBuiltinTools?: string[];
     webhookSecretId?: string | null;
   },
@@ -107,8 +105,6 @@ function mapBot(
     modelProvider: bot.modelProvider ? canonicalPiProviderId(bot.modelProvider) : null,
     modelId: bot.modelId ?? null,
     thinkingLevel: (bot.thinkingLevel as Bot["thinkingLevel"]) ?? null,
-    teamChatAmbientEnabled: bot.teamChatAmbientEnabled ?? false,
-    teamChatRules: bot.teamChatRules ?? "",
     // Stored lists may name a tool that no longer exists; settings resend what they read.
     disabledBuiltinTools: [...disabledBuiltinToolSet(bot.disabledBuiltinTools)],
     webhookConfigured: Boolean(bot.webhookSecretId),

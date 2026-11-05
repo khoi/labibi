@@ -106,11 +106,6 @@ msgstr "{0} 연결"
 msgid "{0} GB"
 msgstr "{0} GB"
 
-#. placeholder {0}: sender.name
-#: src/pages/ExternalConversationSettings.tsx
-msgid "{0} handling"
-msgstr ""
-
 #. placeholder {0}: updated.name
 #: src/pages/McpServersOverlay.tsx
 msgid "{0} is not working"
@@ -130,11 +125,6 @@ msgstr "{0} KB"
 #: src/components/ArtifactFileCard.tsx
 msgid "{0} MB"
 msgstr "{0} MB"
-
-#. placeholder {0}: sender.name
-#: src/pages/ExternalConversationSettings.tsx
-msgid "{0} rollup hours"
-msgstr ""
 
 #. placeholder {0}: parts.amount
 #: src/components/ArtifactFileCard.tsx
@@ -646,10 +636,6 @@ msgstr "자동 실행에 추가"
 msgid "Add trigger"
 msgstr "트리거 추가"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Add workspace"
-msgstr "워크스페이스 추가"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "Added"
@@ -741,10 +727,6 @@ msgstr "한 번 허용됨"
 #: src/pages/Auth.tsx
 msgid "Already have an account?"
 msgstr "이미 계정이 있나요?"
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Always act"
-msgstr ""
 
 #: src/components/AskCard.tsx
 msgid "Always allow {site}"
@@ -855,7 +837,6 @@ msgstr "승인 모델"
 msgid "Approvals"
 msgstr "승인"
 
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
@@ -950,10 +931,6 @@ msgstr "에이전트가 도구를 사용할 수 있도록 이 서버에 권한�
 msgid "Auto"
 msgstr "자동"
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Automated senders"
-msgstr ""
-
 #: src/pages/RoutineEditor.tsx
 msgid "Available after the routine is saved"
 msgstr "루틴을 저장한 후 사용할 수 있습니다"
@@ -1039,7 +1016,6 @@ msgstr "라이브 데스크톱 시작 중…"
 
 #: src/lib/identity-display.ts
 #: src/pages/IntegrationSetup.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/Shell.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
@@ -1231,10 +1207,6 @@ msgstr "채팅 세부정보"
 msgid "Chat Settings"
 msgstr "채팅 설정"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Chat with your bot from Slack."
-msgstr "Slack에서 봇과 채팅하세요."
-
 #: src/lib/localized-provider-hint.ts
 msgid "ChatGPT subscription"
 msgstr ""
@@ -1347,7 +1319,6 @@ msgstr "비우는 중…"
 
 #: src/components/ErrorBoundary.tsx
 #: src/pages/KnowledgeSection.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/chat-find-bar.tsx
@@ -1551,7 +1522,6 @@ msgstr "이 브라우저 세션에서 URL에 연결할 수 있는지 확인한 �
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 #: src/pages/memory-providers/SupermemorySettingsForm.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/model-settings/role-model-picker.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/shell/message-cards.tsx
@@ -1562,10 +1532,6 @@ msgstr "연결"
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Connect {selectedProviderName}"
 msgstr "{selectedProviderName} 연결"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Connect a chat app"
-msgstr "채팅 앱 연결"
 
 #: src/pages/Onboarding.tsx
 #: src/pages/shell/composer-error.tsx
@@ -1688,10 +1654,6 @@ msgstr ""
 msgid "Continue with {0}"
 msgstr "{0}(으)로 계속"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Conversations"
-msgstr ""
-
 #: src/components/InviteDialog.tsx
 #: src/components/markdown-copy.tsx
 #: src/components/pages/PublicPageShell.tsx
@@ -1801,7 +1763,6 @@ msgstr ""
 
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/SlackInstallCallback.tsx
 msgid "Could not connect"
 msgstr "연결하지 못했습니다."
 
@@ -2120,7 +2081,6 @@ msgstr ""
 msgid "Could not run routine"
 msgstr "루틴을 실행할 수 없습니다"
 
-#: src/pages/ExternalConversationSettings.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
@@ -2266,10 +2226,6 @@ msgstr "복사하지 못했습니다. 링크를 선택해 복사하세요."
 msgid "Couldn't load grants"
 msgstr ""
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Couldn't load messaging settings"
-msgstr "메시징 설정을 불러올 수 없습니다"
-
 #: src/components/pages/PagesList.tsx
 msgid "Couldn't load pages."
 msgstr "페이지를 불러오지 못했습니다."
@@ -2285,10 +2241,6 @@ msgstr "이 페이지를 불러올 수 없습니다. 다시 시도하세요."
 #: src/pages/PaymentWalletSettingsPanel.tsx
 msgid "Couldn't load your wallet"
 msgstr ""
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Couldn't update messaging settings"
-msgstr "메시징 설정을 업데이트할 수 없습니다"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Couldn't update your timezone"
@@ -2425,10 +2377,6 @@ msgstr ""
 #: src/lib/cron.ts
 msgid "days"
 msgstr "일"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Decline"
-msgstr "거절"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/model-settings/role-model-picker.tsx
@@ -2587,7 +2535,6 @@ msgstr ""
 
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/MemorySettingsOverlay.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
@@ -2794,7 +2741,6 @@ msgid "Error"
 msgstr ""
 
 #: src/lib/cron.ts
-#: src/pages/ExternalConversationSettings.tsx
 msgid "Every"
 msgstr "매"
 
@@ -2838,10 +2784,6 @@ msgstr "매시간"
 msgid "Every hour at :{0}"
 msgstr "매시간 {0}분"
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Every message"
-msgstr "모든 메시지"
-
 #: src/lib/cron.ts
 msgid "Every Monday"
 msgstr "매주 월요일"
@@ -2855,10 +2797,6 @@ msgstr "매월"
 #: src/pages/RoutineSchedule.tsx
 msgid "Every week"
 msgstr "매주"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Everyone in this bot's space can read the chats it gets from {linkApp}."
-msgstr ""
 
 #: src/components/SharedSpaceRules.tsx
 msgid "Everyone in this space sees all its chats, bots and memory."
@@ -2909,11 +2847,6 @@ msgstr "데이터 내보내기"
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Export this week's list from the CRM and drop it in the shared folder"
 msgstr "CRM에서 이번 주 목록을 내려받아 공유 폴더에 넣기"
-
-#: src/pages/ExternalConversationSettings.tsx
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "External conversation"
-msgstr ""
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
@@ -3127,7 +3060,6 @@ msgid "Granting…"
 msgstr ""
 
 #: src/lib/identity-display.ts
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/shell/chat-header.tsx
 #: src/pages/shell/side-panel.tsx
 #: src/pages/SpaceSearch.tsx
@@ -3137,10 +3069,6 @@ msgstr "그룹"
 #: src/pages/GroupPanel.tsx
 msgid "Group settings"
 msgstr "그룹 설정"
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Group updates"
-msgstr ""
 
 #: src/pages/RoutineEditor.tsx
 msgid "header"
@@ -3213,7 +3141,6 @@ msgid "hour"
 msgstr "시간"
 
 #: src/lib/cron.ts
-#: src/pages/ExternalConversationSettings.tsx
 msgid "hours"
 msgstr "시간"
 
@@ -3244,10 +3171,6 @@ msgstr "조작 끝내기"
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "If you heard that, voice is ready."
 msgstr "샘플이 들렸다면 음성 설정이 완료되었습니다."
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Ignore"
-msgstr ""
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
@@ -3314,10 +3237,6 @@ msgstr "지침 기록"
 #: src/components/InstructionSettings.tsx
 msgid "Instructions"
 msgstr "지침"
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Instructions for this room"
-msgstr "이 방을 위한 지침"
 
 #: src/components/AskCard.tsx
 msgid "Instructions updated"
@@ -3459,7 +3378,6 @@ msgid "Later"
 msgstr ""
 
 #: src/components/SpaceMembersSettings.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 msgid "Leave"
 msgstr "나가기"
 
@@ -3493,10 +3411,6 @@ msgstr ""
 #: src/components/pages/SharePopover.tsx
 msgid "Link copied"
 msgstr "링크를 복사했습니다"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Link DMs"
-msgstr "DM 연결"
 
 #: src/components/AccountAccess.tsx
 msgid "Link SSO"
@@ -3727,10 +3641,6 @@ msgstr "기억 사용 범위"
 msgid "Mentions"
 msgstr "멘션"
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Mentions only"
-msgstr ""
-
 #: src/pages/shell/chat-shared.ts
 #: src/pages/shell/composer.tsx
 #: src/pages/SpaceSearch.tsx
@@ -3750,17 +3660,9 @@ msgstr "{activeName}에게 메시지 보내기"
 msgid "Message composer"
 msgstr "메시지 작성기"
 
-#: src/pages/RoutineEditor.tsx
-msgid "Message event"
-msgstr ""
-
 #: src/pages/shell/composer.tsx
 msgid "Message…"
 msgstr "메시지를 입력하세요"
-
-#: src/pages/settings-nav.ts
-msgid "Messaging"
-msgstr "메시징"
 
 #: src/lib/dictation.ts
 msgid "Microphone failed"
@@ -4850,10 +4752,6 @@ msgid "Remove header"
 msgstr "헤더 삭제"
 
 #: src/pages/RoutineEditor.tsx
-msgid "Remove message trigger"
-msgstr ""
-
-#: src/pages/RoutineEditor.tsx
 msgid "Remove schedule"
 msgstr "일정 제거"
 
@@ -4901,10 +4799,6 @@ msgstr "키 교체"
 msgid "Replaces the login saved for {0}"
 msgstr ""
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Replies to"
-msgstr "응답 대상"
-
 #: src/pages/shell/message-hover-actions.tsx
 #: src/pages/shell/quote-selection-button.tsx
 msgid "Reply"
@@ -4923,16 +4817,11 @@ msgstr ""
 msgid "Request a new code"
 msgstr "새 코드를 요청하세요"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Requests"
-msgstr ""
-
 #: src/pages/shell/message-cards.tsx
 msgid "Research & writing"
 msgstr ""
 
 #: src/components/ComputerMaintenanceActions.tsx
-#: src/pages/ExternalConversationSettings.tsx
 msgid "Reset"
 msgstr "재설정"
 
@@ -5023,7 +4912,6 @@ msgid "Retry screen"
 msgstr ""
 
 #: src/pages/McpOAuthCallback.tsx
-#: src/pages/SlackInstallCallback.tsx
 msgid "Return to Labradoodle"
 msgstr "Labradoodle로 돌아가기"
 
@@ -5100,17 +4988,9 @@ msgstr "실행 중…"
 msgid "Runs"
 msgstr "실행"
 
-#: src/pages/RoutineEditor.tsx
-msgid "Runs when this bot receives a verified message from this provider."
-msgstr ""
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Sales & CRM"
 msgstr ""
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Same as {botName}"
-msgstr "{botName}와(과) 동일"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Same as main model"
@@ -5128,7 +5008,6 @@ msgstr "토요일"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/AccountSettingsOverlay.tsx
-#: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
@@ -5151,7 +5030,6 @@ msgstr "보관함에 저장"
 #: src/components/ComputerProviderSettings.tsx
 #: src/components/SecretAskCard.tsx
 #: src/components/teach/SkillDraftCard.tsx
-#: src/pages/ExternalConversationSettings.tsx
 msgid "Saved"
 msgstr "저장됨"
 
@@ -5165,10 +5043,6 @@ msgstr "저장되었습니다. key를 교체하면 표시됩니다."
 
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Saving your workspace"
-msgstr ""
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Saving..."
 msgstr ""
 
 #: src/components/SecretAskCard.tsx
@@ -5293,14 +5167,6 @@ msgstr "자체 호스팅"
 msgid "Send"
 msgstr "보내기"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Send <0>{linkCode}</0> from {linkApp} within 10 minutes."
-msgstr ""
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Send <0>{linkCode}</0> to <1>{linkAddress}</1> from {linkApp} within 10 minutes."
-msgstr ""
-
 #: src/components/AskCard.tsx
 msgid "Send answer"
 msgstr "답변 보내기"
@@ -5361,7 +5227,6 @@ msgid "Set"
 msgstr "설정"
 
 #: src/components/SidebarFooter.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/keyboard-shortcuts-dialog.tsx
 #: src/pages/shell/shell-dialogs.tsx
@@ -5540,14 +5405,6 @@ msgstr ""
 #: src/pages/shell/use-composer-actions.ts
 msgid "Skipped {0}"
 msgstr "{0} 건너뜀"
-
-#: src/pages/RoutineEditor.tsx
-msgid "Slack message"
-msgstr "Slack 메시지"
-
-#: src/pages/RoutineEditor.tsx
-msgid "Slack not enabled"
-msgstr ""
 
 #: src/components/composer/HoldToTalk.tsx
 msgid "Slide up to lock"
@@ -5817,10 +5674,6 @@ msgstr "팀 공용"
 #: src/pages/shell/computer-view.tsx
 msgid "Team Computer"
 msgstr "팀 컴퓨터"
-
-#: src/pages/RoutineEditor.tsx
-msgid "Teams message"
-msgstr "Teams 메시지"
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "Template"
@@ -6150,10 +6003,6 @@ msgstr ""
 msgid "Transcription response is too large."
 msgstr ""
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Treat like a person"
-msgstr ""
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Treg token"
 msgstr "Treg 토큰"
@@ -6219,10 +6068,6 @@ msgstr "실행 취소"
 #: src/pages/PluginsOverlay.tsx
 msgid "Uninstall"
 msgstr ""
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Unlink"
-msgstr "연결 해제"
 
 #: src/components/pages/PagesList.tsx
 msgid "Unpin"

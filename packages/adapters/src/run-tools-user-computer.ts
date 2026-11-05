@@ -43,17 +43,16 @@ const USER_COMPUTER_UNAVAILABLE =
 
 /**
  * Whose own computer this run may reach: the person whose message started it, when they own the
- * bot. Routines, webhooks, channels, other bots and other people's messages reach no one's.
+ * bot. Routines, webhooks, other bots and other people's messages reach no one's.
  */
 export function userComputerOwner(input: {
   trigger: string;
   sourceRole: string | undefined;
-  messagingChannelRun: boolean;
   runUserId: string;
   botUserId: string;
 }): string | undefined {
   if (input.trigger !== "user" && input.trigger !== "follow_up") return undefined;
-  if (input.sourceRole !== "user" || input.messagingChannelRun) return undefined;
+  if (input.sourceRole !== "user") return undefined;
   return input.runUserId === input.botUserId ? input.runUserId : undefined;
 }
 

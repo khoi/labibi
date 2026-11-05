@@ -109,8 +109,6 @@ const bot = {
   modelProvider: null,
   modelId: null,
   thinkingLevel: null,
-  teamChatAmbientEnabled: false,
-  teamChatRules: "",
   disabledBuiltinTools: ["remember"],
   webhookConfigured: false,
 } as Bot;

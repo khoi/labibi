@@ -19,7 +19,6 @@ import {
 } from "../../components/ToolActivityDisclosure";
 import { SkillDraftCard } from "../../components/teach/SkillDraftCard";
 import type { ArtifactTarget } from "../../lib/artifact-open";
-import { messageProviderLabel } from "../../lib/messaging";
 import type { PageBlock } from "../../lib/page-cards";
 import { useOpenPage } from "../../lib/pages";
 import type { createSpaceRpc } from "../../lib/rpc";
@@ -283,21 +282,6 @@ export const MessageView = memo(function MessageView({
             );
           }
           if (isToolActivityBlock(block)) return null;
-          if (block.kind === "channel_message") {
-            return (
-              <div
-                key={i}
-                className="flex items-center justify-center gap-2 py-1 text-[13.5px] text-muted-foreground"
-              >
-                <span className="shrink-0">
-                  {messageProviderLabel(block.provider, block.transport)}
-                </span>
-                <span>
-                  {block.fromLabel}: {block.text}
-                </span>
-              </div>
-            );
-          }
           if (block.kind === "meta") {
             return (
               <div

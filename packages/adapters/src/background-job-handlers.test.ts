@@ -3,7 +3,6 @@ import type {
   AgentRuntime,
   ArtifactStore,
   JobPublisher,
-  MessagingSurface,
   SandboxProvider,
 } from "@labradoodle/adapter-kit";
 import { SandboxUnresponsiveError } from "@labradoodle/adapter-kit";
@@ -16,7 +15,6 @@ import type * as ComputerControl from "./computer-control.js";
 import { expireComputerControl } from "./computer-control.js";
 import { createRunExecutor } from "./executor.js";
 import { compactHistory } from "./history-compaction.js";
-import { deliverMessagingOutbound, mirrorMessagingOutbound } from "./messaging-delivery.js";
 import type { EncryptedSecretStore } from "./secrets.js";
 
 vi.mock("./history-compaction.js", () => ({ compactHistory: vi.fn(async () => undefined) }));
@@ -24,58 +22,11 @@ vi.mock("./computer-control.js", async (importOriginal) => ({
   ...(await importOriginal<typeof ComputerControl>()),
   expireComputerControl: vi.fn(async () => false),
 }));
-vi.mock("./messaging-delivery.js", () => ({
-  deliverMessagingOutbound: vi.fn(async () => undefined),
-  mirrorMessagingOutbound: vi.fn(async () => undefined),
-}));
 
 const owner = { spaceId: "space-1", userId: "user-1" };
 const owned = () => ({ findUnique: vi.fn(async () => owner) });
 
 describe("createBackgroundJobHandlers", () => {
-  it("delivers directly when shutdown rejects a completed run's mirror job", async () => {
-    const enqueueError = new Error("Background job publisher is closing");
-    const jobs = {
-      enqueue: vi.fn(async () => {
-        throw enqueueError;
-      }),
-    } as unknown as JobPublisher;
-    const sink = createTestSink();
-    installLogger(createLogger({ service: "rakazo-worker", sinks: [sink] }));
-    const handlers = createBackgroundJobHandlers({
-      executor: {
-        continueRun: vi.fn(async () => undefined),
-      } as unknown as ReturnType<typeof createRunExecutor>,
-      prisma: { run: owned() } as unknown as PrismaClient,
-      sandbox: {} as unknown as SandboxProvider,
-      home: {} as unknown as AgentHomeStore,
-      artifacts: {} as unknown as ArtifactStore,
-      jobs,
-      events: {} as unknown as ThreadEvents,
-      workerId: "worker-1",
-      runtime: {} as unknown as AgentRuntime,
-      secretStore: {} as unknown as EncryptedSecretStore,
-      memoryProviders: { resolve: vi.fn(async () => null) },
-      messaging: {} as unknown as MessagingSurface,
-    });
-
-    await handlers["run.continue"]({ runId: "run-1" });
-
-    expect(mirrorMessagingOutbound).toHaveBeenCalledWith(
-      expect.objectContaining({ prisma: expect.anything(), messaging: expect.anything(), jobs }),
-      "run-1",
-    );
-    expect(deliverMessagingOutbound).toHaveBeenCalledWith(
-      expect.objectContaining({ prisma: expect.anything(), messaging: expect.anything(), jobs }),
-      {},
-      expect.objectContaining({ operationId: "messaging.deliver:drain" }),
-    );
-    expect(sink.events.some((event) => event.message === "messaging.deliver enqueue error")).toBe(
-      true,
-    );
-    installLogger(createLogger({ service: "rakazo-worker", level: "off", sinks: [] }));
-  });
-
   it("compacts the requested thread with the runtime, job publisher, and model key it was given", async () => {
     const prisma = { thread: owned() } as unknown as PrismaClient;
     const runtime = {} as unknown as AgentRuntime;
@@ -273,30 +224,4 @@ describe("createBackgroundJobHandlers", () => {
       oauth: undefined,
     });
   });
-});
-
-it("retries retired messaging credentials without deleting a currently referenced credential", async () => {
-  const remove = vi.fn(async () => undefined);
-  const findUnique = vi.fn(async () => ({ ciphertext: "active-ref" }));
-  const handlers = createBackgroundJobHandlers({
-    prisma: { messagingInstallation: { findUnique } },
-    secretStore: { delete: remove },
-  } as unknown as Parameters<typeof createBackgroundJobHandlers>[0]);
-  await handlers["messaging.credential-cleanup"]({
-    installationId: "install-a",
-    ref: "active-ref",
-  });
-  expect(remove).not.toHaveBeenCalled();
-  await handlers["messaging.credential-cleanup"]({
-    installationId: "install-a",
-    ref: "retired-ref",
-  });
-  expect(remove).toHaveBeenCalledWith(
-    "retired-ref",
-    expect.objectContaining({ recordId: "install-a" }),
-  );
-  remove.mockRejectedValueOnce(new Error("secret store temporarily unavailable") as never);
-  await expect(
-    handlers["messaging.credential-cleanup"]({ installationId: "install-a", ref: "retired-ref" }),
-  ).rejects.toThrow("temporarily unavailable");
 });

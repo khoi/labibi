@@ -247,7 +247,6 @@ describe("update_preferences", () => {
         groupId: null,
         trigger,
         semanticMemoryEnabled: false,
-        messagingChannelRun: trigger === "messaging",
         followUpFromUser,
       }).some((tool) => tool.name === "update_preferences");
     expect(offered("user")).toBe(true);
@@ -256,7 +255,6 @@ describe("update_preferences", () => {
       "follow_up",
       "routine",
       "bot_message",
-      "messaging",
       "webhook",
       "spawn",
       "tickets",

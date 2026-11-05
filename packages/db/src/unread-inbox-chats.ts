@@ -25,7 +25,6 @@ export function countUnreadInboxChats(
       SELECT count(*)::int AS count FROM threads t
       JOIN member_spaces m ON m."spaceId" = t."spaceId"
       WHERE t.unread
-        AND t."externalConversationId" IS NULL
         AND (
           EXISTS (SELECT 1 FROM bots b WHERE b.id = t."botId"
             AND b."spaceId" = t."spaceId" AND b."archivedAt" IS NULL)

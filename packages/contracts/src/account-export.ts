@@ -64,8 +64,6 @@ export const AccountExportRecordSchema = z.discriminatedUnion("type", [
     modelId: z.string().nullable(),
     thinkingLevel: z.string().nullable(),
     disabledBuiltinTools: z.array(z.string()),
-    teamChatAmbientEnabled: z.boolean(),
-    teamChatRules: z.string(),
     createdAt: IsoDate,
   }),
   z.object({
@@ -164,7 +162,6 @@ export const AccountExportRecordSchema = z.discriminatedUnion("type", [
     timezone: z.string(),
     active: z.boolean(),
     notify: z.boolean(),
-    messageProvider: z.string().nullable(),
     modelProvider: z.string().nullable(),
     modelId: z.string().nullable(),
     thinkingLevel: z.string().nullable(),

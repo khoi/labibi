@@ -125,19 +125,12 @@ export async function loadThreadSpeakers(
   };
 }
 
-/**
- * The label of a person's line. A messaging group's line names its own sender inside the text
- * and stores no author, since that sender may not belong to the Space, so it stays "User".
- */
+/** The label of a person's line. */
 export function personLineSpeaker(
   people: ReadonlyMap<string, string> | null | undefined,
-  row: { authorUserId?: string | null; blocks?: unknown },
+  row: { authorUserId?: string | null },
 ): string {
-  return isChannelMessage(row.blocks) ? USER_SPEAKER : personSpeaker(people, row.authorUserId);
-}
-
-function isChannelMessage(blocks: unknown): boolean {
-  return Array.isArray(blocks) && blocks.some((block) => block?.kind === "channel_message");
+  return personSpeaker(people, row.authorUserId);
 }
 
 /**

@@ -217,11 +217,7 @@ async function runTurn(
               ]
             : [],
       ),
-      findUnique: vi.fn(async () =>
-        run.trigger === "messaging"
-          ? { blocks: [{ kind: "channel_message", channelId: "channel-1" }] }
-          : null,
-      ),
+      findUnique: vi.fn(async () => null),
       findFirst: vi.fn(async ({ where }: { where?: { runId?: string; role?: string } } = {}) =>
         options.priorBotMessage && where?.runId === run.id && where.role === "bot"
           ? { id: "ask-1" }
@@ -347,7 +343,7 @@ function stepNotes(finalizeRun: Awaited<ReturnType<typeof runTurn>>["finalizeRun
   );
 }
 
-describe.each(["routine", "reaction", "messaging"])("held-back narration on %s runs", (trigger) => {
+describe.each(["routine", "reaction"])("held-back narration on %s runs", (trigger) => {
   it("restores the last non-empty narration as a normal final reply", async () => {
     const { finalizeRun, append } = await runTurn(
       "",
@@ -485,7 +481,6 @@ describe("held-back narration on peer requests", () => {
           },
           routine: { findMany: vi.fn(async () => []) },
           computer: { findMany: vi.fn(async () => []) },
-          messagingOutbound: { findFirst: vi.fn(async () => null) },
           message: {
             findMany: vi.fn(async () => [
               { blocks: finalizeRun.mock.calls[0]![0].blocks, clientNonce: null },
@@ -769,7 +764,7 @@ describe("notes that can't be posted as messages", () => {
     };
     const headsUp = ["This will take a few minutes."];
     expect(await sent("user", "computer_observe")).toEqual(headsUp);
-    expect(await sent("messaging", "browser_snapshot")).toEqual(headsUp);
+    expect(await sent("user", "browser_snapshot")).toEqual(headsUp);
     // Other steps, tools this computer lacks, and runs nobody is waiting on keep the
     // fresh-turn rule.
     expect(await sent("user", "shell")).toEqual([]);
@@ -1169,7 +1164,7 @@ describe("a message from the person while the bot works", () => {
     }
   });
 
-  it.each(["user", "messaging"])(
+  it.each(["user"])(
     "posts a message_user answer to each of four messages in one minute (%s)",
     async (trigger) => {
       const steps = [1, 2, 3, 4].flatMap((index) => [

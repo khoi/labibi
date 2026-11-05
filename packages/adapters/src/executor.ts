@@ -17,16 +17,11 @@ import {
   expandSkillReferencesInPrompt,
   formatSkillRunPrompt,
   formatSkillsCatalogInstruction,
-  isMessagingChannelRun,
   isOwnerStartedRun,
   isTerminal,
   MISSING_MODEL_RUN_ERROR,
   MODEL_ACCESS_REQUIRED_RUN_ERROR,
-  messagingChannelId,
-  messagingChannelPrivacyBlock,
-  messagingDmSurfaceNote,
   nextFence,
-  nonOwnerChatPrivacyBlock,
   promptInvokesSkill,
   redactSecrets,
   userRunError,
@@ -51,7 +46,6 @@ import {
   readRunTimingFields,
   recordUsage,
   settleReleasedTakeoverCards,
-  teamChatRunFromOwner,
 } from "@labradoodle/db";
 import { enrichLogContext, getLogger } from "@labradoodle/logging";
 import { sanitizedError } from "@labradoodle/logging/monitoring";
@@ -207,7 +201,7 @@ import {
 } from "./run-turn-images.js";
 import { inferScript } from "./scripted-runtime.js";
 import { loadSharedSpaceNote } from "./shared-space-note.js";
-import { builtinAgentSkillRecords, listAgentSkillRecords } from "./skill-tools.js";
+import { listAgentSkillRecords } from "./skill-tools.js";
 import {
   continueRunClaimFence,
   refreshTakeoverContinuePlan,
@@ -580,16 +574,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
             pinnedComputerFailure = PINNED_COMPUTER_MODEL_LOST_RUN_ERROR;
           }
         }
-        const messagingSource =
-          run.trigger === "messaging" && run.sourceMessageId
-            ? await deps.prisma.message.findUnique({
-                where: { id: run.sourceMessageId },
-                select: { blocks: true, clientNonce: true },
-              })
-            : null;
-        const sourceBlocks = messagingSource?.blocks as MessageBlock[] | undefined;
-        const channelId = messagingChannelId(sourceBlocks);
-        const messagingChannelRun = isMessagingChannelRun(run.trigger, sourceBlocks);
         const [
           bot,
           thread,
@@ -617,7 +601,7 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
               space: { select: { _count: { select: { memberships: true } } } },
             },
           }),
-          loadRunHistoryMessages(deps.prisma, run, LEGACY_HISTORY_WINDOW_SIZE, channelId),
+          loadRunHistoryMessages(deps.prisma, run, LEGACY_HISTORY_WINDOW_SIZE),
           deps.prisma.task.findUniqueOrThrow({ where: { id: run.taskId } }),
           deps.prisma.connection.findMany({
             where: { userId: run.userId, spaceId: run.spaceId },
@@ -648,17 +632,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
           loadRunLoginRedactions(deps.prisma, deps.secretStore, run, run.id),
           loadRunCodeRedactions(deps.prisma, deps.secretStore, run, run.id),
         ]);
-        // Team chat reaches people besides the owner, so their runs get a group channel's limits.
-        const teamChatConversationId =
-          run.trigger === "messaging" ? thread.externalConversationId : null;
-        const nonOwnerChatRun =
-          messagingChannelRun ||
-          (teamChatConversationId
-            ? !(await teamChatRunFromOwner(deps.prisma, {
-                externalConversationId: teamChatConversationId,
-                sourceClientNonce: messagingSource?.clientNonce,
-              }))
-            : false);
         const historySearchBeforeSeq =
           contextStrategy !== "current" && run.sourceMessageId
             ? (messages.find((message) => message.id === run.sourceMessageId)?.seq ??
@@ -791,7 +764,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
             summary: thread.historyCompactionSummary,
             historyCompactedUpToSeq: thread.historyCompactedUpToSeq,
           },
-          nonOwnerChatRun,
           run.sourceMessageId,
         );
         const compactedHistory = selectCompactedHistory({
@@ -848,7 +820,7 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
         // reached every member, and each may end its turn without a reply.
         const groupReplyOptional =
           Boolean(thread.groupId) && run.trigger === "user" && run.groupReplyOptional;
-        const allowSilentEmptyRun = messagingChannelRun || runAllowsSilentEmpty(run.trigger);
+        const allowSilentEmptyRun = runAllowsSilentEmpty(run.trigger);
         const recallPromise =
           threadContext.includeSemanticRecall &&
           semanticMemory &&
@@ -868,12 +840,10 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
         const [discovered, currentTurnImages, memoryContext, recalled] = await Promise.all([
           discoveredPromise,
           loadCurrentTurnImages(deps, turnBlocks, context),
-          nonOwnerChatRun
-            ? Promise.resolve("")
-            : loadAgentMemoryContext(deps.memory, bot.id, context),
+          loadAgentMemoryContext(deps.memory, bot.id, context),
           recallPromise,
         ]);
-        const semanticMemoryEnabled = Boolean(semanticMemory) && !nonOwnerChatRun;
+        const semanticMemoryEnabled = Boolean(semanticMemory);
         let recalledMemory = "";
         let recallSucceeded = false;
         if (recalled) {
@@ -1220,9 +1190,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
               Boolean(people),
             )
           : undefined;
-        const hasMessagingIdentity = deps.messaging
-          ? await deps.messaging.hasIdentity(bot.id)
-          : false;
         const paymentWallet = deps.paymentWallet;
         const paymentWalletEnabled = paymentWallet
           ? await paymentWalletConnected(
@@ -1230,17 +1197,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
               run.userId,
             )
           : false;
-        const messagingContext =
-          [
-            hasMessagingIdentity ? messagingDmSurfaceNote() : null,
-            messagingChannelRun
-              ? messagingChannelPrivacyBlock()
-              : nonOwnerChatRun
-                ? nonOwnerChatPrivacyBlock()
-                : null,
-          ]
-            .filter(Boolean)
-            .join("\n\n") || undefined;
         if (heldForTakeover) {
           const held = await deps.prisma.run.findUnique({
             where: { id: runId },
@@ -1303,7 +1259,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
         const userComputerOwnerId = userComputerOwner({
           trigger: run.trigger,
           sourceRole: sourceMessage?.role,
-          messagingChannelRun: nonOwnerChatRun,
           runUserId: run.userId,
           botUserId: bot.userId,
         });
@@ -1334,7 +1289,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
             mediaVideoEnabled: Boolean(deps.artifacts && mediaGeneration?.capabilities.video),
             cloudAgentEnabled: cloudAgentsEnabled(cloudAgent, run.spaceId),
             paymentWalletEnabled,
-            messagingChannelRun: nonOwnerChatRun,
             disabledBuiltinTools: bot.disabledBuiltinTools,
             followUpFromUser: sourceMessage?.role === "user",
             userComputer: userComputer === "connected",
@@ -1353,7 +1307,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
           botId: bot.id,
           taskPrompt: task.prompt,
           ownerStartedRun,
-          messagingChannelRun: nonOwnerChatRun,
           sourceMessage,
           connectedPlugins,
         });
@@ -1469,19 +1422,8 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
           secrets: runSecrets,
           source: {
             ownerStartedRun,
-            messagingChannelRun: nonOwnerChatRun,
-            channelId,
             historySearchBeforeSeq,
-            myChatsAllowed: historyMyChatsAllowed(
-              run,
-              sourceMessage,
-              nonOwnerChatRun ||
-                Boolean(
-                  channelId ||
-                    thread.externalConversationId ||
-                    messagingChannelId(sourceMessage?.blocks as MessageBlock[] | undefined),
-                ),
-            ),
+            myChatsAllowed: historyMyChatsAllowed(run, sourceMessage),
             userComputerOwner: userComputerOwnerId,
           },
           computer: {
@@ -1522,8 +1464,8 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
           connectedPlugins.length > 0
             ? `Connected plugins: ${connectedPlugins.map((row) => `${row.displayName} (${row.connectorId}:${row.provider})`).join(", ")}. Prefer those plugin tools over the computer browser or web search when reading app data (repos, releases, mail, calendar, and similar).`
             : "No plugins are connected yet.";
-        const runSavedSkills = nonOwnerChatRun ? [] : savedSkills;
-        const runAgentSkills = nonOwnerChatRun ? builtinAgentSkillRecords() : agentSkills;
+        const runSavedSkills = savedSkills;
+        const runAgentSkills = agentSkills;
         const taughtSkillIndex = runSavedSkills.slice(0, 20);
         const taughtSkillsLine =
           taughtSkillIndex.length > 0
@@ -1759,7 +1701,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
                 groupContext: groupReplyOptional
                   ? [groupContext, GROUP_UNADDRESSED_REPLY_GUIDANCE].filter(Boolean).join("\n")
                   : groupContext,
-                messagingContext,
                 redactedMemoryContext: memoryContext
                   ? redactSecrets(memoryContext, runSecrets)
                   : undefined,

@@ -84,7 +84,6 @@ describe("userComputerOwner", () => {
   const own = {
     trigger: "user",
     sourceRole: "user",
-    messagingChannelRun: false,
     runUserId: "user-1",
     botUserId: "user-1",
   };
@@ -97,10 +96,8 @@ describe("userComputerOwner", () => {
   it.each([
     { trigger: "routine" },
     { trigger: "webhook" },
-    { trigger: "messaging" },
     { sourceRole: "bot" },
     { sourceRole: undefined },
-    { messagingChannelRun: true },
     { runUserId: "user-2" },
   ])("is nobody for %o", (change) => {
     expect(userComputerOwner({ ...own, ...change })).toBeUndefined();

@@ -6,7 +6,6 @@ import type {
 } from "@labradoodle/contracts";
 import {
   answerableAskMessageIds,
-  channelMessageSender,
   chatUserBubbleColors,
   dismissableAskMessageIds,
   isActive,
@@ -106,7 +105,6 @@ import { useThreadSync } from "./shell/use-thread-sync";
 import type { SettingsSection } from "./shell-overlay";
 
 const NO_AGENT_SKILLS: AgentSkillCatalogEntry[] = [];
-const NO_PROVIDERS: string[] = [];
 
 export function ShellPage() {
   // A new key per space switch, so nothing from the previous space survives it.
@@ -199,12 +197,6 @@ function SpaceShell() {
     void queryClient.invalidateQueries({ queryKey: queries.agentSkills.list.queryKey() });
   }, [queries]);
   const [teachBusy, setTeachBusy] = useState(false);
-  const messagingStatus = useQuery({
-    ...queries.messaging.status.queryOptions(),
-    enabled: Boolean(session.data?.user),
-  }).data;
-  const messagingSurfaceEnabled = messagingStatus?.enabled ?? false;
-  const messagingProviders = messagingStatus?.providers ?? NO_PROVIDERS;
   const memoryConfigQuery = useQuery(queries.memory.providerConfig.queryOptions());
   // Undefined while it first loads; null when the space has none or it could not be read.
   const memoryProviderConfig: SpaceMemoryConfig | null | undefined =
@@ -464,7 +456,6 @@ function SpaceShell() {
     setBots,
     refreshThread,
     setPanel,
-    messageProviders: messagingProviders,
   });
   // Until this visit's read lands, a bot shows the routines and skills it had last time.
   const activeRoutines =
@@ -672,9 +663,7 @@ function SpaceShell() {
 
   const replyTargetName = composer.replyTarget
     ? composer.replyTarget.role === "user"
-      ? (otherAuthor(composer.replyTarget.author, userId)?.name ??
-        channelMessageSender(composer.replyTarget.blocks) ??
-        t`You`)
+      ? (otherAuthor(composer.replyTarget.author, userId)?.name ?? t`You`)
       : (resolveTranscriptMemberName(composer.replyTarget.botId) ?? active?.name ?? t`Bot`)
     : undefined;
   useRightPanelRestore({
@@ -766,7 +755,6 @@ function SpaceShell() {
   }
 
   const settingsNavItems = useSettingsNavItems({
-    messaging: messagingSurfaceEnabled,
     wallet: Boolean(bootstrapMe?.paymentWalletProvider),
     computer: computersAreUnavailable(bootstrapMe?.sandboxProvider),
     billing: bootstrapMe?.billingEnabled === true,
@@ -1237,7 +1225,6 @@ function SpaceShell() {
           refetchSession={() => session.refetch({ query: { disableCookieCache: true } })}
           bootstrapMe={bootstrapMe}
           setBootstrapMe={setBootstrapMe}
-          messagingEnabled={messagingSurfaceEnabled}
           memoryConfig={memoryProviderConfig}
         />
       </Suspense>

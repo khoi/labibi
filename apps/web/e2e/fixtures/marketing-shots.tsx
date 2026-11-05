@@ -83,8 +83,6 @@ function inboxBot(): Bot {
     modelProvider: "openai",
     modelId: "gpt-4.1",
     thinkingLevel: null,
-    teamChatAmbientEnabled: false,
-    teamChatRules: "",
     webhookConfigured: false,
     runErrorId: null,
     disabledBuiltinTools: [],
@@ -122,7 +120,6 @@ function RoutineShot() {
     schedules: [preset],
     webhookEnabled: false,
     githubEnabled: false,
-    messageProvider: null,
     active: true,
     runAtLocal: "",
     modelKey: "",
@@ -138,7 +135,6 @@ function RoutineShot() {
         timezone="UTC"
         webhook={{ path: "/hooks/demo", secret: null, configured: false }}
         githubPath=""
-        messageProviders={[]}
         saving={false}
         running={false}
         error={null}

@@ -2,13 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { BackgroundJob } from "@labradoodle/adapter-kit";
 import { ONCE_ROUTINE_CRON } from "@labradoodle/core";
 import type { Prisma, PrismaClient } from "@labradoodle/db";
-import {
-  appendEvent,
-  asSystem,
-  createDb,
-  provisionMessagingIdentity,
-  runAsSystem,
-} from "@labradoodle/db";
+import { appendEvent, asSystem, createDb, provisionTestBot, runAsSystem } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { createRunExecutor } from "./executor.js";
 import { findPendingRoutineTick, routineTimerNonce } from "./routine-coalescing.js";
@@ -25,9 +19,9 @@ describePostgres("routine timer coalescing (PostgreSQL)", () => {
     db = createDb(url!);
     system = asSystem(db.prisma);
     const provisioned = await runAsSystem("routine coalescing fixture", () =>
-      provisionMessagingIdentity(
+      provisionTestBot(
         db.prisma,
-        { provider: "email", address },
+        { address },
         { signupsEnabled: undefined, signupAllowlist: undefined },
       ),
     );
@@ -36,7 +30,6 @@ describePostgres("routine timer coalescing (PostgreSQL)", () => {
   });
   afterAll(async () => {
     if (identity) {
-      await system.messagingIdentity.deleteMany({ where: { address } });
       await system.organization.deleteMany({ where: { id: identity.spaceId } });
       await system.user.deleteMany({ where: { id: identity.userId } });
     }

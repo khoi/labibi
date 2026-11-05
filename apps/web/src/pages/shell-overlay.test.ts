@@ -39,10 +39,6 @@ describe("readShellOverlay", () => {
     expect(read("?mcp=")).toEqual({ kind: "mcp" });
     expect(read("?mcp=srv_1")).toEqual({ kind: "mcp", serverId: "srv_1" });
   });
-
-  it("opens Messaging settings from the old messaging link", () => {
-    expect(read("?messaging")).toEqual({ kind: "settings", section: "messaging", spaceId: null });
-  });
 });
 
 describe("withShellOverlay", () => {

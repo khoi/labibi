@@ -40,7 +40,6 @@ import {
   isServerUnreachable,
   isUnreachableStatus,
   mergeThreadHistory,
-  messagingProviderLabel,
   parseRetryAfter,
   payloadAuthor,
   prependThreadHistoryPage,
@@ -1340,24 +1339,10 @@ export function prependMobileMessagePage(
   return prependThreadHistoryPage(prev, page);
 }
 
-export { messagingProviderLabel };
-
-function channelMessageLine(block: {
-  provider: Parameters<typeof messagingProviderLabel>[0];
-  transport?: Parameters<typeof messagingProviderLabel>[1];
-  fromLabel: string;
-  text: string;
-}): string {
-  return `${block.fromLabel} (${messagingProviderLabel(block.provider, block.transport)}): ${block.text}`;
-}
-
 /** The message's text exactly as written, for a view that selects part of it. */
 export function selectableMobileMessageText(message: MobileMessage): string {
   return message.blocks
     .map((block) => {
-      if (block.kind === "channel_message") {
-        return channelMessageLine(block);
-      }
       if (block.kind === "text" || block.kind === "progress" || block.kind === "ask")
         return block.text;
       return "";
@@ -1373,9 +1358,6 @@ export function copyableMobileMessageText(message: MobileMessage): string {
 export function blockText(message: MobileMessage) {
   return message.blocks
     .map((block) => {
-      if (block.kind === "channel_message") {
-        return channelMessageLine(block);
-      }
       if (block.kind === "cloud_agent")
         return `${block.title}: ${block.status}${block.prUrl ? ` ${block.prUrl}` : ""}`;
       if (block.kind === "subagent") {

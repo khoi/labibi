@@ -32,7 +32,6 @@ function evidence(memory: string, toolCalls: Evidence["toolCalls"] = [], text = 
     finalStep: 5,
     settings: EMPTY_SETTINGS,
     settingsBefore: EMPTY_SETTINGS,
-    messaging: { originThreadId: null, outbound: [] },
   };
 }
 const failed = (id: string, e: Evidence) =>

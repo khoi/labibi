@@ -8,8 +8,8 @@ import { createDb } from "./client.js";
 import { appendEvent, settleReleasedTakeoverCards } from "./events.js";
 import type { RunLease } from "./messages.js";
 import { createThreadMessage, RunHistoryWriteError } from "./messages.js";
-import { provisionMessagingIdentity } from "./messaging.js";
 import { asSystem, runAsSystem, runAsTenant } from "./row-security.js";
+import { provisionTestBot } from "./test-bot.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 const describePostgres =
@@ -38,9 +38,9 @@ describePostgres("run history writes under a lease (PostgreSQL)", () => {
       }
     };
     ({ userId, spaceId, botId, threadId } = await runAsSystem("test fixture", () =>
-      provisionMessagingIdentity(
+      provisionTestBot(
         prisma,
-        { provider: "sendblue", address },
+        { address },
         { signupsEnabled: undefined, signupAllowlist: undefined },
       ),
     ));
@@ -50,7 +50,6 @@ describePostgres("run history writes under a lease (PostgreSQL)", () => {
   afterAll(async () => {
     try {
       if (prisma && provisioned) {
-        await system.messagingIdentity.deleteMany({ where: { provider: "sendblue", address } });
         await system.organization.deleteMany({ where: { id: spaceId } });
         await system.user.deleteMany({ where: { id: userId } });
       }

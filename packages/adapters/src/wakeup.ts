@@ -30,10 +30,7 @@ type Workload = "interactive" | "background" | "maintenance";
 async function isInteractiveRun(prisma: RunLookup, runId: string): Promise<boolean> {
   const run = await prisma.run.findUnique({ where: { id: runId }, select: { trigger: true } });
   return Boolean(
-    run &&
-      ["user", "follow_up", "reaction", "messaging", "created", "skill", "resume"].includes(
-        run.trigger,
-      ),
+    run && ["user", "follow_up", "reaction", "created", "skill", "resume"].includes(run.trigger),
   );
 }
 

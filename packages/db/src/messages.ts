@@ -3,7 +3,6 @@ import type { Prisma, PrismaClient } from "./client.js";
 import { withTransactionRetry } from "./transaction-retry.js";
 
 /**
- * Group turns use channel inputs and their own outputs, never private thread history.
  * `steeringMessages` is non-empty for a message still waiting for its own run, which the caller
  * leaves out of this run's history.
  */
@@ -11,23 +10,9 @@ export function loadRunHistoryMessages(
   prisma: PrismaClient,
   run: { id: string; threadId: string; botId: string },
   limit: number,
-  channelId?: string,
 ) {
   return prisma.message.findMany({
-    where: {
-      threadId: run.threadId,
-      ...(channelId
-        ? {
-            OR: [
-              {
-                role: "user",
-                blocks: { array_contains: [{ kind: "channel_message", channelId }] },
-              },
-              { role: "bot", runId: run.id },
-            ],
-          }
-        : {}),
-    },
+    where: { threadId: run.threadId },
     orderBy: { seq: "desc" },
     take: limit,
     select: {

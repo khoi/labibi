@@ -1,12 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { PrismaClient } from "@labradoodle/db";
-import {
-  appendEvent,
-  asSystem,
-  createDb,
-  provisionMessagingIdentity,
-  runAsSystem,
-} from "@labradoodle/db";
+import { appendEvent, asSystem, createDb, provisionTestBot, runAsSystem } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createRunExecutor } from "./executor.js";
 
@@ -23,9 +17,9 @@ describePostgres("routine tick prompt and model consistency (PostgreSQL)", () =>
     db = createDb(url!);
     system = asSystem(db.prisma);
     const provisioned = await runAsSystem("routine prompt fixture", () =>
-      provisionMessagingIdentity(
+      provisionTestBot(
         db.prisma,
-        { provider: "email", address },
+        { address },
         { signupsEnabled: undefined, signupAllowlist: undefined },
       ),
     );
@@ -34,7 +28,6 @@ describePostgres("routine tick prompt and model consistency (PostgreSQL)", () =>
   });
   afterAll(async () => {
     if (identity) {
-      await system.messagingIdentity.deleteMany({ where: { address } });
       await system.organization.deleteMany({ where: { id: identity.spaceId } });
       await system.user.deleteMany({ where: { id: identity.userId } });
     }

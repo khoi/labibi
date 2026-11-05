@@ -485,10 +485,8 @@ describe("runReplyGuidance", () => {
 
   it("keeps progress guidance for user-triggered runs", () => {
     expect(runPromotesMidTurnNarration("user")).toBe(true);
-    expect(runPromotesMidTurnNarration("messaging")).toBe(true);
     expect(runReplyGuidance("user")).toBe(longWorkProgressGuidance());
     expect(runReplyGuidance("user")).toContain("message_user");
-    expect(runReplyGuidance("messaging")).toBe(longWorkProgressGuidance());
   });
 });
 

@@ -80,7 +80,7 @@ export const macos: VoiceProvider = {
       heading: "Limits",
       bullets: [
         "Labradoodle only offers **Server (Mac)** when its server process runs directly on macOS. A server in Docker, including Docker Desktop on a Mac and the desktop app's **This computer** install, runs Linux inside the container, so the option doesn't appear. Linux hosts don't list it either.",
-        "It doesn't transcribe. Hold-to-talk depends on speech recognition in your browser or the desktop app, and voice notes from messaging apps reach bots without a transcript.",
+        "It doesn't transcribe. Hold-to-talk depends on speech recognition in your browser or the desktop app.",
         "macOS voices sound less natural than the best hosted voices, and there's no voice cloning.",
         "The voices are whatever is installed on the server's Mac. A newly downloaded voice can take a few minutes to show up.",
         "Labradoodle lists the voices `say -v '?'` reports. We haven't tested Personal Voice, which needs the server process to be granted permission.",

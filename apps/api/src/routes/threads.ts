@@ -6,11 +6,7 @@ import {
   MODEL_REQUIRED_SEND_ERROR,
 } from "@labradoodle/core";
 import type { Prisma } from "@labradoodle/db";
-import {
-  AnswerTooLongError,
-  createExternalConversationRepos,
-  IsolationError,
-} from "@labradoodle/db";
+import { AnswerTooLongError, IsolationError } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { ORPCError } from "@orpc/server";
 import type { RouterDeps } from "../router.js";
@@ -405,18 +401,6 @@ export function threadsRoutes(ctx: RouterContext) {
         }
         return { ok: true as const };
       }),
-    },
-    externalConversations: {
-      updatePolicy: authed.externalConversations.updatePolicy.handler(
-        async ({ context, input }) => {
-          const { externalConversationId, ...policy } = input;
-          return createExternalConversationRepos(deps.prisma).updatePolicy(
-            context.actor,
-            externalConversationId,
-            policy,
-          );
-        },
-      ),
     },
   };
 }

@@ -138,8 +138,6 @@ async function* spaceRecords(
       modelId: bot.modelId,
       thinkingLevel: bot.thinkingLevel,
       disabledBuiltinTools: bot.disabledBuiltinTools,
-      teamChatAmbientEnabled: bot.teamChatAmbientEnabled,
-      teamChatRules: bot.teamChatRules,
       createdAt: iso(bot.createdAt),
     };
 
@@ -203,7 +201,6 @@ async function* spaceRecords(
       where: {
         ...tenant,
         id: { gt: cursor },
-        externalConversationId: null,
         OR: [{ botId: { in: [...botIds] } }, { groupId: { in: [...groupIds] } }],
       },
       orderBy: { id: "asc" },
@@ -368,7 +365,6 @@ async function* spaceRecords(
       timezone: routine.timezone,
       active: routine.active,
       notify: routine.notify,
-      messageProvider: routine.messageProvider,
       modelProvider: routine.modelProvider,
       modelId: routine.modelId,
       thinkingLevel: routine.thinkingLevel,

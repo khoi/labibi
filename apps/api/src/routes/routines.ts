@@ -102,8 +102,6 @@ export function routinesRoutes(ctx: RouterContext) {
         const timezone = input.timezone ?? existing.timezone;
         const webhookEnabled = input.webhookEnabled ?? existing.webhookEnabled;
         const githubEnabled = input.githubEnabled ?? existing.githubEnabled;
-        const messageProvider =
-          input.messageProvider === undefined ? existing.messageProvider : input.messageProvider;
         const modelProvider =
           input.modelProvider === undefined ? existing.modelProvider : input.modelProvider;
         const modelId = input.modelId === undefined ? existing.modelId : input.modelId;
@@ -152,9 +150,9 @@ export function routinesRoutes(ctx: RouterContext) {
         const watchChanged =
           input.watch !== undefined &&
           stableStringify(input.watch) !== stableStringify(parseRoutineWatch(existing.watch));
-        if (crons.length === 0 && !webhookEnabled && !githubEnabled && !messageProvider && !watch) {
+        if (crons.length === 0 && !webhookEnabled && !githubEnabled && !watch) {
           throw new ORPCError("BAD_REQUEST", {
-            message: "Add a schedule, webhook, GitHub, message, or change trigger",
+            message: "Add a schedule, webhook, GitHub, or change trigger",
           });
         }
         if (watch && crons.length > 0) {
@@ -258,7 +256,6 @@ export function routinesRoutes(ctx: RouterContext) {
               notify: input.notify,
               webhookEnabled: input.webhookEnabled,
               githubEnabled: input.githubEnabled,
-              messageProvider: input.messageProvider,
               ...(touchesModel ? { modelProvider, modelId, thinkingLevel } : {}),
               // A changed watch starts from a fresh baseline, and so does one that now reads
               // a different person's accounts.

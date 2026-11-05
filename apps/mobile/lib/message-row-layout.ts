@@ -1,10 +1,10 @@
 import { isSecretAskBlock } from "@labradoodle/core";
 import type { MobileMessage } from "./api";
-import { isCenteredAgentEvent, THREAD_COLUMN_GUTTER } from "./message-presentation";
+import { THREAD_COLUMN_GUTTER } from "./message-presentation";
 
 const COLUMN_PADDING = THREAD_COLUMN_GUTTER * 2;
 
-/** Sizes a message's column: wide asks and centered events fill it, minus the avatar gutter. */
+/** Sizes a message's column: wide asks fill it, minus the avatar gutter. */
 export function messageRowLayout(
   blocks: MobileMessage["blocks"],
   {
@@ -18,7 +18,7 @@ export function messageRowLayout(
   },
 ) {
   const wideAsk = blocks.some(isSecretAskBlock);
-  const full = wideAsk || isCenteredAgentEvent(blocks);
+  const full = wideAsk;
   // Connect and app cards fill the bubble width instead of shrinking to their content.
   const appConnect = blocks.some(
     (block) =>
@@ -31,10 +31,8 @@ export function messageRowLayout(
     menuFullWidth: wideAsk || appConnect,
     menuMaxWidth: wideAsk
       ? columnWidth - COLUMN_PADDING - gutter
-      : isCenteredAgentEvent(blocks)
-        ? columnWidth - COLUMN_PADDING
-        : activityBotId
-          ? columnWidth - COLUMN_PADDING - gutter
-          : (columnWidth - COLUMN_PADDING) * 0.9,
+      : activityBotId
+        ? columnWidth - COLUMN_PADDING - gutter
+        : (columnWidth - COLUMN_PADDING) * 0.9,
   } as const;
 }

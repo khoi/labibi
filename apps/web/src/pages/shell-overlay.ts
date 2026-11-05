@@ -7,7 +7,6 @@ const SETTINGS_SECTIONS = [
   "voice",
   "confirmations",
   "vault",
-  "messaging",
   "wallet",
   "usage",
   "computer",
@@ -25,7 +24,7 @@ export type ShellOverlay =
   | { kind: "mcp"; serverId?: string }
   | null;
 
-const OVERLAY_KEYS = ["settings", "space", "integrations", "skills", "mcp", "messaging"] as const;
+const OVERLAY_KEYS = ["settings", "space", "integrations", "skills", "mcp"] as const;
 
 function isSettingsSection(value: string): value is SettingsSection {
   return (SETTINGS_SECTIONS as readonly string[]).includes(value);
@@ -46,8 +45,6 @@ export function readShellOverlay(params: URLSearchParams): ShellOverlay {
     const serverId = params.get("mcp");
     return serverId ? { kind: "mcp", serverId } : { kind: "mcp" };
   }
-  // Links from before Messaging moved into settings.
-  if (params.has("messaging")) return { kind: "settings", section: "messaging", spaceId: null };
   return null;
 }
 

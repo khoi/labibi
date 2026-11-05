@@ -1,6 +1,6 @@
 import { setImmediate } from "node:timers/promises";
 import type { JobPublisher, NotificationProvider } from "@labradoodle/adapter-kit";
-import { messagingDeliverJob, routineWakeupJob, runContinueJob } from "@labradoodle/adapter-kit";
+import { routineWakeupJob, runContinueJob } from "@labradoodle/adapter-kit";
 import type { Pool, PrismaClient, ThreadEvents } from "@labradoodle/db";
 import { reconcileComputerRuns } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
@@ -187,46 +187,31 @@ export function createJobReconciler(
             ],
           }
         : undefined;
-      const [runs, dueOutbound, unmirroredMessagingRuns] = await Promise.all([
-        deps.prisma.run.findMany({
-          where: {
-            AND: [
-              {
-                OR: [
-                  { status: "queued" },
-                  {
-                    status: { in: ["leased", "running"] },
-                    leaseExpiresAt: { lte: now },
-                  },
-                ],
-              },
-              ...(runCursorFilter ? [runCursorFilter] : []),
-            ],
-          },
-          orderBy: [{ updatedAt: "asc" }, { id: "asc" }],
-          take: batchSize,
-          select: {
-            id: true,
-            status: true,
-            updatedAt: true,
-            botId: true,
-            bot: { select: { computerId: true } },
-          },
-        }),
-        deps.prisma.messagingOutbound.findFirst({
-          where: {
-            status: "pending",
-            OR: [{ nextAttemptAt: null }, { nextAttemptAt: { lte: now } }],
-          },
-          select: { id: true },
-        }),
-        deps.prisma.run.findMany({
-          where: { trigger: "messaging", status: "completed", messagingMirroredAt: null },
-          orderBy: [{ updatedAt: "asc" }, { id: "asc" }],
-          take: batchSize,
-          select: { id: true },
-        }),
-      ]);
+      const runs = await deps.prisma.run.findMany({
+        where: {
+          AND: [
+            {
+              OR: [
+                { status: "queued" },
+                {
+                  status: { in: ["leased", "running"] },
+                  leaseExpiresAt: { lte: now },
+                },
+              ],
+            },
+            ...(runCursorFilter ? [runCursorFilter] : []),
+          ],
+        },
+        orderBy: [{ updatedAt: "asc" }, { id: "asc" }],
+        take: batchSize,
+        select: {
+          id: true,
+          status: true,
+          updatedAt: true,
+          botId: true,
+          bot: { select: { computerId: true } },
+        },
+      });
 
       // A queued run already has a job while it waits out failure backoff.
       // Default replace would zero that job's attempts and run it now. keepExisting
@@ -246,8 +231,6 @@ export function createJobReconciler(
               replaceLockedBefore: run.status === "queued" ? abandonedQueuedLockAt : now,
             }),
           ),
-        ...(dueOutbound ? [deps.jobs.enqueue(messagingDeliverJob())] : []),
-        ...unmirroredMessagingRuns.map((run) => deps.jobs.enqueue(messagingDeliverJob(run.id))),
       ]);
 
       const lastRun = runs.at(-1);

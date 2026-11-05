@@ -11,8 +11,7 @@ export function isOwnThreadMessage(
   userId: string,
 ): boolean {
   if (message?.role !== "user") return false;
-  if (message.userId !== undefined) return message.userId === userId;
-  return !message.blocks.some((block) => block.kind === "channel_message");
+  return message.userId === undefined || message.userId === userId;
 }
 
 export type ThreadRowKey = {

@@ -130,12 +130,10 @@ const navigation = {
       {
         ...bot,
         instructions: "Private bot instructions",
-        teamChatRules: "Private rules",
         threadStatus: "running",
       },
     ],
     groups: [{ ...group, createdAt: "2026-10-01T09:00:00.000Z" }],
-    externalConversations: [],
   },
   spaces: [],
 } as unknown as MobileSpaceNavigation;

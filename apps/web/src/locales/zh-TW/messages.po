@@ -107,11 +107,6 @@ msgstr "{0} 連線"
 msgid "{0} GB"
 msgstr "{0} GB"
 
-#. placeholder {0}: sender.name
-#: src/pages/ExternalConversationSettings.tsx
-msgid "{0} handling"
-msgstr "{0} 處理方式"
-
 #. placeholder {0}: updated.name
 #: src/pages/McpServersOverlay.tsx
 msgid "{0} is not working"
@@ -131,11 +126,6 @@ msgstr "{0} KB"
 #: src/components/ArtifactFileCard.tsx
 msgid "{0} MB"
 msgstr "{0} MB"
-
-#. placeholder {0}: sender.name
-#: src/pages/ExternalConversationSettings.tsx
-msgid "{0} rollup hours"
-msgstr "{0} 彙整時數"
 
 #. placeholder {0}: parts.amount
 #: src/components/ArtifactFileCard.tsx
@@ -647,10 +637,6 @@ msgstr "加入例行任務"
 msgid "Add trigger"
 msgstr "新增觸發器"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Add workspace"
-msgstr "新增工作區"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "Added"
@@ -742,10 +728,6 @@ msgstr "已允許一次"
 #: src/pages/Auth.tsx
 msgid "Already have an account?"
 msgstr "已有帳號？"
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Always act"
-msgstr "一律採取行動"
 
 #: src/components/AskCard.tsx
 msgid "Always allow {site}"
@@ -856,7 +838,6 @@ msgstr "核准模型"
 msgid "Approvals"
 msgstr "核准"
 
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
@@ -951,10 +932,6 @@ msgstr "授權此伺服器，讓代理程式使用它的工具。接著會開啟
 msgid "Auto"
 msgstr "自動"
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Automated senders"
-msgstr "自動化傳送者"
-
 #: src/pages/RoutineEditor.tsx
 msgid "Available after the routine is saved"
 msgstr "儲存例行任務後可用"
@@ -1040,7 +1017,6 @@ msgstr "正在啟動即時桌面…"
 
 #: src/lib/identity-display.ts
 #: src/pages/IntegrationSetup.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/Shell.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
@@ -1232,10 +1208,6 @@ msgstr "聊天詳細資料"
 msgid "Chat Settings"
 msgstr "聊天設定"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Chat with your bot from Slack."
-msgstr "在 Slack 與你的機器人聊天。"
-
 #: src/lib/localized-provider-hint.ts
 msgid "ChatGPT subscription"
 msgstr "ChatGPT 訂閱"
@@ -1348,7 +1320,6 @@ msgstr "正在清空…"
 
 #: src/components/ErrorBoundary.tsx
 #: src/pages/KnowledgeSection.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/chat-find-bar.tsx
@@ -1552,7 +1523,6 @@ msgstr "請確認此瀏覽器工作階段可以存取該 URL，然後重新測�
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 #: src/pages/memory-providers/SupermemorySettingsForm.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/model-settings/role-model-picker.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/shell/message-cards.tsx
@@ -1563,10 +1533,6 @@ msgstr "連線"
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Connect {selectedProviderName}"
 msgstr "連線 {selectedProviderName}"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Connect a chat app"
-msgstr "連結聊天應用程式"
 
 #: src/pages/Onboarding.tsx
 #: src/pages/shell/composer-error.tsx
@@ -1689,10 +1655,6 @@ msgstr "繼續結帳"
 msgid "Continue with {0}"
 msgstr "透過 {0} 繼續"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Conversations"
-msgstr "對話"
-
 #: src/components/InviteDialog.tsx
 #: src/components/markdown-copy.tsx
 #: src/components/pages/PublicPageShell.tsx
@@ -1802,7 +1764,6 @@ msgstr "無法完成更新，請再試一次。"
 
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/SlackInstallCallback.tsx
 msgid "Could not connect"
 msgstr "無法連線"
 
@@ -2121,7 +2082,6 @@ msgstr ""
 msgid "Could not run routine"
 msgstr "無法執行例行任務"
 
-#: src/pages/ExternalConversationSettings.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
@@ -2267,10 +2227,6 @@ msgstr "無法複製。請選取連結後複製。"
 msgid "Couldn't load grants"
 msgstr ""
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Couldn't load messaging settings"
-msgstr "無法載入訊息設定"
-
 #: src/components/pages/PagesList.tsx
 msgid "Couldn't load pages."
 msgstr "無法載入頁面。"
@@ -2286,10 +2242,6 @@ msgstr "無法載入此頁面。請再試一次。"
 #: src/pages/PaymentWalletSettingsPanel.tsx
 msgid "Couldn't load your wallet"
 msgstr ""
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Couldn't update messaging settings"
-msgstr "無法更新訊息設定"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Couldn't update your timezone"
@@ -2426,10 +2378,6 @@ msgstr "日常工作"
 #: src/lib/cron.ts
 msgid "days"
 msgstr "天"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Decline"
-msgstr "拒絕"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/model-settings/role-model-picker.tsx
@@ -2588,7 +2536,6 @@ msgstr "捨棄錄製內容"
 
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/MemorySettingsOverlay.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
@@ -2795,7 +2742,6 @@ msgid "Error"
 msgstr "錯誤"
 
 #: src/lib/cron.ts
-#: src/pages/ExternalConversationSettings.tsx
 msgid "Every"
 msgstr "每"
 
@@ -2839,10 +2785,6 @@ msgstr "每小時"
 msgid "Every hour at :{0}"
 msgstr "每小時 {0} 分"
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Every message"
-msgstr "所有訊息"
-
 #: src/lib/cron.ts
 msgid "Every Monday"
 msgstr "每週一"
@@ -2856,10 +2798,6 @@ msgstr "每月"
 #: src/pages/RoutineSchedule.tsx
 msgid "Every week"
 msgstr "每週"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Everyone in this bot's space can read the chats it gets from {linkApp}."
-msgstr ""
 
 #: src/components/SharedSpaceRules.tsx
 msgid "Everyone in this space sees all its chats, bots and memory."
@@ -2910,11 +2848,6 @@ msgstr "匯出資料"
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Export this week's list from the CRM and drop it in the shared folder"
 msgstr "從 CRM 匯出本週名單並放到共享資料夾"
-
-#: src/pages/ExternalConversationSettings.tsx
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "External conversation"
-msgstr "外部對話"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
@@ -3128,7 +3061,6 @@ msgid "Granting…"
 msgstr ""
 
 #: src/lib/identity-display.ts
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/shell/chat-header.tsx
 #: src/pages/shell/side-panel.tsx
 #: src/pages/SpaceSearch.tsx
@@ -3138,10 +3070,6 @@ msgstr "群組"
 #: src/pages/GroupPanel.tsx
 msgid "Group settings"
 msgstr "群組設定"
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Group updates"
-msgstr "群組更新"
 
 #: src/pages/RoutineEditor.tsx
 msgid "header"
@@ -3214,7 +3142,6 @@ msgid "hour"
 msgstr "小時"
 
 #: src/lib/cron.ts
-#: src/pages/ExternalConversationSettings.tsx
 msgid "hours"
 msgstr "小時"
 
@@ -3245,10 +3172,6 @@ msgstr "我做完了"
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "If you heard that, voice is ready."
 msgstr "如果聽到了，說明語音已就緒。"
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Ignore"
-msgstr "忽略"
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
@@ -3315,10 +3238,6 @@ msgstr "指令歷史"
 #: src/components/InstructionSettings.tsx
 msgid "Instructions"
 msgstr "指令"
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Instructions for this room"
-msgstr "此聊天室的指示"
 
 #: src/components/AskCard.tsx
 msgid "Instructions updated"
@@ -3460,7 +3379,6 @@ msgid "Later"
 msgstr "稍後"
 
 #: src/components/SpaceMembersSettings.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 msgid "Leave"
 msgstr "退出"
 
@@ -3494,10 +3412,6 @@ msgstr ""
 #: src/components/pages/SharePopover.tsx
 msgid "Link copied"
 msgstr "連結已複製"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Link DMs"
-msgstr "連結私訊"
 
 #: src/components/AccountAccess.tsx
 msgid "Link SSO"
@@ -3728,10 +3642,6 @@ msgstr "記憶範圍"
 msgid "Mentions"
 msgstr "提及"
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Mentions only"
-msgstr "僅限提及時"
-
 #: src/pages/shell/chat-shared.ts
 #: src/pages/shell/composer.tsx
 #: src/pages/SpaceSearch.tsx
@@ -3751,17 +3661,9 @@ msgstr "給 {activeName} 發訊息"
 msgid "Message composer"
 msgstr "訊息輸入框"
 
-#: src/pages/RoutineEditor.tsx
-msgid "Message event"
-msgstr "訊息事件"
-
 #: src/pages/shell/composer.tsx
 msgid "Message…"
 msgstr "訊息…"
-
-#: src/pages/settings-nav.ts
-msgid "Messaging"
-msgstr "訊息"
 
 #: src/lib/dictation.ts
 msgid "Microphone failed"
@@ -4851,10 +4753,6 @@ msgid "Remove header"
 msgstr "移除標頭"
 
 #: src/pages/RoutineEditor.tsx
-msgid "Remove message trigger"
-msgstr "移除訊息觸發條件"
-
-#: src/pages/RoutineEditor.tsx
 msgid "Remove schedule"
 msgstr "移除排程"
 
@@ -4902,10 +4800,6 @@ msgstr "替換金鑰"
 msgid "Replaces the login saved for {0}"
 msgstr ""
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Replies to"
-msgstr "回覆對象"
-
 #: src/pages/shell/message-hover-actions.tsx
 #: src/pages/shell/quote-selection-button.tsx
 msgid "Reply"
@@ -4924,16 +4818,11 @@ msgstr "正在回覆 {0}"
 msgid "Request a new code"
 msgstr "請重新獲取驗證碼"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Requests"
-msgstr "請求"
-
 #: src/pages/shell/message-cards.tsx
 msgid "Research & writing"
 msgstr "調研和寫作"
 
 #: src/components/ComputerMaintenanceActions.tsx
-#: src/pages/ExternalConversationSettings.tsx
 msgid "Reset"
 msgstr "重設"
 
@@ -5024,7 +4913,6 @@ msgid "Retry screen"
 msgstr "重新連線螢幕"
 
 #: src/pages/McpOAuthCallback.tsx
-#: src/pages/SlackInstallCallback.tsx
 msgid "Return to Labradoodle"
 msgstr "返回 Labradoodle"
 
@@ -5101,17 +4989,9 @@ msgstr "正在執行…"
 msgid "Runs"
 msgstr "執行"
 
-#: src/pages/RoutineEditor.tsx
-msgid "Runs when this bot receives a verified message from this provider."
-msgstr "當此機器人收到來自這個供應商且通過驗證的訊息時執行。"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Sales & CRM"
 msgstr ""
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Same as {botName}"
-msgstr "與 {botName} 相同"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Same as main model"
@@ -5129,7 +5009,6 @@ msgstr "週六"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/AccountSettingsOverlay.tsx
-#: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
@@ -5152,7 +5031,6 @@ msgstr "儲存到保管庫"
 #: src/components/ComputerProviderSettings.tsx
 #: src/components/SecretAskCard.tsx
 #: src/components/teach/SkillDraftCard.tsx
-#: src/pages/ExternalConversationSettings.tsx
 msgid "Saved"
 msgstr "已儲存"
 
@@ -5167,10 +5045,6 @@ msgstr "已儲存。輪換後可檢視。"
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Saving your workspace"
 msgstr "正在儲存工作空間"
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Saving..."
-msgstr "儲存中…"
 
 #: src/components/SecretAskCard.tsx
 #: src/components/teach/SkillDraftCard.tsx
@@ -5294,14 +5168,6 @@ msgstr "自行託管"
 msgid "Send"
 msgstr "傳送"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Send <0>{linkCode}</0> from {linkApp} within 10 minutes."
-msgstr "請在 10 分鐘內從 {linkApp} 傳送 <0>{linkCode}</0>。"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Send <0>{linkCode}</0> to <1>{linkAddress}</1> from {linkApp} within 10 minutes."
-msgstr "請在 10 分鐘內從 {linkApp} 將 <0>{linkCode}</0> 傳送到 <1>{linkAddress}</1>。"
-
 #: src/components/AskCard.tsx
 msgid "Send answer"
 msgstr "傳送回答"
@@ -5362,7 +5228,6 @@ msgid "Set"
 msgstr "設定"
 
 #: src/components/SidebarFooter.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/keyboard-shortcuts-dialog.tsx
 #: src/pages/shell/shell-dialogs.tsx
@@ -5541,14 +5406,6 @@ msgstr ""
 #: src/pages/shell/use-composer-actions.ts
 msgid "Skipped {0}"
 msgstr "已跳過 {0}"
-
-#: src/pages/RoutineEditor.tsx
-msgid "Slack message"
-msgstr "Slack 訊息"
-
-#: src/pages/RoutineEditor.tsx
-msgid "Slack not enabled"
-msgstr "未啟用 Slack"
 
 #: src/components/composer/HoldToTalk.tsx
 msgid "Slide up to lock"
@@ -5818,10 +5675,6 @@ msgstr "團隊"
 #: src/pages/shell/computer-view.tsx
 msgid "Team Computer"
 msgstr "團隊電腦"
-
-#: src/pages/RoutineEditor.tsx
-msgid "Teams message"
-msgstr "Teams 訊息"
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "Template"
@@ -6151,10 +6004,6 @@ msgstr ""
 msgid "Transcription response is too large."
 msgstr ""
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Treat like a person"
-msgstr "視為真人"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Treg token"
 msgstr "Treg 權杖"
@@ -6220,10 +6069,6 @@ msgstr "復原"
 #: src/pages/PluginsOverlay.tsx
 msgid "Uninstall"
 msgstr "解除安裝"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Unlink"
-msgstr "取消關聯"
 
 #: src/components/pages/PagesList.tsx
 msgid "Unpin"

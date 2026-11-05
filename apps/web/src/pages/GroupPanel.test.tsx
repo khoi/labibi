@@ -95,8 +95,6 @@ function fakeBot(id: string, name: string): Bot {
     modelProvider: null,
     modelId: null,
     thinkingLevel: null,
-    teamChatAmbientEnabled: false,
-    teamChatRules: "",
     disabledBuiltinTools: [],
     webhookConfigured: false,
   };

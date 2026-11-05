@@ -7,7 +7,6 @@ import {
   CreditCard,
   Gauge,
   KeyRound,
-  MessageCircle,
   Monitor,
   Settings,
   ShieldCheck,
@@ -25,7 +24,6 @@ export type SettingsNavItem = {
 
 /** The settings sections this deployment offers, in nav order; Space opens from its own menu. */
 export function useSettingsNavItems(available: {
-  messaging: boolean;
   wallet: boolean;
   computer: boolean;
   billing: boolean;
@@ -39,9 +37,6 @@ export function useSettingsNavItems(available: {
     { id: "voice", label: t`Voice`, icon: Volume2 },
     { id: "confirmations", label: t`Approvals`, icon: ShieldCheck },
     { id: "vault", label: t`Vault`, icon: KeyRound },
-    ...(available.messaging
-      ? [{ id: "messaging" as const, label: t`Messaging`, icon: MessageCircle }]
-      : []),
     ...(available.wallet ? [{ id: "wallet" as const, label: t`Wallet`, icon: Wallet }] : []),
     { id: "memory", label: t`Memory`, icon: Brain },
     { id: "usage", label: t`Usage`, icon: Gauge },

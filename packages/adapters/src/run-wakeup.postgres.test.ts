@@ -11,7 +11,7 @@ import {
   createDb,
   createThreadEvents,
   finalizeRun,
-  provisionMessagingIdentity,
+  provisionTestBot,
   runAsSystem,
   runAsTenant,
 } from "@labradoodle/db";
@@ -34,16 +34,15 @@ describePostgres("direct run dispatch (PostgreSQL)", () => {
     db = createDb(url!);
     system = asSystem(db.prisma);
     identity = await runAsSystem("direct dispatch fixture", () =>
-      provisionMessagingIdentity(
+      provisionTestBot(
         db.prisma,
-        { provider: "email", address },
+        { address },
         { signupsEnabled: undefined, signupAllowlist: undefined },
       ),
     );
   });
   afterAll(async () => {
     if (identity) {
-      await system.messagingIdentity.deleteMany({ where: { address } });
       await system.organization.deleteMany({ where: { id: identity.spaceId } });
       await system.user.deleteMany({ where: { id: identity.userId } });
     }

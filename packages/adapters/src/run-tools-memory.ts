@@ -16,10 +16,8 @@ import type { ToolCall, ToolHandlers } from "./run-tool-gate.js";
 export function historyMyChatsAllowed(
   run: { trigger: string; threadId: string },
   source: { role: string; threadId: string } | null,
-  external: boolean,
 ): boolean {
   return (
-    !external &&
     (run.trigger === "user" || run.trigger === "follow_up") &&
     source?.role === "user" &&
     source.threadId === run.threadId
@@ -33,14 +31,13 @@ async function readHistoryTool(ctx: RunContext, call: ToolCall) {
     name === "search_history"
       ? args.scope === "my_chats"
       : typeof args.threadId === "string" && args.threadId !== run.threadId;
-  // Channel or webhook text claimed mid-turn revokes the grant for the rest of the run.
+  // Webhook text claimed mid-turn revokes the grant for the rest of the run.
   const allowMyChats =
     crossChat && ctx.source.myChatsAllowed && !(await ctx.trust.receivedOutsideMessage());
   const scope = {
     spaceId: run.spaceId,
     threadId: run.threadId,
     botId: run.botId,
-    channelId: ctx.source.channelId,
     searchBeforeSeq: ctx.source.historySearchBeforeSeq,
     allowMyChats,
     searchAt: run.createdAt,

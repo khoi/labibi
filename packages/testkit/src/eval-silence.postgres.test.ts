@@ -159,7 +159,7 @@ describe.skipIf(!databaseAvailable)("routine silence eval through the product", 
             timeoutMs: 25_000,
             maxToolCalls: 8,
             judge: judgeFailure === "missing" ? undefined : judge,
-            createApp: (composio, messaging, witnesses) =>
+            createApp: (composio, witnesses) =>
               createApp({
                 ...witnesses,
                 sandbox: new EvalSandboxProvider(),
@@ -173,7 +173,6 @@ describe.skipIf(!databaseAvailable)("routine silence eval through the product", 
                 wakeupDriver: "memory",
                 signupsEnabled: "true",
                 composio,
-                messaging,
                 encryptionKey: "offline-silence-encryption-key-32-characters",
               }),
           },

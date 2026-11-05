@@ -15,7 +15,6 @@ const ownerChat = selectBuiltinToolsForRun({
   trigger: "user",
   semanticMemoryEnabled: false,
   historyRetrievalEnabled: true,
-  messagingChannelRun: false,
   followUpFromUser: true,
 });
 
@@ -106,7 +105,6 @@ describe("built-in tool bridge", () => {
         groupId: null,
         trigger: "user",
         semanticMemoryEnabled: false,
-        messagingChannelRun: false,
         disabledBuiltinTools: ["render_plot"],
       }),
     );

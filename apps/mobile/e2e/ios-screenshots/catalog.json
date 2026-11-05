@@ -110,12 +110,6 @@
     "screens": ["approvals", "vault", "space", "space-members"]
   },
   {
-    "id": "messaging",
-    "title": "Messaging",
-    "flow": "flows/messaging.yaml",
-    "screens": ["messaging", "team-conversation"]
-  },
-  {
     "id": "billing",
     "title": "Billing",
     "flow": "flows/billing.yaml",

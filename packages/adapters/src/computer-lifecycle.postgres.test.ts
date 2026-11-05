@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import type { AdapterContext, JobPublisher } from "@labradoodle/adapter-kit";
 import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
-import { asSystem, createDb, provisionMessagingIdentity, runAsSystem } from "@labradoodle/db";
+import { asSystem, createDb, provisionTestBot, runAsSystem } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { sleepComputerIfIdle } from "./computer-idle.js";
 import {
@@ -34,7 +34,7 @@ const describePostgres =
 describePostgres("Team Computer takeover recovery (PostgreSQL)", () => {
   let prisma: PrismaClient;
   let close: () => Promise<void>;
-  let identity: Awaited<ReturnType<typeof provisionMessagingIdentity>>;
+  let identity: Awaited<ReturnType<typeof provisionTestBot>>;
   let computerId: string;
   const address = `lease-${randomUUID()}@example.test`;
 
@@ -42,7 +42,6 @@ describePostgres("Team Computer takeover recovery (PostgreSQL)", () => {
     const db = createDb(databaseUrl!);
     prisma = asSystem(db.prisma);
     close = async () => {
-      await prisma.messagingIdentity.deleteMany({ where: { address } });
       if (identity) {
         await prisma.organization.deleteMany({ where: { id: identity.spaceId } });
         await prisma.user.deleteMany({ where: { id: identity.userId } });
@@ -51,9 +50,9 @@ describePostgres("Team Computer takeover recovery (PostgreSQL)", () => {
       await db.pool.end();
     };
     identity = await runAsSystem("lease fixture", () =>
-      provisionMessagingIdentity(
+      provisionTestBot(
         db.prisma,
-        { provider: "email", address },
+        { address },
         { signupsEnabled: undefined, signupAllowlist: undefined },
       ),
     );

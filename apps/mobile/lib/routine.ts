@@ -8,13 +8,6 @@ export function routineTriggerNames(routine: Routine): string[] {
   return [
     ...(routine.webhookEnabled ? [t("Webhook")] : []),
     ...(routine.githubEnabled ? [t("Git event")] : []),
-    ...(routine.messageProvider === "slack"
-      ? [t("Slack message")]
-      : routine.messageProvider === "teams"
-        ? [t("Teams message")]
-        : routine.messageProvider
-          ? [t("Message event")]
-          : []),
     ...(routine.watch ? [t("When something changes")] : []),
   ];
 }

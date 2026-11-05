@@ -168,22 +168,6 @@ describe("local history retrieval", () => {
       ),
     );
   });
-  it("restricts channel inputs and bot output using the run source, including neighbors", async () => {
-    const { mock, prisma } = db();
-    mock.$queryRaw.mockResolvedValueOnce([row(4)]).mockResolvedValueOnce([row(3), row(4)]);
-    await readHistory(prisma, { ...scope, channelId: "group-channel" }, { messageId: "message-4" });
-    for (const call of [0, 1]) {
-      expect(sql(mock, call).sql).toContain('source.id = r."sourceMessageId"');
-      expect(sql(mock, call).sql).toContain('source."threadId" = t.id');
-      expect(sql(mock, call).values).toContain(
-        JSON.stringify([{ kind: "channel_message", channelId: "group-channel" }]),
-      );
-    }
-    expect(mock.run.findMany.mock.calls[0]![0].where).toMatchObject({
-      ...scope,
-      sourceMessage: { threadId: "thread", role: "user" },
-    });
-  });
   it("does not retrieve runs or artifacts for a missing, cleared, or inaccessible anchor", async () => {
     const { mock, prisma } = db();
     mock.$queryRaw.mockResolvedValue([]);

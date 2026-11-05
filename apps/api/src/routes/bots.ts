@@ -249,10 +249,6 @@ export function botsRoutes(ctx: RouterContext) {
               ? { modelProvider: input.modelProvider, modelId: input.modelId ?? null }
               : {}),
             ...(input.thinkingLevel !== undefined ? { thinkingLevel } : {}),
-            ...(input.teamChatAmbientEnabled !== undefined
-              ? { teamChatAmbientEnabled: input.teamChatAmbientEnabled }
-              : {}),
-            ...(input.teamChatRules !== undefined ? { teamChatRules: input.teamChatRules } : {}),
             ...(input.disabledBuiltinTools !== undefined
               ? { disabledBuiltinTools: input.disabledBuiltinTools }
               : {}),

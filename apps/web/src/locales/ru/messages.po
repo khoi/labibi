@@ -106,11 +106,6 @@ msgstr "Соединение {0}"
 msgid "{0} GB"
 msgstr "{0} ГБ"
 
-#. placeholder {0}: sender.name
-#: src/pages/ExternalConversationSettings.tsx
-msgid "{0} handling"
-msgstr "Обработка {0}"
-
 #. placeholder {0}: updated.name
 #: src/pages/McpServersOverlay.tsx
 msgid "{0} is not working"
@@ -130,11 +125,6 @@ msgstr "{0} КБ"
 #: src/components/ArtifactFileCard.tsx
 msgid "{0} MB"
 msgstr "{0} МБ"
-
-#. placeholder {0}: sender.name
-#: src/pages/ExternalConversationSettings.tsx
-msgid "{0} rollup hours"
-msgstr "{0} ч. сводки"
 
 #. placeholder {0}: parts.amount
 #: src/components/ArtifactFileCard.tsx
@@ -646,10 +636,6 @@ msgstr "Добавить в задачу"
 msgid "Add trigger"
 msgstr "Добавить триггер"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Add workspace"
-msgstr "Добавить рабочее пространство"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "Added"
@@ -741,10 +727,6 @@ msgstr "Разрешено один раз"
 #: src/pages/Auth.tsx
 msgid "Already have an account?"
 msgstr "У вас уже есть аккаунт?"
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Always act"
-msgstr "Всегда выполнять"
 
 #: src/components/AskCard.tsx
 msgid "Always allow {site}"
@@ -855,7 +837,6 @@ msgstr "Модель проверки действий"
 msgid "Approvals"
 msgstr "Подтверждения"
 
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
@@ -950,10 +931,6 @@ msgstr ""
 msgid "Auto"
 msgstr "Авто"
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Automated senders"
-msgstr "Автоматические отправители"
-
 #: src/pages/RoutineEditor.tsx
 msgid "Available after the routine is saved"
 msgstr "Доступно после сохранения задачи"
@@ -1039,7 +1016,6 @@ msgstr "Загрузка рабочего стола…"
 
 #: src/lib/identity-display.ts
 #: src/pages/IntegrationSetup.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/Shell.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
@@ -1231,10 +1207,6 @@ msgstr "Сведения о чате"
 msgid "Chat Settings"
 msgstr "Настройки чата"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Chat with your bot from Slack."
-msgstr "Общайтесь с ботом из Slack."
-
 #: src/lib/localized-provider-hint.ts
 msgid "ChatGPT subscription"
 msgstr ""
@@ -1347,7 +1319,6 @@ msgstr "Очистка…"
 
 #: src/components/ErrorBoundary.tsx
 #: src/pages/KnowledgeSection.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/chat-find-bar.tsx
@@ -1551,7 +1522,6 @@ msgstr "Убедитесь, что URL доступен из этого сеан
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 #: src/pages/memory-providers/SupermemorySettingsForm.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/model-settings/role-model-picker.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/shell/message-cards.tsx
@@ -1562,10 +1532,6 @@ msgstr "Подключить"
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Connect {selectedProviderName}"
 msgstr "Подключить {selectedProviderName}"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Connect a chat app"
-msgstr ""
 
 #: src/pages/Onboarding.tsx
 #: src/pages/shell/composer-error.tsx
@@ -1688,10 +1654,6 @@ msgstr ""
 msgid "Continue with {0}"
 msgstr "Продолжить с {0}"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Conversations"
-msgstr ""
-
 #: src/components/InviteDialog.tsx
 #: src/components/markdown-copy.tsx
 #: src/components/pages/PublicPageShell.tsx
@@ -1801,7 +1763,6 @@ msgstr "Не удалось завершить обновление. Попро�
 
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/SlackInstallCallback.tsx
 msgid "Could not connect"
 msgstr "Не удалось подключиться"
 
@@ -2120,7 +2081,6 @@ msgstr ""
 msgid "Could not run routine"
 msgstr "Не удалось запустить задачу"
 
-#: src/pages/ExternalConversationSettings.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
@@ -2266,10 +2226,6 @@ msgstr "Не удалось скопировать. Выделите ссылк�
 msgid "Couldn't load grants"
 msgstr ""
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Couldn't load messaging settings"
-msgstr "Не удалось загрузить настройки обмена сообщениями."
-
 #: src/components/pages/PagesList.tsx
 msgid "Couldn't load pages."
 msgstr "Не удалось загрузить страницы."
@@ -2285,10 +2241,6 @@ msgstr "Не удалось загрузить страницу. Попробу�
 #: src/pages/PaymentWalletSettingsPanel.tsx
 msgid "Couldn't load your wallet"
 msgstr ""
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Couldn't update messaging settings"
-msgstr "Не удалось обновить настройки обмена сообщениями."
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Couldn't update your timezone"
@@ -2425,10 +2377,6 @@ msgstr ""
 #: src/lib/cron.ts
 msgid "days"
 msgstr "дни"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Decline"
-msgstr "Отклонить"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/model-settings/role-model-picker.tsx
@@ -2587,7 +2535,6 @@ msgstr "Удалить запись"
 
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/MemorySettingsOverlay.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
@@ -2794,7 +2741,6 @@ msgid "Error"
 msgstr ""
 
 #: src/lib/cron.ts
-#: src/pages/ExternalConversationSettings.tsx
 msgid "Every"
 msgstr "Каждые"
 
@@ -2838,10 +2784,6 @@ msgstr "Каждый час"
 msgid "Every hour at :{0}"
 msgstr "Каждый час на {0}-й минуте"
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Every message"
-msgstr "Все сообщения"
-
 #: src/lib/cron.ts
 msgid "Every Monday"
 msgstr "Каждый понедельник"
@@ -2855,10 +2797,6 @@ msgstr "Каждый месяц"
 #: src/pages/RoutineSchedule.tsx
 msgid "Every week"
 msgstr "Каждую неделю"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Everyone in this bot's space can read the chats it gets from {linkApp}."
-msgstr ""
 
 #: src/components/SharedSpaceRules.tsx
 msgid "Everyone in this space sees all its chats, bots and memory."
@@ -2909,11 +2847,6 @@ msgstr "Экспорт данных"
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Export this week's list from the CRM and drop it in the shared folder"
 msgstr "Экспортируйте список этой недели из CRM и поместите его в общую папку."
-
-#: src/pages/ExternalConversationSettings.tsx
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "External conversation"
-msgstr "Внешний диалог"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
@@ -3127,7 +3060,6 @@ msgid "Granting…"
 msgstr ""
 
 #: src/lib/identity-display.ts
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/shell/chat-header.tsx
 #: src/pages/shell/side-panel.tsx
 #: src/pages/SpaceSearch.tsx
@@ -3137,10 +3069,6 @@ msgstr "Группа"
 #: src/pages/GroupPanel.tsx
 msgid "Group settings"
 msgstr "Настройки группы"
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Group updates"
-msgstr "Обновления группы"
 
 #: src/pages/RoutineEditor.tsx
 msgid "header"
@@ -3213,7 +3141,6 @@ msgid "hour"
 msgstr "час"
 
 #: src/lib/cron.ts
-#: src/pages/ExternalConversationSettings.tsx
 msgid "hours"
 msgstr "часы"
 
@@ -3244,10 +3171,6 @@ msgstr "Готово"
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "If you heard that, voice is ready."
 msgstr "Если вы это услышали, голос готов."
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Ignore"
-msgstr "игнорировать"
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
@@ -3314,10 +3237,6 @@ msgstr "История инструкций"
 #: src/components/InstructionSettings.tsx
 msgid "Instructions"
 msgstr "Инструкции"
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Instructions for this room"
-msgstr "Инструкции для этой комнаты"
 
 #: src/components/AskCard.tsx
 msgid "Instructions updated"
@@ -3459,7 +3378,6 @@ msgid "Later"
 msgstr "Позже"
 
 #: src/components/SpaceMembersSettings.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 msgid "Leave"
 msgstr "Выйти"
 
@@ -3493,10 +3411,6 @@ msgstr ""
 #: src/components/pages/SharePopover.tsx
 msgid "Link copied"
 msgstr "Ссылка скопирована"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Link DMs"
-msgstr "Привязать ЛС"
 
 #: src/components/AccountAccess.tsx
 msgid "Link SSO"
@@ -3727,10 +3641,6 @@ msgstr "Область памяти"
 msgid "Mentions"
 msgstr "Упоминания"
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Mentions only"
-msgstr "Только упоминания"
-
 #: src/pages/shell/chat-shared.ts
 #: src/pages/shell/composer.tsx
 #: src/pages/SpaceSearch.tsx
@@ -3750,17 +3660,9 @@ msgstr "Сообщение {activeName}"
 msgid "Message composer"
 msgstr "Поле сообщения"
 
-#: src/pages/RoutineEditor.tsx
-msgid "Message event"
-msgstr "Событие сообщения"
-
 #: src/pages/shell/composer.tsx
 msgid "Message…"
 msgstr "Сообщение…"
-
-#: src/pages/settings-nav.ts
-msgid "Messaging"
-msgstr "Обмен сообщениями"
 
 #: src/lib/dictation.ts
 msgid "Microphone failed"
@@ -4850,10 +4752,6 @@ msgid "Remove header"
 msgstr "Удалить заголовок"
 
 #: src/pages/RoutineEditor.tsx
-msgid "Remove message trigger"
-msgstr "Удалить триггер сообщения"
-
-#: src/pages/RoutineEditor.tsx
 msgid "Remove schedule"
 msgstr "Удалить расписание"
 
@@ -4901,10 +4799,6 @@ msgstr "Заменить ключ"
 msgid "Replaces the login saved for {0}"
 msgstr ""
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Replies to"
-msgstr "Отвечает на"
-
 #: src/pages/shell/message-hover-actions.tsx
 #: src/pages/shell/quote-selection-button.tsx
 msgid "Reply"
@@ -4923,16 +4817,11 @@ msgstr ""
 msgid "Request a new code"
 msgstr "Запросите новый код"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Requests"
-msgstr ""
-
 #: src/pages/shell/message-cards.tsx
 msgid "Research & writing"
 msgstr ""
 
 #: src/components/ComputerMaintenanceActions.tsx
-#: src/pages/ExternalConversationSettings.tsx
 msgid "Reset"
 msgstr "Сбросить"
 
@@ -5023,7 +4912,6 @@ msgid "Retry screen"
 msgstr "Повторить загрузку экрана"
 
 #: src/pages/McpOAuthCallback.tsx
-#: src/pages/SlackInstallCallback.tsx
 msgid "Return to Labradoodle"
 msgstr "Вернуться в Labradoodle"
 
@@ -5100,17 +4988,9 @@ msgstr "Выполняется…"
 msgid "Runs"
 msgstr "Запуски"
 
-#: src/pages/RoutineEditor.tsx
-msgid "Runs when this bot receives a verified message from this provider."
-msgstr "Запускается, когда этот бот получает проверенное сообщение от этого провайдера."
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Sales & CRM"
 msgstr ""
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Same as {botName}"
-msgstr "Как у {botName}"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Same as main model"
@@ -5128,7 +5008,6 @@ msgstr "суббота"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/AccountSettingsOverlay.tsx
-#: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
@@ -5151,7 +5030,6 @@ msgstr "Сохранить в хранилище"
 #: src/components/ComputerProviderSettings.tsx
 #: src/components/SecretAskCard.tsx
 #: src/components/teach/SkillDraftCard.tsx
-#: src/pages/ExternalConversationSettings.tsx
 msgid "Saved"
 msgstr "Сохранено"
 
@@ -5166,10 +5044,6 @@ msgstr "Сохранено. Поверните, чтобы раскрыть."
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Saving your workspace"
 msgstr "Сохранение вашего рабочего пространства"
-
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Saving..."
-msgstr "Сохранение..."
 
 #: src/components/SecretAskCard.tsx
 #: src/components/teach/SkillDraftCard.tsx
@@ -5293,14 +5167,6 @@ msgstr "Свой сервер"
 msgid "Send"
 msgstr "Отправить"
 
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Send <0>{linkCode}</0> from {linkApp} within 10 minutes."
-msgstr ""
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Send <0>{linkCode}</0> to <1>{linkAddress}</1> from {linkApp} within 10 minutes."
-msgstr ""
-
 #: src/components/AskCard.tsx
 msgid "Send answer"
 msgstr "Отправить ответ"
@@ -5361,7 +5227,6 @@ msgid "Set"
 msgstr "Задать"
 
 #: src/components/SidebarFooter.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/keyboard-shortcuts-dialog.tsx
 #: src/pages/shell/shell-dialogs.tsx
@@ -5540,14 +5405,6 @@ msgstr ""
 #: src/pages/shell/use-composer-actions.ts
 msgid "Skipped {0}"
 msgstr "Пропущен {0}"
-
-#: src/pages/RoutineEditor.tsx
-msgid "Slack message"
-msgstr "Сообщение Slack"
-
-#: src/pages/RoutineEditor.tsx
-msgid "Slack not enabled"
-msgstr "Slack не включен"
 
 #: src/components/composer/HoldToTalk.tsx
 msgid "Slide up to lock"
@@ -5817,10 +5674,6 @@ msgstr "Команда"
 #: src/pages/shell/computer-view.tsx
 msgid "Team Computer"
 msgstr "Командный компьютер"
-
-#: src/pages/RoutineEditor.tsx
-msgid "Teams message"
-msgstr "Сообщение Teams"
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "Template"
@@ -6150,10 +6003,6 @@ msgstr ""
 msgid "Transcription response is too large."
 msgstr ""
 
-#: src/pages/ExternalConversationSettings.tsx
-msgid "Treat like a person"
-msgstr "Считать человеком"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Treg token"
 msgstr "Токен Treg"
@@ -6219,10 +6068,6 @@ msgstr "Отменить"
 #: src/pages/PluginsOverlay.tsx
 msgid "Uninstall"
 msgstr "Удалить"
-
-#: src/pages/MessagingSettingsPanel.tsx
-msgid "Unlink"
-msgstr "Отсоединить"
 
 #: src/components/pages/PagesList.tsx
 msgid "Unpin"

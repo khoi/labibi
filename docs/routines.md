@@ -48,12 +48,8 @@ Gives you a URL and key. Any service that can send a POST request can start the 
 Gives you a URL to add as a GitHub webhook, so pushes, issues and pull requests can start the
 routine.
 
-### Slack message
-
-Runs when the bot receives a message in Slack. Needs [Slack connected](./messaging-apps.md).
-
 > [!NOTE]
-> Runs started by a webhook or an outside message follow stricter [approval](./approvals.md) rules,
+> Runs started by a webhook follow stricter [approval](./approvals.md) rules,
 > since outside text could steer what the bot does.
 
 ## Test, pause and review

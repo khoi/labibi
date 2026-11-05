@@ -37,7 +37,6 @@ export const AnalyticsBotSetting = z.enum([
   "model",
   "thinking",
   "computer",
-  "team_chat",
   "tools",
 ]);
 export const AnalyticsTrigger = RunTriggerSchema;

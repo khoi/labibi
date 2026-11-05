@@ -313,6 +313,6 @@ To move from Labradoodle Cloud to your own install (or back), use **Settings →
 old install and **Import data** on the new one. The export is a zip of every space you belong
 to: bots, chats, files, memory, routines, skills and bot workspace files. Content is decrypted inside the zip, so keep it private. Importing creates new
 spaces you own. Routines arrive switched off. Credentials and connections (model keys, apps,
-MCP servers, messaging) stay behind, so connect them again on the new install. Workspace files
+MCP servers) stay behind, so connect them again on the new install. Workspace files
 over 8 MiB are left out, the export must stay under 4 GiB, and the upload must finish within
 the server's request timeout (5 minutes by default in Node).

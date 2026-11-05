@@ -412,15 +412,6 @@ postgres("history retrieval (PostgreSQL)", () => {
       openRunIds: ["task-only-run"],
     });
     expect(read.runs[0]!.status).toBe("running");
-    expect(
-      (
-        await searchHistory(
-          prisma,
-          { ...scope, channelId: "channel-a" },
-          { query: "quartz routing congestion" },
-        )
-      ).messages,
-    ).toEqual([]);
     await pool.query("DELETE FROM messages WHERE id = 'task-only-message'");
     expect(
       (await searchHistory(prisma, scope, { query: "quartz routing congestion" })).messages,
@@ -433,15 +424,6 @@ postgres("history retrieval (PostgreSQL)", () => {
         '[{"kind":"text","text":"Background investigation complete"}]');`);
     const result = await readHistory(prisma, scope, { messageId: "background-result", limit: 1 });
     expect(result.runs.map((run) => run.id)).toEqual(["background-run"]);
-    expect(
-      (
-        await readHistory(
-          prisma,
-          { ...scope, channelId: "channel-a" },
-          { messageId: "background-result" },
-        )
-      ).runs,
-    ).toEqual([]);
     await pool.query("DELETE FROM messages WHERE id = 'background-result'");
     expect((await readHistory(prisma, scope, { messageId: "background-result" })).runs).toEqual([]);
   });
@@ -608,43 +590,6 @@ postgres("history retrieval (PostgreSQL)", () => {
       [],
     );
   });
-  it("checks ownership and excludes private history from channel retrieval", async () => {
-    await pool.query(`
-      INSERT INTO messages VALUES
-        ('channel-source','synthetic-thread',10001,'user',NULL,NULL,now(),'[{"kind":"channel_message","channelId":"channel-a","text":"exports approved"}]'),
-        ('channel-result','synthetic-thread',10002,'bot','run-a',NULL,now(),'[{"kind":"text","text":"exports completed"}]'),
-        ('private-source','synthetic-thread',10003,'user',NULL,NULL,now(),'[{"kind":"text","text":"exports private"}]'),
-        ('private-result','synthetic-thread',10004,'bot','run-private',NULL,now(),'[{"kind":"text","text":"exports confidential"}]');
-      INSERT INTO runs VALUES
-        ('run-a','synthetic-space','synthetic-user','synthetic-thread','synthetic-bot','channel-source','completed',now(),now()),
-        ('run-private','synthetic-space','synthetic-user','synthetic-thread','synthetic-bot','private-source','completed',now(),now());
-    `);
-    const channelScope = { ...scope, channelId: "channel-a" };
-    expect(
-      (await searchHistory(prisma, channelScope, { query: "exports" })).messages.map(
-        (message) => message.messageId,
-      ),
-    ).toEqual(["channel-result", "channel-source"]);
-    const read = await readHistory(prisma, channelScope, { messageId: "channel-source" });
-    expect(read.messages.map((message) => message.messageId)).toEqual([
-      "channel-source",
-      "channel-result",
-    ]);
-    expect(read.runs.map((run) => run.id)).toEqual(["run-a"]);
-    expect(read.runs[0]!.outcomes[0]!.text).toBe("exports completed");
-    expect(
-      (await searchHistory(prisma, { ...scope, spaceId: "outsider-space" }, { query: "exports" }))
-        .messages,
-    ).toEqual([]);
-    expect(
-      (await readHistory(prisma, channelScope, { messageId: "private-source" })).messages,
-    ).toEqual([]);
-    await pool.query("DELETE FROM messages WHERE id = 'channel-source'");
-    expect((await searchHistory(prisma, channelScope, { query: "exports" })).messages).toEqual([]);
-    expect(
-      (await readHistory(prisma, channelScope, { messageId: "channel-result" })).messages,
-    ).toEqual([]);
-  });
   it("authorizes every active chat in the space, including groups, and nothing outside it", async () => {
     await pool.query(`
       INSERT INTO bots (id, "spaceId", "userId", "archivedAt", name) VALUES
@@ -798,11 +743,7 @@ postgres("history retrieval (PostgreSQL)", () => {
         await readHistory(prisma, grant, { threadId, messageId: `cross-${threadId}` }),
       ).toEqual(missing);
     }
-    for (const denied of [
-      { ...grant, channelId: "channel-a" },
-      { ...grant, allowMyChats: false },
-      scope,
-    ]) {
+    for (const denied of [{ ...grant, allowMyChats: false }, scope]) {
       await expect(searchHistory(prisma, denied, input)).rejects.toThrow("direct human app runs");
       expect(
         await readHistory(prisma, denied, {

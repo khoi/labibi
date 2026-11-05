@@ -4,8 +4,8 @@ import type { PrismaClient } from "./client.js";
 import { createDb } from "./client.js";
 import { finalizeRun } from "./events.js";
 import { createThreadMessage } from "./messages.js";
-import { provisionMessagingIdentity } from "./messaging.js";
 import { asSystem, runAsSystem, runAsTenant } from "./row-security.js";
+import { provisionTestBot } from "./test-bot.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 const describePostgres =
@@ -37,9 +37,9 @@ describePostgres("finalizing a run (PostgreSQL)", () => {
       }
     };
     ({ userId, spaceId, botId, threadId } = await runAsSystem("test fixture", () =>
-      provisionMessagingIdentity(
+      provisionTestBot(
         prisma,
-        { provider: "sendblue", address },
+        { address },
         { signupsEnabled: undefined, signupAllowlist: undefined },
       ),
     ));
@@ -49,7 +49,6 @@ describePostgres("finalizing a run (PostgreSQL)", () => {
   afterAll(async () => {
     try {
       if (prisma && provisioned) {
-        await system.messagingIdentity.deleteMany({ where: { provider: "sendblue", address } });
         await system.organization.deleteMany({ where: { id: spaceId } });
         await system.user.deleteMany({ where: { id: userId } });
       }

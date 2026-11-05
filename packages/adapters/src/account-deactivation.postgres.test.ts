@@ -7,7 +7,7 @@ import {
   cancelDeactivatedAccountRuns,
   createDb,
   createRepos,
-  provisionMessagingIdentity,
+  provisionTestBot,
   runAsSystem,
 } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -41,9 +41,9 @@ describePostgres("a deactivated account's work (PostgreSQL)", () => {
 
   async function person(): Promise<Identity> {
     const { userId, spaceId, botId, threadId } = await runAsSystem("deactivation fixture", () =>
-      provisionMessagingIdentity(
+      provisionTestBot(
         db.prisma,
-        { provider: "email", address: `deactivation-${randomUUID()}@rakazo.test` },
+        { address: `deactivation-${randomUUID()}@rakazo.test` },
         { signupsEnabled: undefined, signupAllowlist: undefined },
       ),
     );

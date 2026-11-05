@@ -35,7 +35,6 @@ export function midTaskMessagePrompt(text: string, canMessageUser: boolean): str
 
 const MID_TASK_SOURCES = {
   member: "another member of this chat",
-  messaging: "a connected chat",
   webhook: "a webhook",
 } as const;
 

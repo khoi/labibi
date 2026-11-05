@@ -419,16 +419,7 @@ const team: Scenario = {
   messages: [
     user("Plan the offsite with the team."),
     say("The Loft fits the budget.", { botId: LEDGER.botId }),
-    bot([
-      {
-        kind: "channel_message",
-        provider: "telegram",
-        channelId: "channel-1",
-        fromAddress: "@sam",
-        fromLabel: "Sam",
-        text: "Tuesday works for me",
-      },
-    ]),
+    say("Tuesday works for everyone.", { botId: SCOUT.botId }),
   ],
 };
 

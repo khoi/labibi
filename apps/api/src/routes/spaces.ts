@@ -8,7 +8,6 @@ import {
   CannotRemoveSpaceOwnerError,
   CannotRenameSpaceAsNonOwnerError,
   cancelSpaceInvites,
-  createExternalConversationRepos,
   createSpaceForMember,
   createSpaceInvite,
   fallbackSpaceForMember,
@@ -135,7 +134,6 @@ export function spacesRoutes(ctx: RouterContext) {
             botCount: 0,
             bots: [],
             groups: [],
-            externalConversations: [],
           };
         }),
       ),
@@ -405,34 +403,26 @@ async function memberSpaceNavigation(
   });
   const spaceIds = memberships.map((membership) => membership.spaceId);
   const inactiveSpaceIds = spaceIds.filter((spaceId) => spaceId !== actor.spaceId);
-  const [
-    currentBots,
-    currentGroups,
-    inactiveBots,
-    inactiveGroups,
-    externalConversations,
-    contentBots,
-    contentGroups,
-  ] = await Promise.all([
-    repos.listBots(actor),
-    groupRepos.listGroups(actor),
-    repos.listSpaceBotsForSpaces(inactiveSpaceIds),
-    groupRepos.listSpaceGroupsForSpaces(inactiveSpaceIds),
-    createExternalConversationRepos(deps.prisma).listForSpaces(spaceIds),
-    // Active-only navigation lists miss archived content in other spaces; count any
-    // bot/group in the actor's spaces (including another member's) so a shared
-    // non-empty space cannot look empty for onboarding redirects.
-    deps.prisma.bot.groupBy({
-      by: ["spaceId"],
-      where: { spaceId: { in: spaceIds } },
-      _count: { _all: true },
-    }),
-    deps.prisma.chatGroup.findMany({
-      where: { spaceId: { in: spaceIds } },
-      select: { spaceId: true },
-      distinct: ["spaceId"],
-    }),
-  ]);
+  const [currentBots, currentGroups, inactiveBots, inactiveGroups, contentBots, contentGroups] =
+    await Promise.all([
+      repos.listBots(actor),
+      groupRepos.listGroups(actor),
+      repos.listSpaceBotsForSpaces(inactiveSpaceIds),
+      groupRepos.listSpaceGroupsForSpaces(inactiveSpaceIds),
+      // Active-only navigation lists miss archived content in other spaces; count any
+      // bot/group in the actor's spaces (including another member's) so a shared
+      // non-empty space cannot look empty for onboarding redirects.
+      deps.prisma.bot.groupBy({
+        by: ["spaceId"],
+        where: { spaceId: { in: spaceIds } },
+        _count: { _all: true },
+      }),
+      deps.prisma.chatGroup.findMany({
+        where: { spaceId: { in: spaceIds } },
+        select: { spaceId: true },
+        distinct: ["spaceId"],
+      }),
+    ]);
   const botCounts = new Map(contentBots.map((row) => [row.spaceId, row._count._all]));
   const spacesWithContent = new Set([
     ...contentBots.map((row) => row.spaceId),
@@ -452,9 +442,6 @@ async function memberSpaceNavigation(
       name: currentMembership.space.name,
       bots: currentBots,
       groups: currentGroups,
-      externalConversations: externalConversations.filter(
-        (conversation) => conversation.spaceId === actor.spaceId,
-      ),
     },
     spaces: memberships.map((membership) => {
       const spaceBots = botsFor(membership.spaceId);
@@ -497,9 +484,6 @@ async function memberSpaceNavigation(
           unread: group.unread,
           updatedAt: group.updatedAt,
         })),
-        externalConversations: externalConversations.filter(
-          (conversation) => conversation.spaceId === membership.spaceId,
-        ),
       };
     }),
   };

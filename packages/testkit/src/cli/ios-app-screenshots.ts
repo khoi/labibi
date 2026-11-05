@@ -114,7 +114,6 @@ async function main() {
         RAKAZO_SCREENSHOT_ARCHIVE_ID: fixture.archiveId,
         RAKAZO_SCREENSHOT_VIDEO_ID: fixture.videoId,
         RAKAZO_SCREENSHOT_TEAM_SPACE_ID: fixture.teamSpaceId,
-        RAKAZO_SCREENSHOT_CONVERSATION_ID: fixture.conversationId,
         RAKAZO_SCREENSHOT_CARDS_BOT_ID: fixture.cardsBotId,
       },
       botId: fixture.botId,

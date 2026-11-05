@@ -188,7 +188,7 @@ export const COMPARISON_ROWS: readonly ComparisonRow[] = [
   {
     aspect: "How you talk to it",
     rakazo:
-      "The Labradoodle web app, Electron desktop app, and Expo mobile app. Optional connectors can attach Slack, WhatsApp, Telegram, iMessage via Sendblue, and Feishu/Lark.",
+      "The Labradoodle web app, Electron desktop app, and Expo mobile app.",
     openclaw:
       "Chat apps are the primary surface. Documented channels include Discord, Google Chat, iMessage, Matrix, Microsoft Teams, Signal, Slack, Telegram, WhatsApp, Zalo, and others via plugins, plus WebChat.",
   },
@@ -284,7 +284,6 @@ There is no seat fee for the open source software. You pay the model provider yo
 
 These work on your own deployment and are not yet on Labradoodle Cloud. Each turns on from \`.env\`.
 
-- **Telegram, WhatsApp, iMessage and SMS, Feishu and Lark.** Add the platform's credentials: \`TELEGRAM_BOT_TOKEN\`, \`WHATSAPP_*\`, \`SENDBLUE_*\` (iMessage and SMS), or \`LARK_*\`.
 - **Image and video generation.** \`MEDIA_GENERATION_PROVIDER=fal\`, \`MEDIA_GENERATION_API_KEY\`, and an image or video model (\`MEDIA_GENERATION_IMAGE_MODEL\`, \`MEDIA_GENERATION_VIDEO_MODEL\`).
 - **Purchases with Stripe Link.** \`PAYMENT_WALLET_PROVIDER=link\`. Each purchase waits for your approval in Link.
 - **Cursor cloud agents.** \`CLOUD_AGENT_PROVIDER=cursor\`, \`CURSOR_API_KEY\`, and \`CLOUD_AGENT_SPACE_ID\`.

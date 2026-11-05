@@ -64,7 +64,6 @@ import {
   CreateRoutineInput,
   DeploymentSettingsSchema,
   ExportManifestSchema,
-  ExternalConversationPolicySchema,
   GroupDetailSchema,
   GroupSchema,
   IntegrationCatalogResultSchema,
@@ -74,10 +73,6 @@ import {
   MemoryPromptBudgetSchema,
   MemoryScopeSchema,
   MeSchema,
-  MessagingChannelMembershipSchema,
-  MessagingInstallationsStatusSchema,
-  MessagingLinkedIdentitySchema,
-  MessagingStatusSchema,
   ModelApiProtocolSchema,
   ModelBackupChoiceSchema,
   ModelBackupListSchema,
@@ -118,7 +113,6 @@ import {
   TimeZoneSchema,
   UpdateAgentSkillInput,
   UpdateBotInput,
-  UpdateExternalConversationPolicyInput,
   UpdateGroupInput,
   UsageRecordSchema,
   UsageSummarySchema,
@@ -777,13 +771,6 @@ export const appContract = {
             notify: z.boolean().optional(),
             webhookEnabled: z.boolean().optional(),
             githubEnabled: z.boolean().optional(),
-            messageProvider: z
-              .string()
-              .min(1)
-              .max(50)
-              .regex(/^[a-z0-9._-]+$/i)
-              .nullable()
-              .optional(),
             /** Null clears the routine's own model and runs it on the bot's. */
             modelProvider: z.string().trim().min(1).max(80).nullable().optional(),
             modelId: z.string().trim().min(1).max(200).nullable().optional(),
@@ -799,12 +786,11 @@ export const appContract = {
               value.crons.length === 0 &&
               value.webhookEnabled === false &&
               value.githubEnabled === false &&
-              value.messageProvider === null &&
               value.watch === null
             ) {
               ctx.addIssue({
                 code: "custom",
-                message: "Add a schedule, webhook, GitHub, message, or change trigger",
+                message: "Add a schedule, webhook, GitHub, or change trigger",
                 path: ["crons"],
               });
             }
@@ -1070,45 +1056,6 @@ export const appContract = {
       ),
     ),
   },
-  /** External messaging surface: link state and group channels. */
-  messaging: {
-    installations: {
-      list: oc.output(MessagingInstallationsStatusSchema),
-      /** Without a bot, the workspace answers as the first bot in the user's default space. */
-      start: oc.input(z.object({ botId: Id.optional() })).output(z.object({ url: z.string() })),
-      complete: oc
-        .input(z.object({ state: z.string().max(64), code: z.string().max(4096) }))
-        .output(z.object({ ok: z.literal(true) })),
-      remove: oc.input(z.object({ id: Id })).output(z.object({ ok: z.literal(true) })),
-    },
-    status: oc.output(MessagingStatusSchema),
-    link: {
-      /** Issue a short-lived code the user sends to the line from a chat app. */
-      start: oc.input(z.object({ botId: Id })).output(
-        z.object({
-          code: z.string(),
-          expiresAt: z.string(),
-          /** Others share the bot's Space, so they can read the chats this link brings in. */
-          shared: z.boolean().optional(),
-        }),
-      ),
-    },
-    identities: {
-      setBot: oc
-        .input(z.object({ identityId: Id, botId: Id }))
-        .output(MessagingLinkedIdentitySchema),
-      unlink: oc.input(z.object({ identityId: Id })).output(z.object({ ok: z.literal(true) })),
-    },
-    channels: {
-      list: oc.output(z.array(MessagingChannelMembershipSchema)),
-      // Addressed by membership, not channel: one user can have two linked
-      // chat apps in the same group, and each answers for its own agent.
-      respond: oc
-        .input(z.object({ membershipId: Id, accept: z.boolean() }))
-        .output(MessagingChannelMembershipSchema),
-      leave: oc.input(z.object({ membershipId: Id })).output(z.object({ ok: z.literal(true) })),
-    },
-  },
   approvalRules: {
     list: oc.input(settingsScopeInput.optional()).output(z.array(ActionApprovalRuleSchema)),
     set: oc
@@ -1358,11 +1305,6 @@ export const appContract = {
         }),
       )
       .output(z.object({ ready: z.boolean(), utterances: z.array(z.string()) })),
-  },
-  externalConversations: {
-    updatePolicy: oc
-      .input(UpdateExternalConversationPolicyInput)
-      .output(ExternalConversationPolicySchema),
   },
   agentSecrets: {
     list: oc.output(z.array(AgentSecretSchema)),

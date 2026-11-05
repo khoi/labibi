@@ -197,7 +197,7 @@ describe("attachment helpers", () => {
         blocks: [{ kind: "text" as const, text: "routine time" }],
       },
     ];
-    expect(userTurnMessageForRun("messaging", "run-new", messages)).toEqual(messages[1]);
+    expect(userTurnMessageForRun("user", "run-new", messages)).toEqual(messages[1]);
     expect(userTurnMessageForRun("reaction", "run-new", messages, "message-new")).toEqual(
       messages[1],
     );
@@ -216,23 +216,6 @@ describe("attachment helpers", () => {
     ];
     expect(attachmentsForBot(attachments, "bot-two")).toEqual([attachments[1]]);
     expect(attachmentsForBot(attachments, undefined)).toEqual([]);
-  });
-});
-
-describe("message history", () => {
-  it("keeps a group-chat line's sender", () => {
-    expect(
-      blocksToAgentHistoryText([
-        {
-          kind: "channel_message",
-          provider: "imessage",
-          channelId: "channel-1",
-          fromAddress: "+15550100",
-          fromLabel: "Ana",
-          text: "dinner at 8?",
-        },
-      ]),
-    ).toBe("[from Ana] dinner at 8?");
   });
 });
 

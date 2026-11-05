@@ -56,7 +56,6 @@ export function routineRowData(actor: Actor, input: CreateRoutineInput, nextRunA
     active: input.active,
     webhookEnabled: input.webhookEnabled,
     githubEnabled: input.githubEnabled,
-    messageProvider: input.messageProvider,
     modelProvider: input.modelProvider,
     modelId: input.modelId,
     thinkingLevel: input.thinkingLevel,
@@ -92,7 +91,6 @@ export function mapRoutine(row: {
   notify: boolean;
   webhookEnabled: boolean;
   githubEnabled: boolean;
-  messageProvider: string | null;
   modelProvider: string | null;
   modelId: string | null;
   thinkingLevel: string | null;
@@ -113,7 +111,6 @@ export function mapRoutine(row: {
     notify: row.notify,
     webhookEnabled: row.webhookEnabled,
     githubEnabled: row.githubEnabled,
-    messageProvider: row.messageProvider,
     modelProvider: row.modelProvider ? canonicalPiProviderId(row.modelProvider) : null,
     modelId: row.modelId ?? null,
     thinkingLevel: (row.thinkingLevel as Routine["thinkingLevel"]) ?? null,

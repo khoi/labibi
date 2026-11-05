@@ -12,8 +12,6 @@ const SETTINGS: Partial<Record<Field, AnalyticsBotSetting>> = {
   modelProvider: "model",
   modelId: "model",
   thinkingLevel: "thinking",
-  teamChatAmbientEnabled: "team_chat",
-  teamChatRules: "team_chat",
   disabledBuiltinTools: "tools",
 };
 

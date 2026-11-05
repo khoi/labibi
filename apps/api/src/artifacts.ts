@@ -1,12 +1,9 @@
 import { createHash } from "node:crypto";
-import type { ArtifactStore, MessagingInboundAttachment } from "@labradoodle/adapter-kit";
+import type { ArtifactStore } from "@labradoodle/adapter-kit";
 import { createAdapterContext } from "@labradoodle/adapter-kit";
 import type { Actor } from "@labradoodle/contracts";
 import {
-  ARTIFACT_NAME_MAX_LENGTH,
-  ATTACHMENT_MAX_BYTES,
   attachmentMaxCount,
-  attachmentSizeLabel,
   isAttachmentAudioMimeType,
   MCP_APP_MIME_TYPE,
 } from "@labradoodle/contracts";
@@ -48,62 +45,6 @@ export async function createOwnedArtifact(
   validateAttachmentMimeType(mimeType);
   const bytes = decodeAttachmentBase64(input.contentBase64, deps.maxUploadSizeBytes);
   return storeOwnedArtifact(deps, actor, { ...input, mimeType, bytes });
-}
-
-/** A stored inbound attachment plus its downloaded content when it was fresh. */
-export type StoredInboundAttachment = ReturnType<typeof createdArtifact> & {
-  bytes?: Uint8Array;
-};
-
-export async function storeInboundAttachment(
-  deps: {
-    prisma: PrismaClient;
-    artifacts: ArtifactStore;
-    maxUploadSizeBytes?: number;
-  },
-  owner: ArtifactOwner,
-  input: {
-    botId: string;
-    attachment: MessagingInboundAttachment;
-    clientNonce: string;
-    downloadDeadline?: number;
-  },
-): Promise<StoredInboundAttachment> {
-  const replayed = await findReplayedArtifact(deps.prisma, owner, input);
-  if (replayed) return createdArtifact(replayed);
-  const { attachment } = input;
-  const name = attachment.name.slice(0, ARTIFACT_NAME_MAX_LENGTH);
-  const mimeType = inferAttachmentMimeType(name, attachment.mimeType) ?? attachment.mimeType;
-  validateAttachmentMimeType(mimeType);
-  const maxBytes = deps.maxUploadSizeBytes ?? ATTACHMENT_MAX_BYTES;
-  const tooLarge = new AttachmentValidationError(
-    `Attachment exceeds the ${attachmentSizeLabel(maxBytes)} limit`,
-  );
-  if ((attachment.size ?? 0) > maxBytes) throw tooLarge;
-  const timeoutMs = Math.min(2_000, (input.downloadDeadline ?? Infinity) - Date.now());
-  if (timeoutMs <= 0) throw new AttachmentValidationError("Attachment download timed out");
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(
-      () => reject(new AttachmentValidationError("Attachment download timed out")),
-      timeoutMs,
-    );
-  });
-  const bytes = await Promise.race([
-    Promise.resolve().then(() => attachment.fetch()),
-    timeout,
-  ]).finally(() => clearTimeout(timer));
-  if (bytes.byteLength === 0) throw new AttachmentValidationError("Attachment content is empty");
-  if (bytes.byteLength > maxBytes) throw tooLarge;
-  const stored = await storeOwnedArtifact(deps, owner, {
-    botId: input.botId,
-    name,
-    mimeType,
-    bytes,
-    clientNonce: input.clientNonce,
-  });
-  // The replay return above carries no bytes; callers treat them as optional.
-  return { ...stored, bytes };
 }
 
 type ArtifactOwner = Pick<Actor, "spaceId" | "userId">;

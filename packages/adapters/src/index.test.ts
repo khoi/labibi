@@ -156,7 +156,6 @@ describe("builtin tools", () => {
       semanticMemoryEnabled: true,
       cloudAgentEnabled: true,
       historyRetrievalEnabled: true,
-      messagingChannelRun: false,
       voiceCall: true,
     };
     const enabled = selectBuiltinToolsForRun(options).map((tool) => tool.name);
