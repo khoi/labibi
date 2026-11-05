@@ -135,10 +135,6 @@ msgstr "{0} TB"
 msgid "{amount} / {period}"
 msgstr "{amount} / {period}"
 
-#: src/pages/shell/dialogs.tsx
-msgid "{botCount, plural, one {Delete {name} and its # bot?} other {Delete {name} and its # bots?}}"
-msgstr "{botCount, plural, other {{name} ve # botu silinsin mi?}}"
-
 #: src/pages/shell/computer-view.tsx
 msgid "{botName}’s computer"
 msgstr "{botName} adlı botun bilgisayarı"
@@ -1112,7 +1108,6 @@ msgstr "Görselleri okuyamaz"
 #: src/pages/model-settings/space-bots-model.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
@@ -1635,7 +1630,6 @@ msgstr "Bağlam sınırı"
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Continue"
 msgstr "Devam"
 
@@ -1802,10 +1796,6 @@ msgstr "Grup oluşturulamadı"
 #: src/components/SpaceMembersSettings.tsx
 msgid "Could not create invite link"
 msgstr ""
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not create space"
-msgstr "Alan oluşturulamadı"
 
 #: src/pages/Onboarding.tsx
 msgid "Could not create your bot"
@@ -2078,7 +2068,6 @@ msgstr "Rutin çalıştırılamadı"
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Could not save"
 msgstr "Kaydedilemedi"
 
@@ -2244,7 +2233,6 @@ msgstr "Cüzdanın güncellenemedi"
 msgid "Country"
 msgstr "Ülke"
 
-#: src/components/CreateOrganizationDialog.tsx
 #: src/pages/shell/sidebar-header.tsx
 msgid "Create"
 msgstr "Oluştur"
@@ -2257,17 +2245,11 @@ msgstr "Hesap oluştur"
 msgid "Create group"
 msgstr "Grup oluştur"
 
-#: src/components/CreateOrganizationDialog.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
-msgid "Create organization"
-msgstr "Kuruluş oluştur"
-
 #: src/pages/RoutineEditor.tsx
 msgid "Create Routine"
 msgstr "Rutin oluştur"
 
 #: src/components/AskCard.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Create space"
 msgstr "Alan oluştur"
 
@@ -2280,7 +2262,6 @@ msgid "Created"
 msgstr "Oluşturuldu"
 
 #: src/pages/GroupPanel.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Creating…"
 msgstr "Oluşturuluyor…"
 
@@ -2328,10 +2309,6 @@ msgstr "Mevcut parola"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Custom header"
 msgstr "Özel başlık"
-
-#: src/pages/shell/dialogs.tsx
-msgid "Customer support"
-msgstr "Müşteri desteği"
 
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Customize"
@@ -2392,7 +2369,6 @@ msgstr "Varsayılan kapsam"
 #: src/pages/BotContextMenu.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingOverrides.tsx
@@ -2415,7 +2391,6 @@ msgstr "{0} sil"
 #. placeholder {0}: deleting.name
 #. placeholder {0}: item.name
 #: src/pages/McpServersOverlay.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "Delete {0}?"
 msgstr "{0} silinsin mi?"
@@ -2433,22 +2408,12 @@ msgstr "Grubu sil"
 msgid "Delete memories too"
 msgstr "Hafızayı da sil"
 
-#: src/pages/OrganizationSettingsPanel.tsx
-msgid "Delete organization"
-msgstr "Kuruluşu sil"
-
-#: src/pages/shell/shell-dialogs.tsx
-#: src/pages/SpaceSettingsPanel.tsx
-msgid "Delete space"
-msgstr "Alanı sil"
-
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete this Space's credentials?"
 msgstr "Bu alanın kimlik bilgileri silinsin mi?"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "Deleting…"
 msgstr "Siliniyor…"
@@ -3781,7 +3746,6 @@ msgstr "Yukarı taşı"
 msgid "My computers"
 msgstr "Bilgisayarlarım"
 
-#: src/components/CreateOrganizationDialog.tsx
 #: src/components/teach/SkillDraftCard.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/AccountSettingsOverlay.tsx
@@ -3789,11 +3753,9 @@ msgstr "Bilgisayarlarım"
 #: src/pages/GroupPanel.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/model-settings/providers-section.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Name"
 msgstr "Ad"
@@ -3887,18 +3849,9 @@ msgstr "Yeni mesajlar"
 msgid "New password"
 msgstr "Yeni parola"
 
-#: src/pages/Shell.tsx
-#: src/pages/shell/bot-picker.tsx
-msgid "New private space"
-msgstr "Yeni özel alan"
-
 #: src/pages/KnowledgeSection.tsx
 msgid "New skill"
 msgstr "Yeni beceri"
-
-#: src/pages/shell/dialogs.tsx
-msgid "New space"
-msgstr "Yeni alan"
 
 #: src/components/VaultSettings.tsx
 msgid "New variable"
@@ -4207,7 +4160,6 @@ msgid "Or paste an API key"
 msgstr "Veya bir API anahtarı yapıştır"
 
 #: src/components/ComputerProviderSettings.tsx
-#: src/pages/settings-nav.ts
 msgid "Organization"
 msgstr "Kuruluş"
 
@@ -4467,10 +4419,6 @@ msgstr "Önceki ayar bölümleri"
 #: src/pages/shell/bot-panel.tsx
 msgid "Private"
 msgstr "Özel"
-
-#: src/pages/shell/bot-picker.tsx
-msgid "Private workspace with its own bots and groups."
-msgstr "Kendi botları ve grupları olan özel çalışma alanı."
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Productivity"
@@ -5036,7 +4984,6 @@ msgstr "Çalışma alanın kaydediliyor"
 #: src/pages/model-settings/providers-section.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Saving…"
 msgstr "Kaydediliyor…"
 
@@ -5791,7 +5738,6 @@ msgstr "Bu tarayıcıda cihaz üstü dikte yok. Transkripsiyon destekli bir ses 
 msgid "This can't be undone."
 msgstr "Bu işlem geri alınamaz."
 
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "This cannot be undone."
 msgstr "Bu işlem geri alınamaz."
@@ -6030,10 +5976,6 @@ msgstr "Salı"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Type"
 msgstr "Tür"
-
-#: src/pages/OrganizationSettingsPanel.tsx
-msgid "Type {name} to confirm"
-msgstr "Onaylamak için {name} yazın"
 
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Type without recording"
@@ -6311,10 +6253,6 @@ msgstr "Labradoodle'ya hoş geldin"
 #: src/pages/shell/dialogs.tsx
 msgid "What about its memories?"
 msgstr "Hafızası ne olsun?"
-
-#: src/pages/shell/dialogs.tsx
-msgid "What can this space use?"
-msgstr "Bu alan neleri kullanabilir?"
 
 #: src/components/SignupSurvey.tsx
 msgid "What do you most want Labradoodle to help with?"

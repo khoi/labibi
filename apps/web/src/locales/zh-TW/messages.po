@@ -136,10 +136,6 @@ msgstr "{0} TB"
 msgid "{amount} / {period}"
 msgstr "{amount} / {period}"
 
-#: src/pages/shell/dialogs.tsx
-msgid "{botCount, plural, one {Delete {name} and its # bot?} other {Delete {name} and its # bots?}}"
-msgstr "{botCount, plural, one {要刪除 {name} 及其 # 個機器人嗎？} other {要刪除 {name} 及其 # 個機器人嗎？}}"
-
 #: src/pages/shell/computer-view.tsx
 msgid "{botName}’s computer"
 msgstr "{botName} 的電腦"
@@ -1113,7 +1109,6 @@ msgstr "無法讀取影像"
 #: src/pages/model-settings/space-bots-model.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
@@ -1636,7 +1631,6 @@ msgstr "上下文長度限制"
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Continue"
 msgstr "繼續"
 
@@ -1803,10 +1797,6 @@ msgstr "無法建立群組"
 #: src/components/SpaceMembersSettings.tsx
 msgid "Could not create invite link"
 msgstr ""
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not create space"
-msgstr "無法建立空間"
 
 #: src/pages/Onboarding.tsx
 msgid "Could not create your bot"
@@ -2079,7 +2069,6 @@ msgstr "無法執行例行任務"
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Could not save"
 msgstr "無法儲存"
 
@@ -2245,7 +2234,6 @@ msgstr ""
 msgid "Country"
 msgstr ""
 
-#: src/components/CreateOrganizationDialog.tsx
 #: src/pages/shell/sidebar-header.tsx
 msgid "Create"
 msgstr "建立"
@@ -2258,17 +2246,11 @@ msgstr "建立帳號"
 msgid "Create group"
 msgstr "建立群組"
 
-#: src/components/CreateOrganizationDialog.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
-msgid "Create organization"
-msgstr "建立組織"
-
 #: src/pages/RoutineEditor.tsx
 msgid "Create Routine"
 msgstr "建立例行任務"
 
 #: src/components/AskCard.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Create space"
 msgstr "建立空間"
 
@@ -2281,7 +2263,6 @@ msgid "Created"
 msgstr "已建立"
 
 #: src/pages/GroupPanel.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Creating…"
 msgstr "正在建立…"
 
@@ -2329,10 +2310,6 @@ msgstr "目前密碼"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Custom header"
 msgstr "自訂標頭"
-
-#: src/pages/shell/dialogs.tsx
-msgid "Customer support"
-msgstr "客戶支援"
 
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Customize"
@@ -2393,7 +2370,6 @@ msgstr "預設範圍"
 #: src/pages/BotContextMenu.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingOverrides.tsx
@@ -2416,7 +2392,6 @@ msgstr "刪除 {0}"
 #. placeholder {0}: deleting.name
 #. placeholder {0}: item.name
 #: src/pages/McpServersOverlay.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "Delete {0}?"
 msgstr "刪除 {0}？"
@@ -2434,22 +2409,12 @@ msgstr "刪除群組"
 msgid "Delete memories too"
 msgstr "同時刪除記憶"
 
-#: src/pages/OrganizationSettingsPanel.tsx
-msgid "Delete organization"
-msgstr "刪除組織"
-
-#: src/pages/shell/shell-dialogs.tsx
-#: src/pages/SpaceSettingsPanel.tsx
-msgid "Delete space"
-msgstr "刪除空間"
-
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete this Space's credentials?"
 msgstr "要刪除此空間的憑證嗎？"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "Deleting…"
 msgstr "正在刪除…"
@@ -3782,7 +3747,6 @@ msgstr "上移"
 msgid "My computers"
 msgstr ""
 
-#: src/components/CreateOrganizationDialog.tsx
 #: src/components/teach/SkillDraftCard.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/AccountSettingsOverlay.tsx
@@ -3790,11 +3754,9 @@ msgstr ""
 #: src/pages/GroupPanel.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/model-settings/providers-section.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Name"
 msgstr "名稱"
@@ -3888,18 +3850,9 @@ msgstr "新訊息"
 msgid "New password"
 msgstr "新密碼"
 
-#: src/pages/Shell.tsx
-#: src/pages/shell/bot-picker.tsx
-msgid "New private space"
-msgstr "新增私人空間"
-
 #: src/pages/KnowledgeSection.tsx
 msgid "New skill"
 msgstr "新增技能"
-
-#: src/pages/shell/dialogs.tsx
-msgid "New space"
-msgstr "新增空間"
 
 #: src/components/VaultSettings.tsx
 msgid "New variable"
@@ -4208,7 +4161,6 @@ msgid "Or paste an API key"
 msgstr "或貼上 API 金鑰"
 
 #: src/components/ComputerProviderSettings.tsx
-#: src/pages/settings-nav.ts
 msgid "Organization"
 msgstr "組織"
 
@@ -4468,10 +4420,6 @@ msgstr "上一組設定區段"
 #: src/pages/shell/bot-panel.tsx
 msgid "Private"
 msgstr "私人"
-
-#: src/pages/shell/bot-picker.tsx
-msgid "Private workspace with its own bots and groups."
-msgstr "擁有專屬機器人與群組的私人工作空間。"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Productivity"
@@ -5037,7 +4985,6 @@ msgstr "正在儲存工作空間"
 #: src/pages/model-settings/providers-section.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Saving…"
 msgstr "正在儲存…"
 
@@ -5792,7 +5739,6 @@ msgstr ""
 msgid "This can't be undone."
 msgstr "此操作無法復原。"
 
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "This cannot be undone."
 msgstr "此操作無法復原。"
@@ -6031,10 +5977,6 @@ msgstr "週二"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Type"
 msgstr "類型"
-
-#: src/pages/OrganizationSettingsPanel.tsx
-msgid "Type {name} to confirm"
-msgstr "輸入 {name} 以確認"
 
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Type without recording"
@@ -6312,10 +6254,6 @@ msgstr "歡迎使用 Labradoodle"
 #: src/pages/shell/dialogs.tsx
 msgid "What about its memories?"
 msgstr "它的記憶怎麼處理？"
-
-#: src/pages/shell/dialogs.tsx
-msgid "What can this space use?"
-msgstr ""
 
 #: src/components/SignupSurvey.tsx
 msgid "What do you most want Labradoodle to help with?"

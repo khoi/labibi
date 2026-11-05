@@ -2,13 +2,9 @@ import type { Actor, SpaceNavigation } from "@labradoodle/contracts";
 import type { createGroupRepos, createRepos, PrismaClient } from "@labradoodle/db";
 import {
   acceptSpaceInvite,
-  CannotDeleteDefaultSpaceError,
-  CannotDeleteLastSpaceError,
-  CannotDeleteSpaceAsNonOwnerError,
   CannotRemoveSpaceOwnerError,
   CannotRenameSpaceAsNonOwnerError,
   cancelSpaceInvites,
-  createSpaceForMember,
   createSpaceInvite,
   fallbackSpaceForMember,
   GUEST_ROLE,
@@ -24,11 +20,9 @@ import {
   renameSpaceForMember,
   runAsSystem,
   runAsTenant,
-  SPACE_DELETION_CLAIM_TIMEOUT_MS,
   SpaceDeletionInProgressError,
   SpaceInviteLimitError,
   SpaceInviteNotFoundError,
-  SpaceLimitError,
   SpaceMemberNotFoundError,
   SpaceNotFoundError,
   SpaceOwnerCannotLeaveError,
@@ -39,7 +33,6 @@ import { ORPCError } from "@orpc/server";
 import { otherSpaceOfBot } from "../bot-space.js";
 import type { RouterDeps } from "../router.js";
 import { listRoutinesDto } from "../routines.js";
-import { deleteSpaceWithContent } from "../space-deletion.js";
 import { afterSpaceDeparture } from "../space-departure.js";
 import { resolveThreadTarget, threadSnapshot } from "../thread-target.js";
 import type { RouterContext } from "./context.js";
@@ -99,44 +92,6 @@ export function spacesRoutes(ctx: RouterContext) {
       list: authed.spaces.list.handler(async ({ context }) =>
         spaceNavigationDto(deps, context.actor, repos, groupRepos),
       ),
-      // Seeds a Space whose id does not exist yet; the member limit is checked inside.
-      create: authed.spaces.create.handler(({ context, input }) =>
-        runAsSystem("create a Space for its member", async () => {
-          let space: { id: string; name: string };
-          try {
-            space = await createSpaceForMember(deps.prisma, {
-              currentSpaceId: context.actor.spaceId,
-              userId: context.actor.userId,
-              name: input.name,
-            });
-          } catch (error) {
-            if (error instanceof SpaceLimitError || error instanceof InvalidSpaceNameError) {
-              throw new ORPCError("BAD_REQUEST", { message: error.message });
-            }
-            if (error instanceof SpaceDeletionInProgressError) {
-              throw new ORPCError("CONFLICT", { message: error.message });
-            }
-            throw error;
-          }
-          await recordAuditEvent({
-            action: "space.created",
-            actor: { type: "user", id: context.actor.userId },
-            spaceId: space.id,
-            target: { type: "space", id: space.id, label: space.name },
-          });
-          return {
-            id: space.id,
-            name: space.name,
-            isDefault: false,
-            hasContent: false,
-            canRename: true,
-            canDelete: true,
-            botCount: 0,
-            bots: [],
-            groups: [],
-          };
-        }),
-      ),
       // Renames another of the member's Spaces; membership is checked inside.
       rename: authed.spaces.rename.handler(({ context, input }) =>
         asMemberOf(deps.prisma, context.actor, input.spaceId, async () => {
@@ -166,52 +121,6 @@ export function spacesRoutes(ctx: RouterContext) {
             }
             if (error instanceof SpaceDeletionInProgressError) {
               throw new ORPCError("CONFLICT", { message: error.message });
-            }
-            throw error;
-          }
-        }),
-      ),
-      // Acts on the Space being deleted, not the current one, so its teardown sees
-      // that Space's rows. Ownership is checked inside.
-      remove: authed.spaces.remove.handler(({ context, input }) =>
-        asMemberOf(deps.prisma, context.actor, input.spaceId, async () => {
-          try {
-            const space = await deps.prisma.space.findUnique({
-              where: { id: input.spaceId },
-              select: { organizationId: true, name: true },
-            });
-            const { activeSpaceId } = await deleteSpaceWithContent(
-              deps,
-              context.actor,
-              input.spaceId,
-              context.signal,
-            );
-            if (space) {
-              await recordAuditEvent({
-                action: "space.deleted",
-                actor: { type: "user", id: context.actor.userId },
-                spaceId: input.spaceId,
-                organizationId: space.organizationId,
-                spaceName: space.name,
-                target: { type: "space", id: input.spaceId, label: space.name },
-              });
-            }
-            return { ok: true as const, activeSpaceId };
-          } catch (error) {
-            if (error instanceof SpaceNotFoundError) {
-              throw new ORPCError("NOT_FOUND", { message: error.message });
-            }
-            if (error instanceof CannotDeleteSpaceAsNonOwnerError) {
-              throw new ORPCError("FORBIDDEN", { message: error.message });
-            }
-            if (error instanceof SpaceDeletionInProgressError) {
-              throw new ORPCError("CONFLICT", { message: error.message });
-            }
-            if (
-              error instanceof CannotDeleteDefaultSpaceError ||
-              error instanceof CannotDeleteLastSpaceError
-            ) {
-              throw new ORPCError("BAD_REQUEST", { message: error.message });
             }
             throw error;
           }
@@ -423,7 +332,6 @@ async function memberSpaceNavigation(
         distinct: ["spaceId"],
       }),
     ]);
-  const botCounts = new Map(contentBots.map((row) => [row.spaceId, row._count._all]));
   const spacesWithContent = new Set([
     ...contentBots.map((row) => row.spaceId),
     ...contentGroups.map((row) => row.spaceId),
@@ -434,7 +342,6 @@ async function memberSpaceNavigation(
   const groupsBySpace = partitionBySpace([...currentGroups, ...inactiveGroups]);
   const botsFor = (spaceId: string) => botsBySpace.get(spaceId) ?? [];
   const groupsFor = (spaceId: string) => groupsBySpace.get(spaceId) ?? [];
-  const staleClaimBefore = new Date(Date.now() - SPACE_DELETION_CLAIM_TIMEOUT_MS);
 
   return {
     current: {
@@ -454,13 +361,7 @@ async function memberSpaceNavigation(
         isDefault: membership.space.isDefault && owner,
         hasContent: spacesWithContent.has(membership.spaceId),
         shared: membership.space._count.memberships > 1,
-        botCount: botCounts.get(membership.spaceId) ?? 0,
         canRename: owner && membership.space.deletingAt === null,
-        canDelete:
-          owner &&
-          !membership.space.isDefault &&
-          memberships.length > 1 &&
-          (membership.space.deletingAt === null || membership.space.deletingAt < staleClaimBefore),
         bots: spaceBots.map((bot) => ({
           id: bot.id,
           spaceId: bot.spaceId,

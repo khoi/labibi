@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -12,7 +12,7 @@ import { LocalAgentHomeStore } from "@labradoodle/adapters";
 import type { AccountExportRecord, Actor } from "@labradoodle/contracts";
 import { PAGE_SOURCE_MAX_BYTES } from "@labradoodle/contracts";
 import type { PrismaClient } from "@labradoodle/db";
-import { asSystem, createDb, createOrganizationForUser } from "@labradoodle/db";
+import { asSystem, createDb, createOrganizationWithDefaultSpace } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AccountImportError, importAccount } from "./account-import.js";
 import { buildArchive, chunked, exportFiles, manifestFor } from "./account-import.test-support.js";
@@ -490,11 +490,19 @@ describePostgres("account import (PostgreSQL)", () => {
   });
 
   it("imports into the importer's current organization", async () => {
-    const work = await createOrganizationForUser(system, { userId, name: "Work" });
+    const workId = randomUUID();
+    const work = {
+      defaultSpaceId: await createOrganizationWithDefaultSpace(system, {
+        userId: userId,
+        orgId: workId,
+        name: "Work",
+        slug: workId,
+      }),
+    };
     const result = await runImport(archive(), { ...actor, spaceId: work.defaultSpaceId });
     await expect(
       system.space.findUniqueOrThrow({ where: { id: result.spaces[0]!.id } }),
-    ).resolves.toMatchObject({ organizationId: work.id });
+    ).resolves.toMatchObject({ organizationId: workId });
   });
 
   it("leaves out an artifact the export could not read, with its versions", async () => {

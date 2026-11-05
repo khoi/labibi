@@ -64,8 +64,8 @@ export async function deleteSpaceWithContent(
   let claimRenewal: ReturnType<typeof setInterval> | null = null;
   const deleteInput = { currentSpaceId: actor.spaceId, userId: actor.userId, spaceId };
   const context = (botId?: string): AdapterContext => ({
-    operationId: `spaces.remove:${spaceId}`,
-    traceId: `spaces.remove:${spaceId}`,
+    operationId: `space-delete:${spaceId}`,
+    traceId: `space-delete:${spaceId}`,
     spaceId,
     userId: actor.userId,
     ...(botId ? { botId } : {}),

@@ -91,7 +91,7 @@ export function displayIdentityResult(
       thread,
     });
   if (procedure === "spaces/list") return fields(result, { current: space, spaces: list(space) });
-  if (procedure === "spaces/create" || procedure === "spaces/rename") return space(result);
+  if (procedure === "spaces/rename") return space(result);
   if (procedure === "bots/list") return list(bot)(result);
   if (/^bots\/(get|create|update|restoreInstructions|setComputer)$/.test(procedure))
     return bot(result);

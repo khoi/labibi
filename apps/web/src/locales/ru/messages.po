@@ -135,10 +135,6 @@ msgstr "{0} ТБ"
 msgid "{amount} / {period}"
 msgstr ""
 
-#: src/pages/shell/dialogs.tsx
-msgid "{botCount, plural, one {Delete {name} and its # bot?} other {Delete {name} and its # bots?}}"
-msgstr "{botCount, plural, one {Удалить {name} и # бота?} few {Удалить {name} и # бота?} many {Удалить {name} и # ботов?} other {Удалить {name} и # бота?}}"
-
 #: src/pages/shell/computer-view.tsx
 msgid "{botName}’s computer"
 msgstr "Компьютер {botName}"
@@ -1112,7 +1108,6 @@ msgstr "Не может читать изображения"
 #: src/pages/model-settings/space-bots-model.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
@@ -1635,7 +1630,6 @@ msgstr ""
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Continue"
 msgstr "Продолжить"
 
@@ -1802,10 +1796,6 @@ msgstr "Не удалось создать группу"
 #: src/components/SpaceMembersSettings.tsx
 msgid "Could not create invite link"
 msgstr ""
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not create space"
-msgstr "Не удалось создать пространство"
 
 #: src/pages/Onboarding.tsx
 msgid "Could not create your bot"
@@ -2078,7 +2068,6 @@ msgstr "Не удалось запустить задачу"
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Could not save"
 msgstr "Не удалось сохранить"
 
@@ -2244,7 +2233,6 @@ msgstr ""
 msgid "Country"
 msgstr ""
 
-#: src/components/CreateOrganizationDialog.tsx
 #: src/pages/shell/sidebar-header.tsx
 msgid "Create"
 msgstr "Создать"
@@ -2257,17 +2245,11 @@ msgstr "Зарегистрироваться"
 msgid "Create group"
 msgstr "Создать группу"
 
-#: src/components/CreateOrganizationDialog.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
-msgid "Create organization"
-msgstr "Создать организацию"
-
 #: src/pages/RoutineEditor.tsx
 msgid "Create Routine"
 msgstr "Создать задачу"
 
 #: src/components/AskCard.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Create space"
 msgstr "Создайте пространство"
 
@@ -2280,7 +2262,6 @@ msgid "Created"
 msgstr "Создано"
 
 #: src/pages/GroupPanel.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Creating…"
 msgstr "Создание…"
 
@@ -2328,10 +2309,6 @@ msgstr "Текущий пароль"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Custom header"
 msgstr ""
-
-#: src/pages/shell/dialogs.tsx
-msgid "Customer support"
-msgstr "Поддержка клиентов"
 
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Customize"
@@ -2392,7 +2369,6 @@ msgstr "Область действия по умолчанию"
 #: src/pages/BotContextMenu.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingOverrides.tsx
@@ -2415,7 +2391,6 @@ msgstr "Удалить {0}"
 #. placeholder {0}: deleting.name
 #. placeholder {0}: item.name
 #: src/pages/McpServersOverlay.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "Delete {0}?"
 msgstr "Удалить {0}?"
@@ -2433,22 +2408,12 @@ msgstr "Удалить группу"
 msgid "Delete memories too"
 msgstr "Удалите воспоминания тоже"
 
-#: src/pages/OrganizationSettingsPanel.tsx
-msgid "Delete organization"
-msgstr "Удалить организацию"
-
-#: src/pages/shell/shell-dialogs.tsx
-#: src/pages/SpaceSettingsPanel.tsx
-msgid "Delete space"
-msgstr "Удалить пространство"
-
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete this Space's credentials?"
 msgstr "Удалить учётные данные этого пространства?"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "Deleting…"
 msgstr "Удаление…"
@@ -3781,7 +3746,6 @@ msgstr "Переместить вверх"
 msgid "My computers"
 msgstr ""
 
-#: src/components/CreateOrganizationDialog.tsx
 #: src/components/teach/SkillDraftCard.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/AccountSettingsOverlay.tsx
@@ -3789,11 +3753,9 @@ msgstr ""
 #: src/pages/GroupPanel.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/model-settings/providers-section.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Name"
 msgstr "Имя"
@@ -3887,18 +3849,9 @@ msgstr "Новые сообщения"
 msgid "New password"
 msgstr "Новый пароль"
 
-#: src/pages/Shell.tsx
-#: src/pages/shell/bot-picker.tsx
-msgid "New private space"
-msgstr "Новое личное пространство"
-
 #: src/pages/KnowledgeSection.tsx
 msgid "New skill"
 msgstr "Новый навык"
-
-#: src/pages/shell/dialogs.tsx
-msgid "New space"
-msgstr "Новое пространство"
 
 #: src/components/VaultSettings.tsx
 msgid "New variable"
@@ -4207,7 +4160,6 @@ msgid "Or paste an API key"
 msgstr "Или вставьте ключ API"
 
 #: src/components/ComputerProviderSettings.tsx
-#: src/pages/settings-nav.ts
 msgid "Organization"
 msgstr "Организация"
 
@@ -4467,10 +4419,6 @@ msgstr ""
 #: src/pages/shell/bot-panel.tsx
 msgid "Private"
 msgstr "Личный"
-
-#: src/pages/shell/bot-picker.tsx
-msgid "Private workspace with its own bots and groups."
-msgstr "Приватное пространство со своими ботами и группами."
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Productivity"
@@ -5036,7 +4984,6 @@ msgstr "Сохранение вашего рабочего пространст�
 #: src/pages/model-settings/providers-section.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Saving…"
 msgstr "Сохранение…"
 
@@ -5791,7 +5738,6 @@ msgstr ""
 msgid "This can't be undone."
 msgstr "Это действие нельзя отменить."
 
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "This cannot be undone."
 msgstr "Это невозможно отменить."
@@ -6030,10 +5976,6 @@ msgstr "вторник"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Type"
 msgstr ""
-
-#: src/pages/OrganizationSettingsPanel.tsx
-msgid "Type {name} to confirm"
-msgstr "Введите {name} для подтверждения"
 
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Type without recording"
@@ -6311,10 +6253,6 @@ msgstr ""
 #: src/pages/shell/dialogs.tsx
 msgid "What about its memories?"
 msgstr "Что делать с его памятью?"
-
-#: src/pages/shell/dialogs.tsx
-msgid "What can this space use?"
-msgstr ""
 
 #: src/components/SignupSurvey.tsx
 msgid "What do you most want Labradoodle to help with?"

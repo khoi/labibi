@@ -5,14 +5,6 @@ name: Compose
     file: ../subflows/sign-in.yaml
     env:
       RAKAZO_ACTIVE_EMAIL: ${RAKAZO_SCREENSHOT_EMAIL}
-- openLink: "rakazo:///new-space"
-- extendedWaitUntil:
-    visible: "Customer support|Create space"
-    timeout: 15000
-- waitForAnimationToEnd:
-    timeout: 3000
-- takeScreenshot: 02-new-space
-- tapOn: "Cancel"
 - openLink: "rakazo:///new-group"
 - extendedWaitUntil:
     visible: "Search bots"

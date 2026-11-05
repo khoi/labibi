@@ -5,7 +5,7 @@ import type { PrismaClient } from "@labradoodle/db";
 import {
   asSystem,
   createDb,
-  createOrganizationForUser,
+  createOrganizationWithDefaultSpace,
   runAsSystem,
   runAsTenant,
 } from "@labradoodle/db";
@@ -291,7 +291,15 @@ describePostgres("caller and tenant scoping (PostgreSQL)", () => {
   });
 
   it("scopes a person with two organizations to the one their Space is in", async () => {
-    const work = await createOrganizationForUser(system, { userId: userA, name: "Work" });
+    const workId = randomUUID();
+    const work = {
+      defaultSpaceId: await createOrganizationWithDefaultSpace(system, {
+        userId: userA,
+        orgId: workId,
+        name: "Work",
+        slug: workId,
+      }),
+    };
     const inWork: Actor = { ...actorA, spaceId: work.defaultSpaceId };
     const workBot = await bot(work.defaultSpaceId, userA, { name: "Work" });
     const sharedBot = await bot(shared, userA, { name: "Shared" });

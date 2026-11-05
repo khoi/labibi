@@ -1,27 +1,21 @@
-import { Button, Input } from "@labradoodle/ui-web";
+import { Input } from "@labradoodle/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useId, useState } from "react";
 import { SettingsGroup, SettingsRow } from "../components/SettingsRows";
 import { SpaceMembersSettings } from "../components/SpaceMembersSettings";
 import { SpaceSettingOverrides } from "./SpaceSettingOverrides";
 import type { SettingsSpace } from "./shell/dialogs";
-import { DeleteSpaceDialog } from "./shell/dialogs";
 
-/**
- * One space's page: its name, its members, the account settings it customizes, and deletion for
- * its owner.
- */
+/** One space's page: its name, its members and the account settings it customizes. */
 export function SpaceSettingsPanel({
   space,
   onRename,
-  onDelete,
   onLeft,
   onClose,
   onBusyChange,
 }: {
   space: SettingsSpace;
   onRename: (name: string) => Promise<void>;
-  onDelete: () => Promise<void>;
   /** After leaving, with the space the server moved this person to. */
   onLeft: (activeSpaceId: string) => void;
   onClose: () => void;
@@ -32,7 +26,6 @@ export function SpaceSettingsPanel({
   const [draft, setDraft] = useState(space.name);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [overridesBusy, setOverridesBusy] = useState(false);
   // A rename in flight holds the dialog open, so a failure is shown instead of lost on leaving.
   const busy = pending || overridesBusy;
@@ -110,22 +103,6 @@ export function SpaceSettingsPanel({
       ) : null}
       <SpaceMembersSettings space={space} onLeft={onLeft} />
       <SpaceSettingOverrides onClose={onClose} onBusyChange={setOverridesBusy} />
-      {space.canDelete ? (
-        <Button
-          variant="destructive"
-          className="rounded-full"
-          onClick={() => setConfirmingDelete(true)}
-        >
-          <Trans>Delete space</Trans>
-        </Button>
-      ) : null}
-      {confirmingDelete ? (
-        <DeleteSpaceDialog
-          space={space}
-          onCancel={() => setConfirmingDelete(false)}
-          onConfirm={onDelete}
-        />
-      ) : null}
     </div>
   );
 }

@@ -618,7 +618,6 @@ describePostgres("shared spaces: invites and membership (PostgreSQL)", () => {
       shared: true,
       isDefault: false,
       canRename: false,
-      canDelete: false,
     });
     // From inside the shared Space, the member still sees their own Spaces around it, and the
     // owner's organization stays out of their switcher.
@@ -626,27 +625,10 @@ describePostgres("shared spaces: invites and membership (PostgreSQL)", () => {
     expect(
       (fromShared.json.spaces as Array<{ id: string }>).map((space) => space.id).sort(),
     ).toEqual([home, invitee.spaceId].sort());
-    const organizationList = await call(inSpace(invitee.actor, home), "organizations/list", {});
-    expect(organizationList.json).toMatchObject({
-      activeOrganizationId: invitee.organizationId,
-      organizations: [expect.objectContaining({ id: invitee.organizationId })],
-    });
-    expect(organizationList.json.organizations).toHaveLength(1);
-    // The shared Space counts as one of theirs, so losing a request's session never drops it.
-    expect(
-      (organizationList.json.organizations as Array<{ spaceIds: string[] }>)[0]!.spaceIds,
-    ).toContain(home);
     const ownerList = await call(owner.actor, "spaces/list", {});
     expect(
       (ownerList.json.spaces as Array<Record<string, unknown>>).find((space) => space.id === home),
-    ).toMatchObject({ shared: true, canRename: true, canDelete: true });
-
-    // Creating while the shared Space is open still lands in the member's own organization.
-    const created = await call(inSpace(invitee.actor, home), "spaces/create", { name: "Work" });
-    expect(created.status).toBe(200);
-    await expect(
-      system.space.findUniqueOrThrow({ where: { id: created.json.id as string } }),
-    ).resolves.toMatchObject({ organizationId: invitee.organizationId });
+    ).toMatchObject({ shared: true, canRename: true });
   });
 
   it("deletes an owner's shared spaces with the account and hands a leaving member's bots over", async () => {
@@ -1121,32 +1103,6 @@ describePostgres("shared spaces: invites and membership (PostgreSQL)", () => {
         },
       }),
     ).resolves.toBeNull();
-  });
-  it("keeps a guest's tools for their other spaces when the owner deletes the shared space", async () => {
-    const owner = await person("owner");
-    const invitee = await person("invitee");
-    const home = await sharedSpace(owner, "Home");
-    await call(invitee.actor, "spaces/invites/accept", { token: await invite(owner, home) });
-    const everywhere = await system.mcpServer.create({
-      data: {
-        spaceId: home,
-        userId: invitee.id,
-        slug: "notes",
-        name: "Notes",
-        transport: "http",
-        endpoint: "https://mcp.example.test",
-        allSpaces: true,
-      },
-    });
-
-    await expect(
-      call(inSpace(owner.actor, home), "spaces/remove", { spaceId: home }),
-    ).resolves.toMatchObject({ status: 200 });
-
-    await expect(system.space.findUnique({ where: { id: home } })).resolves.toBeNull();
-    await expect(
-      system.mcpServer.findUniqueOrThrow({ where: { id: everywhere.id } }),
-    ).resolves.toMatchObject({ spaceId: invitee.spaceId, userId: invitee.id });
   });
   it("leaves a live recording to its teacher and an organization member in their organization", async () => {
     const owner = await person("owner");

@@ -13,7 +13,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { promptAiConsent } from "./ai-consent";
 import type { MobileMessage, MobileModelCredential, MobileSnapshot } from "./api.js";
 import {
-  adoptDeletedSpaceFallback,
   applyMobileThreadEvent,
   authHeaders,
   blockText,
@@ -1915,68 +1914,6 @@ describe("mobile API authentication", () => {
     await resetApiBase();
   });
 
-  it("recovers a deleted-space fallback over a stale saved selection after restart", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-deleted"]]);
-    vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
-    vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
-      storage.delete(key);
-    });
-    vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.space_id") throw new Error("device locked");
-      storage.set(key, value);
-    });
-    await loadApiBase();
-
-    await expect(selectSpace("space-personal")).resolves.toBe(false);
-    await expect(adoptDeletedSpaceFallback("space-personal")).resolves.toBe(true);
-    expect(selectedSpaceId()).toBe("space-personal");
-    // Stale deleted id is cleared even while the replacement write stays locked.
-    expect(storage.has("rakazo.space_id")).toBe(false);
-    expect(storage.get("rakazo.space_rollback")).toBe(
-      JSON.stringify({ apiBase: "http://127.0.0.1:3100", spaceId: "space-personal" }),
-    );
-
-    vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      storage.set(key, value);
-    });
-    vi.resetModules();
-    const restartedApi = await import("./api.js");
-    await restartedApi.loadApiBase();
-    expect(restartedApi.selectedSpaceId()).toBe("space-personal");
-    expect(storage.get("rakazo.space_id")).toBe("space-personal");
-    expect(storage.has("rakazo.space_rollback")).toBe(false);
-  });
-
-  it("clears a deleted selection when every SecureStore write fails after delete", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-deleted"]]);
-    vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
-    vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
-      storage.delete(key);
-    });
-    vi.mocked(SecureStore.setItemAsync).mockImplementation(async () => {
-      throw new Error("device locked");
-    });
-    await loadApiBase();
-
-    await expect(selectSpace("space-personal")).resolves.toBe(false);
-    await expect(adoptDeletedSpaceFallback("space-personal")).resolves.toBe(true);
-    expect(selectedSpaceId()).toBe("space-personal");
-    expect(storage.has("rakazo.space_id")).toBe(false);
-    expect(storage.has("rakazo.space_rollback")).toBe(false);
-
-    vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      storage.set(key, value);
-    });
-    vi.resetModules();
-    const restartedApi = await import("./api.js");
-    await restartedApi.loadApiBase();
-    // Cleared selection lets startup fall through to the server default.
-    expect(restartedApi.selectedSpaceId()).toBeNull();
-    await expect(restartedApi.selectInitialSpace("space-personal")).resolves.toBe(true);
-    expect(restartedApi.selectedSpaceId()).toBe("space-personal");
-    expect(storage.get("rakazo.space_id")).toBe("space-personal");
-  });
-
   it("drops a stale deleted selection when rollback recovery cannot rewrite SPACE_KEY", async () => {
     const storage = new Map<string, string>([
       ["rakazo.space_id", "space-deleted"],
@@ -2001,118 +1938,6 @@ describe("mobile API authentication", () => {
     expect(storage.get("rakazo.space_rollback")).toBe(
       JSON.stringify({ apiBase: "http://127.0.0.1:3100", spaceId: "space-personal" }),
     );
-  });
-
-  it("recovers after restart when SecureStore could neither write nor clear after delete", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-deleted"]]);
-    vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
-    vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async () => {
-      throw new Error("device locked");
-    });
-    vi.mocked(SecureStore.setItemAsync).mockImplementation(async () => {
-      throw new Error("device locked");
-    });
-    await loadApiBase();
-
-    await expect(selectSpace("space-personal")).resolves.toBe(false);
-    await expect(adoptDeletedSpaceFallback("space-personal")).resolves.toBe(false);
-    expect(selectedSpaceId()).toBe("space-personal");
-    expect(storage.get("rakazo.space_id")).toBe("space-deleted");
-
-    vi.resetModules();
-    const restartedApi = await import("./api.js");
-    await restartedApi.loadApiBase();
-    expect(restartedApi.selectedSpaceId()).toBe("space-deleted");
-
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(rpcErrorResponse(401, "UNAUTHORIZED", "Unauthorized"))
-      .mockResolvedValueOnce(jsonResponse({ json: { spaces: [] } }));
-    vi.stubGlobal("fetch", fetchMock);
-
-    await expect(restartedApi.rpc("spaces/list")).resolves.toEqual({ spaces: [] });
-    expect(restartedApi.selectedSpaceId()).toBeNull();
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(fetchMock.mock.calls[0]![1].headers["x-rakazo-space-id"]).toBe("space-deleted");
-    expect(fetchMock.mock.calls[1]![1].headers["x-rakazo-space-id"]).toBeUndefined();
-  });
-
-  it("does not let a stale rollback override a saved deleted-space fallback", async () => {
-    const apiBase = "http://127.0.0.1:3100";
-    const storage = new Map<string, string>([
-      ["rakazo.space_id", "space-deleted"],
-      ["rakazo.space_rollback", JSON.stringify({ apiBase, spaceId: "space-old" })],
-    ]);
-    vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
-    vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.space_rollback") throw new Error("device locked");
-      storage.delete(key);
-    });
-    vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      // clearStoredValue falls back to writing ""; keep that failing for rollback
-      // so only an overwrite of the rollback payload can neutralize it.
-      if (key === "rakazo.space_rollback" && value === "") throw new Error("device locked");
-      storage.set(key, value);
-    });
-    await loadApiBase();
-
-    await expect(adoptDeletedSpaceFallback("space-personal")).resolves.toBe(true);
-    expect(selectedSpaceId()).toBe("space-personal");
-    expect(storage.get("rakazo.space_id")).toBe("space-personal");
-    // Neutralization overwrote the stale rollback; best-effort clear may leave
-    // the matching recovery payload when delete/empty writes stay locked.
-    expect(storage.get("rakazo.space_rollback")).toBe(
-      JSON.stringify({ apiBase, spaceId: "space-personal" }),
-    );
-
-    vi.resetModules();
-    const restartedApi = await import("./api.js");
-    await restartedApi.loadApiBase();
-    expect(restartedApi.selectedSpaceId()).toBe("space-personal");
-    expect(storage.get("rakazo.space_id")).toBe("space-personal");
-  });
-
-  it("does not write SPACE_KEY beside a stale rollback when neutralization fails", async () => {
-    const apiBase = "http://127.0.0.1:3100";
-    const storage = new Map<string, string>([
-      ["rakazo.space_id", "space-deleted"],
-      ["rakazo.space_rollback", JSON.stringify({ apiBase, spaceId: "space-old" })],
-    ]);
-    vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
-    vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async () => {
-      throw new Error("device locked");
-    });
-    vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.space_rollback") throw new Error("device locked");
-      // Block recoverSpaceRollback during loadApiBase, and block SPACE_KEY clears.
-      // Writes of the new fallback id would succeed — the bug was doing that write
-      // before neutralization, then failing to undo it.
-      if (key === "rakazo.space_id" && (value === "" || value === "space-old")) {
-        throw new Error("device locked");
-      }
-      storage.set(key, value);
-    });
-    await loadApiBase();
-
-    await expect(adoptDeletedSpaceFallback("space-personal")).resolves.toBe(false);
-    expect(selectedSpaceId()).toBe("space-personal");
-    // Must not leave the new selection durable beside the stale rollback.
-    expect(storage.get("rakazo.space_id")).toBe("space-deleted");
-    expect(storage.get("rakazo.space_rollback")).toBe(
-      JSON.stringify({ apiBase, spaceId: "space-old" }),
-    );
-
-    vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.space_rollback") throw new Error("device locked");
-      storage.set(key, value);
-    });
-    vi.resetModules();
-    const restartedApi = await import("./api.js");
-    await restartedApi.loadApiBase();
-    // Restart may still recover the old rollback target, but must not have
-    // replaced a newer SPACE_KEY fallback with it.
-    expect(restartedApi.selectedSpaceId()).toBe("space-old");
-    expect(storage.get("rakazo.space_id")).toBe("space-old");
   });
 
   it("keeps the Space selection when unauthorized is a session failure", async () => {

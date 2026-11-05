@@ -452,39 +452,3 @@ it("gives the long-press menu, and with it Delete, only to chats in the current 
   render(<List items={items} spaceId="space-current" />);
   expect(ui.swipeRows).toEqual(["bot:current-bot", "group:current-group"]);
 });
-
-it("offers every space heading's Members and Settings, and Delete only where the member may delete it", () => {
-  const confirmDeleteSpace = vi.fn();
-  ui.push.mockReset();
-  const heading = (id: string, name: string, canDelete: boolean) =>
-    ({
-      type: "heading",
-      key: id,
-      title: name,
-      space: { id, name, isDefault: !canDelete, canDelete, bots: [], groups: [] },
-    }) as unknown as InboxItem;
-  render(
-    <List
-      items={[heading("space-home", "Home", false), heading("space-work", "Work", true)]}
-      spaceId="space-home"
-      options={{ confirmDeleteSpace }}
-    />,
-  );
-  expect(ui.menus.map((menu) => menu.actions.map((entry) => entry.id))).toEqual([
-    ["members", "settings"],
-    ["members", "settings", "delete"],
-  ]);
-  act(() => ui.menus[1]!.onPressAction({ nativeEvent: { event: "members" } }));
-  expect(ui.push).toHaveBeenLastCalledWith({
-    pathname: "/space-members",
-    params: { spaceId: "space-work", name: "Work" },
-  });
-  // Settings open the Space's own page, which edits that Space even when another is selected.
-  act(() => ui.menus[1]!.onPressAction({ nativeEvent: { event: "settings" } }));
-  expect(ui.push).toHaveBeenCalledWith({
-    pathname: "/space",
-    params: { spaceId: "space-work", name: "Work" },
-  });
-  act(() => ui.menus[1]!.onPressAction({ nativeEvent: { event: "delete" } }));
-  expect(confirmDeleteSpace).toHaveBeenCalledWith(expect.objectContaining({ id: "space-work" }));
-});

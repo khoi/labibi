@@ -29,7 +29,6 @@ export function analyticsScreen(pathname: string): AnalyticsScreen | undefined {
       "/models",
       "/bot-settings",
       "/group-settings",
-      "/new-space",
       "/new-group",
     ].includes(pathname)
   )

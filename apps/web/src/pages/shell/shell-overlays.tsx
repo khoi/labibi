@@ -1,7 +1,6 @@
 import type { Me, Space, SpaceMemoryConfig, UsageSummary } from "@labradoodle/contracts";
 import { writeSaved } from "@labradoodle/core/query";
 import { useQuery } from "@tanstack/react-query";
-import type { RefObject } from "react";
 import { useCallback } from "react";
 import { lazyOverlay } from "../../components/ErrorBoundary";
 import type { connectedAppMarks } from "../../lib/connected-apps";
@@ -80,10 +79,8 @@ export function SettingsOverlays({
   showSettings,
   spaces,
   renameSpace,
-  removeSpace,
   leftSpace,
   refreshSpaces,
-  alive,
   user,
   refetchSession,
   bootstrapMe,
@@ -98,10 +95,8 @@ export function SettingsOverlays({
   showSettings: boolean;
   spaces: Space[];
   renameSpace: (spaceId: string, name: string) => Promise<void>;
-  removeSpace: (spaceId: string) => Promise<void>;
   leftSpace: (spaceId: string, activeSpaceId: string) => Promise<void>;
   refreshSpaces: () => Promise<void>;
-  alive: RefObject<boolean>;
   user: { name?: string | null; email?: string } | undefined;
   refetchSession: () => Promise<unknown>;
   bootstrapMe: Me | null | undefined;
@@ -121,10 +116,6 @@ export function SettingsOverlays({
           space={settingsSpace}
           spaces={spaces}
           onRenameSpace={renameSpace}
-          onDeleteSpace={async (spaceId) => {
-            await removeSpace(spaceId);
-            if (alive.current) setOverlay(null);
-          }}
           onLeftSpace={(spaceId, activeSpaceId) => {
             setOverlay(null);
             void leftSpace(spaceId, activeSpaceId);

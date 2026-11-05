@@ -6,8 +6,7 @@ import { Platform, Pressable, Text, View } from "react-native";
 import type { MobileBot, MobileGroup } from "../lib/api";
 import type { ResolvedAppearance } from "../lib/appearance";
 import { useI18n } from "../lib/i18n";
-import type { InboxItem, InboxSpace } from "../lib/inbox-spaces";
-import { canDeleteInboxSpace } from "../lib/inbox-spaces";
+import type { InboxItem } from "../lib/inbox-spaces";
 import { useThemedStyles } from "../lib/native";
 import type { useInboxChatActions } from "../lib/use-inbox-chat-actions";
 import { createHomeStyles } from "./home-styles";
@@ -24,7 +23,6 @@ export function useInboxRenderItem({
   appearance,
   botAction,
   chooseInboxSpace,
-  confirmDeleteSpace,
   day,
   groupAction,
   spaceId,
@@ -33,11 +31,9 @@ export function useInboxRenderItem({
   notifyFromMenu,
   sharing,
   spaceBusy,
-  spaceRecoveryId,
 }: Pick<ChatActions, "botAction" | "groupAction" | "notifyFromMenu"> & {
   appearance: ResolvedAppearance;
   chooseInboxSpace: (spaceId: string) => void;
-  confirmDeleteSpace: (space: InboxSpace) => void;
   day: number;
   /** The selected space: only its chats get swipe actions and the row menu. */
   spaceId: string | undefined;
@@ -46,7 +42,6 @@ export function useInboxRenderItem({
   /** Picking a chat for an incoming share: rows only open, without menus or swipe actions. */
   sharing: boolean;
   spaceBusy: boolean;
-  spaceRecoveryId: string | null;
 }) {
   const styles = useThemedStyles(createHomeStyles);
   const { t } = useI18n();
@@ -75,29 +70,14 @@ export function useInboxRenderItem({
               actions={[
                 { id: "members", title: t("Members"), image: "person.2" },
                 { id: "settings", title: t("Settings"), image: "gearshape" },
-                ...(canDeleteInboxSpace(item.space)
-                  ? [
-                      {
-                        id: "delete",
-                        title: t("Delete space"),
-                        image: "trash" as const,
-                        attributes: {
-                          destructive: true,
-                          disabled: spaceBusy || !!spaceRecoveryId,
-                        },
-                      },
-                    ]
-                  : []),
               ]}
               colorScheme={appearance}
               onPressAction={({ nativeEvent }) => {
                 if (!item.space) return;
-                if (nativeEvent.event === "delete") confirmDeleteSpace(item.space);
-                else
-                  router.push({
-                    pathname: nativeEvent.event === "members" ? "/space-members" : "/space",
-                    params: { spaceId: item.space.id, name: item.space.name },
-                  });
+                router.push({
+                  pathname: nativeEvent.event === "members" ? "/space-members" : "/space",
+                  params: { spaceId: item.space.id, name: item.space.name },
+                });
               }}
             >
               <View
@@ -131,7 +111,6 @@ export function useInboxRenderItem({
       appearance,
       botAction,
       chooseInboxSpace,
-      confirmDeleteSpace,
       day,
       groupAction,
       spaceId,
@@ -141,7 +120,6 @@ export function useInboxRenderItem({
       router,
       sharing,
       spaceBusy,
-      spaceRecoveryId,
       styles,
       t,
     ],

@@ -140,7 +140,7 @@ import { ORPCError, onError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { deleteAccountContent, finishStalledOrganizationDeletions } from "./account-deletion.js";
+import { deleteAccountContent } from "./account-deletion.js";
 import { mountAccountExportRoute } from "./account-export.js";
 import { mountAccountImportRoute } from "./account-import.js";
 import { settleDirectoryChange } from "./account-status.js";
@@ -744,20 +744,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
         )
       : undefined;
 
-  const stopOrganizationDeletions = startHourlySweep(
-    finishStalledOrganizationDeletions({
-      prisma,
-      sandbox,
-      home,
-      jobs,
-      artifacts,
-      dataDir: env.dataDir,
-      secrets,
-      billing,
-    }),
-    (error) => getLogger().error("stalled organization deletion failed", error),
-  );
-
   const router = createRouter({
     speechSummary:
       env.voiceSummaryMinChars === undefined
@@ -1106,7 +1092,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
       oauthLogins.abortAll();
       await stopReferralEmails?.();
       await stopHomeRetention?.();
-      await stopOrganizationDeletions();
       await reconciler?.stop();
       await oauthTokenUpgrade;
       await mcpArgsMove;

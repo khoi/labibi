@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { discardPrimedBootstrap, primeSpaceBootstrap } from "../../lib/bootstrap";
 import { initialBootstrapTarget } from "../../lib/bootstrap-target";
-import { leaveOrganization } from "../../lib/organizations";
 import { queryClient, spaceSeedKey } from "../../lib/query";
 import { selectedSpaceId, selectSpace } from "../../lib/rpc";
 import { remountShellForSpace, spaceSwitchDecision } from "../../lib/space-switch";
@@ -10,7 +9,7 @@ import { readShellOverlay, searchString, withShellOverlay } from "../shell-overl
 import type { useShellNavigation } from "./use-shell-navigation";
 
 /**
- * Opens a chat in any of the user's spaces, including another organization's; another space loads
+ * Opens a chat in any of the user's spaces; another space loads
  * first, then the shell remounts into it.
  */
 export function useOpenSpaceChat({
@@ -55,10 +54,8 @@ export function useOpenSpaceChat({
         return;
       }
       const reload = () => {
-        void leaveOrganization(userId ?? null, previousEffective, spaceId).then(() => {
-          if (request !== spaceSwitchRequest.current) return;
-          if (selectSpace(spaceId)) window.location.assign(destination());
-        });
+        if (request !== spaceSwitchRequest.current) return;
+        if (selectSpace(spaceId)) window.location.assign(destination());
       };
       const destination = () =>
         overlayRevision.current === startedOverlay
@@ -95,7 +92,6 @@ export function useOpenSpaceChat({
             discardPrimedBootstrap(primed);
             return false;
           }
-          void leaveOrganization(userId ?? null, previousEffective, spaceId);
           // Playback belongs to the conversation being left.
           speaker.stop();
           navigate(destination());

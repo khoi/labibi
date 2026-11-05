@@ -1,16 +1,10 @@
 import type { MenuAction } from "@expo/ui/community/menu";
 import { materialIcons } from "./material-icons";
 
-export type CreateAction = "group" | "space";
+export type CreateAction = "group";
 
 export const createMenuItems = [
   { id: "group", label: "New group chat", sfSymbol: "person.2", materialIcon: "group" },
-  {
-    id: "space",
-    label: "New private space",
-    sfSymbol: "square.grid.2x2",
-    materialIcon: "grid_view",
-  },
 ] as const;
 
 export function createMenuActions(t: (text: string) => string, platform: string): MenuAction[] {

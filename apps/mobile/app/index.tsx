@@ -16,7 +16,6 @@ import {
   Alert,
   AppState,
   FlatList,
-  Pressable,
   RefreshControl,
   Text,
   useWindowDimensions,
@@ -29,7 +28,6 @@ import { ActivitySection } from "../components/inbox-activity";
 import { InboxHeader } from "../components/inbox-header";
 import { useInboxRenderItem } from "../components/inbox-render-item";
 import { CompactRowsContext, SelectedChatContext } from "../components/inbox-rows";
-import { OrganizationTitleMenu } from "../components/organization-menu";
 import { PickChatPane } from "../components/pick-chat-pane";
 import { useUnreadJumpPills } from "../components/unread-jump-overlay";
 import { fetchSpaceActivity } from "../lib/activity";
@@ -60,15 +58,11 @@ import { useHeaderHeightIfAny } from "../lib/floating-header";
 import { useForegroundPoll } from "../lib/foreground-poll";
 import { getActiveUiLocale, t, useI18n } from "../lib/i18n";
 import { retainInboxValue } from "../lib/inbox-retention";
-import type { InboxItem, InboxSpace } from "../lib/inbox-spaces";
+import type { InboxItem } from "../lib/inbox-spaces";
 import {
-  canDeleteInboxSpace,
-  deleteSpaceTitle,
   inboxHasNoChats,
   inboxItemKey,
   inboxSignal,
-  removeInboxSpace,
-  retryInboxSpaceFallback,
   selectInboxSpace,
   spaceInboxItems,
 } from "../lib/inbox-spaces";
@@ -76,13 +70,6 @@ import { applyUnreadOverrides } from "../lib/inbox-swipe";
 import { mobileLogoAvatarActivity } from "../lib/logo-avatar-activity";
 import { native, useThemedStyles } from "../lib/native";
 import { iosAtLeast } from "../lib/native-controls";
-import {
-  ensureOrganizations,
-  organizationSwitchActions,
-  organizationSwitchEpoch,
-  subscribeOrganizationSwitch,
-  useOrganizations,
-} from "../lib/organizations";
 import { offerPasskeyOnce } from "../lib/passkey";
 import { ACTIVITY_POLL_INTERVAL_MS, INBOX_POLL_INTERVAL_MS } from "../lib/poll-cadence";
 import { registerPushToken } from "../lib/push";
@@ -141,13 +128,9 @@ export function HomeSession({
 }: InboxPaneProps & { embedded?: boolean }) {
   const generation = useSyncExternalStore(subscribeSessionGeneration, currentSessionGeneration);
   const ready = useSyncExternalStore(subscribeSessionGeneration, currentReadySessionGeneration);
-  const organizationEpoch = useSyncExternalStore(
-    subscribeOrganizationSwitch,
-    organizationSwitchEpoch,
-  );
   return (
     <Home
-      key={`${generation}:${ready}:${organizationEpoch}`}
+      key={`${generation}:${ready}`}
       embedded={embedded}
       onSelectSpace={onSelectSpace}
       onShareSelect={onShareSelect}
@@ -184,12 +167,10 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
   const activityRequestId = useRef(0);
   const inboxRequestId = useRef(0);
   const inboxLoaded = useRef(false);
-  const spaceActionRef = useRef<{ busy: boolean; recoveryId: string | null }>({
+  const spaceActionRef = useRef<{ busy: boolean }>({
     busy: false,
-    recoveryId: null,
   });
   const [spaceBusy, setSpaceBusy] = useState(false);
-  const [spaceRecoveryId, setSpaceRecoveryId] = useState<string | null>(null);
   const userId = me?.userId;
   const { collapsed, toggleCollapsed, loaded: collapsedLoaded } = useCollapsedSections(userId);
   // Collapsed sections load before the inbox first renders, so they don't fold on launch.
@@ -229,7 +210,7 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
 
   const loadBots = useCallback(async () => {
     const badgeGeneration = appBadgeGeneration();
-    if (spaceActionRef.current.busy || spaceActionRef.current.recoveryId) return;
+    if (spaceActionRef.current.busy) return;
     const requestId = ++inboxRequestId.current;
     const apiBase = currentApiBase();
     const generation = currentSessionGeneration();
@@ -286,7 +267,6 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
         }
       }
       inboxLoaded.current = true;
-      void ensureOrganizations();
       setBadgeLoad({ generation: badgeGeneration });
       setLoadFailure(null);
       saveInbox(
@@ -370,7 +350,7 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
   });
 
   const loadActivity = useCallback(async () => {
-    if (spaceActionRef.current.busy || spaceActionRef.current.recoveryId) return;
+    if (spaceActionRef.current.busy) return;
     if (!hasSession || !activityMode) {
       activityRequestId.current += 1;
       setActivity({ active: [], recent: [] });
@@ -530,8 +510,6 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
       onSelectSpace?.(spaceId);
       try {
         const refresh = async () => {
-          spaceActionRef.current.recoveryId = null;
-          setSpaceRecoveryId(null);
           // A space seen before opens as it was saved; polling stays off until it is painted.
           const saved = await loadSavedInbox().catch(() => null);
           if (saved?.me.spaceId === spaceId) {
@@ -543,10 +521,7 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
           await refreshBots();
           await loadActivity();
         };
-        const selected =
-          spaceActionRef.current.recoveryId === spaceId
-            ? await retryInboxSpaceFallback(spaceId, refresh)
-            : await selectInboxSpace(spaceId, refresh);
+        const selected = await selectInboxSpace(spaceId, refresh);
         if (!selected) throw new Error(t("Could not switch spaces"));
       } catch (err) {
         const message = errorText(err, t("Could not switch spaces"));
@@ -560,74 +535,12 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
     [refreshBots, loadActivity, onSelectSpace, t],
   );
 
-  const deleteInboxSpace = useCallback(
-    async (space: InboxSpace) => {
-      if (
-        !canDeleteInboxSpace(space) ||
-        spaceActionRef.current.busy ||
-        spaceActionRef.current.recoveryId
-      )
-        return;
-      spaceActionRef.current.busy = true;
-      setSpaceBusy(true);
-      inboxRequestId.current += 1;
-      activityRequestId.current += 1;
-      try {
-        const recoveryId = await removeInboxSpace(space.id, async () => {
-          spaceActionRef.current.busy = false;
-          setActivity({ active: [], recent: [] });
-          await refreshBots();
-          await loadActivity();
-        });
-        if (recoveryId) {
-          spaceActionRef.current.recoveryId = recoveryId;
-          setSpaceRecoveryId(recoveryId);
-          setError(t("Could not switch spaces"));
-        }
-      } catch (err) {
-        Alert.alert(t("Could not delete space"), errorText(err, t("Try again.")));
-      } finally {
-        spaceActionRef.current.busy = false;
-        setSpaceBusy(false);
-      }
-    },
-    [refreshBots, loadActivity, t],
-  );
-
-  const confirmDeleteSpace = useCallback(
-    (space: InboxSpace) => {
-      if (
-        !canDeleteInboxSpace(space) ||
-        spaceActionRef.current.busy ||
-        spaceActionRef.current.recoveryId
-      )
-        return;
-      Alert.alert(deleteSpaceTitle(space), t("This removes the space for everyone."), [
-        { text: t("Cancel"), style: "cancel" },
-        {
-          text: t("Delete"),
-          style: "destructive",
-          onPress: () => void deleteInboxSpace(space),
-        },
-      ]);
-    },
-    [deleteInboxSpace, t],
-  );
-
   const runCreateAction = useCallback(
     (action: CreateAction) => {
-      if (spaceActionRef.current.busy || spaceActionRef.current.recoveryId) return;
+      if (spaceActionRef.current.busy) return;
       if (action === "group") router.push("/new-group");
-      else router.push("/new-space");
     },
     [router],
-  );
-
-  const organizations = useOrganizations(hasSession && !onShareSelect).data;
-  const hasOrganizationMenu = organizationSwitchActions(organizations).length > 0;
-  const headerTitle = useMemo(
-    () => (hasOrganizationMenu ? () => <OrganizationTitleMenu list={organizations} /> : undefined),
-    [hasOrganizationMenu, organizations],
   );
 
   useHomeHeader({
@@ -638,12 +551,11 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
     activityMode,
     toggleActivityMode,
     runCreateAction,
-    headerTitle,
   });
 
   const openBot = useCallback(
     (bot: MobileBot | SpaceBot) => {
-      if (spaceActionRef.current.busy || spaceActionRef.current.recoveryId) return;
+      if (spaceActionRef.current.busy) return;
       void openMobileSpace(bot.spaceId, () => {
         if (onShareSelect) onShareSelect(bot);
         else openChat({ pathname: "/thread", params: { botId: bot.id, name: bot.name } });
@@ -653,7 +565,7 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
   );
   const openGroup = useCallback(
     (group: MobileGroup | SpaceGroup) => {
-      if (spaceActionRef.current.busy || spaceActionRef.current.recoveryId) return;
+      if (spaceActionRef.current.busy) return;
       void openMobileSpace(group.spaceId, () =>
         openChat({ pathname: "/group-thread", params: { groupId: group.id, name: group.name } }),
       );
@@ -668,7 +580,6 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
     appearance,
     botAction,
     chooseInboxSpace,
-    confirmDeleteSpace,
     day,
     groupAction,
     spaceId: me?.spaceId,
@@ -676,7 +587,6 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
     openGroup,
     notifyFromMenu,
     spaceBusy,
-    spaceRecoveryId,
     sharing: !!onShareSelect,
   });
 
@@ -702,7 +612,6 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
           toggleActivityMode={toggleActivityMode}
           runCreateAction={runCreateAction}
           columnInsets={columnInsets}
-          title={headerTitle?.()}
         />
       )}
 
@@ -742,16 +651,6 @@ function Home({ embedded, onSelectSpace, onShareSelect }: InboxPaneProps & { emb
                 ListHeaderComponent={
                   <>
                     {inlineError ? <Text style={styles.error}>{inlineError}</Text> : null}
-                    {spaceRecoveryId ? (
-                      <Pressable
-                        accessibilityRole="button"
-                        disabled={spaceBusy}
-                        onPress={() => void chooseInboxSpace(spaceRecoveryId)}
-                        style={styles.recoveryAction}
-                      >
-                        <Text style={styles.spaceTitle}>{t("Try again.")}</Text>
-                      </Pressable>
-                    ) : null}
                     {/* Folds are saved per account, so wait for it before offering them. */}
                     {!onShareSelect && activityMode && userId ? (
                       <ActivitySection

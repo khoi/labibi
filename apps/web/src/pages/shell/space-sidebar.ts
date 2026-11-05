@@ -8,17 +8,15 @@ type SidebarSpace<TBot extends SidebarChat, TGroup extends SidebarChat> = {
   id: string;
   name: string;
   canRename?: boolean;
-  canDelete?: boolean;
   shared?: boolean;
   bots: readonly TBot[];
   groups: readonly TGroup[];
 };
 
-function spaceHeaderMenu(space: { canRename?: boolean; canDelete?: boolean }, hostsMenu: boolean) {
+function spaceHeaderMenu(space: { canRename?: boolean }, hostsMenu: boolean) {
   return {
     canRenameSpace: hostsMenu && space.canRename === true,
-    canDeleteSpace: hostsMenu && space.canDelete === true,
-    // Every member can open a space's settings, so the menu does not depend on rename or delete.
+    // Every member can open a space's settings, so the menu does not depend on rename.
     canOpenSpaceSettings: hostsMenu,
   };
 }
@@ -68,7 +66,7 @@ export function sidebarGroupsForSpaces<TBot extends SidebarChat, TGroup extends 
     // Keep empty spaces selectable; chat clicks are the only switch control.
     if (needle && (space.bots.length > 0 || space.groups.length > 0)) return [];
     // A lone space is the selected one, so its settings stay in the account menu too.
-    const lone = !showSpaceNames && !space.canRename && !space.canDelete;
+    const lone = !showSpaceNames && !space.canRename;
     if (lone && needle) return [];
     return [
       {

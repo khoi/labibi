@@ -1,7 +1,12 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import type { Actor } from "@labradoodle/contracts";
 import type { PrismaClient } from "@labradoodle/db";
-import { asSystem, bootstrapUserSpace, createDb, createOrganizationForUser } from "@labradoodle/db";
+import {
+  asSystem,
+  bootstrapUserSpace,
+  createDb,
+  createOrganizationWithDefaultSpace,
+} from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { otherSpaceOfBot } from "./bot-space.js";
 
@@ -52,7 +57,15 @@ describePostgres("the Space of a linked bot (PostgreSQL)", () => {
   it("finds the caller's bot in another organization and never another person's", async () => {
     const ada = await signup();
     const grace = await signup();
-    const work = await createOrganizationForUser(system, { userId: ada.userId, name: "Work" });
+    const workId = randomUUID();
+    const work = {
+      defaultSpaceId: await createOrganizationWithDefaultSpace(system, {
+        userId: ada.userId,
+        orgId: workId,
+        name: "Work",
+        slug: workId,
+      }),
+    };
     const adaWorkBot = await bot(work.defaultSpaceId, ada.userId);
     const adaHomeBot = await bot(ada.spaceId, ada.userId);
     const graceBot = await bot(grace.spaceId, grace.userId);

@@ -19,7 +19,6 @@ import {
 import { BillingSettingsPanel } from "./BillingSettingsPanel";
 import { MemorySettingsOverlay } from "./MemorySettingsOverlay";
 import { ModelSettingsOverlay } from "./ModelSettingsOverlay";
-import { OrganizationSettingsPanel } from "./OrganizationSettingsPanel";
 import { PaymentWalletSettingsPanel } from "./PaymentWalletSettingsPanel";
 import { SpaceSettingsPanel } from "./SpaceSettingsPanel";
 import { useSettingsNavItems } from "./settings-nav";
@@ -32,7 +31,6 @@ export function SettingsOverlay({
   spaces = [],
   onOpenSpace,
   onRenameSpace,
-  onDeleteSpace,
   email,
   name,
   usage,
@@ -59,7 +57,6 @@ export function SettingsOverlay({
   spaces?: { id: string; name: string }[];
   onOpenSpace?: (spaceId: string) => void;
   onRenameSpace?: (spaceId: string, name: string) => Promise<void>;
-  onDeleteSpace?: (spaceId: string) => Promise<void>;
   email?: string | null;
   name: string;
   usage?: UsageSummary | null;
@@ -376,15 +373,11 @@ export function SettingsOverlay({
                         key={space.id}
                         space={space}
                         onRename={(name) => onRenameSpace?.(space.id, name) ?? Promise.resolve()}
-                        onDelete={() => onDeleteSpace?.(space.id) ?? Promise.resolve()}
                         onLeft={(activeSpaceId) => onLeftSpace?.(space.id, activeSpaceId)}
                         onClose={requestClose}
                         onBusyChange={setVoiceBusy}
                       />
                     </div>
-                  ) : null}
-                  {section === "organization" ? (
-                    <OrganizationSettingsPanel onBusyChange={setVoiceBusy} />
                   ) : null}
                   {section === "confirmations" ? <ApprovalRulesSettings scope="account" /> : null}
                   {section === "vault" ? <VaultSettings scope="account" /> : null}

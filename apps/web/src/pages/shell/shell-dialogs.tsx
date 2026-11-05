@@ -7,23 +7,16 @@ import {
 } from "@labradoodle/ui-web";
 import { useLingui } from "@lingui/react/macro";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { Settings, Trash2 } from "lucide-react";
-import type { ComponentProps, RefObject } from "react";
+import { Settings } from "lucide-react";
+import type { ComponentProps } from "react";
 import { useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
 import { PAGE_PARAM } from "../../lib/pages";
 import { useSpaceQueries } from "../../lib/query";
 import type { Panel } from "../../lib/right-panel-state";
 import type { createSpaceRpc } from "../../lib/rpc";
-import { selectSpace } from "../../lib/rpc";
 import type { CommandPaletteAction } from "./command-palette";
 import { CommandPalette } from "./command-palette";
-import {
-  ClearConversationDialog,
-  DeleteBotDialog,
-  DeleteItemDialog,
-  DeleteSpaceDialog,
-  NewSpaceDialog,
-} from "./dialogs";
+import { ClearConversationDialog, DeleteBotDialog, DeleteItemDialog } from "./dialogs";
 
 type ChatTarget = { kind: "bot"; chat: Bot } | { kind: "group"; chat: Group };
 
@@ -31,7 +24,6 @@ type ChatTarget = { kind: "bot"; chat: Bot } | { kind: "group"; chat: Group };
 export function useShellDialogs() {
   const [deleteTarget, setDeleteTarget] = useState<Bot | null>(null);
   const [deleteGroupTarget, setDeleteGroupTarget] = useState<Group | null>(null);
-  const [deleteSpaceTarget, setDeleteSpaceTarget] = useState<Space | null>(null);
   const [spaceMenu, setSpaceMenu] = useState<{
     id: string;
     position: { x: number; y: number };
@@ -44,23 +36,18 @@ export function useShellDialogs() {
   }, [spaceMenu]);
   const closeSpaceMenu = useCallback(() => setSpaceMenu(null), []);
   const [clearTarget, setClearTarget] = useState<ChatTarget | null>(null);
-  const [newSpaceOpen, setNewSpaceOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   return {
     deleteTarget,
     setDeleteTarget,
     deleteGroupTarget,
     setDeleteGroupTarget,
-    deleteSpaceTarget,
-    setDeleteSpaceTarget,
     spaceMenu,
     setSpaceMenu,
     spaceMenuAnchor,
     closeSpaceMenu,
     clearTarget,
     setClearTarget,
-    newSpaceOpen,
-    setNewSpaceOpen,
     commandPaletteOpen,
     setCommandPaletteOpen,
   };
@@ -76,11 +63,9 @@ export function ShellDialogs({
   bots,
   activeId,
   activeGroupId,
-  alive,
   navigate,
   setPanel,
   refreshBots,
-  removeSpace,
   openSpaceSettings,
   closeMobileSidebar,
   clearOpenThread,
@@ -94,11 +79,9 @@ export function ShellDialogs({
   bots: Bot[];
   activeId: string | undefined;
   activeGroupId: string | undefined;
-  alive: RefObject<boolean>;
   navigate: (path: string) => void;
   setPanel: (panel: Panel) => void;
   refreshBots: (mayBeEmpty?: boolean) => Promise<void>;
-  removeSpace: (spaceId: string) => Promise<void>;
   openSpaceSettings: (spaceId: string) => void;
   closeMobileSidebar: () => void;
   clearOpenThread: () => void;
@@ -113,15 +96,11 @@ export function ShellDialogs({
     setDeleteTarget,
     deleteGroupTarget,
     setDeleteGroupTarget,
-    deleteSpaceTarget,
-    setDeleteSpaceTarget,
     spaceMenu,
     setSpaceMenu,
     closeSpaceMenu,
     clearTarget,
     setClearTarget,
-    newSpaceOpen,
-    setNewSpaceOpen,
     commandPaletteOpen,
     setCommandPaletteOpen,
   } = dialogs;
@@ -174,18 +153,6 @@ export function ShellDialogs({
                 {t`Settings`}
               </DropdownMenuItem>
             ) : null}
-            {spaceMenuTarget?.canDelete ? (
-              <DropdownMenuItem
-                variant="destructive"
-                onClick={() => {
-                  setDeleteSpaceTarget(spaceMenuTarget);
-                  setSpaceMenu(null);
-                }}
-              >
-                <Trash2 />
-                {t`Delete space`}
-              </DropdownMenuItem>
-            ) : null}
           </DropdownMenuContent>
         </DropdownMenu>
       ) : null}
@@ -219,17 +186,6 @@ export function ShellDialogs({
         />
       ) : null}
 
-      {deleteSpaceTarget ? (
-        <DeleteSpaceDialog
-          space={deleteSpaceTarget}
-          onCancel={() => setDeleteSpaceTarget(null)}
-          onConfirm={async () => {
-            await removeSpace(deleteSpaceTarget.id);
-            setDeleteSpaceTarget(null);
-          }}
-        />
-      ) : null}
-
       <CommandPalette
         open={commandPaletteOpen}
         onOpenChange={setCommandPaletteOpen}
@@ -253,29 +209,6 @@ export function ShellDialogs({
           },
         }))}
       />
-
-      {newSpaceOpen ? (
-        <NewSpaceDialog
-          onCancel={() => setNewSpaceOpen(false)}
-          onCreate={async (name) => (await rpc.spaces.create({ name })).id}
-          loadItems={() => rpc.availability.items()}
-          chooseItems={async (spaceId, items) => {
-            await rpc.availability.chooseForSpace({
-              spaceId,
-              items: items.map(({ kind, id }) => ({ kind, id })),
-            });
-          }}
-          onDone={(spaceId) => {
-            if (!alive.current) return;
-            if (!selectSpace(spaceId)) {
-              setNewSpaceOpen(false);
-              void refreshBots();
-              return;
-            }
-            window.location.assign("/onboarding");
-          }}
-        />
-      ) : null}
 
       {clearTarget ? (
         <ClearConversationDialog

@@ -1,15 +1,7 @@
 # Spaces
 
-A space is a separate workspace with its own bots, chats, memory and computer, such as one for work
-and one for home.
-
-## Create a space
-
-Choose **Create** (the **+** at the top of the sidebar), then **New private space**. You switch
-to it from the sidebar, and each space has its own bots and groups.
-
-Most people only need one. Add a space when work must stay apart: a client, a side project, or
-personal life.
+A space is a workspace with its own bots, chats, memory and computer. You get one when you sign up,
+and spaces other people share with you appear next to it. You switch between them from the sidebar.
 
 ## What stays inside a space
 
@@ -52,5 +44,3 @@ Right-click a space in the sidebar and choose **Settings**, or open **Settings â
 
 There you can rename the space, or give it its own **Models**, **Voice**, **Approvals** or **Vault**
 with **Customize**. **Use defaults** goes back to your account settings.
-
-**Delete space** removes the space and its bots. This can't be undone.

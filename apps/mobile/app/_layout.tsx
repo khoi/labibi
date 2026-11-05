@@ -457,31 +457,12 @@ function LayoutContent() {
                       }}
                     />
                     <Stack.Screen
-                      name="new-space"
-                      options={{
-                        title: t("New private space"),
-                        presentation: "modal",
-                        gestureEnabled: true,
-                        headerBackVisible: false,
-                      }}
-                    />
-                    <Stack.Screen
                       name="space-members"
                       options={{
                         title: t("Members"),
                         presentation: "modal",
                         gestureEnabled: true,
                         headerBackVisible: false,
-                      }}
-                    />
-                    <Stack.Screen
-                      name="new-organization"
-                      options={{
-                        headerShown: false,
-                        presentation: "formSheet",
-                        sheetAllowedDetents: "fitToContents",
-                        sheetGrabberVisible: true,
-                        contentStyle: { backgroundColor: native.groupedPage },
                       }}
                     />
                     <Stack.Screen name="artifacts" options={glassHeaderOptions(t("Artifacts"))} />

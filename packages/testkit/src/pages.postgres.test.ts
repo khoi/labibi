@@ -7,7 +7,7 @@ import type { createApp } from "@labradoodle/api/app";
 import type { PageDetail, PageSummary, ThreadSnapshot } from "@labradoodle/contracts";
 import { SHARED_PAGE_PATH_PREFIX } from "@labradoodle/contracts";
 import type { PrismaClient } from "@labradoodle/db";
-import { deletePageShareSecrets } from "@labradoodle/db";
+import { createSpaceForMember, deletePageShareSecrets } from "@labradoodle/db";
 import { pageViewerCode } from "@labradoodle/page-kit/compile";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { sessionCookieHeader } from "./index.js";
@@ -762,7 +762,11 @@ describePages("pages", () => {
     expect(
       await db().spaceMember.count({ where: { spaceId: owner.spaceId, userId: member.userId } }),
     ).toBe(1);
-    const other = await rpc<{ id: string }>(app, ownerCookie, "spaces/create", { name: "Other" });
+    const other = await createSpaceForMember(db(), {
+      currentSpaceId: owner.spaceId,
+      userId: owner.userId,
+      name: "Other",
+    });
     const attempts = [
       ["pages/get", { pageId }],
       ["pages/rename", { pageId, title: "Taken" }],
@@ -787,66 +791,6 @@ describePages("pages", () => {
       visibility: "private",
       pinnedAt: null,
     });
-  });
-
-  it("forgets every member's page links when the owner deletes their shared space", async () => {
-    const ownerCookie = await signup(app, `pages-space-owner-${stamp}@rakazo.test`, "Owner");
-    const shared = await rpc<{ id: string }>(app, ownerCookie, "spaces/create", { name: "Crew" });
-    const { organizationId } = await db().space.findUniqueOrThrow({
-      where: { id: shared.id },
-      select: { organizationId: true },
-    });
-    const memberCookie = await signup(app, `pages-space-member-${stamp}@rakazo.test`, "Member");
-    const member = await rpc<{ userId: string }>(app, memberCookie, "me");
-    await db().member.create({
-      data: {
-        id: `pages-space-org-${stamp}`,
-        organizationId,
-        userId: member.userId,
-        role: "member",
-        createdAt: new Date(),
-      },
-    });
-    if (!(await db().spaceMember.count({ where: { spaceId: shared.id, userId: member.userId } })))
-      await db().spaceMember.create({
-        data: {
-          id: `pages-space-member-${stamp}`,
-          spaceId: shared.id,
-          organizationId,
-          userId: member.userId,
-          role: "member",
-          createdAt: new Date(),
-        },
-      });
-    const secret = await db().secret.create({
-      data: {
-        userId: member.userId,
-        spaceId: shared.id,
-        kind: "page_share",
-        ciphertext: "sealed-member-link",
-      },
-    });
-    await db().page.create({
-      data: {
-        spaceId: shared.id,
-        userId: member.userId,
-        title: "Member's plan",
-        visibility: "link",
-        shareTokenHash: `member-hash-${stamp}`,
-        shareSecretId: secret.id,
-        versions: {
-          create: { version: 1, title: "Plan", source: page("P"), code: pageViewerCode(page("P")) },
-        },
-      },
-    });
-    const forget = vi.spyOn(EncryptedSecretStore.prototype, "delete");
-    try {
-      await rpc(app, ownerCookie, "spaces/remove", { spaceId: shared.id }, shared.id);
-      expect(forget.mock.calls.map(([ref]) => ref)).toContain("sealed-member-link");
-    } finally {
-      forget.mockRestore();
-    }
-    expect(await db().secret.count({ where: { id: secret.id } })).toBe(0);
   });
 
   it("lets only one of two saves built on the same version through", async () => {

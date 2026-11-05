@@ -13,13 +13,12 @@ function chat(id: string, name: string) {
 function space(
   id: string,
   name: string,
-  options: { canRename?: boolean; canDelete?: boolean; bots?: ReturnType<typeof chat>[] } = {},
+  options: { canRename?: boolean; bots?: ReturnType<typeof chat>[] } = {},
 ) {
   return {
     id,
     name,
     canRename: options.canRename ?? false,
-    canDelete: options.canDelete ?? false,
     bots: options.bots ?? [chat(`${id}-bot`, "Chief")],
     groups: [],
   };
@@ -33,7 +32,6 @@ describe("sidebarGroupsForSpaces", () => {
       title: "Personal",
       spaceName: "Personal",
       canRenameSpace: true,
-      canDeleteSpace: false,
       showLock: false,
     });
     expect(group?.bots).toHaveLength(1);
@@ -43,21 +41,20 @@ describe("sidebarGroupsForSpaces", () => {
     const groups = sidebarGroupsForSpaces(
       [
         space("space-1", "Personal", { canRename: true }),
-        space("space-2", "Support", { canRename: true, canDelete: true, bots: [] }),
+        space("space-2", "Support", { canRename: true, bots: [] }),
       ],
       "",
     );
 
     expect(groups.map((group) => group.title)).toEqual(["Personal", "Support"]);
-    expect(groups[0]).toMatchObject({ canRenameSpace: true, canDeleteSpace: false });
+    expect(groups[0]).toMatchObject({ canRenameSpace: true });
     expect(groups[1]).toMatchObject({
       canRenameSpace: true,
-      canDeleteSpace: true,
       emptySpaceId: "space-2",
     });
   });
 
-  it("keeps the space menu for a member who cannot rename or delete, for Settings", () => {
+  it("keeps the space menu for a member who cannot rename, for Settings", () => {
     const groups = sidebarGroupsForSpaces(
       [space("space-1", "Personal", { canRename: true }), space("space-2", "Shared")],
       "",
@@ -66,7 +63,6 @@ describe("sidebarGroupsForSpaces", () => {
     expect(groups[1]).toMatchObject({
       title: "Shared",
       canRenameSpace: false,
-      canDeleteSpace: false,
       canOpenSpaceSettings: true,
     });
   });
@@ -77,7 +73,6 @@ describe("sidebarGroupsForSpaces", () => {
         title: "Shared",
         spaceName: "Shared",
         canRenameSpace: false,
-        canDeleteSpace: false,
         canOpenSpaceSettings: true,
       }),
     ]);

@@ -185,11 +185,6 @@ export async function openNewGroup(page: Page) {
   await page.getByTestId("create-new-group").click();
 }
 
-export async function openNewSpace(page: Page) {
-  await page.getByTestId("create-menu-trigger").click();
-  await page.getByTestId("create-new-space").click();
-}
-
 export async function openUserSettings(
   page: Page,
   section?:

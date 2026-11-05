@@ -68,7 +68,6 @@ export function useShellNavigation() {
     navigate,
     navigationRevision,
     overlayRevision,
-    alive,
     searchParams,
     setSearchParams,
     searchParamsRef,

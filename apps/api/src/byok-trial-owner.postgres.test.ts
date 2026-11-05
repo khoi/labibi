@@ -1,7 +1,6 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import type { ArtifactStore, JobPublisher } from "@labradoodle/adapter-kit";
 import { BillingEmulator } from "@labradoodle/adapters";
 import type { Actor } from "@labradoodle/contracts";
 import type { PrismaClient } from "@labradoodle/db";
@@ -14,10 +13,8 @@ import {
   keepOrganizationTrialUse,
   ownerHadTrial,
 } from "@labradoodle/db";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { deleteOrganization } from "./account-deletion.js";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createBillingService, TRIAL_DAYS } from "./billing.js";
-import type { SpaceDeletionDeps } from "./space-deletion.js";
 
 const dbTests =
   process.env.VERIFY_DATABASE && process.env.DATABASE_URL ? describe.sequential : describe.skip;
@@ -195,20 +192,6 @@ class FlakyByokEmulator extends BillingEmulator {
   }
 }
 
-/** A provider whose cancellation fails on demand. */
-class FlakyCancelEmulator extends BillingEmulator {
-  failCancellation = false;
-
-  constructor(namespace: string) {
-    super({ modelCredits: true, namespace });
-  }
-
-  override async cancelCustomerSubscriptions(customerId: string) {
-    if (this.failCancellation) throw new Error("provider unavailable");
-    await super.cancelCustomerSubscriptions(customerId);
-  }
-}
-
 function deferred() {
   let resolve!: () => void;
   const promise = new Promise<void>((done) => {
@@ -381,35 +364,6 @@ dbTests("own-key trial hold lifecycle", () => {
       })
     ).byokTrialCheckoutExpiresAt!;
     expect(hold.getTime() - beforeCreation.getTime()).toBeGreaterThan(1000);
-  });
-
-  it("keeps the hold while the deletion's billing cancellation keeps failing", async () => {
-    const owner = await ownerWith("cancelfail");
-    const provider = new FlakyCancelEmulator(`hold-cancelfail-${stamp}`);
-    const service = createBillingService({ prisma, provider, webOrigin: "https://example.test" });
-    await service.selectFunding(owner.first.actor, "byok");
-    const deps = {
-      prisma,
-      sandbox: { destroy: vi.fn() },
-      home: {},
-      jobs: { cancel: vi.fn() } as unknown as JobPublisher,
-      artifacts: { remove: vi.fn() } as unknown as ArtifactStore,
-      dataDir: root,
-      billing: service,
-    } as unknown as SpaceDeletionDeps & { billing: ReturnType<typeof createBillingService> };
-    provider.failCancellation = true;
-    await expect(
-      deleteOrganization(deps, owner.userId, owner.first.organizationId),
-    ).rejects.toThrow("provider unavailable");
-    // The failed deletion left the organization and its payable session, so the trial stays held.
-    await service.selectFunding(owner.second.actor, "byok");
-    const second = await customerOf(owner.second.organizationId);
-    expect(provider.byokCheckouts.get(second)?.trialDays).toBeUndefined();
-    provider.failCancellation = false;
-    await deleteOrganization(deps, owner.userId, owner.first.organizationId);
-    // The successful cancellation expired that session, so its hold went with it.
-    await service.selectFunding(owner.second.actor, "byok");
-    expect(provider.byokCheckouts.get(second)?.trialDays).toBe(TRIAL_DAYS);
   });
 
   it("keeps the hold when moving it to the session's creation fails", async () => {

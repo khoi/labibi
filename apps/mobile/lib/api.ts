@@ -252,11 +252,8 @@ export async function selectSpace(id: string) {
     return false;
   }
   // Playback belongs to the conversation being left; the listener in voice.ts
-  // stops it once a switch to another Space is confirmed. A fallback that
-  // failed to persist left its origin pending; this confirmed switch consumes
-  // it, so the fallback's retry cannot stop this Space's later playback.
-  if ((pendingFallbackSwitchFrom ?? previousSpaceId) !== id) noteConfirmedSpaceSwitch();
-  pendingFallbackSwitchFrom = null;
+  // stops it once a switch to another Space is confirmed.
+  if (previousSpaceId !== id) noteConfirmedSpaceSwitch();
   await resumeSelectedSpaceNotifications(id, claimGeneration);
   return true;
 }
@@ -278,90 +275,9 @@ export function selectedSpaceId(): string | null {
   return cachedSpaceId || null;
 }
 
-/** Keep requests usable after the server deleted the selected Space but native
- * storage could not replace it. Neutralize any same-endpoint rollback before
- * writing the replacement selection so a cleanup failure cannot leave the new
- * id beside a stale record that recoverSpaceRollback would prefer on restart. */
-/** The Space the user was actually on before a fallback adoption that has not
- * landed yet; a retry that persists must still count as leaving it. */
-let pendingFallbackSwitchFrom: string | null = null;
-
-export async function adoptDeletedSpaceFallback(id: string): Promise<boolean> {
-  const previousSpaceId = cachedSpaceId;
-  if (pendingFallbackSwitchFrom === null && previousSpaceId !== id) {
-    pendingFallbackSwitchFrom = previousSpaceId;
-  }
-  cachedSpaceId = id;
-  bumpSpaceSelectionGeneration();
-  // Neutralize any same-endpoint rollback before writing SPACE_KEY. Writing the
-  // selection first can leave it beside a stale record that recoverSpaceRollback
-  // would prefer on restart if later cleanup fails.
-  const rollbackNeutralized =
-    (await clearStoredValue(SPACE_ROLLBACK_KEY)) || (await saveSpaceRollback(id));
-  // Playback belongs to the conversation being left; the fallback too is a
-  // confirmed switch once it durably adopts another Space. A failed attempt
-  // already claimed the replacement in memory, so the Space remembered before
-  // the first attempt, not the claim, decides whether one was left behind.
-  if (rollbackNeutralized && (await writeStoredValue(SPACE_KEY, id))) {
-    // SPACE_KEY is authoritative; drop a rollback we may have written only to
-    // overwrite a stale record (best-effort).
-    await clearStoredValue(SPACE_ROLLBACK_KEY);
-    if ((pendingFallbackSwitchFrom ?? previousSpaceId) !== id) noteConfirmedSpaceSwitch();
-    pendingFallbackSwitchFrom = null;
-    await resumeLiveNotifications(currentApiBase(), await loadSessionToken(), id).catch(
-      () => undefined,
-    );
-    return true;
-  }
-  // Clear before saving recovery: an empty selection lets startup resolve the
-  // server default even when the recovery record cannot be written.
-  const staleSelectionCleared = await clearStoredValue(SPACE_KEY);
-  const recoverySaved = await saveSpaceRollback(id);
-  await resumeLiveNotifications(currentApiBase(), await loadSessionToken(), id).catch(
-    () => undefined,
-  );
-  // Only treat a cleared selection as durable success when no same-endpoint
-  // rollback remains to override it after restart.
-  const durable =
-    recoverySaved || (staleSelectionCleared && (await clearStoredValue(SPACE_ROLLBACK_KEY)));
-  if (durable && (pendingFallbackSwitchFrom ?? previousSpaceId) !== id) {
-    noteConfirmedSpaceSwitch();
-  }
-  if (durable) pendingFallbackSwitchFrom = null;
-  return durable;
-}
-
 export async function selectInitialSpace(id: string) {
   if (selectedSpaceId()) return true;
   return selectSpace(id);
-}
-
-export async function loadOrganizationSpaces(): Promise<Record<string, string>> {
-  try {
-    const parsed: unknown = JSON.parse(
-      (await SecureStore.getItemAsync(ORGANIZATION_SPACES_KEY)) || "{}",
-    );
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
-      ? Object.fromEntries(
-          Object.entries(parsed).filter(
-            (entry): entry is [string, string] => typeof entry[1] === "string",
-          ),
-        )
-      : {};
-  } catch {
-    return {};
-  }
-}
-
-export async function rememberOrganizationSpace(
-  organizationId: string,
-  spaceId: string,
-): Promise<void> {
-  const spaces = await loadOrganizationSpaces();
-  await writeStoredValue(
-    ORGANIZATION_SPACES_KEY,
-    JSON.stringify({ ...spaces, [organizationId]: spaceId }),
-  );
 }
 
 export async function clearSpace(): Promise<boolean> {

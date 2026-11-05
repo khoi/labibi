@@ -271,17 +271,6 @@ export async function seedIosScreenshotFixture(input: {
     await readFile(new URL("../../../../docs/screenshots/demo.mp4", import.meta.url)),
   );
 
-  const spaces = await rpc<{ spaces: { id: string; name: string }[] }>(
-    input.apiUrl,
-    populated.headers,
-    "spaces/list",
-  );
-  const teamSpace =
-    spaces.spaces.find((space) => space.name === "Launch crew") ??
-    (await rpc<{ id: string }>(input.apiUrl, populated.headers, "spaces/create", {
-      name: "Launch crew",
-    }));
-
   const me = await rpc<MeRow>(input.apiUrl, populated.headers, "me");
   const emptyMe = await rpc<MeRow>(input.apiUrl, empty.headers, "me");
   const db = createDb(input.databaseUrl, { applicationName: "ios-screenshots" });
@@ -333,7 +322,7 @@ export async function seedIosScreenshotFixture(input: {
       pdfId: pdf.id,
       archiveId: archive.id,
       videoId: video.id,
-      teamSpaceId: teamSpace.id,
+      teamSpaceId: me.spaceId,
       cardsBotId: support.id,
     };
   } finally {

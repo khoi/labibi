@@ -70,16 +70,8 @@ vi.mock("./MemorySettingsOverlay", () => ({
   },
 }));
 vi.mock("./SpaceSettingsPanel", () => ({
-  SpaceSettingsPanel: ({
-    space,
-    onDelete,
-  }: {
-    space: { name: string };
-    onDelete: () => Promise<void>;
-  }) => (
-    <button type="button" data-testid="space-settings" onClick={() => void onDelete()}>
-      {space.name}
-    </button>
+  SpaceSettingsPanel: ({ space }: { space: { name: string } }) => (
+    <div data-testid="space-settings">{space.name}</div>
   ),
 }));
 const { scopes, recordScope } = vi.hoisted(() => {
@@ -181,12 +173,10 @@ it("lists no spaces when there is only one", async () => {
 });
 
 it("titles a space's page with its name and leads back to General", async () => {
-  const onDeleteSpace = vi.fn(async () => undefined);
   const onSectionChange = vi.fn();
   const { container, cleanup } = await render({
-    space: { ...acme, canDelete: true },
+    space: acme,
     spaces,
-    onDeleteSpace,
     onSectionChange,
     section: "space",
   });
@@ -195,9 +185,6 @@ it("titles a space's page with its name and leads back to General", async () => 
     expect(
       container.querySelector('[data-testid="settings-nav-general"]')?.getAttribute("aria-current"),
     ).toBe("page");
-    const panel = container.querySelector<HTMLButtonElement>('[data-testid="space-settings"]');
-    await act(async () => panel?.click());
-    expect(onDeleteSpace).toHaveBeenCalledWith("space-a");
     await act(async () => button(container, "Back").click());
     expect(onSectionChange).toHaveBeenCalledWith("general");
   } finally {

@@ -10,7 +10,6 @@ import {
 } from "@labradoodle/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
-  Check,
   Download,
   FolderOpen,
   Link2,
@@ -23,7 +22,6 @@ import {
   UserRound,
 } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
-import type { Organization } from "../lib/organizations";
 import { useSidebarUpdate } from "./DesktopUpdates";
 import { IconTooltip } from "./IconTooltip";
 
@@ -46,9 +44,6 @@ type Props = {
   onLogOut: () => void;
   signingOut: boolean;
   logOutError: string | null;
-  organizations?: Organization[];
-  activeOrganizationId?: string | null;
-  onSwitchOrganization?: (organization: Organization) => void;
 };
 
 // Marks are 24px wide, overlap by 2px, and need 2px for the outer ring.
@@ -75,9 +70,6 @@ export function SidebarFooter({
   onLogOut,
   signingOut,
   logOutError,
-  organizations = [],
-  activeOrganizationId,
-  onSwitchOrganization,
 }: Props) {
   const { t } = useLingui();
   const update = useSidebarUpdate();
@@ -145,26 +137,6 @@ export function SidebarFooter({
                 <p className="truncate text-xs text-muted-foreground">{email}</p>
               ) : null}
             </div>
-            {organizations.length > 1 ? (
-              <>
-                {organizations.map((organization) => {
-                  const active = organization.id === activeOrganizationId;
-                  return (
-                    <Button
-                      key={organization.id}
-                      variant="ghost"
-                      aria-current={active ? "true" : undefined}
-                      className="h-9 w-full justify-between gap-2.5 font-normal"
-                      onClick={() => onSwitchOrganization?.(organization)}
-                    >
-                      <span className="min-w-0 truncate">{organization.name}</span>
-                      {active ? <Check aria-hidden="true" strokeWidth={1.75} /> : null}
-                    </Button>
-                  );
-                })}
-                <div className="my-1 border-t border-border" />
-              </>
-            ) : null}
             {mini ? (
               <Button
                 variant="ghost"

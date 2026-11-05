@@ -135,10 +135,6 @@ msgstr "{0} TB"
 msgid "{amount} / {period}"
 msgstr "{amount} / {period}"
 
-#: src/pages/shell/dialogs.tsx
-msgid "{botCount, plural, one {Delete {name} and its # bot?} other {Delete {name} and its # bots?}}"
-msgstr "{botCount, plural, one {Usunąć {name} i # bota w tej przestrzeni?} few {Usunąć {name} i # boty w tej przestrzeni?} many {Usunąć {name} i # botów w tej przestrzeni?} other {Usunąć {name} i # bota w tej przestrzeni?}}"
-
 #: src/pages/shell/computer-view.tsx
 msgid "{botName}’s computer"
 msgstr "Komputer bota {botName}"
@@ -1112,7 +1108,6 @@ msgstr "Nie odczytuje obrazów"
 #: src/pages/model-settings/space-bots-model.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
@@ -1635,7 +1630,6 @@ msgstr "Limit kontekstu"
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Continue"
 msgstr "Kontynuuj"
 
@@ -1802,10 +1796,6 @@ msgstr "Nie udało się utworzyć grupy"
 #: src/components/SpaceMembersSettings.tsx
 msgid "Could not create invite link"
 msgstr "Nie udało się utworzyć linku z zaproszeniem"
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not create space"
-msgstr "Nie udało się utworzyć przestrzeni"
 
 #: src/pages/Onboarding.tsx
 msgid "Could not create your bot"
@@ -2078,7 +2068,6 @@ msgstr "Nie udało się uruchomić rutyny"
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Could not save"
 msgstr "Nie udało się zapisać"
 
@@ -2244,7 +2233,6 @@ msgstr "Nie udało się zaktualizować portfela"
 msgid "Country"
 msgstr "Kraj"
 
-#: src/components/CreateOrganizationDialog.tsx
 #: src/pages/shell/sidebar-header.tsx
 msgid "Create"
 msgstr "Utwórz"
@@ -2257,17 +2245,11 @@ msgstr "Utwórz konto"
 msgid "Create group"
 msgstr "Utwórz grupę"
 
-#: src/components/CreateOrganizationDialog.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
-msgid "Create organization"
-msgstr "Utwórz organizację"
-
 #: src/pages/RoutineEditor.tsx
 msgid "Create Routine"
 msgstr "Utwórz rutynę"
 
 #: src/components/AskCard.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Create space"
 msgstr "Utwórz przestrzeń"
 
@@ -2280,7 +2262,6 @@ msgid "Created"
 msgstr "Utworzono"
 
 #: src/pages/GroupPanel.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Creating…"
 msgstr "Tworzenie…"
 
@@ -2328,10 +2309,6 @@ msgstr "Bieżące hasło"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Custom header"
 msgstr "Własny nagłówek"
-
-#: src/pages/shell/dialogs.tsx
-msgid "Customer support"
-msgstr "Obsługa klienta"
 
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Customize"
@@ -2392,7 +2369,6 @@ msgstr "Domyślny zakres"
 #: src/pages/BotContextMenu.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingOverrides.tsx
@@ -2415,7 +2391,6 @@ msgstr "Usuń {0}"
 #. placeholder {0}: deleting.name
 #. placeholder {0}: item.name
 #: src/pages/McpServersOverlay.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "Delete {0}?"
 msgstr "Usunąć {0}?"
@@ -2433,22 +2408,12 @@ msgstr "Usuń grupę"
 msgid "Delete memories too"
 msgstr "Usuń również wspomnienia"
 
-#: src/pages/OrganizationSettingsPanel.tsx
-msgid "Delete organization"
-msgstr "Usuń organizację"
-
-#: src/pages/shell/shell-dialogs.tsx
-#: src/pages/SpaceSettingsPanel.tsx
-msgid "Delete space"
-msgstr "Usuń przestrzeń"
-
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete this Space's credentials?"
 msgstr "Usunąć dane uwierzytelniające tej przestrzeni?"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "Deleting…"
 msgstr "Usuwanie…"
@@ -3781,7 +3746,6 @@ msgstr "Przenieś w górę"
 msgid "My computers"
 msgstr "Moje komputery"
 
-#: src/components/CreateOrganizationDialog.tsx
 #: src/components/teach/SkillDraftCard.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/AccountSettingsOverlay.tsx
@@ -3789,11 +3753,9 @@ msgstr "Moje komputery"
 #: src/pages/GroupPanel.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/model-settings/providers-section.tsx
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Name"
 msgstr "Nazwa"
@@ -3887,18 +3849,9 @@ msgstr "Nowe wiadomości"
 msgid "New password"
 msgstr "Nowe hasło"
 
-#: src/pages/Shell.tsx
-#: src/pages/shell/bot-picker.tsx
-msgid "New private space"
-msgstr "Nowa prywatna przestrzeń"
-
 #: src/pages/KnowledgeSection.tsx
 msgid "New skill"
 msgstr "Nowa umiejętność"
-
-#: src/pages/shell/dialogs.tsx
-msgid "New space"
-msgstr "Nowa przestrzeń"
 
 #: src/components/VaultSettings.tsx
 msgid "New variable"
@@ -4207,7 +4160,6 @@ msgid "Or paste an API key"
 msgstr "Lub wklej klucz API"
 
 #: src/components/ComputerProviderSettings.tsx
-#: src/pages/settings-nav.ts
 msgid "Organization"
 msgstr "Organizacja"
 
@@ -4467,10 +4419,6 @@ msgstr "Poprzednie sekcje ustawień"
 #: src/pages/shell/bot-panel.tsx
 msgid "Private"
 msgstr "Prywatne"
-
-#: src/pages/shell/bot-picker.tsx
-msgid "Private workspace with its own bots and groups."
-msgstr "Prywatny obszar roboczy z własnymi botami i grupami."
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Productivity"
@@ -5036,7 +4984,6 @@ msgstr "Zapisywanie obszaru roboczego"
 #: src/pages/model-settings/providers-section.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Saving…"
 msgstr "Zapisywanie…"
 
@@ -5791,7 +5738,6 @@ msgstr "Ta przeglądarka nie obsługuje dyktowania na urządzeniu. Połącz dost
 msgid "This can't be undone."
 msgstr "Tej operacji nie można cofnąć."
 
-#: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "This cannot be undone."
 msgstr "Tej operacji nie można cofnąć."
@@ -6030,10 +5976,6 @@ msgstr "wtorek"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Type"
 msgstr "Typ"
-
-#: src/pages/OrganizationSettingsPanel.tsx
-msgid "Type {name} to confirm"
-msgstr "Wpisz {name}, aby potwierdzić"
 
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Type without recording"
@@ -6311,10 +6253,6 @@ msgstr "Witaj w Labradoodle"
 #: src/pages/shell/dialogs.tsx
 msgid "What about its memories?"
 msgstr "Co zrobić ze wspomnieniami?"
-
-#: src/pages/shell/dialogs.tsx
-msgid "What can this space use?"
-msgstr "Z czego może korzystać ta przestrzeń?"
 
 #: src/components/SignupSurvey.tsx
 msgid "What do you most want Labradoodle to help with?"

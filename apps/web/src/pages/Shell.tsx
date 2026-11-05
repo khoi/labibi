@@ -19,7 +19,7 @@ import type { GroupAvatarMember } from "@labradoodle/ui-web";
 import { useIsMobile } from "@labradoodle/ui-web/hooks/use-mobile";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useQuery } from "@tanstack/react-query";
-import { Keyboard, Lock, Monitor, Moon, Plug, ScrollText, Sun, Users } from "lucide-react";
+import { Keyboard, Monitor, Moon, Plug, ScrollText, Sun, Users } from "lucide-react";
 import {
   Suspense,
   useCallback,
@@ -134,7 +134,6 @@ function SpaceShell() {
     navigate,
     navigationRevision,
     overlayRevision,
-    alive,
     searchParams,
     setSearchParams,
     searchParamsRef,
@@ -488,7 +487,6 @@ function SpaceShell() {
                 isDefault: true,
                 hasContent: true,
                 canRename: false,
-                canDelete: false,
                 bots,
                 groups,
               },
@@ -768,12 +766,6 @@ function SpaceShell() {
       onSelect: () => setPanel("create-group"),
     },
     {
-      id: "new-space",
-      label: t`New private space`,
-      icon: Lock,
-      onSelect: () => dialogs.setNewSpaceOpen(true),
-    },
-    {
       id: "integrations",
       label: t`Connect apps`,
       icon: Plug,
@@ -824,21 +816,6 @@ function SpaceShell() {
       },
       refresh: () => refreshBots(),
     });
-  }
-
-  async function removeSpace(spaceId: string) {
-    const result = await rpc.spaces.remove({ spaceId });
-    if (!alive.current) return;
-    setPanel(null);
-    const effectiveSpaceId = selectedSpaceId() ?? bootstrapMe?.spaceId;
-    if (effectiveSpaceId === spaceId) {
-      // The auth boundary changed, so reload like a space switch.
-      if (selectSpace(result.activeSpaceId)) {
-        window.location.assign("/app");
-        return;
-      }
-    }
-    await refreshBots(true);
   }
 
   async function leftSpace(spaceId: string, activeSpaceId: string) {
@@ -903,7 +880,6 @@ function SpaceShell() {
         toggleSidebarSection={toggleSidebarSection}
         setPanel={setPanel}
         navigate={navigate}
-        setNewSpaceOpen={dialogs.setNewSpaceOpen}
         roster={
           <SidebarRoster
             mini={miniSidebar}
@@ -932,7 +908,6 @@ function SpaceShell() {
         openSettings={openSettings}
         openIntegrations={() => setOverlay({ kind: "integrations" })}
         openSkills={() => setOverlay({ kind: "skills" })}
-        openSpaceChat={openSpaceChat}
       />
 
       {/* Keep the composer's z-index inside the chat so phone overlays like the side panel cover it. */}
@@ -1181,11 +1156,9 @@ function SpaceShell() {
           bots={bots}
           activeId={active?.id}
           activeGroupId={activeGroup?.id}
-          alive={alive}
           navigate={navigate}
           setPanel={setPanel}
           refreshBots={refreshBots}
-          removeSpace={removeSpace}
           openSpaceSettings={openSpaceSettings}
           closeMobileSidebar={() => setMobileSidebarOpen(false)}
           discardChatAttachments={composer.discardThreadAttachments}
@@ -1217,10 +1190,8 @@ function SpaceShell() {
           showSettings={settingsSpaceId === null || Boolean(settingsSpace)}
           spaces={spaces}
           renameSpace={renameSpace}
-          removeSpace={removeSpace}
           leftSpace={leftSpace}
           refreshSpaces={() => refreshBots()}
-          alive={alive}
           user={session.data?.user}
           refetchSession={() => session.refetch({ query: { disableCookieCache: true } })}
           bootstrapMe={bootstrapMe}
