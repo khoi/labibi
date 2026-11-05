@@ -410,7 +410,14 @@ try {
 
 if (ports) log(`Open http://127.0.0.1:${ports.web}`);
 const turbo = spawnPnpm(
-  ["exec", "turbo", "dev", "--env-mode=loose", ...SERVICES.map((name) => `--filter=${name}`)],
+  [
+    "exec",
+    "turbo",
+    "dev",
+    "--ui=tui",
+    "--env-mode=loose",
+    ...SERVICES.map((name) => `--filter=${name}`),
+  ],
   { cwd: root, env, stdio: "inherit" },
 );
 for (const signal of ["SIGINT", "SIGTERM"]) process.on(signal, () => turbo.kill(signal));
