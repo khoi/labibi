@@ -57,11 +57,9 @@ import type { VoiceDeps } from "./voice.js";
 export { nextConnectionLabel } from "./model-credentials.js";
 export { botIntroPrompt, enqueueBotIntroRun } from "./routes/bots.js";
 export { HEARTBEAT_MS, SESSION_RECHECK_MS } from "./routes/shared.js";
-export { callMarkerClientNonce } from "./routes/threads.js";
 
 export interface RouterDeps {
   pushTokens: PushTokenStore;
-  /** Stops a call's ring on the owner's other devices once it is settled. */
   notifications?: NotificationProvider;
   analytics?: ProductAnalytics;
   cloudAgent?: CloudAgentConnection | null;
@@ -118,8 +116,6 @@ export interface RouterDeps {
   env: {
     navLinks?: NavLink[];
     adminEmails?: string[];
-    phoneCallsEnabled?: boolean;
-    phoneCallRingSeconds?: number;
     maxUploadSizeBytes?: number;
     maxAttachmentsPerMessage?: number;
     agentRuntime: string;

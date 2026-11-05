@@ -5,7 +5,6 @@ import type {
   BotSection,
   ComputerStatus,
   Group,
-  IncomingBotCall,
   Me,
   MessageBlock,
   ModelCatalogEntry,
@@ -24,7 +23,6 @@ import {
   accountSecuritySchema,
   authCapabilitiesSchema,
   CLIENT_UPDATE_REQUIRED_STATUS,
-  IncomingBotCallSchema,
   legacyAccountSecurity,
   legacyAuthCapabilitiesSchema,
 } from "@labradoodle/contracts";
@@ -405,18 +403,6 @@ async function snapshotSpace(): Promise<{ ok: true; value: string } | { ok: fals
   }
 }
 
-/**
- * Hangs up an active call while its session can still authorize the hang-up. Set by the call
- * module; a server switch runs it before it discards the old server's session, which would
- * otherwise leave the old server holding an answered call with no marker or wrap-up.
- */
-let hangUpBeforeCredentialsCleared: (() => Promise<void>) | undefined;
-
-/** Registers (or clears) the hang-up that runs before an endpoint change clears credentials. */
-export function configureSessionEndHangUp(hangUp: (() => Promise<void>) | undefined): void {
-  hangUpBeforeCredentialsCleared = hangUp;
-}
-
 /** Clears session + space for an endpoint change. Restores both if either wipe fails. */
 async function clearCredentialsForEndpointChange(): Promise<
   | {
@@ -426,8 +412,6 @@ async function clearCredentialsForEndpointChange(): Promise<
     }
   | { ok: false; result: EndpointResult }
 > {
-  // The old server's session authorizes the call's hang-up; send it while it still exists.
-  await hangUpBeforeCredentialsCleared?.().catch(() => undefined);
   const previousToken = await snapshotSessionToken();
   const previousSpace = await snapshotSpace();
   if (!previousToken.ok || !previousSpace.ok) {
@@ -1496,24 +1480,6 @@ export async function subscribeThread(
   );
 }
 
-export async function subscribeIncomingCallEvents(
-  onCalls: (calls: IncomingBotCall[]) => void,
-  signal: AbortSignal,
-) {
-  const context = await captureApiRequestContext(null);
-  return subscribeRpcEvents(
-    "notifications/subscribeCalls",
-    {},
-    (event) => {
-      if (event.type !== "incoming.calls") return;
-      const calls = IncomingBotCallSchema.array().safeParse(event.payload?.calls);
-      if (calls.success) onCalls(calls.data);
-    },
-    signal,
-    context,
-  );
-}
-
 async function subscribeRpcEvents(
   procedure: string,
   input: Record<string, unknown>,
@@ -1961,9 +1927,6 @@ export function applyMobileThreadEvent(
       createdAt: known?.createdAt ?? event.createdAt,
       runId: event.runId ? String(event.runId) : undefined,
       role: (event.payload?.role as MobileMessage["role"]) ?? "bot",
-      // An update can leave the call id out — the `end_call` marker does — so keep the one
-      // the message already carries instead of dropping it out of its call.
-      callId: typeof event.payload?.callId === "string" ? event.payload.callId : known?.callId,
       blocks: (event.payload?.blocks as MobileMessage["blocks"]) ?? [],
       botId: event.botId ?? (event.payload?.botId ? String(event.payload.botId) : undefined),
       ...payloadAuthor(event.payload ?? {}, known),

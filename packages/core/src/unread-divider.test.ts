@@ -5,9 +5,7 @@ import {
   createSerialQueue,
   settleReadBoundary,
   unreadDividerMessageId,
-  voiceChatHoldsMessage,
 } from "./unread-divider.js";
-import { groupVoiceChats } from "./voice-chat-groups.js";
 
 const thread = [
   { id: "m0", role: "bot", seq: 0 },
@@ -50,21 +48,6 @@ describe("unreadDividerMessageId", () => {
   it("doesn't wait when the loaded page starts with a hidden message right after the cursor", () => {
     // The page starts at seq 50, a hidden tool message; only the reply at 51 is visible.
     expect(unreadDividerMessageId([{ id: "m51", role: "bot", seq: 51 }], 49, 50)).toBe("m51");
-  });
-});
-
-describe("voiceChatHoldsMessage", () => {
-  it("finds the first unread reply inside a voice card that starts with the user's turn", () => {
-    const messages = [
-      { id: "m1", role: "user", seq: 1, callId: "call-1", runId: "run-1", blocks: [] },
-      { id: "m2", role: "bot", seq: 2, runId: "run-1", blocks: [] },
-    ];
-    const [card] = groupVoiceChats(messages);
-    const dividerId = unreadDividerMessageId(messages, 1, null);
-    expect(card?.kind).toBe("voiceChat");
-    expect(card?.kind === "voiceChat" && card.messages[0]?.id === dividerId).toBe(false);
-    expect(card?.kind === "voiceChat" && voiceChatHoldsMessage(card, dividerId)).toBe(true);
-    expect(card?.kind === "voiceChat" && voiceChatHoldsMessage(card, null)).toBe(false);
   });
 });
 

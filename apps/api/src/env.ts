@@ -1,10 +1,5 @@
-import type {
-  ApnsVoipConfig,
-  PhotonProjectCredentials,
-  TelegramBotCredentials,
-} from "@labradoodle/adapters";
+import type { PhotonProjectCredentials, TelegramBotCredentials } from "@labradoodle/adapters";
 import {
-  apnsVoipConfig,
   boatApiKeyFromEnv,
   boatApiUrlFromEnv,
   mcpStdioOptionsFromEnv,
@@ -21,7 +16,6 @@ import { parseMinimumClientBuilds, parseNavLinks } from "@labradoodle/contracts"
 import { parseCrispWebsiteId } from "@labradoodle/contracts/content-security-policy";
 import {
   attachmentCountFromEnv,
-  phoneCallSettings,
   resolveAuthSecret,
   resolveContentEncryption,
   resolveEncryptionKey,
@@ -74,9 +68,6 @@ export interface AppEnv {
   /** Verified accounts that review plugin submissions, add stdio MCP servers, and grant access
    * (RAKAZO_ADMIN_EMAILS), lowercased. */
   adminEmails: string[];
-  phoneCallsEnabled: boolean;
-  phoneCallRingSeconds: number;
-  phoneCallCooldownMinutes: number;
   maxUploadSizeBytes: number;
   maxAttachmentsPerMessage: number;
   /** Bot replies longer than this are read aloud as a summary; unset reads every reply in full. */
@@ -117,7 +108,6 @@ export interface AppEnv {
   sendblueSigningSecret: string | undefined;
   sendbluePhoneNumber: string | undefined;
   expoAccessToken: string | undefined;
-  apnsVoip?: ApnsVoipConfig;
   smtpUrl: string | undefined;
   emailProvider?: string;
   welcomeEmailEnabled?: boolean;
@@ -262,7 +252,6 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
     userDevicesEnabled: source.USER_DEVICES_ENABLED !== "false",
     navLinks: parseNavLinks(source.RAKAZO_NAV_LINKS),
     adminEmails: list(source.RAKAZO_ADMIN_EMAILS).map((email) => email.toLowerCase()),
-    ...phoneCallSettings(source),
     maxUploadSizeBytes: uploadSizeFromEnv(source),
     maxAttachmentsPerMessage: attachmentCountFromEnv(source),
     voiceSummaryMinChars: voiceSummaryMinCharsFromEnv(source.VOICE_SUMMARY_MIN_CHARS),
@@ -301,7 +290,6 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
     sendblueSigningSecret: optional(source.SENDBLUE_SIGNING_SECRET),
     sendbluePhoneNumber: optional(source.SENDBLUE_PHONE_NUMBER),
     expoAccessToken: optional(source.EXPO_ACCESS_TOKEN),
-    apnsVoip: apnsVoipConfig(source),
     smtpUrl: optional(source.SMTP_URL),
     emailProvider: optional(source.EMAIL_PROVIDER),
     emailApiKey: optional(source.EMAIL_API_KEY),

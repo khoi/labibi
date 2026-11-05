@@ -28,8 +28,6 @@ import {
   persistentComputerInstruction,
   threadContextForRun,
   userTurnInstructions,
-  VOICE_CALL_INSTRUCTION,
-  voiceCallInstruction,
 } from "./run-instructions.js";
 import { createRunWorkspaceCheckpoint } from "./run-lifecycle.js";
 import { isTerminalModelSetupError } from "./run-model.js";
@@ -539,7 +537,6 @@ describe("run tool selection", () => {
       );
     expect(offered("user")).toBe(true);
     expect(offered("follow_up")).toBe(true);
-    expect(offered("call_end")).toBe(true);
     // A group hand-off queues a follow_up whose source message another bot wrote.
     expect(offered("follow_up", undefined, false)).toBe(false);
     for (const trigger of [
@@ -587,7 +584,6 @@ describe("run tool selection", () => {
     expect(fleetTools("user", false)).toEqual([]);
     expect(fleetTools("bot_message", false)).toEqual([]);
     expect(fleetTools("user", true)).toEqual(all);
-    expect(fleetTools("call_end", true)).toEqual(all);
     expect(fleetTools("follow_up", true, true)).toEqual(all);
     expect(fleetTools("follow_up", true, false)).toEqual([]);
     for (const trigger of ["bot_message", "messaging", "spawn", "tickets", "webhook", "routine"]) {
@@ -596,20 +592,6 @@ describe("run tool selection", () => {
     expect(fleetTools("user", true, false, ["list_fleet", "create_group"])).toEqual(
       all.filter((name) => name !== "list_fleet" && name !== "create_group"),
     );
-  });
-
-  it("offers end_call on a hang-up run so it can title the call", () => {
-    const callEnd = selectBuiltinToolsForRun({
-      graphicalToolsAllowed: true,
-      groupId: null,
-      trigger: "call_end",
-      semanticMemoryEnabled: false,
-      messagingChannelRun: false,
-      voiceCall: true,
-    }).map((tool) => tool.name);
-    expect(callEnd).toContain("end_call");
-    expect(callEnd).toContain("schedule_create");
-    expect(toolNames("call_end")).not.toContain("end_call");
   });
 
   it("omits a disabled builtin and ignores unknown names", () => {
@@ -1869,22 +1851,6 @@ describe("dockerComputerToolInstruction", () => {
     expect(instruction).not.toContain("browser_act");
     expect(instruction).not.toContain("request_takeover");
     expect(instruction).toContain("--with-token");
-  });
-});
-
-describe("voiceCallInstruction", () => {
-  it("preserves live-call guidance when end_call is offered", () => {
-    expect(voiceCallInstruction()).toBe(
-      "You are on a live voice call. Reply in one to three short spoken sentences. No markdown, lists, links, or option cards; do not use ask_user unless you truly cannot proceed. Answer directly from what you already know when you can; use tools or subagents only when the answer requires them. If the user asks to end the call or hang up, or the conversation is finished, call end_call with a short title and a one-sentence farewell instead of saying goodbye in text, then do any remaining work as a normal chat reply.",
-    );
-    expect(voiceCallInstruction(new Set())).toBe(VOICE_CALL_INSTRUCTION);
-    expect(voiceCallInstruction(new Set(["shell"]))).toBe(VOICE_CALL_INSTRUCTION);
-  });
-
-  it("keeps spoken guidance without prescribing an unavailable hang-up tool", () => {
-    const instruction = voiceCallInstruction(new Set(["end_call"]));
-    expect(instruction).toContain("Reply in one to three short spoken sentences.");
-    expect(instruction).not.toContain("end_call");
   });
 });
 
@@ -4412,28 +4378,6 @@ describe("background run tools", () => {
   });
 });
 
-describe("call_user availability", () => {
-  const options = {
-    graphicalToolsAllowed: false,
-    groupId: null,
-    trigger: "user_message",
-    semanticMemoryEnabled: false,
-    messagingChannelRun: false,
-    phoneCallsEnabled: true,
-  };
-  const offered = (patch = {}) =>
-    selectBuiltinToolsForRun({ ...options, ...patch }).some((tool) => tool.name === "call_user");
-  it("requires the server flag and a private non-ticket turn", () => {
-    expect(offered()).toBe(true);
-    expect(offered({ phoneCallsEnabled: false })).toBe(false);
-    expect(offered({ phoneCallsEnabled: undefined })).toBe(false);
-    expect(offered({ groupId: "group-1" })).toBe(false);
-    expect(offered({ messagingChannelRun: true })).toBe(false);
-    expect(offered({ trigger: "tickets" })).toBe(false);
-    expect(offered({ voiceCall: true })).toBe(false);
-  });
-});
-
 describe("cross-chat history grant", () => {
   it.each(["user", "follow_up"])("allows only human %s requests in the app thread", (trigger) => {
     const run = { trigger, threadId: "thread" };
@@ -4443,7 +4387,7 @@ describe("cross-chat history grant", () => {
     expect(historyMyChatsAllowed(run, { role: "user", threadId: "other" }, false)).toBe(false);
     expect(historyMyChatsAllowed(run, null, false)).toBe(false);
   });
-  it.each(["bot_message", "routine", "schedule", "messaging", "webhook", "created", "call_end"])(
+  it.each(["bot_message", "routine", "schedule", "messaging", "webhook", "created"])(
     "denies %s even with a human-looking source",
     (trigger) => {
       expect(

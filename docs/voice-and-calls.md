@@ -1,6 +1,6 @@
-# Voice and calls
+# Voice
 
-Talk to your bots instead of typing, have them read replies aloud, or call them.
+Talk to your bots instead of typing, and have them read replies aloud.
 
 ## Set up a voice provider
 
@@ -29,17 +29,6 @@ don't have to keep holding.
 - To hear every reply from a bot, open its settings, expand **Advanced**, and turn on
   **Read replies aloud**. The **Voice** next to it overrides your default voice for that bot.
 
-## Call a bot
-
-Choose **Call** at the top of the chat to talk with the bot in real time. During a call you can
-**Mute**, open the **Transcript**, minimize the call and keep using the app, or **Hang up**. The
-transcript stays in the chat afterwards.
-
-Bots can call you too: ask "call me at 5 to go over the day", or a bot may call when you've missed
-the same reminder several times. You'll see that the bot is calling you; answer or **Decline**. A
-missed call shows **Call back** in the chat.
-
 ## On mobile
 
-The mobile app uses your phone's own speech recognition and voices for calls. Pick a
-**Device voice** in a bot's settings. On Android, a call keeps going with the screen off.
+The mobile app can use your phone's own voices. Pick a **Device voice** in a bot's settings.

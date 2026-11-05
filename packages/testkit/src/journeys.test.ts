@@ -2066,7 +2066,7 @@ describeJourneys("required product journeys", () => {
       "cancelled",
     );
 
-    await rpc(app, cookie, "threads/followUp", {
+    await rpc(app, cookie, "threads/send", {
       botId: bot.id,
       text: "write a file in your home called notes/result.txt that says followup-ok",
     });

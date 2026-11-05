@@ -38,7 +38,6 @@ import {
   ComposioConnector,
   contentKeyProviderFromEnv,
   createAgentHomeStore,
-  createApnsVoipProvider,
   createArtifactStore,
   createAuditLogReconciler,
   createBackgroundJobHandlers,
@@ -532,7 +531,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
       sessionExpiresAt: (sessionId) => pushSessionExpiresAt(prisma, sessionId),
       jobs,
       accessToken: env.expoAccessToken,
-      voip: await createApnsVoipProvider(env.apnsVoip),
     });
   const userDeviceSecret = userDeviceForwardSecret(env.encryptionKey);
   const userDeviceHub = env.userDevicesEnabled
@@ -710,9 +708,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     notifications,
     jobs,
     events,
-    phoneCallsEnabled: env.phoneCallsEnabled,
-    phoneCallRingSeconds: env.phoneCallRingSeconds,
-    phoneCallCooldownMinutes: env.phoneCallCooldownMinutes,
     messaging: messaging ? createMessagingContextLoader(prisma) : undefined,
     web: createWebProvider(),
     cloudAgent,
@@ -876,8 +871,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
       openSignup: env.messagingOpenSignup,
     },
     env: {
-      phoneCallsEnabled: env.phoneCallsEnabled,
-      phoneCallRingSeconds: env.phoneCallRingSeconds,
       navLinks: env.navLinks,
       adminEmails: env.adminEmails,
       maxUploadSizeBytes: env.maxUploadSizeBytes,

@@ -111,11 +111,6 @@ msgstr "{0} GB"
 msgid "{0} handling"
 msgstr "Obsługa {0}"
 
-#. placeholder {0}: bot.name
-#: src/components/call/IncomingCall.tsx
-msgid "{0} is calling you"
-msgstr "{0} dzwoni do Ciebie"
-
 #. placeholder {0}: updated.name
 #: src/pages/McpServersOverlay.tsx
 msgid "{0} is not working"
@@ -841,11 +836,6 @@ msgstr "Inny asystent"
 msgid "Answer"
 msgstr "Odpowiedź"
 
-#: src/components/call/IncomingCall.tsx
-msgctxt "incoming call"
-msgid "Answer"
-msgstr "Odbierz"
-
 #: src/components/AskCard.tsx
 msgid "Answered"
 msgstr "Odpowiedziano"
@@ -932,10 +922,6 @@ msgstr "Zatwierdzenia"
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
 msgstr "Zatwierdź"
-
-#: src/lib/call-session.ts
-msgid "Approve or deny it on screen."
-msgstr "Zatwierdź lub odrzuć na ekranie."
 
 #: src/pages/shell/message-cards.tsx
 msgid "Approve this server to let your agent use its tools."
@@ -1201,27 +1187,6 @@ msgstr "Przeglądaj serwery MCP"
 #: src/pages/shell/agent-import.tsx
 msgid "Built-in"
 msgstr "Wbudowane"
-
-#: src/pages/shell/chat-header.tsx
-msgid "Call"
-msgstr "Zadzwoń"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Call back"
-msgstr "Oddzwoń"
-
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Call with {0}"
-msgstr "Rozmowa z {0}"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Calling you…"
-msgstr "Połączenie przychodzące…"
-
-#: src/components/call/CallCard.tsx
-msgid "Calling…"
-msgstr "Dzwonienie…"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Calls"
@@ -2400,11 +2365,6 @@ msgstr "Nie udało się przeszukać katalogu"
 msgid "Could not send reset email"
 msgstr "Nie udało się wysłać wiadomości do resetowania hasła"
 
-#: src/components/call/IncomingCall.tsx
-#: src/lib/call-session.ts
-msgid "Could not send that"
-msgstr "Nie udało się wysłać"
-
 #: src/components/VaultSettings.tsx
 msgid "Could not show the credential"
 msgstr "Nie udało się pokazać danych uwierzytelniających"
@@ -2667,7 +2627,6 @@ msgstr "Codzienna praca"
 msgid "days"
 msgstr "dni"
 
-#: src/components/call/IncomingCall.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Decline"
 msgstr "Odrzuć"
@@ -2829,10 +2788,6 @@ msgid "Dictate"
 msgstr "Dyktuj"
 
 #: src/lib/dictation.ts
-msgid "Dictation ended unexpectedly."
-msgstr "Dyktowanie niespodziewanie się zakończyło."
-
-#: src/lib/dictation.ts
 msgid "Dictation failed: {code}"
 msgstr "Dyktowanie nie powiodło się: {code}"
 
@@ -2918,10 +2873,6 @@ msgstr "Docker"
 #: src/pages/HostComputerPrompt.tsx
 msgid "Docker limits access to your computer for added security. Using {hostLabel} lets bots work with your local files and tools."
 msgstr "Docker ogranicza dostęp do Twojego komputera dla większego bezpieczeństwa. Użycie {hostLabel} pozwala botom pracować na lokalnych plikach i narzędziach."
-
-#: src/components/SidebarFooter.tsx
-msgid "Docs"
-msgstr "Dokumentacja"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Document changed. Reopen to edit the latest version."
@@ -3037,6 +2988,10 @@ msgstr "Identyfikator użytkownika końcowego"
 #: src/lib/billing.ts
 msgid "Ends {day}"
 msgstr "Koniec {day}"
+
+#: src/components/GitHubStarPrompt.tsx
+msgid "Enjoying Labradoodle?"
+msgstr ""
 
 #: src/lib/user-error.ts
 msgid "Enter a password"
@@ -3435,18 +3390,6 @@ msgstr "Ustawienia grupy"
 msgid "Group updates"
 msgstr "Aktualności grupy"
 
-#: src/components/call/CallCard.tsx
-msgid "Hang up"
-msgstr "Rozłącz się"
-
-#: src/lib/call-session.ts
-msgid "Hang up first, then enter the code on screen."
-msgstr "Najpierw zakończ rozmowę, a potem wpisz kod na ekranie."
-
-#: src/lib/call-session.ts
-msgid "Hang up, then enter the code on screen."
-msgstr "Zakończ rozmowę, a potem wpisz kod na ekranie."
-
 #: src/pages/RoutineEditor.tsx
 msgid "header"
 msgstr "nagłówek"
@@ -3490,10 +3433,6 @@ msgstr "Ukryj"
 #: src/components/I18nBootstrap.tsx
 msgid "Hide password"
 msgstr "Ukryj hasło"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Hide transcript"
-msgstr "Ukryj transkrypcję"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
@@ -3603,10 +3542,6 @@ msgstr "Skrzynka i e-mail"
 #: src/pages/shell/agent-import.tsx
 msgid "Include API keys"
 msgstr "Uwzględnij klucze API"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Incoming call"
-msgstr "Połączenie przychodzące"
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Inherit default"
@@ -3849,10 +3784,6 @@ msgstr "Połącz SSO"
 #: src/pages/Artifacts.tsx
 msgid "List view"
 msgstr "Widok listy"
-
-#: src/components/call/CallCard.tsx
-msgid "Listening"
-msgstr "Nasłuchiwanie"
 
 #: src/components/composer/HoldToTalk.tsx
 msgid "Listening…"
@@ -4149,7 +4080,6 @@ msgstr "Wysłano wiadomość do {peer}"
 msgid "Messaging"
 msgstr "Komunikatory"
 
-#: src/lib/call-session.ts
 #: src/lib/dictation.ts
 msgid "Microphone failed"
 msgstr "Błąd mikrofonu"
@@ -4172,10 +4102,6 @@ msgstr "Minimalizuj"
 msgid "Minimize bots"
 msgstr "Zminimalizuj boty"
 
-#: src/components/call/CallCard.tsx
-msgid "Minimize call"
-msgstr "Zminimalizuj rozmowę"
-
 #: src/lib/cron.ts
 msgid "minute"
 msgstr "minuta"
@@ -4184,10 +4110,6 @@ msgstr "minuta"
 #: src/pages/RoutineEditor.tsx
 msgid "minutes"
 msgstr "min"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Missed call"
-msgstr "Nieodebrane połączenie"
 
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Mode"
@@ -4289,14 +4211,6 @@ msgstr "Przenieś do"
 #: src/pages/ModelRoleSettings.tsx
 msgid "Move up"
 msgstr "Przenieś w górę"
-
-#: src/components/call/CallCard.tsx
-msgid "Mute"
-msgstr "Wycisz"
-
-#: src/components/call/CallCard.tsx
-msgid "Muted"
-msgstr "Wyciszono"
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "My computers"
@@ -4615,6 +4529,7 @@ msgstr "Poza katalogiem Labradoodle"
 msgid "Not in the plugin catalog"
 msgstr "Poza katalogiem wtyczek"
 
+#: src/components/GitHubStarPrompt.tsx
 #: src/pages/shell/message-cards.tsx
 msgid "Not now"
 msgstr "Nie teraz"
@@ -4738,15 +4653,6 @@ msgstr "Otwórz {title}"
 #: src/pages/Onboarding.tsx
 msgid "Open <0>{0}</0> and enter this code:"
 msgstr "Otwórz <0>{0}</0> i wpisz ten kod:"
-
-#: src/pages/shell/chat-header.tsx
-msgid "Open call"
-msgstr "Otwórz rozmowę"
-
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Open chat with {0}"
-msgstr "Otwórz czat z {0}"
 
 #: src/components/ComputersUnavailableHint.tsx
 msgid "Open computer settings"
@@ -4986,10 +4892,6 @@ msgstr "Osobiste"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Phone"
 msgstr "Telefon"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Phone call"
-msgstr "Rozmowa telefoniczna"
 
 #: src/pages/shell/chat-context.tsx
 #: src/pages/shell/chat-shared.ts
@@ -5557,11 +5459,6 @@ msgstr "Ponów teraz"
 msgid "Retry screen"
 msgstr "Ponów połączenie z ekranem"
 
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Return to call with {0}"
-msgstr "Wróć do rozmowy z {0}"
-
 #: src/pages/McpOAuthCallback.tsx
 #: src/pages/SlackInstallCallback.tsx
 msgid "Return to Labradoodle"
@@ -5730,10 +5627,6 @@ msgstr "Zapisywanie..."
 #: src/pages/shell/dialogs.tsx
 msgid "Saving…"
 msgstr "Zapisywanie…"
-
-#: src/lib/call-session.ts
-msgid "Say yes or no, or answer in a sentence."
-msgstr "Powiedz tak lub nie albo odpowiedz zdaniem."
 
 #: src/pages/RoutineEditor.tsx
 msgid "Schedule delayed"
@@ -5911,7 +5804,6 @@ msgstr "Adres URL serwera"
 msgid "Set"
 msgstr "Ustaw"
 
-#: src/components/call/CallCard.tsx
 #: src/components/SidebarFooter.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/SettingsOverlay.tsx
@@ -6013,10 +5905,6 @@ msgstr "Pokaż wybrane"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Show tool activity"
 msgstr "Pokaż aktywność narzędzi"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Show transcript"
-msgstr "Pokaż transkrypcję"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Sidebar density"
@@ -6188,10 +6076,6 @@ msgstr "Mów"
 msgid "Speak this reply"
 msgstr "Odczytaj tę odpowiedź"
 
-#: src/components/call/CallCard.tsx
-msgid "Speaking"
-msgstr "Mówienie"
-
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Speech model"
 msgstr "Model mowy"
@@ -6207,6 +6091,10 @@ msgstr "SSO"
 #: src/lib/user-error.ts
 msgid "SSO is temporarily unavailable. Try again."
 msgstr "SSO jest tymczasowo niedostępne. Spróbuj ponownie."
+
+#: src/components/GitHubStarPrompt.tsx
+msgid "Star on GitHub"
+msgstr ""
 
 #: src/pages/shell/computer-overlay.tsx
 msgid "Start"
@@ -6451,10 +6339,6 @@ msgstr "Bot może użyć pliku, ale nie zobaczy obrazu."
 msgid "The bot's browser stays signed in for everyone in this space"
 msgstr "Przeglądarka bota pozostaje zalogowana dla wszystkich w tej przestrzeni"
 
-#: src/lib/dictation.ts
-msgid "The browser keeps dropping the microphone. Start dictation again to retry."
-msgstr "Przeglądarka ciągle traci dostęp do mikrofonu. Uruchom dyktowanie ponownie."
-
 #: src/lib/model-connection-preflight.ts
 msgid "The connection timed out."
 msgstr "Upłynął czas połączenia."
@@ -6527,7 +6411,6 @@ msgstr "Nie można odczytać zapisanych ustawień. Usuń ten element i dodaj go 
 msgid "They get {weeks} weeks free."
 msgstr "Otrzymają {weeks} tyg. za darmo."
 
-#: src/components/call/CallCard.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
@@ -6560,17 +6443,8 @@ msgid "This bot runs on this computer, not a Linux desktop. Shell and files use 
 msgstr "Ten bot działa na tym komputerze, bez pulpitu Linuksa. Powłoka i pliki korzystają z Twojego folderu domowego."
 
 #: src/lib/dictation.ts
-msgid "This browser can't detect when you stop talking. Use Chrome, the desktop app, or hold-to-talk in the composer."
-msgstr "Ta przeglądarka nie wykrywa końca wypowiedzi. Użyj Chrome, aplikacji komputerowej lub przycisku mówienia w edytorze wiadomości."
-
-#: src/lib/dictation.ts
 msgid "This browser has no on-device dictation. Connect a voice provider with transcription, or use Chrome / the desktop app."
 msgstr "Ta przeglądarka nie obsługuje dyktowania na urządzeniu. Połącz dostawcę głosu z transkrypcją lub użyj Chrome albo aplikacji komputerowej."
-
-#: src/components/call/IncomingCall.tsx
-#: src/lib/user-error.ts
-msgid "This call is no longer ringing."
-msgstr "To połączenie już nie dzwoni."
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -6768,10 +6642,6 @@ msgstr "Narzędzia"
 msgid "Transcribing…"
 msgstr "Rozpoznawanie mowy…"
 
-#: src/components/call/CallCard.tsx
-msgid "Transcript"
-msgstr "Transkrypcja"
-
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Transcription model"
 msgstr "Model transkrypcji"
@@ -6862,10 +6732,6 @@ msgstr "Odinstaluj"
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Unlink"
 msgstr "Odłącz"
-
-#: src/components/call/CallCard.tsx
-msgid "Unmute"
-msgstr "Włącz mikrofon"
 
 #: src/components/pages/PagesList.tsx
 #: src/pages/BotContextMenu.tsx
@@ -7271,10 +7137,6 @@ msgstr "Możesz zamknąć tę kartę, jeśli przekierowanie nie nastąpi automat
 #: src/pages/McpOAuthCallback.tsx
 msgid "You can close this window."
 msgstr "Możesz zamknąć to okno."
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "You declined"
-msgstr "Połączenie odrzucone"
 
 #: src/components/InviteDialog.tsx
 msgid "You get a free month when they start their trial with a new card."

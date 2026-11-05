@@ -20,7 +20,7 @@ Labradoodle is in beta. Learn more at [labradoodle.com](https://labradoodle.com)
 ## Features
 
 - Persistent bots with their own conversations, memory, routines, and history
-- Voice mode: speak replies, dictate, and call a bot. Bring your own ElevenLabs, OpenAI, Cartesia, or Fish Audio key, or use a Mac server's installed voices
+- Voice mode: speak replies and dictate. Bring your own ElevenLabs, OpenAI, Cartesia, or Fish Audio key, or use a Mac server's installed voices
 - Shared Team Computers and isolated Private computers
 - Browser, terminal, file, and graphical desktop access
 - Bots that can delegate to peer bots or short-lived subagents

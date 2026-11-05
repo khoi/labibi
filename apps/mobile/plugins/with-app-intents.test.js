@@ -25,16 +25,6 @@ describe("LabradoodleIntents", () => {
     }
   });
 
-  it("hands a voice chat to the module that reads it", () => {
-    const swift = read("ios-intents/LabradoodleIntents.swift");
-    const module = read("modules/labradoodle-voice-chat/ios/LabradoodleVoiceChatModule.swift");
-    expect(swift).toContain('"rakazo.pending_voice_chat"');
-    expect(module).toContain('"rakazo.pending_voice_chat"');
-    for (const source of [swift, module]) {
-      expect(source).toContain('Notification.Name("LabradoodlePendingVoiceChat")');
-    }
-  });
-
   it("falls back to the app's own default server", () => {
     const local = constant("lib/server-config.ts", "LOCAL_API");
     expect(read("plugins/with-app-intents.js")).toContain(`"${local}"`);

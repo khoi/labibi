@@ -111,11 +111,6 @@ msgstr "{0} GB"
 msgid "{0} handling"
 msgstr "{0}の対応方法"
 
-#. placeholder {0}: bot.name
-#: src/components/call/IncomingCall.tsx
-msgid "{0} is calling you"
-msgstr "{0}から着信中"
-
 #. placeholder {0}: updated.name
 #: src/pages/McpServersOverlay.tsx
 msgid "{0} is not working"
@@ -841,11 +836,6 @@ msgstr "他のアシスタント"
 msgid "Answer"
 msgstr "回答"
 
-#: src/components/call/IncomingCall.tsx
-msgctxt "incoming call"
-msgid "Answer"
-msgstr "応答"
-
 #: src/components/AskCard.tsx
 msgid "Answered"
 msgstr "回答済み"
@@ -932,10 +922,6 @@ msgstr "承認"
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
 msgstr "承認"
-
-#: src/lib/call-session.ts
-msgid "Approve or deny it on screen."
-msgstr "画面で承認または拒否してください。"
 
 #: src/pages/shell/message-cards.tsx
 msgid "Approve this server to let your agent use its tools."
@@ -1201,27 +1187,6 @@ msgstr "MCPサーバーを探す"
 #: src/pages/shell/agent-import.tsx
 msgid "Built-in"
 msgstr "組み込み"
-
-#: src/pages/shell/chat-header.tsx
-msgid "Call"
-msgstr "通話"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Call back"
-msgstr "折り返し通話"
-
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Call with {0}"
-msgstr "{0}と通話"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Calling you…"
-msgstr "着信中…"
-
-#: src/components/call/CallCard.tsx
-msgid "Calling…"
-msgstr "発信中…"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Calls"
@@ -2400,11 +2365,6 @@ msgstr "カタログを検索できませんでした"
 msgid "Could not send reset email"
 msgstr "リセット用メールを送信できませんでした"
 
-#: src/components/call/IncomingCall.tsx
-#: src/lib/call-session.ts
-msgid "Could not send that"
-msgstr "送信できませんでした"
-
 #: src/components/VaultSettings.tsx
 msgid "Could not show the credential"
 msgstr "認証情報を表示できませんでした"
@@ -2667,7 +2627,6 @@ msgstr "日々の業務"
 msgid "days"
 msgstr "日"
 
-#: src/components/call/IncomingCall.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Decline"
 msgstr "拒否"
@@ -2829,10 +2788,6 @@ msgid "Dictate"
 msgstr "音声入力"
 
 #: src/lib/dictation.ts
-msgid "Dictation ended unexpectedly."
-msgstr ""
-
-#: src/lib/dictation.ts
 msgid "Dictation failed: {code}"
 msgstr ""
 
@@ -2918,10 +2873,6 @@ msgstr "Docker"
 #: src/pages/HostComputerPrompt.tsx
 msgid "Docker limits access to your computer for added security. Using {hostLabel} lets bots work with your local files and tools."
 msgstr "Dockerはセキュリティ強化のため、コンピューターへのアクセスを制限します。{hostLabel}を使用すると、ボットがローカルのファイルやツールを扱えるようになります。"
-
-#: src/components/SidebarFooter.tsx
-msgid "Docs"
-msgstr "ドキュメント"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Document changed. Reopen to edit the latest version."
@@ -3435,18 +3386,6 @@ msgstr "グループ設定"
 msgid "Group updates"
 msgstr "更新をまとめる"
 
-#: src/components/call/CallCard.tsx
-msgid "Hang up"
-msgstr "通話を終了"
-
-#: src/lib/call-session.ts
-msgid "Hang up first, then enter the code on screen."
-msgstr "先に通話を終了してから、画面に表示されたコードを入力してください。"
-
-#: src/lib/call-session.ts
-msgid "Hang up, then enter the code on screen."
-msgstr "通話を終了してから、画面に表示されたコードを入力してください。"
-
 #: src/pages/RoutineEditor.tsx
 msgid "header"
 msgstr "ヘッダー"
@@ -3490,10 +3429,6 @@ msgstr "非表示"
 #: src/components/I18nBootstrap.tsx
 msgid "Hide password"
 msgstr "パスワードを非表示"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Hide transcript"
-msgstr "文字起こしを非表示"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
@@ -3603,10 +3538,6 @@ msgstr "受信トレイとメール"
 #: src/pages/shell/agent-import.tsx
 msgid "Include API keys"
 msgstr "APIキーを含める"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Incoming call"
-msgstr "着信"
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Inherit default"
@@ -3849,10 +3780,6 @@ msgstr "SSOを連携"
 #: src/pages/Artifacts.tsx
 msgid "List view"
 msgstr "リスト表示"
-
-#: src/components/call/CallCard.tsx
-msgid "Listening"
-msgstr "聞いています"
 
 #: src/components/composer/HoldToTalk.tsx
 msgid "Listening…"
@@ -4149,7 +4076,6 @@ msgstr "{peer}にメッセージを送信しました"
 msgid "Messaging"
 msgstr "メッセージ"
 
-#: src/lib/call-session.ts
 #: src/lib/dictation.ts
 msgid "Microphone failed"
 msgstr "マイクのエラー"
@@ -4172,10 +4098,6 @@ msgstr "最小化"
 msgid "Minimize bots"
 msgstr "ボットを最小化"
 
-#: src/components/call/CallCard.tsx
-msgid "Minimize call"
-msgstr "通話を最小化"
-
 #: src/lib/cron.ts
 msgid "minute"
 msgstr "分"
@@ -4184,10 +4106,6 @@ msgstr "分"
 #: src/pages/RoutineEditor.tsx
 msgid "minutes"
 msgstr "分"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Missed call"
-msgstr "不在着信"
 
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Mode"
@@ -4289,14 +4207,6 @@ msgstr "移動先"
 #: src/pages/ModelRoleSettings.tsx
 msgid "Move up"
 msgstr "上へ移動"
-
-#: src/components/call/CallCard.tsx
-msgid "Mute"
-msgstr "ミュート"
-
-#: src/components/call/CallCard.tsx
-msgid "Muted"
-msgstr "ミュート中"
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "My computers"
@@ -4739,15 +4649,6 @@ msgstr "{title} を開く"
 msgid "Open <0>{0}</0> and enter this code:"
 msgstr "<0>{0}</0>を開いて、このコードを入力してください:"
 
-#: src/pages/shell/chat-header.tsx
-msgid "Open call"
-msgstr "通話を開く"
-
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Open chat with {0}"
-msgstr "{0}とのチャットを開く"
-
 #: src/components/ComputersUnavailableHint.tsx
 msgid "Open computer settings"
 msgstr "コンピューター設定を開く"
@@ -4986,10 +4887,6 @@ msgstr "個人"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Phone"
 msgstr ""
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Phone call"
-msgstr "電話"
 
 #: src/pages/shell/chat-context.tsx
 #: src/pages/shell/chat-shared.ts
@@ -5557,11 +5454,6 @@ msgstr "今すぐ再試行"
 msgid "Retry screen"
 msgstr "画面を再試行"
 
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Return to call with {0}"
-msgstr "{0}との通話に戻る"
-
 #: src/pages/McpOAuthCallback.tsx
 #: src/pages/SlackInstallCallback.tsx
 msgid "Return to Labradoodle"
@@ -5730,10 +5622,6 @@ msgstr "保存中..."
 #: src/pages/shell/dialogs.tsx
 msgid "Saving…"
 msgstr "保存中…"
-
-#: src/lib/call-session.ts
-msgid "Say yes or no, or answer in a sentence."
-msgstr "「はい」か「いいえ」、または文章で答えてください。"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Schedule delayed"
@@ -5911,7 +5799,6 @@ msgstr "サーバーURL"
 msgid "Set"
 msgstr "設定"
 
-#: src/components/call/CallCard.tsx
 #: src/components/SidebarFooter.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/SettingsOverlay.tsx
@@ -6013,10 +5900,6 @@ msgstr "選択中を表示"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Show tool activity"
 msgstr "ツールのアクティビティを表示"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Show transcript"
-msgstr "文字起こしを表示"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Sidebar density"
@@ -6187,10 +6070,6 @@ msgstr "読み上げ"
 #: src/pages/shell/message-view.tsx
 msgid "Speak this reply"
 msgstr "この返信を読み上げ"
-
-#: src/components/call/CallCard.tsx
-msgid "Speaking"
-msgstr "話しています"
 
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Speech model"
@@ -6451,10 +6330,6 @@ msgstr "ボットはファイルを利用できますが、画像の内容は見
 msgid "The bot's browser stays signed in for everyone in this space"
 msgstr ""
 
-#: src/lib/dictation.ts
-msgid "The browser keeps dropping the microphone. Start dictation again to retry."
-msgstr ""
-
 #: src/lib/model-connection-preflight.ts
 msgid "The connection timed out."
 msgstr "接続がタイムアウトしました。"
@@ -6527,7 +6402,6 @@ msgstr "保存された設定を読み取れません。削除してから再度
 msgid "They get {weeks} weeks free."
 msgstr "友だちは{weeks}週間無料で使えます。"
 
-#: src/components/call/CallCard.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
@@ -6560,17 +6434,8 @@ msgid "This bot runs on this computer, not a Linux desktop. Shell and files use 
 msgstr "このボットはLinuxデスクトップではなく、このコンピューター上で動作します。シェルとファイルはホームフォルダーを使用します。"
 
 #: src/lib/dictation.ts
-msgid "This browser can't detect when you stop talking. Use Chrome, the desktop app, or hold-to-talk in the composer."
-msgstr ""
-
-#: src/lib/dictation.ts
 msgid "This browser has no on-device dictation. Connect a voice provider with transcription, or use Chrome / the desktop app."
 msgstr ""
-
-#: src/components/call/IncomingCall.tsx
-#: src/lib/user-error.ts
-msgid "This call is no longer ringing."
-msgstr "この通話の呼び出しは終了しました。"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -6768,10 +6633,6 @@ msgstr "ツール"
 msgid "Transcribing…"
 msgstr "文字起こし中…"
 
-#: src/components/call/CallCard.tsx
-msgid "Transcript"
-msgstr "文字起こし"
-
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Transcription model"
 msgstr "文字起こしモデル"
@@ -6862,10 +6723,6 @@ msgstr "アンインストール"
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Unlink"
 msgstr "リンクを解除"
-
-#: src/components/call/CallCard.tsx
-msgid "Unmute"
-msgstr "ミュート解除"
 
 #: src/components/pages/PagesList.tsx
 #: src/pages/BotContextMenu.tsx
@@ -7271,10 +7128,6 @@ msgstr "自動的にリダイレクトされない場合は、このタブを閉
 #: src/pages/McpOAuthCallback.tsx
 msgid "You can close this window."
 msgstr "このウィンドウを閉じても構いません。"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "You declined"
-msgstr "辞退しました"
 
 #: src/components/InviteDialog.tsx
 msgid "You get a free month when they start their trial with a new card."

@@ -68,7 +68,7 @@ final class VoiceMessageRecorder {
     guard !starting, !isRecording else { return }
     starting = true
     defer { starting = false }
-    // Permission prompts cannot show from the background; the app asks for both on its first call.
+    // Permission prompts cannot show from the background.
     guard AVAudioApplication.shared.recordPermission == .granted,
       SFSpeechRecognizer.authorizationStatus() == .authorized
     else { throw VoiceMessageError.permission }
@@ -266,7 +266,7 @@ enum VoiceMessageError: Error, CustomLocalizedStringResourceConvertible {
 
   var localizedStringResource: LocalizedStringResource {
     switch self {
-    case .permission: "Start a voice call in Labradoodle once to allow the microphone."
+    case .permission: "Allow the microphone and speech recognition for Labradoodle in Settings."
     case .unavailable: "Speech recognition isn't available right now."
     case .liveActivitiesOff: "Turn on Live Activities for Labradoodle in Settings."
     case .failed: "Couldn't start recording."

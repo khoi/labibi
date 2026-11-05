@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findSwitchTarget, ringOnArrival, takeRingOnArrival } from "./bot-switch";
+import { findSwitchTarget } from "./bot-switch";
 
 const bots = [
   { id: "bot-1", name: "Ada" },
@@ -59,30 +59,5 @@ describe("findSwitchTarget", () => {
     expect(findSwitchTarget("switch to Travel Please, please!", named)?.id).toBe("travel-please");
     expect(findSwitchTarget("switch to Travel please", [named[1]!])?.id).toBe("travel");
     expect(findSwitchTarget("switch to Travel please", bots)?.id).toBe("bot-3");
-  });
-});
-
-describe("ringOnArrival", () => {
-  it("rings only the requested bot, once, and only soon after the hand-over", () => {
-    ringOnArrival("max", 1, 1_000);
-    expect(takeRingOnArrival("max", 1, 2_000)).toBe(true);
-    expect(takeRingOnArrival("max", 1, 2_000)).toBe(false);
-
-    ringOnArrival("max", 1, 1_000);
-    expect(takeRingOnArrival("riley", 1, 2_000)).toBe(false);
-    expect(takeRingOnArrival("max", 1, 2_000)).toBe(false);
-
-    ringOnArrival("max", 1, 1_000);
-    expect(takeRingOnArrival("max", 1, 12_000)).toBe(false);
-  });
-
-  it("drops a hand-over asked in an earlier session", () => {
-    ringOnArrival("max", 1, 1_000);
-    expect(takeRingOnArrival("max", 2, 2_000)).toBe(false);
-    expect(takeRingOnArrival("max", 1, 2_000)).toBe(false);
-  });
-
-  it("does not ring without a hand-over", () => {
-    expect(takeRingOnArrival("max", 1)).toBe(false);
   });
 });

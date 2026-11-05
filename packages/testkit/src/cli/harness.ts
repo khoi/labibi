@@ -80,7 +80,6 @@ async function main() {
     process.env.AGENT_RUNTIME = agentRuntime;
     process.env.RAKAZO_LIVE_MODEL_CATALOG = "off";
     if (!integration) {
-      process.env.PHONE_CALLS_ENABLED = "true";
       // The offline wallet, so Settings shows Wallet and sign-in completes without a provider.
       process.env.PAYMENT_WALLET_PROVIDER = "emulator";
       process.env.RAKAZO_NAV_LINKS = JSON.stringify([

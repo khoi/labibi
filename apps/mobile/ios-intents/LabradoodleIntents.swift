@@ -102,29 +102,6 @@ struct OpenBotIntent: AppIntent {
   }
 }
 
-/// Opens a bot's chat and starts a voice call. The call request goes through
-/// modules/labradoodle-voice-chat, since the chat link alone must never open the microphone.
-struct StartVoiceChatIntent: AppIntent {
-  static let title: LocalizedStringResource = "Start Voice Chat"
-  static let description = IntentDescription("Open Labradoodle and start a voice call with a bot.")
-  static let openAppWhenRun = true
-
-  @Parameter(title: "Bot", description: "Leave empty to use the chat you opened last.")
-  var bot: BotEntity?
-
-  @MainActor
-  func perform() async throws -> some IntentResult {
-    guard let target = try await target(bot) else { throw MessageBotError.noBot }
-    let botId = target.botId
-    UserDefaults.standard.set(
-      ["botId": botId, "at": String(Date().timeIntervalSince1970)],
-      forKey: "rakazo.pending_voice_chat")
-    NotificationCenter.default.post(name: Notification.Name("LabradoodlePendingVoiceChat"), object: nil)
-    await openChat(botId: botId, spaceId: target.spaceId)
-    return .result()
-  }
-}
-
 /// The single record written by lib/last-bot.ts; legacy ids have no verified owner.
 private struct SavedLastBot: Decodable {
   let botId: String
@@ -270,11 +247,6 @@ struct LabradoodleShortcuts: AppShortcutsProvider {
       phrases: ["Open a bot in \(.applicationName)"],
       shortTitle: "Open Bot",
       systemImageName: "arrow.up.forward.app")
-    AppShortcut(
-      intent: StartVoiceChatIntent(),
-      phrases: ["Start a voice chat in \(.applicationName)"],
-      shortTitle: "Start Voice Chat",
-      systemImageName: "waveform")
     AppShortcut(
       intent: RecordVoiceMessageIntent(),
       phrases: ["Record a message in \(.applicationName)"],

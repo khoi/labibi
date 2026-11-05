@@ -215,7 +215,6 @@ function account(provider: string, modelId: string) {
     avatarStyle: "organic" as const,
     billingEnabled: false,
     navLinks: [],
-    phoneCallsEnabled: false,
   };
 }
 

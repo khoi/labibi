@@ -35,27 +35,3 @@ export function findSwitchTarget<T extends { id: string; name: string }>(
   const byFirstName = bots.filter((bot) => normalized(bot.name).split(" ")[0] === firstName);
   return byFirstName.length === 1 ? byFirstName[0] : undefined;
 }
-
-/** Keep hand-over requests in memory so links cannot open the microphone. */
-const RING_WINDOW_MS = 10_000;
-let pendingRing: { botId: string; session: number; at: number } | undefined;
-
-/** `session`: the session generation the hand-over was asked in. */
-export function ringOnArrival(botId: string, session: number, now = Date.now()): void {
-  pendingRing = { botId, session, at: now };
-}
-
-/**
- * True once, for the bot a hand-over just asked to ring in this session; any other arrival,
- * or a session change since, drops the request.
- */
-export function takeRingOnArrival(botId: string, session: number, now = Date.now()): boolean {
-  const ring = pendingRing;
-  pendingRing = undefined;
-  return (
-    ring !== undefined &&
-    ring.botId === botId &&
-    ring.session === session &&
-    now - ring.at <= RING_WINDOW_MS
-  );
-}

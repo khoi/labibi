@@ -18,8 +18,6 @@ import {
   BACKGROUND_RUN_TRIGGERS,
   displayName,
   isBackgroundRunTrigger,
-  phoneCallSettings,
-  ringingCall,
   userVisibleMessages,
 } from "@labradoodle/core";
 import { chooseBotAvatar } from "./bot-avatar-choice.js";
@@ -116,7 +114,6 @@ function mapBot(
   status = "idle",
   runErrorId: string | null = null,
   updatedAt: Date = bot.updatedAt,
-  incomingCall: Bot["incomingCall"] = null,
 ): Bot {
   if (!bot.thread) {
     throw new IsolationError("Bot is missing its thread");
@@ -159,14 +156,10 @@ function mapBot(
     disabledBuiltinTools: [...disabledBuiltinToolSet(bot.disabledBuiltinTools)],
     webhookConfigured: Boolean(bot.webhookSecretId),
     spawnKey: bot.spawnKey ?? null,
-    incomingCall,
   };
 }
 
-export function createRepos(
-  prisma: PrismaClient,
-  capabilities: { phoneCallsEnabled?: boolean; phoneCallRingSeconds?: number } = {},
-) {
+export function createRepos(prisma: PrismaClient) {
   async function listBotSectionsForSpaces(
     spaceIds: string[],
   ): Promise<Array<BotSection & { spaceId: string }>> {
@@ -380,30 +373,6 @@ export function createRepos(
         ),
         SIDEBAR_PREVIEW_MESSAGE_WINDOW,
       );
-      const callThreadIds = capabilities.phoneCallsEnabled
-        ? bots.flatMap((bot) => (bot.thread ? [bot.thread.id] : []))
-        : [];
-      const callMessages = callThreadIds.length
-        ? await prisma.message.findMany({
-            where: {
-              threadId: { in: callThreadIds },
-              createdAt: {
-                gt: new Date(
-                  Date.now() -
-                    (capabilities.phoneCallRingSeconds ??
-                      phoneCallSettings().phoneCallRingSeconds) *
-                      1000,
-                ),
-              },
-              role: "bot",
-              clientNonce: { startsWith: "call:", endsWith: ":request" },
-            },
-            orderBy: { seq: "desc" },
-            distinct: ["threadId"],
-            select: { threadId: true, role: true, blocks: true },
-          })
-        : [];
-      const callsByThread = new Map(callMessages.map((message) => [message.threadId, message]));
       const candidateRunIds = [
         ...new Set(
           bots.flatMap((bot) =>
@@ -478,11 +447,6 @@ export function createRepos(
             activeRun?.status ?? "idle",
             rosterRunErrorId(bot.thread?.runs[0], activeRun),
             updatedAt,
-            ringingCall(
-              bot.thread && callsByThread.has(bot.thread.id)
-                ? [callsByThread.get(bot.thread.id)!]
-                : [],
-            ),
           );
           return { ...mapped, threadStatus: threadRunStatus(bot.runs, mapped.threadId) };
         }),

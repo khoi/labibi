@@ -212,12 +212,3 @@ Off by default. Set `VOICE_SUMMARY_MIN_CHARS` (for example `600`) to have a voic
 `FISH_TTS_MODEL` sets the Fish Audio speech model for connections that do not choose one (default
 `s2.1-pro`), and `FISH_ASR_MODEL` the transcription model (default `transcribe-1-pro`). Set them on
 the API and worker.
-
-### Calls
-
-Bots can call a user in the app, and users can hold to talk, when `PHONE_CALLS_ENABLED=true` is set on
-the API and worker. `PHONE_CALL_COOLDOWN_MINUTES` (default `2`) is the minimum time between a bot's
-calls to the same person, and `PHONE_CALL_RING_SECONDS` (default `45`) how long an unanswered call
-rings.
-
-For native mobile ringing and optional APNs VoIP configuration, see [Mobile incoming calls](./self-host-clients.md#mobile-incoming-calls).

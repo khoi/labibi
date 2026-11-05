@@ -60,7 +60,6 @@ async function collect(env: AppEnv, prisma: PrismaClient): Promise<DiagnosticsIn
       mcpStdioAllowedCommands: env.mcpStdioAllowedCommands,
       mcpAllowPrivateEndpoint: env.mcpAllowPrivateEndpoint,
       userDevicesEnabled: env.userDevicesEnabled,
-      phoneCallsEnabled: env.phoneCallsEnabled,
       secretStore: process.env.SECRET_STORE?.trim() || "encrypted",
     },
     nodeVersion: process.version,

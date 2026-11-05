@@ -7,7 +7,6 @@ import type {
 import type { ChildBotBlock, FoldedTranscript } from "@labradoodle/core";
 import {
   expandPeerReplies,
-  groupVoiceChats,
   isPeerReceiptBlocks,
   liveActivityLine,
   liveMessageComposing,
@@ -16,7 +15,6 @@ import {
   projectMessageReactions,
   timeSeparatorIds,
   unreadDividerMessageId,
-  voiceChatHoldsMessage,
 } from "@labradoodle/core";
 import type { GroupAvatarMember } from "@labradoodle/ui-web";
 import { Button, cn, Spinner } from "@labradoodle/ui-web";
@@ -35,7 +33,6 @@ import {
   useState,
 } from "react";
 import { ActiveBotGlyph } from "../../components/ai/CollaborationMarker";
-import { VoiceChatCard } from "../../components/call/VoiceChatCard";
 import type { ArtifactTarget } from "../../lib/artifact-open";
 import { projectPageCards } from "../../lib/page-cards";
 import {
@@ -76,7 +73,6 @@ export const Transcript = memo(function Transcript({
   running,
   workingBots,
   userBubble,
-  onCallBack,
   onLoadOlder,
   onOpenBot,
   onAnswer,
@@ -118,8 +114,6 @@ export const Transcript = memo(function Transcript({
   workingBots: GroupAvatarMember[];
   /** Your bubbles take the bot's color in its own chat. */
   userBubble?: { background: string; foreground: string };
-  /** Calls the bot back from a missed call in the transcript. */
-  onCallBack?: () => void;
   onLoadOlder: () => void | Promise<void>;
   onOpenBot: (botId: string) => void;
   onAnswer: (
@@ -531,32 +525,7 @@ export const Transcript = memo(function Transcript({
             {t`Load earlier messages`}
           </Button>
         ) : null}
-        {groupVoiceChats(reactionView.visibleMessages).map((item) => {
-          if (item.kind === "voiceChat") {
-            return (
-              <div key={item.key}>
-                {item.messages[0] && separatorIds.has(item.messages[0].id) ? (
-                  <TimeSeparator
-                    createdAt={item.messages[0].createdAt}
-                    locale={i18n.locale || "en"}
-                  />
-                ) : null}
-                {voiceChatHoldsMessage(item, unreadDividerId) ? (
-                  <UnreadDivider
-                    afterSeparator={Boolean(
-                      item.messages[0] && separatorIds.has(item.messages[0].id),
-                    )}
-                  />
-                ) : null}
-                <VoiceChatCard
-                  group={item}
-                  revealMessageId={scrollRequest?.messageId}
-                  onCallBack={onCallBack}
-                />
-              </div>
-            );
-          }
-          const message = item.message;
+        {reactionView.visibleMessages.map((message) => {
           if (!messageHasVisibleBlocks(message.blocks, showToolActivity)) return null;
           const peerReceipt = isPeerReceiptBlocks(message.blocks);
           const messageReactions = reactionView.reactions.get(message.id);

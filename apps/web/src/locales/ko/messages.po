@@ -111,11 +111,6 @@ msgstr "{0} GB"
 msgid "{0} handling"
 msgstr ""
 
-#. placeholder {0}: bot.name
-#: src/components/call/IncomingCall.tsx
-msgid "{0} is calling you"
-msgstr ""
-
 #. placeholder {0}: updated.name
 #: src/pages/McpServersOverlay.tsx
 msgid "{0} is not working"
@@ -841,11 +836,6 @@ msgstr "다른 어시스턴트"
 msgid "Answer"
 msgstr "답변"
 
-#: src/components/call/IncomingCall.tsx
-msgctxt "incoming call"
-msgid "Answer"
-msgstr "답변"
-
 #: src/components/AskCard.tsx
 msgid "Answered"
 msgstr "응답함"
@@ -932,10 +922,6 @@ msgstr "승인"
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
 msgstr "승인"
-
-#: src/lib/call-session.ts
-msgid "Approve or deny it on screen."
-msgstr "화면에서 승인하거나 거부하세요."
 
 #: src/pages/shell/message-cards.tsx
 msgid "Approve this server to let your agent use its tools."
@@ -1201,27 +1187,6 @@ msgstr ""
 #: src/pages/shell/agent-import.tsx
 msgid "Built-in"
 msgstr "기본 제공"
-
-#: src/pages/shell/chat-header.tsx
-msgid "Call"
-msgstr ""
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Call back"
-msgstr ""
-
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Call with {0}"
-msgstr ""
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Calling you…"
-msgstr ""
-
-#: src/components/call/CallCard.tsx
-msgid "Calling…"
-msgstr ""
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Calls"
@@ -2400,11 +2365,6 @@ msgstr ""
 msgid "Could not send reset email"
 msgstr "재설정 이메일을 보낼 수 없습니다"
 
-#: src/components/call/IncomingCall.tsx
-#: src/lib/call-session.ts
-msgid "Could not send that"
-msgstr "메시지를 보내지 못했습니다."
-
 #: src/components/VaultSettings.tsx
 msgid "Could not show the credential"
 msgstr "자격 증명을 표시할 수 없습니다"
@@ -2667,7 +2627,6 @@ msgstr ""
 msgid "days"
 msgstr "일"
 
-#: src/components/call/IncomingCall.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Decline"
 msgstr "거절"
@@ -2829,10 +2788,6 @@ msgid "Dictate"
 msgstr "받아쓰기"
 
 #: src/lib/dictation.ts
-msgid "Dictation ended unexpectedly."
-msgstr ""
-
-#: src/lib/dictation.ts
 msgid "Dictation failed: {code}"
 msgstr ""
 
@@ -2918,10 +2873,6 @@ msgstr "Docker"
 #: src/pages/HostComputerPrompt.tsx
 msgid "Docker limits access to your computer for added security. Using {hostLabel} lets bots work with your local files and tools."
 msgstr "Docker는 보안을 위해 컴퓨터 접근을 제한합니다. {hostLabel}에서는 Bot이 로컬 파일과 도구로 작업할 수 있습니다."
-
-#: src/components/SidebarFooter.tsx
-msgid "Docs"
-msgstr "문서"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Document changed. Reopen to edit the latest version."
@@ -3435,18 +3386,6 @@ msgstr "그룹 설정"
 msgid "Group updates"
 msgstr ""
 
-#: src/components/call/CallCard.tsx
-msgid "Hang up"
-msgstr "통화 종료"
-
-#: src/lib/call-session.ts
-msgid "Hang up first, then enter the code on screen."
-msgstr "먼저 전화를 끊은 다음 화면에 표시된 코드를 입력하세요."
-
-#: src/lib/call-session.ts
-msgid "Hang up, then enter the code on screen."
-msgstr "전화를 끊은 다음 화면에 표시된 코드를 입력하세요."
-
 #: src/pages/RoutineEditor.tsx
 msgid "header"
 msgstr "header"
@@ -3490,10 +3429,6 @@ msgstr "숨기기"
 #: src/components/I18nBootstrap.tsx
 msgid "Hide password"
 msgstr "비밀번호 숨기기"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Hide transcript"
-msgstr "대화 기록 숨기기"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
@@ -3603,10 +3538,6 @@ msgstr ""
 #: src/pages/shell/agent-import.tsx
 msgid "Include API keys"
 msgstr "API 키 포함"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Incoming call"
-msgstr ""
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Inherit default"
@@ -3848,10 +3779,6 @@ msgstr "SSO 연결"
 
 #: src/pages/Artifacts.tsx
 msgid "List view"
-msgstr ""
-
-#: src/components/call/CallCard.tsx
-msgid "Listening"
 msgstr ""
 
 #: src/components/composer/HoldToTalk.tsx
@@ -4149,7 +4076,6 @@ msgstr "{peer}에게 메시지 보냄"
 msgid "Messaging"
 msgstr "메시징"
 
-#: src/lib/call-session.ts
 #: src/lib/dictation.ts
 msgid "Microphone failed"
 msgstr "마이크를 사용할 수 없습니다."
@@ -4172,10 +4098,6 @@ msgstr "최소화"
 msgid "Minimize bots"
 msgstr ""
 
-#: src/components/call/CallCard.tsx
-msgid "Minimize call"
-msgstr ""
-
 #: src/lib/cron.ts
 msgid "minute"
 msgstr "분"
@@ -4184,10 +4106,6 @@ msgstr "분"
 #: src/pages/RoutineEditor.tsx
 msgid "minutes"
 msgstr "분"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Missed call"
-msgstr ""
 
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Mode"
@@ -4289,14 +4207,6 @@ msgstr "섹션으로 이동"
 #: src/pages/ModelRoleSettings.tsx
 msgid "Move up"
 msgstr "위로 이동"
-
-#: src/components/call/CallCard.tsx
-msgid "Mute"
-msgstr "음소거"
-
-#: src/components/call/CallCard.tsx
-msgid "Muted"
-msgstr ""
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "My computers"
@@ -4739,15 +4649,6 @@ msgstr "{title} 열기"
 msgid "Open <0>{0}</0> and enter this code:"
 msgstr ""
 
-#: src/pages/shell/chat-header.tsx
-msgid "Open call"
-msgstr ""
-
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Open chat with {0}"
-msgstr ""
-
 #: src/components/ComputersUnavailableHint.tsx
 msgid "Open computer settings"
 msgstr "컴퓨터 설정 열기"
@@ -4985,10 +4886,6 @@ msgstr ""
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Phone"
-msgstr ""
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Phone call"
 msgstr ""
 
 #: src/pages/shell/chat-context.tsx
@@ -5557,11 +5454,6 @@ msgstr "지금 다시 시도"
 msgid "Retry screen"
 msgstr ""
 
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Return to call with {0}"
-msgstr ""
-
 #: src/pages/McpOAuthCallback.tsx
 #: src/pages/SlackInstallCallback.tsx
 msgid "Return to Labradoodle"
@@ -5730,10 +5622,6 @@ msgstr ""
 #: src/pages/shell/dialogs.tsx
 msgid "Saving…"
 msgstr "저장 중…"
-
-#: src/lib/call-session.ts
-msgid "Say yes or no, or answer in a sentence."
-msgstr "예 또는 아니요로 답하거나 문장으로 답해 주세요."
 
 #: src/pages/RoutineEditor.tsx
 msgid "Schedule delayed"
@@ -5911,7 +5799,6 @@ msgstr "서버 URL"
 msgid "Set"
 msgstr "설정"
 
-#: src/components/call/CallCard.tsx
 #: src/components/SidebarFooter.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/SettingsOverlay.tsx
@@ -6013,10 +5900,6 @@ msgstr ""
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Show tool activity"
 msgstr ""
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Show transcript"
-msgstr "대화 기록 표시"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Sidebar density"
@@ -6187,10 +6070,6 @@ msgstr "읽기"
 #: src/pages/shell/message-view.tsx
 msgid "Speak this reply"
 msgstr "이 답변 읽기"
-
-#: src/components/call/CallCard.tsx
-msgid "Speaking"
-msgstr ""
 
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Speech model"
@@ -6451,10 +6330,6 @@ msgstr "Bot은 파일을 사용할 수 있지만 이미지는 볼 수 없습니�
 msgid "The bot's browser stays signed in for everyone in this space"
 msgstr ""
 
-#: src/lib/dictation.ts
-msgid "The browser keeps dropping the microphone. Start dictation again to retry."
-msgstr ""
-
 #: src/lib/model-connection-preflight.ts
 msgid "The connection timed out."
 msgstr "연결 시간이 초과되었습니다."
@@ -6527,7 +6402,6 @@ msgstr ""
 msgid "They get {weeks} weeks free."
 msgstr "친구는 {weeks}주 동안 무료로 사용해요."
 
-#: src/components/call/CallCard.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
@@ -6560,16 +6434,7 @@ msgid "This bot runs on this computer, not a Linux desktop. Shell and files use 
 msgstr "이 Bot은 별도 Linux 화면이 아니라 현재 컴퓨터에서 실행됩니다. 터미널과 파일 작업은 홈 폴더를 사용합니다."
 
 #: src/lib/dictation.ts
-msgid "This browser can't detect when you stop talking. Use Chrome, the desktop app, or hold-to-talk in the composer."
-msgstr ""
-
-#: src/lib/dictation.ts
 msgid "This browser has no on-device dictation. Connect a voice provider with transcription, or use Chrome / the desktop app."
-msgstr ""
-
-#: src/components/call/IncomingCall.tsx
-#: src/lib/user-error.ts
-msgid "This call is no longer ringing."
 msgstr ""
 
 #: src/components/PasskeySettings.tsx
@@ -6768,10 +6633,6 @@ msgstr ""
 msgid "Transcribing…"
 msgstr ""
 
-#: src/components/call/CallCard.tsx
-msgid "Transcript"
-msgstr "대화 기록"
-
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Transcription model"
 msgstr ""
@@ -6862,10 +6723,6 @@ msgstr ""
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Unlink"
 msgstr "연결 해제"
-
-#: src/components/call/CallCard.tsx
-msgid "Unmute"
-msgstr "음소거 해제"
 
 #: src/components/pages/PagesList.tsx
 #: src/pages/BotContextMenu.tsx
@@ -7271,10 +7128,6 @@ msgstr "자동으로 이동하지 않으면 이 탭을 닫아도 됩니다."
 #: src/pages/McpOAuthCallback.tsx
 msgid "You can close this window."
 msgstr "이 창을 닫아도 됩니다."
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "You declined"
-msgstr ""
 
 #: src/components/InviteDialog.tsx
 msgid "You get a free month when they start their trial with a new card."

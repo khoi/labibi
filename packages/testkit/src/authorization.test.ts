@@ -323,7 +323,6 @@ describeWithDatabase("API authorization and resource isolation", () => {
       ],
       ["threads/stop", { botId: "missing-bot" }],
       ["threads/clear", { botId: "missing-bot" }],
-      ["threads/followUp", { botId: "missing-bot", text: "Nope" }],
       [
         "threads/answer",
         {
@@ -337,9 +336,6 @@ describeWithDatabase("API authorization and resource isolation", () => {
       ["threads/markUnread", { botId: "missing-bot" }],
       ["threads/head"],
       ["threads/react"],
-      ["threads/endCall"],
-      ["threads/answerCall"],
-      ["threads/declineCall"],
       ["threads/answer"],
       ["computer/status", { botId: "missing-bot" }],
       ["computer/boot", { botId: "missing-bot" }],
@@ -442,16 +438,6 @@ describeWithDatabase("API authorization and resource isolation", () => {
       ["export/bot", { botId: "missing-bot" }],
       ["export/accountToken"],
       ["notifications/subscribe"],
-      ["notifications/subscribeCalls"],
-      ["notifications/declineIncomingCall", { callId: "00000000-0000-4000-8000-000000000001" }],
-      [
-        "notifications/registerCallPush",
-        {
-          deviceId: "00000000-0000-4000-8000-000000000002",
-          platform: "android",
-          expoToken: "ExponentPushToken[not-real]",
-        },
-      ],
       ["notifications/registerPush", { token: "ExponentPushToken[not-real]" }],
       ["notifications/unregisterPush"],
       ["search/query", { q: "anything" }],
@@ -681,7 +667,6 @@ describeWithDatabase("API authorization and resource isolation", () => {
       ["threads/send", { botId: ownerBot.id, artifactIds: [ownerArtifact.id] }],
       ["threads/stop", { botId: ownerBot.id }],
       ["threads/clear", { botId: ownerBot.id }],
-      ["threads/followUp", { botId: ownerBot.id, text: "intruder follow-up" }],
       [
         "threads/answer",
         {
@@ -741,7 +726,6 @@ describeWithDatabase("API authorization and resource isolation", () => {
       ["threads/subscribe", { groupId: ownerGroup.id, cursor: -1 }],
       ["threads/send", { groupId: ownerGroup.id, text: "intruder group message" }],
       ["threads/stop", { groupId: ownerGroup.id }],
-      ["threads/followUp", { groupId: ownerGroup.id, text: "intruder follow-up" }],
       ["threads/markRead", { groupId: ownerGroup.id }],
       ["threads/markUnread", { groupId: ownerGroup.id }],
     ];
