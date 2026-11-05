@@ -1,7 +1,7 @@
 import { createCipheriv, createHash } from "node:crypto";
-import { BUILTIN_TOOL_NAMES, FLEET_TOOL_NAMES } from "@labradoodle/contracts";
+import { BUILTIN_TOOL_NAMES } from "@labradoodle/contracts";
 import { describe, expect, it } from "vitest";
-import { agentConnectionTools, builtinAgentTools, DELEGATION_TOOL_NAMES } from "./builtin-tools.js";
+import { builtinAgentTools } from "./builtin-tools.js";
 import { selectBuiltinToolsForRun } from "./run-tool-selection.js";
 import { inferScript, ScriptedAgentRuntime } from "./scripted-runtime.js";
 import { EncryptedSecretStore } from "./secrets.js";
@@ -69,23 +69,6 @@ describe("scripted runtime", () => {
     expect(script?.some((t) => t.toolCalls?.some((c) => c.name === "destination.write"))).toBe(
       true,
     );
-  });
-
-  it("spawns a named bot", () => {
-    const script = inferScript("spawn a bot named Scout to research venues");
-    expect(script?.some((t) => t.toolCalls?.some((c) => c.name === "spawn_bot"))).toBe(true);
-    expect(script?.some((t) => t.toolCalls?.some((c) => c.args.name === "Scout"))).toBe(true);
-  });
-
-  it("proposes a named space", () => {
-    const script = inferScript("create a space named Customer support");
-    expect(
-      script?.some((turn) =>
-        turn.toolCalls?.some(
-          (call) => call.name === "create_space" && call.args.name === "Customer support",
-        ),
-      ),
-    ).toBe(true);
   });
 
   it("runs an in-thread subagent", () => {
@@ -159,25 +142,12 @@ describe("scripted runtime", () => {
       ),
     ).toBe(true);
   });
-
-  it("archives a spawned bot by exact name", () => {
-    const script = inferScript("delete the bot named Scout");
-    expect(
-      script?.some((t) =>
-        t.toolCalls?.some((c) => c.name === "archive_bot" && c.args.confirm_name === "Scout"),
-      ),
-    ).toBe(true);
-  });
 });
 
 describe("builtin tools", () => {
-  it("keeps every bot management tool out of helper tool lists", () => {
-    for (const name of FLEET_TOOL_NAMES) expect(DELEGATION_TOOL_NAMES.has(name), name).toBe(true);
-  });
-
   it("exposes the tools the executor actually applies", async () => {
     expect([...BUILTIN_TOOL_NAMES].sort()).toEqual(
-      [...builtinAgentTools, ...agentConnectionTools].map((tool) => tool.name).sort(),
+      builtinAgentTools.map((tool) => tool.name).sort(),
     );
     const options = {
       graphicalToolsAllowed: true,

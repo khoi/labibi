@@ -22,15 +22,6 @@ import {
 } from "./index.js";
 
 describe("contracts", () => {
-  it("leaves bot management to the database default and preserves explicit choices", () => {
-    expect(CreateBotInput.parse({ name: "New bot" }).fleetManagement).toBeUndefined();
-    for (const fleetManagement of [false, true]) {
-      expect(CreateBotInput.parse({ name: "New bot", fleetManagement }).fleetManagement).toBe(
-        fleetManagement,
-      );
-    }
-  });
-
   it("bounds the count and length of compatible model selections", () => {
     const input = {
       provider: "openai-compatible",
@@ -319,15 +310,6 @@ describe("contracts", () => {
     }
   });
 
-  it("accepts fleetManagement on bot updates and rejects non-boolean values", () => {
-    expect(UpdateBotInput.parse({ botId: "bot-1", fleetManagement: true }).fleetManagement).toBe(
-      true,
-    );
-    expect(UpdateBotInput.safeParse({ botId: "bot-1", fleetManagement: "yes" }).success).toBe(
-      false,
-    );
-  });
-
   it("drops a title that installed apps still send", () => {
     expect(CreateBotInput.parse({ name: "Chief", title: "Lead" })).not.toHaveProperty("title");
     expect(UpdateBotInput.parse({ botId: "bot-1", title: "Lead" })).toEqual({ botId: "bot-1" });
@@ -452,7 +434,7 @@ describe("contracts", () => {
       threadId: "thread-1",
       taskId: "task-1",
       status: "running",
-      trigger: "bot_message",
+      trigger: "routine",
       routineId: null,
       modelProvider: null,
       modelId: null,
@@ -474,7 +456,6 @@ describe("contracts", () => {
         status: run.status,
         trigger: run.trigger,
         notificationsEnabled: true,
-        agentMessage: null,
         promptSnippet: "Review the report",
         updatedAt: "2026-08-26T00:00:01.000Z",
       }).success,

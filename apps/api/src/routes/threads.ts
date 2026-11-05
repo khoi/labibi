@@ -19,10 +19,8 @@ import { withSerializableRetry } from "../serializable-retry.js";
 import { assertTeachingSendAllowed } from "../taught-skills.js";
 import {
   isBackgroundRun,
-  isPeerRun,
   loadMessagePage,
   shouldForwardBackgroundThreadEvent,
-  shouldForwardPeerThreadEvent,
 } from "../thread-message-pages.js";
 import type { ThreadTarget } from "../thread-target.js";
 import {
@@ -155,13 +153,10 @@ export function threadsRoutes(ctx: RouterContext) {
           input.before,
           THREAD_MESSAGE_PAGE_SIZE,
           input.around,
-          input.includePeerRuns,
-          input.includePeerReceipts,
         );
       }),
       subscribe: authed.threads.subscribe.handler(async function* ({ context, input }) {
         const target = await resolveThreadTarget(deps.prisma, context.actor, input);
-        const peerRunCache = new Map<string, Promise<boolean>>();
         const backgroundRunCache = new Map<string, Promise<boolean>>();
         const follow = deps.events.follow(target.threadId, input.cursor, context.signal);
         // A half-open stream looks identical to an idle one, so punctuate silence:
@@ -204,13 +199,13 @@ export function threadsRoutes(ctx: RouterContext) {
             pending = undefined;
             if (next.done) return;
             const event = next.value;
-            // Filtered peer events also restart the heartbeat, so check before skipping them.
+            // Filtered events also restart the heartbeat, so check before skipping them.
             await assertStillAuthorized();
-            if (await isPeerRun(deps.prisma, event.runId, peerRunCache)) {
-              if (!shouldForwardPeerThreadEvent(event)) continue;
-            } else if (await isBackgroundRun(deps.prisma, event.runId, backgroundRunCache)) {
-              if (!shouldForwardBackgroundThreadEvent(event)) continue;
-            }
+            if (
+              (await isBackgroundRun(deps.prisma, event.runId, backgroundRunCache)) &&
+              !shouldForwardBackgroundThreadEvent(event)
+            )
+              continue;
             yield event;
           }
         } finally {

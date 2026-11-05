@@ -161,10 +161,6 @@ msgstr "{commandVariable}은(는) 예약되어 있어 명령 변수로 사용할
 msgid "{connectedCount, plural, one {# connected} other {# connected}}"
 msgstr ""
 
-#: src/pages/shell/message-view.tsx
-msgid "{count, plural, one {# message with {peer}} other {# messages with {peer}}}"
-msgstr "{count, plural, other {{peer}님과 메시지 #개}}"
-
 #: src/components/markdown-copy.tsx
 msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# 행} other {# 행}}"
@@ -232,14 +228,6 @@ msgstr ""
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "{name} (same name as a built-in skill)"
 msgstr ""
-
-#: src/lib/activity-list-filters.ts
-msgid "{name} asked"
-msgstr "{name}의 질문"
-
-#: src/lib/activity-list-filters.ts
-msgid "{name} asked: {text}"
-msgstr "{name}의 질문: {text}"
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts
@@ -726,10 +714,6 @@ msgstr ""
 msgid "Allow"
 msgstr "허용"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "Allow cross-space bot communication"
-msgstr ""
-
 #: src/components/AskCard.tsx
 msgid "Allow in this space"
 msgstr ""
@@ -793,10 +777,6 @@ msgstr "데이터를 읽어올 기존 Honcho 피어입니다. Labradoodle는 이
 #: src/pages/RoutineEditor.tsx
 msgid "An integration tool"
 msgstr "연동 도구"
-
-#: src/lib/activity-list-filters.ts
-msgid "Another agent"
-msgstr "다른 Agent"
 
 #: src/components/AskCard.tsx
 msgid "Answer"
@@ -901,10 +881,6 @@ msgstr ""
 #: src/pages/BotContextMenu.tsx
 msgid "Archive"
 msgstr "보관"
-
-#: src/pages/shell/message-view.tsx
-msgid "archived"
-msgstr "보관됨"
 
 #: src/pages/shell/archived-chats.tsx
 msgid "Archived"
@@ -1072,10 +1048,6 @@ msgstr "차단"
 #: src/pages/shell/use-computer.tsx
 msgid "Booting live desktop…"
 msgstr "라이브 데스크톱 시작 중…"
-
-#: src/pages/shell/message-view.tsx
-msgid "bot"
-msgstr "Bot"
 
 #: src/lib/identity-display.ts
 #: src/pages/IntegrationSetup.tsx
@@ -1403,7 +1375,6 @@ msgstr "비우는 중…"
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/chat-find-bar.tsx
@@ -2084,10 +2055,6 @@ msgstr "스킬을 불러오지 못했습니다"
 msgid "Could not load this artifact."
 msgstr ""
 
-#: src/pages/PeerMessagesOverlay.tsx
-msgid "Could not load this chat."
-msgstr "이 채팅을 불러오지 못했습니다."
-
 #: src/components/ArtifactFileCard.tsx
 msgid "Could not load this file."
 msgstr "파일을 불러오지 못했습니다."
@@ -2613,10 +2580,6 @@ msgstr ""
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete this Space's credentials?"
 msgstr "이 스페이스의 자격 증명을 삭제할까요?"
-
-#: src/pages/shell/message-view.tsx
-msgid "deleted"
-msgstr "삭제됨"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -3694,7 +3657,6 @@ msgstr "음성 서비스를 불러오는 중…"
 #: src/pages/Artifacts.tsx
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/Invite.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/RoutineRunHistory.tsx
 #: src/pages/shell/transcript.tsx
@@ -3756,10 +3718,6 @@ msgstr ""
 #: src/pages/PluginsOverlay.tsx
 msgid "Manage MCP servers"
 msgstr "MCP 서버 관리"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Manage other bots"
-msgstr "다른 봇 관리"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Manual"
@@ -3890,21 +3848,9 @@ msgstr "메시지 작성기"
 msgid "Message event"
 msgstr ""
 
-#: src/pages/shell/message-view.tsx
-msgid "Message from {peer}"
-msgstr "{peer}의 메시지"
-
-#: src/lib/activity-list-filters.ts
-msgid "Message from another agent"
-msgstr "다른 Agent의 메시지"
-
 #: src/pages/shell/composer.tsx
 msgid "Message…"
 msgstr "메시지를 입력하세요"
-
-#: src/pages/shell/message-view.tsx
-msgid "Messaged {peer}"
-msgstr "{peer}에게 메시지 보냄"
 
 #: src/pages/settings-nav.ts
 msgid "Messaging"
@@ -4251,10 +4197,6 @@ msgstr "일치하는 모델 없음"
 #: src/pages/GroupPanel.tsx
 msgid "No members yet"
 msgstr ""
-
-#: src/pages/PeerMessagesOverlay.tsx
-msgid "No messages with {peerBotName} yet."
-msgstr "{peerBotName}와의 메시지가 아직 없습니다."
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "No model catalog is available."
@@ -4643,14 +4585,9 @@ msgid "Paused"
 msgstr "일시 중지됨"
 
 #: src/pages/AdminAccessPage.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
 msgstr ""
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Permissions"
-msgstr "권한"
 
 #: src/components/SignupSurvey.tsx
 msgid "Personal"
@@ -5202,7 +5139,6 @@ msgid "Retry"
 msgstr "다시 시도"
 
 #: src/App.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 msgid "Retry now"
 msgstr "지금 다시 시도"
 
@@ -5220,7 +5156,6 @@ msgid "Review provider settings and test again."
 msgstr "서비스 설정을 확인한 뒤 다시 테스트하세요."
 
 #: src/pages/AdminAccessPage.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 msgid "Revoke"
 msgstr "연결 해제"
 
@@ -6454,14 +6389,6 @@ msgstr "컴퓨터 업데이트"
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Update failed"
 msgstr "업데이트 실패"
-
-#: src/lib/activity-list-filters.ts
-msgid "Update from {name}"
-msgstr "{name}의 업데이트"
-
-#: src/lib/activity-list-filters.ts
-msgid "Update from {name}: {text}"
-msgstr "{name}의 업데이트: {text}"
 
 #: src/components/AskCard.tsx
 msgid "Update instructions?"

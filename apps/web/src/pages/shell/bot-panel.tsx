@@ -132,8 +132,6 @@ export function BotSettings({
     computerMode?: ComputerMode;
     memoryScope?: "isolated" | "shared" | null;
     autoSpeak?: boolean;
-    fleetManagement?: boolean;
-    crossSpaceCommunication?: boolean;
     voiceId?: string | null;
     modelProvider?: string | null;
     modelId?: string | null;
@@ -172,15 +170,6 @@ export function BotSettings({
   const [computerMode, setComputerMode] = useState(bot.computerMode);
   const [memoryScope, setMemoryScope] = useState(bot.memoryScope);
   const [autoSpeak, setAutoSpeak] = useState(bot.autoSpeak);
-  const [crossSpaceCommunication, setCrossSpaceCommunication] = useState(
-    bot.crossSpaceCommunication ?? true,
-  );
-  useEffect(
-    () => setCrossSpaceCommunication(bot.crossSpaceCommunication ?? true),
-    [bot.crossSpaceCommunication],
-  );
-  const [fleetManagement, setFleetManagement] = useState(bot.fleetManagement);
-  useEffect(() => setFleetManagement(bot.fleetManagement), [bot.fleetManagement]);
   const [voiceId, setVoiceId] = useState(bot.voiceId ?? "");
   const [modelKey, setModelKey] = useState(
     bot.modelProvider && bot.modelId ? modelOptionKey(bot.modelProvider, bot.modelId) : "",
@@ -240,8 +229,6 @@ export function BotSettings({
         color?: string;
         avatarSet?: BotAvatarSet;
         notifyOnFinish?: boolean;
-        fleetManagement?: boolean;
-        crossSpaceCommunication?: boolean;
         disabledBuiltinTools?: string[];
         baseDisabledBuiltinTools?: string[];
       },
@@ -328,8 +315,6 @@ export function BotSettings({
       color?: string;
       avatarSet?: BotAvatarSet;
       notifyOnFinish?: boolean;
-      fleetManagement?: boolean;
-      crossSpaceCommunication?: boolean;
       disabledBuiltinTools?: string[];
       baseDisabledBuiltinTools?: string[];
     },
@@ -338,14 +323,6 @@ export function BotSettings({
     try {
       setSaving(true);
       setError(null);
-      if (patchOverrides?.crossSpaceCommunication !== undefined) {
-        await onSave({ crossSpaceCommunication: patchOverrides.crossSpaceCommunication });
-        return;
-      }
-      if (patchOverrides?.fleetManagement !== undefined) {
-        await onSave({ fleetManagement: patchOverrides.fleetManagement });
-        return;
-      }
       const selected = selectedModel;
       const nextName = (patchOverrides?.name !== undefined ? patchOverrides.name : name).trim();
       const nextDescription = (
@@ -446,10 +423,6 @@ export function BotSettings({
         revisions?.notifyOnFinish === automaticRevision.current.notifyOnFinish
       )
         setNotifyOnFinish(acceptedAutomatic.current.notifyOnFinish);
-      if (patchOverrides?.crossSpaceCommunication !== undefined)
-        setCrossSpaceCommunication(!patchOverrides.crossSpaceCommunication);
-      if (patchOverrides?.fleetManagement !== undefined)
-        setFleetManagement(!patchOverrides.fleetManagement);
       setError(errorText(err, t`Could not save`));
     } finally {
       pendingSavesRef.current -= 1;
@@ -478,8 +451,6 @@ export function BotSettings({
     color?: string;
     avatarSet?: BotAvatarSet;
     notifyOnFinish?: boolean;
-    fleetManagement?: boolean;
-    crossSpaceCommunication?: boolean;
     disabledBuiltinTools?: string[];
   }) {
     // Serialize full-object auto-saves so an older in-flight request cannot
@@ -709,36 +680,6 @@ export function BotSettings({
                   </NativeSelect>
                 </label>
               ) : null}
-            </SettingsGroup>
-            <SettingsGroup label={t`Permissions`}>
-              <div className="flex min-h-11 items-center justify-between gap-3 text-sm">
-                <label htmlFor={`${ids}-cross-space`} className={rowLabelClass}>
-                  <Trans>Allow cross-space bot communication</Trans>
-                </label>
-                <Switch
-                  id={`${ids}-cross-space`}
-                  checked={crossSpaceCommunication}
-                  disabled={saving}
-                  onCheckedChange={(checked) => {
-                    setCrossSpaceCommunication(checked);
-                    void enqueueSave({ crossSpaceCommunication: checked });
-                  }}
-                />
-              </div>
-              <div className="flex min-h-11 items-center justify-between gap-3 text-sm">
-                <label htmlFor={`${ids}-fleet-management`} className={rowLabelClass}>
-                  <Trans>Manage other bots</Trans>
-                </label>
-                <Switch
-                  id={`${ids}-fleet-management`}
-                  checked={fleetManagement}
-                  disabled={saving}
-                  onCheckedChange={(checked) => {
-                    setFleetManagement(checked);
-                    void enqueueSave({ fleetManagement: checked });
-                  }}
-                />
-              </div>
             </SettingsGroup>
             <InstructionSettings key={bot.id} bot={bot} />
             <SettingsGroup label={t`How other bots see it`} plain>

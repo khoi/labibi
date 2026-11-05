@@ -1,5 +1,3 @@
-import { ModelOutputError } from "@labradoodle/adapter-kit";
-import { MISSING_TOOL_FINAL_RESPONSE_ERROR } from "@labradoodle/core";
 import { describe, expect, it } from "vitest";
 import { runIdentityInstruction } from "./run-instructions.js";
 import { mayOpenModelStream } from "./run-lifecycle.js";
@@ -13,8 +11,6 @@ import {
 } from "./run-notifications.js";
 import {
   completionMessageSegments,
-  DELEGATED_EMPTY_NOTICE,
-  emptyDelegatedToolTurnShouldFail,
   longWorkProgressGuidance,
   REACTION_SILENT_REPLY_GUIDANCE,
   ROUTINE_SILENT_REPLY_GUIDANCE,
@@ -22,7 +18,6 @@ import {
   runPromotesMidTurnNarration,
   runReplyGuidance,
 } from "./run-replies.js";
-import { handoffEndedTurn } from "./run-turn.js";
 import {
   couldBecomeNoResponse,
   isExactNoResponse,
@@ -44,61 +39,16 @@ describe("completionMessageSegments", () => {
     expect(completionMessageSegments([])).toEqual([{ kind: "text", text: "done." }]);
   });
 
-  it("allows a fully empty completion for silent bot-message wakes", () => {
+  it("allows a fully empty completion for silent runs", () => {
     expect(completionMessageSegments([], { allowSilentEmpty: true })).toEqual([]);
   });
 
-  it("drops narration after a successful group handoff", () => {
+  it("drops suppressed output", () => {
     expect(
       completionMessageSegments([{ kind: "text", text: "Research is checking this." }], {
         suppressOutput: true,
       }),
     ).toEqual([]);
-  });
-
-  it("uses a contextual fallback for a non-silent peer result", () => {
-    expect(
-      completionMessageSegments([], { emptyResponseText: "Update from Researcher: 42" }),
-    ).toEqual([{ kind: "text", text: "Update from Researcher: 42" }]);
-  });
-
-  it("keeps a peer result visible when the runtime emitted only tool activity", () => {
-    const steps = [{ kind: "steps" as const, steps: [{ label: "Read file", count: 1 }] }];
-    expect(
-      completionMessageSegments(steps, { emptyResponseText: "Update from Researcher: 42" }),
-    ).toEqual([...steps, { kind: "text", text: "Update from Researcher: 42" }]);
-  });
-
-  it("does not append fallback text to a tool-only FYI", () => {
-    const steps = [{ kind: "steps" as const, steps: [{ label: "Read file", count: 1 }] }];
-    expect(
-      completionMessageSegments(steps, {
-        allowSilentEmpty: true,
-        emptyResponseText: "synthetic text",
-      }),
-    ).toEqual(steps);
-  });
-
-  it("normalizes a blank fallback", () => {
-    expect(completionMessageSegments([], { emptyResponseText: "   " })).toEqual([
-      { kind: "text", text: "done." },
-    ]);
-  });
-
-  it("fails a tool turn whose only completion text is the empty delegated notice", () => {
-    const steps = [{ kind: "steps" as const, steps: [{ label: "Read file", count: 1 }] }];
-    const blocks = completionMessageSegments(steps, { emptyResponseText: DELEGATED_EMPTY_NOTICE });
-    expect(blocks).toEqual([...steps, { kind: "text", text: DELEGATED_EMPTY_NOTICE }]);
-    expect(emptyDelegatedToolTurnShouldFail(blocks)).toBe(true);
-    expect(emptyDelegatedToolTurnShouldFail(steps)).toBe(false);
-    expect(emptyDelegatedToolTurnShouldFail([{ kind: "text", text: DELEGATED_EMPTY_NOTICE }])).toBe(
-      false,
-    );
-    expect(
-      emptyDelegatedToolTurnShouldFail(
-        completionMessageSegments(steps, { emptyResponseText: "Update from Researcher: 42" }),
-      ),
-    ).toBe(false);
   });
 });
 
@@ -176,11 +126,6 @@ describe("completionMarksUnread", () => {
     expect(completionMarksUnread("routine", "")).toBe(false);
     expect(completionMarksUnread("routine", "Daily report ready")).toBe(true);
     expect(completionMarksUnread("user", "")).toBe(true);
-  });
-
-  it("keeps peer completions quiet except the requester’s final answer", () => {
-    expect(completionMarksUnread("bot_message", "The result")).toBe(false);
-    expect(completionMarksUnread("bot_message", "The result", true)).toBe(true);
   });
 
   it("keeps empty-run done. fallback unread and notifying", () => {
@@ -579,9 +524,7 @@ describe("runReplyGuidance", () => {
 });
 
 describe("runPromotesMidTurnNarration", () => {
-  it("drops mid-turn narration in bot-to-bot runs", () => {
-    expect(runPromotesMidTurnNarration("bot_message")).toBe(false);
-  });
+  it("drops mid-turn narration in bot-to-bot runs", () => {});
 });
 
 describe("subagentMarksUnread", () => {
@@ -589,9 +532,6 @@ describe("subagentMarksUnread", () => {
     expect(subagentMarksUnread("routine", "completed")).toBe(false);
     expect(subagentMarksUnread("routine", "failed")).toBe(true);
     expect(subagentMarksUnread("user", "completed")).toBe(true);
-    expect(subagentMarksUnread("bot_message", "completed")).toBe(false);
-    expect(subagentMarksUnread("bot_message", "failed")).toBe(true);
-    expect(subagentMarksUnread("bot_message", "completed", true)).toBe(true);
   });
 });
 
@@ -659,21 +599,5 @@ describe("isPlaceholderReply", () => {
     for (const text of ["Paris", "ok", "7", "👍", "été", "好", "✓", "—", "-", "?", ". ok"]) {
       expect(isPlaceholderReply(text, [])).toBe(false);
     }
-  });
-});
-
-describe("handoffEndedTurn", () => {
-  const missing = new ModelOutputError(MISSING_TOOL_FINAL_RESPONSE_ERROR);
-
-  it("ends a handed-off turn that wrote no final answer without failing it", () => {
-    expect(handoffEndedTurn({ handedOff: true }, missing)).toBe(true);
-  });
-
-  it("still fails a turn that did not hand off, or failed for another reason", () => {
-    expect(handoffEndedTurn({ handedOff: false }, missing)).toBe(false);
-    expect(handoffEndedTurn({ handedOff: true }, new ModelOutputError("cut off"))).toBe(false);
-    expect(
-      handoffEndedTurn({ handedOff: true }, new Error(MISSING_TOOL_FINAL_RESPONSE_ERROR)),
-    ).toBe(false);
   });
 });

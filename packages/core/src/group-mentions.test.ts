@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   hasMentionToken,
-  inferHandoffTargetBotId,
-  inferHandoffTargetName,
   memberName,
   mentionedGroupBotIds,
   resolveGroupTargetBotIds,
@@ -257,35 +255,6 @@ describe("mentionedGroupBotIds", () => {
   it("names the members a message addresses", () => {
     expect(mentionedGroupBotIds({ text: "@BotA and @Writer", members })).toEqual(["a", "c"]);
     expect(mentionedGroupBotIds({ text: "@everyone", members })).toEqual(["a", "b", "c"]);
-  });
-});
-
-describe("inferHandoffTargetName", () => {
-  it("picks Writer when BotA is also mentioned", () => {
-    expect(inferHandoffTargetName("@BotA hand this to Writer for the draft")).toBe("Writer");
-  });
-});
-
-describe("inferHandoffTargetBotId", () => {
-  it("recognizes hand this to Writer", () => {
-    expect(inferHandoffTargetBotId("hand this to Writer for the draft", members)).toBe("c");
-  });
-
-  it("recognizes @Writer take the draft", () => {
-    expect(inferHandoffTargetBotId("@Writer take the draft", members)).toBe("c");
-  });
-
-  it("resolves Writer from mixed mention prompt", () => {
-    expect(inferHandoffTargetBotId("@BotA hand this to Writer for the draft", members)).toBe("c");
-  });
-
-  it("resolves multi-word handoff targets", () => {
-    expect(
-      inferHandoffTargetBotId("hand this to Research Writer for the draft", [
-        ...members,
-        { id: "research", name: "Research Writer" },
-      ]),
-    ).toBe("research");
   });
 });
 

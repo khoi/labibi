@@ -1,18 +1,13 @@
 import { setImmediate } from "node:timers/promises";
 import type { JobPublisher, NotificationProvider } from "@labradoodle/adapter-kit";
 import { messagingDeliverJob, routineWakeupJob, runContinueJob } from "@labradoodle/adapter-kit";
-import type { MessageBlock } from "@labradoodle/contracts";
-import { stuckWorkStatusMessages } from "@labradoodle/core";
 import type { Pool, PrismaClient, ThreadEvents } from "@labradoodle/db";
 import { reconcileComputerRuns } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import type { PoolClient } from "pg";
-import { returnBotMessageOutcome } from "./bot-messages.js";
 import { scheduleComputerControlExpiry } from "./computer-control.js";
 import { findRunRecoveryBlockers } from "./run-recovery.js";
 import { reconcileStuckWork } from "./stuck-work.js";
-import { isLoopGuardStopText } from "./tool-loop.js";
-import { isUserProgressClientNonce } from "./user-progress.js";
 
 const DEFAULT_INTERVAL_MS = 30_000;
 const DEFAULT_BATCH_SIZE = 100;
@@ -233,78 +228,6 @@ export function createJobReconciler(
         }),
       ]);
 
-      const events = deps.events;
-      if (events) {
-        const outcomes = await deps.prisma.run.findMany({
-          where: {
-            trigger: "bot_message",
-            botOutcomeReturnedAt: null,
-            OR: [
-              { status: { in: ["completed", "failed"] } },
-              { status: "cancelled", error: { in: [...stuckWorkStatusMessages()] } },
-            ],
-          },
-          orderBy: [{ updatedAt: "asc" }, { id: "asc" }],
-          take: batchSize,
-          select: {
-            id: true,
-            spaceId: true,
-            threadId: true,
-            botId: true,
-            userId: true,
-            sourceMessageId: true,
-            status: true,
-            error: true,
-            bot: { select: { name: true } },
-          },
-        });
-        await Promise.all(
-          outcomes.map(async (run) => {
-            const stuckCancel = run.status === "cancelled";
-            const transcript =
-              run.status === "failed" || stuckCancel
-                ? { text: "", progressOnly: false }
-                : await botRunOutcomeText(deps.prisma, run.id);
-            const text = stuckCancel
-              ? (run.error ?? "")
-              : run.status === "failed"
-                ? `Could not complete the delegated request: ${run.error ?? "unknown error"}`
-                : transcript.text ||
-                  "The delegated bot completed its turn without a written summary.";
-            // Loop-guard stops complete without an error; their persisted final text
-            // is the only marker available when the executor's outcome delivery fails.
-            const loopGuardStop = isLoopGuardStopText(transcript.text);
-            // Same stable delivery key as the executor path (auto-outcome:<runId>), so a
-            // concurrent or earlier return is replayed instead of double-posted. Progress-only
-            // transcripts (all mid-turn user-progress messages) return as status.
-            const intent =
-              run.status === "failed" ||
-              stuckCancel ||
-              !transcript.text.trim() ||
-              transcript.progressOnly
-                ? "status"
-                : ("result" as const);
-            const returned = await returnBotMessageOutcome(
-              { prisma: deps.prisma, jobs: deps.jobs, events },
-              run,
-              { id: run.botId, name: run.bot.name },
-              text,
-              intent,
-              { forceUnread: run.status === "failed" || stuckCancel || loopGuardStop },
-            ).catch((error) => {
-              getLogger().error("bot message outcome reconciliation", error);
-              return false;
-            });
-            if (!returned) {
-              await deps.prisma.run.updateMany({
-                where: { id: run.id, botOutcomeReturnedAt: null },
-                data: { updatedAt: new Date() },
-              });
-            }
-          }),
-        );
-      }
-
       // A queued run already has a job while it waits out failure backoff.
       // Default replace would zero that job's attempts and run it now. keepExisting
       // leaves the job while attempts remain, and still replaces one that is exhausted.
@@ -490,48 +413,4 @@ async function publishAll(publications: Array<Promise<unknown>>) {
     (result) => result.status === "rejected",
   );
   if (failed) throw failed.reason;
-}
-
-/** Prefer the full bot transcript for a run so interim progress is not mistaken for the sole result. */
-async function botRunOutcomeText(
-  prisma: {
-    message: {
-      findMany: (args: {
-        where: { runId: string; role: "bot" };
-        orderBy: { seq: "asc" };
-        select: { blocks: true; clientNonce: true };
-      }) => Promise<Array<{ blocks: unknown; clientNonce: string | null }>>;
-    };
-  },
-  runId: string,
-): Promise<{ text: string; progressOnly: boolean }> {
-  const messages = await prisma.message.findMany({
-    where: { runId, role: "bot" },
-    orderBy: { seq: "asc" },
-    select: { blocks: true, clientNonce: true },
-  });
-  const progressParts: string[] = [];
-  const finalParts: string[] = [];
-  for (const message of messages) {
-    const text = messageText(message.blocks);
-    if (!text) continue;
-    if (isUserProgressClientNonce(message.clientNonce)) progressParts.push(text);
-    else finalParts.push(text);
-  }
-  // Prefer the latest non-progress reply when present so earlier untagged mid-run
-  // publishes (for example pre-takeover narration) do not contaminate the result.
-  // Progress-only turns still join progress beats as status.
-  if (finalParts.length > 0) {
-    return { text: finalParts[finalParts.length - 1]!, progressOnly: false };
-  }
-  return { text: progressParts.join("\n\n"), progressOnly: progressParts.length > 0 };
-}
-
-function messageText(blocks: unknown): string {
-  if (!Array.isArray(blocks)) return "";
-  return (blocks as MessageBlock[])
-    .filter((block): block is Extract<MessageBlock, { kind: "text" }> => block.kind === "text")
-    .map((block) => block.text)
-    .join("")
-    .trim();
 }

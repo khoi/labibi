@@ -26,7 +26,7 @@ const TERMINAL: RunStatus[] = ["completed", "failed", "cancelled"];
  * its reply goes back to that bot. A message that lands during any of them waits, and the
  * continuation after the turn finishes answers it.
  */
-const NON_CONVERSATIONAL_RUN_TRIGGERS = new Set(["routine", "webhook", "tickets", "bot_message"]);
+const NON_CONVERSATIONAL_RUN_TRIGGERS = new Set(["routine", "webhook", "tickets"]);
 
 /**
  * Background triggers do internal work that must not leak into the chat: the

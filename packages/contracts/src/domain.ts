@@ -117,7 +117,6 @@ export const BotSchema = z.object({
   sectionId: Id.nullable(),
   archivedAt: z.string().nullable(),
   unread: z.boolean(),
-  parentBotId: Id.nullable(),
   memoryScope: MemoryScopeSchema.nullable(),
   threadId: Id,
   preview: z.string(),
@@ -134,12 +133,8 @@ export const BotSchema = z.object({
   thinkingLevel: ThinkingLevelSchema.nullable(),
   teamChatAmbientEnabled: z.boolean(),
   teamChatRules: z.string(),
-  crossSpaceCommunication: z.boolean().optional(),
-  fleetManagement: z.boolean().default(true),
   disabledBuiltinTools: z.array(z.string()).default([]),
   webhookConfigured: z.boolean(),
-  /** Present when created with an idempotency key (e.g. onboarding:first). */
-  spawnKey: z.string().nullable(),
 });
 export type Bot = z.infer<typeof BotSchema>;
 
@@ -264,7 +259,6 @@ export const SpaceBotSchema = BotSchema.pick({
   pinned: true,
   sectionId: true,
   unread: true,
-  parentBotId: true,
   preview: true,
   status: true,
   threadStatus: true,
@@ -437,7 +431,6 @@ export const CreateBotInput = z.object({
   description: z.string().max(BOT_DESCRIPTION_MAX_LENGTH).default(""),
   instructions: z.string().max(BOT_INSTRUCTIONS_MAX_LENGTH).default(""),
   notifyOnFinish: z.boolean().default(true),
-  fleetManagement: z.boolean().optional(),
   color: BotAvatarValueSchema.optional(),
   /** Ignored: a new bot takes its owner's set. Older apps still send one. */
   avatarSet: BotAvatarSetSchema.optional(),
@@ -445,7 +438,6 @@ export const CreateBotInput = z.object({
   avatarFamily: z.number().int().min(0).max(9).optional(),
   computerMode: ComputerModeSchema.default("team"),
   /** Idempotency key within a space (unique with spaceId). */
-  spawnKey: z.string().trim().min(1).max(120).optional(),
 });
 export type CreateBotInput = z.infer<typeof CreateBotInput>;
 
@@ -471,8 +463,6 @@ export const UpdateBotInput = z
     thinkingLevel: ThinkingLevelSchema.nullable().optional(),
     teamChatAmbientEnabled: z.boolean().optional(),
     teamChatRules: z.string().max(TEAM_CHAT_RULES_MAX_LENGTH).optional(),
-    crossSpaceCommunication: z.boolean().optional(),
-    fleetManagement: z.boolean().optional(),
     disabledBuiltinTools: DisabledBuiltinToolsSchema.optional(),
     /** Write only while these settings still hold, as an undo does. */
     expectedSettings: BotSettingsValuesSchema.optional(),
@@ -1367,16 +1357,6 @@ export const MessagingChannelMembershipSchema = z.object({
   memberCount: z.number().int().nonnegative(),
 });
 export type MessagingChannelMembership = z.infer<typeof MessagingChannelMembershipSchema>;
-
-export const MessagingAgentConnectionSchema = z.object({
-  id: Id,
-  peerBotName: z.string(),
-  peerOwnerLabel: z.string(),
-  status: z.enum(["pending", "approved", "declined", "revoked"]),
-  /** true when the caller's bot is the target (only the target can respond). */
-  incoming: z.boolean(),
-});
-export type MessagingAgentConnection = z.infer<typeof MessagingAgentConnectionSchema>;
 
 export const RunSchema = z.object({
   id: Id,

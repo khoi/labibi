@@ -149,7 +149,6 @@ async function* spaceRecords(
       position: bot.position,
       sectionId: bot.sectionId,
       archivedAt: isoOrNull(bot.archivedAt),
-      parentBotId: ownBot(bot.parentBotId),
       memoryScope: bot.memoryScope,
       voiceId: bot.voiceId,
       autoSpeak: bot.autoSpeak,
@@ -159,8 +158,6 @@ async function* spaceRecords(
       disabledBuiltinTools: bot.disabledBuiltinTools,
       teamChatAmbientEnabled: bot.teamChatAmbientEnabled,
       teamChatRules: bot.teamChatRules,
-      crossSpaceCommunication: bot.crossSpaceCommunication,
-      fleetManagement: bot.fleetManagement,
       createdAt: iso(bot.createdAt),
     };
 

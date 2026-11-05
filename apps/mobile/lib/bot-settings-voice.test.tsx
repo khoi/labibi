@@ -14,7 +14,6 @@ import { afterChatNotifyChange } from "./live-notifications";
 const mocks = vi.hoisted(() => ({
   instructions: "",
   description: "",
-  crossSpaceCommunication: false,
   avatarSet: undefined as "organic" | "rakazo" | undefined,
   focus: undefined as string | undefined,
   os: "ios",
@@ -96,8 +95,6 @@ vi.mock("./api", () => ({
         avatarSet: mocks.avatarSet,
         autoSpeak: false,
         computerMode: "team",
-        fleetManagement: false,
-        crossSpaceCommunication: mocks.crossSpaceCommunication,
       };
     }
     if (procedure === "scratchpad/list") return mocks.work;
@@ -362,7 +359,6 @@ describe("bot settings device voice menu", () => {
   let root: Root;
   let container: HTMLDivElement;
   beforeEach(() => {
-    mocks.crossSpaceCommunication = false;
     mocks.avatarSet = undefined;
     vi.clearAllMocks();
     mocks.loadBot.mockReset();
@@ -394,32 +390,6 @@ describe("bot settings device voice menu", () => {
     await expand();
   };
   const menu = () => container.querySelector('[data-menu="Device voice"]');
-
-  it("defaults daily check-ins on and saves an opt-out", async () => {
-    await render();
-    const toggle = container.querySelector<HTMLButtonElement>(
-      '[aria-label="Daily check-ins on unfinished work"]',
-    )!;
-    expect(toggle.getAttribute("aria-checked")).toBe("true");
-    await act(async () => toggle.click());
-    expect(mocks.rpc).toHaveBeenCalledWith("bots/update", {
-      botId: "bot-fixture",
-    });
-  });
-
-  it.each([false, true])("loads and saves cross-space communication: %s", async (enabled) => {
-    mocks.crossSpaceCommunication = enabled;
-    await render();
-    const toggle = container.querySelector<HTMLButtonElement>(
-      '[aria-label="Allow cross-space bot communication"]',
-    )!;
-    expect(toggle.getAttribute("aria-checked")).toBe(String(enabled));
-    await act(async () => toggle.click());
-    expect(mocks.rpc).toHaveBeenCalledWith("bots/update", {
-      botId: "bot-fixture",
-      crossSpaceCommunication: !enabled,
-    });
-  });
 
   it.each(["ios", "android"])(
     "uses muted section disclosure and nonrepeating labels on %s",
@@ -456,40 +426,6 @@ describe("bot settings device voice menu", () => {
       expect(trigger.getAttribute("aria-expanded")).toBe("false");
     },
   );
-
-  it("adds work from the native prompt and completes it with a leading checkbox", async () => {
-    mocks.work = [{ id: "first", title: "First task", notes: "", status: "open" }];
-    await render();
-    await act(async () =>
-      container.querySelector<HTMLButtonElement>('[aria-label="Add open work"]')!.click(),
-    );
-    expect(mocks.prompt).toHaveBeenCalledWith(
-      "Add open work",
-      undefined,
-      expect.any(Array),
-      "plain-text",
-      "",
-    );
-    mocks.rpc.mockResolvedValueOnce({ id: "new", title: "New task", notes: "", status: "open" });
-    const buttons = mocks.prompt.mock.calls.at(-1)![2];
-    await act(async () =>
-      buttons.find((button: { text: string }) => button.text === "Save").onPress("New task"),
-    );
-    expect(mocks.rpc).toHaveBeenCalledWith("scratchpad/create", {
-      botId: "bot-fixture",
-      title: "New task",
-    });
-    const complete = container.querySelector<HTMLButtonElement>(
-      '[aria-label="Complete New task"]',
-    )!;
-    expect(complete.getAttribute("role")).toBe("checkbox");
-    expect(JSON.parse(complete.dataset.style!)).toMatchObject({ minHeight: 22, width: 22 });
-    expect(complete.dataset.hitSlop).toBe("11");
-    mocks.rpc.mockResolvedValueOnce({});
-    await act(async () => complete.click());
-    expect(mocks.rpc).toHaveBeenCalledWith("scratchpad/update", { itemId: "new", status: "done" });
-    expect(container.textContent).not.toContain("New task");
-  });
 
   it("restores instructions through the history icon's native menu", async () => {
     mocks.history = [
@@ -587,36 +523,6 @@ describe("bot settings device voice menu", () => {
     ).toBe(false);
   });
 
-  it("limits open work and memory lists until Show more", async () => {
-    mocks.work = Array.from({ length: 7 }, (_, i) => ({
-      id: `task-${i}`,
-      title: `Task ${i}`,
-      notes: "",
-      status: "open",
-    }));
-    mocks.docs = Array.from({ length: 7 }, (_, i) => ({
-      id: `doc-${i}`,
-      path: `notes/${i}.md`,
-      content: "Fixture notes",
-    }));
-    await act(async () => root.render(<BotSettingsScreen />));
-    expect(container.textContent).not.toContain("Task 6");
-    expect(container.textContent).not.toContain("notes/6.md");
-    for (const button of [...container.querySelectorAll("button")].filter(
-      (node) => node.textContent === "Show more",
-    ))
-      await act(async () => button.click());
-    expect(container.textContent).toContain("Task 6");
-    expect(container.textContent).toContain("notes/6.md");
-    await act(async () =>
-      container.querySelector<HTMLButtonElement>('[aria-label="notes/6.md"]')!.click(),
-    );
-    expect(mocks.push).toHaveBeenCalledWith({
-      pathname: "/memory-note",
-      params: { id: "doc-6", botId: "bot-fixture" },
-    });
-  });
-
   it("uses a dialog rather than inline fields on Android", async () => {
     mocks.os = "android";
     await act(async () => root.render(<BotSettingsScreen />));
@@ -673,7 +579,6 @@ describe("bot settings device voice menu", () => {
       "Computer",
       "Read replies aloud",
       "Device voice",
-      "Manage other bots",
       "Instructions",
     ]) {
       expect(container.textContent).not.toContain(label);
@@ -700,8 +605,6 @@ describe("bot settings device voice menu", () => {
       model: "Model",
       readAloud: "Read replies aloud",
       voice: "Device voice",
-      crossSpaceCommunication: "Allow cross-space bot communication",
-      fleetManagement: "Manage other bots",
     };
     const actual = [...container.querySelectorAll("span")].flatMap((span) =>
       Object.entries(labels)
@@ -717,13 +620,7 @@ describe("bot settings device voice menu", () => {
         .flat()
         .filter((key) => key in labels && key !== "instructions" && key !== "computer"),
     );
-    expect(actual).toEqual([
-      "model",
-      "readAloud",
-      "voice",
-      "crossSpaceCommunication",
-      "fleetManagement",
-    ]);
+    expect(actual).toEqual(["model", "readAloud", "voice"]);
 
     await expand();
     expect(container.textContent).not.toContain("Read replies aloud");
@@ -935,187 +832,6 @@ describe("bot settings device voice menu", () => {
       "bots/update",
       expect.objectContaining({ botId: "bot-fixture", autoSpeak: true }),
     );
-  });
-
-  it("persists bot management toggles immediately without adding them to unrelated saves", async () => {
-    mocks.rpc.mockResolvedValue(undefined);
-    await render();
-    const toggle = container.querySelector<HTMLButtonElement>('[aria-label="Manage other bots"]');
-    if (!toggle) throw new Error("Missing bot management switch");
-    await act(async () => {
-      toggle.click();
-    });
-    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("bots/update", {
-      botId: "bot-fixture",
-      fleetManagement: true,
-    });
-    mocks.rpc.mockClear();
-    const save = [...container.querySelectorAll("button")].find(
-      (button) => button.textContent === "Save",
-    );
-    if (!save) {
-      expect(container.querySelector('[aria-label="Save"]')).toBeNull();
-      return;
-    }
-    await act(async () => {
-      save.click();
-    });
-    for (const [, input] of mocks.rpc.mock.calls)
-      expect(input).not.toHaveProperty("fleetManagement");
-  });
-
-  it("keeps the switch and Save enabled while saving and coalesces rapid toggles", async () => {
-    const first = deferredSave();
-    const last = deferredSave();
-    mocks.rpc.mockReturnValueOnce(first.promise).mockReturnValueOnce(last.promise);
-    await render();
-    const toggle = container.querySelector<HTMLButtonElement>('[aria-label="Manage other bots"]')!;
-    const save = [...container.querySelectorAll("button")].find(
-      (button) => button.textContent === "Save",
-    )!;
-    await act(async () => toggle.click());
-    expect(toggle.getAttribute("aria-checked")).toBe("true");
-    expect(toggle.disabled).toBe(false);
-    expect(save).toBeUndefined();
-    await act(async () => toggle.click());
-    await act(async () => toggle.click());
-    await act(async () => toggle.click());
-    expect(toggle.getAttribute("aria-checked")).toBe("false");
-    expect(mocks.rpc).toHaveBeenCalledTimes(1);
-    await act(async () => first.resolve());
-    expect(mocks.rpc.mock.calls).toEqual([
-      ["bots/update", { botId: "bot-fixture", fleetManagement: true }],
-      ["bots/update", { botId: "bot-fixture", fleetManagement: false }],
-    ]);
-    expect(toggle.getAttribute("aria-checked")).toBe("false");
-    await act(async () => last.reject(new Error("latest save failed")));
-    expect(toggle.getAttribute("aria-checked")).toBe("true");
-    expect(container.textContent).toContain("latest save failed");
-    expect(toggle.disabled).toBe(false);
-  });
-
-  it.each([false, true])(
-    "waits for the full bot management queue before leaving (failure: %s)",
-    async (fails) => {
-      const first = deferredSave();
-      const last = deferredSave();
-      let fleetCalls = 0;
-      mocks.rpc.mockImplementation((_procedure: string, input: { fleetManagement?: boolean }) =>
-        input.fleetManagement === undefined
-          ? Promise.resolve(undefined)
-          : ++fleetCalls === 1
-            ? first.promise
-            : last.promise,
-      );
-      await render();
-      const toggle = container.querySelector<HTMLButtonElement>(
-        '[aria-label="Manage other bots"]',
-      )!;
-      await act(async () =>
-        container.querySelector<HTMLButtonElement>('[aria-label="Read replies aloud"]')!.click(),
-      );
-      const save = [...container.querySelectorAll("button")].find(
-        (button) => button.textContent === "Save",
-      )!;
-      await act(async () => toggle.click());
-      await act(async () => save.click());
-      expect(mocks.back).not.toHaveBeenCalled();
-      expect(toggle.disabled).toBe(false);
-      await act(async () => toggle.click());
-      await act(async () => first.resolve());
-      expect(mocks.back).not.toHaveBeenCalled();
-      expect(mocks.rpc).toHaveBeenCalledTimes(3);
-      await act(async () => {
-        if (fails) last.reject(new Error("bot management write failed"));
-        else last.resolve();
-      });
-      if (fails) {
-        expect(mocks.back).not.toHaveBeenCalled();
-        expect(toggle.getAttribute("aria-checked")).toBe("true");
-        expect(container.textContent).toContain("bot management write failed");
-        expect(toggle.disabled).toBe(false);
-      } else {
-        expect(mocks.back).toHaveBeenCalledOnce();
-      }
-    },
-  );
-
-  it("keeps a failed bot management write visible without an unrelated Save", async () => {
-    mocks.rpc.mockRejectedValueOnce(new Error("offline"));
-    await render();
-    await act(async () =>
-      container.querySelector<HTMLButtonElement>('[aria-label="Manage other bots"]')!.click(),
-    );
-    expect(
-      [...container.querySelectorAll("button")].some((button) => button.textContent === "Save"),
-    ).toBe(false);
-    expect(mocks.back).not.toHaveBeenCalled();
-    expect(container.textContent).toContain("offline");
-  });
-
-  it("does not resend saved edits when Save is retried after a failed bot management write", async () => {
-    mocks.rpc.mockResolvedValue(undefined);
-    mocks.rpc.mockRejectedValueOnce(new Error("offline")).mockResolvedValueOnce({
-      instructions: "",
-      autoSpeak: true,
-      instructionHistory: [
-        { id: "v1", instructions: "Older", reason: "edit", createdAt: "2026-10-21T18:00:00Z" },
-      ],
-    });
-    await render();
-    expect(container.querySelector('[data-menu="Instruction history"]')).toBeNull();
-    const toggle = container.querySelector<HTMLButtonElement>('[aria-label="Manage other bots"]')!;
-    await act(async () => toggle.click());
-    await act(async () =>
-      container.querySelector<HTMLButtonElement>('[aria-label="Read replies aloud"]')!.click(),
-    );
-    const save = [...container.querySelectorAll("button")].find(
-      (button) => button.textContent === "Save",
-    )!;
-    await act(async () => save.click());
-    expect(mocks.rpc).toHaveBeenLastCalledWith("bots/update", {
-      botId: "bot-fixture",
-      autoSpeak: true,
-    });
-    expect(mocks.back).not.toHaveBeenCalled();
-    expect(container.textContent).toContain("offline");
-    expect(container.querySelector('[data-menu="Instruction history"]')).not.toBeNull();
-    await act(async () => toggle.click());
-    mocks.rpc.mockClear();
-    expect(
-      [...container.querySelectorAll("button")].some((button) => button.textContent === "Save"),
-    ).toBe(false);
-    expect(mocks.rpc).not.toHaveBeenCalled();
-  });
-
-  it("coalesces a queued value matching the confirmed save", async () => {
-    const first = deferredSave();
-    mocks.rpc.mockReturnValueOnce(first.promise);
-    await render();
-    const toggle = container.querySelector<HTMLButtonElement>('[aria-label="Manage other bots"]')!;
-    await act(async () => toggle.click());
-    await act(async () => toggle.click());
-    await act(async () => toggle.click());
-    await act(async () => first.resolve());
-    expect(mocks.rpc).toHaveBeenCalledTimes(1);
-    expect(toggle.getAttribute("aria-checked")).toBe("true");
-  });
-
-  it("restores the bot management toggle when saving fails", async () => {
-    mocks.rpc.mockRejectedValueOnce(new Error("offline"));
-    await render();
-    const toggle = container.querySelector<HTMLButtonElement>('[aria-label="Manage other bots"]');
-    if (!toggle) throw new Error("Missing bot management switch");
-    await act(async () => {
-      toggle.click();
-    });
-    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("bots/update", {
-      botId: "bot-fixture",
-      fleetManagement: true,
-    });
-    expect(toggle.getAttribute("aria-checked")).toBe("false");
-    expect(toggle.disabled).toBe(false);
-    expect(container.textContent).toContain("offline");
   });
 
   it("marks the current voice, keeps the plain row, and saves before playing a sample", async () => {

@@ -9,7 +9,6 @@ function chat(id: string, name: string) {
     preview: "",
     pinned: false,
     sectionId: null,
-    parentBotId: null,
   };
 }
 

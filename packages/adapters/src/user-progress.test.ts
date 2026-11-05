@@ -5,7 +5,6 @@ import { builtinAgentTools } from "./builtin-tools.js";
 import { longWorkProgressGuidance } from "./run-replies.js";
 import {
   assistantTurnSeparator,
-  botMessageOutcomeFromMidTurn,
   clampUserProgressMessage,
   extractNarrationText,
   finalBlocksAfterMidTurnProgress,
@@ -143,28 +142,6 @@ describe("finalBlocksAfterMidTurnProgress", () => {
     ];
     expect(finalBlocksAfterMidTurnProgress(blocks, true)).toEqual(blocks);
     expect(isToolActivityBlock(blocks[0]!)).toBe(true);
-  });
-});
-
-describe("botMessageOutcomeFromMidTurn", () => {
-  it("prefers the final reply as a result", () => {
-    expect(botMessageOutcomeFromMidTurn("All set.", ["Checking calendars…"])).toEqual({
-      text: "All set.",
-      intent: "result",
-    });
-  });
-
-  it("returns mid-turn progress as status when there is no final reply", () => {
-    expect(
-      botMessageOutcomeFromMidTurn("", ["Checking calendars…", "Found three free slots."]),
-    ).toEqual({
-      text: "Checking calendars…\n\nFound three free slots.",
-      intent: "status",
-    });
-  });
-
-  it("returns null when nothing was posted", () => {
-    expect(botMessageOutcomeFromMidTurn("  ", [])).toBeNull();
   });
 });
 

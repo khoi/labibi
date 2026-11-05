@@ -161,10 +161,6 @@ msgstr "{commandVariable} 是保留名称，不能用作命令变量。请选择
 msgid "{connectedCount, plural, one {# connected} other {# connected}}"
 msgstr "{connectedCount, plural, one {# 个已连接} other {# 个已连接}}"
 
-#: src/pages/shell/message-view.tsx
-msgid "{count, plural, one {# message with {peer}} other {# messages with {peer}}}"
-msgstr "{count, plural, other {与 {peer} 的 # 条消息}}"
-
 #: src/components/markdown-copy.tsx
 msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# 行} other {# 行}}"
@@ -232,14 +228,6 @@ msgstr "{moved, plural, one {# 个 Bot 已改用工作区默认。} other {# 个
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "{name} (same name as a built-in skill)"
 msgstr ""
-
-#: src/lib/activity-list-filters.ts
-msgid "{name} asked"
-msgstr "{name} 问"
-
-#: src/lib/activity-list-filters.ts
-msgid "{name} asked: {text}"
-msgstr "{name} 问：{text}"
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts
@@ -726,10 +714,6 @@ msgstr "全部时间"
 msgid "Allow"
 msgstr "允许"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "Allow cross-space bot communication"
-msgstr "允许跨空间机器人通信"
-
 #: src/components/AskCard.tsx
 msgid "Allow in this space"
 msgstr ""
@@ -793,10 +777,6 @@ msgstr "用于读取数据的现有 Honcho peer。Labradoodle 绝不会向其写
 #: src/pages/RoutineEditor.tsx
 msgid "An integration tool"
 msgstr "集成工具"
-
-#: src/lib/activity-list-filters.ts
-msgid "Another agent"
-msgstr "其他 Agent"
 
 #: src/components/AskCard.tsx
 msgid "Answer"
@@ -901,10 +881,6 @@ msgstr "应用"
 #: src/pages/BotContextMenu.tsx
 msgid "Archive"
 msgstr "归档"
-
-#: src/pages/shell/message-view.tsx
-msgid "archived"
-msgstr "已归档"
 
 #: src/pages/shell/archived-chats.tsx
 msgid "Archived"
@@ -1072,10 +1048,6 @@ msgstr "阻止"
 #: src/pages/shell/use-computer.tsx
 msgid "Booting live desktop…"
 msgstr "正在启动实时桌面…"
-
-#: src/pages/shell/message-view.tsx
-msgid "bot"
-msgstr "Bot"
 
 #: src/lib/identity-display.ts
 #: src/pages/IntegrationSetup.tsx
@@ -1403,7 +1375,6 @@ msgstr "正在清空…"
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/chat-find-bar.tsx
@@ -2084,10 +2055,6 @@ msgstr "无法加载技能"
 msgid "Could not load this artifact."
 msgstr "无法加载此产物。"
 
-#: src/pages/PeerMessagesOverlay.tsx
-msgid "Could not load this chat."
-msgstr "无法加载此对话。"
-
 #: src/components/ArtifactFileCard.tsx
 msgid "Could not load this file."
 msgstr "无法加载此文件。"
@@ -2613,10 +2580,6 @@ msgstr "删除工作区"
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete this Space's credentials?"
 msgstr "要删除此工作区的凭据吗？"
-
-#: src/pages/shell/message-view.tsx
-msgid "deleted"
-msgstr "已删除"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -3694,7 +3657,6 @@ msgstr "正在加载语音提供方…"
 #: src/pages/Artifacts.tsx
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/Invite.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/RoutineRunHistory.tsx
 #: src/pages/shell/transcript.tsx
@@ -3756,10 +3718,6 @@ msgstr "管理账单"
 #: src/pages/PluginsOverlay.tsx
 msgid "Manage MCP servers"
 msgstr "管理 MCP 服务器"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Manage other bots"
-msgstr "管理其他机器人"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Manual"
@@ -3890,21 +3848,9 @@ msgstr "消息输入框"
 msgid "Message event"
 msgstr "消息事件"
 
-#: src/pages/shell/message-view.tsx
-msgid "Message from {peer}"
-msgstr "来自 {peer} 的消息"
-
-#: src/lib/activity-list-filters.ts
-msgid "Message from another agent"
-msgstr "来自其他 Agent 的消息"
-
 #: src/pages/shell/composer.tsx
 msgid "Message…"
 msgstr "消息…"
-
-#: src/pages/shell/message-view.tsx
-msgid "Messaged {peer}"
-msgstr "已发给 {peer}"
 
 #: src/pages/settings-nav.ts
 msgid "Messaging"
@@ -4251,10 +4197,6 @@ msgstr "没有匹配的模型"
 #: src/pages/GroupPanel.tsx
 msgid "No members yet"
 msgstr "还没有成员"
-
-#: src/pages/PeerMessagesOverlay.tsx
-msgid "No messages with {peerBotName} yet."
-msgstr "还没有与 {peerBotName} 的消息。"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "No model catalog is available."
@@ -4643,14 +4585,9 @@ msgid "Paused"
 msgstr "已暂停"
 
 #: src/pages/AdminAccessPage.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
 msgstr "待处理"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Permissions"
-msgstr "权限"
 
 #: src/components/SignupSurvey.tsx
 msgid "Personal"
@@ -5202,7 +5139,6 @@ msgid "Retry"
 msgstr "重试"
 
 #: src/App.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 msgid "Retry now"
 msgstr "立即重试"
 
@@ -5220,7 +5156,6 @@ msgid "Review provider settings and test again."
 msgstr "请检查提供方设置并重新测试。"
 
 #: src/pages/AdminAccessPage.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 msgid "Revoke"
 msgstr "撤销"
 
@@ -6454,14 +6389,6 @@ msgstr "更新电脑"
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Update failed"
 msgstr "更新失败"
-
-#: src/lib/activity-list-filters.ts
-msgid "Update from {name}"
-msgstr "来自 {name} 的更新"
-
-#: src/lib/activity-list-filters.ts
-msgid "Update from {name}: {text}"
-msgstr "来自 {name} 的更新：{text}"
 
 #: src/components/AskCard.tsx
 msgid "Update instructions?"

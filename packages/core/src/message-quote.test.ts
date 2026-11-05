@@ -215,7 +215,6 @@ const visibleBlocks: Array<[MessageBlock, string]> = [
     { kind: "subagent", agentId: "agent", name: "Research", task: "Search", status: "running" },
     "Research",
   ],
-  [{ kind: "child_bot", botId: "child", name: "Helper", status: "created" }, "Helper"],
   [
     {
       kind: "cloud_agent",
@@ -264,15 +263,6 @@ const visibleBlocks: Array<[MessageBlock, string]> = [
   [
     { kind: "file", artifactId: "file", name: "notes.txt", mimeType: "text/plain", size: 12 },
     "notes.txt",
-  ],
-  [{ kind: "handoff", fromBotId: "one", toBotId: "two", text: "Please review" }, "Please review"],
-  [
-    { kind: "bot_message_sent", toBotId: "two", toBotName: "Helper", text: "Check this" },
-    "Check this",
-  ],
-  [
-    { kind: "bot_message_received", fromBotId: "two", fromBotName: "Helper", text: "Checked" },
-    "Checked",
   ],
 ];
 

@@ -487,7 +487,6 @@ async function memberSpaceNavigation(
           (membership.space.deletingAt === null || membership.space.deletingAt < staleClaimBefore),
         bots: spaceBots.map((bot) => ({
           id: bot.id,
-          parentBotId: bot.parentBotId,
           spaceId: bot.spaceId,
           name: bot.name,
           title: "",

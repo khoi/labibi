@@ -1,5 +1,5 @@
 import type { ConnectorTool } from "@labradoodle/adapter-kit";
-import { BOT_INSTRUCTIONS_MAX_LENGTH, ThinkingLevelSchema } from "@labradoodle/contracts";
+import { ThinkingLevelSchema } from "@labradoodle/contracts";
 import { getLogger } from "@labradoodle/logging";
 import { Type } from "typebox";
 import {
@@ -92,15 +92,6 @@ function builtinParameters(tool: ConnectorTool) {
       model_id: Type.Optional(Type.String()),
     });
   }
-  if (tool.name === "spawn_bot") {
-    return Type.Object({
-      name: Type.String(),
-      description: Type.Optional(Type.String()),
-      instructions: Type.Optional(Type.String()),
-      prompt: Type.Optional(Type.String()),
-      computer_mode: Type.Optional(stringEnum(["team", "dedicated"], {})),
-    });
-  }
   if (tool.name === "update_bot") {
     return Type.Object({
       name: Type.Optional(Type.String()),
@@ -115,62 +106,6 @@ function builtinParameters(tool: ConnectorTool) {
       thinkingLevel: Type.Optional(stringEnum(ThinkingLevelSchema.options, {})),
       readAloud: Type.Optional(Type.Boolean()),
       voice: Type.Optional(Type.String()),
-      bot_id: Type.Optional(Type.String()),
-    });
-  }
-  if (tool.name === "list_fleet") return Type.Object({ bot_id: Type.Optional(Type.String()) });
-  if (tool.name === "create_group") {
-    return Type.Object({
-      name: Type.String({ minLength: 1 }),
-      bot_ids: Type.Optional(Type.Array(Type.String())),
-      bot_names: Type.Optional(Type.Array(Type.String())),
-    });
-  }
-  if (tool.name === "update_group") {
-    return Type.Object({
-      group_id: Type.Optional(Type.String()),
-      group_name: Type.Optional(Type.String()),
-      name: Type.Optional(Type.String({ minLength: 1 })),
-      add_bot_ids: Type.Optional(Type.Array(Type.String())),
-      remove_bot_ids: Type.Optional(Type.Array(Type.String())),
-    });
-  }
-  if (tool.name === "organize_bot") {
-    return Type.Object({
-      bot_id: Type.Optional(Type.String()),
-      bot_name: Type.Optional(Type.String()),
-      group_id: Type.Optional(Type.String()),
-      group_name: Type.Optional(Type.String()),
-      section: Type.Optional(Type.String({ minLength: 1 })),
-      clear_section: Type.Optional(Type.Boolean()),
-      pinned: Type.Optional(Type.Boolean()),
-    });
-  }
-  if (tool.name === "set_child_instructions") {
-    return Type.Object({
-      bot_id: Type.Optional(Type.String()),
-      bot_name: Type.Optional(Type.String()),
-      instructions: Type.String({ minLength: 1, maxLength: BOT_INSTRUCTIONS_MAX_LENGTH }),
-      expected_version: Type.String(),
-    });
-  }
-  if (tool.name === "set_child_bot_model") {
-    return Type.Object({
-      bot_id: Type.Optional(Type.String()),
-      bot_name: Type.Optional(Type.String()),
-      provider: Type.Optional(Type.String()),
-      model: Type.Optional(Type.String()),
-      thinking_level: Type.Optional(Type.String()),
-      clear: Type.Optional(Type.Boolean()),
-    });
-  }
-  if (tool.name === "create_space") {
-    return Type.Object({ name: Type.String({ minLength: 1, maxLength: 60 }) });
-  }
-  if (tool.name === "archive_bot") {
-    return Type.Object({
-      confirm_name: Type.String(),
-      bot_id: Type.Optional(Type.String()),
     });
   }
   return undefined;
@@ -324,62 +259,35 @@ function fieldOptions(definition: Record<string, unknown>): FieldOptions {
     : {};
 }
 
-const FLEET_STRING_ARGS = [
-  "bot_id",
-  "bot_name",
-  "group_id",
-  "group_name",
+const UPDATE_BOT_STRING_ARGS = [
   "name",
   "description",
   "color",
   "artifact_id",
-  "provider",
   "model",
-  "thinking_level",
   "thinkingLevel",
   "voice",
-  "section",
   "instructions",
-  "expected_version",
 ] as const;
-const FLEET_LIST_ARGS = ["bot_ids", "bot_names", "add_bot_ids", "remove_bot_ids"] as const;
-const FLEET_FLAG_ARGS = [
-  "pinned",
-  "clear_section",
-  "clear",
-  "use_attached_image",
-  "readAloud",
-] as const;
+const UPDATE_BOT_FLAG_ARGS = ["use_attached_image", "readAloud"] as const;
 
 /**
- * Keeps only the fleet and `update_bot` arguments a model sent, coerced to their declared types.
+ * Keeps only the `update_bot` arguments a model sent, coerced to their declared types.
  * Providers send omitted optional fields as null or blank, so those stay absent: `String(null)`
  * would otherwise become the text "null".
  */
-export function prepareFleetArguments(
-  toolName: string,
-  raw: Record<string, unknown>,
-): Record<string, unknown> {
-  // A routine's timing fields are numbers and one-of branches; only the blanks are dropped.
-  if (toolName === "create_child_routine") {
-    return Object.fromEntries(Object.entries(raw).filter(([, value]) => argumentGiven(value)));
-  }
+export function prepareUpdateBotArguments(raw: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
-  for (const key of FLEET_STRING_ARGS) {
-    if (toolName === "update_bot" && key === "expected_version") continue;
+  for (const key of UPDATE_BOT_STRING_ARGS) {
     if (argumentGiven(raw[key])) out[key] = String(raw[key]);
   }
-  for (const key of FLEET_LIST_ARGS) {
-    if (Array.isArray(raw[key])) out[key] = raw[key].map(String);
-  }
-  for (const key of FLEET_FLAG_ARGS) {
+  for (const key of UPDATE_BOT_FLAG_ARGS) {
     if (argumentGiven(raw[key])) out[key] = raw[key];
   }
   const notify = raw.notifyOnFinish ?? raw.notify_on_finish;
   if (argumentGiven(notify)) out.notifyOnFinish = notify;
   // The read pager's offset is a number; the handler validates it.
-  if (toolName === "update_bot" && argumentGiven(raw.instructions_offset))
-    out.instructions_offset = raw.instructions_offset;
+  if (argumentGiven(raw.instructions_offset)) out.instructions_offset = raw.instructions_offset;
   return out;
 }
 

@@ -84,7 +84,6 @@ describePostgres("new bot avatars (PostgreSQL)", () => {
         await repos.createBot(actor(), {
           ...botInput("Child"),
           avatarSet: "organic",
-          parentBotId: bots[0]!.id,
         }),
       );
       return bots;
@@ -157,7 +156,6 @@ describePostgres("new bot avatars (PostgreSQL)", () => {
       await expect(runAsTenant(owner, () => repos.createBot(actor(), input))).rejects.toThrow();
       expect(await system.bot.findUnique({ where: { id } })).toMatchObject({
         color: first.color,
-        spawnKey: id,
         archivedAt: expect.any(Date),
       });
     }
@@ -170,7 +168,6 @@ describePostgres("new bot avatars (PostgreSQL)", () => {
       repos.createBot(actor(), {
         ...botInput("Keep me"),
         id,
-        spawnKey: "different-key",
         color: "#123456",
       }),
     );
@@ -199,7 +196,6 @@ describePostgres("new bot avatars (PostgreSQL)", () => {
             {
               ...botInput("Foreign collision"),
               id,
-              spawnKey: "different-key",
             },
           ),
         ),

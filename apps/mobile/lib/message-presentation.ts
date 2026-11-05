@@ -6,13 +6,7 @@ import {
 } from "@labradoodle/core/message-quote";
 
 export function isCenteredAgentEvent(blocks: readonly MessageBlock[]): boolean {
-  return blocks.some(
-    (block) =>
-      block.kind === "handoff" ||
-      block.kind === "bot_message_sent" ||
-      block.kind === "bot_message_received" ||
-      block.kind === "channel_message",
-  );
+  return blocks.some((block) => block.kind === "channel_message");
 }
 
 /** Cards with a text field, buttons or links own the taps that land inside them. */

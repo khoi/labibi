@@ -54,9 +54,11 @@ describe("localized identity projections", () => {
     const message = {
       blocks: [
         {
-          kind: "bot_message_received",
-          fromBotId: "__route__",
-          fromBotName: "__TestTok1__",
+          kind: "channel_message",
+          provider: "fixture",
+          channelId: "channel",
+          fromAddress: "__route__",
+          fromLabel: "__TestTok1__",
           text: "Keep __TestTok1__ literal",
         },
       ],
@@ -78,7 +80,11 @@ describe("localized identity projections", () => {
         messages: [
           {
             blocks: [
-              { fromBotName: "Бот", fromBotId: "__route__", text: "Keep __TestTok1__ literal" },
+              {
+                fromLabel: "Участник",
+                fromAddress: "__route__",
+                text: "Keep __TestTok1__ literal",
+              },
             ],
           },
         ],

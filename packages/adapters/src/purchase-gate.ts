@@ -1,7 +1,7 @@
+import { CARD_TITLE_ESCAPED_CHARACTERS } from "@labradoodle/core";
 import { getLogger } from "@labradoodle/logging";
-import type { FleetCardSummary } from "./approval-ask.js";
+import type { ApprovalCardSummary } from "./approval-ask.js";
 import { redactConnectorPayload } from "./connector-safety.js";
-import { cardName } from "./fleet-tools.js";
 import type { RunContext } from "./run-context.js";
 
 /** The page tools a click that pays can go through. */
@@ -53,8 +53,15 @@ export function purchaseApprovalOf(value: unknown): PurchaseApproval | undefined
   };
 }
 
+const CARD_TITLE_ESCAPED = new RegExp(CARD_TITLE_ESCAPED_CHARACTERS, "g");
+
+/** A name in a card title, which renders as Markdown: one line, and no links or emphasis. */
+function cardName(value: string): string {
+  return value.replace(/\s+/g, " ").trim().replace(CARD_TITLE_ESCAPED, "\\$&");
+}
+
 /** The card for a purchase. The button and total are read from the page, not chosen by the model. */
-export function purchaseCardSummary(purchase: PurchaseApproval): FleetCardSummary {
+export function purchaseCardSummary(purchase: PurchaseApproval): ApprovalCardSummary {
   if (!purchase.site) {
     return {
       onceOnly: true,

@@ -158,13 +158,6 @@ describePostgres("account export (PostgreSQL)", () => {
         blocks: [
           { kind: "page", pageId: page.id, version: 2, title: "Launch plan" },
           { kind: "text", text: `Updated [Launch plan](page:${page.id}).` },
-          // Messages to other bots name pages too; their links must follow the page's new id.
-          {
-            kind: "bot_message_sent",
-            toBotId: `elsewhere-${suffix}`,
-            toBotName: "Elsewhere",
-            text: `Built [Launch plan](page:${page.id}) for you.`,
-          },
         ],
       });
       const theirThread = await prisma.thread.create({

@@ -1,14 +1,11 @@
 import type { ConnectorTool } from "@labradoodle/adapter-kit";
 import {
-  ATTACHMENT_MAX_COUNT,
-  BOT_DESCRIPTION_MAX_LENGTH,
   BOT_INSTRUCTIONS_MAX_LENGTH,
   BOT_MEMORY_MAX_BYTES,
   BotSecretName,
   botSecretDestinationSchema,
   FEEDBACK_DESCRIPTION_MAX_LENGTH,
   FEEDBACK_KINDS,
-  FLEET_TOOL_NAMES,
   GenerateSecretInput,
   HISTORY_QUERIES_MAX_BYTES,
   LOGIN_FIELD_LIMIT,
@@ -100,14 +97,7 @@ function secretAskToolSurface() {
   return secretAskSurface;
 }
 
-export const DELEGATION_TOOL_NAMES = new Set<string>([
-  "run_subagent",
-  "spawn_bot",
-  "archive_bot",
-  "handoff_to_bot",
-  "message_bot",
-  ...FLEET_TOOL_NAMES,
-]);
+export const DELEGATION_TOOL_NAMES = new Set<string>(["run_subagent"]);
 
 const scheduleCreateProperties = {
   name: { type: "string", description: "Short label shown in Routines." },
@@ -189,12 +179,9 @@ const startAtSpec = {
     "ISO date or datetime a repeating schedule starts; the first run is the first match at or after it. Without an offset, read in timezone. If you already did this period's work yourself, set startAt so the first run does not repeat it.",
 };
 
-function scheduleCreateBranch(
-  active: readonly (keyof typeof scheduleTimingSpecs)[],
-  extraProperties: Record<string, unknown> = {},
-) {
+function scheduleCreateBranch(active: readonly (keyof typeof scheduleTimingSpecs)[]) {
   const activeNames = new Set<string>(active);
-  const properties: Record<string, unknown> = { ...extraProperties, ...scheduleCreateProperties };
+  const properties: Record<string, unknown> = { ...scheduleCreateProperties };
   for (const name of scheduleTimingNames) {
     properties[name] = activeNames.has(name) ? scheduleTimingSpecs[name] : blankScheduleTiming;
   }
@@ -218,32 +205,6 @@ const scheduleCreateInputSchema = {
     scheduleCreateBranch(["delaySeconds"]),
     scheduleCreateBranch(["watch"]),
   ],
-};
-
-const childRoutineTargetProperties = {
-  bot_id: { type: "string", description: "Id of a bot in this space." },
-  bot_name: { type: "string", description: "Exact name of a bot in this space." },
-};
-
-/** Same exactly-one-timing-method rule as schedule_create, plus the target bot. */
-const createChildRoutineInputSchema = {
-  oneOf: [
-    scheduleCreateBranch(["cron"], childRoutineTargetProperties),
-    scheduleCreateBranch(["every", "unit"], childRoutineTargetProperties),
-    scheduleCreateBranch(["runAt"], childRoutineTargetProperties),
-    scheduleCreateBranch(["delayMinutes"], childRoutineTargetProperties),
-    scheduleCreateBranch(["delaySeconds"], childRoutineTargetProperties),
-  ],
-};
-
-const fleetBotTargetProperties = {
-  bot_id: { type: "string", description: "Id of the bot." },
-  bot_name: { type: "string", description: "Exact name of the bot." },
-};
-
-const fleetGroupTargetProperties = {
-  group_id: { type: "string", description: "Id of the group." },
-  group_name: { type: "string", description: "Exact name of the group." },
 };
 
 export const builtinAgentTools: ConnectorTool[] = [
@@ -1246,57 +1207,6 @@ export const builtinAgentTools: ConnectorTool[] = [
     },
   },
   {
-    name: "create_space",
-    description:
-      "Propose a new space in the current organization when the user asks for a separate data boundary. A space can contain many bots and groups, but its chats, files, memory, tools, and integrations stay isolated from other spaces. Creating the space is the whole action; do not create bots in it unless the user asks later.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        name: {
-          type: "string",
-          minLength: 1,
-          maxLength: 60,
-          description: 'Short display name, e.g. "Customer support".',
-        },
-      },
-      required: ["name"],
-    },
-  },
-  {
-    name: "spawn_bot",
-    description:
-      "Create a full, regular bot — the same kind the user creates from the + button. It gets its own thread, computer, and memory, and appears as a peer in the bot list. Do not also call run_subagent. Creating the bot is the whole action. Only set prompt if the user asked that new bot to start work immediately.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        name: { type: "string" },
-        description: {
-          type: "string",
-          maxLength: BOT_DESCRIPTION_MAX_LENGTH,
-          description:
-            "Short public summary of what the new bot is for. Teammates see it in their bot directory.",
-        },
-        instructions: {
-          type: "string",
-          maxLength: BOT_INSTRUCTIONS_MAX_LENGTH,
-          description:
-            "Private operating instructions for the new bot. Only that bot sees them, as its system prompt.",
-        },
-        prompt: {
-          type: "string",
-          description: "Optional first task to run in the new bot's thread.",
-        },
-        computer_mode: {
-          type: "string",
-          enum: ["team", "dedicated"],
-          description:
-            "Optional. team shares one screen with other Team bots; dedicated (Private) gets its own. Defaults to team.",
-        },
-      },
-      required: ["name"],
-    },
-  },
-  {
     name: "update_bot",
     description:
       "Read or change your own settings. Call with no fields to read them and the models and thinking levels you can pick. Long instructions come in pages; follow instructionsNextOffset before replacing them. If a read comes back with contextTruncated, it was shortened: say so, do not rewrite. Pass fields to change them, only when the user asks; setting your name, description and first instructions when you have none is fine. Never claim a change without calling this.",
@@ -1360,191 +1270,7 @@ export const builtinAgentTools: ConnectorTool[] = [
           type: "string",
           description: 'Voice to read replies in: a voice name, or "default".',
         },
-        bot_id: {
-          type: "string",
-          description: "A bot in this space, to update its profile instead of yours.",
-        },
       },
-    },
-  },
-  {
-    name: "list_fleet",
-    description:
-      "List the bots and groups in this space with their ids, sections and pinned state. You can manage every bot listed; createdByMe only says which ones you created. Pass bot_id of a bot in this space to read only its full instructions and instructionsVersion, which set_child_instructions needs as expected_version. Call this before changing the bots you manage.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        bot_id: {
-          type: "string",
-          description:
-            "A bot in this space, to read its instructions and version instead of the roster.",
-        },
-      },
-      additionalProperties: false,
-    },
-  },
-  {
-    name: "create_group",
-    description:
-      "Create a group of 2 to 10 of this user's bots. Pass bot_ids or bot_names (exact).",
-    inputSchema: {
-      type: "object",
-      properties: {
-        name: { type: "string", minLength: 1 },
-        bot_ids: { type: "array", items: { type: "string" } },
-        bot_names: { type: "array", items: { type: "string" } },
-      },
-      required: ["name"],
-      additionalProperties: false,
-    },
-  },
-  {
-    name: "update_group",
-    description:
-      "Rename a group or add and remove its members. Works on any group of this user, not only ones you created. Identify it by group_id or group_name (exact). A group keeps 2 to 10 members.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        ...fleetGroupTargetProperties,
-        name: { type: "string", minLength: 1, description: "New group name." },
-        add_bot_ids: { type: "array", items: { type: "string" } },
-        remove_bot_ids: { type: "array", items: { type: "string" } },
-      },
-      additionalProperties: false,
-    },
-  },
-  {
-    name: "organize_bot",
-    description:
-      "Move a bot or group into a sidebar section, clear its section, or pin and unpin it. Works on any bot or group of this user, not only ones you created. Identify it by bot_id, bot_name, group_id or group_name (exact). section is a section name; clear_section: true takes it out of its section.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        ...fleetBotTargetProperties,
-        ...fleetGroupTargetProperties,
-        section: { type: "string", minLength: 1, description: "Section name." },
-        clear_section: { type: "boolean", description: "Take it out of its section." },
-        pinned: { type: "boolean" },
-      },
-      additionalProperties: false,
-    },
-  },
-  {
-    name: "set_child_instructions",
-    description:
-      "Replace the instructions of a bot in this space. Identify it by bot_id or bot_name (exact). Pass expected_version from list_fleet with that bot_id. One instruction edit per bot per run. Needs the owner's approval.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        ...fleetBotTargetProperties,
-        instructions: { type: "string", minLength: 1, maxLength: BOT_INSTRUCTIONS_MAX_LENGTH },
-        expected_version: {
-          type: "string",
-          description: "instructionsVersion from list_fleet for that bot.",
-        },
-      },
-      required: ["instructions", "expected_version"],
-      additionalProperties: false,
-    },
-  },
-  {
-    name: "set_child_bot_model",
-    description:
-      "Set the model of a bot in this space, or reset it to the default with clear: true. Identify it by bot_id or bot_name (exact). Needs the owner's approval.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        ...fleetBotTargetProperties,
-        model: {
-          type: "string",
-          description: 'A name like "Claude Sonnet" or an exact id.',
-        },
-        provider: { type: "string", description: "Optional; limits model to this provider." },
-        thinking_level: { type: "string" },
-        clear: { type: "boolean", description: "Reset to the default model." },
-      },
-      additionalProperties: false,
-    },
-  },
-  {
-    name: "create_child_routine",
-    description:
-      "Schedule a routine that wakes a bot in this space in its own thread. Identify it by bot_id or bot_name (exact). Repeats: cron or every/unit (min 1 minute). One-shot: runAt, delayMinutes, or delaySeconds.",
-    inputSchema: createChildRoutineInputSchema,
-  },
-  {
-    name: "archive_bot",
-    description:
-      "Archive another bot in this space. Archiving stops its work and routines, hides it from the active list, and preserves its conversation, memory, and files for the user to restore or delete later. confirm_name must exactly match its name. This cannot archive you.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        confirm_name: { type: "string", description: "Exact current name of the bot to archive." },
-        bot_id: {
-          type: "string",
-          description:
-            "Optional bot id. If omitted, the unique bot in this space with confirm_name is archived.",
-        },
-      },
-      required: ["confirm_name"],
-    },
-  },
-  {
-    name: "message_bot",
-    description:
-      'Send a useful update, question, or result to another of the user\'s bots. You must call this tool to actually deliver it — writing the message in your own reply text (e.g. "[to Comms] ...") does not send anything and the recipient never sees it. Delivery is async and does not end your turn. Continue independent work; do not poll or send ack-only messages. Later updates only if they add something new.',
-    inputSchema: {
-      type: "object",
-      properties: {
-        bot_id: { type: "string", description: "Target bot id from your teammate list." },
-        confirm_name: {
-          type: "string",
-          description: "Exact name of the target bot when bot_id is omitted.",
-        },
-        message: { type: "string", description: "What to send." },
-        files: {
-          type: "array",
-          items: { type: "string" },
-          maxItems: ATTACHMENT_MAX_COUNT,
-          description:
-            "Paths of files or folders on your computer to send with it. A bot on your computer reads them in place; one with its own computer gets copies, so zip a folder for it. Never paste file contents into message.",
-        },
-        intent: {
-          type: "string",
-          enum: ["request", "result", "question", "status", "fyi"],
-          description: "What the recipient should do with this message. Defaults to request.",
-        },
-      },
-      required: ["message"],
-    },
-  },
-  {
-    name: "handoff_to_bot",
-    description:
-      "Transfer a genuinely distinct next stage to another current group member. In a group, stay in that group. Outside a group, supply group_id from your groups list to coordinate there. Appends a visible handoff and starts that bot asynchronously. Do not hand a stage back merely to report or repeat the same work; post results in the shared thread.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        group_id: {
-          type: "string",
-          description:
-            "Explicit destination from your groups list; required outside a group, omitted in a group.",
-        },
-        bot_id: { type: "string", description: "Target member bot id." },
-        confirm_name: {
-          type: "string",
-          description: "Exact name of the target member when bot_id is omitted.",
-        },
-        message: { type: "string", description: "What the receiving bot should do next." },
-        files: {
-          type: "array",
-          items: { type: "string" },
-          maxItems: ATTACHMENT_MAX_COUNT,
-          description:
-            "Paths of files or folders on your computer to send with it. A bot on your computer reads them in place; one with its own computer gets copies, so zip a folder for it. Never paste file contents into message.",
-        },
-      },
-      required: ["message"],
     },
   },
   {
@@ -1582,55 +1308,6 @@ export const builtinAgentTools: ConnectorTool[] = [
       },
       required: ["kind", "description"],
       additionalProperties: false,
-    },
-  },
-];
-
-/** Agent-connection tools, exposed only when the messaging surface is enabled. */
-export const agentConnectionTools: ConnectorTool[] = [
-  {
-    name: "connect_agent",
-    description:
-      "Request a standing connection to another person's agent by their owner's chat address. The other owner must approve before either agent can message the other. Only for agents whose owner messaged the deployment's chat line.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        address: {
-          type: "string",
-          description:
-            "The owner's address on the chat surface: an E.164 phone number (e.g. +15551234567) or platform user id.",
-        },
-      },
-      required: ["address"],
-    },
-  },
-  {
-    name: "respond_agent_connection",
-    description:
-      "Approve or decline the newest pending agent connection request addressed to you. Use only on your owner's explicit instruction.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        accept: { type: "boolean", description: "true to approve, false to decline." },
-      },
-      required: ["accept"],
-    },
-  },
-  {
-    name: "message_agent",
-    description:
-      "Send a useful update, question, or result to another person's agent over an approved connection. Delivery is async and does not end your turn. Continue independent work; do not poll or send ack-only messages.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        address: {
-          type: "string",
-          description:
-            "Chat address (phone number or platform user id) of the connected agent's owner.",
-        },
-        message: { type: "string", description: "What to send." },
-      },
-      required: ["address", "message"],
     },
   },
 ];

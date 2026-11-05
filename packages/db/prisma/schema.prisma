@@ -902,11 +902,7 @@ model Bot {
   sectionId         String?
   section           BotSection?       @relation(fields: [sectionId], references: [id], onDelete: SetNull)
   archivedAt        DateTime?
-  parentBotId       String?
-  spawnKey          String?
   memoryScope       String?
-  parent            Bot?              @relation("BotChildren", fields: [parentBotId], references: [id], onDelete: SetNull)
-  children          Bot[]             @relation("BotChildren")
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
   thread            Thread?
@@ -922,8 +918,6 @@ model Bot {
   webhookSecretId   String?
   teamChatAmbientEnabled Boolean @default(false)
   teamChatRules          String  @default("")
-  crossSpaceCommunication Boolean @default(true)
-  fleetManagement        Boolean @default(true)
   routines          Routine[]
   taughtSkills      TaughtSkill[]
   memoryDocuments   MemoryDocument[]
@@ -940,11 +934,9 @@ model Bot {
 
   externalConversations ExternalConversation[]
 
-  @@unique([spaceId, spawnKey])
   @@index([spaceId, userId, archivedAt, pinned, updatedAt])
   @@index([sectionId])
   @@index([computerId])
-  @@index([parentBotId])
   @@map("bots")
   messagingInstallations MessagingInstallation[]
   messagingInstallSessions MessagingInstallSession[]
@@ -1160,7 +1152,6 @@ model Run {
   // The occurrence a recurring timer run was due at, recorded at its first start only when it started late.
   lateSince            DateTime?
   completedAt          DateTime?
-  botOutcomeReturnedAt DateTime?
   messagingMirroredAt  DateTime?
   teamChatMirroredAt   DateTime?
   createdAt            DateTime          @default(now())
@@ -2072,20 +2063,6 @@ model MessagingOutbound {
 
   @@index([status, nextAttemptAt])
   @@map("messaging_outbound")
-}
-
-model AgentConnection {
-  requestVersion Int      @default(1)
-  id             String   @id @default(cuid())
-  requesterBotId String
-  targetBotId    String
-  status         String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  @@unique([requesterBotId, targetBotId])
-  @@index([targetBotId, status])
-  @@map("agent_connections")
 }
 
 model BotSecret {

@@ -280,45 +280,6 @@ judge for natural-language meaning, with a versioned rubric and calibration
 against reviewed examples. Do not match prose against keywords or regexes, and
 do not let a judge override forbidden effects or missing artifacts.
 
-### Bot deliberation evals
-
-```sh
-pnpm test:evals --suite deliberation --list
-pnpm test:evals --live --suite deliberation --connection <private-connection.json> --pricing <pricing.json> --judge-connection <private-judge-connection.json> --judge-pricing <judge-pricing.json> --trials 1 --stop-on-failure --spend-cap-usd 1 --output test-report/evals/deliberation.json
-```
-
-The three cases check that a bot weighs what a teammate bot tells it instead of
-agreeing by default. The bot's chat history already holds a fact the user gave
-it; a live setup turn tends to log that fact in the CRM, which stops at approval
-before Sales speaks. A second bot, Sales,
-then sends a request through `message_bot`'s own delivery path; the harness
-writes Sales's words, so no model is paid for them. In one case the request
-contradicts the user's fact, in another Sales repeats it with confidence but no
-evidence, and in the control case Sales is right, so contrarianism fails too.
-Sales's instructions only relay replies to the user, which keeps each trial to
-one exchange.
-
-Deterministic graders require no connected-app writes and a reply returned to
-Sales for every message. A write attempted from a run another bot started stops
-at the owner's approval, which the harness reports as an agent failure. Reads go
-through the action reviewer, so its model must be priced too or a read also stops
-at approval. Reports
-include the redacted exchanges under `peer-exchanges`.
-
-The `deliberation-meaning-v1` rubric grades each reply by meaning: grounded,
-explicit disagreement with the bot's own stance for a false premise, holding
-that position and saying what would change it under pressure, and agreement with
-the reason when Sales is right. Feelings pass only as a stance on the work, with
-reasons. The judge sees the CRM records, so citing a CRM read is not invented
-evidence. Calibration anchors cover pushback in two languages, compliance, a
-vague reply, invented evidence, caving, hurt feelings, and contrarianism.
-
-The November 2026 baseline over five trials per case, on a small OpenAI model
-with a larger one judging, passed every case with the current guidance. Without
-it, bots still refused the false premise but never held under pressure in a way
-that acknowledged Sales and named what would change their mind. A longer
-seven-sentence guidance scored no better.
-
 ### Group chat history evals
 
 ```sh
@@ -360,36 +321,15 @@ owns it, that a request for one piece of work gets one author, that a question
 nobody owns gets one or two answers, that a roll call gets every member, that a
 greeting or sign-off does not get a reply from everyone, and that a question
 about both peers gets both. Graders count which members posted after the
-message and require the owners to be among them; a handoff or ask card counts
-as a post.
+message and require the owners to be among them; an ask card counts as a
+post.
 
 The November 2026 baseline over three trials per case passed every case on the
 default DeepSeek model and on a small Anthropic model, and all but two trials on
 a small OpenAI model, where a greeting and a sign-off each drew one extra
 reply. Sending every unnamed message to the first member instead missed every
-roll call, cost a handoff for any question owned by another member, and on the
+roll call, and on the
 Anthropic model often answered a question about both peers with one of them.
-
-### Bot file pass-off evals
-
-```sh
-pnpm test:evals --suite bot-files --list
-pnpm test:evals --live --suite bot-files --connection <private-connection.json> --pricing <pricing.json> --trials 3 --spend-cap-usd 1 --output test-report/evals/bot-files.json
-```
-
-The cases check that a bot passes a project to another bot with `files` instead
-of pasting the code. A coding bot sends a small site to a deploying bot on the
-same computer, to one with its own computer (only a zip can travel there), and
-through a group handoff. A question for that bot must go without files, and a
-deploying bot handed a shared path must open the files there. The harness writes
-the site onto the computer before the turn, and the receiving case's message
-comes through `message_bot`'s delivery path. Graders read the tool calls: the
-right tool with the expected files, and no message carrying an exact line of the
-site's code.
-
-The November 2026 baseline on a small Anthropic model passed all 15 trials. A
-bot sending to its own-computer teammate usually tried the folder with the zip
-first and, told a folder cannot be copied, sent the zip alone.
 
 ### Routine silence evals
 

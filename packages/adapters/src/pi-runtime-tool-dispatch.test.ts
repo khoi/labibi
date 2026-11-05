@@ -1020,60 +1020,6 @@ describe("Pi connector tool dispatch", () => {
     );
   });
 
-  it("passes spawn_bot's public description and private instructions to the executor", async () => {
-    const spawnBotTool = builtinAgentTools.find((tool) => tool.name === "spawn_bot");
-    if (!spawnBotTool) throw new Error("missing spawn_bot");
-    fakeAgentState.invoke = {
-      name: "use_tool",
-      args: {
-        name: "spawn_bot",
-        arguments: {
-          name: "Scout",
-          description: "Finds venues.",
-          instructions: "Ask before booking anything.",
-          computer_mode: "team",
-        },
-      },
-    };
-    const executeTool = vi.fn(async () => ({ ok: true }));
-    const runtime = new PiAgentRuntime();
-
-    for await (const _event of runtime.run(
-      {
-        botId: "b",
-        threadId: "t",
-        runId: "r",
-        prompt: "create a bot named Scout",
-        instructions: "",
-        history: [],
-        tools: [spawnBotTool],
-        model: { provider: "test", id: "dispatch-test-model" },
-        executeTool,
-      },
-      {
-        operationId: "1",
-        traceId: "1",
-        spaceId: "w",
-        userId: "u",
-        signal: new AbortController().signal,
-      },
-    )) {
-      // Exhaust the runtime event stream so tool execution completes.
-    }
-
-    expect(executeTool).toHaveBeenCalledWith(
-      "spawn_bot",
-      expect.objectContaining({
-        name: "Scout",
-        description: "Finds venues.",
-        instructions: "Ask before booking anything.",
-      }),
-      JSON.stringify(["pi-tool", "main", "call-1"]),
-      undefined,
-      { onShellStillRunning: expect.any(Function) },
-    );
-  });
-
   it("passes update_bot's read offset through the use_tool wrapper", async () => {
     const updateBotTool = builtinAgentTools.find((tool) => tool.name === "update_bot");
     if (!updateBotTool) throw new Error("missing update_bot");
@@ -2641,54 +2587,6 @@ describe("Pi connector tool dispatch", () => {
     const result = fakeAgentState.toolResult as { content: Array<{ type: string; text: string }> };
     expect(result.content[0]!.text.length).toBeGreaterThan(TOOL_RESULT_TEXT_LIMIT);
     expect(JSON.parse(result.content[0]!.text)).toEqual(skill);
-  });
-
-  it("delivers full child instructions and their version past the tool result bound", async () => {
-    const listing = {
-      bot: { id: "child", instructionsVersion: "v2", instructions: "x".repeat(20_000) },
-      bots: [],
-      groups: [],
-      sections: [],
-      truncated: false,
-    };
-    fakeAgentState.invoke = {
-      name: "use_tool",
-      args: { name: "list_fleet", arguments: { bot_id: "child" } },
-    };
-    const runtime = new PiAgentRuntime();
-
-    for await (const _event of runtime.run(
-      {
-        botId: "b",
-        threadId: "t",
-        runId: "large-child",
-        prompt: "edit the child",
-        instructions: "Read the child before updating it.",
-        history: [],
-        tools: [
-          {
-            name: "list_fleet",
-            description: "Read a child by id",
-            inputSchema: { type: "object", properties: { bot_id: { type: "string" } } },
-          },
-        ],
-        model: { provider: "test", id: "dispatch-test-model" },
-        executeTool: vi.fn(async () => listing),
-      },
-      {
-        operationId: "large-child",
-        traceId: "large-child",
-        spaceId: "w",
-        userId: "u",
-        signal: new AbortController().signal,
-      },
-    )) {
-      // Exhaust so the fake agent executes the tool.
-    }
-
-    const result = fakeAgentState.toolResult as { content: Array<{ type: string; text: string }> };
-    expect(result.content[0]!.text.length).toBeGreaterThan(TOOL_RESULT_TEXT_LIMIT);
-    expect(JSON.parse(result.content[0]!.text)).toEqual(listing);
   });
 
   it("serialises object content instead of writing [object Object] for write_file", async () => {

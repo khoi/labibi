@@ -21,9 +21,6 @@ Nothing crosses between spaces unless you allow it:
 - [Saved credentials](./bot-secrets.md), when the space keeps its own.
 - Skills a bot saves.
 
-Bots only talk to bots in the same space, unless you turn on **Allow cross-space bot communication**
-in a bot's settings.
-
 ## What follows you everywhere
 
 Your account settings apply in every space: [models](./models.md), [voice](./voice-and-calls.md),

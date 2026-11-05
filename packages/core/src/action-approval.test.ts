@@ -20,7 +20,6 @@ import {
   resolveActionApprovalDetail,
   resolveActionApprovalForTools,
   toolRequiresApproval,
-  toolRequiresExplicitApproval,
   toolResultTaintsRun,
   unattendedTriggerToolRequiresApproval,
   watchToolRefusal,
@@ -63,15 +62,10 @@ describe("toolRequiresApproval", () => {
     expect(toolRequiresApproval("delete_bot", false)).toBe(false);
     expect(toolRequiresApproval("delete_bot", true, true)).toBe(true);
     expect(toolRequiresApproval("delete_bot", true, false)).toBe(true);
-    expect(toolRequiresApproval("archive_bot", false)).toBe(true);
     expect(toolRequiresApproval("cloud_agent_launch", false)).toBe(true);
-    expect(toolRequiresApproval("create_space", false)).toBe(true);
-    expect(toolRequiresExplicitApproval("create_space")).toBe(true);
     // The wallet owner approves every purchase on the provider's side.
     expect(toolRequiresApproval("request_purchase", false)).toBe(false);
     expect(toolRequiresApproval("purchase_status", false)).toBe(false);
-    expect(toolRequiresExplicitApproval("save_shared_memory")).toBe(false);
-    expect(toolRequiresExplicitApproval("archive_bot")).toBe(false);
   });
 
   it("does not gate read-only or local work", () => {
@@ -83,33 +77,10 @@ describe("toolRequiresApproval", () => {
       "shell",
       "remember",
       "save_shared_memory",
-      "spawn_bot",
       "run_subagent",
     ]) {
       expect(toolRequiresApproval(name, false)).toBe(false);
     }
-  });
-
-  it("always asks before bot management writes that cost money or rewrite a bot", () => {
-    for (const name of ["set_child_instructions", "set_child_bot_model"]) {
-      expect(toolRequiresApproval(name, false)).toBe(true);
-      expect(toolRequiresExplicitApproval(name)).toBe(true);
-    }
-  });
-
-  it("treats grouping and scheduling other bots as ordinary approvals that Never ask skips", () => {
-    for (const name of ["create_group", "update_group", "create_child_routine"]) {
-      expect(toolRequiresApproval(name, false)).toBe(true);
-      expect(toolRequiresExplicitApproval(name)).toBe(false);
-    }
-  });
-
-  it("never asks before reading the bots it manages or organizing the sidebar", () => {
-    for (const name of ["list_fleet", "organize_bot", "update_bot"]) {
-      expect(toolRequiresApproval(name, false)).toBe(false);
-      expect(toolRequiresExplicitApproval(name)).toBe(false);
-    }
-    expect(toolRequiresApproval("organize_bot", true)).toBe(false);
   });
 
   it("gates connector executes except obvious reads", () => {
@@ -232,7 +203,6 @@ describe("unattendedTriggerToolRequiresApproval", () => {
       "browser_snapshot",
       "request_takeover",
       "run_subagent",
-      "list_fleet",
       "purchase_status",
     ]) {
       expect(unattendedTriggerToolRequiresApproval("webhook", name, false)).toBe(false);
@@ -997,15 +967,9 @@ describe("toolResultTaintsRun", () => {
 it("classifies schedule_update like schedule_create", () => {
   for (const name of ["schedule_create", "schedule_update"]) {
     expect(toolRequiresApproval(name, false)).toBe(false);
-    expect(toolRequiresExplicitApproval(name)).toBe(false);
     expect(toolResultTaintsRun(name)).toBe(false);
     expect(unattendedTriggerToolRequiresApproval("webhook", name, false)).toBe(true);
   }
-});
-
-it("requires human confirmation to approve an agent connection", () => {
-  expect(toolRequiresExplicitApproval("respond_agent_connection")).toBe(true);
-  expect(toolRequiresApproval("respond_agent_connection", false)).toBe(true);
 });
 
 describe("repeatsDeniedAction", () => {

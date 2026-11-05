@@ -26,13 +26,6 @@ name: Bots
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 03-bot-model
-- openLink: "rakazo:///peer-chat?botId=${RAKAZO_SCREENSHOT_BOT_ID}&botName=Researcher&peerBotId=${RAKAZO_SCREENSHOT_PEER_BOT_ID}&peerBotName=Writer"
-- extendedWaitUntil:
-    visible: ".*draft the announcement.*"
-    timeout: 15000
-- waitForAnimationToEnd:
-    timeout: 3000
-- takeScreenshot: 04-peer-chat
 - openLink: "rakazo:///routine?botId=${RAKAZO_SCREENSHOT_BOT_ID}&botName=Researcher"
 - extendedWaitUntil:
     visible: "Add schedule"

@@ -1,7 +1,6 @@
 import type {
   Bot,
   ExternalConversation,
-  MessagingAgentConnection,
   MessagingChannelMembership,
   MessagingInstallationsStatus,
   MessagingStatus,
@@ -33,7 +32,6 @@ export default function MessagingSettings() {
     installations: [],
   });
   const [channels, setChannels] = useState<MessagingChannelMembership[]>([]);
-  const [connections, setConnections] = useState<MessagingAgentConnection[]>([]);
   const [rooms, setRooms] = useState<ExternalConversation[]>([]);
   const [link, setLink] = useState<{
     code: string;
@@ -47,20 +45,17 @@ export default function MessagingSettings() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const refresh = useCallback(async () => {
-    const [nextBots, nextStatus, nextInstallations, nextChannels, nextConnections, navigation] =
-      await Promise.all([
-        rpc("bots/list"),
-        rpc("messaging/status"),
-        rpc("messaging/installations/list"),
-        rpc("messaging/channels/list"),
-        rpc("messaging/connections/list"),
-        rpc("spaces/list"),
-      ]);
+    const [nextBots, nextStatus, nextInstallations, nextChannels, navigation] = await Promise.all([
+      rpc("bots/list"),
+      rpc("messaging/status"),
+      rpc("messaging/installations/list"),
+      rpc("messaging/channels/list"),
+      rpc("spaces/list"),
+    ]);
     setBots(nextBots);
     setStatus(nextStatus);
     setInstallations(nextInstallations);
     setChannels(nextChannels);
-    setConnections(nextConnections);
     setRooms(navigation.current.externalConversations);
     setLoadError(null);
   }, []);
@@ -126,14 +121,7 @@ export default function MessagingSettings() {
       .filter(Boolean)
       .join(", ");
   const invitedChannels = channels.filter((channel) => channel.status === "invited");
-  const incomingConnections = connections.filter(
-    (connection) => connection.status === "pending" && connection.incoming,
-  );
   const joinedChannels = channels.filter((channel) => channel.status === "approved");
-  const otherConnections = connections.filter(
-    (connection) =>
-      connection.status === "approved" || (connection.status === "pending" && !connection.incoming),
-  );
   const connectOptions = messagingConnectOptions(
     status?.enabled ? status.providers : [],
     installations.available,
@@ -231,15 +219,6 @@ export default function MessagingSettings() {
             detail={channelDetail(channel)}
             trailing={respond((accept) =>
               rpc("messaging/channels/respond", { membershipId: channel.id, accept }),
-            )}
-          />
-        ))}
-        {incomingConnections.map((connection) => (
-          <SettingsRow
-            key={connection.id}
-            title={`${connection.peerOwnerLabel}'s ${connection.peerBotName}`}
-            trailing={respond((accept) =>
-              rpc("messaging/connections/respond", { connectionId: connection.id, accept }),
             )}
           />
         ))}
@@ -393,20 +372,6 @@ export default function MessagingSettings() {
             trailing={textAction(t("Leave"), () =>
               rpc("messaging/channels/leave", { membershipId: channel.id }),
             )}
-          />
-        ))}
-        {otherConnections.map((connection) => (
-          <SettingsRow
-            key={connection.id}
-            title={`${connection.peerOwnerLabel}'s ${connection.peerBotName}`}
-            value={connection.status === "pending" ? t("Pending") : undefined}
-            trailing={
-              connection.status === "approved"
-                ? textAction(t("Revoke"), () =>
-                    rpc("messaging/connections/revoke", { connectionId: connection.id }),
-                  )
-                : undefined
-            }
           />
         ))}
         {rooms.map((room) => (

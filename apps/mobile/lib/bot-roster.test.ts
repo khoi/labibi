@@ -27,16 +27,13 @@ function bot(id = "bot-1"): Bot {
     spaceId: "space-1",
     description: "",
     instructions: "",
-    parentBotId: null,
     memoryScope: null,
     createdAt: "2026-01-01T00:00:00.000Z",
     voiceId: null,
     teamChatAmbientEnabled: false,
     teamChatRules: "",
-    fleetManagement: false,
     disabledBuiltinTools: [],
     webhookConfigured: false,
-    spawnKey: null,
   };
 }
 

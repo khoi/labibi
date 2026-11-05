@@ -1,10 +1,5 @@
 import type { ReplyPreview, ThreadMessage } from "@labradoodle/contracts";
-import {
-  formatTimeSeparator,
-  isPageOriginReply,
-  isPeerReceiptBlocks,
-  replyLabel,
-} from "@labradoodle/core";
+import { formatTimeSeparator, isPageOriginReply, replyLabel } from "@labradoodle/core";
 import { cn } from "@labradoodle/ui-web";
 import { useLingui } from "@lingui/react/macro";
 import { X } from "lucide-react";
@@ -162,8 +157,7 @@ export function ReplyLine({
   onJump?: (id: string) => void;
 }) {
   const { t } = useLingui();
-  // Peer receipts use internal reply links for routing; their bodies belong in the peer view.
-  if (isPeerReceiptBlocks(message.blocks) || isPageOriginReply(message)) return null;
+  if (isPageOriginReply(message)) return null;
   if (!message.replyToMessageId && message.replyQuote == null) return null;
   const unavailable = message.replyPreview === null || !message.replyToMessageId;
   if (unavailable)

@@ -373,7 +373,7 @@ export function reduceThreadSnapshot(
         taskId: runId,
         ...(userId ? { userId } : {}),
         status,
-        trigger: "bot_message",
+        trigger: "user",
         routineId: null,
         modelProvider: null,
         modelId: null,

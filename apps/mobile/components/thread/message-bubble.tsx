@@ -1,11 +1,6 @@
-import {
-  ChatMarkdown,
-  MarkdownLongPressContext,
-  withBlockMentions,
-} from "@labradoodle/chat-ui/native";
+import { MarkdownLongPressContext } from "@labradoodle/chat-ui/native";
 import type { LoginFieldInput, MessageBlock } from "@labradoodle/contracts";
 import { artifactPreviewKind, isAttachmentAudioMimeType } from "@labradoodle/contracts";
-import type { ChildBotBlock, PeerExchange } from "@labradoodle/core";
 import {
   formatFileSize,
   isApprovalAskBlock,
@@ -14,7 +9,7 @@ import {
 } from "@labradoodle/core";
 import { fontWeight, typeScale } from "@labradoodle/ui-tokens";
 import type { ComponentProps } from "react";
-import { memo, useContext, useMemo, useState } from "react";
+import { memo, useContext, useMemo } from "react";
 import type { TextProps } from "react-native";
 import { Alert, Pressable, Text, View } from "react-native";
 import type { MobileBot, MobileMessage, MobileSnapshot } from "../../lib/api";
@@ -41,7 +36,6 @@ import { errorText } from "../../lib/user-error";
 import { AppConnectCard } from "../AppConnectCard";
 import { AskActions } from "../AskActions";
 import { AudioAttachment } from "../audio-attachment";
-import { MessageMentions } from "../bot-mention";
 import { ChoiceCard } from "../ChoiceCard";
 import { ComputerCard } from "../ComputerCard";
 import { ChangeUndo, isUndoableChange } from "../change-undo";
@@ -49,9 +43,7 @@ import type { ImageArtifactPreviewTarget } from "../image-artifact-viewer";
 import { InlineImageAttachment } from "../inline-image-attachment";
 import { McpApprovalCard } from "../McpApprovalCard";
 import { MessageCaption } from "../message-caption";
-import { NativeSymbol } from "../native-symbol";
 import { PageCard } from "../pages/page-card";
-import { PeerReceiptLine } from "../peer-receipt-line";
 import { AskBlock } from "./ask-block";
 import { McpAppCard } from "./mcp-app-card";
 import type { MessageRowActions } from "./message-row";
@@ -81,12 +73,9 @@ export type MessageActionProps = Pick<
   "onLongPress" | "accessibilityActions" | "onAccessibilityAction"
 >;
 
-export const MessageBubble = memo(function MessageBubble({
-  mentions,
-  ...props
-}: ComponentProps<typeof MessageBubbleContent> & {
-  mentions?: readonly ChildBotBlock[];
-}) {
+export const MessageBubble = memo(function MessageBubble(
+  props: ComponentProps<typeof MessageBubbleContent>,
+) {
   const { members, onOpenBot } = props;
   const userMentions = useMemo(
     () => (members?.length ? { targets: userMentionTargets(members), onOpenBot } : undefined),
@@ -94,7 +83,7 @@ export const MessageBubble = memo(function MessageBubble({
   );
   const body = (
     <MarkdownLongPressContext.Provider value={props.actionProps.onLongPress}>
-      <MessageBubbleWithMentions mentions={mentions} {...props} />
+      <MessageBubbleBody {...props} />
     </MarkdownLongPressContext.Provider>
   );
   return props.message.role === "user" && userMentions ? (
@@ -103,37 +92,6 @@ export const MessageBubble = memo(function MessageBubble({
     body
   );
 });
-
-function MessageBubbleWithMentions({
-  mentions,
-  ...props
-}: ComponentProps<typeof MessageBubbleContent> & {
-  mentions?: readonly ChildBotBlock[];
-}) {
-  if (!mentions?.length) return <MessageBubbleBody {...props} />;
-  return (
-    <MessageMentions
-      mentions={mentions}
-      colorOf={(id) =>
-        props.bots.find((bot) => bot.id === id)?.color ??
-        props.members?.find((member) => member.botId === id)?.color
-      }
-      tokens={mobileTokens()}
-      onOpenBot={props.onOpenBot}
-    >
-      <MessageBubbleBody
-        {...props}
-        message={{
-          ...props.message,
-          blocks: withBlockMentions(
-            props.message.blocks,
-            mentions.map((bot) => ({ id: bot.botId, name: bot.name })),
-          ),
-        }}
-      />
-    </MessageMentions>
-  );
-}
 
 /** Blocks drawn as their own card between the message's text pieces. */
 function isOwnCardBlock(block: MessageBlock): boolean {
@@ -208,8 +166,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
   onChoiceDismissed,
   onPreviewFile,
   onPreviewImage,
-  peerExchange,
-  onOpenPeerChat,
   actionProps,
   doubleTapSurface = false,
   userBubble,
@@ -239,8 +195,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
   /** Opens a file the app can show; other types go to the share sheet. */
   onPreviewFile: (artifactId: string) => void;
   onPreviewImage: (target: ImageArtifactPreviewTarget) => void;
-  peerExchange?: PeerExchange;
-  onOpenPeerChat: (peer: { peerBotId: string; peerBotName: string }) => void;
   actionProps: MessageActionProps;
   doubleTapSurface?: boolean;
   userBubble?: UserBubble;
@@ -248,7 +202,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
   const colorScheme = useResolvedAppearance();
   const tokens = withUserBubble(mobileTokens(), userBubble);
   const { t } = useI18n();
-  const [peerExpanded, setPeerExpanded] = useState(false);
   const outgoing = message.role === "user" && !authorName;
   const artifactTarget: MobileArtifactTarget = groupId ? { groupId } : { botId };
   const cardBotId = message.botId ?? botId;
@@ -302,49 +255,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
           />
         ))}
       </View>
-    );
-  }
-  const handoff = message.blocks.find((block) => block.kind === "handoff");
-  if (handoff) {
-    const from = memberName(members, handoff.fromBotId) ?? t("bot");
-    const to = memberName(members, handoff.toBotId) ?? t("bot");
-    return (
-      <AgentEventLabel
-        actionProps={actionProps}
-        label={t("{from} messaged {to}", { from, to })}
-        detail={handoff.text}
-        expanded={peerExpanded}
-        onToggle={() => setPeerExpanded((expanded) => !expanded)}
-      />
-    );
-  }
-  const peerMessage = message.blocks.find(
-    (
-      block,
-    ): block is Extract<MessageBlock, { kind: "bot_message_sent" | "bot_message_received" }> =>
-      block.kind === "bot_message_sent" || block.kind === "bot_message_received",
-  );
-  if (peerMessage) {
-    const sent = peerMessage.kind === "bot_message_sent";
-    const peer = sent ? peerMessage.toBotName : peerMessage.fromBotName;
-    const peerBotId = sent ? peerMessage.toBotId : peerMessage.fromBotId;
-    const peerBot = bots.find((bot) => bot.id === peerBotId);
-    const peerMember = members?.find((member) => member.botId === peerBotId);
-    const peerColor = peerBot?.color ?? peerMember?.color ?? tokens.mutedForeground;
-    return (
-      <PeerReceiptLine
-        peerBotId={peerBotId}
-        peerBotName={peerExchange?.peerBotName ?? peer ?? t("Bot")}
-        color={peerColor}
-        count={peerExchange?.count ?? 1}
-        direction={sent ? "sent" : "received"}
-        actionProps={actionProps}
-        onPress={
-          !groupId && botId && peerBotId !== botId
-            ? () => onOpenPeerChat({ peerBotId, peerBotName: peer ?? t("Bot") })
-            : undefined
-        }
-      />
     );
   }
   const channelMessage = message.blocks.find(
@@ -821,60 +731,5 @@ function MessageTextCard({
         streaming={message.id.startsWith("progress:")}
       />
     </Surface>
-  );
-}
-
-function AgentEventLabel({
-  label,
-  detail,
-  expanded,
-  onToggle,
-  actionProps,
-}: {
-  label: string;
-  detail?: string;
-  expanded: boolean;
-  onToggle: () => void;
-  actionProps: MessageActionProps;
-}) {
-  const colorScheme = useResolvedAppearance();
-  const tokens = mobileTokens();
-  const { t } = useI18n();
-  return (
-    <Pressable
-      {...actionProps}
-      onPress={onToggle}
-      accessibilityRole="button"
-      accessibilityLabel={expanded ? t("Hide {label}", { label }) : t("Show {label}", { label })}
-      style={{ width: "100%", paddingVertical: 4, alignItems: "center" }}
-    >
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-        <NativeSymbol
-          ios="arrow.left.arrow.right"
-          android="swap-horizontal"
-          size={12}
-          color={tokens.mutedForeground}
-        />
-        <Text style={{ color: tokens.mutedForeground, fontSize: 13.5, textAlign: "center" }}>
-          {label}
-        </Text>
-      </View>
-      {expanded && detail ? (
-        <View
-          style={{
-            width: "100%",
-            marginTop: 6,
-            borderRadius: 14,
-            backgroundColor: tokens.card,
-            paddingHorizontal: 14,
-            paddingVertical: 10,
-          }}
-        >
-          <ChatMarkdown palette={tokens} colorScheme={colorScheme}>
-            {detail}
-          </ChatMarkdown>
-        </View>
-      ) : null}
-    </Pressable>
   );
 }

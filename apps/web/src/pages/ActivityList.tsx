@@ -23,7 +23,6 @@ import { useId, useMemo, useState } from "react";
 import type { ActivityListFilters } from "../lib/activity-list-filters";
 import {
   activityFiltersActive,
-  activityPreview,
   clearActivityFilterField,
   emptyActivityFilters,
   filterActivityRuns,
@@ -194,13 +193,7 @@ export function ActivityList({
           {sections.unreadBots.map((bot) => (
             <ChatRow
               key={bot.id}
-              avatar={
-                <BotAvatar
-                  identity={bot.id}
-                  color={bot.color}
-                  size={28}
-                />
-              }
+              avatar={<BotAvatar identity={bot.id} color={bot.color} size={28} />}
               name={bot.name}
               preview={bot.preview}
               updatedAt={bot.updatedAt}
@@ -443,7 +436,7 @@ function ActivityRow({
   const title = run.groupName ? `${run.botName}, ${run.groupName}` : run.botName;
   const label = statusLabel(run.status);
   const activityLabel = t`${title}, ${label}`;
-  const preview = activityPreview(run);
+  const preview = run.promptSnippet;
   return (
     <button
       type="button"
@@ -451,12 +444,7 @@ function ActivityRow({
       onClick={onOpen}
       className="flex w-full items-center gap-3 rounded-xl px-2.5 py-2 text-left hover:bg-accent"
     >
-      <BotAvatar
-        identity={run.botId}
-        color={bot?.color ?? ""}
-        status={run.status}
-        size={28}
-      />
+      <BotAvatar identity={run.botId} color={bot?.color ?? ""} status={run.status} size={28} />
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-2">
           <span className="flex min-w-0 gap-2 text-sm font-medium">

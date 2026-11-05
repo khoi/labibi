@@ -25,7 +25,6 @@ const baseBot = {
   position: 0,
   sectionId: null,
   archivedAt: null,
-  parentBotId: null,
   memoryScope: null as string | null,
   createdAt: new Date("2026-08-19T00:00:00.000Z"),
   updatedAt: new Date("2026-08-19T00:00:00.000Z"),
@@ -83,91 +82,6 @@ describe("createRepos.listBots", () => {
     ]);
     const recovered = await repos.listBots(actor);
     expect(recovered[0]).toMatchObject({ status: "idle", runErrorId: null });
-  });
-
-  it("classifies initial preview runs once across bots, including non-peer results", async () => {
-    const prisma = {
-      bot: {
-        findMany: vi.fn(async () =>
-          ["one", "two"].map((id) => ({
-            ...baseBot,
-            id,
-            thread: { ...baseBot.thread, id: `thread-${id}`, messages: [] },
-          })),
-        ),
-      },
-      run: { findMany: vi.fn(async () => []) },
-      $queryRaw: vi.fn(async () =>
-        ["one", "two"].map((id, seq) => ({
-          threadId: `thread-${id}`,
-          seq,
-          createdAt: new Date("2026-08-20T00:00:00.000Z"),
-          runId: `run-${id}`,
-          blocks: [{ kind: "text", text: `Answer ${id}` }],
-        })),
-      ),
-    };
-
-    const bots = await createRepos(prisma as unknown as PrismaClient).listBots(actor);
-
-    expect(bots.map((bot) => bot.preview)).toEqual(["Answer one", "Answer two"]);
-    expect(prisma.run.findMany).toHaveBeenCalledExactlyOnceWith({
-      where: { id: { in: ["run-one", "run-two"] }, trigger: { in: ["bot_message", "tickets"] } },
-      select: { id: true, trigger: true },
-    });
-  });
-
-  it("classifies unseen runs in older pages and retains negative results between pages", async () => {
-    const prisma = {
-      bot: {
-        findMany: vi.fn(async () => [
-          {
-            ...baseBot,
-            thread: { ...baseBot.thread, messages: [] },
-          },
-        ]),
-      },
-      run: {
-        findMany: vi
-          .fn()
-          .mockResolvedValueOnce([{ id: "peer-new" }])
-          .mockResolvedValueOnce([{ id: "peer-old" }]),
-      },
-      $queryRaw: vi.fn(async () => [
-        {
-          threadId: "thread-1",
-          seq: 30,
-          createdAt: new Date("2026-08-20T00:00:00.000Z"),
-          runId: "peer-new",
-          blocks: [{ kind: "text", text: "Hidden" }],
-        },
-      ]),
-      message: {
-        findMany: vi
-          .fn()
-          .mockResolvedValueOnce([
-            { seq: 20, runId: "peer-old", blocks: [{ kind: "text", text: "Also hidden" }] },
-            { seq: 19, runId: "user-old", blocks: [] },
-          ])
-          .mockResolvedValueOnce([
-            { seq: 10, runId: "peer-old", blocks: [{ kind: "text", text: "Still hidden" }] },
-            { seq: 9, runId: "user-old", blocks: [{ kind: "text", text: "Visible answer" }] },
-          ]),
-      },
-    };
-
-    const bots = await createRepos(prisma as unknown as PrismaClient).listBots(actor);
-
-    expect(bots[0]?.preview).toBe("Visible answer");
-    expect(prisma.run.findMany).toHaveBeenCalledTimes(2);
-    expect(prisma.run.findMany).toHaveBeenNthCalledWith(2, {
-      where: {
-        id: { in: ["peer-old", "user-old"] },
-        trigger: { in: ["bot_message", "tickets"] },
-      },
-      select: { id: true, trigger: true },
-    });
-    expect(prisma.message.findMany).toHaveBeenCalledTimes(2);
   });
 
   it("keeps bot-to-bot run output out of sidebar previews", async () => {
@@ -447,7 +361,6 @@ describe("createRepos.listSpaceBotsForSpaces", () => {
         pinned: true,
         sectionId: null,
         updatedAt: new Date("2026-08-20T00:00:00.000Z"),
-        parentBotId: null,
         thread: {
           id: "thread-2",
           unread: true,
@@ -490,7 +403,6 @@ describe("createRepos.listSpaceBotsForSpaces", () => {
         pinned: true,
         sectionId: null,
         unread: true,
-        parentBotId: null,
         preview: "Waiting for a reply",
         status: "running",
         threadStatus: "idle",

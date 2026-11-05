@@ -139,7 +139,6 @@ export function useThreadPaging({
       const page = await rpc("threads/messages", {
         ...(groupId ? { groupId } : { botId: botId! }),
         before: snap.olderCursor,
-        includePeerReceipts: true,
       });
       if (epoch !== historyEpoch.current || pinnedAroundRef.current !== pinned) {
         loadingOlderContent.current = false;

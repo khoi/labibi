@@ -25,13 +25,11 @@ import {
   OWNER_SETTINGS_REFUSAL_REPLY,
   terminatingToolResult,
 } from "./approval-effect.js";
-import type { loadBotMessageContext } from "./bot-messages.js";
 import { partitionTools } from "./builtin-tool-bridge.js";
 import type { ComputerExecutionLease } from "./computer-lifecycle.js";
 import type { UnchangedVisualStreak } from "./computer-tools.js";
 import type { selectRunConnections } from "./connection-context.js";
 import type { ExecutorDeps } from "./executor-deps.js";
-import type { FleetRun } from "./fleet-tools.js";
 import { namedAgentTools } from "./pi-runtime-tools.js";
 import type { lazyRunComputer } from "./run-computer.js";
 import type { createRunWorkspaceCheckpoint } from "./run-lifecycle.js";
@@ -196,7 +194,6 @@ export interface RunState {
    * the wallet owner approved paying there, so the pay click there asks nothing more.
    */
   walletHosts: Set<string>;
-  handedOff: boolean;
   terminalCheckpointComplete: boolean;
 }
 
@@ -227,7 +224,6 @@ export interface RunSource {
   historySearchBeforeSeq: number;
   /** See historyMyChatsAllowed; claimed outside steering still revokes it per call. */
   myChatsAllowed: boolean;
-  peerMessage: Awaited<ReturnType<typeof loadBotMessageContext>>;
   /** Whose own computer user_computer_shell may reach (see userComputerOwner). */
   userComputerOwner: string | undefined;
 }
@@ -272,7 +268,6 @@ export interface RunContext {
   /** Provider context for this run's calls; aborting the run aborts its signal. */
   context: AdapterContext;
   abortController: AbortController;
-  fleetRun: FleetRun;
   /** Every value redacted from what this run shows or stores. Grows during the run. */
   secrets: string[];
   source: RunSource;
@@ -288,7 +283,6 @@ export interface RunContext {
   allowSilentEmptyRun: boolean;
   /** A group message that named no member: this member may end without replying. */
   groupReplyOptional: boolean;
-  emptyResponseText: string | undefined;
   state: RunState;
   settleRunningHelpers: () => Promise<void>;
   stopHeartbeatAfterCompletion: () => void;

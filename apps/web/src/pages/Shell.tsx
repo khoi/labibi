@@ -11,7 +11,6 @@ import {
   channelMessageSender,
   chatUserBubbleColors,
   dismissableAskMessageIds,
-  foldPeerReplies,
   groupBotsForSidebar,
   isActive,
   isRunWorking,
@@ -58,7 +57,6 @@ import { desktopBridge } from "../lib/desktop";
 import { hasOpenDialog } from "../lib/has-open-dialog";
 import { PagesProvider, usePagesForChat } from "../lib/pages";
 import { markAfterPaint, markOnce } from "../lib/performance";
-import { usePreloadRecoveryState } from "../lib/preload-recovery";
 import { lastChatKey, lastChatOf, queryClient, spaceQueries, spaceSeedKey } from "../lib/query";
 import type { Panel } from "../lib/right-panel-state";
 import { rightPanelStorageKey } from "../lib/right-panel-state";
@@ -199,10 +197,6 @@ function SpaceShell() {
   const lastBotTab = useRef<Panel>("routines");
   if (panel === "routines" || panel === "computer" || panel === "pages" || panel === "settings")
     lastBotTab.current = panel;
-  const [peerConversation, setPeerConversation] = usePreloadRecoveryState<{
-    peerBotId: string;
-    peerBotName: string;
-  } | null>("peerConversation", null);
   const agentSkillsQuery = useQuery(queries.agentSkills.list.queryOptions());
   const agentSkills = agentSkillsQuery.data ?? NO_AGENT_SKILLS;
   const setAgentSkills = useCallback(
@@ -567,8 +561,8 @@ function SpaceShell() {
   const workingRuns = currentRuns.filter((run) => isRunWorking(run.status));
   const transcriptRunning = workingRuns.length > 0;
   const composerRunning = currentRuns.some((run) => isActive(run.status));
-  const transcript = useMemo(
-    () => foldPeerReplies(activeSnapshot?.messages ?? [], { includePeerReceipts: true }),
+  const transcriptMessages = useMemo(
+    () => activeSnapshot?.messages ?? [],
     [activeSnapshot?.messages],
   );
   const transcriptArtifactTarget = useMemo<ArtifactTarget>(
@@ -635,7 +629,6 @@ function SpaceShell() {
     queries,
     thread,
     commitComputer,
-    transcript,
     active,
     inGroup,
     groupId,
@@ -752,12 +745,6 @@ function SpaceShell() {
       else if (active?.id) void read.markBotUnread(active.id, message.id).catch(() => undefined);
     },
     [active?.id, groupId, read.markBotUnread, read.markGroupUnreadFrom],
-  );
-  const openPeerMessages = useCallback(
-    (peer: { peerBotId: string; peerBotName: string }) => {
-      setPeerConversation(peer);
-    },
-    [setPeerConversation],
   );
   const stopTeaching = useCallback(async () => {
     const id = activeBotId.current;
@@ -1094,7 +1081,7 @@ function SpaceShell() {
               followRequest={composer.sentCount}
               artifactTarget={transcriptArtifactTarget}
               markedUnreadMessageId={read.markedUnreadMessageId}
-              transcript={transcript}
+              messages={transcriptMessages}
               showToolActivity={showToolActivity}
               olderCursor={activeSnapshot?.olderCursor ?? null}
               unreadAfterSeq={read.unreadAfterSeq}
@@ -1105,14 +1092,12 @@ function SpaceShell() {
               workingBots={workingBots}
               userBubble={userBubble}
               onLoadOlder={loadOlder}
-              onOpenBot={openBot}
               onAnswer={composer.answerMessage}
               onReply={replyToMessage}
               onMarkUnread={markMessageUnread}
               onQuote={quoteMessage}
               onReact={composer.reactToMessage}
               onJumpToMessage={jumpToReplyMessage}
-              onOpenPeerMessages={openPeerMessages}
               memberName={resolveTranscriptMemberName}
               peerBot={resolveTranscriptBot}
               onRefresh={refreshActiveThread}
@@ -1338,10 +1323,6 @@ function SpaceShell() {
           setBootstrapMe={setBootstrapMe}
           messagingEnabled={messagingSurfaceEnabled}
           memoryConfig={memoryProviderConfig}
-          peerConversation={peerConversation}
-          setPeerConversation={setPeerConversation}
-          active={active}
-          peerBot={resolveTranscriptBot}
         />
       </Suspense>
 

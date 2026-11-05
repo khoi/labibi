@@ -178,14 +178,8 @@ export function blocksToAgentHistoryText(blocks: MessageBlock[]): string {
       if (block.kind === "file") {
         return `[file: ${block.name} (${block.mimeType}, ${block.size} bytes)]`;
       }
-      // Keep attribution on peer messages: without it a later turn cannot tell
-      // which lines came from another bot rather than the user.
-      if (block.kind === "bot_message_received") return `[from ${block.fromBotName}] ${block.text}`;
-      if (block.kind === "bot_message_sent") return `[to ${block.toBotName}] ${block.text}`;
+      // Keep attribution: without it a later turn cannot tell which lines came from someone else.
       if (block.kind === "channel_message") return `[from ${block.fromLabel}] ${block.text}`;
-      if (block.kind === "handoff") {
-        return `[handoff ${block.fromBotId} -> ${block.toBotId}] ${block.text}`;
-      }
       // Without the answer a later turn sees the question as still open and asks it again.
       if (block.kind === "ask") {
         if (block.status !== "answered" || !block.answer) return block.text;
@@ -313,22 +307,11 @@ export function attachmentsForBot<T extends { botId: string }>(
 }
 
 /**
- * The message whose attachments this run receives: a person's message, or a message or
- * handoff another bot delivered, whose files arrive the same way.
+ * The message whose attachments this run receives: a person's message.
  */
 export function userTurnMessageForRun<
   T extends { id?: string; role: string; runId?: string | null; blocks: MessageBlock[] },
 >(trigger: string, runId: string, messages: T[], sourceMessageId?: string | null): T | undefined {
-  if (trigger === "bot_message" || trigger === "follow_up") {
-    if (!sourceMessageId) return undefined;
-    return messages.find(
-      (message) =>
-        message.id === sourceMessageId &&
-        message.blocks.some(
-          (block) => block.kind === "bot_message_received" || block.kind === "handoff",
-        ),
-    );
-  }
   if (trigger !== "user" && trigger !== "messaging" && trigger !== "reaction") return undefined;
   return messages.find(
     (message) =>

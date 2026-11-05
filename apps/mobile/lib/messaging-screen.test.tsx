@@ -144,22 +144,6 @@ beforeEach(() => {
         memberCount: 5,
       },
     ],
-    "messaging/connections/list": [
-      {
-        id: "ac-in",
-        peerBotName: "Assistant",
-        peerOwnerLabel: "Dana",
-        status: "pending",
-        incoming: true,
-      },
-      {
-        id: "ac-ok",
-        peerBotName: "Helper",
-        peerOwnerLabel: "Sam",
-        status: "approved",
-        incoming: false,
-      },
-    ],
     "messaging/link/start": {
       code: "ABCD-2345",
       expiresAt: new Date(Date.now() + 600_000).toISOString(),
@@ -208,22 +192,10 @@ it("answers requests and manages conversations by their own ids, then refreshes"
     membershipId: "cm-invited",
     accept: false,
   });
-  await press("Dana's Assistant", "Approve");
-  expect(rpc).toHaveBeenCalledWith("messaging/connections/respond", {
-    connectionId: "ac-in",
-    accept: true,
-  });
-  await press("Dana's Assistant", "Decline");
-  expect(rpc).toHaveBeenCalledWith("messaging/connections/respond", {
-    connectionId: "ac-in",
-    accept: false,
-  });
   await press("Ops", "Leave");
   expect(rpc).toHaveBeenCalledWith("messaging/channels/leave", { membershipId: "cm-joined" });
-  await press("Sam's Helper", "Revoke");
-  expect(rpc).toHaveBeenCalledWith("messaging/connections/revoke", { connectionId: "ac-ok" });
 
-  expect(listCalls()).toBe(before + 6);
+  expect(listCalls()).toBe(before + 3);
 });
 
 it("says which line to send a link code to", async () => {

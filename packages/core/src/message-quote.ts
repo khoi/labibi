@@ -150,9 +150,6 @@ function replyBlockText(block: MessageBlock): string {
     case "computer":
     case "meta":
     case "progress":
-    case "handoff":
-    case "bot_message_sent":
-    case "bot_message_received":
       return block.text;
     case "choice":
       return block.question;
@@ -165,7 +162,6 @@ function replyBlockText(block: MessageBlock): string {
       return block.title;
     case "subagent":
       return block.name || block.task;
-    case "child_bot":
     case "skill_draft":
     case "connect":
     case "app_connect":

@@ -1,5 +1,4 @@
 import type { ConnectorTool } from "@labradoodle/adapter-kit";
-import { FLEET_TOOL_NAMES } from "@labradoodle/contracts";
 import type { CatalogEntry } from "./lazy-tool-catalog.js";
 import {
   catalogEntries,
@@ -50,11 +49,9 @@ export const CORE_BUILTIN_TOOL_NAMES: ReadonlySet<string> = new Set([
   "read_history",
 ]);
 
-const FLEET_NAMES: ReadonlySet<string> = new Set(FLEET_TOOL_NAMES);
-
 const AREAS: Array<[area: string, matches: (name: string) => boolean]> = [
   ["secrets", (name) => name.includes("secret")],
-  ["bots", (name) => FLEET_NAMES.has(name) || name.endsWith("_bot")],
+  ["bots", (name) => name.endsWith("_bot")],
   ["tasks", (name) => name === "task_catalog"],
   ["skills", (name) => name.startsWith("skill_")],
   ["schedules", (name) => name.startsWith("schedule_")],

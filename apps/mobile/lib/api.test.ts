@@ -4172,27 +4172,6 @@ describe("mobile thread event reduction", () => {
     expect(next?.messages[0]?.blocks).toEqual([completed]);
   });
 
-  it("keeps a replayed bot-to-bot marker in its durable transcript position", () => {
-    const peerBlock = {
-      kind: "bot_message_received" as const,
-      fromBotId: "bot-peer",
-      fromBotName: "Peer",
-      text: "Please check this.",
-    };
-    const initial = snapshot([
-      mobileMessage("peer-message", [peerBlock], 1),
-      mobileMessage("newer-message", [{ kind: "text", text: "Working on it." }], 2),
-    ]);
-
-    const next = applyMobileThreadEvent(initial, {
-      type: "thread.message.created",
-      seq: 9,
-      payload: { messageId: "peer-message", role: "user", blocks: [peerBlock] },
-    });
-
-    expect(next?.messages.map((message) => message.id)).toEqual(["peer-message", "newer-message"]);
-  });
-
   it("clears loaded history and active state when another client clears the thread", () => {
     const initial = snapshot([mobileMessage("message-1", [{ kind: "text", text: "old" }])], 1);
     initial.run = { id: "run-1", status: "running" };

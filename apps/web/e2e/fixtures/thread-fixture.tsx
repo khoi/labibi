@@ -1,9 +1,8 @@
 import type { ProductEvent, ThreadMessage, ThreadSnapshot } from "@labradoodle/contracts";
-import { foldPeerReplies } from "@labradoodle/core";
 import type { GroupAvatarMember } from "@labradoodle/ui-web";
 import { DEFAULT_BOT_AVATAR_COLOR } from "@labradoodle/ui-web";
 import type { ReactNode } from "react";
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 import { rpc } from "../../src/lib/rpc";
 import { reduceThreadSnapshot } from "../../src/lib/thread-events";
 import { Transcript } from "../../src/pages/shell/transcript";
@@ -64,10 +63,6 @@ export function FixtureTranscript({
   bots?: GroupAvatarMember[];
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const transcript = useMemo(
-    () => foldPeerReplies(messages, { includePeerReceipts: true }),
-    [messages],
-  );
   const bot = (botId: string | undefined) => bots.find((member) => member.botId === botId);
   return (
     <main className="flex h-dvh flex-col bg-background text-foreground">
@@ -79,7 +74,7 @@ export function FixtureTranscript({
         onScrollRequestHandled={noop}
         followRequest={0}
         artifactTarget={{ botId: BOT.botId }}
-        transcript={transcript}
+        messages={messages}
         showToolActivity={showToolActivity}
         olderCursor={null}
         unreadAfterSeq={null}
@@ -89,14 +84,12 @@ export function FixtureTranscript({
         running={running}
         workingBots={running ? [bots[0]!] : []}
         onLoadOlder={noop}
-        onOpenBot={noop}
         onAnswer={resolved}
         onReply={noop}
         onMarkUnread={noop}
         onQuote={noop}
         onReact={resolved}
         onJumpToMessage={noop}
-        onOpenPeerMessages={noop}
         memberName={(botId) => bot(botId)?.name}
         peerBot={(botId) => bot(botId) ?? BOT}
         onRefresh={resolved}

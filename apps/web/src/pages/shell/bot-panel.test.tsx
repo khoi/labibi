@@ -136,7 +136,6 @@ function bot(description = "Billing", overrides: Partial<Bot> = {}): Bot {
     sectionId: null,
     archivedAt: null,
     unread: false,
-    parentBotId: null,
     memoryScope: null,
     threadId: "thread-1",
     preview: "",
@@ -152,10 +151,8 @@ function bot(description = "Billing", overrides: Partial<Bot> = {}): Bot {
     thinkingLevel: null,
     teamChatAmbientEnabled: false,
     teamChatRules: "",
-    fleetManagement: false,
     disabledBuiltinTools: [],
     webhookConfigured: false,
-    spawnKey: null,
     ...overrides,
   };
 }
@@ -272,7 +269,6 @@ it("shows the profile and the Advanced tab's controls", async () => {
     memoryScope: "Memory scope",
     voice: "Voice",
     readAloud: "Read replies aloud",
-    fleetManagement: "Manage other bots",
   };
   const controls = [...advanced.querySelectorAll("h3, span, label, div")].flatMap((node) =>
     Object.entries(labels)
@@ -289,7 +285,6 @@ it("shows the profile and the Advanced tab's controls", async () => {
     "memoryScope",
     "voice",
     "readAloud",
-    "fleetManagement",
   ]);
 });
 
@@ -393,24 +388,6 @@ describe("BotSettings thinking options", () => {
 });
 
 describe("BotSettings bot management saves", () => {
-  it("cannot restore a stale enabled value when another session disables it", async () => {
-    await render("Billing", { fleetManagement: true });
-    await render("Billing", { fleetManagement: false });
-    await clickSave();
-    expect(onSave.mock.lastCall?.[0]).not.toHaveProperty("fleetManagement");
-  });
-
-  it("restores the toggle when the immediate save fails", async () => {
-    await render();
-    onSave.mockRejectedValueOnce(new Error("offline"));
-    const toggle = container.querySelector<HTMLButtonElement>('button[id$="-fleet-management"]');
-    if (!toggle) throw new Error("Missing switch");
-    await act(async () => {
-      toggle.click();
-    });
-    expect(toggle.getAttribute("aria-checked")).toBe("false");
-  });
-
   it("shows a failed export instead of leaving it unhandled", async () => {
     await render();
     onExport.mockRejectedValueOnce(Object.assign(new Error("Bad Gateway"), { status: 502 }));
@@ -422,18 +399,6 @@ describe("BotSettings bot management saves", () => {
       exportButton.click();
     });
     expect(container.textContent).toContain("Could not reach the server");
-  });
-
-  it.each([false, true])("saves only the bot management toggle from %s", async (enabled) => {
-    await render("Billing", { fleetManagement: enabled });
-    const toggle = container.querySelector<HTMLButtonElement>('button[id$="-fleet-management"]');
-    if (!toggle) throw new Error("Missing switch");
-    await act(async () => {
-      toggle.click();
-    });
-    expect(onSave).toHaveBeenCalledExactlyOnceWith({ fleetManagement: !enabled });
-    await clickSave();
-    expect(onSave.mock.lastCall?.[0]).not.toHaveProperty("fleetManagement");
   });
 });
 

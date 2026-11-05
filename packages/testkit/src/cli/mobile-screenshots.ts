@@ -401,7 +401,7 @@ async function seedFixture(app: App, prisma: PrismaClient) {
       status: "completed",
     },
   });
-  const run = await prisma.run.create({
+  await prisma.run.create({
     data: {
       spaceId: botThread.spaceId,
       userId: botThread.userId,
@@ -417,59 +417,6 @@ async function seedFixture(app: App, prisma: PrismaClient) {
       completedAt: new Date(),
     },
   });
-  // A peer exchange: Researcher messages Writer, and Writer's update wakes a peer run.
-  await createThreadMessage(prisma, {
-    threadId: botThread.id,
-    role: "bot",
-    botId: researcher.id,
-    runId: run.id,
-    blocks: [
-      {
-        kind: "bot_message_sent",
-        toBotId: writer.id,
-        toBotName: "Writer",
-        text: "Draft the fixture launch note.",
-      },
-    ],
-  });
-  const peerRun = await prisma.run.create({
-    data: {
-      spaceId: botThread.spaceId,
-      userId: botThread.userId,
-      botId: researcher.id,
-      threadId: botThread.id,
-      taskId: task.id,
-      status: "completed",
-      trigger: "bot_message",
-      modelProvider: "scripted",
-      modelId: "scripted",
-      startedAt: new Date(Date.now() - 1_000),
-      completedAt: new Date(),
-    },
-  });
-  await createThreadMessage(prisma, {
-    threadId: botThread.id,
-    role: "user",
-    runId: peerRun.id,
-    markUnread: false,
-    blocks: [
-      {
-        kind: "bot_message_received",
-        fromBotId: writer.id,
-        fromBotName: "Writer",
-        text: "The fixture launch note is drafted.",
-      },
-    ],
-  });
-  await createThreadMessage(prisma, {
-    threadId: botThread.id,
-    role: "bot",
-    botId: researcher.id,
-    runId: peerRun.id,
-    markUnread: false,
-    blocks: [{ kind: "text", text: "Update from Writer: The fixture launch note is drafted." }],
-  });
-
   return {
     botId: researcher.id,
     groupId: group.id,

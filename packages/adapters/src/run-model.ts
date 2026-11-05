@@ -15,7 +15,6 @@ import { MISSING_MODEL_RUN_ERROR } from "@labradoodle/core";
 import { cloudflareProviderEnv } from "./cloudflare-ai-gateway.js";
 import { resolveDeploymentModel } from "./deployment-model.js";
 import type { ExecutorDeps } from "./executor-deps.js";
-import type { FleetPrepareDeps } from "./fleet-tools.js";
 import {
   HostedModelCreditsRequiredError,
   hostedModelCreditObserver,
@@ -32,6 +31,7 @@ import {
 } from "./model-selection.js";
 import { compatibleModelSeesImages } from "./model-vision.js";
 import { assertAllowedOpenAiCompatibleUrl } from "./openai-compatible-url.js";
+import type { BotSettingsDeps } from "./own-bot-settings.js";
 import { codexLiveModel } from "./pi-codex-catalog.js";
 import { toOAuthCredential } from "./pi-credentials.js";
 import { LOCAL_PROVIDER_ID } from "./pi-local-provider.js";
@@ -65,10 +65,10 @@ export function isTerminalModelSetupError(error: unknown): boolean {
   );
 }
 
-export async function fleetPrepareDeps(
+export async function botSettingsDeps(
   deps: ExecutorDeps,
   scope: { userId: string; spaceId: string },
-): Promise<FleetPrepareDeps> {
+): Promise<BotSettingsDeps> {
   const hostedProvider = (await modelCreditBillingEnabled(deps))
     ? resolveDeploymentModel().provider
     : undefined;

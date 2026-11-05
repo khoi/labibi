@@ -161,10 +161,6 @@ msgstr "{commandVariable} зарезервирована и не может ис
 msgid "{connectedCount, plural, one {# connected} other {# connected}}"
 msgstr ""
 
-#: src/pages/shell/message-view.tsx
-msgid "{count, plural, one {# message with {peer}} other {# messages with {peer}}}"
-msgstr "{count, plural, one {# сообщение с {peer}} few {# сообщения с {peer}} many {# сообщений с {peer}} other {# сообщения с {peer}}}"
-
 #: src/components/markdown-copy.tsx
 msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# строка} few {# строки} many {# строк} other {# строки}}"
@@ -232,14 +228,6 @@ msgstr ""
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "{name} (same name as a built-in skill)"
 msgstr ""
-
-#: src/lib/activity-list-filters.ts
-msgid "{name} asked"
-msgstr "{name} спрашивает"
-
-#: src/lib/activity-list-filters.ts
-msgid "{name} asked: {text}"
-msgstr "{name} спрашивает: {text}"
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts
@@ -726,10 +714,6 @@ msgstr ""
 msgid "Allow"
 msgstr "Разрешить"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "Allow cross-space bot communication"
-msgstr "Разрешить общение ботов из разных пространств"
-
 #: src/components/AskCard.tsx
 msgid "Allow in this space"
 msgstr ""
@@ -793,10 +777,6 @@ msgstr "Существующий пир Honcho для чтения. Labradoodle 
 #: src/pages/RoutineEditor.tsx
 msgid "An integration tool"
 msgstr "Инструмент интеграции"
-
-#: src/lib/activity-list-filters.ts
-msgid "Another agent"
-msgstr "Другой агент"
 
 #: src/components/AskCard.tsx
 msgid "Answer"
@@ -901,10 +881,6 @@ msgstr ""
 #: src/pages/BotContextMenu.tsx
 msgid "Archive"
 msgstr "Архивировать"
-
-#: src/pages/shell/message-view.tsx
-msgid "archived"
-msgstr "в архиве"
 
 #: src/pages/shell/archived-chats.tsx
 msgid "Archived"
@@ -1072,10 +1048,6 @@ msgstr "Блокировать"
 #: src/pages/shell/use-computer.tsx
 msgid "Booting live desktop…"
 msgstr "Загрузка рабочего стола…"
-
-#: src/pages/shell/message-view.tsx
-msgid "bot"
-msgstr "бот"
 
 #: src/lib/identity-display.ts
 #: src/pages/IntegrationSetup.tsx
@@ -1403,7 +1375,6 @@ msgstr "Очистка…"
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/chat-find-bar.tsx
@@ -2084,10 +2055,6 @@ msgstr "Не удалось загрузить навык"
 msgid "Could not load this artifact."
 msgstr ""
 
-#: src/pages/PeerMessagesOverlay.tsx
-msgid "Could not load this chat."
-msgstr "Не удалось загрузить этот чат."
-
 #: src/components/ArtifactFileCard.tsx
 msgid "Could not load this file."
 msgstr "Не удалось загрузить этот файл."
@@ -2613,10 +2580,6 @@ msgstr "Удалить пространство"
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete this Space's credentials?"
 msgstr "Удалить учётные данные этого пространства?"
-
-#: src/pages/shell/message-view.tsx
-msgid "deleted"
-msgstr "удалено"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -3694,7 +3657,6 @@ msgstr "Загрузка поставщиков голосовой связи…
 #: src/pages/Artifacts.tsx
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/Invite.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/RoutineRunHistory.tsx
 #: src/pages/shell/transcript.tsx
@@ -3756,10 +3718,6 @@ msgstr ""
 #: src/pages/PluginsOverlay.tsx
 msgid "Manage MCP servers"
 msgstr "Управление серверами MCP"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Manage other bots"
-msgstr "Управлять другими ботами"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Manual"
@@ -3890,21 +3848,9 @@ msgstr "Поле сообщения"
 msgid "Message event"
 msgstr "Событие сообщения"
 
-#: src/pages/shell/message-view.tsx
-msgid "Message from {peer}"
-msgstr "Сообщение от {peer}"
-
-#: src/lib/activity-list-filters.ts
-msgid "Message from another agent"
-msgstr "Сообщение от другого агента"
-
 #: src/pages/shell/composer.tsx
 msgid "Message…"
 msgstr "Сообщение…"
-
-#: src/pages/shell/message-view.tsx
-msgid "Messaged {peer}"
-msgstr "Отправлено сообщение {peer}"
 
 #: src/pages/settings-nav.ts
 msgid "Messaging"
@@ -4251,10 +4197,6 @@ msgstr "Нет подходящих моделей"
 #: src/pages/GroupPanel.tsx
 msgid "No members yet"
 msgstr ""
-
-#: src/pages/PeerMessagesOverlay.tsx
-msgid "No messages with {peerBotName} yet."
-msgstr "Сообщений с {peerBotName} пока нет."
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "No model catalog is available."
@@ -4643,14 +4585,9 @@ msgid "Paused"
 msgstr "Приостановлено"
 
 #: src/pages/AdminAccessPage.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
 msgstr ""
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Permissions"
-msgstr "Разрешения"
 
 #: src/components/SignupSurvey.tsx
 msgid "Personal"
@@ -5202,7 +5139,6 @@ msgid "Retry"
 msgstr "Повторить"
 
 #: src/App.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 msgid "Retry now"
 msgstr "Повторить попытку сейчас"
 
@@ -5220,7 +5156,6 @@ msgid "Review provider settings and test again."
 msgstr "Проверьте настройки поставщика и повторите тест."
 
 #: src/pages/AdminAccessPage.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 msgid "Revoke"
 msgstr "Отозвать"
 
@@ -6454,14 +6389,6 @@ msgstr "Обновить компьютер"
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Update failed"
 msgstr "Обновление не выполнено"
-
-#: src/lib/activity-list-filters.ts
-msgid "Update from {name}"
-msgstr "Обновление от {name}"
-
-#: src/lib/activity-list-filters.ts
-msgid "Update from {name}: {text}"
-msgstr "Обновление от {name}: {text}"
 
 #: src/components/AskCard.tsx
 msgid "Update instructions?"

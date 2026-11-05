@@ -16,7 +16,6 @@ const ownerChat = selectBuiltinToolsForRun({
   semanticMemoryEnabled: false,
   historyRetrievalEnabled: true,
   messagingChannelRun: false,
-  fleetManagement: true,
   followUpFromUser: true,
 });
 
@@ -60,7 +59,7 @@ describe("built-in tool bridge", () => {
     // read_file takes a line range.
     expect(definitionBytes(listed)).toBeLessThanOrEqual(32_344);
     expect(deferred.map((tool) => tool.name)).toEqual(
-      expect.arrayContaining(["render_plot", "create_space", "generate_secret"]),
+      expect.arrayContaining(["render_plot", "generate_secret"]),
     );
   });
 
@@ -93,7 +92,6 @@ describe("built-in tool bridge", () => {
 
     const names = (query: string) => findTools(deferred, { query }).tools.map((tool) => tool.name);
     expect(names("chart")).toContain("render_plot");
-    expect(names("new space")[0]).toBe("create_space");
     expect(names("generate password")[0]).toBe("generate_secret");
     expect(findTools(deferred, { query: "zzzz" })).toMatchObject({
       tools: [],
@@ -122,8 +120,8 @@ describe("built-in tool bridge", () => {
   });
 
   it("shows the real tool as activity", () => {
-    expect(
-      describeToolActivity(USE_TOOL, { name: "create_space", arguments: { name: "Finance" } }),
-    ).toBe("Creating space: Finance");
+    expect(describeToolActivity(USE_TOOL, { name: "save_page", arguments: { help: true } })).toBe(
+      "Reading the page kit reference",
+    );
   });
 });

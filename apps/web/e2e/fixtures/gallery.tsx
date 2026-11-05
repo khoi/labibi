@@ -418,32 +418,6 @@ const team: Scenario = {
   bots: [BOT, SCOUT, LEDGER],
   messages: [
     user("Plan the offsite with the team."),
-    bot([
-      {
-        kind: "bot_message_sent",
-        toBotId: SCOUT.botId,
-        toBotName: SCOUT.name,
-        text: "Find three venues near the office.",
-        intent: "request",
-      },
-    ]),
-    message("user", [
-      {
-        kind: "bot_message_received",
-        fromBotId: SCOUT.botId,
-        fromBotName: SCOUT.name,
-        text: "The Loft, Harbor Hall and Pine Room are free.",
-        intent: "result",
-      },
-    ]),
-    bot([
-      {
-        kind: "handoff",
-        fromBotId: BOT.botId,
-        toBotId: LEDGER.botId,
-        text: "Budget check",
-      },
-    ]),
     say("The Loft fits the budget.", { botId: LEDGER.botId }),
     bot([
       {
@@ -455,8 +429,6 @@ const team: Scenario = {
         text: "Tuesday works for me",
       },
     ]),
-    bot([{ kind: "child_bot", botId: SCOUT.botId, name: SCOUT.name, status: "created" }]),
-    bot([{ kind: "child_bot", botId: LEDGER.botId, name: LEDGER.name, status: "archived" }]),
   ],
 };
 

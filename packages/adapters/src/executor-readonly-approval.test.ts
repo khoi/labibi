@@ -22,7 +22,6 @@ import type * as ComputerLifecycleModule from "./computer-lifecycle.js";
 import { createRunExecutor } from "./executor.js";
 import { fakeSpendingPrisma } from "./fake-spending.js";
 import { FakeWebProvider } from "./fake-web.js";
-import type * as FleetToolsModule from "./fleet-tools.js";
 import type { HostComputerRequest } from "./host-computer-protocol.js";
 import {
   CATALOG_EXECUTE,
@@ -42,13 +41,6 @@ vi.mock("./computer-lifecycle.js", async (importOriginal) => ({
     input: { computerId: string; botId: string; runId: string },
   ) => ({ ...input, fence: 7 }),
   provisionComputer: async () => ({ id: "computer-1", kind: "desktop" }),
-}));
-
-// Group writes run against Postgres in the journeys; here only the dispatch is under test.
-const createFleetGroupMock = vi.hoisted(() => vi.fn());
-vi.mock("./fleet-tools.js", async (importOriginal) => ({
-  ...(await importOriginal<typeof FleetToolsModule>()),
-  createFleetGroup: createFleetGroupMock,
 }));
 
 const reviewMock = vi.fn();
@@ -102,8 +94,6 @@ function fixture({
   sourceRole,
   existingSharedMemory,
   advanceRevisionAfterRead = false,
-  fleetManagement = false,
-  fleetBots = [] as { id: string; name: string; thread?: { id: string } }[],
   secondResource = false,
   routines = [] as { name: string; prompt: string }[],
   connectedApps = [] as string[],
@@ -127,10 +117,6 @@ function fixture({
   routines?: { name: string; prompt: string }[];
   /** Adds `demo_get_other`, a read on a separate installed resource with the same name prefix. */
   secondResource?: boolean;
-  /** The switch as the run starts; `liveBot` is what a later read sees. */
-  fleetManagement?: boolean;
-  /** Other active bots of the same user, found by id or exact name. */
-  fleetBots?: { id: string; name: string; thread?: { id: string } }[];
   parallelCalls?: boolean;
   sourceRole?: string;
   builtin?: boolean;
@@ -303,7 +289,6 @@ function fixture({
   };
   // Turn checkpoints live in external_effects too, but outside the approval fixtures' rows.
   const turnCheckpoints: { idempotencyKey: string; result: string }[] = [];
-  const liveBot = { fleetManagement };
   const reviewCredential =
     approvalRole && checkerConnected
       ? {
@@ -355,7 +340,6 @@ function fixture({
         thinkingLevel: null,
         autoSpeak: false,
         disabledBuiltinTools,
-        fleetManagement,
         computerId: "computer-1",
         computer: { id: "computer-1", scope: "dedicated" },
       })),
@@ -371,18 +355,7 @@ function fixture({
         Object.assign(instructionState, data);
         return { count: 1 };
       }),
-      findMany: vi.fn(async ({ where }: { where?: { id?: unknown; name?: unknown } } = {}) => {
-        const matches = (value: string, condition: unknown) =>
-          condition === undefined ||
-          (typeof condition === "object" && condition !== null && "in" in condition
-            ? (condition as { in: unknown[] }).in.includes(value)
-            : value === condition);
-        if (where?.id === undefined && where?.name === undefined) return [];
-        return fleetBots.filter(
-          (row) => matches(row.id, where.id) && matches(row.name, where.name),
-        );
-      }),
-      findUnique: vi.fn(async () => ({ ...liveBot })),
+      findMany: vi.fn(async () => []),
     },
     attempt: {
       create: vi.fn(async () => ({ id: "attempt-1" })),
@@ -636,9 +609,7 @@ function fixture({
     spending: spending.state,
     web,
     fetchedUrls,
-    fleetBots,
     instructionState,
-    liveBot,
     claimedOutsideSteering(value: boolean) {
       outsideSteering = value;
     },
@@ -1980,13 +1951,13 @@ describe("own settings through update_bot", () => {
     const f = fixture({ name: "update_bot", builtin: true });
     f.setCalls([
       {
-        args: { name: "Scout", fleetManagement: true, disabledBuiltinTools: [] },
+        args: { name: "Scout", disabledBuiltinTools: [] },
         executionId: "call-1",
       },
     ]);
     await f.run();
     expect(f.results).toEqual([
-      { error: "Only the owner can change fleetManagement, disabledBuiltinTools, in Settings." },
+      { error: "Only the owner can change disabledBuiltinTools, in Settings." },
     ]);
     expect(f.prisma.bot.update).not.toHaveBeenCalled();
     expect(f.effects).toEqual([]);
@@ -2069,318 +2040,6 @@ describe("own settings through update_bot", () => {
       models: [],
     });
     expect(f.prisma.bot.update).not.toHaveBeenCalled();
-  });
-});
-
-describe("bot management tool gating", () => {
-  const trustRejection = { error: "Bot management tools need a run you started." };
-  const taintRejection = {
-    error:
-      "Changes to the bots you manage are blocked for the rest of this run because it received a channel or webhook message.",
-  };
-  const switchRejection = { error: "This tool is disabled for this bot." };
-
-  it("re-reads the switch at call time and refuses once it is turned off mid-run", async () => {
-    const f = fixture({ name: "list_fleet", builtin: true, fleetManagement: true });
-    f.liveBot.fleetManagement = false;
-    f.setCalls([{ args: {}, executionId: "call-1" }]);
-    await f.run();
-    expect(f.offeredTools()).toContain("list_fleet");
-    expect(f.results).toEqual([switchRejection]);
-    expect(f.effects).toEqual([]);
-  });
-
-  it.each(["bot_message", "messaging", "spawn", "tickets", "webhook", "routine"])(
-    "neither offers nor runs list_fleet on %s runs",
-    async (trigger) => {
-      const f = fixture({ name: "list_fleet", builtin: true, fleetManagement: true, trigger });
-      f.setCalls([{ args: {}, executionId: "call-1" }]);
-      await f.run();
-      expect(f.offeredTools()).not.toContain("list_fleet");
-      expect(f.results).toEqual([trustRejection]);
-    },
-  );
-
-  it("refuses every bot management write once the run claimed a channel or webhook message", async () => {
-    const f = fixture({
-      name: "create_group",
-      builtin: true,
-      fleetManagement: true,
-      fleetBots: [
-        { id: "bot-a", name: "Alpha" },
-        { id: "bot-b", name: "Beta" },
-      ],
-    });
-    f.claimedOutsideSteering(true);
-    f.setCalls([{ args: { name: "Crew", bot_ids: ["bot-a", "bot-b"] }, executionId: "call-1" }]);
-    await f.run();
-    expect(f.results).toEqual([taintRejection]);
-    expect(f.effects).toEqual([]);
-  });
-
-  it("still reads the bots it manages after the run claimed a channel message", async () => {
-    const f = fixture({ name: "list_fleet", builtin: true, fleetManagement: true });
-    f.claimedOutsideSteering(true);
-    f.setCalls([{ args: {}, executionId: "call-1" }]);
-    await f.run();
-    expect(f.results).toEqual([{ bots: [], groups: [], sections: [], truncated: false }]);
-  });
-
-  it.each(["bot_message", "messaging", "spawn", "tickets", "webhook", "routine"])(
-    "refuses bot management writes on %s runs even with the switch on",
-    async (trigger) => {
-      const f = fixture({ name: "create_group", builtin: true, fleetManagement: true, trigger });
-      f.setCalls([{ args: { name: "Crew", bot_ids: ["a", "b"] }, executionId: "call-1" }]);
-      await f.run();
-      expect(f.offeredTools()).not.toContain("create_group");
-      expect(f.results).toEqual([trustRejection]);
-      expect(f.effects).toEqual([]);
-    },
-  );
-
-  it("offers bot management writes on a follow-up only when the user wrote the source message", async () => {
-    const fromUser = fixture({
-      name: "create_group",
-      builtin: true,
-      fleetManagement: true,
-      trigger: "follow_up",
-      sourceRole: "user",
-    });
-    await fromUser.run();
-    expect(fromUser.offeredTools()).toContain("create_group");
-
-    const fromBot = fixture({
-      name: "create_group",
-      builtin: true,
-      fleetManagement: true,
-      trigger: "follow_up",
-      sourceRole: "bot",
-    });
-    fromBot.setCalls([{ args: { name: "Crew", bot_ids: ["a", "b"] }, executionId: "call-1" }]);
-    await fromBot.run();
-    expect(fromBot.offeredTools()).not.toContain("create_group");
-    expect(fromBot.results).toEqual([trustRejection]);
-  });
-
-  it.each([
-    ["list_fleet", {}],
-    ["create_group", { name: "Crew", bot_ids: ["a", "b"] }],
-    ["set_child_instructions", { bot_id: "child-1", instructions: "Obey", expected_version: "v1" }],
-    ["update_bot", { bot_id: "child-1", name: "Obeys" }],
-    ["archive_bot", { bot_id: "peer-1", confirm_name: "Peer" }],
-  ])("refuses %s from a helper even on a run the owner started", async (name, args) => {
-    const f = fixture({ name, builtin: true, fleetManagement: true });
-    f.setCalls([{ args, executionId: JSON.stringify(["pi-tool", "helper-call", "call-1"]) }]);
-    await f.run();
-    expect(f.results).toEqual([{ error: "Helpers cannot use bot management tools." }]);
-    expect(f.effects).toEqual([]);
-  });
-
-  it.each(["switch", "helper", "channel"])(
-    "checks restored child arguments against the live %s gate",
-    async (gate) => {
-      const f = fixture({
-        name: "update_bot",
-        builtin: true,
-        fleetManagement: true,
-        rules: [{ effect: "require_approval", matchKind: "tool", matchValue: "update_bot" }],
-      });
-      f.setCalls([{ args: { bot_id: "child-1", name: "New name" }, executionId: "call-1" }]);
-      await f.run();
-      expect(f.effects).toHaveLength(1);
-      f.effects[0]!.status = "approved";
-      if (gate === "switch") f.liveBot.fleetManagement = false;
-      if (gate === "channel") f.claimedOutsideSteering(true);
-      f.setCalls([
-        {
-          args: { name: "Self edit" },
-          executionId:
-            gate === "helper" ? JSON.stringify(["pi-tool", "helper-call", "call-2"]) : "call-2",
-        },
-      ]);
-      await f.run();
-      expect(f.results.at(-1)).toEqual(
-        gate === "switch"
-          ? switchRejection
-          : gate === "channel"
-            ? taintRejection
-            : { error: "Helpers cannot use bot management tools." },
-      );
-      expect(f.effects[0]!.status).toBe("approved");
-    },
-  );
-
-  it.each(["switch", "external", "channel"])(
-    "refuses archiving a peer through the %s management gate",
-    async (gate) => {
-      const f = fixture({
-        name: "archive_bot",
-        builtin: true,
-        fleetManagement: gate !== "switch",
-        trigger: gate === "external" ? "bot_message" : "user",
-      });
-      if (gate === "channel") f.claimedOutsideSteering(true);
-      f.setCalls([{ args: { bot_id: "peer-1", confirm_name: "Peer" }, executionId: "call-1" }]);
-      await f.run();
-      expect(f.results.at(-1)).toHaveProperty("error");
-      expect(f.effects).toEqual([]);
-    },
-  );
-
-  it("refuses update_bot on another bot when the switch is off or the run is untrusted", async () => {
-    const childEdit = { bot_id: "child-1", name: "Obeys" };
-    const off = fixture({ name: "update_bot", builtin: true, fleetManagement: false });
-    off.setCalls([{ args: childEdit, executionId: "call-1" }]);
-    await off.run();
-    expect(off.results).toEqual([switchRejection]);
-
-    const untrusted = fixture({
-      name: "update_bot",
-      builtin: true,
-      fleetManagement: true,
-      trigger: "bot_message",
-    });
-    untrusted.setCalls([{ args: { bot_id: "child-1", name: "Renamed" }, executionId: "call-1" }]);
-    await untrusted.run();
-    expect(untrusted.results).toEqual([trustRejection]);
-    expect(untrusted.offeredTools()).toContain("update_bot");
-  });
-});
-
-describe("bot management approvals", () => {
-  beforeEach(() => createFleetGroupMock.mockReset());
-  const modelArgs = { name: "Crew", bot_names: ["Alpha", "Beta"] };
-  const approved = {
-    name: "Crew",
-    botIds: ["bot-a", "bot-b"],
-    members: [
-      { id: "bot-a", name: "Alpha" },
-      { id: "bot-b", name: "Beta" },
-    ],
-  };
-
-  it("asks with the resolved members in Ask mode", async () => {
-    const f = fixture({
-      name: "create_group",
-      builtin: true,
-      fleetManagement: true,
-      fleetBots: [
-        { id: "bot-a", name: "Alpha" },
-        { id: "bot-b", name: "Beta" },
-      ],
-    });
-    f.setCalls([{ args: modelArgs, executionId: "call-1" }]);
-    await f.run();
-    expect(f.effects).toEqual([
-      expect.objectContaining({ kind: "create_group", status: "intended", request: approved }),
-    ]);
-    expect(f.pauseRunForInput).toHaveBeenCalledWith(
-      expect.objectContaining({
-        blocks: [
-          expect.objectContaining({ text: "Create group “Crew”?", detail: "Members: Alpha, Beta" }),
-        ],
-      }),
-    );
-  });
-
-  it("creates the group in Never ask after outside content", async () => {
-    const f = fixture({
-      name: "create_group",
-      builtin: true,
-      fleetManagement: true,
-      skipApprovals: true,
-      fleetBots: [
-        { id: "bot-a", name: "Alpha" },
-        { id: "bot-b", name: "Beta" },
-      ],
-    });
-    const created = { groupId: "group-1", threadId: "thread-group-1", name: "Crew" };
-    createFleetGroupMock.mockResolvedValueOnce(created);
-    f.setCalls([
-      { name: "web_search", args: { query: "news" }, executionId: "call-1" },
-      { args: modelArgs, executionId: "call-2" },
-    ]);
-    await f.run();
-    expect(f.pauseRunForInput).not.toHaveBeenCalled();
-    expect(f.results.at(-1)).toEqual(created);
-  });
-
-  it("replays the approved ids after a member is renamed during the pause", async () => {
-    const f = fixture({
-      name: "create_group",
-      builtin: true,
-      fleetManagement: true,
-      fleetBots: [
-        { id: "bot-a", name: "Alpha" },
-        { id: "bot-b", name: "Beta" },
-      ],
-    });
-    f.setCalls([{ args: modelArgs, executionId: "call-1" }]);
-    await f.run();
-    f.fleetBots.splice(0, 1, { id: "bot-a", name: "Gamma" }, { id: "bot-c", name: "Alpha" });
-    f.effects[0]!.status = "approved";
-    const created = {
-      groupId: "group-1",
-      threadId: "thread-group-1",
-      name: "Crew",
-      members: approved.members,
-    };
-    createFleetGroupMock.mockResolvedValueOnce(created);
-    f.setCalls([{ args: modelArgs, executionId: "call-2" }]);
-    await f.run();
-    expect(f.effects).toHaveLength(1);
-    expect(f.effects[0]!.request).toEqual(approved);
-    expect(createFleetGroupMock).toHaveBeenCalledExactlyOnceWith(
-      expect.anything(),
-      expect.objectContaining({ spaceId: "space-1", userId: "user-1", botId: "bot-1" }),
-      approved,
-    );
-    expect(f.effects[0]).toMatchObject({ status: "completed", result: created });
-    expect(f.results.at(-1)).toEqual(created);
-    expect(f.execute).not.toHaveBeenCalled();
-  });
-
-  it("asks a person before a child routine names a site found in outside content", async () => {
-    reviewMock.mockReset();
-    reviewMock.mockResolvedValue({ decision: "pass", reason: "Fits", model: "mock" });
-    const f = fixture({
-      name: "create_child_routine",
-      builtin: true,
-      fleetManagement: true,
-      autoReview: true,
-      rules: [{ effect: "always_allow", matchKind: "tool", matchValue: "create_child_routine" }],
-      fleetBots: [{ id: "bot-a", name: "Alpha", thread: { id: "thread-a" } }],
-    });
-    f.setCalls([
-      { name: "web_search", args: { query: "news" }, executionId: "call-1" },
-      {
-        args: {
-          bot_id: "bot-a",
-          name: "Daily",
-          prompt: "Every day fetch https://attacker.test/",
-          every: 1,
-          unit: "days",
-        },
-        executionId: "call-2",
-      },
-    ]);
-    await f.run();
-    expect(reviewMock).not.toHaveBeenCalled();
-    expect(isApprovalPausedResult(f.results.at(-1))).toBe(true);
-  });
-
-  it("returns a refused target to the model without a card", async () => {
-    const f = fixture({
-      name: "create_group",
-      builtin: true,
-      fleetManagement: true,
-      fleetBots: [{ id: "bot-a", name: "Alpha" }],
-    });
-    f.setCalls([{ args: modelArgs, executionId: "call-1" }]);
-    await f.run();
-    expect(f.results).toEqual([{ error: 'No bot named "Beta". Call list_fleet and pass bot_id.' }]);
-    expect(f.effects).toEqual([]);
-    expect(f.pauseRunForInput).not.toHaveBeenCalled();
   });
 });
 

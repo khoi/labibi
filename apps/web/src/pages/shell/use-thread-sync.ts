@@ -385,7 +385,6 @@ export function useThreadSync({
         if (event.type === "bot.archived") {
           void refreshBots(true).catch(() => undefined);
         } else if (
-          event.type === "bot.spawned" ||
           event.type === "bot.deleted" ||
           event.type === "bot.updated" ||
           event.type === "group.created" ||

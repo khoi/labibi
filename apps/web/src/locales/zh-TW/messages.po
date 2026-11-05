@@ -162,10 +162,6 @@ msgstr "{commandVariable} 是保留名稱，不能用作命令變數。請選擇
 msgid "{connectedCount, plural, one {# connected} other {# connected}}"
 msgstr ""
 
-#: src/pages/shell/message-view.tsx
-msgid "{count, plural, one {# message with {peer}} other {# messages with {peer}}}"
-msgstr "{count, plural, other {與{peer}的 # 則訊息}}"
-
 #: src/components/markdown-copy.tsx
 msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# 列} other {# 列}}"
@@ -233,14 +229,6 @@ msgstr "{moved, plural, one {# 個機器人已改用空間預設模型。} other
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "{name} (same name as a built-in skill)"
 msgstr ""
-
-#: src/lib/activity-list-filters.ts
-msgid "{name} asked"
-msgstr "{name} 問"
-
-#: src/lib/activity-list-filters.ts
-msgid "{name} asked: {text}"
-msgstr "{name} 問：{text}"
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts
@@ -727,10 +715,6 @@ msgstr "不限時間"
 msgid "Allow"
 msgstr "允許"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "Allow cross-space bot communication"
-msgstr "允許跨空間機器人通訊"
-
 #: src/components/AskCard.tsx
 msgid "Allow in this space"
 msgstr ""
@@ -794,10 +778,6 @@ msgstr "用於讀取資料的現有 Honcho peer。Labradoodle 絕不會向其寫
 #: src/pages/RoutineEditor.tsx
 msgid "An integration tool"
 msgstr "整合工具"
-
-#: src/lib/activity-list-filters.ts
-msgid "Another agent"
-msgstr "其他代理程式"
 
 #: src/components/AskCard.tsx
 msgid "Answer"
@@ -902,10 +882,6 @@ msgstr ""
 #: src/pages/BotContextMenu.tsx
 msgid "Archive"
 msgstr "封存"
-
-#: src/pages/shell/message-view.tsx
-msgid "archived"
-msgstr "已封存"
 
 #: src/pages/shell/archived-chats.tsx
 msgid "Archived"
@@ -1073,10 +1049,6 @@ msgstr "封鎖"
 #: src/pages/shell/use-computer.tsx
 msgid "Booting live desktop…"
 msgstr "正在啟動即時桌面…"
-
-#: src/pages/shell/message-view.tsx
-msgid "bot"
-msgstr "機器人"
 
 #: src/lib/identity-display.ts
 #: src/pages/IntegrationSetup.tsx
@@ -1404,7 +1376,6 @@ msgstr "正在清空…"
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/chat-find-bar.tsx
@@ -2085,10 +2056,6 @@ msgstr "無法載入技能"
 msgid "Could not load this artifact."
 msgstr "無法載入此成品。"
 
-#: src/pages/PeerMessagesOverlay.tsx
-msgid "Could not load this chat."
-msgstr "無法載入此對話。"
-
 #: src/components/ArtifactFileCard.tsx
 msgid "Could not load this file."
 msgstr "無法載入此檔案。"
@@ -2614,10 +2581,6 @@ msgstr "刪除空間"
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete this Space's credentials?"
 msgstr "要刪除此空間的憑證嗎？"
-
-#: src/pages/shell/message-view.tsx
-msgid "deleted"
-msgstr "已刪除"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -3695,7 +3658,6 @@ msgstr "正在載入語音供應商…"
 #: src/pages/Artifacts.tsx
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/Invite.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/RoutineRunHistory.tsx
 #: src/pages/shell/transcript.tsx
@@ -3757,10 +3719,6 @@ msgstr "管理帳務"
 #: src/pages/PluginsOverlay.tsx
 msgid "Manage MCP servers"
 msgstr "管理 MCP 伺服器"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Manage other bots"
-msgstr "管理其他機器人"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Manual"
@@ -3891,21 +3849,9 @@ msgstr "訊息輸入框"
 msgid "Message event"
 msgstr "訊息事件"
 
-#: src/pages/shell/message-view.tsx
-msgid "Message from {peer}"
-msgstr "來自 {peer} 的訊息"
-
-#: src/lib/activity-list-filters.ts
-msgid "Message from another agent"
-msgstr "來自其他代理程式的訊息"
-
 #: src/pages/shell/composer.tsx
 msgid "Message…"
 msgstr "訊息…"
-
-#: src/pages/shell/message-view.tsx
-msgid "Messaged {peer}"
-msgstr "已發給 {peer}"
 
 #: src/pages/settings-nav.ts
 msgid "Messaging"
@@ -4252,10 +4198,6 @@ msgstr "沒有符合的模型"
 #: src/pages/GroupPanel.tsx
 msgid "No members yet"
 msgstr "尚無成員"
-
-#: src/pages/PeerMessagesOverlay.tsx
-msgid "No messages with {peerBotName} yet."
-msgstr "還沒有與 {peerBotName} 的訊息。"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "No model catalog is available."
@@ -4644,14 +4586,9 @@ msgid "Paused"
 msgstr "已暫停"
 
 #: src/pages/AdminAccessPage.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
 msgstr "待處理"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Permissions"
-msgstr "權限"
 
 #: src/components/SignupSurvey.tsx
 msgid "Personal"
@@ -5203,7 +5140,6 @@ msgid "Retry"
 msgstr "重試"
 
 #: src/App.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 msgid "Retry now"
 msgstr "立即重試"
 
@@ -5221,7 +5157,6 @@ msgid "Review provider settings and test again."
 msgstr "請檢查供應商設定並重新測試。"
 
 #: src/pages/AdminAccessPage.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 msgid "Revoke"
 msgstr "撤銷授權"
 
@@ -6455,14 +6390,6 @@ msgstr "更新電腦"
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Update failed"
 msgstr "更新失敗"
-
-#: src/lib/activity-list-filters.ts
-msgid "Update from {name}"
-msgstr "來自 {name} 的更新"
-
-#: src/lib/activity-list-filters.ts
-msgid "Update from {name}: {text}"
-msgstr "來自 {name} 的更新：{text}"
 
 #: src/components/AskCard.tsx
 msgid "Update instructions?"

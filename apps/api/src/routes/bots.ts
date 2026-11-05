@@ -332,12 +332,6 @@ export function botsRoutes(ctx: RouterContext) {
               ? { teamChatAmbientEnabled: input.teamChatAmbientEnabled }
               : {}),
             ...(input.teamChatRules !== undefined ? { teamChatRules: input.teamChatRules } : {}),
-            ...(input.crossSpaceCommunication !== undefined
-              ? { crossSpaceCommunication: input.crossSpaceCommunication }
-              : {}),
-            ...(input.fleetManagement !== undefined
-              ? { fleetManagement: input.fleetManagement }
-              : {}),
             ...(input.disabledBuiltinTools !== undefined
               ? { disabledBuiltinTools: input.disabledBuiltinTools }
               : {}),

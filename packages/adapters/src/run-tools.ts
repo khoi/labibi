@@ -11,10 +11,10 @@ import { PAGE_BROWSER_TOOL_NAMES } from "./run-tool-selection.js";
 import { computerTools, pageBrowserTool } from "./run-tools-computer.js";
 import { feedbackTools } from "./run-tools-feedback.js";
 import { fileTools } from "./run-tools-files.js";
-import { fleetTools } from "./run-tools-fleet.js";
 import { cloudAgentTool, connectorTool, integrationTools } from "./run-tools-integrations.js";
 import { memoryTools } from "./run-tools-memory.js";
 import { messagingTools } from "./run-tools-messaging.js";
+import { ownBotTools } from "./run-tools-own-bot.js";
 import { pageTools } from "./run-tools-pages.js";
 import { preferenceTools } from "./run-tools-preferences.js";
 import { purchaseTools } from "./run-tools-purchases.js";
@@ -28,7 +28,6 @@ import {
   userComputerObserve,
   userComputerShell,
 } from "./run-tools-user-computer.js";
-import { argumentGiven } from "./update-bot-patch.js";
 
 const TOOL_HANDLERS = new Map<string, ToolHandler>([
   ...Object.entries(computerTools),
@@ -39,7 +38,7 @@ const TOOL_HANDLERS = new Map<string, ToolHandler>([
   ...Object.entries(taskTools),
   ...Object.entries(messagingTools),
   ...Object.entries(secretTools),
-  ...Object.entries(fleetTools),
+  ...Object.entries(ownBotTools),
   [USER_COMPUTER_SHELL_TOOL, userComputerShell],
   [USER_COMPUTER_OBSERVE_TOOL, userComputerObserve],
   [USER_COMPUTER_ACT_TOOL, userComputerAct],
@@ -67,9 +66,8 @@ export async function applyTool(
   try {
     return await dispatchTool(ctx, name, args, executionId, observer);
   } finally {
-    // Editing its own profile returns only what this run wrote; a child's profile is another bot's.
-    const ownProfile = name === "update_bot" && !argumentGiven(args.bot_id);
-    if (toolResultTaintsRun(name) && !ownProfile) ctx.state.tainted = true;
+    // Editing its own profile returns only what this run wrote.
+    if (toolResultTaintsRun(name) && name !== "update_bot") ctx.state.tainted = true;
   }
 }
 
@@ -81,11 +79,6 @@ async function dispatchTool(
   observer: AgentToolExecutionObserver | undefined,
 ) {
   ctx.context.signal.throwIfAborted();
-  if (ctx.state.handedOff) {
-    return {
-      error: "This stage was handed off. End the turn without more tool calls.",
-    };
-  }
   if (ctx.tools.disabled.has(name)) {
     return { error: "This tool is disabled for this bot." };
   }

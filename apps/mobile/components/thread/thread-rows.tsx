@@ -41,7 +41,6 @@ export function useLatestRowActions(current: MessageRowActions): MessageRowActio
       previewImage: (target) => rowActionsRef.current.previewImage(target),
       jump: (id) => rowActionsRef.current.jump(id),
       dismissChoice: (id, question) => rowActionsRef.current.dismissChoice(id, question),
-      openPeerChat: (peer) => rowActionsRef.current.openPeerChat(peer),
       layout: (id, y, index) => rowActionsRef.current.layout(id, y, index),
     }),
     [],
@@ -88,7 +87,7 @@ export function useThreadRows({
   highlightedMessageId: string | null;
 }) {
   const { t, locale } = useI18n();
-  const { showBotSenderName, reactionView, exchanges, visibleMessages } = transcript;
+  const { showBotSenderName, reactionView, visibleMessages } = transcript;
   const answerableAskIds = useMemo(() => answerableAskMessageIds(snap), [snap]);
   const dismissableAskIds = useMemo(() => dismissableAskMessageIds(snap, userId), [snap, userId]);
   const separatorIds = useMemo(() => timeSeparatorIds(visibleMessages), [visibleMessages]);
@@ -159,8 +158,6 @@ export function useThreadRows({
               (run.status === "waiting_input" || run.status === "waiting_takeover"),
           )}
           messageReactions={messageReactions}
-          mentions={reactionView.mentions.get(message.id)}
-          peerExchange={exchanges.lines.get(message.id)}
           activityBotId={activityBotId}
           activityColor={activityBot?.color}
           activityStatus={activityStatus}
@@ -181,7 +178,6 @@ export function useThreadRows({
       mentionBots,
       displayName,
       reactionView,
-      exchanges,
       inGroup,
       botId,
       groupId,

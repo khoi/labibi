@@ -24,7 +24,6 @@ import {
   resolveActionApprovalForTools,
   SITE_SENDING_TOOLS,
   toolRequiresApproval,
-  toolRequiresExplicitApproval,
   unattendedTriggerToolRequiresApproval,
 } from "@labradoodle/core";
 import { normalizedHttpUrl, urlSite } from "@labradoodle/core/egress";
@@ -35,7 +34,7 @@ import {
 import type { AuditEventInput } from "@labradoodle/db";
 import { recordAuditEvent, runSecretKind } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
-import type { FleetCardSummary } from "./approval-ask.js";
+import type { ApprovalCardSummary } from "./approval-ask.js";
 import { buildApprovalAskBlock, MAX_FETCH_URL_LENGTH } from "./approval-ask.js";
 import {
   boundDirectApprovalDetails,
@@ -89,7 +88,7 @@ export type AppliedEffect = Awaited<ReturnType<typeof recordEffect>>;
 
 type ApprovalCard = {
   reviewReason: string | undefined;
-  summary: FleetCardSummary | undefined;
+  summary: ApprovalCardSummary | undefined;
   batch: ToolBatch | undefined;
 };
 
@@ -256,9 +255,7 @@ export async function gateToolCall(
   // site this run was not given needs a person: a reviewer would judge it on this run's
   // context, and passing it would trust the site for every later run.
   const scheduleNamesNewSite =
-    (name === "schedule_create" ||
-      name === "create_child_routine" ||
-      (name === "schedule_update" && Boolean(args.prompt))) &&
+    (name === "schedule_create" || (name === "schedule_update" && Boolean(args.prompt))) &&
     (await isRunTainted(ctx)) &&
     (await ctx.trust.routineNamesNewSite(String(args.prompt ?? "")));
   const { purchase, cardUse } = request;
@@ -278,13 +275,7 @@ export async function gateToolCall(
   // A gated read still fails closed when its review errors, and keeps its approval key.
   const gated = requiresApprovalByDefault || connectorReadGated;
   const requiresMandatoryApproval =
-    paying ||
-    commandWatch ||
-    scheduleNamesNewSite ||
-    requiresUnattendedApproval ||
-    toolRequiresExplicitApproval(name);
-  // Never ask runs everything else: only another owner's connection could have been steered into it.
-  const guardedInNeverAsk = name === "respond_agent_connection";
+    paying || commandWatch || scheduleNamesNewSite || requiresUnattendedApproval;
   const resolvedRules = resolveActionApprovalForTools({
     tools: approvalToolNames.map((toolName) => ({
       name: toolName,
@@ -342,10 +333,6 @@ export async function gateToolCall(
         resolved: approvalResolved,
         mode,
         mandatory: requiresMandatoryApproval,
-        steerable:
-          guardedInNeverAsk && mode === "never"
-            ? !ctx.source.ownerStartedRun || (await isRunTainted(ctx))
-            : undefined,
         consequential: requiresApprovalByDefault,
         reviewOnly: connectorReadGated,
         checkerConfigured,
@@ -549,7 +536,7 @@ export async function gateToolCall(
     bypassApproval: gateDecision === "allow" && gated,
     spend: spends,
   });
-  const card = { reviewReason, summary: request.fleetSummary, batch: connectorTool?.batch };
+  const card = { reviewReason, summary: request.cardSummary, batch: connectorTool?.batch };
 
   if (applied?.duplicate) {
     const gate = resolveDuplicateEffectGate(applied.effect, name);
@@ -665,7 +652,7 @@ function createToolCall(
   fields: Omit<ToolCall, "claimedEffect" | "persistEffectResult" | "finish" | "claimOrReturn">,
 ): ToolCall {
   const { deps } = ctx;
-  const { name, args, applied } = fields;
+  const { name, applied } = fields;
   const call: ToolCall = {
     ...fields,
     claimedEffect: false,
@@ -679,7 +666,7 @@ function createToolCall(
           )
         : Promise.resolve(true),
     finish: async (result) =>
-      (await call.persistEffectResult(result)) ? result : uncertainEffectResult(name, args),
+      (await call.persistEffectResult(result)) ? result : uncertainEffectResult(name),
     claimOrReturn: async (from) => {
       if (await claimEffect(deps, ctx.runId, applied!.effect.id, from)) {
         call.claimedEffect = true;
@@ -715,7 +702,7 @@ async function settleToolUncertainty(
     )
       return recovered;
   }
-  return settleUncertainEffect(ctx.deps.prisma, effectId, toolName, call.args);
+  return settleUncertainEffect(ctx.deps.prisma, effectId, toolName);
 }
 
 /** Ask the owner through an approval card. Parallel calls share the first call's pause. */

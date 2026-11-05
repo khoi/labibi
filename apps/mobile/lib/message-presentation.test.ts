@@ -13,16 +13,8 @@ import {
 } from "./message-presentation";
 
 describe("mobile message presentation", () => {
-  it("centers handoffs, inter-agent messages, and channel mirrors", () => {
+  it("centers channel mirrors", () => {
     const blocks = [
-      { kind: "handoff", fromBotId: "a", toBotId: "b", text: "Go" },
-      { kind: "bot_message_sent", toBotId: "b", toBotName: "Research", text: "Go" },
-      {
-        kind: "bot_message_received",
-        fromBotId: "b",
-        fromBotName: "Research",
-        text: "Done",
-      },
       {
         kind: "channel_message",
         provider: "sendblue",

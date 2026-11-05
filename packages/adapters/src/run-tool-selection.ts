@@ -1,25 +1,16 @@
-import {
-  disabledBuiltinToolSet,
-  FLEET_TOOL_NAMES,
-  FLEET_WRITE_TOOL_NAMES,
-} from "@labradoodle/contracts";
+import { disabledBuiltinToolSet } from "@labradoodle/contracts";
 import { isBackgroundRunTrigger, isOwnerStartedRun } from "@labradoodle/core";
 import { builtinAgentTools } from "./builtin-tools.js";
 import { selectCloudAgentTools } from "./cloud-agent-tools-select.js";
 import { selectMemoryTools } from "./memory-tools.js";
 import { filterImageReturningComputerTools } from "./model-vision.js";
 import { USER_COMPUTER_SCREEN_TOOLS } from "./run-tools-user-computer.js";
-import {
-  filterBuiltinToolsForRun,
-  filterBuiltinToolsForThread,
-  SCHEDULE_TOOL_NAMES,
-} from "./schedule-tools.js";
+import { filterBuiltinToolsForRun, SCHEDULE_TOOL_NAMES } from "./schedule-tools.js";
 import { SKILL_TOOL_NAMES } from "./skill-tools.js";
 
 export const READ_ONLY_AGENT_TOOLS = new Set([
   "computer_observe",
   "list_files",
-  "list_fleet",
   "read_file",
   "read_history",
   "search_history",
@@ -42,10 +33,6 @@ const PURCHASE_TOOL_NAMES = new Set(["request_purchase", "purchase_status", "pai
 
 export const BUILTIN_AGENT_TOOL_NAMES = new Set(builtinAgentTools.map((tool) => tool.name));
 
-const FLEET_TOOL_NAMES_SET: ReadonlySet<string> = new Set(FLEET_TOOL_NAMES);
-
-export const FLEET_WRITE_TOOL_NAMES_SET: ReadonlySet<string> = new Set(FLEET_WRITE_TOOL_NAMES);
-
 export function selectBuiltinToolsForRun(options: {
   historyRetrievalEnabled?: boolean;
   graphicalToolsAllowed: boolean;
@@ -64,7 +51,6 @@ export function selectBuiltinToolsForRun(options: {
   messagingChannelRun: boolean;
   /** Built-in names this bot turned off. Unknown names are ignored. */
   disabledBuiltinTools?: readonly string[];
-  fleetManagement?: boolean;
   /** A follow-up run whose source message the user wrote. */
   followUpFromUser?: boolean;
   /** The person who started this run has their desktop connected (see userComputerOwner). */
@@ -77,12 +63,9 @@ export function selectBuiltinToolsForRun(options: {
   return selectCloudAgentTools(
     selectMemoryTools(
       filterBuiltinToolsForRun(
-        filterBuiltinToolsForThread(
-          filterPageBrowserTools(
-            filterImageReturningComputerTools(builtinAgentTools, options.graphicalToolsAllowed),
-            options.pageBrowserAllowed ?? options.graphicalToolsAllowed,
-          ),
-          options.groupId,
+        filterPageBrowserTools(
+          filterImageReturningComputerTools(builtinAgentTools, options.graphicalToolsAllowed),
+          options.pageBrowserAllowed ?? options.graphicalToolsAllowed,
         ),
         options.trigger,
       ),
@@ -93,21 +76,12 @@ export function selectBuiltinToolsForRun(options: {
   ).filter(
     (tool) =>
       !disabled.has(tool.name) &&
-      (!FLEET_TOOL_NAMES_SET.has(tool.name) ||
-        (Boolean(options.fleetManagement) && ownerStartedRun)) &&
       (ownerStartedRun || (tool.name !== "update_preferences" && tool.name !== "feedback")) &&
       (options.paymentWalletEnabled || !PURCHASE_TOOL_NAMES.has(tool.name)) &&
       (options.mediaImagesEnabled || tool.name !== "generate_image") &&
       (options.mediaVideoEnabled || tool.name !== "generate_video") &&
       (!isBackgroundRunTrigger(options.trigger) ||
-        ![
-          "message_user",
-          "message_bot",
-          "handoff_to_bot",
-          "message_agent",
-          "generate_image",
-          "generate_video",
-        ].includes(tool.name)) &&
+        !["message_user", "generate_image", "generate_video"].includes(tool.name)) &&
       (options.userComputer || tool.name !== "user_computer_shell") &&
       ((options.userComputer && options.userComputerScreen) ||
         !USER_COMPUTER_SCREEN_TOOLS.has(tool.name)) &&
@@ -139,9 +113,4 @@ export function filterPageBrowserTools<T extends { name: string }>(
 ): T[] {
   if (pageBrowserAllowed) return tools;
   return tools.filter((tool) => !PAGE_BROWSER_TOOL_NAMES.has(tool.name));
-}
-
-/** The fleet tools this run was offered, the same decision as tool selection. */
-export function offeredFleetTools(tools: readonly { name: string }[]): string[] {
-  return tools.map((tool) => tool.name).filter((name) => FLEET_TOOL_NAMES_SET.has(name));
 }

@@ -978,7 +978,7 @@ export class PiAgentRuntime implements AgentRuntime {
                     content: [
                       {
                         type: "text",
-                        text: JSON.stringify(uncertainEffectResult(call.name, call.arguments)),
+                        text: JSON.stringify(uncertainEffectResult(call.name)),
                       },
                     ],
                     isError: true,

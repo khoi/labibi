@@ -211,7 +211,7 @@ describe("purchase detection for the page tools", () => {
     ctx.state.walletHosts.add("shop.example.test");
     const exempt = await prepare();
     expect(exempt.purchase).toBeUndefined();
-    expect(exempt.fleetSummary).toBeUndefined();
+    expect(exempt.cardSummary).toBeUndefined();
     // The page helper refuses an unapproved purchase click, so the exempt click carries its approval.
     expect(exempt.args.purchaseApproval).toMatchObject({ steps: [0], site: "shop.example.test" });
     // It is spent: a second purchase on that host asks.

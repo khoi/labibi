@@ -161,10 +161,6 @@ msgstr "{commandVariable} ayrılmıştır ve komut değişkeni olarak kullanıla
 msgid "{connectedCount, plural, one {# connected} other {# connected}}"
 msgstr "{connectedCount, plural, one {# bağlı} other {# bağlı}}"
 
-#: src/pages/shell/message-view.tsx
-msgid "{count, plural, one {# message with {peer}} other {# messages with {peer}}}"
-msgstr "{count, plural, one {{peer} ile # mesaj} other {{peer} ile # mesaj}}"
-
 #: src/components/markdown-copy.tsx
 msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# satır} other {# satır}}"
@@ -232,14 +228,6 @@ msgstr "{moved, plural, one {# bot artık alan varsayılanını kullanıyor.} ot
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "{name} (same name as a built-in skill)"
 msgstr "{name} (yerleşik bir beceriyle aynı ad)"
-
-#: src/lib/activity-list-filters.ts
-msgid "{name} asked"
-msgstr "{name} soruyor"
-
-#: src/lib/activity-list-filters.ts
-msgid "{name} asked: {text}"
-msgstr "{name} soruyor: {text}"
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts
@@ -726,10 +714,6 @@ msgstr "Tüm zamanlar"
 msgid "Allow"
 msgstr "İzin ver"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "Allow cross-space bot communication"
-msgstr "Alanlar arası bot iletişimine izin ver"
-
 #: src/components/AskCard.tsx
 msgid "Allow in this space"
 msgstr "Bu alanda izin ver"
@@ -793,10 +777,6 @@ msgstr "Verilerin okunacağı mevcut bir Honcho eşi. Labradoodle bu eşe asla v
 #: src/pages/RoutineEditor.tsx
 msgid "An integration tool"
 msgstr "Bir entegrasyon aracı"
-
-#: src/lib/activity-list-filters.ts
-msgid "Another agent"
-msgstr "Başka bir Agent"
 
 #: src/components/AskCard.tsx
 msgid "Answer"
@@ -901,10 +881,6 @@ msgstr "Uygulamalar"
 #: src/pages/BotContextMenu.tsx
 msgid "Archive"
 msgstr "Arşivle"
-
-#: src/pages/shell/message-view.tsx
-msgid "archived"
-msgstr "arşivlendi"
 
 #: src/pages/shell/archived-chats.tsx
 msgid "Archived"
@@ -1072,10 +1048,6 @@ msgstr "Engelle"
 #: src/pages/shell/use-computer.tsx
 msgid "Booting live desktop…"
 msgstr "Canlı masaüstü başlatılıyor…"
-
-#: src/pages/shell/message-view.tsx
-msgid "bot"
-msgstr "bot"
 
 #: src/lib/identity-display.ts
 #: src/pages/IntegrationSetup.tsx
@@ -1403,7 +1375,6 @@ msgstr "Temizleniyor…"
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/chat-find-bar.tsx
@@ -2084,10 +2055,6 @@ msgstr "Beceri yüklenemedi"
 msgid "Could not load this artifact."
 msgstr "Bu çıktı yüklenemedi."
 
-#: src/pages/PeerMessagesOverlay.tsx
-msgid "Could not load this chat."
-msgstr "Bu sohbet yüklenemedi."
-
 #: src/components/ArtifactFileCard.tsx
 msgid "Could not load this file."
 msgstr "Bu dosya yüklenemedi."
@@ -2613,10 +2580,6 @@ msgstr "Alanı sil"
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete this Space's credentials?"
 msgstr "Bu alanın kimlik bilgileri silinsin mi?"
-
-#: src/pages/shell/message-view.tsx
-msgid "deleted"
-msgstr "silindi"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -3694,7 +3657,6 @@ msgstr "Ses sağlayıcıları yükleniyor…"
 #: src/pages/Artifacts.tsx
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/Invite.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/RoutineRunHistory.tsx
 #: src/pages/shell/transcript.tsx
@@ -3756,10 +3718,6 @@ msgstr "Faturalandırmayı yönet"
 #: src/pages/PluginsOverlay.tsx
 msgid "Manage MCP servers"
 msgstr "MCP sunucularını yönet"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Manage other bots"
-msgstr "Diğer botları yönet"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Manual"
@@ -3890,21 +3848,9 @@ msgstr "Mesaj yazma alanı"
 msgid "Message event"
 msgstr "Mesaj olayı"
 
-#: src/pages/shell/message-view.tsx
-msgid "Message from {peer}"
-msgstr "{peer} botundan mesaj"
-
-#: src/lib/activity-list-filters.ts
-msgid "Message from another agent"
-msgstr "Başka bir Agent'tan mesaj"
-
 #: src/pages/shell/composer.tsx
 msgid "Message…"
 msgstr "Mesaj…"
-
-#: src/pages/shell/message-view.tsx
-msgid "Messaged {peer}"
-msgstr "{peer} botuna mesaj gönderildi"
 
 #: src/pages/settings-nav.ts
 msgid "Messaging"
@@ -4251,10 +4197,6 @@ msgstr "Eşleşen model yok"
 #: src/pages/GroupPanel.tsx
 msgid "No members yet"
 msgstr "Henüz üye yok"
-
-#: src/pages/PeerMessagesOverlay.tsx
-msgid "No messages with {peerBotName} yet."
-msgstr "{peerBotName} ile henüz mesaj yok."
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "No model catalog is available."
@@ -4643,14 +4585,9 @@ msgid "Paused"
 msgstr "Duraklatıldı"
 
 #: src/pages/AdminAccessPage.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
 msgstr "Beklemede"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Permissions"
-msgstr "İzinler"
 
 #: src/components/SignupSurvey.tsx
 msgid "Personal"
@@ -5202,7 +5139,6 @@ msgid "Retry"
 msgstr "Yeniden dene"
 
 #: src/App.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 msgid "Retry now"
 msgstr "Şimdi tekrar dene"
 
@@ -5220,7 +5156,6 @@ msgid "Review provider settings and test again."
 msgstr "Sağlayıcı ayarlarını gözden geçir ve yeniden test et."
 
 #: src/pages/AdminAccessPage.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 msgid "Revoke"
 msgstr "İptal et"
 
@@ -6454,14 +6389,6 @@ msgstr "Bilgisayarı güncelle"
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Update failed"
 msgstr "Güncelleme başarısız oldu"
-
-#: src/lib/activity-list-filters.ts
-msgid "Update from {name}"
-msgstr "{name} tarafından güncelleme"
-
-#: src/lib/activity-list-filters.ts
-msgid "Update from {name}: {text}"
-msgstr "{name} tarafından güncelleme: {text}"
 
 #: src/components/AskCard.tsx
 msgid "Update instructions?"

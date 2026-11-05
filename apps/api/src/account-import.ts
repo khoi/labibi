@@ -266,7 +266,6 @@ class SpaceImport {
   readonly pageVersions = new Map<string, number>();
   readonly seenPageVersions = new Set<string>();
   readonly artifacts = new Map<string, PendingArtifact>();
-  readonly parentLinks: Array<{ botId: string; parentBotId: string }> = [];
   readonly homes = new Map<string, string>();
   readonly receivedArtifacts = new Set<string>();
   readonly receivedHomeFiles = new Set<string>();
@@ -509,11 +508,6 @@ class AccountImporter implements ArchiveSink {
           where: { id: space.mapped(sourceId) },
           data: { currentVersion },
         });
-      for (const link of space.parentLinks) {
-        const parentBotId = space.ids.get(link.parentBotId);
-        if (parentBotId)
-          await prisma.bot.update({ where: { id: link.botId }, data: { parentBotId } });
-      }
     });
     space.recordsDone = true;
   }
@@ -739,7 +733,6 @@ class AccountImporter implements ArchiveSink {
       description: record.description,
       instructions: record.instructions,
       notifyOnFinish: record.notifyOnFinish,
-      fleetManagement: record.fleetManagement,
       color: record.color,
       avatarSet: resolveBotAvatarSet(record.avatarSet),
       // Bot ids pick the avatar shape; keep the look the bot had.
@@ -761,7 +754,6 @@ class AccountImporter implements ArchiveSink {
             autoSpeak: record.autoSpeak,
             teamChatAmbientEnabled: record.teamChatAmbientEnabled,
             teamChatRules: record.teamChatRules,
-            crossSpaceCommunication: record.crossSpaceCommunication,
             createdAt: new Date(record.createdAt),
           },
         });
@@ -782,8 +774,6 @@ class AccountImporter implements ArchiveSink {
       homeKey: computer.homeKey,
       directory: resolveBotWorkspacePath(parseComputerMode(computer.scope), bot.id, ""),
     });
-    if (record.parentBotId)
-      space.parentLinks.push({ botId: bot.id, parentBotId: record.parentBotId });
   }
 
   private async writeMessages(space: SpaceImport) {

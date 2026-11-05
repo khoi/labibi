@@ -9,7 +9,6 @@ import {
   BACKGROUND_RUN_TRIGGERS,
   isBackgroundInputBlock,
   isBackgroundRunTrigger,
-  isPeerReceiptBlocks,
 } from "@labradoodle/core";
 import { messageReplyPreview } from "@labradoodle/core/message-quote";
 import type { Prisma, PrismaClient } from "@labradoodle/db";
@@ -31,8 +30,7 @@ export async function loadMessagePage(
   before: number | undefined,
   pageSize: number,
   around?: { messageId?: string; seq?: number },
-  includePeerRuns = false,
-  includePeerReceipts = false,
+  includeBackgroundRuns = false,
 ): Promise<ThreadMessagePage> {
   if (around) {
     let targetSeq = around.seq;
@@ -59,10 +57,9 @@ export async function loadMessagePage(
       const hasOlder = first
         ? (await prisma.message.count({ where: { threadId, seq: { lt: first.seq } } })) > 0
         : false;
-      // Peer activity stays out of the normal transcript (including the
-      // around target). Full peer history belongs in the bot-messages overlay
-      // (includePeerRuns).
-      const messages = includePeerRuns ? rows : await withoutPeerRunMessages(prisma, rows);
+      const messages = includeBackgroundRuns
+        ? rows
+        : await withoutBackgroundRunMessages(prisma, rows);
       return {
         threadId,
         messages: await toThreadMessages(prisma, messages),
@@ -85,21 +82,16 @@ export async function loadMessagePage(
     });
     const hasOlder = rows.length > pageSize;
     const pageRows = rows.slice(0, pageSize).reverse();
-    const visibleRows = includePeerRuns ? pageRows : await withoutPeerRunMessages(prisma, pageRows);
-    // Web hides receipts client-side, so its receipt-only pages keep scanning.
-    // Mobile explicitly retains them and must receive each page for pagination.
-    const hasSubstantive = visibleRows.some(
-      (row) => !isPeerReceiptBlocks(row.blocks as MessageBlock[]),
-    );
-    if (hasSubstantive || includePeerReceipts || !hasOlder || includePeerRuns) {
+    const visibleRows = includeBackgroundRuns
+      ? pageRows
+      : await withoutBackgroundRunMessages(prisma, pageRows);
+    if (visibleRows.length > 0 || !hasOlder) {
       return {
         threadId,
         messages: await toThreadMessages(prisma, visibleRows),
         olderCursor: hasOlder ? (pageRows[0]?.seq ?? null) : null,
       };
     }
-    // TODO: only rescan when a raw page is entirely peer output. Consider a run relation if
-    // long peer-only histories make this path hot.
     cursor = pageRows[0]?.seq;
   }
 }
@@ -119,7 +111,7 @@ export async function loadAllMessages(
   return pages.reverse().flat();
 }
 
-async function withoutPeerRunMessages<
+async function withoutBackgroundRunMessages<
   T extends {
     runId: string | null;
     blocks: Prisma.JsonValue;
@@ -128,56 +120,17 @@ async function withoutPeerRunMessages<
   const runIds = [...new Set(rows.flatMap((row) => (row.runId ? [row.runId] : [])))];
   if (runIds.length === 0) return rows;
   const runs = await prisma.run.findMany({
-    where: {
-      id: { in: runIds },
-      trigger: { in: ["bot_message", ...BACKGROUND_RUN_TRIGGERS] },
-    },
-    select: { id: true, trigger: true },
+    where: { id: { in: runIds }, trigger: { in: [...BACKGROUND_RUN_TRIGGERS] } },
+    select: { id: true },
   });
-  const backgroundRunIds = new Set(
-    runs.filter((run) => isBackgroundRunTrigger(run.trigger)).map((r) => r.id),
+  const backgroundRunIds = new Set(runs.map((run) => run.id));
+  // Ticket work stays off the transcript except existing user-input cards.
+  return rows.filter(
+    (row) =>
+      !row.runId ||
+      !backgroundRunIds.has(row.runId) ||
+      (row.blocks as MessageBlock[]).some(isBackgroundInputBlock),
   );
-  const peerRunIds = new Set(
-    runs.filter((run) => !backgroundRunIds.has(run.id)).map((run) => run.id),
-  );
-  return rows.filter((row) => {
-    if (!row.runId) return true;
-    const blocks = row.blocks as MessageBlock[];
-    if (backgroundRunIds.has(row.runId)) {
-      // Ticket work stays off the transcript except existing user-input cards.
-      return blocks.some(isBackgroundInputBlock);
-    }
-    if (!peerRunIds.has(row.runId)) return true;
-    // Keep peer receipts (chips), ask cards, and the bot's text, chart, page or attachment reply.
-    return blocks.some(
-      (block) =>
-        block.kind === "bot_message_sent" ||
-        block.kind === "bot_message_received" ||
-        block.kind === "ask" ||
-        block.kind === "text" ||
-        block.kind === "chart" ||
-        block.kind === "app" ||
-        block.kind === "file" ||
-        block.kind === "image" ||
-        block.kind === "page",
-    );
-  });
-}
-
-export async function isPeerRun(
-  prisma: MessageDb,
-  runId: string | undefined,
-  cache: Map<string, Promise<boolean>>,
-): Promise<boolean> {
-  if (!runId) return false;
-  let peerRun = cache.get(runId);
-  if (!peerRun) {
-    peerRun = prisma.run
-      .findUnique({ where: { id: runId }, select: { trigger: true } })
-      .then((run) => run?.trigger === "bot_message");
-    cache.set(runId, peerRun);
-  }
-  return peerRun;
 }
 
 export async function isBackgroundRun(
@@ -194,44 +147,6 @@ export async function isBackgroundRun(
     cache.set(runId, backgroundRun);
   }
   return backgroundRun;
-}
-
-/** Peer-run SSE events that must still reach an open thread (terminals, waits, receipts, asks, text, charts, attachments). */
-export function shouldForwardPeerThreadEvent(event: {
-  type: string;
-  payload: { blocks?: unknown };
-}): boolean {
-  if (
-    event.type === "run.completed" ||
-    event.type === "run.failed" ||
-    event.type === "run.cancelled" ||
-    event.type === "run.waiting_input" ||
-    event.type === "computer.takeover.requested"
-  ) {
-    return true;
-  }
-  if (event.type !== "thread.message.created" && event.type !== "thread.message.updated") {
-    return false;
-  }
-  const blocks = event.payload.blocks;
-  return (
-    Array.isArray(blocks) &&
-    blocks.some(
-      (block) =>
-        !!block &&
-        typeof block === "object" &&
-        "kind" in block &&
-        (block.kind === "bot_message_received" ||
-          block.kind === "bot_message_sent" ||
-          block.kind === "ask" ||
-          block.kind === "text" ||
-          block.kind === "chart" ||
-          block.kind === "app" ||
-          block.kind === "file" ||
-          block.kind === "image" ||
-          block.kind === "page"),
-    )
-  );
 }
 
 /**

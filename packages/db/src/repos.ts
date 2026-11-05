@@ -14,12 +14,7 @@ import {
   initialBotMemory,
   resolveBotAvatarSet,
 } from "@labradoodle/contracts";
-import {
-  BACKGROUND_RUN_TRIGGERS,
-  displayName,
-  isBackgroundRunTrigger,
-  userVisibleMessages,
-} from "@labradoodle/core";
+import { BACKGROUND_RUN_TRIGGERS, displayName, userVisibleMessages } from "@labradoodle/core";
 import { chooseBotAvatar } from "./bot-avatar-choice.js";
 import type { Prisma, PrismaClient } from "./client.js";
 import type { ComputerMode } from "./computers.js";
@@ -42,18 +37,6 @@ const SIDEBAR_PREVIEW_MESSAGE_WINDOW = 16;
 
 function isUniqueViolation(error: unknown): boolean {
   return Boolean(error && typeof error === "object" && "code" in error && error.code === "P2002");
-}
-
-function isBotCreateConflict(error: unknown, clientId?: string): boolean {
-  if (!isUniqueViolation(error)) return false;
-  const target = (error as { meta?: { target?: string[] | string } }).meta?.target;
-  if (target == null) return true;
-  const fields = Array.isArray(target) ? target : [target];
-  return fields.some(
-    (field) =>
-      field.includes("spawnKey") ||
-      (clientId !== undefined && (field === "id" || field === "bots_pkey")),
-  );
 }
 
 function rosterRunErrorId(
@@ -90,7 +73,6 @@ function mapBot(
     pinned: boolean;
     sectionId: string | null;
     archivedAt: Date | null;
-    parentBotId: string | null;
     memoryScope: string | null;
     createdAt: Date;
     updatedAt: Date;
@@ -103,11 +85,8 @@ function mapBot(
     thinkingLevel?: string | null;
     teamChatAmbientEnabled?: boolean;
     teamChatRules?: string;
-    crossSpaceCommunication?: boolean;
-    fleetManagement?: boolean;
     disabledBuiltinTools?: string[];
     webhookSecretId?: string | null;
-    spawnKey?: string | null;
   },
   preview = "",
   status = "idle",
@@ -132,7 +111,6 @@ function mapBot(
     sectionId: bot.sectionId,
     archivedAt: bot.archivedAt?.toISOString() ?? null,
     unread: bot.thread.unread,
-    parentBotId: bot.parentBotId,
     memoryScope: bot.memoryScope as "isolated" | "shared" | null,
     threadId: bot.thread.id,
     preview,
@@ -148,12 +126,9 @@ function mapBot(
     thinkingLevel: (bot.thinkingLevel as Bot["thinkingLevel"]) ?? null,
     teamChatAmbientEnabled: bot.teamChatAmbientEnabled ?? false,
     teamChatRules: bot.teamChatRules ?? "",
-    crossSpaceCommunication: bot.crossSpaceCommunication ?? true,
-    fleetManagement: bot.fleetManagement ?? true,
     // Stored lists may name a tool that no longer exists; settings resend what they read.
     disabledBuiltinTools: [...disabledBuiltinToolSet(bot.disabledBuiltinTools)],
     webhookConfigured: Boolean(bot.webhookSecretId),
-    spawnKey: bot.spawnKey ?? null,
   };
 }
 
@@ -193,7 +168,6 @@ export function createRepos(prisma: PrismaClient) {
         pinned: true,
         sectionId: true,
         updatedAt: true,
-        parentBotId: true,
         thread: {
           select: {
             id: true,
@@ -219,7 +193,6 @@ export function createRepos(prisma: PrismaClient) {
         pinned: bot.pinned,
         sectionId: bot.sectionId,
         unread: bot.thread.unread,
-        parentBotId: bot.parentBotId,
         preview: previewFromBlocks(bot.thread.messages[0]?.blocks),
         status: activeRun?.status ?? "idle",
         threadStatus: threadRunStatus(bot.runs, bot.thread.id),
@@ -381,7 +354,6 @@ export function createRepos(prisma: PrismaClient) {
         ),
       ];
       const checkedRunIds = new Set<string>();
-      const peerRunIds = new Set<string>();
       const backgroundRunIds = new Set<string>();
       const classifyRunIds = async (ids: string[]) => {
         const missing = ids.filter((id) => !checkedRunIds.has(id));
@@ -389,14 +361,11 @@ export function createRepos(prisma: PrismaClient) {
         const rows = await prisma.run.findMany({
           where: {
             id: { in: missing },
-            trigger: { in: ["bot_message", ...BACKGROUND_RUN_TRIGGERS] },
+            trigger: { in: [...BACKGROUND_RUN_TRIGGERS] },
           },
-          select: { id: true, trigger: true },
+          select: { id: true },
         });
-        for (const row of rows) {
-          if (isBackgroundRunTrigger(row.trigger)) backgroundRunIds.add(row.id);
-          else peerRunIds.add(row.id);
-        }
+        for (const row of rows) backgroundRunIds.add(row.id);
         for (const id of missing) checkedRunIds.add(id);
       };
       await classifyRunIds(candidateRunIds);
@@ -418,11 +387,7 @@ export function createRepos(prisma: PrismaClient) {
                 blocks: message.blocks as MessageBlock[],
                 runId: message.runId ?? undefined,
               })),
-              {
-                knownPeerRunIds: peerRunIds,
-                backgroundRunIds,
-                includeDelegatedReplyText: false,
-              },
+              { backgroundRunIds },
             );
             for (const message of visible) {
               preview = previewFromBlocks(message.blocks);
@@ -474,15 +439,12 @@ export function createRepos(prisma: PrismaClient) {
         description: string;
         instructions: string;
         notifyOnFinish: boolean;
-        fleetManagement?: boolean;
         color?: string;
         avatarSet?: BotAvatarSet;
         /** Copy a pin as is (duplicates); otherwise a set other than the default pins the bot. */
         avatarSetPinned?: boolean;
         avatarFamily?: number;
-        parentBotId?: string | null;
         computerMode?: ComputerMode;
-        spawnKey?: string;
         modelProvider?: string | null;
         modelId?: string | null;
         thinkingLevel?: string | null;
@@ -497,29 +459,10 @@ export function createRepos(prisma: PrismaClient) {
         isolationLevel?: Prisma.TransactionIsolationLevel;
       },
     ): Promise<Bot> {
-      // A reserved preview identity is also an idempotency key if the response is lost.
-      const spawnKey = input.spawnKey ?? input.id;
-      let modelProvider = input.modelProvider ?? null;
-      let modelId = input.modelId ?? null;
-      let thinkingLevel = input.thinkingLevel ?? null;
-      let disabledBuiltinTools = input.disabledBuiltinTools ?? [];
-      if (input.parentBotId) {
-        const parent = await prisma.bot.findFirst({
-          where: {
-            id: input.parentBotId,
-            spaceId: actor.spaceId,
-          },
-        });
-        if (!parent) throw new IsolationError();
-        if (!modelId) {
-          modelProvider = parent.modelProvider ?? null;
-          modelId = parent.modelId ?? null;
-        }
-        if (thinkingLevel == null) thinkingLevel = parent.thinkingLevel ?? null;
-        if (input.disabledBuiltinTools === undefined) {
-          disabledBuiltinTools = parent.disabledBuiltinTools;
-        }
-      }
+      const modelProvider = input.modelProvider ?? null;
+      const modelId = input.modelId ?? null;
+      const thinkingLevel = input.thinkingLevel ?? null;
+      const disabledBuiltinTools = input.disabledBuiltinTools ?? [];
       const settings = await prisma.deploymentSettings.findUnique({ where: { id: "default" } });
       const envKind = process.env.SANDBOX_PROVIDER ?? "docker";
       const kind =
@@ -569,14 +512,11 @@ export function createRepos(prisma: PrismaClient) {
               description: input.description,
               instructions: input.instructions,
               notifyOnFinish: input.notifyOnFinish,
-              fleetManagement: input.fleetManagement,
               color: avatar.color,
               avatarSet,
               avatarSetPinned: input.avatarSetPinned ?? avatarSet !== defaultSet,
               position: (positions._max.position ?? -1) + 1,
-              parentBotId: input.parentBotId ?? null,
               computerId: teamComputer.id,
-              spawnKey,
               modelProvider,
               modelId,
               thinkingLevel,
@@ -631,48 +571,18 @@ export function createRepos(prisma: PrismaClient) {
           });
         });
 
-      const findBySpawnKey = async () => {
-        if (!spawnKey) return null;
-        return prisma.bot.findUnique({
-          where: {
-            spaceId_spawnKey: {
-              spaceId: actor.spaceId,
-              spawnKey,
-            },
-          },
-          include: { thread: true, computer: true },
-        });
-      };
-
       let bot: Awaited<ReturnType<typeof insertBot>>;
       try {
         bot = await insertBot();
       } catch (error) {
-        if (!spawnKey || !isBotCreateConflict(error, input.id)) throw error;
-        const existing = await findBySpawnKey();
-        if (
-          !existing ||
-          (input.id !== undefined && (existing.id !== input.id || existing.archivedAt))
-        )
-          throw error;
-        if (!existing.archivedAt) {
-          bot = existing;
-        } else {
-          // Free the key from the archived bot so empty-space onboarding
-          // creates a fresh first bot (stale thread/runtime must not return).
-          await prisma.bot.update({
-            where: { id: existing.id },
-            data: { spawnKey: null },
-          });
-          try {
-            bot = await insertBot();
-          } catch (retryError) {
-            if (!isBotCreateConflict(retryError)) throw retryError;
-            const winner = await findBySpawnKey();
-            if (!winner || winner.archivedAt) throw retryError;
-            bot = winner;
-          }
-        }
+        // A reserved preview identity is an idempotency key if the response is lost.
+        if (!input.id || !isUniqueViolation(error)) throw error;
+        const existing = await prisma.bot.findFirst({
+          where: { id: input.id, spaceId: actor.spaceId, archivedAt: null },
+          include: { thread: true, computer: true },
+        });
+        if (!existing) throw error;
+        bot = existing;
       }
       return mapBot(bot);
     },

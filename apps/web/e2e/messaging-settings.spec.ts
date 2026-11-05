@@ -12,7 +12,7 @@ test.afterEach(async ({ page }) => {
  * navigation from account settings, layout, and both action lists — renders
  * exactly as it would against a live deployment.
  */
-test("messaging settings show linked chat apps, channels, connections, and team conversations", async ({
+test("messaging settings show linked chat apps, channels, and team conversations", async ({
   page,
 }, testInfo) => {
   await page.route("**/rpc/messaging/installations/list", (route) =>
@@ -88,23 +88,6 @@ test("messaging settings show linked chat apps, channels, connections, and team 
       }),
     }),
   );
-  await page.route("**/rpc/messaging/connections/list", (route) =>
-    route.fulfill({
-      contentType: "application/json",
-      body: JSON.stringify({
-        json: [
-          {
-            id: "cn1",
-            peerBotName: "Assistant",
-            peerOwnerLabel: "Dana",
-            status: "pending",
-            incoming: true,
-          },
-        ],
-      }),
-    }),
-  );
-
   await page.route("**/rpc/externalConversations/updatePolicy", (route) =>
     route.fulfill({
       contentType: "application/json",
@@ -199,7 +182,6 @@ test("messaging settings show linked chat apps, channels, connections, and team 
   await expect(messagingSettings.getByText("+15551230001, Chief")).toBeVisible();
   await expect(messagingSettings.getByText("424242, Lead")).toBeVisible();
   await expect(messagingSettings.getByText("Family")).toBeVisible();
-  await expect(messagingSettings.getByText("Dana's Assistant")).toBeVisible();
   // Scoped to the panel: the settings nav has its own 승인 (Approvals).
   await expect(messagingSettings.getByRole("button", { name: "승인" })).toHaveCount(2);
 
@@ -232,7 +214,6 @@ test("Slack setup has one Connect action that opens workspace authorization", as
     route.fulfill(fixture({ available: true, installations: [], personalLinkAvailable })),
   );
   await page.route("**/rpc/messaging/channels/list", (route) => route.fulfill(fixture([])));
-  await page.route("**/rpc/messaging/connections/list", (route) => route.fulfill(fixture([])));
   await page
     .context()
     .route("**/slack-test-authorize", (route) =>

@@ -1,12 +1,6 @@
 import type { ThreadScrollState } from "@labradoodle/core";
-import {
-  foldPeerReplies,
-  jumpTargetId,
-  leaveThreadWindow,
-  openThreadWindow,
-  peerExchangeLines,
-} from "@labradoodle/core";
-import type { Dispatch, RefObject, SetStateAction } from "react";
+import { leaveThreadWindow, openThreadWindow } from "@labradoodle/core";
+import type { RefObject } from "react";
 import type { MobileSnapshot } from "./api";
 import { rpc } from "./api";
 import { isIntegrationsScopeCurrent } from "./integrations-cache";
@@ -47,7 +41,6 @@ export type ThreadJump = ThreadWindow & {
   newerLoadFailed: RefObject<boolean>;
   pinnedScrollMetrics: RefObject<{ offset: number; viewport: number; content: number }>;
   snapshotOrigin: RefObject<SavedChatsScope | null>;
-  setExpandedPeerMarkers: Dispatch<SetStateAction<ReadonlySet<string>>>;
   setShowingSaved: (showing: boolean) => void;
 };
 
@@ -94,10 +87,7 @@ export async function applyThreadMessageJump(
     return;
   if (target.groupId && jump.activeGroupId.current !== target.groupId) return;
   if (target.botId && jump.activeBotId.current !== target.botId) return;
-  // A relay's dropped marker (e.g. a search hit) lands on its "Messaged X" receipt.
-  const transcript = foldPeerReplies(page.messages, { includePeerReceipts: true });
-  const receiptId = jumpTargetId(transcript, target.messageId);
-  const messageId = peerExchangeLines(transcript).lineOf.get(receiptId) ?? receiptId;
+  const messageId = target.messageId;
   const targetInPage = page.messages.some((message) => message.id === messageId);
   const opened = targetInPage ? openThreadWindow(snap, page) : null;
   jump.expandedHistoryThread.current = targetInPage ? page.threadId : null;
@@ -118,15 +108,6 @@ export async function applyThreadMessageJump(
   jump.setThreadScrollState(jump.scrollBehavior.current.state());
   jump.snapshotOrigin.current = scope;
   const next = opened?.snapshot ?? snap;
-  // A reply folded under its peer marker is only drawn once the marker is expanded.
-  const markerId = targetInPage
-    ? foldPeerReplies(next.messages, { includePeerReceipts: true }).markerOf.get(messageId)
-    : undefined;
-  if (markerId) {
-    jump.setExpandedPeerMarkers((expanded) =>
-      expanded.has(markerId) ? expanded : new Set(expanded).add(markerId),
-    );
-  }
   jump.commitSnap(next);
   jump.setShowingSaved(false);
 }

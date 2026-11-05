@@ -1,5 +1,4 @@
 import type { RunActivityRow, RunStatus } from "@labradoodle/contracts";
-import { t } from "@lingui/core/macro";
 
 export type ActivityStatusFilter = RunStatus | "all";
 
@@ -29,24 +28,12 @@ export function activityFiltersActive(filters: ActivityListFilters): boolean {
   );
 }
 
-export function activityPreview(run: RunActivityRow): string {
-  if (run.trigger !== "bot_message") return run.promptSnippet;
-  if (!run.agentMessage) return run.promptSnippet;
-  if (run.agentMessage.kind === "unknown") return t`Message from another agent`;
-  const name = run.agentMessage.fromBotName.trim() || t`Another agent`;
-  const text = run.agentMessage.text;
-  if (run.agentMessage.kind === "update") {
-    return text ? t`Update from ${name}: ${text}` : t`Update from ${name}`;
-  }
-  return text ? t`${name} asked: ${text}` : t`${name} asked`;
-}
-
 export function activitySearchHaystack(run: RunActivityRow): string {
   const parts = [run.botName];
   if (run.groupName) {
     parts.push(run.groupName, `${run.botName} ${run.groupName}`);
   }
-  parts.push(activityPreview(run));
+  parts.push(run.promptSnippet);
   return parts.join(" ").toLowerCase();
 }
 

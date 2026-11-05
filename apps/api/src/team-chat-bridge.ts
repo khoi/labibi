@@ -8,11 +8,7 @@ import type {
 import { runContinueJob } from "@labradoodle/adapter-kit";
 import type { MessageBlock } from "@labradoodle/contracts";
 import { ATTACHMENT_MAX_COUNT, AutomatedSenderPoliciesSchema } from "@labradoodle/contracts";
-import {
-  botMessageMaxHops,
-  messageBlockForArtifact,
-  promptTextForAttachments,
-} from "@labradoodle/core";
+import { messageBlockForArtifact, promptTextForAttachments } from "@labradoodle/core";
 import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
 import { clearEndedRunState, teamChatRunClientNonce } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
@@ -957,95 +953,6 @@ export class TeamChatBridge {
         await this.deliverFailure(message).catch((error) => this.retry(message, error));
       }
     }
-    await this.deliverDelegatedReplies(target);
-  }
-
-  private async deliverDelegatedReplies(target: TargetBot): Promise<void> {
-    const runs = await this.deps.prisma.run.findMany({
-      where: {
-        botId: target.id,
-        trigger: "bot_message",
-        status: { in: ["completed", "failed"] },
-        teamChatMirroredAt: null,
-        thread: {
-          externalConversation: {
-            ...this.conversationScope(),
-          },
-        },
-      },
-      orderBy: [{ updatedAt: "asc" }, { id: "asc" }],
-      take: BATCH_SIZE,
-      select: {
-        id: true,
-        status: true,
-        sourceMessageId: true,
-      },
-    });
-    for (const run of runs) {
-      const origin = await this.findExternalOrigin(run.sourceMessageId);
-      if (!origin) {
-        await this.markTeamChatMirrored(run.id);
-        continue;
-      }
-      const response =
-        run.status === "completed"
-          ? await this.deps.prisma.message.findFirst({
-              where: { runId: run.id, role: "bot" },
-              orderBy: { seq: "desc" },
-              select: { blocks: true },
-            })
-          : null;
-      const blocks = Array.isArray(response?.blocks) ? (response.blocks as MessageBlock[]) : [];
-      const content =
-        run.status === "failed"
-          ? `${target.name} could not complete the delegated request. Open Labradoodle for details.`
-          : teamChatResponseText(blocks, target.name, true);
-      if (content) {
-        await this.deps.send({
-          conversationId: origin.externalConversation.conversationId,
-          replyThreadId: origin.replyThreadId,
-          content,
-          idempotencyKey: `team-chat-run:${run.id}`,
-        });
-      }
-      await this.markTeamChatMirrored(run.id);
-    }
-  }
-
-  private async findExternalOrigin(sourceMessageId: string | null) {
-    let currentSourceMessageId: string | null = sourceMessageId;
-    const visitedRunIds = new Set<string>();
-    const maxHops = botMessageMaxHops();
-    for (let depth = 0; currentSourceMessageId && depth <= maxHops; depth += 1) {
-      const source = await this.deps.prisma.message.findUnique({
-        where: { id: currentSourceMessageId },
-        select: { replyTo: { select: { runId: true } } },
-      });
-      const parentRunId = source?.replyTo?.runId;
-      if (!parentRunId || visitedRunIds.has(parentRunId)) return null;
-      visitedRunIds.add(parentRunId);
-      const external = await this.deps.prisma.externalMessage.findUnique({
-        where: { runId: parentRunId },
-        select: {
-          replyThreadId: true,
-          externalConversation: { select: { conversationId: true } },
-        },
-      });
-      if (external) return external;
-      const parent = await this.deps.prisma.run.findUnique({
-        where: { id: parentRunId },
-        select: { sourceMessageId: true },
-      });
-      currentSourceMessageId = parent?.sourceMessageId ?? null;
-    }
-    return null;
-  }
-
-  private async markTeamChatMirrored(runId: string): Promise<void> {
-    await this.deps.prisma.run.updateMany({
-      where: { id: runId, teamChatMirroredAt: null },
-      data: { teamChatMirroredAt: new Date() },
-    });
   }
 
   private async evaluateAmbient(now: Date): Promise<void> {

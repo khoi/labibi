@@ -56,7 +56,6 @@ const bot: MobileBot = {
   modelId: null,
   thinkingLevel: null,
   autoSpeak: false,
-  fleetManagement: false,
 };
 
 describe("spaceInboxItems", () => {
@@ -222,7 +221,7 @@ describe("spaceInboxItems", () => {
       bots: [
         { ...bot, id: "pinned", pinned: true },
         { ...bot, id: "parent", sectionId: "section-1" },
-        { ...bot, id: "child", parentBotId: "parent", sectionId: "section-1" },
+        { ...bot, id: "child", sectionId: "section-1" },
         { ...bot, id: "loose" },
       ],
       botSections: [

@@ -46,11 +46,7 @@ import { useThreadListScroll } from "../../lib/thread-list-scroll";
 import { useThreadMentionCatalog } from "../../lib/thread-mention-catalog";
 import { useThreadPaging } from "../../lib/thread-paging";
 import { useThreadRead } from "../../lib/thread-read";
-import {
-  isOwnThreadMessage,
-  latestArrivalMessage,
-  latestThreadRowKey,
-} from "../../lib/thread-scroll";
+import { isOwnThreadMessage, latestThreadRowKey } from "../../lib/thread-scroll";
 import { useThreadSend } from "../../lib/thread-send";
 import { threadGroupMembers } from "../../lib/thread-snapshot";
 import { useThreadSync } from "../../lib/thread-sync";
@@ -206,10 +202,10 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
   const { error, setError } = feedback;
   const [selectableText, setSelectableText] = useState<string | null>(null);
   const transcript = useThreadTranscript(snap?.messages, inGroup);
-  const { reactionView, peerTranscript, setExpandedPeerMarkers } = transcript;
+  const { reactionView } = transcript;
   const visibleMessages = transcript.visibleMessages;
   const newestPages = useMemo(() => newestPageCards(visibleMessages), [visibleMessages]);
-  const latestMessage = latestArrivalMessage(reactionView.visibleMessages, peerTranscript.markerOf);
+  const latestMessage = reactionView.visibleMessages.at(-1);
   const composerMentionTargets = useMemo(
     () =>
       buildComposerMentionOptions({
@@ -342,7 +338,6 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     activeBotId,
     activeGroupId,
     readVisibleTarget,
-    setExpandedPeerMarkers,
     setError,
     onRefreshed: feedback.refreshed,
     refreshMentionBots,
@@ -441,23 +436,10 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
       void applyMessageJump({
         botId,
         groupId,
-        messageId: reactionView.foldedInto.get(messageId) ?? messageId,
+        messageId,
       }).catch(() => undefined);
     },
     dismissChoice: transcript.dismissChoice,
-    openPeerChat: (peer) => {
-      if (!botId) return;
-      router.push({
-        pathname: "/peer-chat",
-        params: {
-          botId,
-          botName: displayName,
-          botColor: currentBot?.color,
-          peerBotColor: mentionBots.find((bot) => bot.id === peer.peerBotId)?.color,
-          ...peer,
-        },
-      });
-    },
     layout: scroll.layoutJumpRow,
   });
 

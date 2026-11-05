@@ -14,7 +14,6 @@ import {
   displayName,
   humanizeToolName,
   isBackgroundRunTrigger,
-  MISSING_TOOL_FINAL_RESPONSE_ERROR,
   redactSecrets,
   redactSecretsAfter,
   TAKEOVER_COMPUTER_PENDING_STATE,
@@ -25,7 +24,6 @@ import { RunHistoryWriteError, recordUsage } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { sanitizedError } from "@labradoodle/logging/monitoring";
 import { isToolPauseResult } from "./approval-effect.js";
-import { returnBotMessageOutcome } from "./bot-messages.js";
 import { scheduleComputerSleep } from "./computer-idle.js";
 import { holdComputerExecutionLeaseForTakeover } from "./computer-lifecycle.js";
 import { resolveBotWorkspacePath } from "./computer-support.js";
@@ -40,7 +38,7 @@ import {
   clearRoutineBackoff,
   modelAccountRefusal,
 } from "./routine-backoff.js";
-import type { RunContext, RunState } from "./run-context.js";
+import type { RunContext } from "./run-context.js";
 import { persistTurnCheckpoint } from "./run-context.js";
 import { renewRunLease, requeueComputerRun } from "./run-lifecycle.js";
 import { publishMessage, redactBlocks } from "./run-messages.js";
@@ -67,10 +65,8 @@ import {
 } from "./run-progress.js";
 import {
   completionMessageSegments,
-  emptyDelegatedToolTurnShouldFail,
   runAllowsSilentEmpty,
   runPromotesMidTurnNarration,
-  TOOL_STEPS_WITHOUT_RESPONSE,
 } from "./run-replies.js";
 import { scheduleRoutineRetry } from "./run-routines.js";
 import { applyTool } from "./run-tools.js";
@@ -78,7 +74,6 @@ import { withRuntimeCleanup } from "./runtime-stream.js";
 import {
   isNoResponseReply,
   isPlaceholderReply,
-  peerReplyWithoutSentinel,
   stripNoResponseReply,
   stripStrayNoResponse,
 } from "./silent-reply.js";
@@ -94,7 +89,6 @@ import {
 } from "./tool-loop.js";
 import {
   assistantTurnSeparator,
-  botMessageOutcomeFromMidTurn,
   clampUserProgressMessage,
   extractNarrationText,
   finalBlocksAfterMidTurnProgress,
@@ -637,16 +631,6 @@ async function stopStuckToolLoop(ctx: RunContext, toolName: string) {
       .enqueue(runContinueJob(stopped.continuationRunId))
       .catch((error) => getLogger().error("steering continuation enqueue", error));
   }
-  if (run.trigger === "bot_message") {
-    await returnBotMessageOutcome(
-      deps,
-      { ...run, sourceMessageId: run.sourceMessageId },
-      { id: bot.id, name: bot.name },
-      stuckText,
-      "result",
-      { forceUnread: true },
-    ).catch((error) => getLogger().error("bot message loop-guard return", error));
-  }
   ctx.abortController.abort();
 }
 
@@ -683,12 +667,7 @@ async function publishSubagent(ctx: RunContext, event: RuntimeEvent<"subagent">)
     runningHelpers.delete(event.agentId);
   }
   if (event.status === "completed" || event.status === "failed") {
-    const repliesToRequest = ctx.source.peerMessage?.repliesToRequest === true;
-    reply.publishedTerminalSubagent ||= !subagentMarksUnread(
-      run.trigger,
-      event.status,
-      repliesToRequest,
-    );
+    reply.publishedTerminalSubagent ||= !subagentMarksUnread(run.trigger, event.status);
     await publishMessage(
       deps,
       run,
@@ -704,7 +683,7 @@ async function publishSubagent(ctx: RunContext, event: RuntimeEvent<"subagent">)
           result: safeResult,
         },
       ],
-      subagentMarksUnread(run.trigger, event.status, repliesToRequest),
+      subagentMarksUnread(run.trigger, event.status),
     );
   }
 }
@@ -778,12 +757,10 @@ export async function completeRun(ctx: RunContext) {
 
   // Preserve the last held-back preview as a normal final reply when the
   // model supplies none, unless it chose silence or already delivered that text.
-  // Persisting peer results here also lets outcome delivery retry after completion.
   recordExplicitNoResponse(reply, reply.lastDiscardedMidTurnNarration);
   // When nothing follows the last step, the notes since the last interim message are the reply.
   if (
     !isBackgroundRunTrigger(run.trigger) &&
-    !ctx.state.handedOff &&
     !reply.explicitNoResponse &&
     reply.workingNotes.length > 0 &&
     !reply.textSinceLastStep.trim()
@@ -801,7 +778,6 @@ export async function completeRun(ctx: RunContext) {
   // Runs that hold their narration back keep only the last held-back preview.
   if (
     !isBackgroundRunTrigger(run.trigger) &&
-    !ctx.state.handedOff &&
     !reply.explicitNoResponse &&
     !reply.assembled.trim() &&
     reply.lastDiscardedMidTurnNarration &&
@@ -830,11 +806,7 @@ export async function completeRun(ctx: RunContext) {
     ? { assembled: "", blocks: [] }
     : ctx.allowSilentEmptyRun || ctx.groupReplyOptional
       ? stripNoResponseReply(reply.assembled, reply.messageSegments)
-      : (ctx.source.peerMessage?.intent === "request" ||
-            ctx.source.peerMessage?.intent === "question") &&
-          !reply.publishedMidTurnUserMessage
-        ? peerReplyWithoutSentinel(reply.assembled, reply.messageSegments)
-        : stripStrayNoResponse(reply.assembled, reply.messageSegments);
+      : stripStrayNoResponse(reply.assembled, reply.messageSegments);
   let completionBlocks = silentReply.blocks;
   if (!silentReply.assembled || isBackgroundRunTrigger(run.trigger)) {
     // Mid-turn progress already posted durable chat messages; skip the empty
@@ -842,38 +814,22 @@ export async function completeRun(ctx: RunContext) {
     completionBlocks = completionMessageSegments(completionBlocks, {
       allowSilentEmpty:
         ctx.allowSilentEmptyRun || reply.publishedMidTurnUserMessage || groupSilentEnd,
-      emptyResponseText: ctx.emptyResponseText,
-      suppressOutput: ctx.state.handedOff || isBackgroundRunTrigger(run.trigger),
+      suppressOutput: isBackgroundRunTrigger(run.trigger),
       skipEmptyFallback: reply.publishedTerminalSubagent || reply.publishedMidTurnUserMessage,
     });
   }
-  const blocks = ctx.state.handedOff
-    ? []
-    : finalBlocksAfterMidTurnProgress(
-        redactBlocks(completionBlocks, ctx.secrets),
-        reply.publishedMidTurnUserMessage || runAllowsSilentEmpty(run.trigger),
-      );
-  const text = ctx.state.handedOff
-    ? ""
-    : redactSecrets(completionNotificationBody(silentReply.assembled, blocks), ctx.secrets);
+  const blocks = finalBlocksAfterMidTurnProgress(
+    redactBlocks(completionBlocks, ctx.secrets),
+    reply.publishedMidTurnUserMessage || runAllowsSilentEmpty(run.trigger),
+  );
+  const text = redactSecrets(
+    completionNotificationBody(silentReply.assembled, blocks),
+    ctx.secrets,
+  );
   if (containsSecret(text, ctx.secrets)) {
     throw new Error("refusing to persist a secret in the thread");
   }
-  // Tool steps succeeded and the only completion text is the synthetic
-  // empty notice. That is a missed final answer or a swallowed provider
-  // failure, not a successful delegated summary.
-  if (
-    !ctx.state.handedOff &&
-    !silentReply.assembled.trim() &&
-    emptyDelegatedToolTurnShouldFail(completionBlocks)
-  ) {
-    throw new Error(TOOL_STEPS_WITHOUT_RESPONSE);
-  }
   if (!(await renewRunLease(deps, runId, ctx.workerId, ctx.fence))) return;
-  const botMessageOutcome =
-    run.trigger === "bot_message"
-      ? botMessageOutcomeFromMidTurn(text, reply.midTurnUserTexts)
-      : null;
   await ctx.settleRunningHelpers();
   const completed = await deps.events.finalizeRun({
     spaceId: run.spaceId,
@@ -886,9 +842,7 @@ export async function completeRun(ctx: RunContext) {
     leaseFence: ctx.fence,
     outcome: "completed",
     blocks,
-    markUnread:
-      !groupSilentEnd &&
-      completionMarksUnread(run.trigger, text, ctx.source.peerMessage?.repliesToRequest === true),
+    markUnread: !groupSilentEnd && completionMarksUnread(run.trigger, text),
   });
   if (!completed) return;
   ctx.stopHeartbeatAfterCompletion();
@@ -901,19 +855,6 @@ export async function completeRun(ctx: RunContext) {
     await deps.jobs
       .enqueue(runContinueJob(completed.continuationRunId))
       .catch((error) => getLogger().error("steering continuation enqueue", error));
-  }
-  if (botMessageOutcome) {
-    // Prefer the final reply. If the turn only posted mid-turn progress, return that
-    // text explicitly as status. Delivery uses a stable auto-outcome key; mark
-    // botOutcomeReturnedAt only after a successful (or intentionally skipped) return
-    // so a crash or failed delivery stays visible to the reconciler.
-    await returnBotMessageOutcome(
-      deps,
-      { ...run, sourceMessageId: run.sourceMessageId },
-      { id: bot.id, name: bot.name },
-      botMessageOutcome.text,
-      botMessageOutcome.intent,
-    ).catch((error) => getLogger().error("bot message result return", error));
   }
   const notifyBody = completionNotificationPreview(text);
   if (runSendsFinishNotification(run.trigger) && notifyBody && !completed.continuationRunId) {
@@ -953,15 +894,6 @@ export async function completeRun(ctx: RunContext) {
   }
 }
 
-/** A group handoff already gave the work to another member, so the turn needs no reply. */
-export function handoffEndedTurn(state: Pick<RunState, "handedOff">, error: unknown): boolean {
-  return (
-    state.handedOff &&
-    error instanceof ModelOutputError &&
-    error.message === MISSING_TOOL_FINAL_RESPONSE_ERROR
-  );
-}
-
 /** The turn failed: keep the reply streamed so far, record the error, and retry or notify. */
 export async function failRun(
   ctx: RunContext,
@@ -995,10 +927,7 @@ export async function failRun(
   // thread, above the error, instead of vanishing with the live row.
   recordExplicitNoResponse(reply, reply.assistantTurnText);
   const partialText =
-    ctx.scripted ||
-    ctx.state.handedOff ||
-    reply.explicitNoResponse ||
-    !runPromotesMidTurnNarration(run.trigger)
+    ctx.scripted || reply.explicitNoResponse || !runPromotesMidTurnNarration(run.trigger)
       ? ""
       : redactSecrets(
           extractNarrationText(reply.messageSegments, reply.currentTextSegment).text,
@@ -1053,16 +982,6 @@ export async function failRun(
     await deps.jobs
       .enqueue(runContinueJob(failed.continuationRunId))
       .catch((error) => getLogger().error("steering continuation enqueue", error));
-  }
-  if (run.trigger === "bot_message") {
-    await returnBotMessageOutcome(
-      deps,
-      { ...run, sourceMessageId: run.sourceMessageId },
-      { id: bot.id, name: bot.name },
-      `Could not complete the delegated request: ${message}`,
-      "status",
-      { forceUnread: true },
-    ).catch((returnError) => getLogger().error("bot message failure return", returnError));
   }
   // A refusal of the deployment's own key is the operator's problem, not the user's.
   const refusal =

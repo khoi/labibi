@@ -1,5 +1,3 @@
-import type { MessageBlock } from "@labradoodle/contracts";
-import { botMessageContext } from "@labradoodle/core";
 import type { PrismaClient } from "@labradoodle/db";
 import { loadMessageAuthors } from "@labradoodle/db";
 
@@ -142,13 +140,9 @@ function isChannelMessage(blocks: unknown): boolean {
   return Array.isArray(blocks) && blocks.some((block) => block?.kind === "channel_message");
 }
 
-function isRelay(blocks: unknown): boolean {
-  return Array.isArray(blocks) && Boolean(botMessageContext(blocks as MessageBlock[]));
-}
-
 /**
  * The label a message carries in the receiving bot's history, or undefined for an unlabelled one:
- * the bot's own replies, system rows, and a relayed peer message, which already says `[from X]`.
+ * the bot's own replies and system rows.
  * Another bot is named even after it was archived; once its record is gone it is "another bot".
  * Two bots with the same name share a label; the roster the model reads lists them apart.
  */
@@ -157,8 +151,7 @@ export function historySpeaker(
   row: SpeakerRow,
 ): string | undefined {
   if (!speakers) return undefined;
-  if (row.role === "user")
-    return isRelay(row.blocks) ? undefined : personLineSpeaker(speakers.people, row);
+  if (row.role === "user") return personLineSpeaker(speakers.people, row);
   if (row.role !== "bot" || !row.botId || row.botId === speakers.botId) return undefined;
   return speakers.names.get(row.botId) ?? UNKNOWN_BOT_SPEAKER;
 }

@@ -1,9 +1,9 @@
 import { VoiceAccountError } from "@labradoodle/adapter-kit";
 import type { PrismaClient } from "@labradoodle/db";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { FleetPrepareDeps } from "./fleet-tools.js";
 import type * as ModelSelection from "./model-selection.js";
 import { validateBotModelChange } from "./model-selection.js";
+import type { BotSettingsDeps } from "./own-bot-settings.js";
 import {
   prepareOwnBotSettings,
   readOwnBotSettings,
@@ -18,7 +18,7 @@ vi.mock("./model-selection.js", async (importOriginal) => ({
 const validate = vi.mocked(validateBotModelChange);
 const scope = { userId: "user-1", spaceId: "space-1" };
 
-function deps(): FleetPrepareDeps {
+function deps(): BotSettingsDeps {
   const credential = {
     id: "cred-google",
     provider: "google",

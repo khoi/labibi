@@ -1228,10 +1228,8 @@ export type MobileBot = Pick<
   | "modelId"
   | "thinkingLevel"
   | "autoSpeak"
-  | "fleetManagement"
-  | "crossSpaceCommunication"
 > &
-  Partial<Pick<Bot, "parentBotId" | "spaceId" | "instructions">>;
+  Partial<Pick<Bot, "spaceId" | "instructions">>;
 
 export type MobileBotSection = BotSection;
 
@@ -1397,9 +1395,6 @@ export function blockText(message: MobileMessage) {
         return `${block.title}: ${block.status}${block.prUrl ? ` ${block.prUrl}` : ""}`;
       if (block.kind === "subagent") {
         return `${block.name ?? "subagent"}: ${block.result || block.progress || block.task || ""}`;
-      }
-      if (block.kind === "child_bot") {
-        return `${block.status === "archived" ? "Archived" : block.status === "deleted" ? "Deleted" : "Bot"} ${block.name ?? ""}`;
       }
       if (block.kind === "chart") return `[chart: ${block.name ?? "chart"}]`;
       if (block.kind === "app") return `[app: ${block.server}]`;

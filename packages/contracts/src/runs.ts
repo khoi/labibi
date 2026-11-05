@@ -14,15 +14,12 @@ export const RUN_TRIGGERS = [
   "follow_up",
   "reaction",
   "call_end",
-  "spawn",
   "skill",
-  "bot_message",
   "webhook",
   "messaging",
   "cloud_agent",
   "purchase",
   "media",
-  "created",
   "tickets",
 ] as const;
 export const RunTriggerSchema = z.enum(RUN_TRIGGERS);
@@ -101,16 +98,6 @@ export const RunActivityRowSchema = z.object({
   trigger: RunTriggerSchema,
   notificationsEnabled: z.boolean(),
   promptSnippet: z.string(),
-  agentMessage: z
-    .discriminatedUnion("kind", [
-      z.strictObject({
-        fromBotName: z.string(),
-        kind: z.enum(["update", "request"]),
-        text: z.string().max(120),
-      }),
-      z.strictObject({ kind: z.literal("unknown") }),
-    ])
-    .nullable(),
   updatedAt: z.string(),
 });
 export type RunActivityRow = z.infer<typeof RunActivityRowSchema>;

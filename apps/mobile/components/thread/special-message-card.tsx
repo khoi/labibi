@@ -16,7 +16,6 @@ import { useI18n } from "../../lib/i18n";
 import { useResolvedAppearance } from "../../lib/native";
 import type { UserBubble } from "../../lib/user-bubble";
 import { withUserBubble } from "../../lib/user-bubble";
-import { BotMention } from "../bot-mention";
 import { NativeSymbol } from "../native-symbol";
 import type { MessageActionProps } from "./message-bubble";
 import type { MessageRowActions } from "./message-row";
@@ -25,13 +24,10 @@ import type { MessageRowActions } from "./message-row";
 // its row mounts again when the helper finishes. Remember open cards by agent id across that.
 const openHelpers = new Set<string>();
 
-export type SpecialMessageBlock = Extract<
-  MessageBlock,
-  { kind: "subagent" | "child_bot" | "cloud_agent" }
->;
+export type SpecialMessageBlock = Extract<MessageBlock, { kind: "subagent" | "cloud_agent" }>;
 
 export function isSpecialMessageBlock(block: MessageBlock): block is SpecialMessageBlock {
-  return block.kind === "subagent" || block.kind === "child_bot" || block.kind === "cloud_agent";
+  return block.kind === "subagent" || block.kind === "cloud_agent";
 }
 
 type SpecialMessageCardProps = {
@@ -172,7 +168,7 @@ function HelperMessageCard({
 }
 
 export function SpecialMessageCard(props: SpecialMessageCardProps) {
-  const { special, actionProps, bots, members, onOpenBot, userBubble } = props;
+  const { special, actionProps, userBubble } = props;
   const tokens = withUserBubble(mobileTokens(), userBubble);
   const { t } = useI18n();
   if (special.kind === "subagent") return <HelperMessageCard {...props} special={special} />;
@@ -233,34 +229,6 @@ export function SpecialMessageCard(props: SpecialMessageCardProps) {
           </Text>
         ) : null}
       </Pressable>
-    );
-  }
-  if (special.kind === "child_bot") {
-    return (
-      <Text
-        {...actionProps}
-        style={{
-          alignSelf: "flex-start",
-          paddingHorizontal: 4,
-          color: tokens.mutedForeground,
-          ...typeScale.body,
-        }}
-      >
-        <BotMention
-          block={special}
-          color={
-            bots.find((bot) => bot.id === special.botId)?.color ??
-            members?.find((member) => member.botId === special.botId)?.color
-          }
-          tokens={tokens}
-          onOpenBot={onOpenBot}
-        />
-        {special.status === "archived"
-          ? ` ${t("archived")}`
-          : special.status === "deleted"
-            ? ` ${t("deleted")}`
-            : null}
-      </Text>
     );
   }
   return null;

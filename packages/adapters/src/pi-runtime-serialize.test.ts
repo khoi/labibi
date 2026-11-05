@@ -20,22 +20,6 @@ describe("serializeToolResult", () => {
   );
 
   it.each(["current", "retrieval"] as const)(
-    "keeps a full child read and its version with %s context",
-    (strategy) => {
-      const listing = {
-        bot: { id: "child", instructionsVersion: "v2", instructions: "x".repeat(20_000) },
-        bots: [],
-        groups: [],
-        sections: [],
-        truncated: false,
-      };
-      expect(
-        JSON.parse(serializeToolResult(listing, strategy, "list_fleet", { bot_id: "child" })),
-      ).toEqual(listing);
-    },
-  );
-
-  it.each(["current", "retrieval"] as const)(
     "passes every page of a settings read whole with the %s strategy",
     (strategy) => {
       const settingsPage = (instructions: string, offset: number, next: number | null) => ({

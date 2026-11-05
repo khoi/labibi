@@ -40,9 +40,6 @@ export const AnalyticsBotSetting = z.enum([
   "thinking",
   "computer",
   "team_chat",
-  "cross_space",
-  "daily_check_ins",
-  "fleet_management",
   "tools",
 ]);
 export const AnalyticsTrigger = RunTriggerSchema;

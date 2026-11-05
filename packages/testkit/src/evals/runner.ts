@@ -1,15 +1,10 @@
 import { randomUUID } from "node:crypto";
 import type { AgentRuntime, JobPublisher, NotificationProvider } from "@labradoodle/adapter-kit";
 import { runJobKey } from "@labradoodle/adapter-kit";
-import {
-  CapturingNotificationProvider,
-  MessagingTeamChatEmulator,
-  messageBot,
-} from "@labradoodle/adapters";
-import type { MessageBlock, ModelConnectInput, RunStatus } from "@labradoodle/contracts";
+import { CapturingNotificationProvider, MessagingTeamChatEmulator } from "@labradoodle/adapters";
+import type { ModelConnectInput, RunStatus } from "@labradoodle/contracts";
 import { ACTIVE_RUN_STATUSES, attachmentComputerPath, isTerminal } from "@labradoodle/core";
 import type { createDb } from "@labradoodle/db";
-import { createThreadEvents } from "@labradoodle/db";
 import { sessionCookieHeader } from "../index.js";
 import { asSystem } from "../system-db.js";
 import type { EvalCase, Evidence, SettingsSnapshot } from "./cases.js";
@@ -98,13 +93,11 @@ export async function runTrial(
   const notifications = new CapturingNotificationProvider();
   const realtime = new SilenceObserver();
   const routineRuns: RoutineEvidence[] = [];
-  const peerExchanges: NonNullable<Evidence["peerExchanges"]> = [];
   let handles: EvalApp | undefined;
   // The harness observes product state outside any request or job.
   let db: EvalApp["prisma"] | undefined;
   let cookie = "";
   let botId = "";
-  let peer: { id: string; name: string } | undefined;
   // A group case talks to the subject inside a group thread; every other case uses its direct chat.
   let group: { id: string; threadId: string; memberIds: Map<string, string> } | undefined;
   let seededThreadId: string | undefined;
@@ -235,22 +228,6 @@ export async function runTrial(
           content: scenario.botMemory,
         });
       }
-      if (scenario.peer) {
-        const created = await rpc<{ id: string }>(app, cookie, "bots/create", {
-          name: scenario.peer.name,
-          title: "",
-          description: scenario.peer.description,
-          instructions: scenario.peer.instructions,
-          notifyOnFinish: false,
-          ...(scenario.peer.ownComputer ? { computerMode: "dedicated" } : {}),
-        });
-        await rpc(app, cookie, "bots/update", {
-          botId: created.id,
-          modelProvider: options.connection.provider,
-          modelId: options.connection.modelId,
-        });
-        peer = { id: created.id, name: scenario.peer.name };
-      }
       if (scenario.group) {
         // Without roles, members only author seeded history and never run a model.
         const { roles } = scenario.group;
@@ -285,24 +262,16 @@ export async function runTrial(
     };
     await setupActor();
     if (scenario.computerFiles?.length) {
-      // Written through the same upload path as a person's file drop, under each owner's control.
-      for (const owner of [botId, peer?.id]) {
-        const files = scenario.computerFiles.filter(
-          (file) => (file.owner === "peer" ? peer?.id : botId) === owner,
-        );
-        if (!owner || !files.length) continue;
-        await rpc(app, cookie, "computer/boot", { botId: owner });
-        await rpc(app, cookie, "computer/takeover", { botId: owner });
-        for (const file of files)
-          await rpc(app, cookie, "computer/uploadFile", {
-            botId: owner,
-            path: file.path,
-            contentBase64: Buffer.from(file.content).toString("base64"),
-          });
-        await rpc(app, cookie, "computer/release", { botId: owner });
-      }
-      if (scenario.computerFiles.some((file) => file.owner === "peer") && !peer)
-        throw new EvalFailure("harness", "Peer computer files need the case's peer bot");
+      // Written through the same upload path as a person's file drop.
+      await rpc(app, cookie, "computer/boot", { botId });
+      await rpc(app, cookie, "computer/takeover", { botId });
+      for (const file of scenario.computerFiles)
+        await rpc(app, cookie, "computer/uploadFile", {
+          botId,
+          path: file.path,
+          contentBase64: Buffer.from(file.content).toString("base64"),
+        });
+      await rpc(app, cookie, "computer/release", { botId });
     }
     if (scenario.routine) {
       await rpc(app, cookie, "routines/create", {
@@ -546,26 +515,6 @@ export async function runTrial(
             where: { id: runId },
             select: { sourceMessageId: true },
           }));
-      } else if ("fromPeer" in step) {
-        if (!peer) throw new EvalFailure("harness", "A fromPeer step needs the case's peer bot");
-        await deliverPeerMessage(
-          prisma,
-          handles.jobs,
-          peer,
-          botId,
-          step.fromPeer.replaceAll("{peerHome}", `bots/${peer.id}`),
-        );
-        runId = await poll(
-          async () =>
-            (
-              await prisma.run.findFirst({
-                where: { botId, trigger: "bot_message", id: { notIn: runIds } },
-                orderBy: { createdAt: "desc" },
-                select: { id: true },
-              })
-            )?.id,
-          deadline,
-        );
       } else if ("slack" in step) {
         if (!messagingLinked) {
           const link = await rpc<{ code: string }>(app, cookie, "messaging/link/start", { botId });
@@ -657,15 +606,10 @@ export async function runTrial(
       }
       runIds.push(runId);
       runSteps.set(runId, stepIndex + 1);
-      // Every reply to a peer is graded, so it is never setup.
       if (
-        !("fromPeer" in step) &&
         scenario.steps
           .slice(stepIndex + 1)
-          .some(
-            (next) =>
-              "ask" in next || "slack" in next || "wakeRoutine" in next || "fromPeer" in next,
-          )
+          .some((next) => "ask" in next || "slack" in next || "wakeRoutine" in next)
       )
         setupRunIds.add(runId);
       const requestStarted = (
@@ -746,9 +690,8 @@ export async function runTrial(
       if ("slack" in step && terminal.status === "completed") {
         await waitForMessagingDelivery(prisma, runId, deadline);
       }
-      // Completion is committed before notification delivery and before the reply returns to a
-      // peer. Drain the executor before observing.
-      if ((wakesRoutines(scenario) || "fromPeer" in step) && handles.awaitIdle)
+      // Completion is committed before notification delivery. Drain the executor before observing.
+      if (wakesRoutines(scenario) && handles.awaitIdle)
         await withinDeadline(handles.awaitIdle(), deadline);
       const snap = await rpc<{
         messages: Array<{
@@ -855,35 +798,11 @@ export async function runTrial(
         for (const message of after.messages) {
           if (message.role !== "bot" || message.seq <= seq || !message.botId) continue;
           const name = names.get(message.botId) ?? message.botId;
-          // A handoff card is a post too, so a detour through another member shows in the count.
           const text = message.blocks
-            .flatMap((b) =>
-              b.kind === "text" || b.kind === "ask"
-                ? [b.text ?? ""]
-                : b.kind === "handoff"
-                  ? ["(handoff)"]
-                  : [],
-            )
+            .flatMap((b) => (b.kind === "text" || b.kind === "ask" ? [b.text ?? ""] : []))
             .join("\n");
           memberReplies[name] = [memberReplies[name], text].filter(Boolean).join("\n");
         }
-      }
-      if ("fromPeer" in step) {
-        const returned = (
-          await prisma.message.findMany({
-            where: { runId, role: "bot" },
-            orderBy: { seq: "asc" },
-            select: { blocks: true },
-          })
-        ).flatMap((message) =>
-          (message.blocks as MessageBlock[]).flatMap((block) =>
-            block.kind === "bot_message_sent" && block.toBotId === peer?.id ? [block.text] : [],
-          ),
-        );
-        peerExchanges.push({
-          message: step.fromPeer,
-          reply: returned.length ? returned.join("\n") : null,
-        });
       }
       if ("wakeRoutine" in step) {
         const messages = await prisma.message.findMany({
@@ -948,15 +867,6 @@ export async function runTrial(
       routines.length,
       await prisma.event.count({ where: { botId, type: "routine.created" } }),
     );
-    const deliveries = await deliveredBySubject(prisma, botId, [
-      ...(peer
-        ? [
-            (await prisma.thread.findUnique({ where: { botId: peer.id }, select: { id: true } }))
-              ?.id,
-          ]
-        : []),
-      group?.threadId,
-    ]);
     await captureTools();
     const finalStep = scenario.steps.length;
     const evidence: Evidence = {
@@ -964,9 +874,6 @@ export async function runTrial(
       replies,
       memberReplies,
       routineRuns,
-      peerExchanges,
-      ...(deliveries.length ? { deliveries } : {}),
-      ...(peer ? { peerHome: `bots/${peer.id}` } : {}),
       files,
       ...(Object.keys(seededAttachments).length ? { seededAttachments } : {}),
       records: services.records,
@@ -1003,7 +910,6 @@ export async function runTrial(
           ? Object.fromEntries(replies.map((reply, index) => [`turn-${index + 1}-response`, reply]))
           : {}),
         ...(routineRuns.length ? { "routine-observations": JSON.stringify(routineRuns) } : {}),
-        ...(peerExchanges.length ? { "peer-exchanges": JSON.stringify(peerExchanges) } : {}),
         ...(memberReplies ? { "member-replies": JSON.stringify(memberReplies) } : {}),
         ...(evidence.toolCalls.length ? { "tool-calls": JSON.stringify(evidence.toolCalls) } : {}),
         "memory-snapshot": evidence.memory,
@@ -1178,87 +1084,6 @@ async function rpc<T>(app: App, cookie: string, proc: string, body: unknown = {}
   const parsed = (await res.json()) as { json?: T; error?: unknown };
   if (!res.ok || parsed.error) throw new Error(`${proc} failed (${res.status})`);
   return parsed.json as T;
-}
-
-/**
- * Speak as the peer through message_bot's own delivery, so the subject wakes exactly as it
- * would from a teammate. The peer's turn is fixture setup: no model is paid to write its words.
- */
-async function deliverPeerMessage(
-  prisma: EvalApp["prisma"],
-  jobs: JobPublisher,
-  peer: { id: string; name: string },
-  targetBotId: string,
-  text: string,
-) {
-  const { spaceId, userId, thread } = await prisma.bot.findUniqueOrThrow({
-    where: { id: peer.id },
-    select: { spaceId: true, userId: true, thread: { select: { id: true } } },
-  });
-  if (!thread) throw new EvalFailure("harness", "Peer bot has no chat");
-  const task = await prisma.task.create({
-    data: {
-      spaceId,
-      userId,
-      botId: peer.id,
-      threadId: thread.id,
-      prompt: "Synthetic peer turn",
-      status: "completed",
-    },
-  });
-  const run = await prisma.run.create({
-    data: {
-      spaceId,
-      userId,
-      botId: peer.id,
-      threadId: thread.id,
-      taskId: task.id,
-      status: "completed",
-      trigger: "user",
-      completedAt: new Date(),
-    },
-  });
-  const sent = await messageBot(
-    { prisma, events: createThreadEvents(prisma), jobs },
-    { id: run.id, spaceId, threadId: thread.id, botId: peer.id, userId },
-    peer,
-    { bot_id: targetBotId, message: text, intent: "request" },
-    { allowTerminalSource: true },
-  );
-  if (!sent.ok) throw new EvalFailure("harness", `Peer message was not delivered: ${sent.error}`);
-}
-
-/** Messages and handoffs the subject delivered into these threads, read from what was stored. */
-async function deliveredBySubject(
-  prisma: EvalApp["prisma"],
-  botId: string,
-  threadIds: Array<string | undefined>,
-): Promise<NonNullable<Evidence["deliveries"]>> {
-  const ids = threadIds.filter((id): id is string => Boolean(id));
-  if (!ids.length) return [];
-  const messages = await prisma.message.findMany({
-    where: { threadId: { in: ids } },
-    select: { blocks: true },
-    orderBy: { seq: "asc" },
-  });
-  return messages.flatMap((message) => {
-    const blocks = message.blocks as MessageBlock[];
-    const sent = blocks.find(
-      (block) =>
-        (block.kind === "bot_message_received" || block.kind === "handoff") &&
-        block.fromBotId === botId,
-    );
-    if (!sent || (sent.kind !== "bot_message_received" && sent.kind !== "handoff")) return [];
-    return [
-      {
-        kind: sent.kind === "handoff" ? ("handoff" as const) : ("message" as const),
-        text: sent.text,
-        files: blocks.flatMap((block) =>
-          (block.kind === "file" || block.kind === "image") && block.name ? [block.name] : [],
-        ),
-      },
-    ];
-  });
 }
 
 async function poll<T>(read: () => Promise<T | undefined>, deadline: number): Promise<T> {

@@ -44,21 +44,17 @@ export const ProductEventType = z.enum([
   "agent.tool.completed",
   "effect.reconciled",
   "usage.recorded",
-  "bot.spawned",
   "bot.updated",
   "bot.archived",
   "bot.deleted",
   "group.created",
   "group.updated",
-  "group.handoff",
   /** Liveness only: never persisted, never applied to a snapshot, always seq 0. */
   "heartbeat",
 ]);
 export type ProductEventType = z.infer<typeof ProductEventType>;
 
 export const MessageRole = z.enum(["user", "bot", "system"]);
-export const BotMessageIntent = z.enum(["request", "result", "question", "status", "fyi"]);
-export type BotMessageIntent = z.infer<typeof BotMessageIntent>;
 
 export const MAX_CHART_DATA_ROWS = 5_000;
 
@@ -234,12 +230,6 @@ const MessageBlockSchema = z.discriminatedUnion("kind", [
     result: z.string().optional(),
   }),
   z.object({
-    kind: z.literal("child_bot"),
-    botId: z.string(),
-    name: z.string(),
-    status: z.enum(["created", "archived", "deleted"]),
-  }),
-  z.object({
     /** Compact card for a remote cloud coding agent (not the bot computer). */
     kind: z.literal("cloud_agent"),
     agentId: z.string(),
@@ -317,14 +307,6 @@ const MessageBlockSchema = z.discriminatedUnion("kind", [
     title: z.string().max(PAGE_TITLE_MAX_LENGTH),
   }),
   z.object({
-    kind: z.literal("handoff"),
-    fromBotId: Id,
-    toBotId: Id,
-    text: z.string(),
-    /** Links ownership transfers in one user-started group turn. */
-    hop: z.number().int().positive().optional(),
-  }),
-  z.object({
     /** A group-chat message delivered into a member bot's own thread. */
     kind: z.literal("channel_message"),
     provider: z.string(),
@@ -334,26 +316,6 @@ const MessageBlockSchema = z.discriminatedUnion("kind", [
     fromAddress: z.string(),
     fromLabel: z.string(),
     text: z.string(),
-    hop: z.number().int().nonnegative().optional(),
-  }),
-  z.object({
-    /** Shown in the sending bot's own chat, so the user can see what it sent. */
-    kind: z.literal("bot_message_sent"),
-    toBotId: Id,
-    toBotName: z.string(),
-    text: z.string(),
-    intent: BotMessageIntent.optional(),
-  }),
-  z.object({
-    /** Delivered into the receiving bot's own chat as the prompt that woke it. */
-    kind: z.literal("bot_message_received"),
-    fromBotId: Id,
-    fromBotName: z.string(),
-    text: z.string(),
-    intent: BotMessageIntent.optional(),
-    /** Sender-thread echo this delivery answers, when applicable. */
-    returnToMessageId: Id.optional(),
-    /** Links in a bot-started chain; absent when a person started it. */
     hop: z.number().int().nonnegative().optional(),
   }),
 ]);

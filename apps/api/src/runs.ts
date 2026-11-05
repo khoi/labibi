@@ -1,12 +1,5 @@
 import type { Actor, RunActivityRow } from "@labradoodle/contracts";
-import { MessageBlock } from "@labradoodle/contracts";
-import {
-  ACTIVE_RUN_STATUSES,
-  BACKGROUND_RUN_TRIGGERS,
-  botMessageContext,
-  displayName,
-  truncatePlainText,
-} from "@labradoodle/core";
+import { ACTIVE_RUN_STATUSES, BACKGROUND_RUN_TRIGGERS, truncatePlainText } from "@labradoodle/core";
 import type { PrismaClient } from "@labradoodle/db";
 
 const RECENT_LIMIT = 20;
@@ -16,36 +9,6 @@ function promptSnippet(prompt: string, max = 120): string {
   const oneLine = prompt.replace(/\s+/g, " ").trim();
   if (oneLine.length <= max) return oneLine;
   return `${truncatePlainText(oneLine, max - 1)}…`;
-}
-
-export function activityPreview(
-  input: { trigger: string; prompt: string; sourceBlocks?: unknown },
-  max = 120,
-): Pick<RunActivityRow, "promptSnippet" | "agentMessage"> {
-  if (input.trigger !== "bot_message")
-    return { promptSnippet: promptSnippet(input.prompt, max), agentMessage: null };
-  const parsed = MessageBlock.array().safeParse(input.sourceBlocks);
-  const message = parsed.success ? botMessageContext(parsed.data) : undefined;
-  if (!message) {
-    return {
-      promptSnippet: "Message from another agent",
-      agentMessage: { kind: "unknown" },
-    };
-  }
-  const name = displayName(message.fromBotName, "Another agent");
-  const kind =
-    message.intent === "result" || message.intent === "status" || message.intent === "fyi"
-      ? "update"
-      : "request";
-  const label = kind === "update" ? `Update from ${name}` : `${name} asked`;
-  return {
-    promptSnippet: promptSnippet(message.text.trim() ? `${label}: ${message.text}` : label, max),
-    agentMessage: {
-      fromBotName: displayName(message.fromBotName, ""),
-      kind,
-      text: promptSnippet(message.text, max),
-    },
-  };
 }
 
 export function activityNotificationsEnabled(
@@ -72,7 +35,6 @@ export async function listSpaceRuns(
     include: {
       bot: { select: { name: true, archivedAt: true, notifyOnFinish: true } },
       task: { select: { prompt: true } },
-      sourceMessage: { select: { blocks: true } },
       thread: {
         select: {
           groupId: true,
@@ -97,11 +59,7 @@ export async function listSpaceRuns(
     status: row.status as RunActivityRow["status"],
     trigger: row.trigger as RunActivityRow["trigger"],
     notificationsEnabled: activityNotificationsEnabled(row.thread.groupId, row.bot.notifyOnFinish),
-    ...activityPreview({
-      trigger: row.trigger,
-      prompt: row.task.prompt,
-      sourceBlocks: row.sourceMessage?.blocks,
-    }),
+    promptSnippet: promptSnippet(row.task.prompt),
     updatedAt: (filter === "recent" && row.completedAt
       ? row.completedAt
       : row.updatedAt

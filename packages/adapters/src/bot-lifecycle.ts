@@ -7,21 +7,14 @@ import type {
   SandboxProvider,
   SecretStore,
 } from "@labradoodle/adapter-kit";
-import { routineJobKey, runContinueJob, runJobKey } from "@labradoodle/adapter-kit";
-import type { Actor, Bot, ComputerMode } from "@labradoodle/contracts";
-import {
-  BOT_DESCRIPTION_MAX_LENGTH,
-  BOT_INSTRUCTIONS_MAX_LENGTH,
-  GROUP_MEMBER_MIN,
-} from "@labradoodle/contracts";
+import { routineJobKey, runJobKey } from "@labradoodle/adapter-kit";
+import { GROUP_MEMBER_MIN } from "@labradoodle/contracts";
 import { ACTIVE_RUN_STATUSES } from "@labradoodle/core";
 import type { Prisma, PrismaClient } from "@labradoodle/db";
 import {
   cancelRunsInTransaction,
   clearEndedRunState,
   computerScopeKey,
-  createRepos,
-  createThreadMessageInTransaction,
   deletePageShareSecrets,
   expireComputerExecutionLeases,
   legacyTeamHomeKey,
@@ -43,169 +36,6 @@ import { removeAgentHome, removeAgentHomeFolders } from "./home.js";
 import { forgetPageShareSecrets } from "./page-share-secrets.js";
 import { removePiBotSessions } from "./pi-session.js";
 import { isSandboxGoneError } from "./sandbox-errors.js";
-
-export function confirmSpawnedBotName(confirmName: string, botName: string) {
-  if (confirmName !== botName) {
-    return {
-      ok: false as const,
-      error: "confirm_name must exactly match the bot's name. Refusing to archive.",
-    };
-  }
-  return { ok: true as const };
-}
-
-export async function spawnBot(
-  deps: {
-    prisma: PrismaClient;
-    jobs: JobPublisher;
-  },
-  input: {
-    spawnedBy: {
-      id: string;
-      name: string;
-      spaceId: string;
-      userId: string;
-    };
-    runId: string;
-    spawnKey: string;
-    name: string;
-    description?: string;
-    instructions?: string;
-    prompt?: string;
-    computerMode?: ComputerMode;
-  },
-) {
-  const name = input.name.trim();
-  if (!name) return { error: "Bot name is required." };
-
-  const actor: Actor = {
-    userId: input.spawnedBy.userId,
-    spaceId: input.spawnedBy.spaceId,
-    email: "",
-    isDeploymentOwner: false,
-  };
-  let duplicate = false;
-  let created: Pick<Bot, "id" | "name" | "threadId">;
-  try {
-    created = await createRepos(deps.prisma).createBot(actor, {
-      name,
-      description: (input.description ?? "").trim().slice(0, BOT_DESCRIPTION_MAX_LENGTH),
-      instructions: (input.instructions ?? "").trim().slice(0, BOT_INSTRUCTIONS_MAX_LENGTH),
-      notifyOnFinish: true,
-      // Creation provenance only; bots remain peers in the roster.
-      parentBotId: input.spawnedBy.id,
-      spawnKey: input.spawnKey,
-      computerMode: input.computerMode,
-      initialMessage: {
-        role: "system",
-        blocks: [{ kind: "meta", text: `Created by ${input.spawnedBy.name}` }],
-        runId: input.runId,
-      },
-    });
-  } catch (error) {
-    const existing = await deps.prisma.bot.findUnique({
-      where: {
-        spaceId_spawnKey: {
-          spaceId: input.spawnedBy.spaceId,
-          spawnKey: input.spawnKey,
-        },
-      },
-      include: { thread: true },
-    });
-    if (!existing) throw error;
-    if (!existing.thread) throw new Error(`Spawned bot ${existing.id} is missing its thread`);
-    duplicate = true;
-    created = {
-      id: existing.id,
-      name: existing.name,
-      threadId: existing.thread.id,
-    };
-  }
-
-  const prompt = (input.prompt ?? "").trim();
-  if (prompt) {
-    const run = await ensureSpawnRun(deps.prisma, {
-      spaceId: input.spawnedBy.spaceId,
-      userId: input.spawnedBy.userId,
-      botId: created.id,
-      threadId: created.threadId,
-      sourceRunId: input.runId,
-      spawnKey: input.spawnKey,
-      prompt,
-    });
-    await deps.jobs
-      .enqueue(runContinueJob(run.id))
-      .catch((error) => getLogger().error("spawned bot enqueue", error));
-  }
-
-  return {
-    ok: true as const,
-    ...(duplicate ? { duplicate: true as const } : {}),
-    botId: created.id,
-    name: created.name,
-    threadId: created.threadId,
-  };
-}
-
-async function ensureSpawnRun(
-  prisma: PrismaClient,
-  input: {
-    spaceId: string;
-    userId: string;
-    botId: string;
-    threadId: string;
-    sourceRunId: string;
-    spawnKey: string;
-    prompt: string;
-  },
-) {
-  const clientNonce = `spawn:${input.spawnKey}`;
-  const where = {
-    spaceId_clientNonce: {
-      spaceId: input.spaceId,
-      clientNonce,
-    },
-  } as const;
-  const existing = await prisma.run.findUnique({ where });
-  if (existing) return existing;
-
-  try {
-    return await prisma.$transaction(async (tx) => {
-      await createThreadMessageInTransaction(tx, {
-        threadId: input.threadId,
-        role: "user",
-        blocks: [{ kind: "text", text: input.prompt }],
-        runId: input.sourceRunId,
-      });
-      const task = await tx.task.create({
-        data: {
-          spaceId: input.spaceId,
-          botId: input.botId,
-          threadId: input.threadId,
-          userId: input.userId,
-          prompt: input.prompt,
-          status: "queued",
-        },
-      });
-      return tx.run.create({
-        data: {
-          spaceId: input.spaceId,
-          botId: input.botId,
-          threadId: input.threadId,
-          taskId: task.id,
-          userId: input.userId,
-          status: "queued",
-          trigger: "spawn",
-          clientNonce,
-        },
-      });
-    });
-  } catch (error) {
-    const winner = await prisma.run.findUnique({ where });
-    if (winner) return winner;
-    throw error;
-  }
-}
 
 type BotLifecycleDeps = {
   prisma: PrismaClient;
@@ -230,67 +60,6 @@ type LifecycleBot = {
   computerId?: string | null;
   webhookSecretId?: string | null;
 };
-
-/** Management stays within the current space, whichever member created the bot. */
-export function managedBotsWhere(caller: { spaceId: string }): Prisma.BotWhereInput {
-  return { spaceId: caller.spaceId };
-}
-
-/**
- * Creation provenance for the roster metadata, whichever member's run spawned the bot; this
- * does not grant management permissions.
- */
-export function createdByWhere(caller: { botId: string; spaceId: string }): Prisma.BotWhereInput {
-  return { parentBotId: caller.botId, spaceId: caller.spaceId };
-}
-
-export async function archiveSpawnedBot(
-  deps: BotLifecycleDeps,
-  input: {
-    spawnedByBotId: string;
-    userId: string;
-    spaceId: string;
-    confirmName: string;
-    botId?: string;
-  },
-  context: AdapterContext,
-) {
-  const confirmName = input.confirmName.trim();
-  if (!confirmName) {
-    return { error: "confirm_name is required. Refusing to archive." };
-  }
-
-  // Archived bots stay eligible so retries can reconcile unfinished cleanup.
-  const matches = await deps.prisma.bot.findMany({
-    where: {
-      ...managedBotsWhere(input),
-      ...(input.botId ? { id: input.botId } : { name: confirmName }),
-    },
-    take: 2,
-  });
-
-  if (input.botId && matches.length === 0) {
-    return { error: "That bot is not in this space. Refusing to archive." };
-  }
-  if (!input.botId && matches.length === 0) {
-    return { error: `This space has no bot named "${confirmName}". Refusing to archive.` };
-  }
-  if (!input.botId && matches.length > 1) {
-    return {
-      error: `More than one bot is named "${confirmName}". Pass bot_id as well as confirm_name.`,
-    };
-  }
-
-  const target = matches[0]!;
-  const confirmed = confirmSpawnedBotName(confirmName, target.name);
-  if (!confirmed.ok) return confirmed;
-  if (target.id === input.spawnedByBotId) {
-    return { error: "A bot cannot archive itself with archive_bot." };
-  }
-
-  await archiveBot(deps, target, context);
-  return { ok: true as const, botId: target.id, name: target.name };
-}
 
 export async function archiveBot(
   deps: BotLifecycleDeps,
@@ -663,7 +432,6 @@ async function releaseTeamComputerScreen(
 ) {
   const computer = await sharedTeamComputer(deps, bot, dedicatedId);
   if (!computer?.providerRef) return computer;
-  // archive_bot runs inside the parent bot, and hard delete can omit botId.
   // Release this bot's screen; the caller's lease must not veto or redirect it.
   // Profile removal waits on the browser stop. A timed-out or failed stop can
   // return while Chromium is still exiting, and that process would recreate

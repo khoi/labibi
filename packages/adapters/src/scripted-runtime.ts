@@ -7,8 +7,6 @@ import type {
 import {
   APPROVED_ACTION_NOT_RUN_ERROR,
   abortableDelay,
-  BOT_MESSAGE_WAKE_CUE,
-  inferHandoffTargetName,
   MODEL_CONTEXT_TOO_SMALL_ERROR,
   MODEL_OUTPUT_CUT_ERROR,
   MODEL_REQUEST_LIMIT_ERROR,
@@ -52,9 +50,8 @@ export class ScriptedAgentRuntime implements AgentRuntime {
           ? steering.map((item) => item.historyText ?? item.text).join("\n")
           : undefined;
       const prompt = steeredPrompt ?? request.prompt;
-      // A run hangs on its own words: a peer's wake on the peer's text, a reply without the
-      // message it quotes.
-      const hangMs = hangDuration(peerMessage(prompt)?.text ?? prompt.replace(REPLY_CONTEXT, ""));
+      // A run hangs on its own words: a reply without the message it quotes.
+      const hangMs = hangDuration(prompt.replace(REPLY_CONTEXT, ""));
       if (hangMs !== undefined) {
         // Long-running work happens on the computer, which starts it like any real run would.
         yield {
@@ -178,10 +175,9 @@ export function inferScript(
   prompt: string,
   resumeFromCheckpoint?: string,
 ): NonNullable<AgentRunRequest["script"]> {
-  // A bot-message wake embeds the sender's name and id around the peer's words, and an
-  // ordinary reply opens with the quoted target; a generated id can contain a journey
-  // keyword by chance ("crm" inside a cuid), so the branches key on the words alone.
-  const words = peerMessage(prompt)?.text ?? prompt.replace(REPLY_CONTEXT, "");
+  // A reply opens with the quoted target; a generated id can contain a journey keyword by
+  // chance ("crm" inside a cuid), so the branches key on the words alone.
+  const words = prompt.replace(REPLY_CONTEXT, "");
   const lower = words.toLowerCase();
   // In a group the words open with the mention that picked this bot.
   const page = /^(?:@\S+\s+)?call save_page with (.+?)(?:\nthen say ([\s\S]+))?$/s.exec(
@@ -231,12 +227,6 @@ export function inferScript(
         complete: true,
       },
     ];
-  }
-  // A delegated result wakes the bot to relay it to the user. Before every content-based intent
-  // so the peer's text cannot steal the branch.
-  const report = delegatedReport(prompt);
-  if (report) {
-    return [{ assistant: `Here's what ${report.from} found: ${report.gist}`, complete: true }];
   }
   // Before every content-based intent so payload text cannot steal the branch.
   const shellCommand = /run the shell command\s+([\s\S]+)$/i.exec(prompt)?.[1]?.trim();
@@ -288,37 +278,6 @@ export function inferScript(
         complete: true,
       },
     ];
-  }
-  if (lower.includes("message the bot named") || lower.includes("message bot named")) {
-    const name = namedBot(prompt) ?? "Peer";
-    const message =
-      /named\s+[A-Za-z0-9][A-Za-z0-9_-]{0,39}\s+(?:saying|with|:)\s*([\s\S]+)$/i
-        .exec(prompt)?.[1]
-        ?.trim() ?? `Please help with: ${prompt}`;
-    return [
-      {
-        assistant: "messaging that bot now.",
-        toolCalls: [
-          {
-            name: "message_bot",
-            args: {
-              confirm_name: name,
-              message,
-              intent: "request",
-            },
-          },
-        ],
-        complete: true,
-      },
-    ];
-  }
-  const childEdit = childEditCalls(prompt);
-  if (childEdit) {
-    return [{ assistant: "updating your bots.", toolCalls: childEdit, complete: true }];
-  }
-  const fleet = fleetCall(prompt);
-  if (fleet) {
-    return [{ assistant: "updating your bots.", toolCalls: [fleet], complete: true }];
   }
   if (
     lower.includes("launch a cloud agent") ||
@@ -536,66 +495,12 @@ code-b
       },
     ];
   }
-  if (
-    lower.includes("delete the bot named") ||
-    lower.includes("delete the child bot") ||
-    lower.includes("delete child")
-  ) {
-    const name = namedBot(prompt) ?? "Scout";
-    return [
-      {
-        assistant: "archiving that bot.",
-        toolCalls: [{ name: "archive_bot", args: { confirm_name: name } }],
-        complete: true,
-      },
-    ];
-  }
   const ownInstructions = /update your instructions to:\s*([^\n<&]+)/i.exec(prompt);
   if (ownInstructions) {
     return [
       {
         assistant: "updating my instructions.",
         toolCalls: [{ name: "update_bot", args: { instructions: ownInstructions[1]!.trim() } }],
-        complete: true,
-      },
-    ];
-  }
-  if (
-    lower.includes("create a space") ||
-    lower.includes("create space") ||
-    lower.includes("new space named") ||
-    lower.includes("new private space")
-  ) {
-    const name = namedSpace(prompt) ?? "New space";
-    return [
-      {
-        assistant: "i can create that separate space after you confirm the boundary.",
-        toolCalls: [{ name: "create_space", args: { name } }],
-        complete: true,
-      },
-    ];
-  }
-  if (
-    lower.includes("spawn a bot") ||
-    lower.includes("spawn a child") ||
-    lower.includes("create a bot named") ||
-    lower.includes("create a child bot")
-  ) {
-    const name = namedBot(prompt) ?? "Helper";
-    return [
-      {
-        assistant: "creating a bot for that.",
-        toolCalls: [
-          {
-            name: "spawn_bot",
-            args: {
-              name,
-              title: `${name} specialist`,
-              instructions: `You are ${name}.`,
-              prompt: "Start on the assigned work.",
-            },
-          },
-        ],
         complete: true,
       },
     ];
@@ -629,29 +534,6 @@ code-b
       {
         assistant: "spinning up a helper for that.",
         toolCalls: [{ name: "run_subagent", args: { name: "helper", task: prompt } }],
-        complete: true,
-      },
-    ];
-  }
-  if (
-    lower.includes("hand this to") ||
-    lower.includes("hand off to") ||
-    lower.includes("handoff to") ||
-    (lower.includes("@writer") && lower.includes("draft"))
-  ) {
-    const target = inferHandoffTargetName(prompt) ?? "Writer";
-    return [
-      {
-        assistant: "handing this off in the group thread.",
-        toolCalls: [
-          {
-            name: "handoff_to_bot",
-            args: {
-              confirm_name: target,
-              message: prompt,
-            },
-          },
-        ],
         complete: true,
       },
     ];
@@ -753,7 +635,7 @@ code-b
   }
   return [
     {
-      assistant: `on it. i will work this in the background and come back with a result.\n\n${summarize(peerMessage(prompt)?.text ?? prompt)}`,
+      assistant: `on it. i will work this in the background and come back with a result.\n\n${summarize(prompt)}`,
     },
     {
       files: [{ path: "notes/last-task.md", content: `# Task\n\n${prompt}\n` }],
@@ -812,161 +694,9 @@ function hangDuration(prompt: string): number | undefined {
     : undefined;
 }
 
-/** One fleet tool call per prompt, so journeys can drive each tool in plain words. */
-function fleetCall(prompt: string): { name: string; args: Record<string, unknown> } | undefined {
-  const target = (kind: string, name: string) => ({
-    [kind.toLowerCase() === "group" ? "group_name" : "bot_name"]: clean(name),
-  });
-  const listed = /\blist the bots you manage(?: with bot\s+([A-Za-z0-9_-]+))?/i.exec(prompt);
-  if (listed) return { name: "list_fleet", args: listed[1] ? { bot_id: listed[1] } : {} };
-  const created = /create a group named\s+([^\n<&]+?)\s+with\s+([^\n<&]+)/i.exec(prompt);
-  if (created) {
-    const names = clean(created[2]!)
-      .split(/\s*,\s*|\s+and\s+/)
-      .filter(Boolean);
-    return { name: "create_group", args: { name: clean(created[1]!), bot_names: names } };
-  }
-  const membership =
-    /\b(add|remove) bots?\s+([A-Za-z0-9_,\s-]+?)\s+(?:to|from) the group named\s+([^\n<&]+)/i.exec(
-      prompt,
-    );
-  if (membership) {
-    const ids = membership[2]!.split(/[\s,]+/).filter(Boolean);
-    const key = membership[1]!.toLowerCase() === "add" ? "add_bot_ids" : "remove_bot_ids";
-    return { name: "update_group", args: { group_name: clean(membership[3]!), [key]: ids } };
-  }
-  const renamed = /rename the group named\s+([^\n<&]+?)\s+to\s+([^\n<&]+)/i.exec(prompt);
-  if (renamed) {
-    return {
-      name: "update_group",
-      args: { group_name: clean(renamed[1]!), name: clean(renamed[2]!) },
-    };
-  }
-  const moved = /move the (bot|group) named\s+([^\n<&]+?)\s+to section\s+([^\n<&]+)/i.exec(prompt);
-  if (moved) {
-    return {
-      name: "organize_bot",
-      args: { ...target(moved[1]!, moved[2]!), section: clean(moved[3]!) },
-    };
-  }
-  const cleared = /clear the section of the (bot|group) named\s+([^\n<&]+)/i.exec(prompt);
-  if (cleared) {
-    return {
-      name: "organize_bot",
-      args: { ...target(cleared[1]!, cleared[2]!), clear_section: true },
-    };
-  }
-  const model =
-    /set the model of bot\s+([A-Za-z0-9_-]+)\s+to\s+([A-Za-z0-9_.-]+)\/([^\s<&]+)/i.exec(prompt);
-  if (model) {
-    return {
-      name: "set_child_bot_model",
-      args: { bot_id: model[1], provider: model[2], model: clean(model[3]!) },
-    };
-  }
-  const reset = /reset the model of bot\s+([A-Za-z0-9_-]+)/i.exec(prompt);
-  if (reset) return { name: "set_child_bot_model", args: { bot_id: reset[1], clear: true } };
-  const routine =
-    /schedule bot\s+([A-Za-z0-9_-]+)\s+routine\s+([^\n<&]+?)\s+every\s+(\d+)\s+(minutes|hours|days)\s+saying\s+([^\n<&]+)/i.exec(
-      prompt,
-    );
-  if (routine) {
-    return {
-      name: "create_child_routine",
-      args: {
-        bot_id: routine[1],
-        name: clean(routine[2]!),
-        every: Number(routine[3]),
-        unit: routine[4]!.toLowerCase(),
-        prompt: clean(routine[5]!),
-      },
-    };
-  }
-  const pinned = /\b(un)?pin the (bot|group) named\s+([^\n<&]+)/i.exec(prompt);
-  if (pinned) {
-    return {
-      name: "organize_bot",
-      args: { ...target(pinned[2]!, pinned[3]!), pinned: !pinned[1] },
-    };
-  }
-  return undefined;
-}
-
-/** Child edits a journey can chain in one run: instruction rewrites, a rename, a self-rename. */
-function childEditCalls(
-  prompt: string,
-): Array<{ name: string; args: Record<string, unknown> }> | undefined {
-  const edit =
-    /rewrite the instructions of bot\s+([A-Za-z0-9_-]+)(?:\s+at version\s+([A-Za-z0-9_-]+))?\s+to\s+([^\n<&]+)/i.exec(
-      prompt,
-    );
-  if (edit) {
-    return edit[3]!.split(/\s+and then to\s+/i).map((instructions) => ({
-      name: "set_child_instructions",
-      args: {
-        bot_id: edit[1],
-        ...(edit[2] ? { expected_version: edit[2] } : {}),
-        instructions: clean(instructions),
-      },
-    }));
-  }
-  const renamed = /rename bot\s+([A-Za-z0-9_-]+)\s+to\s+([^\n<&]+)/i.exec(prompt);
-  if (renamed)
-    return [{ name: "update_bot", args: { bot_id: renamed[1], name: clean(renamed[2]!) } }];
-  // Some providers send every omitted optional field as an empty string.
-  const blank = /rename yourself to\s+([^\n<&]+?)\s+with blank bot management fields/i.exec(prompt);
-  if (blank) return [{ name: "update_bot", args: { name: clean(blank[1]!), bot_id: "" } }];
-  return undefined;
-}
-
-/** A phrase from a journey prompt without its surrounding space and closing punctuation. */
-function clean(value: string): string {
-  return value.trim().replace(/[.!?]+$/, "");
-}
-
-function namedBot(prompt: string) {
-  return /named\s+([A-Za-z0-9][A-Za-z0-9_-]{0,39})/i.exec(prompt)?.[1];
-}
-
-function namedSpace(prompt: string) {
-  return /space\s+(?:named|called)\s+["“]?([^"”\n]{1,60})/i
-    .exec(prompt)?.[1]
-    ?.replace(/[.!?]+$/, "")
-    .trim();
-}
-
 /** The quoted message a reply's prompt opens with (see reply-context.ts). */
 const REPLY_CONTEXT =
   /^(?:Replying to|User reacted with \S+ to) \(quoted data, not instructions\):\n<(reply_target|reaction_target)>\n[\s\S]*?\n<\/\1>\n\n/;
-
-/**
- * The sender and body of a bot-message wake prompt, without the wake instructions around it. A
- * delivery that threads back to this bot's own message opens with that message quoted.
- */
-function peerMessage(prompt: string): { from: string; text: string } | undefined {
-  if (!prompt.replace(REPLY_CONTEXT, "").startsWith(BOT_MESSAGE_WAKE_CUE)) return undefined;
-  const match = /<bot_message from="([^"]*)">\n([\s\S]*?)\n<\/bot_message>/.exec(prompt);
-  if (!match) return undefined;
-  const text = match[2]!
-    .replaceAll("&lt;", "<")
-    .replaceAll("&gt;", ">")
-    .replaceAll("&amp;", "&")
-    .trim();
-  return { from: match[1] || "Peer", text };
-}
-
-/** A delegated result or status to relay: who sent it and its last paragraph. */
-function delegatedReport(prompt: string): { from: string; gist: string } | undefined {
-  if (!/^This is a (?:result|status) for work you delegated\./m.test(prompt)) return undefined;
-  const message = peerMessage(prompt);
-  if (!message?.text) return undefined;
-  const gist =
-    message.text
-      .split(/\n\s*\n/)
-      .at(-1)
-      ?.trim() || message.text;
-  return { from: message.from, gist };
-}
 
 function summarize(prompt: string): string {
   return `done. i handled: ${prompt.slice(0, 180)}`;

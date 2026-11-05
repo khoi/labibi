@@ -4,14 +4,9 @@ import type {
   MessageReaction,
   ThreadMessage,
 } from "@labradoodle/contracts";
-import type { ChildBotBlock, FoldedTranscript } from "@labradoodle/core";
 import {
-  expandPeerReplies,
-  isPeerReceiptBlocks,
   liveActivityLine,
   liveMessageComposing,
-  peerExchangeLines,
-  projectBotMentions,
   projectMessageReactions,
   timeSeparatorIds,
   unreadDividerMessageId,
@@ -32,7 +27,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { ActiveBotGlyph } from "../../components/ai/CollaborationMarker";
+import { ActiveBotGlyph } from "../../components/ai/ActiveBotGlyph";
 import type { ArtifactTarget } from "../../lib/artifact-open";
 import { projectPageCards } from "../../lib/page-cards";
 import {
@@ -61,7 +56,7 @@ export const Transcript = memo(function Transcript({
   onScrollRequestHandled,
   followRequest,
   artifactTarget,
-  transcript,
+  messages,
   meId,
   showToolActivity,
   olderCursor,
@@ -73,7 +68,6 @@ export const Transcript = memo(function Transcript({
   workingBots,
   userBubble,
   onLoadOlder,
-  onOpenBot,
   onAnswer,
   onReply,
   onMarkUnread,
@@ -81,7 +75,6 @@ export const Transcript = memo(function Transcript({
   onQuote,
   onReact,
   onJumpToMessage,
-  onOpenPeerMessages,
   memberName,
   peerBot,
   onRefresh,
@@ -99,7 +92,7 @@ export const Transcript = memo(function Transcript({
   /** Changes when you send: the view moves to the end and follows the reply. */
   followRequest: number;
   artifactTarget: ArtifactTarget;
-  transcript: FoldedTranscript<ThreadMessage>;
+  messages: readonly ThreadMessage[];
   meId?: string;
   showToolActivity: boolean;
   olderCursor: number | null;
@@ -113,7 +106,6 @@ export const Transcript = memo(function Transcript({
   /** Your bubbles take the bot's color in its own chat. */
   userBubble?: { background: string; foreground: string };
   onLoadOlder: () => void | Promise<void>;
-  onOpenBot: (botId: string) => void;
   onAnswer: (
     message: ThreadMessage,
     text: string,
@@ -127,7 +119,6 @@ export const Transcript = memo(function Transcript({
   onQuote: (message: ThreadMessage, quote: string) => void;
   onReact: (message: ThreadMessage, reaction: MessageReaction) => Promise<void>;
   onJumpToMessage: (messageId: string) => void;
-  onOpenPeerMessages: (peer: { peerBotId: string; peerBotName: string }) => void;
   memberName?: (botId: string | undefined) => string | undefined;
   peerBot: (
     botId: string,
@@ -149,42 +140,13 @@ export const Transcript = memo(function Transcript({
   const lastScrollTop = useRef<number | null>(null);
   const autoScrollTimer = useRef<number | undefined>(undefined);
   const jumpButtonRef = useRef<HTMLButtonElement>(null);
-  const [expandedPeerMarkers, setExpandedPeerMarkers] = useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
-  // A jump to a folded reply expands its marker; the scroll effect below then finds the row.
-  useLayoutEffect(() => {
-    const markerId = scrollRequest && transcript.markerOf.get(scrollRequest.messageId);
-    if (!markerId) return;
-    setExpandedPeerMarkers((expanded) =>
-      expanded.has(markerId) ? expanded : new Set(expanded).add(markerId),
-    );
-  }, [scrollRequest, transcript]);
-  const messages = useMemo(
-    () => expandPeerReplies(transcript, expandedPeerMarkers),
-    [transcript, expandedPeerMarkers],
-  );
   const messageById = useMemo(
     () => new Map(messages.map((message) => [message.id, message])),
     [messages],
   );
-  const committedMentions = useRef(new Map<string, ChildBotBlock[]>());
-  const mentionView = useMemo(() => {
-    const view = projectBotMentions(messages);
-    for (const [id, mentions] of view.mentions) {
-      const previous = committedMentions.current.get(id);
-      if (
-        previous?.length === mentions.length &&
-        mentions.every((block, index) => block === previous[index])
-      ) {
-        view.mentions.set(id, previous);
-      }
-    }
-    return view;
-  }, [messages]);
   const committedPages = useRef<ReturnType<typeof projectPageCards> | null>(null);
   const pageView = useMemo(() => {
-    const view = projectPageCards(mentionView.visibleMessages);
+    const view = projectPageCards(messages);
     const committed = committedPages.current;
     if (!committed) return view;
     for (const [id, pages] of view.pages) {
@@ -198,30 +160,23 @@ export const Transcript = memo(function Transcript({
     }
     if (committed.cardsKey === view.cardsKey) view.isSuperseded = committed.isSuperseded;
     return view;
-  }, [mentionView]);
+  }, [messages]);
   // A progress tick rebuilds these views. The jump still reads the latest folds, without a new
   // callback that would rerender every memoized message.
-  const foldViews = useRef({ mentionView, pageView });
+  const foldViews = useRef({ pageView });
   useLayoutEffect(() => {
-    foldViews.current = { mentionView, pageView };
-    committedMentions.current = mentionView.mentions;
+    foldViews.current = { pageView };
     committedPages.current = pageView;
-  }, [mentionView, pageView]);
+  }, [pageView]);
   const jumpToMessage = useCallback(
     (messageId: string) => {
-      const views = foldViews.current;
-      const target = views.mentionView.foldedInto.get(messageId) ?? messageId;
-      onJumpToMessage(views.pageView.foldedInto.get(target) ?? target);
+      onJumpToMessage(foldViews.current.pageView.foldedInto.get(messageId) ?? messageId);
     },
     [onJumpToMessage],
   );
   const reactionView = useMemo(() => projectMessageReactions(pageView.visibleMessages), [pageView]);
-  const visibleReceipts = reactionView.visibleMessages.filter((message) =>
+  const shownMessages = reactionView.visibleMessages.filter((message) =>
     messageHasVisibleBlocks(message.blocks, showToolActivity),
-  );
-  const exchanges = peerExchangeLines({ ...transcript, messages: visibleReceipts });
-  const shownMessages = visibleReceipts.filter(
-    (message) => !exchanges.lineOf.has(message.id) || exchanges.lines.has(message.id),
   );
   const separatorIds = timeSeparatorIds(shownMessages);
   const unreadDividerId = unreadDividerMessageId(shownMessages, unreadAfterSeq, olderCursor);
@@ -383,7 +338,7 @@ export const Transcript = memo(function Transcript({
     if (!scrollRequest || scrolledJump.current === scrollRequest.nonce) return;
     const element = scrollRef.current;
     const row = element?.querySelector(
-      `[data-message-id="${CSS.escape(exchanges.lineOf.get(scrollRequest.messageId) ?? scrollRequest.messageId)}"]`,
+      `[data-message-id="${CSS.escape(scrollRequest.messageId)}"]`,
     );
     if (!element || !row) return;
     scrolledJump.current = scrollRequest.nonce;
@@ -407,7 +362,7 @@ export const Transcript = memo(function Transcript({
       { duration: 1200 },
     );
     onScrollRequestHandled();
-  }, [messages, scrollRequest, scrollRef, endJumpScroll, onScrollRequestHandled, exchanges.lineOf]);
+  }, [messages, scrollRequest, scrollRef, endJumpScroll, onScrollRequestHandled]);
 
   const followedRequest = useRef(followRequest);
   useLayoutEffect(() => {
@@ -524,7 +479,6 @@ export const Transcript = memo(function Transcript({
         ) : null}
         {reactionView.visibleMessages.map((message) => {
           if (!messageHasVisibleBlocks(message.blocks, showToolActivity)) return null;
-          const peerReceipt = isPeerReceiptBlocks(message.blocks);
           const messageReactions = reactionView.reactions.get(message.id);
           return (
             <Fragment key={message.id}>
@@ -534,27 +488,18 @@ export const Transcript = memo(function Transcript({
               {message.id === unreadDividerId ? (
                 <UnreadDivider afterSeparator={separatorIds.has(message.id)} />
               ) : null}
-              <div
-                data-message-id={message.id}
-                className={peerReceipt ? "relative py-0.5" : "group/message relative hover:z-[1]"}
-              >
+              <div data-message-id={message.id} className="group/message relative hover:z-[1]">
                 <div
-                  className={
-                    peerReceipt
-                      ? undefined
-                      : `relative flex ${message.role === "user" ? "justify-end" : "justify-start"}`
-                  }
+                  className={`relative flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    data-testid={peerReceipt ? undefined : "message-bubble-frame"}
+                    data-testid="message-bubble-frame"
                     className={
-                      peerReceipt
-                        ? undefined
-                        : message.blocks.some(
-                              (block) => block.kind === "ask" || block.kind === "mcp_approval",
-                            )
-                          ? "relative w-full min-w-0 max-w-xl"
-                          : `relative ${message.blocks.some((block) => block.kind === "app_connect" || block.kind === "page") || pageView.pages.has(message.id) ? "w-full" : "w-fit"} min-w-0 ${bubbleFrameWidth(message.role)}`
+                      message.blocks.some(
+                        (block) => block.kind === "ask" || block.kind === "mcp_approval",
+                      )
+                        ? "relative w-full min-w-0 max-w-xl"
+                        : `relative ${message.blocks.some((block) => block.kind === "app_connect" || block.kind === "page") || pageView.pages.has(message.id) ? "w-full" : "w-fit"} min-w-0 ${bubbleFrameWidth(message.role)}`
                     }
                   >
                     <MessageView
@@ -562,22 +507,12 @@ export const Transcript = memo(function Transcript({
                       message={message}
                       meId={meId}
                       markedUnread={message.id === markedUnreadMessageId}
-                      mentions={mentionView.mentions.get(message.id)}
                       pages={pageView.pages.get(message.id)}
                       isPageSuperseded={pageView.isSuperseded}
                       canAnswer={answerableAskIds.has(message.id)}
                       canDismiss={dismissableAskIds.has(message.id)}
-                      onOpenBot={onOpenBot}
-                      onOpenPeerMessages={onOpenPeerMessages}
-                      peerExchange={exchanges.lines.get(message.id)}
                       onAnswer={onAnswer}
-                      speakerName={
-                        peerReceipt
-                          ? undefined
-                          : message.role === "bot"
-                            ? memberName?.(message.botId)
-                            : undefined
-                      }
+                      speakerName={message.role === "bot" ? memberName?.(message.botId) : undefined}
                       memberName={memberName}
                       peerBot={peerBot}
                       replyParent={
@@ -601,7 +536,7 @@ export const Transcript = memo(function Transcript({
                     />
                   </div>
                 </div>
-                {!peerReceipt && messageReactions ? (
+                {messageReactions ? (
                   <div
                     data-testid="message-reactions"
                     className={cn(

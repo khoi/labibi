@@ -13,10 +13,8 @@ const RESPONSE_BLOCK_KINDS = new Set<string>([
   "image",
   "file",
   "page",
-  "handoff",
   "skill_draft",
   "mcp_approval",
-  "child_bot",
   "cloud_agent",
 ] satisfies MessageBlock["kind"][]);
 

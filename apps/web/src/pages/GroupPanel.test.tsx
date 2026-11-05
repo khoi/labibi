@@ -87,7 +87,6 @@ function fakeBot(id: string, name: string): Bot {
     sectionId: null,
     archivedAt: null,
     unread: false,
-    parentBotId: null,
     memoryScope: null,
     threadId: `thread-${id}`,
     preview: "",
@@ -105,8 +104,6 @@ function fakeBot(id: string, name: string): Bot {
     teamChatRules: "",
     disabledBuiltinTools: [],
     webhookConfigured: false,
-    fleetManagement: false,
-    spawnKey: null,
   };
 }
 

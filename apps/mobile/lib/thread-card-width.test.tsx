@@ -143,7 +143,6 @@ function Bubble(props: Partial<BubbleProps> & Pick<BubbleProps, "message">) {
       onOpenComputer={() => undefined}
       onPreviewFile={() => undefined}
       onPreviewImage={() => undefined}
-      onOpenPeerChat={() => undefined}
       actionProps={{}}
       {...props}
     />
@@ -182,12 +181,6 @@ describe("thread cards", () => {
     status: "completed",
     task: "Check the plan",
   });
-  const child: MessageBlock = {
-    kind: "child_bot",
-    botId: "child-1",
-    name: "Planner",
-    status: "created",
-  };
   const cloud: MessageBlock = {
     kind: "cloud_agent",
     agentId: "cloud-1",
@@ -270,7 +263,6 @@ describe("thread cards", () => {
       [helper(), text("Ship Flow B")],
       ["agent-1CompletedCheck the plan", "Ship Flow B"],
     ],
-    ["text around a child", [text("Before"), child, text("After")], ["Before", "Planner", "After"]],
     ["cloud then text", [cloud, text("Cloud result")], ["Remote taskfinished", "Cloud result"]],
     [
       "two helpers",
@@ -309,42 +301,6 @@ describe("thread cards", () => {
         paddingVertical: 14,
       });
     }
-  });
-
-  it.each([
-    ["no longer in the roster", child, []],
-    ["deleted", { ...child, status: "deleted" }, [{ id: "child-1", name: "Planner" }]],
-  ])("keeps a child bot's name without a link when it is %s", (_, block, bots) => {
-    const onOpenBot = vi.fn();
-    renderBlocks([block as MessageBlock], { bots, onOpenBot });
-    const row = container.firstElementChild as HTMLElement;
-    expect(row.textContent).toContain("Planner");
-    expect(row.querySelector('[role="link"]')).toBeNull();
-    act(() => {
-      for (const span of row.querySelectorAll("span")) span.click();
-    });
-    expect(onOpenBot).not.toHaveBeenCalled();
-  });
-
-  it("keeps child navigation and long-press actions on each card and text piece", () => {
-    const onOpenBot = vi.fn();
-    const onLongPress = vi.fn();
-    renderBlocks([helper(), child, text("After")], {
-      bots: [{ id: "child-1", name: "Planner", color: "orange" }],
-      onOpenBot,
-      actionProps: { onLongPress },
-    });
-    const cards = [...container.firstElementChild!.children] as HTMLElement[];
-    expect(cards).toHaveLength(3);
-    act(() => cards[1]!.querySelector<HTMLElement>('[role="link"]')!.click());
-    expect(onOpenBot).toHaveBeenCalledWith("child-1", "Planner");
-    act(() =>
-      cards.forEach((card) => {
-        const target = card.tagName === "DIV" ? card.querySelector("button")! : card;
-        target.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true }));
-      }),
-    );
-    expect(onLongPress).toHaveBeenCalledTimes(3);
   });
 
   it("keeps contiguous text in the normal bubble and leaves text-only messages unchanged", () => {

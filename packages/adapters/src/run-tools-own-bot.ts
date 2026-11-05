@@ -1,29 +1,16 @@
-import { BotSettingsValuesSchema } from "@labradoodle/contracts";
+import type { AdapterContext } from "@labradoodle/adapter-kit";
+import type { MessageBlock } from "@labradoodle/contracts";
+import { BotSettingsValuesSchema, isAttachmentImageMimeType } from "@labradoodle/contracts";
 import {
   appendEventInTransaction,
   commitBotUpdate,
-  createSpaceForMember,
   InstructionConflictError,
-  InvalidSpaceNameError,
-  runAsSystem,
-  SpaceLimitError,
   THREAD_LOCK_TRANSACTION_OPTIONS,
   writeBotInstructions,
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
-import { uncertainEffectResult } from "./approval-effect.js";
-import { archiveSpawnedBot, spawnBot } from "./child-bots.js";
-import {
-  createChildRoutine,
-  createFleetGroup,
-  listFleet,
-  organizeBot,
-  setChildBotModel,
-  setChildInstructions,
-  updateChildBot,
-  updateFleetGroup,
-  updateOwnBotFromTool,
-} from "./fleet-tools.js";
+import { attachedImageArtifactIds, resolveUpdateBotAvatar } from "./bot-avatar.js";
+import type { ExecutorDeps } from "./executor-deps.js";
 import {
   listDefaultVoices,
   prepareOwnBotSettings,
@@ -36,48 +23,9 @@ import {
 } from "./run-context.js";
 import { mayOpenModelStream } from "./run-lifecycle.js";
 import { publishMessage } from "./run-messages.js";
-import { fleetPrepareDeps } from "./run-model.js";
-import type { ToolCall, ToolHandlers } from "./run-tool-gate.js";
-import { argumentGiven } from "./update-bot-patch.js";
-
-async function archiveBot(ctx: RunContext, call: ToolCall) {
-  const { deps, run, bot, thread, context } = ctx;
-  const { name, args } = call;
-  const archived = await archiveSpawnedBot(
-    deps,
-    {
-      spawnedByBotId: bot.id,
-      userId: run.userId,
-      spaceId: run.spaceId,
-      confirmName: String(args.confirm_name ?? args.confirmName ?? ""),
-      botId: args.bot_id ? String(args.bot_id) : args.botId ? String(args.botId) : undefined,
-    },
-    context,
-  );
-  if ("error" in archived) return call.finish(archived);
-  if (!(await call.persistEffectResult(archived))) return uncertainEffectResult(name);
-  try {
-    await publishMessage(deps, run, "bot", [
-      {
-        kind: "child_bot",
-        botId: archived.botId,
-        name: archived.name,
-        status: "archived",
-      },
-    ]);
-    await deps.events.append({
-      spaceId: run.spaceId,
-      threadId: thread.id,
-      botId: bot.id,
-      runId: run.id,
-      type: "bot.archived",
-      payload: { childBotId: archived.botId, name: archived.name },
-    });
-  } catch (error) {
-    getLogger().error("archived bot notification", error);
-  }
-  return archived;
-}
+import { botSettingsDeps } from "./run-model.js";
+import type { ToolHandlers } from "./run-tool-gate.js";
+import { argumentGiven, parseUpdateBotPatch } from "./update-bot-patch.js";
 
 /** Writes this bot's instructions quietly; earlier versions stay restorable in its settings. */
 async function commitOwnInstructions(
@@ -139,126 +87,11 @@ async function commitOwnInstructions(
   return { ok: true };
 }
 
-/** This bot's own settings, Spaces and the bots this bot manages. */
-export const fleetTools: ToolHandlers = {
-  async create_space(ctx, call) {
-    const { deps, run } = ctx;
-    const { args } = call;
-    try {
-      // The new Space's rows are outside the run's tenant until it exists.
-      const space = await runAsSystem("create a Space for its member", () =>
-        createSpaceForMember(deps.prisma, {
-          currentSpaceId: run.spaceId,
-          userId: run.userId,
-          name: String(args.name ?? ""),
-        }),
-      );
-      return call.finish({ ok: true, spaceId: space.id, name: space.name });
-    } catch (error) {
-      if (error instanceof SpaceLimitError || error instanceof InvalidSpaceNameError) {
-        return call.finish({ error: error.message });
-      }
-      throw error;
-    }
-  },
-  async spawn_bot(ctx, call) {
-    const { deps, run, runId, bot, thread } = ctx;
-    const { name, args, effectKey } = call;
-    const computerModeArg = args.computer_mode;
-    let computerMode: "team" | "dedicated" | undefined;
-    if (computerModeArg != null && computerModeArg !== "") {
-      const value = String(computerModeArg);
-      if (value !== "team" && value !== "dedicated") {
-        return call.finish({
-          error: 'computer_mode must be "team" or "dedicated".',
-        });
-      }
-      computerMode = value;
-    }
-    const spawned = await spawnBot(deps, {
-      spawnedBy: {
-        id: bot.id,
-        name: bot.name,
-        spaceId: bot.spaceId,
-        userId: run.userId,
-      },
-      runId,
-      spawnKey: effectKey,
-      name: String(args.name ?? ""),
-      description: args.description ? String(args.description) : undefined,
-      instructions: args.instructions ? String(args.instructions) : undefined,
-      prompt: args.prompt ? String(args.prompt) : undefined,
-      computerMode,
-    });
-    if ("error" in spawned) return call.finish(spawned);
-    if (!(await call.persistEffectResult(spawned))) return uncertainEffectResult(name);
-    try {
-      await publishMessage(deps, run, "bot", [
-        {
-          kind: "child_bot",
-          botId: spawned.botId,
-          name: spawned.name,
-          status: "created",
-        },
-      ]);
-      await deps.events.append({
-        spaceId: run.spaceId,
-        threadId: thread.id,
-        botId: bot.id,
-        runId: run.id,
-        type: "bot.spawned",
-        payload: { childBotId: spawned.botId, name: spawned.name },
-      });
-    } catch (error) {
-      getLogger().error("spawned bot notification", error);
-    }
-    return spawned;
-  },
-  async list_fleet(ctx, call) {
-    const { deps } = ctx;
-    const { args } = call;
-    return call.finish(await listFleet(deps, ctx.fleetRun, args));
-  },
-  async organize_bot(ctx, call) {
-    const { deps } = ctx;
-    const { args } = call;
-    return call.finish(await organizeBot({ ...deps, runSecrets: ctx.secrets }, ctx.fleetRun, args));
-  },
-  // Replay hands these the canonical request stored with the approved effect.
-  async create_group(ctx, call) {
-    const { deps } = ctx;
-    const { args } = call;
-    return call.finish(await createFleetGroup(deps, ctx.fleetRun, args));
-  },
-  async update_group(ctx, call) {
-    const { deps } = ctx;
-    const { args } = call;
-    return call.finish(await updateFleetGroup(deps, ctx.fleetRun, args));
-  },
-  async set_child_instructions(ctx, call) {
-    const { deps } = ctx;
-    const { args } = call;
-    return call.finish(await setChildInstructions(deps, ctx.fleetRun, args));
-  },
-  async set_child_bot_model(ctx, call) {
-    const { deps, run } = ctx;
-    const { args } = call;
-    const modelDeps = { ...(await fleetPrepareDeps(deps, run)), events: deps.events };
-    return call.finish(await setChildBotModel(modelDeps, ctx.fleetRun, args));
-  },
-  async create_child_routine(ctx, call) {
-    const { deps } = ctx;
-    const { args } = call;
-    return call.finish(await createChildRoutine(deps, ctx.fleetRun, args));
-  },
+/** update_bot: this bot reads and changes its own settings. */
+export const ownBotTools: ToolHandlers = {
   async update_bot(ctx, call) {
     const { deps, run, bot, thread, context } = ctx;
     const { args } = call;
-    if (argumentGiven(args.bot_id)) {
-      return call.finish(
-        await updateChildBot({ ...deps, runSecrets: ctx.secrets }, ctx.fleetRun, args),
-      );
-    }
     // A held change (see prepareOwnBotUpdate) runs only once the owner or Auto Review approves it.
     if (typeof args.previousInstructions === "string") {
       if ((call.nextApprovedTool !== call.name && !call.bypassApproval) || !call.claimedEffect)
@@ -276,7 +109,7 @@ export const fleetTools: ToolHandlers = {
       );
     }
     const { instructions, model, thinkingLevel, readAloud, voice, ...profile } = args;
-    const modelDeps = await fleetPrepareDeps(deps, run);
+    const modelDeps = await botSettingsDeps(deps, run);
     const live = await deps.prisma.bot.findUniqueOrThrow({
       where: { id: bot.id },
       select: {
@@ -390,5 +223,93 @@ export const fleetTools: ToolHandlers = {
       ...(argumentGiven(instructions) ? { instructions: "updated" } : {}),
     });
   },
-  archive_bot: archiveBot,
 };
+
+/** update_bot on the calling bot's own profile. */
+async function updateOwnBotFromTool(
+  deps: ExecutorDeps,
+  run: { id: string; spaceId: string; userId: string; sourceMessageId: string | null },
+  threadId: string,
+  bot: { id: string; name: string },
+  args: Record<string, unknown>,
+  context: AdapterContext,
+) {
+  const parsed = parseUpdateBotPatch(args);
+  if ("error" in parsed) return parsed;
+  const patch = parsed.patch;
+  const wantsImage = args.artifact_id !== undefined || args.use_attached_image === true;
+  let sourceImageArtifactIds: string[] = [];
+  if (wantsImage && run.sourceMessageId) {
+    const source = await deps.prisma.message.findUnique({
+      where: { id: run.sourceMessageId },
+      select: { blocks: true, threadId: true },
+    });
+    if (source?.threadId === threadId) {
+      sourceImageArtifactIds = attachedImageArtifactIds(source.blocks as MessageBlock[]);
+    }
+  }
+  const avatar = await resolveUpdateBotAvatar({
+    color: args.color,
+    artifactId: args.artifact_id,
+    useAttachedImage: args.use_attached_image,
+    sourceImageArtifactIds,
+    loadArtifact: async (id) => {
+      if (!deps.artifacts) return null;
+      const row = await deps.prisma.artifact.findFirst({
+        where: { id, spaceId: run.spaceId },
+        select: { mimeType: true, storageKey: true },
+      });
+      if (!row || !isAttachmentImageMimeType(row.mimeType)) return null;
+      try {
+        return await deps.artifacts.get(row.storageKey, context);
+      } catch {
+        return null;
+      }
+    },
+  });
+  if ("error" in avatar && avatar.error !== "missing") {
+    return { error: avatar.error };
+  }
+  if ("color" in avatar) patch.color = avatar.color;
+  if (Object.keys(patch).length === 0) {
+    return {
+      error:
+        "Provide at least one of name, description, notifyOnFinish, color, artifact_id, or use_attached_image.",
+    };
+  }
+  const updated = await deps.prisma.bot.update({
+    where: { id: bot.id },
+    data: patch,
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      color: true,
+      notifyOnFinish: true,
+    },
+  });
+  try {
+    await deps.events.append({
+      spaceId: run.spaceId,
+      threadId: threadId,
+      botId: bot.id,
+      runId: run.id,
+      type: "bot.updated",
+      payload: {
+        botId: updated.id,
+        name: updated.name,
+        description: updated.description,
+      },
+    });
+  } catch (error) {
+    getLogger().error("bot.updated notification", error);
+  }
+  return {
+    ok: true,
+    botId: updated.id,
+    name: updated.name,
+    description: updated.description,
+    avatar: updated.color.startsWith("data:image/") ? "image" : updated.color,
+    notifyOnFinish: updated.notifyOnFinish,
+  };
+}

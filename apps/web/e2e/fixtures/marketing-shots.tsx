@@ -75,7 +75,6 @@ function inboxBot(): Bot {
     sectionId: null,
     archivedAt: null,
     unread: false,
-    parentBotId: null,
     memoryScope: null,
     threadId: "thread-demo",
     preview: "",
@@ -91,9 +90,7 @@ function inboxBot(): Bot {
     teamChatAmbientEnabled: false,
     teamChatRules: "",
     webhookConfigured: false,
-    spawnKey: null,
     runErrorId: null,
-    fleetManagement: true,
     disabledBuiltinTools: [],
   };
 }

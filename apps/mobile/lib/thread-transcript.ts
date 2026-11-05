@@ -1,27 +1,16 @@
-import {
-  expandPeerReplies,
-  foldPeerReplies,
-  peerExchangeLines,
-  projectBotMentions,
-  projectMessageReactions,
-  shouldShowBotSenderName,
-} from "@labradoodle/core";
+import { projectMessageReactions, shouldShowBotSenderName } from "@labradoodle/core";
 import { useMemo, useState } from "react";
 import type { MobileMessage } from "./api";
 import { applyLocalChoiceDismissals, hasVisibleMessagePresentation } from "./message-presentation";
 
 /**
- * What the chat draws from its messages: peer replies folded under their marker until expanded,
- * mentions and reactions folded into the message they belong to, and choices the user dismissed
- * here hidden.
+ * What the chat draws from its messages: reactions folded into the message they belong to, and
+ * choices the user dismissed here hidden.
  */
 export function useThreadTranscript(messages: MobileMessage[] | undefined, inGroup: boolean) {
   const [dismissedChoiceQuestions, setDismissedChoiceQuestions] = useState<
     ReadonlyMap<string, ReadonlySet<string>>
   >(() => new Map());
-  const [expandedPeerMarkers, setExpandedPeerMarkers] = useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
   const showBotSenderName = useMemo(
     () =>
       shouldShowBotSenderName({
@@ -32,27 +21,20 @@ export function useThreadTranscript(messages: MobileMessage[] | undefined, inGro
       }),
     [inGroup, messages],
   );
-  const peerTranscript = useMemo(
-    () => foldPeerReplies(messages ?? [], { includePeerReceipts: true }),
-    [messages],
+  const reactionView = useMemo(
+    () =>
+      projectMessageReactions(
+        (messages ?? [])
+          .map((message) => {
+            const dismissed = dismissedChoiceQuestions.get(message.id);
+            if (!dismissed) return message;
+            const blocks = applyLocalChoiceDismissals(message.blocks, dismissed);
+            return blocks === message.blocks ? message : { ...message, blocks: [...blocks] };
+          })
+          .filter((message) => hasVisibleMessagePresentation(message.blocks)),
+      ),
+    [dismissedChoiceQuestions, messages],
   );
-  const reactionView = useMemo(() => {
-    const mentionView = projectBotMentions(
-      expandPeerReplies(peerTranscript, expandedPeerMarkers)
-        .map((message) => {
-          const dismissed = dismissedChoiceQuestions.get(message.id);
-          if (!dismissed) return message;
-          const blocks = applyLocalChoiceDismissals(message.blocks, dismissed);
-          return blocks === message.blocks ? message : { ...message, blocks: [...blocks] };
-        })
-        .filter((message) => hasVisibleMessagePresentation(message.blocks)),
-    );
-    return {
-      ...projectMessageReactions(mentionView.visibleMessages),
-      mentions: mentionView.mentions,
-      foldedInto: mentionView.foldedInto,
-    };
-  }, [dismissedChoiceQuestions, expandedPeerMarkers, peerTranscript]);
 
   function dismissChoice(messageId: string, question: string) {
     setDismissedChoiceQuestions((current) => {
@@ -66,29 +48,10 @@ export function useThreadTranscript(messages: MobileMessage[] | undefined, inGro
     });
   }
 
-  const exchanges = useMemo(
-    () =>
-      peerExchangeLines({
-        ...peerTranscript,
-        messages: reactionView.visibleMessages,
-      }),
-    [peerTranscript, reactionView],
-  );
-  const visibleMessages = useMemo(
-    () =>
-      reactionView.visibleMessages.filter(
-        (message) => !exchanges.lineOf.has(message.id) || exchanges.lines.has(message.id),
-      ),
-    [reactionView, exchanges],
-  );
-
   return {
     showBotSenderName,
-    peerTranscript,
     reactionView,
-    setExpandedPeerMarkers,
     dismissChoice,
-    exchanges,
-    visibleMessages,
+    visibleMessages: reactionView.visibleMessages,
   };
 }

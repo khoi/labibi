@@ -86,8 +86,6 @@ export function displayIdentityResult(
     });
   const identity: Project = (value) => fields(value, { botName: label(labels.bot) });
   const channel: Project = (value) => fields(value, { name: label(labels.group) });
-  const connection: Project = (value) =>
-    fields(value, { peerBotName: label(labels.bot), peerOwnerLabel: label(labels.owner) });
   const procedure = path.join("/");
   if (procedure === "bootstrap")
     return fields(result, {
@@ -120,7 +118,6 @@ export function displayIdentityResult(
         fields(run, {
           botName: label(labels.bot),
           groupName: (name) => (name === null ? null : label(labels.group)(name)),
-          agentMessage: (message) => fields(message, { fromBotName: label("") }),
         }),
       ),
     });
@@ -142,13 +139,10 @@ export function displayIdentityResult(
     return fields(result, {
       identities: list(identity),
       channels: list(channel),
-      connections: list(connection),
     });
   if (procedure === "messaging/identities/setBot") return identity(result);
   if (procedure === "messaging/channels/list") return list(channel)(result);
   if (procedure === "messaging/channels/respond") return channel(result);
-  if (procedure === "messaging/connections/list") return list(connection)(result);
-  if (procedure === "messaging/connections/respond") return connection(result);
   if (procedure === "computer/status")
     return fields(result, {
       busyBotName: (name) => (name === null ? null : label(labels.bot)(name)),

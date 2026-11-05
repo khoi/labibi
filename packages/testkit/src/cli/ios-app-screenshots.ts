@@ -105,7 +105,6 @@ async function main() {
         RAKAZO_SCREENSHOT_FREE_EMAIL: freeEmail,
         RAKAZO_SCREENSHOT_PASSWORD: password,
         RAKAZO_SCREENSHOT_BOT_ID: fixture.botId,
-        RAKAZO_SCREENSHOT_PEER_BOT_ID: fixture.peerBotId,
         RAKAZO_SCREENSHOT_GROUP_ID: fixture.groupId,
         RAKAZO_SCREENSHOT_ROUTINE_ID: fixture.routineId,
         RAKAZO_SCREENSHOT_ARTIFACT_ID: fixture.artifactId,

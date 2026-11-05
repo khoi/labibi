@@ -1,8 +1,7 @@
 import { markdownCodeBlocks } from "@labradoodle/chat-ui/native";
 import type { LoginFieldInput, MessageReaction } from "@labradoodle/contracts";
 import { canReactToThreadMessage, MESSAGE_REACTIONS } from "@labradoodle/contracts";
-import type { ChildBotBlock, PeerExchange } from "@labradoodle/core";
-import { canMarkMessageUnread, isPeerReceiptBlocks, liveMessageComposing } from "@labradoodle/core";
+import { canMarkMessageUnread, liveMessageComposing } from "@labradoodle/core";
 import * as Clipboard from "expo-clipboard";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { GestureResponderEvent, LayoutChangeEvent } from "react-native";
@@ -56,7 +55,6 @@ export type MessageRowActions = {
   previewImage: (target: ImageArtifactPreviewTarget) => void;
   jump: (messageId: string) => void;
   dismissChoice: (messageId: string, question: string) => void;
-  openPeerChat: (peer: { peerBotId: string; peerBotName: string }) => void;
   layout: (messageId: string, y: number, index: number) => void;
 };
 
@@ -84,9 +82,6 @@ type MessageRowProps = {
   replyFallbackText?: string;
   waitingForUser: boolean;
   messageReactions?: ReadonlyMap<MessageReaction, number>;
-  mentions?: readonly ChildBotBlock[];
-  /** The adjacent receipts represented by this peer line. */
-  peerExchange?: PeerExchange;
   activityBotId?: string;
   activityColor?: string;
   activityStatus?: MobileBot["status"];
@@ -119,9 +114,7 @@ export const MessageRow = memo(function MessageRow({
   replyAuthor,
   replyFallbackText,
   messageReactions,
-  mentions,
   waitingForUser,
-  peerExchange,
   activityBotId,
   activityColor,
   activityStatus,
@@ -403,17 +396,15 @@ export const MessageRow = memo(function MessageRow({
             flexShrink: 1,
           }}
         >
-          {isPeerReceiptBlocks(message.blocks) ? null : (
-            <ReplyLine
-              threadTarget={artifactTarget}
-              targetId={message.replyToMessageId}
-              quote={message.replyQuote}
-              preview={message.replyPreview}
-              author={replyAuthor}
-              fallbackText={replyFallbackText}
-              onJump={actions.jump}
-            />
-          )}
+          <ReplyLine
+            threadTarget={artifactTarget}
+            targetId={message.replyToMessageId}
+            quote={message.replyQuote}
+            preview={message.replyPreview}
+            author={replyAuthor}
+            fallbackText={replyFallbackText}
+            onJump={actions.jump}
+          />
           <MessageContextMenu
             actions={menu}
             fullWidth={layout.menuFullWidth}
@@ -425,7 +416,6 @@ export const MessageRow = memo(function MessageRow({
           >
             <ThreadReadOnlyContext.Provider value={readOnly}>
               <MessageBubble
-                mentions={mentions}
                 botId={bubbleBotId}
                 groupId={groupId}
                 message={message}
@@ -442,8 +432,6 @@ export const MessageRow = memo(function MessageRow({
                 onChoiceDismissed={onChoiceDismissed}
                 onPreviewFile={actions.previewFile}
                 onPreviewImage={actions.previewImage}
-                peerExchange={peerExchange}
-                onOpenPeerChat={actions.openPeerChat}
                 actionProps={actionProps}
                 doubleTapSurface={Boolean(likeMessage)}
                 onHelperToggle={actions.helperToggle}

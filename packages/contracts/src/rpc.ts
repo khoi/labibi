@@ -77,7 +77,6 @@ import {
   MemoryPromptBudgetSchema,
   MemoryScopeSchema,
   MeSchema,
-  MessagingAgentConnectionSchema,
   MessagingChannelMembershipSchema,
   MessagingInstallationsStatusSchema,
   MessagingLinkedIdentitySchema,
@@ -611,8 +610,6 @@ export const appContract = {
       .input(
         threadTarget.safeExtend({
           before: z.number().int().nonnegative().optional(),
-          includePeerRuns: z.boolean().optional(),
-          includePeerReceipts: z.boolean().optional(),
           around: z
             .object({
               messageId: Id.optional(),
@@ -1101,7 +1098,7 @@ export const appContract = {
       ),
     ),
   },
-  /** External messaging surface: link state, group channels, agent connections. */
+  /** External messaging surface: link state and group channels. */
   messaging: {
     installations: {
       list: oc.output(MessagingInstallationsStatusSchema),
@@ -1138,13 +1135,6 @@ export const appContract = {
         .input(z.object({ membershipId: Id, accept: z.boolean() }))
         .output(MessagingChannelMembershipSchema),
       leave: oc.input(z.object({ membershipId: Id })).output(z.object({ ok: z.literal(true) })),
-    },
-    connections: {
-      list: oc.output(z.array(MessagingAgentConnectionSchema)),
-      respond: oc
-        .input(z.object({ connectionId: Id, accept: z.boolean() }))
-        .output(MessagingAgentConnectionSchema),
-      revoke: oc.input(z.object({ connectionId: Id })).output(z.object({ ok: z.literal(true) })),
     },
   },
   approvalRules: {

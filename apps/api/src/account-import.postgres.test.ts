@@ -68,7 +68,6 @@ function sourceRecords(): AccountExportRecord[] {
       sectionId: "src-section",
       archivedAt: null,
       // Its parent comes later in the file.
-      parentBotId: "src-bot-parent",
       memoryScope: null,
       voiceId: null,
       autoSpeak: false,
@@ -78,8 +77,6 @@ function sourceRecords(): AccountExportRecord[] {
       disabledBuiltinTools: ["browser"],
       teamChatAmbientEnabled: false,
       teamChatRules: "",
-      crossSpaceCommunication: false,
-      fleetManagement: false,
       createdAt: at,
     },
     {
@@ -95,7 +92,6 @@ function sourceRecords(): AccountExportRecord[] {
       position: 0,
       sectionId: null,
       archivedAt: null,
-      parentBotId: null,
       memoryScope: null,
       voiceId: null,
       autoSpeak: false,
@@ -105,8 +101,6 @@ function sourceRecords(): AccountExportRecord[] {
       disabledBuiltinTools: [],
       teamChatAmbientEnabled: false,
       teamChatRules: "",
-      crossSpaceCommunication: false,
-      fleetManagement: true,
       createdAt: at,
     },
     {
@@ -410,9 +404,7 @@ describePostgres("account import (PostgreSQL)", () => {
     const parent = bots.find((bot) => bot.name === "Chief")!;
     expect(bots).toHaveLength(2);
     expect(bots.every((bot) => bot.userId === userId && !bot.id.startsWith("src-"))).toBe(true);
-    expect(child.parentBotId).toBe(parent.id);
     expect(child.pinned).toBe(true);
-    expect(child.fleetManagement).toBe(false);
     expect(child.disabledBuiltinTools).toEqual(["browser"]);
     const section = await system.botSection.findFirstOrThrow({ where: { spaceId } });
     expect(child.sectionId).toBe(section.id);

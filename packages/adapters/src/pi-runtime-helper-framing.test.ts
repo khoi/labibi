@@ -1,4 +1,3 @@
-import { FLEET_TOOL_NAMES } from "@labradoodle/contracts";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { builtinAgentTools } from "./builtin-tools.js";
 
@@ -30,7 +29,7 @@ vi.mock("@earendil-works/pi-agent-core", () => ({
       if (delegate) {
         await this.tools
           .find((tool) => tool.name === "use_tool")
-          ?.execute("main-call-1", { name: "list_fleet", arguments: {} });
+          ?.execute("main-call-1", { name: "render_plot", arguments: {} });
         // The main bot hands work to a helper and reads back what the tool returns.
         seen.resultForParent = await delegate.execute("call-1", {
           name: "scout",
@@ -44,7 +43,7 @@ vi.mock("@earendil-works/pi-agent-core", () => ({
       seen.helperToolNames = this.tools.map((tool) => tool.name);
       await this.tools
         .find((tool) => tool.name === "update_bot")
-        ?.execute("helper-call-1", { bot_id: "child-1", name: "Obeys" });
+        ?.execute("helper-call-1", { name: "Obeys" });
       this.state.messages = [
         { role: "assistant", content: [{ type: "text", text: "There are 3 files." }] },
       ];
@@ -119,14 +118,9 @@ describe("helpers know who they are talking to", () => {
     );
   });
 
-  it("never lets the helper inherit any bot management tool", () => {
-    expect(seen.helperToolNames.length).toBeGreaterThan(0);
-    for (const name of FLEET_TOOL_NAMES) expect(seen.helperToolNames).not.toContain(name);
-  });
-
-  it("marks helper calls so the executor refuses update_bot's bot management form from them", () => {
+  it("marks helper calls so the executor can tell them from the bot's own", () => {
     expect(isSubagentToolExecution(seen.toolExecutionIds.get("update_bot")!)).toBe(true);
-    const mainCall = seen.toolExecutionIds.get("list_fleet");
+    const mainCall = seen.toolExecutionIds.get("render_plot");
     expect(mainCall).toBeDefined();
     expect(isSubagentToolExecution(mainCall!)).toBe(false);
   });

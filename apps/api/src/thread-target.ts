@@ -505,7 +505,7 @@ export async function threadSnapshot(
                 })
               : null;
           const currentRun = run?.status === "failed" && newestTerminal?.id !== run.id ? null : run;
-          const liveRuns = activeRuns.filter((run) => run.trigger !== "bot_message");
+          const liveRuns = activeRuns;
           const liveEvents =
             liveRuns.length > 0
               ? await tx.event.findMany({
@@ -563,10 +563,10 @@ export async function threadSnapshot(
           where: {
             threadId: target.threadId,
             status: { in: [...ACTIVE_RUN_STATUSES] },
-            // Waiting peer and ticket asks stay answerable. Busy ticket runs stay off
+            // Waiting ticket asks stay answerable. Busy ticket runs stay off
             // the transcript; only their waiting_input / waiting_takeover states surface.
             OR: [
-              { trigger: { notIn: ["bot_message", ...BACKGROUND_RUN_TRIGGERS] } },
+              { trigger: { notIn: [...BACKGROUND_RUN_TRIGGERS] } },
               { status: { in: ["waiting_input", "waiting_takeover"] } },
             ],
           },
@@ -577,7 +577,7 @@ export async function threadSnapshot(
         tx.run.findMany({
           where: {
             threadId: target.threadId,
-            trigger: { notIn: ["bot_message", ...BACKGROUND_RUN_TRIGGERS] },
+            trigger: { notIn: [...BACKGROUND_RUN_TRIGGERS] },
             status: { in: ["failed", "completed", "cancelled"] },
           },
           orderBy: [{ updatedAt: "desc" }, { id: "desc" }],

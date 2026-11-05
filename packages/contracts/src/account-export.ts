@@ -7,7 +7,7 @@ import { PageSourceSchema, PageTitleSchema } from "./pages.js";
  *
  * - `manifest.json` comes first: the format, version and the exported spaces.
  * - `spaces/<spaceId>/records.jsonl`: one `AccountExportRecord` per line. A record only refers to
- *   records earlier in the same file, except `bot.parentBotId`, which may point forward.
+ *   records earlier in the same file.
  * - `spaces/<spaceId>/artifacts/<artifactId>`: each artifact's bytes, after the records.
  * - `spaces/<spaceId>/homes/<botId>/<path>`: each bot's workspace files, after the records.
  * - `spaces/<spaceId>/executables.json`: after the workspace files, which of them are executable
@@ -69,7 +69,6 @@ export const AccountExportRecordSchema = z.discriminatedUnion("type", [
     position: z.number().int(),
     sectionId: Id.nullable(),
     archivedAt: IsoDate.nullable(),
-    parentBotId: Id.nullable(),
     memoryScope: z.string().nullable(),
     voiceId: z.string().nullable(),
     autoSpeak: z.boolean(),
@@ -79,8 +78,6 @@ export const AccountExportRecordSchema = z.discriminatedUnion("type", [
     disabledBuiltinTools: z.array(z.string()),
     teamChatAmbientEnabled: z.boolean(),
     teamChatRules: z.string(),
-    crossSpaceCommunication: z.boolean(),
-    fleetManagement: z.boolean(),
     createdAt: IsoDate,
   }),
   z.object({

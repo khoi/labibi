@@ -209,62 +209,6 @@ describe("attachment helpers", () => {
     );
   });
 
-  it("selects a message or handoff another bot delivered as the turn", () => {
-    const file = {
-      kind: "file" as const,
-      artifactId: "art_zip",
-      mimeType: "application/zip",
-      name: "project.zip",
-      size: 19_000,
-    };
-    const messages = [
-      {
-        id: "delivered",
-        role: "user",
-        runId: "run-bot",
-        blocks: [
-          {
-            kind: "bot_message_received" as const,
-            fromBotId: "bot_coder",
-            fromBotName: "Coder",
-            text: "Deploy this",
-            hop: 1,
-          },
-          file,
-        ],
-      },
-      {
-        id: "handoff",
-        role: "bot",
-        runId: "run-coder",
-        blocks: [
-          {
-            kind: "handoff" as const,
-            fromBotId: "bot_coder",
-            toBotId: "bot_servo",
-            text: "Deploy this",
-            hop: 1,
-          },
-          file,
-        ],
-      },
-      {
-        id: "follow-up",
-        role: "bot",
-        runId: "run-other",
-        blocks: [{ kind: "text" as const, text: "Done" }],
-      },
-    ];
-    expect(userTurnMessageForRun("bot_message", "run-bot", messages, "delivered")).toEqual(
-      messages[0],
-    );
-    expect(userTurnMessageForRun("follow_up", "run-servo", messages, "handoff")).toEqual(
-      messages[1],
-    );
-    expect(userTurnMessageForRun("follow_up", "run-x", messages, "follow-up")).toBeUndefined();
-    expect(userTurnMessageForRun("bot_message", "run-bot", messages)).toBeUndefined();
-  });
-
   it("selects pending attachments only for their originating bot", () => {
     const attachments = [
       { id: "one", botId: "bot-one" },
@@ -275,20 +219,7 @@ describe("attachment helpers", () => {
   });
 });
 
-describe("peer message history", () => {
-  it("keeps attribution so a later turn knows a bot spoke, not the user", () => {
-    expect(
-      blocksToAgentHistoryText([
-        { kind: "bot_message_received", fromBotId: "b_1", fromBotName: "Researcher", text: "hi" },
-      ]),
-    ).toBe("[from Researcher] hi");
-    expect(
-      blocksToAgentHistoryText([
-        { kind: "bot_message_sent", toBotId: "b_2", toBotName: "Analyst", text: "chart it" },
-      ]),
-    ).toBe("[to Analyst] chart it");
-  });
-
+describe("message history", () => {
   it("keeps a group-chat line's sender", () => {
     expect(
       blocksToAgentHistoryText([

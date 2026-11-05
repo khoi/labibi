@@ -1,8 +1,6 @@
 import type { AgentToolExecutionResult } from "@labradoodle/adapter-kit";
 import { ModelOutputError } from "@labradoodle/adapter-kit";
-import { FLEET_WRITE_TOOL_NAMES } from "@labradoodle/contracts";
 import { APPROVED_ACTION_NOT_RUN_ERROR } from "@labradoodle/core";
-import { argumentGiven } from "./update-bot-patch.js";
 
 export type ApprovalPausedToolResult = AgentToolExecutionResult & { terminate: true };
 
@@ -462,26 +460,9 @@ export function resolveDuplicateEffectGate(
 
 export type UncertainEffectResult = { error: string; uncertain: true };
 
-/** Fleet writes, including `update_bot` on a child, are checked with list_fleet. */
-function changesTheFleet(toolName: string, args: Record<string, unknown> | undefined): boolean {
-  return (
-    (FLEET_WRITE_TOOL_NAMES as readonly string[]).includes(toolName) ||
-    (toolName === "update_bot" && argumentGiven(args?.bot_id))
-  );
-}
-
-export function uncertainEffectResult(
-  toolName: string,
-  args?: Record<string, unknown>,
-): UncertainEffectResult {
-  const verify =
-    toolName === "set_child_bot_model" || toolName === "create_child_routine"
-      ? "Ask the owner to verify the outcome before proposing another change; do not retry automatically."
-      : changesTheFleet(toolName, args)
-        ? "Call list_fleet to check whether it happened before retrying."
-        : "Verify the destination before proposing another action.";
+export function uncertainEffectResult(toolName: string): UncertainEffectResult {
   return {
-    error: `The earlier ${toolName} execution was interrupted, so its outcome is unknown. It was not replayed to avoid a duplicate side effect. ${verify}`,
+    error: `The earlier ${toolName} execution was interrupted, so its outcome is unknown. It was not replayed to avoid a duplicate side effect. Verify the destination before proposing another action.`,
     uncertain: true,
   };
 }
@@ -500,9 +481,8 @@ export async function settleUncertainEffect(
   },
   effectId: string,
   toolName: string,
-  args?: Record<string, unknown>,
 ): Promise<unknown> {
-  const result = uncertainEffectResult(toolName, args);
+  const result = uncertainEffectResult(toolName);
   const settled = await store.externalEffect.updateMany({
     where: { id: effectId, status: "executing" },
     data: { status: "uncertain", result },

@@ -85,7 +85,7 @@ describe("thread speakers", () => {
     expect(historySpeaker(speakers, botRow("m1", "bot-deleted"))).toBe(UNKNOWN_BOT_SPEAKER);
   });
 
-  it("leaves system rows and a relayed peer message unlabelled", async () => {
+  it("leaves system rows unlabelled", async () => {
     const { prisma } = fakePrisma();
     const speakers = await loadThreadSpeakers(
       prisma,
@@ -94,14 +94,6 @@ describe("thread speakers", () => {
       [],
     );
     expect(historySpeaker(speakers, { role: "system", blocks: [] })).toBeUndefined();
-    expect(
-      historySpeaker(
-        speakers,
-        userRow([
-          { kind: "bot_message_received", fromBotId: "bot-anya", fromBotName: "Anya", text: "x" },
-        ]),
-      ),
-    ).toBeUndefined();
   });
 
   it("keeps a name on one line", () => {

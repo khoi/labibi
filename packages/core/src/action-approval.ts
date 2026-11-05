@@ -19,13 +19,10 @@ const APPROVAL_EXEMPT_TOOLS = new Set([
   "request_secret",
   "generate_secret",
   "run_subagent",
-  "spawn_bot",
   "schedule_create",
   "schedule_list",
   "schedule_update",
   "schedule_cancel",
-  "list_fleet",
-  "organize_bot",
   // The wallet owner approves every purchase in the wallet itself; a card here would ask twice.
   "request_purchase",
 ]);
@@ -33,7 +30,6 @@ const APPROVAL_EXEMPT_TOOLS = new Set([
 const APPROVAL_REQUIRED_BUILTIN_TOOLS = new Set([
   "generate_image",
   "generate_video",
-  "archive_bot",
   "secret_request",
   "forget_secret",
   "forget_memory",
@@ -43,24 +39,13 @@ const APPROVAL_REQUIRED_BUILTIN_TOOLS = new Set([
   "user_computer_shell",
   "user_computer_observe",
   "user_computer_act",
-  "create_group",
-  "update_group",
-  "create_child_routine",
   "feedback",
 ]);
-const EXPLICIT_APPROVAL_BUILTIN_TOOLS = new Set([
-  "respond_agent_connection",
-  "create_space",
-  "set_child_instructions",
-  "set_child_bot_model",
-]);
-
 const UNATTENDED_SAFE_BUILTIN_TOOLS = new Set([
   "browser_snapshot",
   "cloud_agent_status",
   "computer_observe",
   "list_files",
-  "list_fleet",
   "list_secrets",
   "purchase_status",
   "read_file",
@@ -154,7 +139,6 @@ export function toolRequiresApproval(
   readOnly?: boolean,
 ): boolean {
   if (APPROVAL_EXEMPT_TOOLS.has(toolName)) return false;
-  if (toolRequiresExplicitApproval(toolName)) return true;
   if (APPROVAL_REQUIRED_BUILTIN_TOOLS.has(toolName)) return true;
   if (viaConnector) return connectorToolRequiresApproval(toolName, readOnly);
   return false;
@@ -184,11 +168,6 @@ function innerToolSlugs(args: unknown): string[] {
     const slug = (item as { tool_slug?: unknown } | null)?.tool_slug;
     return typeof slug === "string" && slug.trim() ? [slug.trim().toUpperCase()] : [];
   });
-}
-
-/** Security-boundary changes cannot be auto-reviewed or permanently allowed. */
-export function toolRequiresExplicitApproval(toolName: string): boolean {
-  return EXPLICIT_APPROVAL_BUILTIN_TOOLS.has(toolName);
 }
 
 /**
@@ -227,7 +206,6 @@ const OWN_STATE_RESULT_TOOLS = new Set([
   "attach_file",
   "feedback",
   "generate_secret",
-  "list_fleet",
   "list_secrets",
   "message_user",
   "read_history",
@@ -560,7 +538,7 @@ export type AutoReviewJudgeDecision = "pass" | "ask" | "error";
 export function planActionGate(input: {
   resolved: ActionApprovalResolved;
   mode: ApprovalMode;
-  /** Needs a person whatever the rules say (see toolRequiresExplicitApproval). */
+  /** Needs a person whatever the rules say. */
   mandatory?: boolean;
   /** Never ask refuses it: the owner did not start this run, or outside content entered it. */
   steerable?: boolean;

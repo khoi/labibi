@@ -30,7 +30,6 @@ const NOTES = [
 
 export interface IosScreenshotFixture {
   botId: string;
-  peerBotId: string;
   groupId: string;
   routineId: string;
   artifactId: string;
@@ -302,7 +301,6 @@ export async function seedIosScreenshotFixture(input: {
     await ensureThreadCopy(db.prisma, {
       threadId: researcher.threadId,
       botId: researcher.id,
-      peer: writer,
       artifact: notes,
     });
     const conversation = await ensureTeamConversation(db.prisma, {
@@ -344,7 +342,6 @@ export async function seedIosScreenshotFixture(input: {
     }
     return {
       botId: researcher.id,
-      peerBotId: writer.id,
       groupId: group.id,
       routineId: routine.id,
       artifactId: notes.id,
@@ -450,7 +447,7 @@ async function ensureBot(
 
 async function ensureThreadCopy(
   prisma: ReturnType<typeof createDb>["prisma"],
-  input: { threadId: string; botId: string; peer: BotRow; artifact: ArtifactRow },
+  input: { threadId: string; botId: string; artifact: ArtifactRow },
 ) {
   const messages = await prisma.message.findMany({
     where: { threadId: input.threadId },
@@ -462,32 +459,6 @@ async function ensureThreadCopy(
       threadId: input.threadId,
       role: "user",
       blocks: [{ kind: "text", text: "Summarize the launch notes." }],
-    });
-    // A bot-to-bot exchange, which the chat links to its own transcript.
-    await createThreadMessage(prisma, {
-      threadId: input.threadId,
-      role: "bot",
-      botId: input.botId,
-      blocks: [
-        {
-          kind: "bot_message_sent",
-          toBotId: input.peer.id,
-          toBotName: input.peer.name,
-          text: "Can you draft the announcement from these notes?",
-        },
-      ],
-    });
-    await createThreadMessage(prisma, {
-      threadId: input.threadId,
-      role: "user",
-      blocks: [
-        {
-          kind: "bot_message_received",
-          fromBotId: input.peer.id,
-          fromBotName: input.peer.name,
-          text: "Done. The draft leads with the customer quotes.",
-        },
-      ],
     });
     await createThreadMessage(prisma, {
       threadId: input.threadId,

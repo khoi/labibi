@@ -1,15 +1,30 @@
 import type { AdapterContext, SecretStore } from "@labradoodle/adapter-kit";
 import { VoiceAccountError } from "@labradoodle/adapter-kit";
 import type { Actor, BotSettingsValues, VoiceInfo } from "@labradoodle/contracts";
-import { ThinkingLevelSchema } from "@labradoodle/contracts";
+import { canonicalPiProviderId, ThinkingLevelSchema } from "@labradoodle/contracts";
 import type { PrismaClient } from "@labradoodle/db";
 import { findDefaultVoiceCredential } from "@labradoodle/db";
-import type { FleetPrepareDeps } from "./fleet-tools.js";
-import { modelLabel } from "./fleet-tools.js";
 import { connectedModelChoices, echoedQuery, resolveModelChoice, words } from "./model-choice.js";
+import type { BotModelChangeDeps } from "./model-selection.js";
 import { prepareAllowedThinkingLevels, validateBotModelChange } from "./model-selection.js";
 import { OPENAI_COMPATIBLE_VOICE_PROVIDER_ID } from "./openai-compatible-voice.js";
+import { listPiCatalog, scriptedCatalogEntry } from "./pi-models.js";
 import { createVoiceProvider } from "./voice-factory.js";
+
+export type BotSettingsDeps = {
+  prisma: PrismaClient;
+  modelChange: Omit<BotModelChangeDeps, "prisma">;
+};
+
+export function modelLabel(provider: string | null, model: string | null): string {
+  if (!provider || !model) return "Default model";
+  const catalog = [...listPiCatalog(), scriptedCatalogEntry];
+  const catalogProvider = canonicalPiProviderId(provider);
+  const entry = catalog.find((item) => item.provider === catalogProvider && item.id === model);
+  const providerName =
+    catalog.find((item) => item.provider === catalogProvider)?.providerName ?? provider;
+  return entry ? `${entry.providerName}: ${entry.label}` : `${model} (${providerName})`;
+}
 
 export type OwnBotSettingsRow = {
   name: string;
@@ -43,7 +58,7 @@ const endsWholeCharacter = (text: string, end: number) => {
 
 /** `update_bot` with no fields: this bot's settings and the values it may set. */
 export async function readOwnBotSettings(
-  deps: FleetPrepareDeps,
+  deps: BotSettingsDeps,
   scope: Pick<Actor, "userId" | "spaceId">,
   bot: OwnBotSettingsRow,
   instructionsOffset = 0,
@@ -184,7 +199,7 @@ export function resolveVoiceChoice(
 
 /** The model, thinking, voice and read-aloud fields of `update_bot`, checked like the settings screen. */
 export async function prepareOwnBotSettings(
-  deps: FleetPrepareDeps,
+  deps: BotSettingsDeps,
   scope: Pick<Actor, "userId" | "spaceId">,
   bot: Pick<OwnBotSettingsRow, "modelProvider" | "modelId" | "thinkingLevel">,
   args: { model?: unknown; thinkingLevel?: unknown; readAloud?: unknown; voice?: unknown },

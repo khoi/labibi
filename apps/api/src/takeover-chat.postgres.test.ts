@@ -14,7 +14,6 @@ import {
   LocalAgentHomeStore,
   ScriptedAgentRuntime,
   screenLeaseIdForRun,
-  updateFleetGroup,
 } from "@labradoodle/adapters";
 import type { Actor } from "@labradoodle/contracts";
 import {
@@ -1041,21 +1040,6 @@ describePostgres("chat replies during screen takeover (PostgreSQL)", () => {
       );
       expect(response?.status).toBe(200);
     };
-    const saveFromManager = (prismaClient = prisma) =>
-      runAsTenant(actor, () =>
-        updateFleetGroup(
-          { prisma: prismaClient, events: createThreadEvents(prisma), jobs, sandbox },
-          {
-            spaceId,
-            userId,
-            botId: cy.id,
-            groupId: null,
-            threadId: randomUUID(),
-            runId: randomUUID(),
-          },
-          { ...removeAda, expectedBotIds: [ada.id, ben.id, cy.id] },
-        ),
-      );
     /** The removed bot's next chat gets the computer now, not when the takeover hold ends. */
     const expectComputerFreed = async () => {
       await expect(
@@ -1080,26 +1064,21 @@ describePostgres("chat replies during screen takeover (PostgreSQL)", () => {
       jobs,
       sandbox,
       saveFromSettings,
-      saveFromManager,
       expectComputerFreed,
       groupUpdates,
     };
   }
 
-  it.each(["the group settings", "a manager bot"])(
+  it.each(["the group settings"])(
     "stops and frees the computer of a bot %s removes while it waits for takeover",
-    async (path) => {
+    async () => {
       const fixture = await groupWithWaitingRun();
       const { ada, run } = fixture;
       const execute = vi.spyOn(fixture.sandbox, "execute");
       const releaseScreen = vi.spyOn(fixture.sandbox, "releaseScreen");
 
-      if (path === "the group settings") {
-        // Two saves of the same removal race; only the one that cancels the run tears it down.
-        await Promise.all([fixture.saveFromSettings(), fixture.saveFromSettings()]);
-      } else {
-        await expect(fixture.saveFromManager()).resolves.toMatchObject({ ok: true });
-      }
+      // Two saves of the same removal race; only the one that cancels the run tears it down.
+      await Promise.all([fixture.saveFromSettings(), fixture.saveFromSettings()]);
 
       expect(vi.mocked(fixture.jobs.cancel).mock.calls).toEqual([[runJobKey(run.id)]]);
       expect(execute).toHaveBeenCalledWith(
@@ -1215,26 +1194,6 @@ describePostgres("chat replies during screen takeover (PostgreSQL)", () => {
       expect(releaseScreen.mock.calls.some(([, context]) => context.runId === run.id)).toBe(false);
     },
   );
-
-  it("still announces a manager bot's group change when freeing the computer fails", async () => {
-    const fixture = await groupWithWaitingRun();
-    const leaseWriteFails = new Proxy(prisma, {
-      get(client, key) {
-        if (key === "computerExecutionLease") {
-          return {
-            updateMany: async () => {
-              throw new Error("database unavailable");
-            },
-          };
-        }
-        const value = Reflect.get(client, key, client);
-        return typeof value === "function" ? value.bind(client) : value;
-      },
-    });
-
-    await fixture.saveFromManager(leaseWriteFails).catch(() => undefined);
-    expect(await fixture.groupUpdates()).toBe(1);
-  });
 });
 
 /** Runs `before` once, right before the first write that hands the screen to the user. */

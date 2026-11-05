@@ -295,7 +295,6 @@ describe("Pi outgoing provider prefixes", () => {
               redactedMemoryContext: `Memory: ${index === 0 ? "first" : "second"}`,
               hasHistoricalContext: true,
               agentEnvironmentInstruction: undefined,
-              botDirectory: undefined,
               pluginLine: undefined,
               agentSkillsLine: undefined,
               taughtSkillsLine: undefined,

@@ -424,30 +424,6 @@ describe("thread event reduction", () => {
     expect(next?.messages[0]?.blocks).toEqual([completedBlock]);
   });
 
-  it("keeps a replayed bot-to-bot marker in its durable transcript position", () => {
-    const peerBlock = {
-      kind: "bot_message_received" as const,
-      fromBotId: "bot-peer",
-      fromBotName: "Peer",
-      text: "Please check this.",
-    };
-    const initial = snapshot([
-      message("peer-message", [peerBlock], 1),
-      message("newer-message", [{ kind: "text", text: "Working on it." }], 2),
-    ]);
-
-    const next = reduceThreadSnapshot(
-      initial,
-      event({
-        type: "thread.message.created",
-        seq: 9,
-        payload: { messageId: "peer-message", role: "user", blocks: [peerBlock] },
-      }),
-    );
-
-    expect(next?.messages.map((item) => item.id)).toEqual(["peer-message", "newer-message"]);
-  });
-
   it("clears durable and transient history when another client clears the thread", () => {
     const initial = snapshot(
       [
@@ -660,19 +636,6 @@ describe("thread event reduction", () => {
     expect(started?.cursor).toBe(7);
   });
 
-  it("preserves bot_message when event-sourcing a peer run", () => {
-    const started = reduceThreadSnapshot(
-      snapshot([]),
-      event({
-        type: "run.started",
-        runId: "peer-run-1",
-        payload: { trigger: "bot_message" },
-      }),
-    );
-
-    expect(started?.run?.trigger).toBe("bot_message");
-  });
-
   it("preserves webhook when event-sourcing an inbound wake", () => {
     const started = reduceThreadSnapshot(
       snapshot([]),
@@ -758,7 +721,7 @@ describe("thread event reduction", () => {
       id: "run-peer",
       botId: "bot-peer",
       status: "waiting_takeover",
-      trigger: "bot_message",
+      trigger: "user",
     });
     expect(waiting?.activeRuns?.map((run) => ({ id: run.id, status: run.status }))).toEqual([
       { id: "run-user", status: "running" },

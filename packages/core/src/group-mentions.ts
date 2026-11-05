@@ -80,27 +80,3 @@ export function resolveGroupTargetBotIds(input: GroupTargetInput): string[] {
   const mentioned = mentionedGroupBotIds(input);
   return mentioned.length > 0 ? mentioned : input.members.map((member) => member.id);
 }
-
-export function inferHandoffTargetName(prompt: string): string | undefined {
-  const handoffMatch =
-    /hand(?:\s+this|\s+off|\s+it)?\s+to\s+@?([A-Za-z0-9][A-Za-z0-9_-]{0,39})/i.exec(prompt) ??
-    /@([A-Za-z0-9][A-Za-z0-9_-]{0,39})\s+take/i.exec(prompt);
-  return handoffMatch?.[1];
-}
-
-export function inferHandoffTargetBotId(
-  prompt: string,
-  members: GroupMemberRef[],
-): string | undefined {
-  const handedTo = members.find((member) => {
-    const escaped = escapeRegExp(member.name.trim());
-    return escaped
-      ? new RegExp(`\\bto\\s+@?${escaped}(?![\\p{L}\\p{N}_-])`, "iu").test(prompt)
-      : false;
-  });
-  if (handedTo) return handedTo.id;
-  const mentioned = members.find((member) => hasMentionToken(prompt, member.name));
-  if (mentioned) return mentioned.id;
-  const name = inferHandoffTargetName(prompt)?.toLowerCase();
-  return name ? members.find((member) => member.name.toLowerCase() === name)?.id : undefined;
-}

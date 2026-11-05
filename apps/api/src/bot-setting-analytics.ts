@@ -18,8 +18,6 @@ const SETTINGS: Partial<Record<Field, AnalyticsBotSetting>> = {
   thinkingLevel: "thinking",
   teamChatAmbientEnabled: "team_chat",
   teamChatRules: "team_chat",
-  crossSpaceCommunication: "cross_space",
-  fleetManagement: "fleet_management",
   disabledBuiltinTools: "tools",
 };
 

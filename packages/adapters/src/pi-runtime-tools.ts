@@ -11,7 +11,6 @@ import type {
   ModelCallObserver,
 } from "@labradoodle/adapter-kit";
 import { DEFAULT_CONTEXT_STRATEGY } from "@labradoodle/adapter-kit";
-import { FLEET_TOOL_NAMES } from "@labradoodle/contracts";
 import { batchActions, humanizeToolName } from "@labradoodle/core";
 import {
   isInternalTermination,
@@ -32,7 +31,7 @@ import { sanitizeSensitiveText } from "./pi-runtime-errors.js";
 import { clipToolResultContent, clipToolResultText } from "./pi-runtime-limits.js";
 import type { RuntimeModelTarget } from "./pi-runtime-models.js";
 import { executeSubagent } from "./pi-runtime-subagent.js";
-import { parametersFor, prepareFleetArguments } from "./pi-runtime-tool-parameters.js";
+import { parametersFor, prepareUpdateBotArguments } from "./pi-runtime-tool-parameters.js";
 import { recordPiTelemetryContent, withPiTelemetrySpan } from "./pi-telemetry.js";
 import { VERBATIM_TOOL_RESULTS } from "./runtime-context.js";
 import { SCHEDULE_TOOL_NAMES } from "./schedule-tools.js";
@@ -247,15 +246,6 @@ export function describeToolActivity(
   if (toolName === "browser_act") return "Using the page";
   if (toolName === "computer_act") return "Operating the computer";
   if (toolName === "run_subagent") return `Delegating to helper: ${detail(record.name)}`;
-  if (toolName === "create_space") return `Creating space: ${detail(record.name)}`;
-  if (toolName === "list_fleet") return "Checking your bots";
-  if (toolName === "create_group") return `Creating group: ${detail(record.name)}`;
-  if (toolName === "update_group")
-    return `Updating group: ${detail(record.group_name ?? record.name)}`;
-  if (toolName === "organize_bot") return "Organizing the sidebar";
-  if (toolName === "set_child_instructions") return "Rewriting a bot's instructions";
-  if (toolName === "set_child_bot_model") return "Setting a bot's model";
-  if (toolName === "create_child_routine") return `Scheduling routine: ${detail(record.name)}`;
   if (toolName === "remember") return "Saving a note to memory";
   if (toolName === "save_shared_memory") return `Saving shared memory: ${detail(record.path)}`;
   if (toolName === "web_search") return `Searching the web: ${detail(record.query)}`;
@@ -446,27 +436,7 @@ function toAgentTool(
           model_id: raw.model_id ? String(raw.model_id) : "",
         };
       }
-      if (tool.name === "spawn_bot") {
-        return {
-          name: String(raw.name ?? ""),
-          description: raw.description ? String(raw.description) : "",
-          instructions: raw.instructions ? String(raw.instructions) : "",
-          prompt: raw.prompt ? String(raw.prompt) : "",
-          computer_mode: raw.computer_mode ? String(raw.computer_mode) : "",
-        };
-      }
-      if (tool.name === "update_bot" || FLEET_TOOL_NAMES.some((name) => name === tool.name)) {
-        return prepareFleetArguments(tool.name, raw);
-      }
-      if (tool.name === "create_space") {
-        return { name: String(raw.name ?? "") };
-      }
-      if (tool.name === "archive_bot") {
-        return {
-          confirm_name: String(raw.confirm_name ?? raw.confirmName ?? ""),
-          bot_id: raw.bot_id ? String(raw.bot_id) : raw.botId ? String(raw.botId) : "",
-        };
-      }
+      if (tool.name === "update_bot") return prepareUpdateBotArguments(raw);
       return raw as never;
     },
     execute: async (toolCallId, params): Promise<AgentToolResult<unknown>> =>

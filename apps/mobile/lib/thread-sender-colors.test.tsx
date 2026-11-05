@@ -81,7 +81,6 @@ function Bubble(props: Partial<BubbleProps> & Pick<BubbleProps, "message">) {
       onOpenComputer={() => undefined}
       onPreviewFile={() => undefined}
       onPreviewImage={() => undefined}
-      onOpenPeerChat={() => undefined}
       actionProps={{}}
       {...props}
     />

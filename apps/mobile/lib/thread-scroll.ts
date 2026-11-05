@@ -5,14 +5,6 @@ export type { ThreadScrollState } from "@labradoodle/core";
 
 export type ThreadScrollAction = "jump" | "smooth" | null;
 
-/** The last row that isn't a folded peer reply, so expanding or collapsing a fold isn't an arrival. */
-export function latestArrivalMessage<M extends { id: string }>(
-  visible: readonly M[],
-  markerOf: ReadonlyMap<string, string>,
-): M | undefined {
-  return visible.findLast((message) => !markerOf.has(message.id));
-}
-
 /** Older transcripts do not carry a human author; retain their bubble ownership rule. */
 export function isOwnThreadMessage(
   message: (Pick<ThreadMessage, "role" | "blocks"> & { userId?: string }) | undefined,
@@ -20,9 +12,7 @@ export function isOwnThreadMessage(
 ): boolean {
   if (message?.role !== "user") return false;
   if (message.userId !== undefined) return message.userId === userId;
-  return !message.blocks.some(
-    (block) => block.kind === "channel_message" || block.kind === "bot_message_received",
-  );
+  return !message.blocks.some((block) => block.kind === "channel_message");
 }
 
 export type ThreadRowKey = {

@@ -36,9 +36,6 @@ export function redactBlocks(blocks: MessageBlock[], secrets: string[]): Message
         text: redactSecrets(block.text, secrets),
       };
     }
-    if (block.kind === "bot_message_sent" || block.kind === "bot_message_received") {
-      return { ...block, text: redactSecrets(block.text, secrets) };
-    }
     if (block.kind === "page") return { ...block, title: redactSecrets(block.title, secrets) };
     if (block.kind === "steps") {
       return {
@@ -63,7 +60,7 @@ export async function publishMessage(
   run: { id: string; spaceId: string; threadId: string; botId: string; trigger: string },
   role: "user" | "bot" | "system",
   blocks: MessageBlock[],
-  markUnread: boolean | undefined = run.trigger === "bot_message" ? false : undefined,
+  markUnread?: boolean,
   clientNonce?: string,
   stoppedHelper?: Extract<MessageBlock, { kind: "subagent" }> & {
     status: "failed";

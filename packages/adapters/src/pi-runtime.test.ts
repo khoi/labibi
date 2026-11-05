@@ -63,7 +63,6 @@ describe("describeToolActivity", () => {
     expect(describeToolActivity("write_file", { path: "out.csv", content: "…" })).toBe(
       "Writing out.csv",
     );
-    expect(describeToolActivity("list_fleet", {})).toBe("Checking your bots");
     expect(describeToolActivity("render_plot", { spec: {} })).toBe("Rendering a chart");
     expect(describeToolActivity("save_page", { help: true })).toBe(
       "Reading the page kit reference",
@@ -76,9 +75,6 @@ describe("describeToolActivity", () => {
     );
     expect(describeToolActivity("run_subagent", { name: "scout", task: "…" })).toBe(
       "Delegating to helper: scout",
-    );
-    expect(describeToolActivity("create_space", { name: "Customer support" })).toBe(
-      "Creating space: Customer support",
     );
     expect(describeToolActivity("web_search", { query: "rakazo agents" })).toBe(
       "Searching the web: rakazo agents",

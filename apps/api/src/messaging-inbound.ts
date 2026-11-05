@@ -28,7 +28,6 @@ import type {
 import {
   accountDeactivated,
   createThreadMessage,
-  crossSpaceCommunicationAllowed,
   normalizeMessagingLinkCode,
   redeemMessagingLinkCode,
   THREAD_LOCK_TRANSACTION_OPTIONS,
@@ -592,7 +591,7 @@ async function stopOwnerWork(
   if (stop?.runIds.length) await finishThreadStop(deps, identity, target, stop);
 }
 
-/** How long a channel invite or connection request can be answered by text. */
+/** How long a channel invite can be answered by text. */
 export const TEXT_ANSWER_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 /**
@@ -618,12 +617,6 @@ async function answeredRequest(deps: MessagingInboundDeps, identity: IdentityRow
       where: { channelId: first, identityId: identity.id, status: "invited" },
     });
     return membership ? ({ kind: "channel", membership } as const) : null;
-  }
-  if (kind === "connect" && first && second === identity.botId) {
-    const connection = await deps.prisma.agentConnection.findFirst({
-      where: { requesterBotId: first, targetBotId: identity.botId, status: "pending" },
-    });
-    return connection ? ({ kind: "connection", connection } as const) : null;
   }
   return null;
 }
@@ -667,69 +660,24 @@ async function applyOwnerCommand(
   if (!target) return false;
   const approved = command === "approve";
 
-  if (target.kind === "channel") {
-    const key = `command:${command}:${target.membership.id}`;
-    const claimed = await deps.prisma.$transaction(async (tx) => {
-      // The claim holds the membership row lock through commit, so the
-      // participant sweep can never interleave with the confirmation write.
-      const { count } = await tx.messagingChannelMember.updateMany({
-        where: { id: target.membership.id, status: "invited" },
-        data: { status: approved ? "approved" : "declined" },
-      });
-      // Swept out or answered elsewhere since the read: not ours to write.
-      if (count === 0) return false;
-      await writeConfirmation(
-        tx,
-        identity,
-        key,
-        approved
-          ? "You're in. Your agent will now see and reply to that group."
-          : "No problem, your agent will stay out of that group.",
-      );
-      return true;
-    });
-    if (!claimed) return false;
-    await enqueueDeliverJob(deps);
-    return true;
-  }
-
-  const connectedKey = `command:connected:${target.connection.id}`;
-  const requesterIdentity = approved
-    ? await deps.prisma.messagingIdentity.findUnique({
-        where: { botId: target.connection.requesterBotId },
-      })
-    : null;
-  const key = `command:${command}:${target.connection.id}`;
+  const key = `command:${command}:${target.membership.id}`;
   const claimed = await deps.prisma.$transaction(async (tx) => {
-    // The claim holds the connection row lock through commit, so a revoke
-    // can never interleave with the confirmation writes.
-    if (
-      approved &&
-      !(await crossSpaceCommunicationAllowed(tx, target.connection.requesterBotId, identity.botId))
-    )
-      return false;
-    const { count } = await tx.agentConnection.updateMany({
-      where: { id: target.connection.id, status: "pending" },
+    // The claim holds the membership row lock through commit, so the
+    // participant sweep can never interleave with the confirmation write.
+    const { count } = await tx.messagingChannelMember.updateMany({
+      where: { id: target.membership.id, status: "invited" },
       data: { status: approved ? "approved" : "declined" },
     });
-    // Revoked or answered elsewhere since the read: not ours to write.
+    // Swept out or answered elsewhere since the read: not ours to write.
     if (count === 0) return false;
     await writeConfirmation(
       tx,
       identity,
       key,
       approved
-        ? "Connection approved. Your agents can now message each other."
-        : "Connection declined.",
+        ? "You're in. Your agent will now see and reply to that group."
+        : "No problem, your agent will stay out of that group.",
     );
-    if (requesterIdentity) {
-      await writeConfirmation(
-        tx,
-        requesterIdentity,
-        connectedKey,
-        "Your connection request was accepted. Your agents can now message each other.",
-      );
-    }
     return true;
   });
   if (!claimed) return false;

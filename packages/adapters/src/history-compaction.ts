@@ -1,7 +1,7 @@
 import type { AgentRunRequest, AgentRuntime, JobPublisher } from "@labradoodle/adapter-kit";
 import { historyCompactJob } from "@labradoodle/adapter-kit";
 import type { MessageBlock } from "@labradoodle/contracts";
-import { blocksToAgentHistoryText, botMessageContext, escapePromptData } from "@labradoodle/core";
+import { blocksToAgentHistoryText, escapePromptData } from "@labradoodle/core";
 import type { PrismaClient } from "@labradoodle/db";
 import { recordUsage, runAsTenant } from "@labradoodle/db";
 import { getLogger, unwrapJobPayload } from "@labradoodle/logging";
@@ -344,13 +344,9 @@ export async function compactHistory(
 
   // The summarizer reads who said what, labelled the way a run's history is: each person as "User"
   // (by name only in a space several people share) and each bot by its current name, including a
-  // bot that has since been archived or that relayed a message here.
+  // bot that has since been archived.
   const authorBotId = (message: (typeof batch)[number]) =>
-    message.role === "bot"
-      ? (message.botId ?? thread.botId!)
-      : message.role === "user"
-        ? botMessageContext(message.blocks as MessageBlock[])?.fromBotId
-        : undefined;
+    message.role === "bot" ? (message.botId ?? thread.botId!) : undefined;
   const [botNames, people] = await Promise.all([
     loadBotNames(deps.prisma, thread.spaceId, [
       ...new Set(batch.flatMap((message) => authorBotId(message) ?? [])),

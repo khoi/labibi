@@ -1,11 +1,4 @@
-import type {
-  Bot,
-  BotAvatarSet,
-  Me,
-  Space,
-  SpaceMemoryConfig,
-  UsageSummary,
-} from "@labradoodle/contracts";
+import type { Me, Space, SpaceMemoryConfig, UsageSummary } from "@labradoodle/contracts";
 import { writeSaved } from "@labradoodle/core/query";
 import { useQuery } from "@tanstack/react-query";
 import type { RefObject } from "react";
@@ -16,13 +9,9 @@ import type { SpaceQueries } from "../../lib/query";
 import { queryClient } from "../../lib/query";
 import type { createSpaceRpc } from "../../lib/rpc";
 import type { ShellOverlay } from "../shell-overlay";
-import { FALLBACK_BOT_COLOR } from "./chat-shared";
 
 const SettingsOverlay = lazyOverlay(() =>
   import("../SettingsOverlay").then((module) => module.SettingsOverlay),
-);
-const PeerMessagesOverlay = lazyOverlay(() =>
-  import("../PeerMessagesOverlay").then((module) => module.PeerMessagesOverlay),
 );
 const PluginsOverlay = lazyOverlay(() =>
   import("../PluginsOverlay").then((module) => module.PluginsOverlay),
@@ -101,10 +90,6 @@ export function SettingsOverlays({
   setBootstrapMe,
   messagingEnabled,
   memoryConfig,
-  peerConversation,
-  setPeerConversation,
-  active,
-  peerBot,
 }: {
   rpc: ReturnType<typeof createSpaceRpc>;
   queries: SpaceQueries;
@@ -124,10 +109,6 @@ export function SettingsOverlays({
   setBootstrapMe: (update: (prev: Me | null | undefined) => Me | null | undefined) => void;
   messagingEnabled: boolean;
   memoryConfig: SpaceMemoryConfig | null | undefined;
-  peerConversation: { peerBotId: string; peerBotName: string } | null;
-  setPeerConversation: (peer: null) => void;
-  active: Bot | undefined;
-  peerBot: (botId: string) => { color: string; avatarSet?: BotAvatarSet } | undefined;
 }) {
   // Read when Usage opens; a reopened Usage shows the last summary while it refreshes.
   const usageQuery = useQuery({ ...queries.usage.summary.queryOptions(), enabled: false });
@@ -189,19 +170,6 @@ export function SettingsOverlays({
             }
           }}
           onClose={() => setOverlay(null)}
-        />
-      ) : null}
-      {peerConversation && active ? (
-        <PeerMessagesOverlay
-          botId={active.id}
-          botName={active.name}
-          botColor={active.color}
-          botAvatarSet={active.avatarSet}
-          peerBotId={peerConversation.peerBotId}
-          peerBotName={peerConversation.peerBotName}
-          peerBotColor={peerBot(peerConversation.peerBotId)?.color ?? FALLBACK_BOT_COLOR}
-          peerBotAvatarSet={peerBot(peerConversation.peerBotId)?.avatarSet}
-          onClose={() => setPeerConversation(null)}
         />
       ) : null}
     </>

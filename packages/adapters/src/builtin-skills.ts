@@ -33,7 +33,6 @@ const RAKAZO_DOCS: ReadonlyArray<readonly [topics: string, url: string]> = [
   ],
   ["Desktop app", "https://labradoodle.com/docs/desktop-app.md"],
   ["Mobile app", "https://labradoodle.com/docs/mobile-app.md"],
-  ["Bots that create and manage bots", "https://labradoodle.com/docs/fleet-management.md"],
   ["Building a plugin", "https://labradoodle.com/docs/build-a-plugin.md"],
   ["Self-hosting", "https://labradoodle.com/docs/self-host.md"],
   ["Self-hosted server configuration", "https://labradoodle.com/docs/self-host-configuration.md"],

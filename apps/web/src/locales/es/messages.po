@@ -161,10 +161,6 @@ msgstr "{commandVariable} está reservada y no puede usarse como variable de com
 msgid "{connectedCount, plural, one {# connected} other {# connected}}"
 msgstr "{connectedCount, plural, one {# conectada} other {# conectadas}}"
 
-#: src/pages/shell/message-view.tsx
-msgid "{count, plural, one {# message with {peer}} other {# messages with {peer}}}"
-msgstr "{count, plural, one {# mensaje con {peer}} other {# mensajes con {peer}}}"
-
 #: src/components/markdown-copy.tsx
 msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# fila} other {# filas}}"
@@ -232,14 +228,6 @@ msgstr "{moved, plural, one {# bot ahora usa el modelo predeterminado del espaci
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "{name} (same name as a built-in skill)"
 msgstr ""
-
-#: src/lib/activity-list-filters.ts
-msgid "{name} asked"
-msgstr "{name} pregunta"
-
-#: src/lib/activity-list-filters.ts
-msgid "{name} asked: {text}"
-msgstr "{name} pregunta: {text}"
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts
@@ -726,10 +714,6 @@ msgstr "Todo el tiempo"
 msgid "Allow"
 msgstr "Permitir"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "Allow cross-space bot communication"
-msgstr "Permitir la comunicación entre bots de distintos espacios"
-
 #: src/components/AskCard.tsx
 msgid "Allow in this space"
 msgstr ""
@@ -793,10 +777,6 @@ msgstr "Un peer existente de Honcho del que leer. Labradoodle nunca escribe en �
 #: src/pages/RoutineEditor.tsx
 msgid "An integration tool"
 msgstr "Una herramienta de integración"
-
-#: src/lib/activity-list-filters.ts
-msgid "Another agent"
-msgstr "Otro agente"
 
 #: src/components/AskCard.tsx
 msgid "Answer"
@@ -901,10 +881,6 @@ msgstr "Apps"
 #: src/pages/BotContextMenu.tsx
 msgid "Archive"
 msgstr "Archivar"
-
-#: src/pages/shell/message-view.tsx
-msgid "archived"
-msgstr "archivado"
 
 #: src/pages/shell/archived-chats.tsx
 msgid "Archived"
@@ -1072,10 +1048,6 @@ msgstr "Bloquear"
 #: src/pages/shell/use-computer.tsx
 msgid "Booting live desktop…"
 msgstr "Iniciando escritorio en vivo…"
-
-#: src/pages/shell/message-view.tsx
-msgid "bot"
-msgstr "bot"
 
 #: src/lib/identity-display.ts
 #: src/pages/IntegrationSetup.tsx
@@ -1403,7 +1375,6 @@ msgstr "Borrando…"
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/chat-find-bar.tsx
@@ -2084,10 +2055,6 @@ msgstr "No se pudo cargar la habilidad"
 msgid "Could not load this artifact."
 msgstr "No se pudo cargar este artefacto."
 
-#: src/pages/PeerMessagesOverlay.tsx
-msgid "Could not load this chat."
-msgstr "No se pudo cargar este chat."
-
 #: src/components/ArtifactFileCard.tsx
 msgid "Could not load this file."
 msgstr "No se pudo cargar este archivo."
@@ -2613,10 +2580,6 @@ msgstr "Eliminar espacio"
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete this Space's credentials?"
 msgstr "¿Eliminar las credenciales de este espacio?"
-
-#: src/pages/shell/message-view.tsx
-msgid "deleted"
-msgstr "eliminado"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -3694,7 +3657,6 @@ msgstr "Cargando proveedores de voz…"
 #: src/pages/Artifacts.tsx
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/Invite.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/RoutineRunHistory.tsx
 #: src/pages/shell/transcript.tsx
@@ -3756,10 +3718,6 @@ msgstr "Administrar facturación"
 #: src/pages/PluginsOverlay.tsx
 msgid "Manage MCP servers"
 msgstr "Gestionar servidores MCP"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Manage other bots"
-msgstr "Gestionar otros bots"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Manual"
@@ -3890,21 +3848,9 @@ msgstr "Redactor de mensajes"
 msgid "Message event"
 msgstr "Evento de mensaje"
 
-#: src/pages/shell/message-view.tsx
-msgid "Message from {peer}"
-msgstr "Mensaje de {peer}"
-
-#: src/lib/activity-list-filters.ts
-msgid "Message from another agent"
-msgstr "Mensaje de otro agente"
-
 #: src/pages/shell/composer.tsx
 msgid "Message…"
 msgstr "Mensaje…"
-
-#: src/pages/shell/message-view.tsx
-msgid "Messaged {peer}"
-msgstr "Mensaje enviado a {peer}"
 
 #: src/pages/settings-nav.ts
 msgid "Messaging"
@@ -4251,10 +4197,6 @@ msgstr "No hay modelos coincidentes"
 #: src/pages/GroupPanel.tsx
 msgid "No members yet"
 msgstr "Aún no hay miembros"
-
-#: src/pages/PeerMessagesOverlay.tsx
-msgid "No messages with {peerBotName} yet."
-msgstr "Aún no hay mensajes con {peerBotName}."
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "No model catalog is available."
@@ -4643,14 +4585,9 @@ msgid "Paused"
 msgstr "En pausa"
 
 #: src/pages/AdminAccessPage.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
 msgstr "Pendiente"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Permissions"
-msgstr "Permisos"
 
 #: src/components/SignupSurvey.tsx
 msgid "Personal"
@@ -5202,7 +5139,6 @@ msgid "Retry"
 msgstr "Reintentar"
 
 #: src/App.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 msgid "Retry now"
 msgstr "Reintentar ahora"
 
@@ -5220,7 +5156,6 @@ msgid "Review provider settings and test again."
 msgstr "Revisa la configuración del proveedor y vuelve a probar."
 
 #: src/pages/AdminAccessPage.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 msgid "Revoke"
 msgstr "Revocar"
 
@@ -6454,14 +6389,6 @@ msgstr "Actualizar computadora"
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Update failed"
 msgstr "Falló la actualización"
-
-#: src/lib/activity-list-filters.ts
-msgid "Update from {name}"
-msgstr "Actualización de {name}"
-
-#: src/lib/activity-list-filters.ts
-msgid "Update from {name}: {text}"
-msgstr "Actualización de {name}: {text}"
 
 #: src/components/AskCard.tsx
 msgid "Update instructions?"

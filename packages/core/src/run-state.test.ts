@@ -27,7 +27,6 @@ describe("run state machine", () => {
     expect(bypasses({ status: "waiting_takeover", trigger: "user" })).toBe(false);
     expect(bypasses({ status: "waiting_takeover", trigger: "user" }, false)).toBe(true);
     expect(bypasses({ status: "waiting_takeover", trigger: "routine" })).toBe(true);
-    expect(bypasses({ status: "waiting_takeover", trigger: "bot_message" })).toBe(true);
     expect(bypasses({ status: "running", trigger: "routine" })).toBe(false);
   });
 
@@ -62,14 +61,13 @@ describe("run state machine", () => {
     expect(canTransition("waiting_takeover", "running")).toBe(false);
   });
 
-  it("withholds user steering from routine, webhook, creation intro, and peer wake turns", () => {
+  it("withholds user steering from routine and webhook turns", () => {
     expect(isConversationalRun("user")).toBe(true);
     expect(isConversationalRun("follow_up")).toBe(true);
     expect(isConversationalRun("messaging")).toBe(true);
     expect(isConversationalRun("routine")).toBe(false);
     expect(isConversationalRun("webhook")).toBe(false);
     expect(isConversationalRun("tickets")).toBe(false);
-    expect(isConversationalRun("bot_message")).toBe(false);
   });
 
   it("marks ticket runs as background work that stays out of the chat", () => {

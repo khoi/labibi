@@ -1390,70 +1390,6 @@ describe("createMessagingInboundHandler owner commands", () => {
     );
   });
 
-  it("approves a pending agent connection on YES and messages both owners", async () => {
-    const deps = createDeps();
-    Object.assign(deps.prisma, {
-      agentConnection: {
-        findFirst: vi.fn(async () => ({
-          id: "ac-1",
-          requesterBotId: "bot-9",
-          targetBotId: "bot-1",
-          status: "pending",
-          updatedAt: new Date("2026-08-28T00:00:00.000Z"),
-        })),
-        update: vi.fn(async () => ({})),
-        updateMany: vi.fn(async () => ({ count: 1 })),
-      },
-    });
-    Object.assign(deps.prisma.messagingIdentity, {
-      findUnique: vi.fn(
-        async ({
-          where,
-        }: {
-          where: { provider_address?: { provider: string; address: string }; botId?: string };
-        }) => {
-          if (where.botId === "bot-9") {
-            return {
-              id: "mi-9",
-              provider: "sendblue",
-              address: "+15559999999",
-              userId: "user-9",
-              spaceId: "ws-9",
-              botId: "bot-9",
-              outboundSinceInbound: 0,
-            };
-          }
-          return {
-            id: "mi-1",
-            provider: "sendblue",
-            address: "+15551111111",
-            userId: "user-1",
-            spaceId: "ws-1",
-            botId: "bot-1",
-            outboundSinceInbound: 0,
-          };
-        },
-      ),
-    });
-    sentPrompt(deps, "connect:bot-9:bot-1");
-    const handle = createMessagingInboundHandler(deps);
-    await handle({ ...dmEvent, content: "YES" });
-
-    expect(deps.prisma.agentConnection.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: "ac-1", status: "pending" },
-        data: { status: "approved" },
-      }),
-    );
-    expect(deps.outboundRows).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ kind: "dm", identityId: "mi-1" }),
-        expect.objectContaining({ kind: "dm", identityId: "mi-9" }),
-      ]),
-    );
-    expect(deps.sendUserMessage).not.toHaveBeenCalled();
-  });
-
   it.each([
     ["the bot wrote since the invite", "reply"],
     ["the invite is more than a day old", "stale"],
@@ -1498,25 +1434,6 @@ describe("createMessagingInboundHandler owner commands", () => {
     const handle = createMessagingInboundHandler(deps);
     await handle({ ...dmEvent, content: "YES" });
 
-    expect(deps.prisma.messagingChannelMember.updateMany).not.toHaveBeenCalled();
-    expect(deps.sendUserMessage).toHaveBeenCalled();
-  });
-
-  it("answers only the request whose prompt was sent last", async () => {
-    const deps = createDeps({
-      invitedMember: { id: "cm-1", channelId: "ch-1", status: "invited", identityId: "mi-1" },
-    });
-    const connection = vi.fn(async () => null);
-    Object.assign(deps.prisma.agentConnection, { findFirst: connection });
-    sentPrompt(deps, "invite:ch-1:mi-1", 120_000);
-    sentPrompt(deps, "connect:bot-9:bot-1", 60_000);
-    const handle = createMessagingInboundHandler(deps);
-    await handle({ ...dmEvent, content: "YES" });
-
-    // The newer prompt names a connection that is no longer pending; the older invite stays open.
-    expect(connection).toHaveBeenCalledWith({
-      where: { requesterBotId: "bot-9", targetBotId: "bot-1", status: "pending" },
-    });
     expect(deps.prisma.messagingChannelMember.updateMany).not.toHaveBeenCalled();
     expect(deps.sendUserMessage).toHaveBeenCalled();
   });
@@ -2601,45 +2518,6 @@ describe("createMessagingInboundHandler owner-command status races", () => {
     expect(deps.sendUserMessage).toHaveBeenCalled();
   });
 
-  it("does not let YES overwrite a concurrently revoked agent connection", async () => {
-    const deps = createDeps();
-    sentPrompt(deps, "connect:bot-9:bot-1");
-    const state = {
-      id: "ac-7",
-      requesterBotId: "bot-9",
-      targetBotId: "bot-1",
-      status: "pending",
-      updatedAt: new Date("2026-08-28T00:00:00.000Z"),
-    };
-    const connectionModel = deps.prisma.agentConnection as unknown as Record<string, unknown>;
-    connectionModel.findFirst = vi.fn(async ({ where }: { where?: { status?: string } }) => {
-      if (where?.status === "pending" && state.status === "pending") {
-        const snapshot = { ...state };
-        // Interleaved: the requester revokes between the read and the write.
-        state.status = "revoked";
-        return snapshot;
-      }
-      return null;
-    });
-    connectionModel.update = vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
-      Object.assign(state, data);
-      return state;
-    });
-    connectionModel.updateMany = vi.fn(
-      async ({ where, data }: { where: { status?: string }; data: Record<string, unknown> }) => {
-        if (where.status && state.status !== where.status) return { count: 0 };
-        Object.assign(state, data);
-        return { count: 1 };
-      },
-    );
-    const handle = createMessagingInboundHandler(deps);
-    await handle({ ...dmEvent, content: "YES" });
-
-    expect(state.status).toBe("revoked");
-    expect(deps.outboundRows).toHaveLength(1);
-    expect(deps.sendUserMessage).toHaveBeenCalled();
-  });
-
   it("does not let an in-flight LEAVE overwrite a membership that was re-invited", async () => {
     const rejoined = {
       id: "cm-8",
@@ -2732,57 +2610,6 @@ describe("createMessagingInboundHandler approval-cycle notifications", () => {
 });
 
 describe("createMessagingInboundHandler confirmation atomicity", () => {
-  it("writes the connection confirmations under the claim's transaction", async () => {
-    const deps = createDeps();
-    sentPrompt(deps, "connect:bot-9:bot-1");
-    Object.assign(deps.prisma, {
-      agentConnection: {
-        findFirst: vi.fn(async () => ({
-          id: "ac-1",
-          requesterBotId: "bot-9",
-          targetBotId: "bot-1",
-          status: "pending",
-          updatedAt: new Date("2026-08-28T00:00:00.000Z"),
-        })),
-        update: vi.fn(async () => ({})),
-        updateMany: vi.fn(async () => ({ count: 1 })),
-      },
-    });
-    const txCreateMany = vi.fn(async ({ data }: { data: Array<Record<string, unknown>> }) => {
-      deps.outboundRows.push(...data);
-      return { count: data.length };
-    });
-    deps.prisma.$transaction = vi.fn(async (fn: (tx: unknown) => Promise<unknown>) =>
-      fn({
-        $queryRaw: vi.fn(async () =>
-          ["bot-1", "bot-9"].map((id) => ({
-            id,
-            spaceId: id,
-            crossSpaceCommunication: true,
-            archivedAt: null,
-          })),
-        ),
-        agentConnection: deps.prisma.agentConnection,
-        messagingOutbound: {
-          createMany: txCreateMany,
-          deleteMany: vi.fn(async () => ({ count: 0 })),
-        },
-      }),
-    ) as unknown as typeof deps.prisma.$transaction;
-    const handle = createMessagingInboundHandler(deps);
-    await handle({ ...dmEvent, content: "YES" });
-
-    // Both confirmations must be written while the claim's row lock is held;
-    // a revoke landing between claim and writes must not interleave.
-    const keys = txCreateMany.mock.calls.flatMap(([input]) =>
-      input.data.map((row) => row.idempotencyKey),
-    );
-    expect(keys).toEqual(
-      expect.arrayContaining(["command:approve:ac-1", "command:connected:ac-1"]),
-    );
-    expect(deps.sendUserMessage).not.toHaveBeenCalled();
-  });
-
   it("writes the channel confirmation under the claim's transaction", async () => {
     const invited = {
       id: "cm-1",

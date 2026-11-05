@@ -1,8 +1,7 @@
 import type { ConnectorCall, ConnectorTool } from "@labradoodle/adapter-kit";
 import { BOT_INSTRUCTIONS_MAX_LENGTH, BotSecretAuth } from "@labradoodle/contracts";
 import { redactSecrets } from "@labradoodle/core";
-import { prepareAgentConnectionResponse } from "./agent-connections.js";
-import type { FleetCardSummary } from "./approval-ask.js";
+import type { ApprovalCardSummary } from "./approval-ask.js";
 import type { TerminatingToolResult } from "./approval-effect.js";
 import {
   approvalReplayPathError,
@@ -20,7 +19,6 @@ import {
 import { listVaultItems } from "./bot-secrets.js";
 import { validCloudAgentArgs } from "./cloud-agent-tools.js";
 import { sanitizeConnectorError } from "./connector-safety.js";
-import { isFleetApprovalTool, prepareFleetRequest } from "./fleet-tools.js";
 import { assertConnectorToolArgs, CATALOG_EXECUTE } from "./lazy-tool-catalog.js";
 import { paidRequestEffect, restorePaidRequest } from "./paid-request.js";
 import type { PurchaseApproval } from "./purchase-gate.js";
@@ -42,8 +40,7 @@ import {
   CATALOG_APPROVAL_TOOL,
   isSubagentToolExecution,
 } from "./run-effects.js";
-import { fleetPrepareDeps } from "./run-model.js";
-import { BUILTIN_AGENT_TOOL_NAMES, FLEET_WRITE_TOOL_NAMES_SET } from "./run-tool-selection.js";
+import { BUILTIN_AGENT_TOOL_NAMES } from "./run-tool-selection.js";
 import { scheduleCreateRefusal } from "./run-tools-tasks.js";
 import { USER_COMPUTER_TOOLS } from "./run-tools-user-computer.js";
 import { SCHEDULE_TOOL_NAMES } from "./schedule-tools.js";
@@ -67,7 +64,7 @@ export interface ToolRequest {
   nextApprovedTool: string | undefined;
   approvedEffectKey: string | undefined;
   replayEffectToolName: string;
-  fleetSummary: FleetCardSummary | undefined;
+  cardSummary: ApprovalCardSummary | undefined;
   /** Gated like a consequential action, even when the tool alone is not. */
   heldForApproval: boolean;
   /** This page tool call completes a purchase, which a person approves each time. */
@@ -287,7 +284,7 @@ export async function resolveToolRequest(
     nextApprovedTool,
     approvedEffectKey,
     replayEffectToolName,
-    fleetSummary: undefined,
+    cardSummary: undefined,
     heldForApproval: false,
     purchase: undefined,
     cardUse: undefined,
@@ -302,7 +299,7 @@ export async function prepareToolRequest(
   ctx: RunContext,
   request: ToolRequest,
 ): Promise<PrepareRefusal | undefined> {
-  const { deps, run, bot } = ctx;
+  const { deps, run } = ctx;
   const { name, executionId, nextApprovedTool } = request;
   let { args } = request;
   if (
@@ -332,62 +329,10 @@ export async function prepareToolRequest(
     const refused = await scheduleCreateRefusal(ctx, args);
     if (refused) return refused;
   }
-  const fleetWrite =
-    FLEET_WRITE_TOOL_NAMES_SET.has(name) ||
-    name === "archive_bot" ||
-    (name === "update_bot" && argumentGiven(args.bot_id));
-  if (fleetWrite || name === "list_fleet") {
-    if (isSubagentToolExecution(executionId))
-      return { error: "Helpers cannot use bot management tools." };
-    // The run-start snapshot is not enough: the owner can turn the switch off mid-run.
-    const live = await deps.prisma.bot.findUnique({
-      where: { id: bot.id },
-      select: { fleetManagement: true },
-    });
-    if (!live?.fleetManagement) return { error: "This tool is disabled for this bot." };
-    if (!ctx.source.ownerStartedRun)
-      return { error: "Bot management tools need a run you started." };
-    if (fleetWrite && !(await neverAsks(ctx)) && (await ctx.trust.receivedOutsideMessage()))
-      return {
-        error:
-          "Changes to the bots you manage are blocked for the rest of this run because it received a channel or webhook message.",
-      };
-  }
-  if (name === "update_bot" && !argumentGiven(args.bot_id)) {
+  if (name === "update_bot") {
     const refused = await prepareOwnBotUpdate(ctx, request);
     if (refused) return refused;
     args = request.args;
-  }
-  if (isFleetApprovalTool(name) && nextApprovedTool !== name) {
-    // Resolve names, members, model and schedule now; an approved replay runs the stored
-    // request above and never resolves them again.
-    const prepared = await prepareFleetRequest(
-      await fleetPrepareDeps(deps, run),
-      ctx.fleetRun,
-      name,
-      args,
-      ctx.secrets,
-    );
-    if (!prepared.ok) return { error: prepared.error };
-    args = prepared.canonical;
-    request.fleetSummary = prepared.summary;
-  }
-  if (name === "respond_agent_connection") {
-    if (nextApprovedTool !== name) {
-      const pending = await prepareAgentConnectionResponse(
-        deps.prisma,
-        bot.id,
-        Boolean(args.accept),
-      );
-      if (!pending) return { error: "no pending connection request" };
-      args = pending;
-    } else if (
-      typeof args.requester_name !== "string" ||
-      typeof args.requester_address !== "string" ||
-      typeof args.requester_provider !== "string"
-    ) {
-      return { error: "connection request is no longer pending" };
-    }
   }
   if (PURCHASE_CHECKED_TOOLS.has(name)) {
     // The approval is written here from what the page says; a model-supplied one is dropped, and an
@@ -418,7 +363,7 @@ export async function prepareToolRequest(
       }
       args = { ...args, cardApproval: cardUse };
       request.cardUse = cardUse;
-      request.fleetSummary = cardUseSummary(cardUse);
+      request.cardSummary = cardUseSummary(cardUse);
     }
     // A desktop press has no check on the page right before it, as a browser_act click does: one the user
     // approved goes ahead only while the page still shows what the card did. A card that named nothing
@@ -454,7 +399,7 @@ export async function prepareToolRequest(
       // click still carries the approval to the page, with no card. Spent on the first purchase click there.
       if (approved || request.cardUse || !ctx.state.walletHosts.delete(purchase.site)) {
         request.purchase = purchase;
-        request.fleetSummary = request.cardUse
+        request.cardSummary = request.cardUse
           ? cardUseSummary(request.cardUse, purchase)
           : purchaseCardSummary(purchase);
       }
@@ -463,8 +408,7 @@ export async function prepareToolRequest(
       request.effectRequest = args;
   }
   request.args = args;
-  if (name === "respond_agent_connection" || name === "update_bot" || isFleetApprovalTool(name))
-    request.effectRequest = args;
+  if (name === "update_bot") request.effectRequest = args;
   return undefined;
 }
 
@@ -484,7 +428,6 @@ const OWN_FIELDS = new Set([
   "use_attached_image",
   "notifyOnFinish",
   "notify_on_finish",
-  "bot_id",
 ]);
 
 /**

@@ -1,18 +1,7 @@
-import type { ThreadMessage } from "@labradoodle/contracts";
 import type { ThreadScrollState } from "@labradoodle/core";
-import {
-  expandPeerReplies,
-  foldPeerReplies,
-  peerExchangeLines,
-  reconcileThreadScrollState,
-} from "@labradoodle/core";
+import { reconcileThreadScrollState } from "@labradoodle/core";
 import { describe, expect, it } from "vitest";
-import {
-  isOwnThreadMessage,
-  latestArrivalMessage,
-  latestThreadRowKey,
-  ThreadScrollBehavior,
-} from "./thread-scroll.js";
+import { isOwnThreadMessage, latestThreadRowKey, ThreadScrollBehavior } from "./thread-scroll.js";
 
 function createScrollBehavior(threadKey = "thread-1") {
   const behavior = new ThreadScrollBehavior();
@@ -434,125 +423,6 @@ describe("mobile thread initial scroll", () => {
   });
 });
 
-describe("mobile thread folded peer replies", () => {
-  const markerOf = new Map([["reply", "marker"]]);
-  const collapsed = [{ id: "user" }, { id: "marker" }];
-  const expanded = [...collapsed, { id: "reply" }];
-
-  it("returns the arrival message and handles lists without an arrival", () => {
-    expect(latestArrivalMessage(expanded, markerOf)).toBe(collapsed[1]);
-    expect(latestArrivalMessage([], markerOf)).toBeUndefined();
-    expect(latestArrivalMessage([{ id: "reply" }], markerOf)).toBeUndefined();
-  });
-
-  it("ignores hidden arrivals and fold toggles but marks an inline ask unread", () => {
-    const messages: ThreadMessage[] = [
-      {
-        id: "marker",
-        threadId: "thread-1",
-        seq: 1,
-        createdAt: "2026-10-19T00:00:00Z",
-        role: "user",
-        runId: "peer-run",
-        blocks: [
-          { kind: "bot_message_received", fromBotId: "peer", fromBotName: "Peer", text: "Done" },
-        ],
-      },
-    ];
-    const behavior = createScrollBehavior();
-    behavior.onLayout(600);
-    behavior.onContentSizeChanged(1800);
-    const arrive = (expandedMarkers: ReadonlySet<string>) => {
-      const transcript = foldPeerReplies(messages, { includePeerReceipts: true });
-      return behavior.onContentChanged(
-        false,
-        latestThreadRowKey(
-          latestArrivalMessage(expandPeerReplies(transcript, expandedMarkers), transcript.markerOf)
-            ?.id ?? null,
-        ),
-      );
-    };
-    expect(arrive(new Set())).toBe("jump");
-    behavior.onUserScroll(200);
-    messages.push({
-      ...messages[0]!,
-      id: "reply",
-      seq: 2,
-      role: "bot",
-      blocks: [{ kind: "text", text: "Peer summary" }],
-    });
-    for (const expandedMarkers of [new Set<string>(), new Set(["marker"]), new Set<string>()]) {
-      expect(arrive(expandedMarkers)).toBeNull();
-      expect(behavior.state()).toEqual({ detached: true, unread: false });
-    }
-    messages.push({
-      ...messages[0]!,
-      id: "ask",
-      seq: 3,
-      role: "bot",
-      blocks: [{ kind: "ask", text: "Which city?", status: "pending" }],
-    });
-    expect(arrive(new Set())).toBeNull();
-    expect(behavior.state()).toEqual({ detached: true, unread: true });
-    expect(arrive(new Set(["marker"]))).toBeNull();
-    expect(behavior.state()).toEqual({ detached: true, unread: true });
-    expect(behavior.jumpToLatest()).toBe("smooth");
-    expect(behavior.state()).toEqual({ detached: false, unread: false });
-  });
-
-  it("does not count collapsing a fold at the end as a new message", () => {
-    const behavior = createScrollBehavior();
-    behavior.onLayout();
-    behavior.onContentChanged(
-      false,
-      latestThreadRowKey(latestArrivalMessage(collapsed, markerOf)?.id ?? null),
-    );
-    behavior.onContentChanged(
-      false,
-      latestThreadRowKey(latestArrivalMessage(expanded, markerOf)?.id ?? null),
-    );
-
-    behavior.onUserScroll(200);
-    behavior.onContentChanged(
-      false,
-      latestThreadRowKey(latestArrivalMessage(collapsed, markerOf)?.id ?? null),
-    );
-    expect(behavior.state()).toEqual({ detached: true, unread: false });
-  });
-
-  it("does not follow an expanded fold as if a message arrived", () => {
-    const behavior = createScrollBehavior();
-    behavior.onLayout();
-    behavior.onContentChanged(
-      false,
-      latestThreadRowKey(latestArrivalMessage(collapsed, markerOf)?.id ?? null),
-    );
-
-    expect(
-      behavior.onContentChanged(
-        false,
-        latestThreadRowKey(latestArrivalMessage(expanded, markerOf)?.id ?? null),
-      ),
-    ).toBe(null);
-  });
-
-  it("still records a real new row after the marker while detached", () => {
-    const behavior = createScrollBehavior();
-    behavior.onLayout();
-    behavior.onContentChanged(
-      false,
-      latestThreadRowKey(latestArrivalMessage(expanded, markerOf)?.id ?? null),
-    );
-
-    behavior.onUserScroll(200);
-    behavior.onContentChanged(
-      false,
-      latestThreadRowKey(latestArrivalMessage([...expanded, { id: "new" }], markerOf)?.id ?? null),
-    );
-    expect(behavior.state()).toEqual({ detached: true, unread: true });
-  });
-});
-
 describe("message ownership", () => {
   const message = { role: "user" as const, blocks: [] };
   it("uses the human author when available and falls back for older messages", () => {
@@ -561,17 +431,6 @@ describe("message ownership", () => {
     expect(isOwnThreadMessage(message, "me")).toBe(true);
     expect(isOwnThreadMessage({ ...message, role: "bot" }, "me")).toBe(false);
     expect(isOwnThreadMessage(undefined, "me")).toBe(false);
-    expect(
-      isOwnThreadMessage(
-        {
-          ...message,
-          blocks: [
-            { kind: "bot_message_received", fromBotId: "bot", fromBotName: "Bot", text: "Hi" },
-          ],
-        },
-        "me",
-      ),
-    ).toBe(false);
   });
   it("marks another member's arrival unread while detached", () => {
     const behavior = createScrollBehavior("thread");
@@ -599,58 +458,4 @@ describe("message ownership", () => {
     behavior.onContentChanged(false, latestThreadRowKey("reply"));
     expect(behavior.state().unread).toBe(true);
   });
-});
-
-it("marks a receipt joining the last exchange unread while folded replies stay hidden", () => {
-  const marker: ThreadMessage = {
-    id: "receipt-1",
-    threadId: "thread",
-    seq: 1,
-    role: "user",
-    runId: "peer-run",
-    createdAt: "2026-10-20T00:00:00Z",
-    blocks: [
-      {
-        kind: "bot_message_received",
-        fromBotId: "peer",
-        fromBotName: "Peer",
-        text: "Request",
-        intent: "request",
-      },
-    ],
-  };
-  const messages: ThreadMessage[] = [marker];
-  const behavior = createScrollBehavior();
-  behavior.onLayout(600);
-  behavior.onContentSizeChanged(1800);
-  const arrive = () => {
-    const transcript = foldPeerReplies(messages, { includePeerReceipts: true });
-    const exchanges = peerExchangeLines(transcript);
-    expect([...exchanges.lines.keys()]).toEqual(["receipt-1"]);
-    return behavior.onContentChanged(
-      false,
-      latestThreadRowKey(
-        latestArrivalMessage(transcript.messages, transcript.markerOf)?.id ?? null,
-      ),
-    );
-  };
-  expect(arrive()).toBe("jump");
-  behavior.onUserScroll(200);
-  messages.push({
-    ...marker,
-    id: "reply",
-    role: "bot",
-    seq: 2,
-    blocks: [{ kind: "text", text: "Answer" }],
-  });
-  expect(arrive()).toBeNull();
-  expect(behavior.state()).toEqual({ detached: true, unread: false });
-  messages.push({
-    ...marker,
-    id: "receipt-2",
-    seq: 3,
-    blocks: [{ kind: "bot_message_sent", toBotId: "peer", toBotName: "Peer", text: "Answer" }],
-  });
-  expect(arrive()).toBeNull();
-  expect(behavior.state()).toEqual({ detached: true, unread: true });
 });

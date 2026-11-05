@@ -59,31 +59,23 @@ export function MessagingSettingsPanel() {
   const queryClient = useQueryClient();
   const statusOptions = queries.messaging.status.queryOptions();
   const channelsOptions = queries.messaging.channels.list.queryOptions();
-  const connectionsOptions = queries.messaging.connections.list.queryOptions();
   const botsOptions = queries.bots.list.queryOptions();
   const spacesOptions = queries.spaces.list.queryOptions();
   const installationsOptions = queries.messaging.installations.list.queryOptions();
   const statusQuery = useQuery(statusOptions);
   const channelsQuery = useQuery(channelsOptions);
-  const connectionsQuery = useQuery(connectionsOptions);
   const botsQuery = useQuery(botsOptions);
   const spacesQuery = useQuery(spacesOptions);
   const installationsQuery = useQuery(installationsOptions);
   const status = statusQuery.data ?? null;
   const channels = channelsQuery.data ?? [];
-  const connections = connectionsQuery.data ?? [];
   const bots = botsQuery.data ?? [];
   const externalConversations = spacesQuery.data?.current.externalConversations ?? [];
   const installationStatus = installationsQuery.data ?? NO_INSTALLATIONS;
   // A failed refresh is shown even over cached settings.
-  const loadFailed = [
-    statusQuery,
-    channelsQuery,
-    connectionsQuery,
-    botsQuery,
-    spacesQuery,
-    installationsQuery,
-  ].some((query) => query.isError);
+  const loadFailed = [statusQuery, channelsQuery, botsQuery, spacesQuery, installationsQuery].some(
+    (query) => query.isError,
+  );
   const shownError = error ?? (loadFailed ? t`Couldn't load messaging settings` : null);
 
   /** Reads everything again with requests sent after a change. */
@@ -91,7 +83,6 @@ export function MessagingSettingsPanel() {
     await Promise.all([
       fetchFresh(queryClient, statusOptions),
       fetchFresh(queryClient, channelsOptions),
-      fetchFresh(queryClient, connectionsOptions),
       fetchFresh(queryClient, botsOptions),
       fetchFresh(queryClient, spacesOptions),
       fetchFresh(queryClient, installationsOptions),
@@ -197,17 +188,9 @@ export function MessagingSettingsPanel() {
     Boolean(installationStatus.personalLinkAvailable) &&
     Boolean(status?.providers.includes("slack"));
   const invitedChannels = channels.filter((channel) => channel.status === "invited");
-  const incomingConnections = connections.filter(
-    (connection) => connection.status === "pending" && connection.incoming,
-  );
   const joinedChannels = channels.filter((channel) => channel.status === "approved");
-  const otherConnections = connections.filter(
-    (connection) =>
-      connection.status === "approved" || (connection.status === "pending" && !connection.incoming),
-  );
-  const hasRequests = invitedChannels.length > 0 || incomingConnections.length > 0;
-  const hasConversations =
-    joinedChannels.length > 0 || otherConnections.length > 0 || externalConversations.length > 0;
+  const hasRequests = invitedChannels.length > 0;
+  const hasConversations = joinedChannels.length > 0 || externalConversations.length > 0;
 
   const linkCode = linkRequest?.code;
   const linkApp = linkRequest ? providerLabel(linkRequest.provider) : "";
@@ -297,18 +280,6 @@ export function MessagingSettingsPanel() {
               >
                 {channel.name ?? t`Group`}
                 <Meta>{channelMeta(channel)}</Meta>
-              </Row>
-            ))}
-            {incomingConnections.map((connection) => (
-              <Row
-                key={connection.id}
-                actions={respondButtons((accept) =>
-                  rpc.messaging.connections.respond({ connectionId: connection.id, accept }),
-                )}
-              >
-                {connection.peerOwnerLabel}
-                {"'s "}
-                {connection.peerBotName}
               </Row>
             ))}
           </ul>
@@ -485,34 +456,6 @@ export function MessagingSettingsPanel() {
               >
                 {channel.name ?? t`Group`}
                 <Meta>{channelMeta(channel)}</Meta>
-              </Row>
-            ))}
-            {otherConnections.map((connection) => (
-              <Row
-                key={connection.id}
-                actions={
-                  connection.status === "approved" ? (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() =>
-                        void act(() =>
-                          rpc.messaging.connections.revoke({ connectionId: connection.id }),
-                        )
-                      }
-                    >
-                      <Trans>Revoke</Trans>
-                    </Button>
-                  ) : (
-                    <Meta>
-                      <Trans>Pending</Trans>
-                    </Meta>
-                  )
-                }
-              >
-                {connection.peerOwnerLabel}
-                {"'s "}
-                {connection.peerBotName}
               </Row>
             ))}
             {externalConversations.map((conversation) => {

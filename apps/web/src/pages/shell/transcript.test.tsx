@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 import type { ThreadMessage } from "@labradoodle/contracts";
-import { foldPeerReplies } from "@labradoodle/core";
 import type { ComponentProps, ReactNode, RefObject } from "react";
 import { act } from "react";
 import type { Root } from "react-dom/client";
@@ -94,7 +93,7 @@ function baseProps(messages: readonly ThreadMessage[]): ComponentProps<typeof Tr
     onScrollRequestHandled: vi.fn(),
     followRequest: 0,
     artifactTarget: { botId: "bot" },
-    transcript: foldPeerReplies(messages, { includePeerReceipts: true }),
+    messages: [...messages],
     showToolActivity: false,
     olderCursor: null,
     unreadAfterSeq: null,
@@ -104,14 +103,12 @@ function baseProps(messages: readonly ThreadMessage[]): ComponentProps<typeof Tr
     running: true,
     workingBots: [{ botId: "bot", color: "orange", status: "running" }],
     onLoadOlder: vi.fn(),
-    onOpenBot: vi.fn(),
     onAnswer: vi.fn(),
     onReply: vi.fn(),
     onMarkUnread: vi.fn(),
     onQuote: vi.fn(),
     onReact: vi.fn(),
     onJumpToMessage: vi.fn(),
-    onOpenPeerMessages: vi.fn(),
     peerBot: () => ({ name: "Atlas", color: "orange" }),
     onRefresh: vi.fn(),
     onBotChanged: vi.fn(),
@@ -168,9 +165,7 @@ it("drops the quote pill when a streaming edit replaces the selected nodes", asy
   );
   render({
     ...props,
-    transcript: foldPeerReplies([...rewritten, liveMessage("Drafting")], {
-      includePeerReceipts: true,
-    }),
+    messages: [...rewritten, liveMessage("Drafting")],
   });
 
   expect(window.getSelection()!.getRangeAt(0).collapsed).toBe(true);
@@ -214,9 +209,7 @@ it("drops the quote pill when an edit removes only one end of the selection", as
   start.remove();
   render({
     ...props,
-    transcript: foldPeerReplies([...messages, liveMessage("Drafting more")], {
-      includePeerReceipts: true,
-    }),
+    messages: [...messages, liveMessage("Drafting more")],
   });
 
   expect(window.getSelection()!.getRangeAt(0).collapsed).toBe(false);

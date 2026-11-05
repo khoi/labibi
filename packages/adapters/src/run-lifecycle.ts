@@ -2,7 +2,6 @@ import { runContinueJob } from "@labradoodle/adapter-kit";
 import { displayName } from "@labradoodle/core";
 import type { PrismaClient } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
-import { returnBotMessageOutcome } from "./bot-messages.js";
 import { sleepDeferReason } from "./computer-idle.js";
 import { withComputerScreenAvailability } from "./computer-screens.js";
 import type { ExecutorDeps } from "./executor-deps.js";
@@ -92,16 +91,6 @@ export async function failRunBeforeTurn(
     await deps.jobs
       .enqueue(runContinueJob(failed.continuationRunId))
       .catch((error) => getLogger().error("steering continuation enqueue", error));
-  }
-  if (run.trigger === "bot_message") {
-    await returnBotMessageOutcome(
-      deps,
-      run,
-      { id: run.botId, name: botName },
-      `Could not complete the delegated request: ${message}`,
-      "status",
-      { forceUnread: true },
-    ).catch((error) => getLogger().error("bot message failure return", error));
   }
   if (!failed.continuationRunId) {
     await notifyRun(deps, run, {

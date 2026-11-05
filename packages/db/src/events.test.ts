@@ -8,7 +8,6 @@ import {
 import { describe, expect, it, vi } from "vitest";
 import { commitBotUpdate } from "./bot-update.js";
 import type { PrismaClient } from "./client.js";
-import { CrossSpaceCommunicationBlockedError } from "./cross-space-communication.js";
 import type { AnswerRunInput } from "./events.js";
 import {
   AnswerTooLongError,
@@ -4717,7 +4716,7 @@ describe("claimSteering", () => {
     });
   });
 
-  it.each(["routine", "bot_message"])(
+  it.each(["routine"])(
     "leaves pending user messages alone while a %s turn is running",
     async (trigger) => {
       const tx = {
@@ -5590,35 +5589,4 @@ describe("discardAnsweredSteering", () => {
       },
     });
   });
-});
-
-it("checks cross-space peer permission inside the message transaction before creating a run", async () => {
-  const tx = {
-    thread: { update: vi.fn(async () => ({ nextMessageSeq: 1 })) },
-    message: { create: vi.fn(async () => ({ id: "message-1", seq: 0 })) },
-    task: { create: vi.fn() },
-    run: { create: vi.fn(), findMany: vi.fn() },
-    $queryRaw: vi.fn(async () => [
-      { id: "sender", spaceId: "a", crossSpaceCommunication: true, archivedAt: null },
-      { id: "target", spaceId: "b", crossSpaceCommunication: false, archivedAt: null },
-    ]),
-  };
-  const prisma = {
-    message: { findUnique: vi.fn(async () => null) },
-    $transaction: vi.fn(async (callback: (client: typeof tx) => Promise<unknown>) => callback(tx)),
-  } as unknown as PrismaClient;
-  await expect(
-    sendUserMessage(prisma, {
-      spaceId: "b",
-      threadId: "thread",
-      botId: "target",
-      userId: "owner",
-      blocks: [{ kind: "text", text: "peer reply" }],
-      prompt: "peer reply",
-      trigger: "messaging",
-      crossSpaceSenderBotId: "sender",
-    }),
-  ).rejects.toBeInstanceOf(CrossSpaceCommunicationBlockedError);
-  expect(tx.task.create).not.toHaveBeenCalled();
-  expect(tx.run.create).not.toHaveBeenCalled();
 });

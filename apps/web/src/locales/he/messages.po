@@ -161,10 +161,6 @@ msgstr "{commandVariable} שמור ואי אפשר להשתמש בו כמשתנ�
 msgid "{connectedCount, plural, one {# connected} other {# connected}}"
 msgstr ""
 
-#: src/pages/shell/message-view.tsx
-msgid "{count, plural, one {# message with {peer}} other {# messages with {peer}}}"
-msgstr "{count, plural, one {הודעה אחת עם {peer}} two {# הודעות עם {peer}} other {# הודעות עם {peer}}}"
-
 #: src/components/markdown-copy.tsx
 msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# שורה} other {# שורות}}"
@@ -232,14 +228,6 @@ msgstr ""
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "{name} (same name as a built-in skill)"
 msgstr ""
-
-#: src/lib/activity-list-filters.ts
-msgid "{name} asked"
-msgstr "בקשה מאת {name}"
-
-#: src/lib/activity-list-filters.ts
-msgid "{name} asked: {text}"
-msgstr "בקשה מאת {name}: {text}"
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts
@@ -726,10 +714,6 @@ msgstr "כל הזמנים"
 msgid "Allow"
 msgstr "לאפשר"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "Allow cross-space bot communication"
-msgstr ""
-
 #: src/components/AskCard.tsx
 msgid "Allow in this space"
 msgstr ""
@@ -793,10 +777,6 @@ msgstr "עמית Honcho קיים לקריאה ממנו. Labradoodle לעולם �
 #: src/pages/RoutineEditor.tsx
 msgid "An integration tool"
 msgstr ""
-
-#: src/lib/activity-list-filters.ts
-msgid "Another agent"
-msgstr "סוכן אחר"
 
 #: src/components/AskCard.tsx
 msgid "Answer"
@@ -901,10 +881,6 @@ msgstr ""
 #: src/pages/BotContextMenu.tsx
 msgid "Archive"
 msgstr "העברה לארכיון"
-
-#: src/pages/shell/message-view.tsx
-msgid "archived"
-msgstr "בארכיון"
 
 #: src/pages/shell/archived-chats.tsx
 msgid "Archived"
@@ -1072,10 +1048,6 @@ msgstr "לחסום"
 #: src/pages/shell/use-computer.tsx
 msgid "Booting live desktop…"
 msgstr "מפעיל שולחן עבודה חי…"
-
-#: src/pages/shell/message-view.tsx
-msgid "bot"
-msgstr "בוט"
 
 #: src/lib/identity-display.ts
 #: src/pages/IntegrationSetup.tsx
@@ -1403,7 +1375,6 @@ msgstr "מנקה…"
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/chat-find-bar.tsx
@@ -2084,10 +2055,6 @@ msgstr "לא ניתן לטעון את המיומנות"
 msgid "Could not load this artifact."
 msgstr "לא ניתן לטעון את התוצר הזה."
 
-#: src/pages/PeerMessagesOverlay.tsx
-msgid "Could not load this chat."
-msgstr "לא ניתן לטעון את הצ׳אט הזה."
-
 #: src/components/ArtifactFileCard.tsx
 msgid "Could not load this file."
 msgstr "לא ניתן לטעון את הקובץ הזה."
@@ -2613,10 +2580,6 @@ msgstr "מחיקת המרחב"
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete this Space's credentials?"
 msgstr "למחוק את פרטי הגישה של המרחב הזה?"
-
-#: src/pages/shell/message-view.tsx
-msgid "deleted"
-msgstr "נמחק"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -3694,7 +3657,6 @@ msgstr "טוען ספקי קול…"
 #: src/pages/Artifacts.tsx
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/Invite.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/RoutineRunHistory.tsx
 #: src/pages/shell/transcript.tsx
@@ -3756,10 +3718,6 @@ msgstr "ניהול חיוב"
 #: src/pages/PluginsOverlay.tsx
 msgid "Manage MCP servers"
 msgstr "ניהול שרתי MCP"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Manage other bots"
-msgstr "ניהול בוטים אחרים"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Manual"
@@ -3890,21 +3848,9 @@ msgstr "חלון כתיבת הודעה"
 msgid "Message event"
 msgstr "אירוע הודעה"
 
-#: src/pages/shell/message-view.tsx
-msgid "Message from {peer}"
-msgstr "הודעה מ-{peer}"
-
-#: src/lib/activity-list-filters.ts
-msgid "Message from another agent"
-msgstr "הודעה מסוכן אחר"
-
 #: src/pages/shell/composer.tsx
 msgid "Message…"
 msgstr "הודעה…"
-
-#: src/pages/shell/message-view.tsx
-msgid "Messaged {peer}"
-msgstr "נשלחה הודעה אל {peer}"
 
 #: src/pages/settings-nav.ts
 msgid "Messaging"
@@ -4251,10 +4197,6 @@ msgstr "אין מודלים תואמים"
 #: src/pages/GroupPanel.tsx
 msgid "No members yet"
 msgstr ""
-
-#: src/pages/PeerMessagesOverlay.tsx
-msgid "No messages with {peerBotName} yet."
-msgstr "עדיין אין הודעות עם {peerBotName}."
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "No model catalog is available."
@@ -4643,14 +4585,9 @@ msgid "Paused"
 msgstr "מושהה"
 
 #: src/pages/AdminAccessPage.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
 msgstr ""
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Permissions"
-msgstr "הרשאות"
 
 #: src/components/SignupSurvey.tsx
 msgid "Personal"
@@ -5202,7 +5139,6 @@ msgid "Retry"
 msgstr "לנסות שוב"
 
 #: src/App.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 msgid "Retry now"
 msgstr "לנסות שוב עכשיו"
 
@@ -5220,7 +5156,6 @@ msgid "Review provider settings and test again."
 msgstr "יש לבדוק את הגדרות הספק ולבדוק שוב."
 
 #: src/pages/AdminAccessPage.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 msgid "Revoke"
 msgstr "ביטול הרשאה"
 
@@ -6454,14 +6389,6 @@ msgstr "עדכון המחשב"
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Update failed"
 msgstr "העדכון נכשל"
-
-#: src/lib/activity-list-filters.ts
-msgid "Update from {name}"
-msgstr "עדכון מאת {name}"
-
-#: src/lib/activity-list-filters.ts
-msgid "Update from {name}: {text}"
-msgstr "עדכון מאת {name}: {text}"
 
 #: src/components/AskCard.tsx
 msgid "Update instructions?"

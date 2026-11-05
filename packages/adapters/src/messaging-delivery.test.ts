@@ -436,15 +436,6 @@ describe("deliverMessagingOutbound", () => {
     expect(noIdentity.sendToThread).not.toHaveBeenCalled();
   });
 
-  it("mirrors delegated bot_message replies to the linked DM", async () => {
-    const deps = createDeps({ run: { ...messagingRun, trigger: "bot_message" } });
-    await deliverMessagingOutbound(deps, { runId: "run-1" }, context);
-    expect(deps.sendToThread).toHaveBeenCalledWith(
-      { threadId: "sendblue:dm-1", body: "Hello from your bot" },
-      context,
-    );
-  });
-
   it("holds sendblue DM sends at the consecutive-outbound cap", async () => {
     const deps = createDeps({
       identity: {
@@ -633,52 +624,6 @@ describe("deliverMessagingOutbound", () => {
     expect(deps.rows[0]).toEqual(expect.objectContaining({ status: "failed" }));
   });
 
-  it("does not send a connect invite after the connection was revoked", async () => {
-    const deps = createDeps({
-      run: null,
-      connectionStatus: "revoked",
-      outboundRows: [
-        {
-          id: "out-connect",
-          idempotencyKey: "connect:bot-1:bot-9",
-          kind: "dm",
-          identityId: "mi-1",
-          body: "wants to connect. Reply YES to allow, NO to decline.",
-          status: "pending",
-          providerHandle: null,
-        },
-      ],
-    });
-    await deliverMessagingOutbound(deps, {}, context);
-
-    expect(deps.sendToThread).not.toHaveBeenCalled();
-    expect(deps.rows[0]).toEqual(expect.objectContaining({ status: "failed" }));
-    expect(deps.prisma.$queryRaw).toHaveBeenCalled();
-  });
-
-  it("does not send a connect invite when revoke already deleted the claim", async () => {
-    const deps = createDeps({
-      run: null,
-      connectionStatus: "pending",
-      outboundRows: [
-        {
-          id: "out-connect",
-          idempotencyKey: "connect:bot-1:bot-9",
-          kind: "dm",
-          identityId: "mi-1",
-          body: "wants to connect. Reply YES to allow, NO to decline.",
-          status: "pending",
-          providerHandle: null,
-        },
-      ],
-    });
-    // After claim, revoke deletes the row before the locked gate runs.
-    deps.prisma.messagingOutbound.findUnique = vi.fn(async () => null) as never;
-    await deliverMessagingOutbound(deps, {}, context);
-
-    expect(deps.sendToThread).not.toHaveBeenCalled();
-  });
-
   it("still sends a connect invite while the connection is pending", async () => {
     const deps = createDeps({
       run: null,
@@ -709,91 +654,6 @@ describe("deliverMessagingOutbound", () => {
       where: { id: "mi-1" },
       data: { outboundSinceInbound: { increment: 1 } },
     });
-  });
-
-  it("does not send a connect invite queued by a person who has since been deactivated", async () => {
-    const deps = createDeps({
-      run: null,
-      connectionStatus: "pending",
-      outboundRows: [
-        {
-          id: "out-connect",
-          idempotencyKey: "connect:bot-1:bot-9",
-          kind: "dm",
-          identityId: "mi-1",
-          body: "wants to connect. Reply YES to allow, NO to decline.",
-          status: "pending",
-          providerHandle: null,
-        },
-      ],
-    });
-    deps.prisma.user.findUnique.mockImplementation(async ({ where }) => ({
-      deactivatedAt: where.id === "owner-of-bot-1" ? new Date() : null,
-    }));
-    await deliverMessagingOutbound(deps, {}, context);
-
-    expect(deps.sendToThread).not.toHaveBeenCalled();
-    expect(deps.rows[0]).toEqual(expect.objectContaining({ status: "failed" }));
-  });
-
-  it("does not re-queue a connect invite when the provider send fails", async () => {
-    const deps = createDeps({
-      run: null,
-      connectionStatus: "pending",
-      sendError: new Error("provider down"),
-      outboundRows: [
-        {
-          id: "out-connect",
-          idempotencyKey: "connect:bot-1:bot-9",
-          kind: "dm",
-          identityId: "mi-1",
-          body: "wants to connect",
-          status: "pending",
-          providerHandle: null,
-          attempts: 0,
-        },
-      ],
-    });
-    await deliverMessagingOutbound(deps, {}, context);
-
-    // At-most-once: keep the claim rather than risk a duplicate YES/NO.
-    expect(deps.rows[0]).toEqual(expect.objectContaining({ status: "sent" }));
-    expect(deps.jobs.enqueue).not.toHaveBeenCalled();
-    expect(deps.prisma.messagingIdentity.update).not.toHaveBeenCalled();
-  });
-
-  it("does not re-queue a connect invite after a delivery transaction timeout", async () => {
-    const deps = createDeps({
-      run: null,
-      connectionStatus: "pending",
-      outboundRows: [
-        {
-          id: "out-connect",
-          idempotencyKey: "connect:bot-1:bot-9",
-          kind: "dm",
-          identityId: "mi-1",
-          body: "wants to connect",
-          status: "pending",
-          providerHandle: null,
-        },
-      ],
-    });
-    let claimTransaction = true;
-    (deps.prisma as unknown as { $transaction: unknown }).$transaction = vi.fn(
-      async (fn: (tx: unknown) => Promise<unknown>) => {
-        // The claim's transaction succeeds; the invite delivery times out.
-        if (claimTransaction) {
-          claimTransaction = false;
-          return fn(deps.prisma);
-        }
-        throw new Error("Transaction API error: Transaction already closed");
-      },
-    );
-    await deliverMessagingOutbound(deps, {}, context);
-
-    expect(deps.sendToThread).not.toHaveBeenCalled();
-    expect(deps.rows[0]).toEqual(expect.objectContaining({ status: "sent" }));
-    expect(deps.jobs.enqueue).not.toHaveBeenCalled();
   });
 });
 
@@ -882,7 +742,7 @@ function createChannelDeps(
     address: "+15553333333",
     dmThreadId: "sendblue:dm-2",
     userId: "user-2",
-    spaceId: "ws-2",
+    spaceId: "ws-1",
     botId: "bot-2",
     outboundSinceInbound: 0,
   };
@@ -1245,11 +1105,10 @@ describe("deliverMessagingOutbound channel runs", () => {
 
     expect(deps.sendUserMessage).toHaveBeenCalledWith(
       expect.objectContaining({
-        spaceId: "ws-2",
+        spaceId: "ws-1",
         threadId: "thread-2",
         botId: "bot-2",
         trigger: "messaging",
-        crossSpaceSenderBotId: "bot-1",
         clientNonce: "messaging-peer:m-1:bot-2",
       }),
     );
@@ -1815,39 +1674,6 @@ describe("deliverMessagingOutbound attachments", () => {
     expect(deps.rows.map((row) => row.status)).toEqual(["sent", "failed", "failed"]);
     expect(deps.artifacts.get).not.toHaveBeenCalled();
   });
-});
-
-describe("cross-space group reply isolation", () => {
-  it.each(["bot-1", "bot-2"])(
-    "does not send history or wake a peer when %s is blocked",
-    async (blockedBot) => {
-      const deps = createChannelDeps({ blockedBot, text: "@Helper private reply" });
-      await deliverMessagingOutbound(deps, { runId: "run-1" }, context);
-      expect(deps.contextMessages).toHaveLength(0);
-      expect(deps.sendUserMessage).not.toHaveBeenCalled();
-    },
-  );
-});
-
-it("drops a queued connection invite after opt-out", async () => {
-  const deps = createDeps({
-    run: null,
-    blockedBot: "bot-1",
-    connectionStatus: "pending",
-    outboundRows: [
-      {
-        id: "invite",
-        idempotencyKey: "connect:bot-1:bot-2",
-        kind: "dm",
-        identityId: "mi-1",
-        body: "Connection invite",
-        status: "pending",
-        providerHandle: null,
-      },
-    ],
-  });
-  await deliverMessagingOutbound(deps, {}, context);
-  expect(deps.sendToThread).not.toHaveBeenCalled();
 });
 
 describe("accepted outbound bookkeeping failures", () => {

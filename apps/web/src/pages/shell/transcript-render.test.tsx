@@ -78,12 +78,7 @@ function Host({ messages }: { messages: ThreadMessage[] }) {
       onScrollRequestHandled={reply}
       followRequest={0}
       artifactTarget={artifactTarget}
-      transcript={{
-        messages,
-        folded: new Map(),
-        markerOf: new Map(),
-        mergedInto: new Map(),
-      }}
+      messages={messages}
       showToolActivity={false}
       olderCursor={null}
       unreadAfterSeq={null}
@@ -93,14 +88,12 @@ function Host({ messages }: { messages: ThreadMessage[] }) {
       running={false}
       workingBots={[]}
       onLoadOlder={reply}
-      onOpenBot={reply}
       onAnswer={answer}
       onReply={reply}
       onMarkUnread={reply}
       onQuote={quote}
       onReact={react}
       onJumpToMessage={reply}
-      onOpenPeerMessages={peer}
       peerBot={peer}
       onRefresh={refresh}
       onBotChanged={refresh}
@@ -113,36 +106,20 @@ function Host({ messages }: { messages: ThreadMessage[] }) {
   );
 }
 
-it.each([false, true])(
-  "leaves an unchanged message unrendered when a later one updates (mentions: %s)",
-  (withMentions) => {
-    const kept = message("kept", "Earlier");
-    const announcement: ThreadMessage = {
-      ...message("announcement", ""),
-      blocks: [{ kind: "child_bot", botId: "child", name: "Planner", status: "created" }],
-    };
-    const earlier = withMentions ? [announcement, kept] : [kept];
-    const live = message("progress:run", "Draft");
-    act(() => root.render(<Host messages={[...earlier, live]} />));
-    expect(messageRenders.get("kept")).toBe(1);
-    expect(messageRenders.get("progress:run")).toBe(1);
+it("leaves an unchanged message unrendered when a later one updates", () => {
+  const kept = message("kept", "Earlier");
+  const earlier = [kept];
+  const live = message("progress:run", "Draft");
+  act(() => root.render(<Host messages={[...earlier, live]} />));
+  expect(messageRenders.get("kept")).toBe(1);
+  expect(messageRenders.get("progress:run")).toBe(1);
 
-    act(() =>
-      root.render(<Host messages={[...earlier, message("progress:run", "Draft continues")]} />),
-    );
-    expect(messageRenders.get("kept")).toBe(1);
-    expect(messageRenders.get("progress:run")).toBe(2);
-    if (withMentions) {
-      expect(messageRenders.has("announcement")).toBe(false);
-      const renamed: ThreadMessage = {
-        ...announcement,
-        blocks: [{ kind: "child_bot", botId: "child", name: "Writer", status: "created" }],
-      };
-      act(() => root.render(<Host messages={[renamed, kept, live]} />));
-      expect(messageRenders.get("kept")).toBe(2);
-    }
-  },
-);
+  act(() =>
+    root.render(<Host messages={[...earlier, message("progress:run", "Draft continues")]} />),
+  );
+  expect(messageRenders.get("kept")).toBe(1);
+  expect(messageRenders.get("progress:run")).toBe(2);
+});
 
 it("redraws a page card's reply only when a newer card supersedes it", () => {
   const card = (id: string, version: number): ThreadMessage => ({

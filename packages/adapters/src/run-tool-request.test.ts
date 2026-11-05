@@ -38,7 +38,7 @@ function ownBotUpdateCall() {
     nextApprovedTool: undefined,
     approvedEffectKey: undefined,
     replayEffectToolName: "update_bot",
-    fleetSummary: undefined,
+    cardSummary: undefined,
     heldForApproval: false,
     purchase: undefined,
     cardUse: undefined,

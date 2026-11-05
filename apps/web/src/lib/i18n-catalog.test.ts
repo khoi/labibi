@@ -130,12 +130,10 @@ describe("lingui catalogs", () => {
         "Notifications",
         "When it finishes or needs input",
         "Model",
-        "Add open work",
         "Disable a tool",
         "Edit name",
         "Enable {0}",
         "Model connections",
-        "Permissions",
         "Skills",
       ]) {
         const entry = catalog
@@ -306,31 +304,6 @@ describe("lingui catalogs", () => {
     );
   });
 
-  it("translates counted peer exchanges and close controls in every locale", () => {
-    const message = "{count, plural, one {# message with {peer}} other {# messages with {peer}}}";
-    for (const locale of UI_LOCALES.filter((locale) => locale !== "en")) {
-      const catalog = readFileSync(
-        fileURLToPath(new URL(`../locales/${locale}/messages.po`, import.meta.url)),
-        "utf8",
-      );
-      for (const id of [message, "Close"]) {
-        const entry = catalog
-          .split("\n\n")
-          .find((block) => block.includes(`msgid ${JSON.stringify(id)}\n`));
-        const translation = entry?.match(/msgstr "(.+)"/)?.[1];
-        expect(translation, `${locale}: ${id}`).toBeTruthy();
-        expect(translation).not.toBe(id);
-        i18n.load(locale, { [id]: translation ?? "" });
-      }
-      i18n.activate(locale);
-      for (const count of [2, 5, 21]) {
-        const label = i18n._({ id: message, values: { count, peer: "Writer" } });
-        expect(label).toContain("Writer");
-        expect(label).toContain(String(count));
-        expect(label).not.toContain("{peer}");
-      }
-    }
-  });
 });
 
 it("renders Polish plural categories and interpolated values in every counted message", async () => {

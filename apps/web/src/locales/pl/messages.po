@@ -161,10 +161,6 @@ msgstr "Nazwa {commandVariable} jest zastrzeżona i nie może być zmienną pole
 msgid "{connectedCount, plural, one {# connected} other {# connected}}"
 msgstr "{connectedCount, plural, one {Połączono #} few {Połączono #} many {Połączono #} other {Połączono #}}"
 
-#: src/pages/shell/message-view.tsx
-msgid "{count, plural, one {# message with {peer}} other {# messages with {peer}}}"
-msgstr "{count, plural, one {# wiadomość z {peer}} few {# wiadomości z {peer}} many {# wiadomości z {peer}} other {# wiadomości z {peer}}}"
-
 #: src/components/markdown-copy.tsx
 msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# wiersz} few {# wiersze} many {# wierszy} other {# wiersza}}"
@@ -232,14 +228,6 @@ msgstr "{moved, plural, one {# bot używa teraz domyślnego modelu przestrzeni.}
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "{name} (same name as a built-in skill)"
 msgstr "{name} (ta sama nazwa co wbudowana umiejętność)"
-
-#: src/lib/activity-list-filters.ts
-msgid "{name} asked"
-msgstr "Pytanie od {name}"
-
-#: src/lib/activity-list-filters.ts
-msgid "{name} asked: {text}"
-msgstr "Pytanie od {name}: {text}"
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts
@@ -726,10 +714,6 @@ msgstr "Cały okres"
 msgid "Allow"
 msgstr "Zezwól"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "Allow cross-space bot communication"
-msgstr "Zezwól botom na komunikację między przestrzeniami"
-
 #: src/components/AskCard.tsx
 msgid "Allow in this space"
 msgstr "Zezwól w tej przestrzeni"
@@ -793,10 +777,6 @@ msgstr "Istniejący profil Honcho do odczytu. Labradoodle nigdy w nim nie zapisu
 #: src/pages/RoutineEditor.tsx
 msgid "An integration tool"
 msgstr "Narzędzie integracji"
-
-#: src/lib/activity-list-filters.ts
-msgid "Another agent"
-msgstr "Inny agent"
 
 #: src/components/AskCard.tsx
 msgid "Answer"
@@ -901,10 +881,6 @@ msgstr "Aplikacje"
 #: src/pages/BotContextMenu.tsx
 msgid "Archive"
 msgstr "Archiwizuj"
-
-#: src/pages/shell/message-view.tsx
-msgid "archived"
-msgstr "zarchiwizowane"
 
 #: src/pages/shell/archived-chats.tsx
 msgid "Archived"
@@ -1072,10 +1048,6 @@ msgstr "Zablokuj"
 #: src/pages/shell/use-computer.tsx
 msgid "Booting live desktop…"
 msgstr "Uruchamianie pulpitu na żywo…"
-
-#: src/pages/shell/message-view.tsx
-msgid "bot"
-msgstr "bot"
 
 #: src/lib/identity-display.ts
 #: src/pages/IntegrationSetup.tsx
@@ -1403,7 +1375,6 @@ msgstr "Czyszczenie…"
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/chat-find-bar.tsx
@@ -2084,10 +2055,6 @@ msgstr "Nie udało się wczytać umiejętności"
 msgid "Could not load this artifact."
 msgstr "Nie udało się wczytać tego artefaktu."
 
-#: src/pages/PeerMessagesOverlay.tsx
-msgid "Could not load this chat."
-msgstr "Nie udało się wczytać tego czatu."
-
 #: src/components/ArtifactFileCard.tsx
 msgid "Could not load this file."
 msgstr "Nie udało się wczytać tego pliku."
@@ -2613,10 +2580,6 @@ msgstr "Usuń przestrzeń"
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete this Space's credentials?"
 msgstr "Usunąć dane uwierzytelniające tej przestrzeni?"
-
-#: src/pages/shell/message-view.tsx
-msgid "deleted"
-msgstr "usunięto"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -3694,7 +3657,6 @@ msgstr "Wczytywanie dostawców głosu…"
 #: src/pages/Artifacts.tsx
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/Invite.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/RoutineRunHistory.tsx
 #: src/pages/shell/transcript.tsx
@@ -3756,10 +3718,6 @@ msgstr "Zarządzaj rozliczeniami"
 #: src/pages/PluginsOverlay.tsx
 msgid "Manage MCP servers"
 msgstr "Zarządzaj serwerami MCP"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Manage other bots"
-msgstr "Zarządzaj innymi botami"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Manual"
@@ -3890,21 +3848,9 @@ msgstr "Edytor wiadomości"
 msgid "Message event"
 msgstr "Zdarzenie wiadomości"
 
-#: src/pages/shell/message-view.tsx
-msgid "Message from {peer}"
-msgstr "Wiadomość od {peer}"
-
-#: src/lib/activity-list-filters.ts
-msgid "Message from another agent"
-msgstr "Wiadomość od innego agenta"
-
 #: src/pages/shell/composer.tsx
 msgid "Message…"
 msgstr "Wiadomość…"
-
-#: src/pages/shell/message-view.tsx
-msgid "Messaged {peer}"
-msgstr "Wysłano wiadomość do {peer}"
 
 #: src/pages/settings-nav.ts
 msgid "Messaging"
@@ -4251,10 +4197,6 @@ msgstr "Brak pasujących modeli"
 #: src/pages/GroupPanel.tsx
 msgid "No members yet"
 msgstr "Brak członków"
-
-#: src/pages/PeerMessagesOverlay.tsx
-msgid "No messages with {peerBotName} yet."
-msgstr "Brak wiadomości z {peerBotName}."
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "No model catalog is available."
@@ -4643,14 +4585,9 @@ msgid "Paused"
 msgstr "Wstrzymano"
 
 #: src/pages/AdminAccessPage.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
 msgstr "Oczekuje"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Permissions"
-msgstr "Uprawnienia"
 
 #: src/components/SignupSurvey.tsx
 msgid "Personal"
@@ -5202,7 +5139,6 @@ msgid "Retry"
 msgstr "Ponów"
 
 #: src/App.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 msgid "Retry now"
 msgstr "Ponów teraz"
 
@@ -5220,7 +5156,6 @@ msgid "Review provider settings and test again."
 msgstr "Sprawdź ustawienia dostawcy i ponów test."
 
 #: src/pages/AdminAccessPage.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 msgid "Revoke"
 msgstr "Cofnij"
 
@@ -6454,14 +6389,6 @@ msgstr "Zaktualizuj komputer"
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Update failed"
 msgstr "Aktualizacja nie powiodła się"
-
-#: src/lib/activity-list-filters.ts
-msgid "Update from {name}"
-msgstr "Aktualizacja od {name}"
-
-#: src/lib/activity-list-filters.ts
-msgid "Update from {name}: {text}"
-msgstr "Aktualizacja od {name}: {text}"
 
 #: src/components/AskCard.tsx
 msgid "Update instructions?"

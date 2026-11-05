@@ -13,9 +13,7 @@ import type { Prisma, PrismaClient, ThreadEvents } from "@labradoodle/db";
 import {
   accountDeactivated,
   appendEventInTransaction,
-  CrossSpaceCommunicationBlockedError,
   createThreadMessageInTransaction,
-  crossSpaceCommunicationAllowed,
   runAsSystem,
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
@@ -117,9 +115,8 @@ async function mirrorRun(deps: MessagingDeliveryDeps, runId: string): Promise<vo
       await mirrorChannelRun(deps, run, channelBlock);
       return;
     }
-  } else if (run.trigger !== "bot_message") {
-    // Mirror inbound messaging runs and delegated bot_message replies only.
-    // Do not push in-app user/routine runs out to the linked chat.
+  } else {
+    // Mirror inbound messaging runs only. Do not push in-app user/routine runs out to the linked chat.
     return;
   }
 
@@ -127,9 +124,6 @@ async function mirrorRun(deps: MessagingDeliveryDeps, runId: string): Promise<vo
     where: { botId: run.botId },
   });
   if (!identity) return;
-
-  // bot_message runs can carry the bot's user-facing reply after a delegate wake.
-  // extractText keeps only text and page titles, so inter-bot chatter blocks never leak out.
 
   const messages = await deps.prisma.message.findMany({
     where: { runId: run.id, role: "bot" },
@@ -269,8 +263,8 @@ async function mirrorChannelRun(
       NOT: { identityId: identity.id },
     },
   });
-  // Peer bots belong to other members, usually in other Spaces.
-  await runAsSystem("fan a group post out to peer bots in other Spaces", () =>
+  // Peer bots belong to other members; only those in the same Space receive the post.
+  await runAsSystem("fan a group post out to peer bots in the same Space", () =>
     fanOutToPeers(deps, { identity, channel, channelBlock, fromLabel, hop, peers, messages }),
   );
 }
@@ -286,7 +280,7 @@ async function fanOutToPeers(
     peers,
     messages,
   }: {
-    identity: { provider: string; address: string; botId: string };
+    identity: { provider: string; address: string; botId: string; spaceId: string };
     channel: { id: string; name: string | null };
     channelBlock: Extract<MessageBlock, { kind: "channel_message" }>;
     fromLabel: string;
@@ -301,8 +295,7 @@ async function fanOutToPeers(
         where: { id: peer.identityId! },
       });
       if (!peerIdentity || (await accountDeactivated(deps.prisma, peerIdentity.userId))) continue;
-      if (!(await crossSpaceCommunicationAllowed(deps.prisma, identity.botId, peerIdentity.botId)))
-        continue;
+      if (peerIdentity.spaceId !== identity.spaceId) continue;
       const peerThread = await deps.prisma.thread.findFirst({
         where: { botId: peerIdentity.botId },
       });
@@ -326,22 +319,16 @@ async function fanOutToPeers(
         ? new RegExp(`@${escapeRegExp(peerBot.name)}\\b`, "i").test(text)
         : false;
       if (mentioned && !botMessageHopExhausted(hop)) {
-        const sent = await deps.events
-          .sendUserMessage({
-            spaceId: peerIdentity.spaceId,
-            threadId: peerThread.id,
-            botId: peerIdentity.botId,
-            userId: peerIdentity.userId,
-            blocks: [block],
-            prompt: `[Group "${channel.name ?? "group"}" — ${fromLabel}]: ${text}`,
-            trigger: "messaging",
-            clientNonce,
-            crossSpaceSenderBotId: identity.botId,
-          })
-          .catch((error: unknown) => {
-            if (error instanceof CrossSpaceCommunicationBlockedError) return null;
-            throw error;
-          });
+        const sent = await deps.events.sendUserMessage({
+          spaceId: peerIdentity.spaceId,
+          threadId: peerThread.id,
+          botId: peerIdentity.botId,
+          userId: peerIdentity.userId,
+          blocks: [block],
+          prompt: `[Group "${channel.name ?? "group"}" — ${fromLabel}]: ${text}`,
+          trigger: "messaging",
+          clientNonce,
+        });
         if (sent?.runId) {
           await deps.jobs.enqueue(runContinueJob(sent.runId)).catch((error) => {
             getLogger().error("messaging peer wake enqueue error", error);
@@ -354,28 +341,21 @@ async function fanOutToPeers(
         where: { threadId_clientNonce: { threadId: peerThread.id, clientNonce } },
       });
       if (existing) continue;
-      const event = await deps.prisma
-        .$transaction(async (tx) => {
-          const created = await createThreadMessageInTransaction(tx, {
-            threadId: peerThread.id,
-            role: "user",
-            blocks: [block],
-            clientNonce,
-          });
-          if (!(await crossSpaceCommunicationAllowed(tx, identity.botId, peerIdentity.botId)))
-            throw new CrossSpaceCommunicationBlockedError();
-          return appendEventInTransaction(tx, {
-            spaceId: peerIdentity.spaceId,
-            threadId: peerThread.id,
-            botId: peerIdentity.botId,
-            type: "thread.message.created",
-            payload: { messageId: created.id, role: "user", blocks: [block] },
-          });
-        })
-        .catch((error: unknown) => {
-          if (error instanceof CrossSpaceCommunicationBlockedError) return null;
-          throw error;
+      const event = await deps.prisma.$transaction(async (tx) => {
+        const created = await createThreadMessageInTransaction(tx, {
+          threadId: peerThread.id,
+          role: "user",
+          blocks: [block],
+          clientNonce,
         });
+        return appendEventInTransaction(tx, {
+          spaceId: peerIdentity.spaceId,
+          threadId: peerThread.id,
+          botId: peerIdentity.botId,
+          type: "thread.message.created",
+          payload: { messageId: created.id, role: "user", blocks: [block] },
+        });
+      });
       if (event) await deps.events.notify(peerThread.id, event.seq).catch(() => undefined);
     }
   }
@@ -383,86 +363,6 @@ async function fanOutToPeers(
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-/** `connect:{requesterBotId}:{targetBotId}` — agent-connection approval DMs. */
-function connectInvitePair(
-  idempotencyKey: string,
-): { requesterBotId: string; targetBotId: string } | null {
-  const match = /^connect:([^:]+):([^:]+)$/.exec(idempotencyKey);
-  if (!match) return null;
-  return { requesterBotId: match[1]!, targetBotId: match[2]! };
-}
-
-/**
- * Deliver a connect invite while holding the connection row lock.
- * Revoke's status update blocks behind this lock, so it cannot commit
- * (and delete the claim) between the pending check and the send.
- * Only used for rare approval DMs, not for ordinary mirrored traffic.
- *
- * At-most-once: any failure after the provider call (or an ambiguous
- * transport error) keeps the outer claim as `sent` so drain does not
- * restore pending and duplicate the YES/NO DM. A lost invite is fine;
- * reconnect starts a fresh cycle.
- */
-async function sendConnectInvite(
-  deps: MessagingDeliveryDeps,
-  row: { id: string; body: string },
-  threadId: string,
-  pair: { requesterBotId: string; targetBotId: string },
-  context: AdapterContext,
-): Promise<"delivered" | "skipped" | "held"> {
-  try {
-    return await deps.prisma.$transaction(
-      async (tx) => {
-        const communicationAllowed = await crossSpaceCommunicationAllowed(
-          tx,
-          pair.requesterBotId,
-          pair.targetBotId,
-        );
-        const locked = await tx.$queryRaw<Array<{ status: string }>>`
-          SELECT status FROM agent_connections
-          WHERE "requesterBotId" = ${pair.requesterBotId}
-            AND "targetBotId" = ${pair.targetBotId}
-          FOR UPDATE
-        `;
-        // An invite queued before its requester was deactivated is not sent for them.
-        const requester = await tx.bot.findUnique({
-          where: { id: pair.requesterBotId },
-          select: { userId: true },
-        });
-        const requesterDeactivated = requester && (await accountDeactivated(tx, requester.userId));
-        if (locked[0]?.status !== "pending" || !communicationAllowed || requesterDeactivated) {
-          await tx.messagingOutbound.updateMany({
-            where: { id: row.id },
-            data: { status: "failed" },
-          });
-          return "skipped";
-        }
-        const outbound = await tx.messagingOutbound.findUnique({
-          where: { id: row.id },
-          select: { id: true },
-        });
-        if (!outbound) return "skipped";
-        try {
-          const sent = await deps.messaging.sendToThread({ threadId, body: row.body }, context);
-          await tx.messagingOutbound.updateMany({
-            where: { id: row.id },
-            data: { providerHandle: sent.handle },
-          });
-          return "delivered";
-        } catch {
-          // Provider error or lost response is ambiguous without an
-          // idempotency key. Do not ask drain to retry.
-          return "held";
-        }
-      },
-      { maxWait: 5_000, timeout: 20_000 },
-    );
-  } catch {
-    // Lock/timeout after a possible accept: keep the outer claim as sent.
-    return "held";
-  }
 }
 
 async function drain(deps: MessagingDeliveryDeps, context: AdapterContext): Promise<void> {
@@ -626,24 +526,6 @@ async function deliverRow(
       return false;
     }
     const threadId = await resolveDirectThread(deps, identity, context);
-    const invitePair = connectInvitePair(row.idempotencyKey);
-    if (invitePair) {
-      const result = await sendConnectInvite(
-        deps,
-        { id: row.id, body: row.body },
-        threadId,
-        invitePair,
-        context,
-      );
-      if (result === "delivered") {
-        accepted = true;
-        await deps.prisma.messagingIdentity.update({
-          where: { id: identity.id },
-          data: { outboundSinceInbound: { increment: 1 } },
-        });
-      }
-      return true;
-    }
     let attachment: MessagingOutboundAttachment | undefined;
     const artifactId = fileArtifactId(row.idempotencyKey);
     if (artifactId) {

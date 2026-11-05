@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { accountDisplay, displayMessageBlock, displayName } from "./display-name.js";
+import { accountDisplay, displayName } from "./display-name.js";
 
 const email = "demo@example.com";
 const opaque = [
@@ -64,22 +64,4 @@ describe("accountDisplay", () => {
     expect(accountDisplay({ name: "'ada" }, "You").initial).toBe("A");
     expect(accountDisplay({}, "…").initial).toBeNull();
   });
-});
-
-it("guards identity metadata without changing literal message text", () => {
-  expect(
-    displayMessageBlock({
-      kind: "bot_message_received",
-      fromBotId: "peer",
-      fromBotName: "__TestTok1__",
-      text: "Keep __TestTok1__ literal",
-    }),
-  ).toMatchObject({
-    kind: "bot_message_received",
-    fromBotId: "peer",
-    fromBotName: "Bot",
-    text: "Keep __TestTok1__ literal",
-  });
-  const text = { kind: "text" as const, text: "__TestTok1__" };
-  expect(displayMessageBlock(text)).toBe(text);
 });

@@ -19,12 +19,12 @@ export function runAllowsSilentEmpty(trigger: string): boolean {
 
 /**
  * Whether text written before a tool call may become a durable mid-turn chat bubble.
- * Routine and bot-to-bot runs hold it back, using the last segment as the final reply
+ * Routine runs hold it back, using the last segment as the final reply
  * only when the model supplies none and has not explicitly chosen silence.
  * Background runs never promote it.
  */
 export function runPromotesMidTurnNarration(trigger: string): boolean {
-  return trigger !== "routine" && trigger !== "bot_message" && !isBackgroundRunTrigger(trigger);
+  return trigger !== "routine" && !isBackgroundRunTrigger(trigger);
 }
 
 export function runReplyGuidance(trigger: string): string {
@@ -49,44 +49,16 @@ export function replyGuidanceForOfferedTools(
   return guidance.includes("message_user") ? undefined : guidance;
 }
 
-export const DELEGATED_EMPTY_NOTICE =
-  "The delegated bot completed its turn without a written summary.";
-
-/** Failure used when a tool-bearing turn would otherwise complete as the empty notice. */
-export const TOOL_STEPS_WITHOUT_RESPONSE =
-  "The model finished its tool steps without a written response.";
-
-/** True when the only written completion is the empty delegated notice after tool steps. */
-export function emptyDelegatedToolTurnShouldFail(blocks: MessageBlock[]): boolean {
-  const text = blocks
-    .filter((block): block is Extract<MessageBlock, { kind: "text" }> => block.kind === "text")
-    .map((block) => block.text)
-    .join("")
-    .trim();
-  return text === DELEGATED_EMPTY_NOTICE && blocks.some((block) => block.kind === "steps");
-}
-
 export function completionMessageSegments(
   segments: MessageBlock[],
   options?: {
     allowSilentEmpty?: boolean;
-    emptyResponseText?: string;
     suppressOutput?: boolean;
     skipEmptyFallback?: boolean;
   },
 ): MessageBlock[] {
   if (options?.suppressOutput) return [];
-  const fallback = options?.emptyResponseText?.trim() || "done.";
-  if (segments.length > 0) {
-    if (
-      !options?.allowSilentEmpty &&
-      options?.emptyResponseText !== undefined &&
-      !segments.some((segment) => segment.kind === "text" && segment.text)
-    ) {
-      return [...segments, { kind: "text", text: fallback }];
-    }
-    return segments;
-  }
+  if (segments.length > 0) return segments;
   if (options?.allowSilentEmpty || options?.skipEmptyFallback) return [];
-  return [{ kind: "text", text: fallback }];
+  return [{ kind: "text", text: "done." }];
 }

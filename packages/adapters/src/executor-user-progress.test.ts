@@ -9,13 +9,11 @@ import {
 } from "@labradoodle/db";
 import { describe, expect, it, vi } from "vitest";
 import { PARTIAL_REPLY_NOTE } from "./automated-messages.js";
-import { loadBotMessageContext, returnBotMessageOutcome } from "./bot-messages.js";
 import type * as ComputerLifecycleModule from "./computer-lifecycle.js";
 import { createRunExecutor } from "./executor.js";
 import { createJobReconciler } from "./job-reconciler.js";
 import type * as ModelVisionModule from "./model-vision.js";
 import { GROUP_UNADDRESSED_REPLY_GUIDANCE } from "./run-replies.js";
-import { PEER_NOTHING_NEW_REPLY } from "./silent-reply.js";
 import { MID_TURN_PROGRESS_MIN_TURN_AGE_MS, userProgressClientNonce } from "./user-progress.js";
 
 vi.mock("./computer-lifecycle.js", async (importOriginal) => ({
@@ -30,24 +28,12 @@ vi.mock("./model-vision.js", async (importOriginal) => ({
   modelAcceptsImageInput: () => vision.seesImages,
 }));
 
-vi.mock("./bot-messages.js", () => ({
-  loadBotMessageContext: vi.fn(async () => ({
-    fromBotId: "caller",
-    fromBotName: "Caller",
-    text: "FYI",
-    intent: "fyi",
-    hop: 1,
-    repliesToRequest: false,
-  })),
-  returnBotMessageOutcome: vi.fn(async () => undefined),
-}));
-
 async function runTurn(
   finalText: string,
   silent = true,
   narration: string | string[] = "I will check that.",
   secrets: string[] = [],
-  intent: "fyi" | "request" | "question" = "fyi",
+  _intent: "fyi" | "request" | "question" = "fyi",
   options: {
     trigger?: string;
     doneText?: string;
@@ -76,15 +62,6 @@ async function runTurn(
     priorBotMessage?: boolean;
   } = {},
 ) {
-  vi.mocked(loadBotMessageContext).mockResolvedValue({
-    kind: "bot_message_received",
-    fromBotId: "caller",
-    fromBotName: "Caller",
-    text: "Look again",
-    intent,
-    hop: 1,
-    repliesToRequest: false,
-  });
   const run = {
     id: "run-1",
     botId: "bot-1",
@@ -93,7 +70,7 @@ async function runTurn(
     spaceId: "space-1",
     userId: "user-1",
     status: "queued",
-    trigger: options.trigger ?? (silent ? "bot_message" : "user"),
+    trigger: options.trigger ?? (silent ? "routine" : "user"),
     sourceMessageId: "source-1",
     leaseFence: 0,
     groupReplyOptional: options.group?.optional ?? false,
@@ -370,95 +347,78 @@ function stepNotes(finalizeRun: Awaited<ReturnType<typeof runTurn>>["finalizeRun
   );
 }
 
-describe.each(["routine", "reaction", "bot_message", "messaging"])(
-  "held-back narration on %s runs",
-  (trigger) => {
-    it("restores the last non-empty narration as a normal final reply", async () => {
-      vi.mocked(returnBotMessageOutcome).mockClear();
-      const { finalizeRun, append } = await runTurn(
-        "",
-        true,
-        ["I will check that.", "  The draft is posted.  ", "   "],
-        [],
-        "fyi",
-        { trigger },
-      );
-      expect(finalizeRun).toHaveBeenCalledExactlyOnceWith(
-        expect.objectContaining({
-          outcome: "completed",
-          markUnread: trigger !== "bot_message",
-        }),
-      );
-      expect(finalizeRun.mock.calls[0]![0].blocks.filter((block) => block.kind === "text")).toEqual(
-        [{ kind: "text", text: "The draft is posted." }],
-      );
-      expect(append.mock.calls.map(([event]) => event.type)).not.toContain(
-        "thread.message.created",
-      );
-      if (trigger === "bot_message") {
-        expect(returnBotMessageOutcome).toHaveBeenCalledExactlyOnceWith(
-          expect.anything(),
-          expect.anything(),
-          expect.anything(),
-          "The draft is posted.",
-          "result",
-        );
-      }
-    });
+describe.each(["routine", "reaction", "messaging"])("held-back narration on %s runs", (trigger) => {
+  it("restores the last non-empty narration as a normal final reply", async () => {
+    const { finalizeRun, append } = await runTurn(
+      "",
+      true,
+      ["I will check that.", "  The draft is posted.  ", "   "],
+      [],
+      "fyi",
+      { trigger },
+    );
+    expect(finalizeRun).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        outcome: "completed",
+        markUnread: true,
+      }),
+    );
+    expect(finalizeRun.mock.calls[0]![0].blocks.filter((block) => block.kind === "text")).toEqual([
+      { kind: "text", text: "The draft is posted." },
+    ]);
+    expect(append.mock.calls.map(([event]) => event.type)).not.toContain("thread.message.created");
+  });
 
-    it("keeps a non-empty post-tool final", async () => {
-      const { finalizeRun } = await runTurn("Checked: all clear.", true, undefined, [], "fyi", {
-        trigger,
-      });
-      expect(finalizeRun.mock.calls[0]![0].blocks.filter((block) => block.kind === "text")).toEqual(
-        [{ kind: "text", text: "Checked: all clear." }],
-      );
+  it("keeps a non-empty post-tool final", async () => {
+    const { finalizeRun } = await runTurn("Checked: all clear.", true, undefined, [], "fyi", {
+      trigger,
     });
+    expect(finalizeRun.mock.calls[0]![0].blocks.filter((block) => block.kind === "text")).toEqual([
+      { kind: "text", text: "Checked: all clear." },
+    ]);
+  });
 
-    it.each([
-      { narration: ["I will check that.", "NO_RESPONSE"], doneText: "" },
-      { narration: ["NO_RESPONSE", "The draft is posted."], doneText: "" },
-      { narration: ["I will check that. NO_RESPONSE"], doneText: "" },
-      { narration: ["NO_RESPONSENO_RESPONSE"], doneText: "" },
-      { narration: ["The draft is posted."], doneText: "NO_RESPONSE" },
-    ])("respects explicit silence in any turn: %j", async ({ narration, doneText }) => {
-      vi.mocked(returnBotMessageOutcome).mockClear();
-      const { finalizeRun } = await runTurn("", true, narration, [], "fyi", {
+  it.each([
+    { narration: ["I will check that.", "NO_RESPONSE"], doneText: "" },
+    { narration: ["NO_RESPONSE", "The draft is posted."], doneText: "" },
+    { narration: ["I will check that. NO_RESPONSE"], doneText: "" },
+    { narration: ["NO_RESPONSENO_RESPONSE"], doneText: "" },
+    { narration: ["The draft is posted."], doneText: "NO_RESPONSE" },
+  ])("respects explicit silence in any turn: %j", async ({ narration, doneText }) => {
+    const { finalizeRun } = await runTurn("", true, narration, [], "fyi", {
+      trigger,
+      doneText,
+      splitText: true,
+    });
+    expect(finalizeRun.mock.calls[0]![0].blocks.filter((block) => block.kind === "text")).toEqual(
+      [],
+    );
+  });
+
+  it("respects an explicit silent final", async () => {
+    const { finalizeRun } = await runTurn("NO_RESPONSE", true, undefined, [], "fyi", { trigger });
+    expect(finalizeRun.mock.calls[0]![0].blocks.filter((block) => block.kind === "text")).toEqual(
+      [],
+    );
+  });
+
+  it("does not confuse an identifier with the silence token across chunks", async () => {
+    const { finalizeRun } = await runTurn(
+      "",
+      true,
+      "NO_RESPONSE_POLICY is configured.",
+      [],
+      "fyi",
+      {
         trigger,
-        doneText,
         splitText: true,
-      });
-      expect(finalizeRun.mock.calls[0]![0].blocks.filter((block) => block.kind === "text")).toEqual(
-        [],
-      );
-      expect(returnBotMessageOutcome).not.toHaveBeenCalled();
-    });
-
-    it("respects an explicit silent final", async () => {
-      const { finalizeRun } = await runTurn("NO_RESPONSE", true, undefined, [], "fyi", { trigger });
-      expect(finalizeRun.mock.calls[0]![0].blocks.filter((block) => block.kind === "text")).toEqual(
-        [],
-      );
-    });
-
-    it("does not confuse an identifier with the silence token across chunks", async () => {
-      const { finalizeRun } = await runTurn(
-        "",
-        true,
-        "NO_RESPONSE_POLICY is configured.",
-        [],
-        "fyi",
-        {
-          trigger,
-          splitText: true,
-        },
-      );
-      expect(finalizeRun.mock.calls[0]![0].blocks.filter((block) => block.kind === "text")).toEqual(
-        [{ kind: "text", text: "NO_RESPONSE_POLICY is configured." }],
-      );
-    });
-  },
-);
+      },
+    );
+    expect(finalizeRun.mock.calls[0]![0].blocks.filter((block) => block.kind === "text")).toEqual([
+      { kind: "text", text: "NO_RESPONSE_POLICY is configured." },
+    ]);
+  });
+});
 
 it("redacts restored narration", async () => {
   const { finalizeRun } = await runTurn(
@@ -491,7 +451,6 @@ describe("held-back narration on peer requests", () => {
   it.each(["request", "question"] as const)(
     "saves the last non-empty narration as the final result for an empty %s reply",
     async (intent) => {
-      vi.mocked(returnBotMessageOutcome).mockClear();
       const { finalizeRun, append } = await runTurn(
         "",
         true,
@@ -508,16 +467,8 @@ describe("held-back narration on peer requests", () => {
       expect(append.mock.calls.map(([event]) => event.type)).not.toContain(
         "thread.message.created",
       );
-      expect(returnBotMessageOutcome).toHaveBeenCalledExactlyOnceWith(
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-        "The draft is posted.",
-        "result",
-      );
 
       // A worker stopping after finalizeRun leaves only these saved blocks for retry.
-      vi.mocked(returnBotMessageOutcome).mockClear();
       const terminalRun = {
         id: "run-1",
         status: "completed",
@@ -545,14 +496,6 @@ describe("held-back narration on peer requests", () => {
         events: {},
       } as unknown as Parameters<typeof createJobReconciler>[0]);
       await reconciler.reconcileOnce();
-      expect(returnBotMessageOutcome).toHaveBeenCalledExactlyOnceWith(
-        expect.anything(),
-        terminalRun,
-        { id: "bot-1", name: "Assistant" },
-        "The draft is posted.",
-        "result",
-        { forceUnread: false },
-      );
     },
   );
 });
@@ -831,7 +774,7 @@ describe("notes that can't be posted as messages", () => {
     // fresh-turn rule.
     expect(await sent("user", "shell")).toEqual([]);
     expect(await sent("user", "browser_snapshot", false)).toEqual([]);
-    for (const trigger of ["routine", "webhook", "reaction", "bot_message"])
+    for (const trigger of ["routine", "webhook", "reaction"])
       expect(await sent(trigger, "browser_snapshot")).toEqual([]);
   });
 });
@@ -1348,45 +1291,6 @@ describe("a stray NO_RESPONSE on runs that must reply", () => {
     expect(savedText(finalizeRun)).toBe("The report is ready.");
   });
 
-  it.each(["request", "question"] as const)(
-    "tells the asker there is nothing new instead of relaying a bare sentinel (%s)",
-    async (intent) => {
-      vi.mocked(returnBotMessageOutcome).mockClear();
-      const { finalizeRun } = await runTurn("NO_RESPONSE", true, undefined, [], intent, {
-        trigger: "bot_message",
-      });
-      expect(savedText(finalizeRun)).toBe(PEER_NOTHING_NEW_REPLY);
-      expect(returnBotMessageOutcome).toHaveBeenCalledExactlyOnceWith(
-        expect.anything(),
-        expect.anything(),
-        expect.anything(),
-        PEER_NOTHING_NEW_REPLY,
-        "result",
-      );
-    },
-  );
-
-  it("returns a peer request's result without the sentinel", async () => {
-    vi.mocked(returnBotMessageOutcome).mockClear();
-    const { finalizeRun } = await runTurn("", true, undefined, [], "request", {
-      trigger: "bot_message",
-      runtimeEvents: [
-        { type: "text", text: "Done." },
-        { type: "turn" },
-        { type: "text", text: "NO_RESPONSE" },
-        { type: "done", text: "Done.NO_RESPONSE" },
-      ],
-    });
-    expect(savedText(finalizeRun)).toBe("Done.");
-    expect(returnBotMessageOutcome).toHaveBeenCalledExactlyOnceWith(
-      expect.anything(),
-      expect.anything(),
-      expect.anything(),
-      "Done.",
-      "result",
-    );
-  });
-
   it.each(["Set the reply token to NO_RESPONSE and restart.", "NO_RESPONSE_POLICY is configured."])(
     "keeps the sentinel when it is part of the reply: %s",
     async (reply) => {
@@ -1560,19 +1464,16 @@ describe("a run that fails partway through its reply", () => {
     ]);
   });
 
-  it.each(["routine", "bot_message"])(
-    "keeps nothing on a %s run, which shows no reply live",
-    async (trigger) => {
-      const { finalizeRun } = await runTurn("", false, "", [], "fyi", {
-        trigger,
-        runtimeEvents: cut,
-        runtimeFailure: true,
-      });
-      expect(finalizeRun).toHaveBeenCalledExactlyOnceWith(
-        expect.not.objectContaining({ partialReply: expect.anything() }),
-      );
-    },
-  );
+  it.each(["routine"])("keeps nothing on a %s run, which shows no reply live", async (trigger) => {
+    const { finalizeRun } = await runTurn("", false, "", [], "fyi", {
+      trigger,
+      runtimeEvents: cut,
+      runtimeFailure: true,
+    });
+    expect(finalizeRun).toHaveBeenCalledExactlyOnceWith(
+      expect.not.objectContaining({ partialReply: expect.anything() }),
+    );
+  });
 
   it("keeps nothing when no reply text streamed", async () => {
     const { finalizeRun } = await runTurn("", false, "", [], "fyi", {
@@ -1764,15 +1665,6 @@ describe("a group member the message named nobody for", () => {
       done,
     ]);
     expect(result.messages).toEqual([]);
-  });
-
-  it("cannot hand off a message every member already received", async () => {
-    const offered = async (optional: boolean) =>
-      (
-        (await turn(optional, [text("NO_RESPONSE"), done])).runtimeRun.mock.calls[0]![0].tools ?? []
-      ).map((tool: { name: string }) => tool.name);
-    expect(await offered(true)).not.toContain("handoff_to_bot");
-    expect(await offered(false)).toContain("handoff_to_bot");
   });
 
   it("gets neither the guidance nor a silent ending when the message named it", async () => {

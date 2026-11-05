@@ -210,7 +210,6 @@ test("activity filters keep retry when a refresh fails", async ({ page }, testIn
     status: "completed",
     trigger: "user",
     notificationsEnabled: false,
-    agentMessage: null,
     promptSnippet: "filter me",
     updatedAt: new Date(now.getTime() - 45_000).toISOString(),
   };
@@ -220,8 +219,7 @@ test("activity filters keep retry when a refresh fails", async ({ page }, testIn
     runId: "run-agent",
     botId: "bot-agent",
     botName: "Helper",
-    trigger: "bot_message",
-    agentMessage: { fromBotName: "Scout", kind: "update", text: "filter me" },
+    trigger: "routine",
     promptSnippet: "Update from Scout: filter me",
   };
 

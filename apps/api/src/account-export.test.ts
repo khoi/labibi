@@ -51,7 +51,6 @@ const botRecord = (id: string): Extract<AccountExportRecord, { type: "bot" }> =>
   position: 0,
   sectionId: null,
   archivedAt: null,
-  parentBotId: null,
   memoryScope: null,
   voiceId: null,
   autoSpeak: false,
@@ -61,8 +60,6 @@ const botRecord = (id: string): Extract<AccountExportRecord, { type: "bot" }> =>
   disabledBuiltinTools: [],
   teamChatAmbientEnabled: false,
   teamChatRules: "",
-  crossSpaceCommunication: false,
-  fleetManagement: true,
   createdAt,
 });
 

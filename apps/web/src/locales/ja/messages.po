@@ -161,10 +161,6 @@ msgstr "{commandVariable}は予約済みのため、コマンド変数として�
 msgid "{connectedCount, plural, one {# connected} other {# connected}}"
 msgstr ""
 
-#: src/pages/shell/message-view.tsx
-msgid "{count, plural, one {# message with {peer}} other {# messages with {peer}}}"
-msgstr "{count, plural, other {{peer}とのメッセージ#件}}"
-
 #: src/components/markdown-copy.tsx
 msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# 行} other {# 行}}"
@@ -232,14 +228,6 @@ msgstr "{moved, plural, one {#個のボットがスペースのデフォルト�
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "{name} (same name as a built-in skill)"
 msgstr ""
-
-#: src/lib/activity-list-filters.ts
-msgid "{name} asked"
-msgstr "{name}からの質問"
-
-#: src/lib/activity-list-filters.ts
-msgid "{name} asked: {text}"
-msgstr "{name}からの質問: {text}"
 
 #. js-lingui-explicit-id
 #: src/lib/browser-notifications.ts
@@ -726,10 +714,6 @@ msgstr "全期間"
 msgid "Allow"
 msgstr "許可"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "Allow cross-space bot communication"
-msgstr "スペース間のボット通信を許可"
-
 #: src/components/AskCard.tsx
 msgid "Allow in this space"
 msgstr ""
@@ -793,10 +777,6 @@ msgstr "読み取り元となる既存のHonchoピアです。Labradoodleが書�
 #: src/pages/RoutineEditor.tsx
 msgid "An integration tool"
 msgstr "連携ツール"
-
-#: src/lib/activity-list-filters.ts
-msgid "Another agent"
-msgstr "別のエージェント"
 
 #: src/components/AskCard.tsx
 msgid "Answer"
@@ -901,10 +881,6 @@ msgstr ""
 #: src/pages/BotContextMenu.tsx
 msgid "Archive"
 msgstr "アーカイブ"
-
-#: src/pages/shell/message-view.tsx
-msgid "archived"
-msgstr "アーカイブ済み"
 
 #: src/pages/shell/archived-chats.tsx
 msgid "Archived"
@@ -1072,10 +1048,6 @@ msgstr "ブロック"
 #: src/pages/shell/use-computer.tsx
 msgid "Booting live desktop…"
 msgstr "ライブデスクトップを起動中…"
-
-#: src/pages/shell/message-view.tsx
-msgid "bot"
-msgstr "ボット"
 
 #: src/lib/identity-display.ts
 #: src/pages/IntegrationSetup.tsx
@@ -1403,7 +1375,6 @@ msgstr "クリア中…"
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/chat-find-bar.tsx
@@ -2084,10 +2055,6 @@ msgstr "スキルを読み込めませんでした"
 msgid "Could not load this artifact."
 msgstr "このアーティファクトを読み込めませんでした。"
 
-#: src/pages/PeerMessagesOverlay.tsx
-msgid "Could not load this chat."
-msgstr "このチャットを読み込めませんでした。"
-
 #: src/components/ArtifactFileCard.tsx
 msgid "Could not load this file."
 msgstr "このファイルを読み込めませんでした。"
@@ -2613,10 +2580,6 @@ msgstr "スペースを削除"
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete this Space's credentials?"
 msgstr "このスペースの認証情報を削除しますか？"
-
-#: src/pages/shell/message-view.tsx
-msgid "deleted"
-msgstr "削除済み"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -3694,7 +3657,6 @@ msgstr "音声プロバイダーを読み込み中…"
 #: src/pages/Artifacts.tsx
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/Invite.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/RoutineRunHistory.tsx
 #: src/pages/shell/transcript.tsx
@@ -3756,10 +3718,6 @@ msgstr "請求を管理"
 #: src/pages/PluginsOverlay.tsx
 msgid "Manage MCP servers"
 msgstr "MCPサーバーを管理"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Manage other bots"
-msgstr "他のボットを管理"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Manual"
@@ -3890,21 +3848,9 @@ msgstr "メッセージ入力欄"
 msgid "Message event"
 msgstr "メッセージイベント"
 
-#: src/pages/shell/message-view.tsx
-msgid "Message from {peer}"
-msgstr "{peer}からのメッセージ"
-
-#: src/lib/activity-list-filters.ts
-msgid "Message from another agent"
-msgstr "他のエージェントからのメッセージ"
-
 #: src/pages/shell/composer.tsx
 msgid "Message…"
 msgstr "メッセージ…"
-
-#: src/pages/shell/message-view.tsx
-msgid "Messaged {peer}"
-msgstr "{peer}にメッセージを送信しました"
 
 #: src/pages/settings-nav.ts
 msgid "Messaging"
@@ -4251,10 +4197,6 @@ msgstr "一致するモデルはありません"
 #: src/pages/GroupPanel.tsx
 msgid "No members yet"
 msgstr "メンバーはまだいません"
-
-#: src/pages/PeerMessagesOverlay.tsx
-msgid "No messages with {peerBotName} yet."
-msgstr "{peerBotName}とのメッセージはまだありません。"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "No model catalog is available."
@@ -4643,14 +4585,9 @@ msgid "Paused"
 msgstr "一時停止中"
 
 #: src/pages/AdminAccessPage.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
 msgstr ""
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Permissions"
-msgstr "権限"
 
 #: src/components/SignupSurvey.tsx
 msgid "Personal"
@@ -5202,7 +5139,6 @@ msgid "Retry"
 msgstr "再試行"
 
 #: src/App.tsx
-#: src/pages/PeerMessagesOverlay.tsx
 msgid "Retry now"
 msgstr "今すぐ再試行"
 
@@ -5220,7 +5156,6 @@ msgid "Review provider settings and test again."
 msgstr "プロバイダー設定を確認して、もう一度テストしてください。"
 
 #: src/pages/AdminAccessPage.tsx
-#: src/pages/MessagingSettingsPanel.tsx
 msgid "Revoke"
 msgstr "取り消す"
 
@@ -6454,14 +6389,6 @@ msgstr "コンピューターを更新"
 #: src/components/ComputerUpdateProgress.tsx
 msgid "Update failed"
 msgstr "更新に失敗しました"
-
-#: src/lib/activity-list-filters.ts
-msgid "Update from {name}"
-msgstr "{name}からの更新"
-
-#: src/lib/activity-list-filters.ts
-msgid "Update from {name}: {text}"
-msgstr "{name}からの更新: {text}"
 
 #: src/components/AskCard.tsx
 msgid "Update instructions?"

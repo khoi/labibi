@@ -4,7 +4,7 @@ import type { Href } from "expo-router";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
 import { View } from "react-native";
-import { activityPreview, activityStatusLabel, formatActivityRelativeTime } from "../lib/activity";
+import { activityStatusLabel, formatActivityRelativeTime } from "../lib/activity";
 import type { MobileBot, MobileGroup } from "../lib/api";
 import { useI18n } from "../lib/i18n";
 import { useThemedStyles } from "../lib/native";
@@ -157,7 +157,7 @@ function ActivityRow({
   onPress: () => void;
 }) {
   const status = activityStatusLabel(run.status);
-  const snippet = activityPreview(run);
+  const snippet = run.promptSnippet;
   const preview = detailed ? (snippet ? `${status}: ${snippet}` : status) : snippet;
   // Compact rows hide tags, so the group stays in the title.
   const title = [run.botName, run.groupName].filter(Boolean).join(", ");

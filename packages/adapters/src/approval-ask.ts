@@ -1,15 +1,11 @@
 import type { ToolBatch } from "@labradoodle/adapter-kit";
 import type { MessageBlock } from "@labradoodle/contracts";
-import { BOT_INSTRUCTIONS_MAX_LENGTH } from "@labradoodle/contracts";
 import {
   batchActions,
   CARD_TITLE_ESCAPED_CHARACTERS,
   instructionUpdateDiff,
-  messagingProviderName,
   redactSecrets,
   SITE_SENDING_TOOLS,
-  sanitizeMessagingLabel,
-  toolRequiresExplicitApproval,
 } from "@labradoodle/core";
 import { urlSite } from "@labradoodle/core/egress";
 import { USER_COMPUTER_SCREEN_TOOLS, userComputerAppName } from "./user-computer-tools.js";
@@ -19,26 +15,18 @@ export const MAX_APPROVAL_DETAIL_LENGTH = 4_000;
 /** Longer fetch URLs are refused, so an approval card always shows the whole URL it sends. */
 export const MAX_FETCH_URL_LENGTH = 2_048;
 
-/** A fleet card built from the resolved request: a title and the lines under it. */
-/** `onceOnly`: the card never offers Always allow, as for a purchase. */
-export type FleetCardSummary = { title: string; lines: string[]; onceOnly?: boolean };
-
 /**
- * The child instruction card shows the whole new text, so its detail holds the longest
- * instructions plus the two length lines above them.
+ * A card built from the resolved request: a title and the lines under it.
+ * `onceOnly`: the card never offers Always allow, as for a purchase.
  */
-export function approvalDetailLength(toolName: string): number {
-  return toolName === "set_child_instructions"
-    ? BOT_INSTRUCTIONS_MAX_LENGTH + MAX_APPROVAL_SUMMARY_LENGTH
-    : MAX_APPROVAL_DETAIL_LENGTH;
-}
+export type ApprovalCardSummary = { title: string; lines: string[]; onceOnly?: boolean };
 
 export function buildApprovalAskBlock(
   effectId: string,
   toolName: string,
   args: Record<string, unknown>,
   secrets: string[],
-  options?: { reviewReason?: string; summary?: FleetCardSummary; batch?: ToolBatch },
+  options?: { reviewReason?: string; summary?: ApprovalCardSummary; batch?: ToolBatch },
 ): MessageBlock {
   if (options?.summary) {
     // Built from what was resolved before the effect was recorded, not from what the model typed.
@@ -48,45 +36,20 @@ export function buildApprovalAskBlock(
       text: truncate(redactSecrets(options.summary.title, secrets), MAX_APPROVAL_SUMMARY_LENGTH),
       detail: truncate(
         redactSecrets(options.summary.lines.join("\n"), secrets),
-        approvalDetailLength(toolName),
-      ),
-      detailFormat: toolName === "set_child_instructions" ? "code" : "text",
-      status: "pending",
-      actions:
-        toolRequiresExplicitApproval(toolName) || options.summary.onceOnly
-          ? [
-              { id: "allow", label: "Allow once" },
-              { id: "deny", label: "Deny" },
-            ]
-          : [
-              { id: "allow", label: "Allow once" },
-              { id: "always", label: "Always allow this tool" },
-              { id: "deny", label: "Deny" },
-            ],
-    };
-  }
-  if (toolName === "respond_agent_connection") {
-    const name = sanitizeMessagingLabel(String(args.requester_name ?? "agent")).replace(
-      new RegExp(CARD_TITLE_ESCAPED_CHARACTERS, "g"),
-      "\\$&",
-    );
-    return {
-      kind: "ask",
-      approvalEffectId: effectId,
-      text: redactSecrets(
-        `${args.accept === true ? "Approve" : "Decline"} connection with “${name}”?`,
-        secrets,
-      ),
-      detail: redactSecrets(
-        `${messagingProviderName(String(args.requester_provider ?? ""))}: ${String(args.requester_address ?? "").replace(/[\r\n]/g, " ")}`,
-        secrets,
+        MAX_APPROVAL_DETAIL_LENGTH,
       ),
       detailFormat: "text",
       status: "pending",
-      actions: [
-        { id: "allow", label: "Allow once" },
-        { id: "deny", label: "Deny" },
-      ],
+      actions: options.summary.onceOnly
+        ? [
+            { id: "allow", label: "Allow once" },
+            { id: "deny", label: "Deny" },
+          ]
+        : [
+            { id: "allow", label: "Allow once" },
+            { id: "always", label: "Always allow this tool" },
+            { id: "deny", label: "Deny" },
+          ],
     };
   }
   // Only an instruction change held for approval carries the text it replaces.
@@ -167,35 +130,18 @@ export function buildApprovalAskBlock(
   return {
     kind: "ask",
     approvalEffectId: effectId,
-    text: truncate(
-      redactSecrets(
-        toolName === "create_space" ? `${summary}?` : `Review before ${summary}`,
-        secrets,
-      ),
-      MAX_APPROVAL_SUMMARY_LENGTH,
-    ),
+    text: truncate(redactSecrets(`Review before ${summary}`, secrets), MAX_APPROVAL_SUMMARY_LENGTH),
     detail: safeDetail ? truncate(safeDetail, MAX_APPROVAL_DETAIL_LENGTH) : undefined,
     ...(fetchSite ? { site: fetchSite } : {}),
     status: "pending",
-    actions:
-      toolName === "create_space"
-        ? [
-            { id: "allow", label: "Create space", outcome: "created" },
-            { id: "deny", label: "Cancel", outcome: "cancelled" },
-          ]
-        : toolRequiresExplicitApproval(toolName)
-          ? [
-              { id: "allow", label: "Allow once" },
-              { id: "deny", label: "Deny" },
-            ]
-          : [
-              { id: "allow", label: "Allow once" },
-              {
-                id: "always",
-                label: fetchSite ? `Always allow ${fetchSite}` : "Always allow this tool",
-              },
-              { id: "deny", label: "Deny" },
-            ],
+    actions: [
+      { id: "allow", label: "Allow once" },
+      {
+        id: "always",
+        label: fetchSite ? `Always allow ${fetchSite}` : "Always allow this tool",
+      },
+      { id: "deny", label: "Deny" },
+    ],
   };
 }
 
@@ -215,14 +161,6 @@ function describeApprovalAction(
   if (batch?.actions.length) {
     return [...batch.actions, ...(batch.complete ? [] : ["…"])].join(", ");
   }
-  if (toolName === "archive_bot") {
-    const name = args.confirm_name ?? args.confirmName;
-    return name ? `${toolName.replace("_", " ")} (${String(name)})` : toolName.replace("_", " ");
-  }
-  if (toolName === "create_space") {
-    const name = args.name ? String(args.name) : "Untitled";
-    return `Create space “${name}”`;
-  }
   const target = webFetchSite(toolName, args) ?? pickScopeLabel(args);
   return target ? `${toolName} → ${target}` : toolName;
 }
@@ -237,11 +175,6 @@ function formatApprovalDetail(
   const lines: string[] = [];
   if (reviewReason?.trim()) {
     lines.push(reviewReason.trim().replace(/\u2014|\u2013/g, "-"));
-  }
-  if (toolName === "create_space") {
-    lines.push(
-      "Bots, groups, chats, files, memory, and integrations in this space stay separate from other spaces.",
-    );
   }
   // A fetch carries data in its path and query, so the card shows the whole URL.
   const shown = (values: Record<string, unknown>) =>

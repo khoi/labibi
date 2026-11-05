@@ -346,7 +346,7 @@ test("takeover, routine, plugins, and export are reachable", async ({ page }, te
   await captureScreenshot(page, testInfo, "12-bot-settings");
 });
 
-test("sign-in, spawn, and stop work in the shell", async ({ page }, testInfo) => {
+test("sign-in and stop work in the shell", async ({ page }, testInfo) => {
   const browserErrors: string[] = [];
   const failedRequests: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
@@ -370,20 +370,6 @@ test("sign-in, spawn, and stop work in the shell", async ({ page }, testInfo) =>
   });
 
   const composer = page.locator('textarea[name="chat-message"]');
-  await composer.fill("spawn a bot named Scout to research venues");
-  await page.keyboard.press("Enter");
-  await expect(sidebarBotButton(page, /Scout/)).toBeVisible({
-    timeout: 30_000,
-  });
-  await expect(page.getByTestId("bot-mention").filter({ hasText: "Scout" })).toBeVisible({
-    timeout: 30_000,
-  });
-  await captureScreenshot(page, testInfo, "13-spawned-bot");
-
-  await page
-    .locator("[data-sidebar-group]")
-    .getByRole("button", { name: /^Chief/ })
-    .click();
   await composer.fill("keep working until I stop you");
   await page.keyboard.press("Enter");
   await expect(page.getByRole("button", { name: "Stop", exact: true })).toBeVisible({

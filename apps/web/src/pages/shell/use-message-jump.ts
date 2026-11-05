@@ -1,5 +1,5 @@
 import type { Bot, ComputerStatus, Routine } from "@labradoodle/contracts";
-import { foldPeerReplies, jumpTargetId, searchHitThreadTarget } from "@labradoodle/core";
+import { searchHitThreadTarget } from "@labradoodle/core";
 import { fetchFresh } from "@labradoodle/core/query";
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -21,7 +21,6 @@ export function useMessageJump({
   queries,
   thread,
   commitComputer,
-  transcript,
   active,
   inGroup,
   groupId,
@@ -38,7 +37,6 @@ export function useMessageJump({
   queries: SpaceQueries;
   thread: ThreadState;
   commitComputer: (next: ComputerStatus | null) => void;
-  transcript: ReturnType<typeof foldPeerReplies>;
   active: Bot | undefined;
   inGroup: boolean;
   groupId: string | undefined;
@@ -86,13 +84,8 @@ export function useMessageJump({
     if (epoch !== historyEpoch.current || jumpId !== jumpGeneration.current) return;
     if (target.groupId && activeGroupId.current !== target.groupId) return;
     if (target.botId && activeBotId.current !== target.botId) return;
-    // A reply folded under its peer marker counts: the transcript expands the marker to show it.
-    const pageTranscript = foldPeerReplies(page.messages, { includePeerReceipts: true });
-    // A relay's dropped marker (e.g. a search hit) lands on its "Messaged X" receipt.
-    const messageId = jumpTargetId(pageTranscript, target.messageId);
-    const targetInPage =
-      pageTranscript.markerOf.has(messageId) ||
-      pageTranscript.messages.some((message) => message.id === messageId);
+    const messageId = target.messageId;
+    const targetInPage = page.messages.some((message) => message.id === messageId);
     expandedHistoryThread.current = targetInPage ? page.threadId : null;
     pinnedAroundRef.current = targetInPage
       ? {
@@ -186,11 +179,6 @@ export function useMessageJump({
     }
   }, [active?.id, groupId, inGroup, routines, routinesBotId, searchParams, setSearchParams]);
 
-  const transcriptRef = useRef(transcript);
-  useLayoutEffect(() => {
-    transcriptRef.current = transcript;
-  }, [transcript]);
-
   useLayoutEffect(() => {
     const pin = pinnedAroundRef.current;
     if (inGroup) {
@@ -213,10 +201,8 @@ export function useMessageJump({
   const jumpToMessageRef = useRef(jumpToMessage);
   jumpToMessageRef.current = jumpToMessage;
   const jumpToReplyMessage = useCallback((replyId: string) => {
-    const messageId = jumpTargetId(transcriptRef.current, replyId);
-    const inTranscript =
-      transcriptRef.current.markerOf.has(messageId) ||
-      document.querySelector(`[data-message-id="${CSS.escape(messageId)}"]`);
+    const messageId = replyId;
+    const inTranscript = document.querySelector(`[data-message-id="${CSS.escape(messageId)}"]`);
     if (inTranscript) {
       // Cancel any in-flight around-fetch so it cannot overwrite this scroll.
       jumpGeneration.current += 1;

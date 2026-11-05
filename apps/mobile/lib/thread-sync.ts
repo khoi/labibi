@@ -1,6 +1,6 @@
 import { isRetryableError } from "@labradoodle/core";
 import { useFocusEffect } from "expo-router";
-import type { Dispatch, RefObject, SetStateAction } from "react";
+import type { RefObject } from "react";
 import { useCallback, useEffect } from "react";
 import { mergeMobileSnapshot, mobileThreadRefreshResult, rpc, selectedSpaceId } from "./api";
 import { onConversationCleared } from "./conversation-cleared";
@@ -42,7 +42,6 @@ export function useThreadSync({
   activeBotId,
   activeGroupId,
   readVisibleTarget,
-  setExpandedPeerMarkers,
   setError,
   onRefreshed,
   refreshMentionBots,
@@ -60,7 +59,6 @@ export function useThreadSync({
   activeBotId: RefObject<string | undefined>;
   activeGroupId: RefObject<string | undefined>;
   readVisibleTarget: RefObject<string | null>;
-  setExpandedPeerMarkers: Dispatch<SetStateAction<ReadonlySet<string>>>;
   setError: (error: string | null) => void;
   /** A refresh for the chat on screen finished, committed or not. */
   onRefreshed: (threadKey: string | undefined) => void;
@@ -172,7 +170,6 @@ export function useThreadSync({
     setThreadScrollState: scroll.setState,
     activeBotId,
     activeGroupId,
-    setExpandedPeerMarkers,
   };
 
   function applyMessageJump(target: { botId?: string; groupId?: string; messageId: string }) {

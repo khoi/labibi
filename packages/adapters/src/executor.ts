@@ -14,11 +14,9 @@ import type { MessageBlock, ModelRoleChoice, RunStatus } from "@labradoodle/cont
 import { disabledBuiltinToolSet } from "@labradoodle/contracts";
 import {
   assertTransition,
-  botMessageAllowsSilence,
   expandSkillReferencesInPrompt,
   formatSkillRunPrompt,
   formatSkillsCatalogInstruction,
-  isBackgroundRunTrigger,
   isMessagingChannelRun,
   isOwnerStartedRun,
   isTerminal,
@@ -31,7 +29,6 @@ import {
   nonOwnerChatPrivacyBlock,
   promptInvokesSkill,
   redactSecrets,
-  renderBotDirectory,
   userRunError,
   userTurnMessageForRun,
 } from "@labradoodle/core";
@@ -61,7 +58,6 @@ import { sanitizedError } from "@labradoodle/logging/monitoring";
 import { formatAgentEnvironmentInstruction } from "./agent-environment.js";
 import { createApprovedEffectReplayQueue } from "./approval-effect.js";
 import { PARTIAL_REPLY_NOTE } from "./automated-messages.js";
-import { loadBotMessageContext } from "./bot-messages.js";
 import {
   commandCredentialRedactions,
   loadBotCommandEnvironment,
@@ -71,7 +67,7 @@ import {
 } from "./bot-secrets.js";
 import { createBrowserProvider } from "./browser-provider-factory.js";
 import { partitionTools } from "./builtin-tool-bridge.js";
-import { agentConnectionTools, builtinAgentTools } from "./builtin-tools.js";
+import { builtinAgentTools } from "./builtin-tools.js";
 import { cloudAgentsEnabled } from "./cloud-agent-factory.js";
 import { mergeConnectedPlugins, needsLivePluginSync } from "./composio-connector.js";
 import { diskNoteInstruction, recordComputerDisk } from "./computer-disk.js";
@@ -103,8 +99,7 @@ import {
 import { formatCurrentTimeInstruction } from "./current-time.js";
 import { resolveDeploymentModel } from "./deployment-model.js";
 import type { ExecutorDeps } from "./executor-deps.js";
-import type { FleetRun } from "./fleet-tools.js";
-import { loadBotGroupDirectory, loadGroupContext } from "./group-handoff.js";
+import { loadGroupContext } from "./group-context.js";
 import {
   formatCompactedSummary,
   formatRecalledMemory,
@@ -154,7 +149,6 @@ import type {
 import { restoreTurnCheckpointEffects, settleRunningHelpers } from "./run-context.js";
 import { APPROVED_EFFECT_REPLAY_ORDER, buildApprovalContinuation } from "./run-effects.js";
 import {
-  BOT_DIRECTORY_LIMIT,
   dockerComputerToolInstruction,
   persistentComputerInstruction,
   runIdentityInstruction,
@@ -188,7 +182,6 @@ import {
 } from "./run-model.js";
 import { createReplyState } from "./run-progress.js";
 import {
-  DELEGATED_EMPTY_NOTICE,
   GROUP_UNADDRESSED_REPLY_GUIDANCE,
   runAllowsSilentEmpty,
   runReplyGuidance,
@@ -198,17 +191,13 @@ import {
   retryRoutineRun,
   wakeRoutine,
 } from "./run-routines.js";
-import {
-  BUILTIN_AGENT_TOOL_NAMES,
-  offeredFleetTools,
-  selectBuiltinToolsForRun,
-} from "./run-tool-selection.js";
+import { BUILTIN_AGENT_TOOL_NAMES, selectBuiltinToolsForRun } from "./run-tool-selection.js";
 import { applyTool } from "./run-tools.js";
 import { historyMyChatsAllowed } from "./run-tools-memory.js";
 import type { UserComputerState } from "./run-tools-user-computer.js";
 import { USER_COMPUTER_SHELL_TOOL, userComputerOwner } from "./run-tools-user-computer.js";
 import { createRunTrustLoaders } from "./run-trust.js";
-import { completeRun, consumeRunEvents, failRun, handoffEndedTurn } from "./run-turn.js";
+import { completeRun, consumeRunEvents, failRun } from "./run-turn.js";
 import {
   claimRunSteering,
   loadCurrentTurnImages,
@@ -605,7 +594,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
           bot,
           thread,
           messages,
-          peerMessage,
           task,
           storedConnections,
           main,
@@ -630,9 +618,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
             },
           }),
           loadRunHistoryMessages(deps.prisma, run, LEGACY_HISTORY_WINDOW_SIZE, channelId),
-          run.trigger === "bot_message"
-            ? loadBotMessageContext(deps.prisma, run.sourceMessageId)
-            : Promise.resolve(undefined),
           deps.prisma.task.findUniqueOrThrow({ where: { id: run.taskId } }),
           deps.prisma.connection.findMany({
             where: { userId: run.userId, spaceId: run.spaceId },
@@ -863,20 +848,7 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
         // reached every member, and each may end its turn without a reply.
         const groupReplyOptional =
           Boolean(thread.groupId) && run.trigger === "user" && run.groupReplyOptional;
-        const allowSilentPeerMessage = botMessageAllowsSilence(
-          peerMessage?.intent,
-          peerMessage?.repliesToRequest,
-        );
-        const allowSilentEmptyRun =
-          allowSilentPeerMessage || messagingChannelRun || runAllowsSilentEmpty(run.trigger);
-        const emptyResponseText = peerMessage
-          ? peerMessage.intent === "result" ||
-            peerMessage.intent === "status" ||
-            peerMessage.intent === "question" ||
-            peerMessage.repliesToRequest
-            ? `Update from ${peerMessage.fromBotName}: ${peerMessage.text}`
-            : DELEGATED_EMPTY_NOTICE
-          : undefined;
+        const allowSilentEmptyRun = messagingChannelRun || runAllowsSilentEmpty(run.trigger);
         const recallPromise =
           threadContext.includeSemanticRecall &&
           semanticMemory &&
@@ -1319,7 +1291,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
                 select: { role: true, blocks: true, threadId: true },
               })
             : null;
-        // A follow-up can be queued by a bot (group handoffs); only the user's own counts.
         const ownerStartedRun = isOwnerStartedRun(run.trigger, sourceMessage?.role === "user");
         const acceptsImages =
           deps.runtime.describe().capabilities.scripted ||
@@ -1364,21 +1335,11 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
             cloudAgentEnabled: cloudAgentsEnabled(cloudAgent, run.spaceId),
             paymentWalletEnabled,
             messagingChannelRun: nonOwnerChatRun,
-            // Every member already got a message that names nobody, so a handoff only repeats it.
-            disabledBuiltinTools: groupReplyOptional
-              ? [...(bot.disabledBuiltinTools ?? []), "handoff_to_bot"]
-              : bot.disabledBuiltinTools,
-            fleetManagement: bot.fleetManagement,
+            disabledBuiltinTools: bot.disabledBuiltinTools,
             followUpFromUser: sourceMessage?.role === "user",
             userComputer: userComputer === "connected",
             userComputerScreen,
           }),
-          // Cross-owner agent connections only exist for chat-linked bots.
-          ...(hasMessagingIdentity &&
-          bot.crossSpaceCommunication === true &&
-          !isBackgroundRunTrigger(run.trigger)
-            ? agentConnectionTools.filter((tool) => !disabledBuiltinTools.has(tool.name))
-            : []),
         ];
         const exposedConnectorTools = discovered.filter(
           (tool) => !builtinAgentTools.some((builtin) => builtin.name === tool.name),
@@ -1488,19 +1449,9 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
           ownInstructionsBaseline: bot.instructions ?? "",
           earlierAttempt: undefined,
           walletHosts: new Set(),
-          handedOff: false,
           terminalCheckpointComplete: false,
         };
         const { effects } = state;
-        /** Fleet tools take every scope from the run, never from arguments. */
-        const fleetRun: FleetRun = {
-          spaceId: run.spaceId,
-          userId: run.userId,
-          botId: bot.id,
-          groupId: thread.groupId ?? null,
-          threadId: thread.id,
-          runId,
-        };
 
         const ctx: RunContext = {
           deps,
@@ -1515,7 +1466,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
           task,
           context,
           abortController: runAbortController,
-          fleetRun,
           secrets: runSecrets,
           source: {
             ownerStartedRun,
@@ -1532,7 +1482,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
                     messagingChannelId(sourceMessage?.blocks as MessageBlock[] | undefined),
                 ),
             ),
-            peerMessage,
             userComputerOwner: userComputerOwnerId,
           },
           computer: {
@@ -1565,7 +1514,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
           script,
           allowSilentEmptyRun,
           groupReplyOptional,
-          emptyResponseText,
           state,
           settleRunningHelpers: settleHelpers,
           stopHeartbeatAfterCompletion,
@@ -1707,25 +1655,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
             })
           : history;
         const runtimeHistory = [...historicalContext, ...historyWithImages];
-        // Without a roster a bot only knows the bots it spawned itself.
-        const [teammates, groupDirectory] = await Promise.all([
-          thread.groupId
-            ? []
-            : deps.prisma.bot.findMany({
-                where: {
-                  spaceId: run.spaceId,
-                  archivedAt: null,
-                  id: { not: bot.id },
-                  thread: { isNot: null },
-                },
-                select: { id: true, name: true, description: true },
-                orderBy: { createdAt: "asc" },
-                take: BOT_DIRECTORY_LIMIT,
-              }),
-          !thread.groupId ? loadBotGroupDirectory(deps.prisma, run) : undefined,
-        ]);
-        const botDirectory =
-          [renderBotDirectory(teammates), groupDirectory].filter(Boolean).join("\n\n") || undefined;
 
         if (heldForTakeover) {
           const releasedCheckpoint = takeoverCheckpointOf(
@@ -1841,13 +1770,11 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
                 taskCatalogInstruction,
                 workspaceInstruction,
                 agentEnvironmentInstruction,
-                botDirectory,
                 pluginLine,
                 agentSkillsLine,
                 taughtSkillsLine,
                 replyGuidance: runReplyGuidance(run.trigger),
                 disabledBuiltinTools,
-                offeredFleetTools: offeredFleetTools(builtins),
                 userComputer,
               })
                 .filter((instruction): instruction is string => Boolean(instruction))
@@ -1932,7 +1859,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
               },
               script,
               allowSilentEmpty: allowSilentEmptyRun,
-              emptyResponseText,
               executeTool: scripted
                 ? undefined
                 : (name, args, executionId, route, observer) =>
@@ -1991,15 +1917,7 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
           await completeRun(ctx);
         } catch (turnError) {
           if (await interruptedByShutdown()) return;
-          let caughtError = turnError;
-          if (handoffEndedTurn(state, caughtError)) {
-            try {
-              await completeRun(ctx);
-              return;
-            } catch (completionError) {
-              caughtError = completionError;
-            }
-          }
+          const caughtError = turnError;
           await failRun(ctx, caughtError, {
             ownCredential: resolved.ownCredential,
             active: activeModel,

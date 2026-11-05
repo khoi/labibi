@@ -1,5 +1,5 @@
 import { BotSecretName, OneTimeCodeTarget } from "@labradoodle/contracts";
-import type { FleetCardSummary } from "./approval-ask.js";
+import type { ApprovalCardSummary } from "./approval-ask.js";
 import type { PurchaseApproval } from "./purchase-gate.js";
 import { purchaseCardSummary } from "./purchase-gate.js";
 
@@ -56,7 +56,10 @@ export function requestedCardUse(
 }
 
 /** The approval card for typing a saved card, with the purchase the same call presses, if any. */
-export function cardUseSummary(use: VaultCardUse, purchase?: PurchaseApproval): FleetCardSummary {
+export function cardUseSummary(
+  use: VaultCardUse,
+  purchase?: PurchaseApproval,
+): ApprovalCardSummary {
   const host = new URL(use.site).host;
   const paying = purchase ? purchaseCardSummary(purchase) : undefined;
   return {

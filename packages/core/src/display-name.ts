@@ -51,14 +51,8 @@ export function displayMessageBlock(
   block = identitySource(block);
   const named = (next: MessageBlock) => preserveIdentitySource(source, next);
   switch (block.kind) {
-    case "bot_message_sent":
-      return named({ ...block, toBotName: displayName(block.toBotName, labels.bot) });
-    case "bot_message_received":
-      return named({ ...block, fromBotName: displayName(block.fromBotName, labels.bot) });
     case "subagent":
       return named({ ...block, name: displayName(block.name, labels.subagent) });
-    case "child_bot":
-      return named({ ...block, name: displayName(block.name, labels.bot) });
     case "channel_message":
       return named({ ...block, fromLabel: displayName(block.fromLabel, labels.member) });
     default:

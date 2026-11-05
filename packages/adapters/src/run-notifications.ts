@@ -164,25 +164,12 @@ export function secretAskNotification(botName: string, label: string, runSecrets
   return { title: `${botName} needs an answer`, body };
 }
 
-export function completionMarksUnread(
-  trigger: string,
-  text: string,
-  userFacingPeerReply = false,
-): boolean {
-  if (trigger === "bot_message") return userFacingPeerReply;
+export function completionMarksUnread(trigger: string, text: string): boolean {
   if (isBackgroundRunTrigger(trigger)) return false;
   return (trigger !== "routine" && trigger !== "reaction") || Boolean(text);
 }
 
-export function subagentMarksUnread(
-  trigger: string,
-  status: "running" | "completed" | "failed",
-  userFacingPeerReply = false,
-) {
+export function subagentMarksUnread(trigger: string, status: "running" | "completed" | "failed") {
   if (isBackgroundRunTrigger(trigger)) return false;
-  return (
-    status === "failed" ||
-    (trigger === "bot_message" && userFacingPeerReply) ||
-    (trigger !== "routine" && trigger !== "bot_message")
-  );
+  return status === "failed" || trigger !== "routine";
 }

@@ -1,20 +1,5 @@
 import * as z from "zod";
 
-/** Fleet management tools. Only list_fleet is read-only. */
-export const FLEET_TOOL_NAMES = [
-  "list_fleet",
-  "create_group",
-  "update_group",
-  "organize_bot",
-  "set_child_instructions",
-  "set_child_bot_model",
-  "create_child_routine",
-] as const;
-
-export const FLEET_WRITE_TOOL_NAMES = FLEET_TOOL_NAMES.filter(
-  (name): name is Exclude<(typeof FLEET_TOOL_NAMES)[number], "list_fleet"> => name !== "list_fleet",
-);
-
 /** What a feedback report is about, and how long its description may be. */
 export const FEEDBACK_KINDS = ["bug", "feedback"] as const;
 export const FEEDBACK_DESCRIPTION_MAX_LENGTH = 2_000;
@@ -76,18 +61,9 @@ export const BUILTIN_TOOL_NAMES = [
   "skill_update",
   "skill_delete",
   "run_subagent",
-  "create_space",
-  "spawn_bot",
   "update_bot",
-  ...FLEET_TOOL_NAMES,
-  "archive_bot",
-  "message_bot",
-  "handoff_to_bot",
   "update_preferences",
   "feedback",
-  "connect_agent",
-  "respond_agent_connection",
-  "message_agent",
 ] as const;
 
 export const BuiltinToolNameSchema = z.enum(BUILTIN_TOOL_NAMES);

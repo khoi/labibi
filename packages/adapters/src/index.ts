@@ -1,4 +1,3 @@
-export * from "./agent-connections.js";
 export * from "./agent-environment.js";
 export * from "./ai-consent.js";
 export * from "./artifact-store-factory.js";
@@ -11,7 +10,7 @@ export * from "./background-job-handlers.js";
 export * from "./billing-emulator.js";
 export * from "./boat-sandbox.js";
 export * from "./bot-avatar.js";
-export * from "./bot-messages.js";
+export * from "./bot-lifecycle.js";
 export {
   defaultVaultItemTitle,
   forgetBotSecret,
@@ -36,7 +35,6 @@ export * from "./builtin-tool-bridge.js";
 export * from "./builtin-tools.js";
 export * from "./cartesia-voice.js";
 export * from "./chat-sdk-surface.js";
-export * from "./child-bots.js";
 export * from "./cloud-agent-emulator.js";
 export * from "./cloud-agent-factory.js";
 export * from "./cloud-agent-poll.js";
@@ -79,10 +77,8 @@ export * from "./fake-sandbox.js";
 export * from "./fake-web.js";
 export * from "./favicon.js";
 export * from "./fish-audio-voice.js";
-export * from "./fleet-tools.js";
 export * from "./github-webhook-emulator.js";
 export * from "./graphql-connectors.js";
-export * from "./group-handoff.js";
 export * from "./home.js";
 export * from "./home-object-store.js";
 export { HonchoMemoryProvider } from "./honcho-memory-provider.js";
