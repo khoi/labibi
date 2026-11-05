@@ -27,16 +27,14 @@ import type {
   ProviderCatalogCache,
   PushTokenStore,
   RemoteConnectorDependencies,
-  TicketChangeNotifier,
   verifyModelServesAgents,
 } from "@labradoodle/adapters";
 import type { Auth } from "@labradoodle/auth";
 import type { NavLink } from "@labradoodle/contracts";
-import type { BoardEvents, PrismaClient, ThreadEvents } from "@labradoodle/db";
+import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
 import type { BillingService } from "./billing.js";
 import { accountRoutes } from "./routes/account.js";
 import { availabilityRoutes } from "./routes/availability.js";
-import { boardsRoutes } from "./routes/boards.js";
 import { botsRoutes } from "./routes/bots.js";
 import { computerRoutes } from "./routes/computer.js";
 import { computerProviderRoutes } from "./routes/computer-provider.js";
@@ -71,8 +69,6 @@ export interface RouterDeps {
   paymentWallet?: PaymentWalletProvider | null;
   prisma: PrismaClient;
   events: ThreadEvents;
-  boardEvents: BoardEvents;
-  ticketChanges: TicketChangeNotifier;
   auth: Auth;
   jobs: JobPublisher;
   sandbox: SandboxProvider;
@@ -120,7 +116,6 @@ export interface RouterDeps {
   onEmailError?: (error: unknown) => void;
   speechSummary?: VoiceDeps["speechSummary"];
   env: {
-    ticketBoardEnabled?: boolean;
     navLinks?: NavLink[];
     adminEmails?: string[];
     phoneCallsEnabled?: boolean;
@@ -162,7 +157,6 @@ export function createRouter(deps: RouterDeps) {
     ...computerProviderRoutes(ctx),
     ...memoryRoutes(ctx),
     ...routinesRoutes(ctx),
-    ...boardsRoutes(ctx),
     ...mcpRoutes(ctx),
     ...availabilityRoutes(ctx),
     ...connectionsRoutes(ctx),

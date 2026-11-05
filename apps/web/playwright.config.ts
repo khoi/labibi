@@ -16,7 +16,6 @@ const nightlySpecs = [
   "artifacts-tab",
   "avatar-motion",
   "avatar-studio",
-  "board",
   "bot-organization",
   "chart-export",
   "chart-links",

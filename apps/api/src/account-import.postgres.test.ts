@@ -23,6 +23,34 @@ const describePostgres =
 
 const at = "2026-03-01T10:00:00.000Z";
 
+const retiredBoardRecords = [
+  { type: "board", id: "src-board", name: "Board", ticketPrefix: "ADA" },
+  {
+    type: "ticket",
+    id: "src-ticket",
+    number: 3,
+    title: "Ship it",
+    description: null,
+    status: "todo",
+    priority: null,
+    assigneeBotId: "src-bot-child",
+    createdByBotId: null,
+    createdByExporter: true,
+    createdAt: at,
+    updatedAt: at,
+    completedAt: null,
+  },
+  {
+    type: "ticket_comment",
+    id: "src-comment",
+    ticketId: "src-ticket",
+    authorBotId: null,
+    authoredByExporter: true,
+    body: "On it",
+    createdAt: at,
+  },
+];
+
 function sourceRecords(): AccountExportRecord[] {
   return [
     { type: "bot_section", id: "src-section", name: "Work", position: 0, createdAt: at },
@@ -247,31 +275,7 @@ function sourceRecords(): AccountExportRecord[] {
       files: null,
       createdAt: at,
     },
-    { type: "board", id: "src-board", name: "Board", ticketPrefix: "ADA" },
-    {
-      type: "ticket",
-      id: "src-ticket",
-      number: 3,
-      title: "Ship it",
-      description: null,
-      status: "todo",
-      priority: null,
-      assigneeBotId: "src-bot-child",
-      createdByBotId: null,
-      createdByExporter: true,
-      createdAt: at,
-      updatedAt: at,
-      completedAt: null,
-    },
-    {
-      type: "ticket_comment",
-      id: "src-comment",
-      ticketId: "src-ticket",
-      authorBotId: null,
-      authoredByExporter: true,
-      body: "On it",
-      createdAt: at,
-    },
+    ...(retiredBoardRecords as unknown as AccountExportRecord[]),
   ];
 }
 
@@ -510,16 +514,6 @@ describePostgres("account import (PostgreSQL)", () => {
       source: "user",
       allSpaces: false,
     });
-    const board = await system.board.findUniqueOrThrow({
-      where: { spaceId },
-      include: { tickets: { include: { comments: true } } },
-    });
-    expect(board.nextNumber).toBe(4);
-    expect(board.tickets[0]).toMatchObject({
-      assigneeBotId: child.id,
-      createdByUserId: userId,
-    });
-    expect(board.tickets[0]!.comments[0]).toMatchObject({ authorUserId: userId, body: "On it" });
   });
 
   it("imports the same archive twice as two independent copies", async () => {

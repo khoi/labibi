@@ -64,7 +64,6 @@ export async function listSpaceRuns(
     where: {
       spaceId: actor.spaceId,
       bot: { archivedAt: null },
-      // Background ticket work belongs on the board, not in the activity list.
       trigger: { notIn: [...BACKGROUND_RUN_TRIGGERS] },
       ...(filter === "active"
         ? { status: { in: [...ACTIVE_RUN_STATUSES] } }

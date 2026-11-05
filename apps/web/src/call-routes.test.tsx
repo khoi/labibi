@@ -54,10 +54,6 @@ vi.mock("./lib/auth", () => ({
     }),
   },
 }));
-vi.mock("./lib/bootstrap", () => ({
-  getTicketBoardEnabled: () => false,
-  subscribeTicketBoardEnabled: () => () => {},
-}));
 vi.mock("./lib/rpc", () => {
   const client = {
     me: mocks.me,

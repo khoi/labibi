@@ -32,7 +32,6 @@ async function render(
   name = "Demo User",
   image?: string,
   onIntegrations = vi.fn(),
-  onBoard?: () => void,
   logos?: Array<{ name: string; logo?: string }>,
 ) {
   const email = "account@rakazo.test";
@@ -54,7 +53,6 @@ async function render(
           onOpenChange={() => {}}
           onIntegrations={onIntegrations}
           onSkills={vi.fn()}
-          onBoard={onBoard}
           onArtifacts={() => {}}
           onSettings={() => {}}
           onLogOut={() => {}}
@@ -132,7 +130,7 @@ it("shows the account image and falls back to the initial after a load error", a
 
 it("opens integrations and keeps the existing account actions and links", async () => {
   const onIntegrations = vi.fn();
-  await render("Demo User", undefined, onIntegrations, vi.fn());
+  await render("Demo User", undefined, onIntegrations);
   const connect = [...host.querySelectorAll("button")].find((button) =>
     button.textContent?.includes("Connect apps"),
   )!;
@@ -143,18 +141,11 @@ it("opens integrations and keeps the existing account actions and links", async 
     "Settings",
     "Skills",
     "Artifacts",
-    "Board",
     "Get the mobile app",
     "Log out",
   ]);
   expect(host.querySelector('[data-testid="user-menu-trigger"]')?.getAttribute("aria-label")).toBe(
     "Account menu for Demo User",
-  );
-});
-it("omits Board when unavailable", async () => {
-  await render();
-  expect(document.querySelector('[data-slot="popover-content"]')?.textContent).not.toContain(
-    "Board",
   );
 });
 
@@ -168,7 +159,7 @@ it("offers Google Play on Android", async () => {
 });
 
 it("falls back when app artwork fails and accepts replacement artwork", async () => {
-  await render("Demo User", undefined, undefined, undefined, [
+  await render("Demo User", undefined, undefined, [
     { name: "Slack", logo: "https://example.test/slack.svg" },
   ]);
   const pill = [...host.querySelectorAll("button")].find((button) =>
@@ -177,7 +168,7 @@ it("falls back when app artwork fails and accepts replacement artwork", async ()
   await act(async () => pill.querySelector("img")!.dispatchEvent(new Event("error")));
   expect(pill.querySelector("img")).toBeNull();
   expect(pill.textContent).toContain("S");
-  await render("Demo User", undefined, undefined, undefined, [
+  await render("Demo User", undefined, undefined, [
     { name: "Slack", logo: "https://example.test/new-slack.svg" },
   ]);
   expect(pill.querySelector("img")?.src).toBe("https://example.test/new-slack.svg");
@@ -231,7 +222,7 @@ it.each([
 });
 
 it("keeps at most three marks with the same tile and a missing-logo fallback", async () => {
-  await render("Demo User", undefined, undefined, undefined, [
+  await render("Demo User", undefined, undefined, [
     { name: "Gmail", logo: "https://example.test/gmail.svg" },
     { name: "Notion" },
     { name: "GitHub", logo: "https://example.test/github.svg" },

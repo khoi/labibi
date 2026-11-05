@@ -120,10 +120,7 @@ function CreateShot() {
   }, []);
   return (
     <main data-ready={ready ? "true" : "false"} className="min-h-screen bg-background">
-      <CreateBotDialog
-        onCreate={async () => undefined}
-        onCancel={() => undefined}
-      />
+      <CreateBotDialog onCreate={async () => undefined} onCancel={() => undefined} />
     </main>
   );
 }
@@ -221,7 +218,6 @@ function ApprovalShot() {
 }
 
 const subscriptionMe: Me = {
-  ticketBoardEnabled: false,
   navLinks: [],
   phoneCallsEnabled: false,
   userId: "user-demo",

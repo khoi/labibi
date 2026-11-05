@@ -19,20 +19,6 @@ import {
   ATTACHMENT_COUNT_CEILING,
 } from "./attachments.js";
 import { AuditEventListInputSchema, AuditEventPageSchema } from "./audit-events.js";
-import {
-  BoardEventSchema,
-  BoardSchema,
-  CommentTicketInput,
-  CreateTicketInput,
-  GetTicketInput,
-  ListTicketsInput,
-  ListTicketsOutput,
-  MoveTicketInput,
-  RenameBoardInput,
-  TicketCommentSchema,
-  TicketSchema,
-  UpdateTicketInput,
-} from "./board.js";
 import { BotAvatarSetSchema } from "./bot-avatar.js";
 import {
   BotSecretMetadata,
@@ -955,21 +941,6 @@ export const appContract = {
       )
       .output(ScratchpadItemSchema),
     remove: oc.input(z.object({ itemId: Id })).output(z.object({ ok: z.literal(true) })),
-  },
-  boards: {
-    list: oc.output(z.array(BoardSchema)),
-    get: oc.output(BoardSchema),
-    rename: oc.input(RenameBoardInput).output(BoardSchema),
-    subscribe: oc.output(eventIterator(BoardEventSchema)),
-  },
-  tickets: {
-    list: oc.input(ListTicketsInput).output(ListTicketsOutput),
-    get: oc.input(GetTicketInput).output(TicketSchema),
-    create: oc.input(CreateTicketInput).output(TicketSchema),
-    update: oc.input(UpdateTicketInput).output(TicketSchema),
-    move: oc.input(MoveTicketInput).output(TicketSchema),
-    comment: oc.input(CommentTicketInput).output(TicketCommentSchema),
-    comments: oc.input(z.object({ ticketId: Id })).output(z.array(TicketCommentSchema)),
   },
   skills: {
     list: oc.input(botId).output(z.array(TaughtSkillSchema)),

@@ -209,38 +209,6 @@ export const AccountExportRecordSchema = z.discriminatedUnion("type", [
     files: json.nullable(),
     createdAt: IsoDate,
   }),
-  /** Only in spaces the user owns. */
-  z.object({
-    type: z.literal("board"),
-    id: Id,
-    name: z.string(),
-    ticketPrefix: z.string(),
-  }),
-  z.object({
-    type: z.literal("ticket"),
-    id: Id,
-    number: z.number().int().positive(),
-    title: z.string(),
-    description: z.string().nullable(),
-    status: z.string(),
-    priority: z.string().nullable(),
-    /** Null when the bot is someone else's, so it is not in the export. */
-    assigneeBotId: Id.nullable(),
-    createdByBotId: Id.nullable(),
-    createdByExporter: z.boolean(),
-    createdAt: IsoDate,
-    updatedAt: IsoDate,
-    completedAt: IsoDate.nullable(),
-  }),
-  z.object({
-    type: z.literal("ticket_comment"),
-    id: Id,
-    ticketId: Id,
-    authorBotId: Id.nullable(),
-    authoredByExporter: z.boolean(),
-    body: z.string(),
-    createdAt: IsoDate,
-  }),
 ]);
 export type AccountExportRecord = z.infer<typeof AccountExportRecordSchema>;
 

@@ -65,8 +65,6 @@ describeWithDatabase("API authorization and resource isolation", () => {
       agentRuntime: "scripted",
       wakeupDriver: "memory",
       signupsEnabled: "true",
-      // Board procedures answer 404 before the session check while the board is off.
-      ticketBoardEnabled: true,
       composio: new ComposioConnector({ client: new FakeComposioClient() }),
     });
     pushTokens = new PrismaPushTokenStore(handles.prisma, encryptionKey);
@@ -489,17 +487,6 @@ describeWithDatabase("API authorization and resource isolation", () => {
       ["bootstrap"],
       ["security/events"],
       ["audit/events"],
-      ["boards/list"],
-      ["boards/get"],
-      ["boards/rename"],
-      ["boards/subscribe"],
-      ["tickets/list"],
-      ["tickets/get"],
-      ["tickets/create"],
-      ["tickets/update"],
-      ["tickets/move"],
-      ["tickets/comment"],
-      ["tickets/comments"],
       ["availability/set"],
       ["availability/items"],
       ["availability/chooseForSpace"],

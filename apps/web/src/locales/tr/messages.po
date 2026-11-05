@@ -1068,7 +1068,6 @@ msgstr "Avatar Stüdyosu"
 #: src/pages/AdminAccessPage.tsx
 #: src/pages/AdminPluginsPage.tsx
 #: src/pages/Auth.tsx
-#: src/pages/Board.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/NavLinkPage.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -1125,15 +1124,6 @@ msgstr "Fatura dönemi"
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Block"
 msgstr "Engelle"
-
-#: src/lib/ticket-status.ts
-msgid "Blocked"
-msgstr "Engellendi"
-
-#: src/components/SidebarFooter.tsx
-#: src/pages/Board.tsx
-msgid "Board"
-msgstr "Pano"
 
 #: src/pages/shell/computer-view.tsx
 #: src/pages/shell/use-computer.tsx
@@ -1630,10 +1620,6 @@ msgstr "Komut menüsü"
 #: src/components/SecretAskCard.tsx
 msgid "Command variable"
 msgstr "Komut değişkeni"
-
-#: src/pages/Board.tsx
-msgid "Comment"
-msgstr "Yorum"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Communication"
@@ -2537,7 +2523,6 @@ msgid "Country"
 msgstr "Ülke"
 
 #: src/components/CreateOrganizationDialog.tsx
-#: src/pages/Board.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
@@ -2810,7 +2795,6 @@ msgstr "Reddet"
 msgid "Deployment default ({0})"
 msgstr "Dağıtım varsayılanı ({0})"
 
-#: src/pages/Board.tsx
 #: src/pages/shell/agent-import.tsx
 msgid "Description"
 msgstr "Açıklama"
@@ -2949,7 +2933,6 @@ msgstr "Hesabın yok mu?"
 
 #: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
-#: src/lib/ticket-status.ts
 #: src/pages/ActivityList.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/import-setup-card.tsx
@@ -3512,7 +3495,6 @@ msgstr "Parolayı gizle"
 msgid "Hide transcript"
 msgstr "Dökümü gizle"
 
-#: src/lib/ticket-priority.ts
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "High"
@@ -3605,14 +3587,6 @@ msgstr "Bir agent içe aktar"
 #: src/components/AccountDataSettings.tsx
 msgid "Import data"
 msgstr "Verileri içe aktar"
-
-#: src/lib/ticket-status.ts
-msgid "In progress"
-msgstr "Devam ediyor"
-
-#: src/lib/ticket-status.ts
-msgid "In review"
-msgstr "İncelemede"
 
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "In this bot"
@@ -3969,7 +3943,6 @@ msgstr "Girişler"
 msgid "Looks like it contains a key"
 msgstr "Bir anahtar içeriyor gibi görünüyor"
 
-#: src/lib/ticket-priority.ts
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "Low"
@@ -4477,10 +4450,6 @@ msgstr "Yeni beceri"
 msgid "New space"
 msgstr "Yeni alan"
 
-#: src/pages/Board.tsx
-msgid "New ticket"
-msgstr "Yeni talep"
-
 #: src/components/VaultSettings.tsx
 msgid "New variable"
 msgstr "Yeni değişken"
@@ -4612,10 +4581,6 @@ msgstr "Henüz beceri yok"
 msgid "No submissions"
 msgstr "Gönderim yok"
 
-#: src/pages/Board.tsx
-msgid "No tickets yet"
-msgstr "Henüz talep yok"
-
 #: src/pages/RoutineEditor.tsx
 msgid "No trigger"
 msgstr "Tetikleyici yok"
@@ -4624,10 +4589,6 @@ msgstr "Tetikleyici yok"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "None"
 msgstr "Yok"
-
-#: src/lib/ticket-priority.ts
-msgid "Normal"
-msgstr "Normal"
 
 #: src/pages/shell/agent-import.tsx
 msgid "Not a valid skill"
@@ -4875,7 +4836,6 @@ msgstr "Çıktı"
 #: src/components/pages/SharePopover.tsx
 #: src/components/SpaceMembersSettings.tsx
 #: src/lib/identity-display.ts
-#: src/pages/Board.tsx
 msgid "Owner"
 msgstr "Sahip"
 
@@ -5128,10 +5088,6 @@ msgstr "Önceki sayfa"
 #: src/pages/SettingsOverlay.tsx
 msgid "Previous settings sections"
 msgstr "Önceki ayar bölümleri"
-
-#: src/pages/Board.tsx
-msgid "Priority"
-msgstr "Öncelik"
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Private"
@@ -5714,7 +5670,6 @@ msgstr "Cumartesi"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/AccountSettingsOverlay.tsx
-#: src/pages/Board.tsx
 #: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx
 #: src/pages/KnowledgeSection.tsx
@@ -6306,7 +6261,6 @@ msgid "State or region"
 msgstr "Eyalet veya bölge"
 
 #: src/pages/ActivityList.tsx
-#: src/pages/Board.tsx
 msgid "Status"
 msgstr "Durum"
 
@@ -6762,10 +6716,6 @@ msgstr "Saat dilimi"
 msgid "Timing may differ"
 msgstr "Zamanlama farklı olabilir"
 
-#: src/pages/Board.tsx
-msgid "Title"
-msgstr "Başlık"
-
 #: src/pages/ActivityList.tsx
 msgid "To"
 msgstr "Bitiş"
@@ -6774,10 +6724,6 @@ msgstr "Bitiş"
 #: src/pages/ActivityList.tsx
 msgid "To {0}"
 msgstr "Bitiş: {0}"
-
-#: src/lib/ticket-status.ts
-msgid "To do"
-msgstr "Yapılacak"
 
 #: src/pages/shell/bot-picker.tsx
 msgid "To:"
@@ -6999,10 +6945,6 @@ msgstr "Şimdi yükselt"
 #: src/pages/shell/avatar-studio-popover.tsx
 msgid "Upload"
 msgstr "Yükle"
-
-#: src/lib/ticket-priority.ts
-msgid "Urgent"
-msgstr "Acil"
 
 #: src/pages/settings-nav.ts
 msgid "Usage"
@@ -7272,10 +7214,6 @@ msgstr "Botlar nerede çalışsın?"
 #: src/components/pages/SharePopover.tsx
 msgid "Who can open this page"
 msgstr "Bu sayfayı kimler açabilir"
-
-#: src/lib/ticket-status.ts
-msgid "Won't do"
-msgstr "Yapılmayacak"
 
 #: src/components/SignupSurvey.tsx
 msgid "Work"

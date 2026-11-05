@@ -1267,7 +1267,6 @@ export type MobileMe = Pick<
   | "needsSignupSurvey"
   | "billingEnabled"
   | "paymentWalletProvider"
-  | "ticketBoardEnabled"
   | "botAvatarSet"
 >;
 

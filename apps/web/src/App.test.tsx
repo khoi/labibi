@@ -13,8 +13,6 @@ interface SessionState {
 
 const signedIn: SessionState = { isPending: false, data: { user: { id: "user-1" } }, error: null };
 const capability = vi.hoisted(() => ({
-  enabled: false,
-  boardLoaded: vi.fn(),
   screen: vi.fn(async () => ({ ok: true })),
   session: null as SessionState | null,
   authMounts: 0,
@@ -23,10 +21,6 @@ const capability = vi.hoisted(() => ({
 vi.mock("@lingui/react/macro", () => ({
   Trans: ({ children }: { children: ReactNode }) => children,
   useLingui: () => ({ t: (parts: TemplateStringsArray) => parts.join("") }),
-}));
-vi.mock("./lib/bootstrap", () => ({
-  getTicketBoardEnabled: () => capability.enabled,
-  subscribeTicketBoardEnabled: () => () => {},
 }));
 vi.mock("./lib/auth", () => ({
   authClient: {
@@ -62,10 +56,6 @@ vi.mock("./components/call/CallLayout", async () => {
 vi.mock("./components/markdown-link-prompt", () => ({
   MarkdownLinkPrompt: ({ children }: { children: ReactNode }) => children,
 }));
-vi.mock("./pages/Board", () => {
-  capability.boardLoaded();
-  return { BoardPage: () => <div>Board page</div> };
-});
 vi.mock("./pages/IntegrationSetup", () => ({ IntegrationSetupPage: () => null }));
 vi.mock("./pages/McpOAuthCallback", () => ({ McpOAuthCallbackPage: () => null }));
 
@@ -104,33 +94,6 @@ it.each([
     }
   },
 );
-
-it("loads the board chunk only after bootstrap enables the route", async () => {
-  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-  const container = document.createElement("div");
-  const root = createRoot(container);
-  const render = () => (
-    <MemoryRouter initialEntries={["/app/board"]}>
-      <App />
-    </MemoryRouter>
-  );
-  try {
-    await act(async () => root.render(render()));
-    expect(container.textContent).toBe("Shell");
-    expect(capability.screen).toHaveBeenCalledExactlyOnceWith({ screen: "board", surface: "web" });
-    expect(capability.boardLoaded).not.toHaveBeenCalled();
-    capability.enabled = true;
-    await act(async () => {
-      root.render(render());
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    });
-    expect(capability.boardLoaded).toHaveBeenCalledOnce();
-    expect(container.textContent).toBe("Board page");
-  } finally {
-    await act(async () => root.unmount());
-    vi.unstubAllGlobals();
-  }
-});
 
 it("keeps the sign-in page mounted while a signed-out session refetches", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);

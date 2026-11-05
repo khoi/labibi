@@ -448,19 +448,6 @@ describePostgres("row-level security (PostgreSQL)", () => {
           },
         }),
       );
-      const board = keep("board", await o.board.create({ data: { spaceId: t.spaceId } }));
-      const ticket = keep(
-        "ticket",
-        await o.ticket.create({
-          data: { spaceId: t.spaceId, boardId: board.id, number: 1, title: "t" },
-        }),
-      );
-      keep(
-        "ticketComment",
-        await o.ticketComment.create({
-          data: { spaceId: t.spaceId, ticketId: ticket.id, body: "b" },
-        }),
-      );
       const identity = keep(
         "messagingIdentity",
         await o.messagingIdentity.create({
