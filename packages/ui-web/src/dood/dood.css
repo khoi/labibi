@@ -54,6 +54,14 @@
   stroke-linecap: butt;
 }
 
+.labradoodle-dood-gaze {
+  transform: translate(calc(var(--dood-gaze-x, 0) * 1px), calc(var(--dood-gaze-y, 0) * 1px));
+}
+
+.labradoodle-dood[data-gaze] .labradoodle-dood-gaze {
+  transition: transform 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
 .labradoodle-dood-eyes {
   fill: var(--dood-eye);
   transform-origin: 12px 8px;
@@ -70,17 +78,23 @@
     animation-delay: calc(var(--dood-phase) * -4.8s);
   }
 
-  .labradoodle-dood[data-state="idle"] .labradoodle-dood-svg[data-motion="true"] .labradoodle-dood-gaze {
-    animation: labradoodle-dood-wander 9s ease-in-out infinite;
-    animation-delay: calc(var(--dood-phase) * -9s);
-  }
-
-  .labradoodle-dood[data-state="thinking"] .labradoodle-dood-svg[data-motion="true"] .labradoodle-dood-gaze {
+  .labradoodle-dood[data-state="thinking"]
+    .labradoodle-dood-svg[data-motion="true"]
+    .labradoodle-dood-gaze {
     animation: labradoodle-dood-look-around 2.4s ease-in-out infinite;
   }
 
-  .labradoodle-dood[data-state="working"] .labradoodle-dood-svg[data-motion="true"] .labradoodle-dood-gaze {
+  .labradoodle-dood[data-state="working"]
+    .labradoodle-dood-svg[data-motion="true"]
+    .labradoodle-dood-gaze {
     animation: labradoodle-dood-look-down 3s ease-in-out infinite;
+  }
+
+  .labradoodle-dood[data-state="idle"]:not([data-gaze])
+    .labradoodle-dood-svg[data-motion="true"]
+    .labradoodle-dood-gaze {
+    animation: labradoodle-dood-wander 9s ease-in-out infinite;
+    animation-delay: calc(var(--dood-phase) * -9s);
   }
 }
 

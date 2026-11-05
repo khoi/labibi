@@ -1,4 +1,4 @@
-import type { Dood as DoodLook, DoodEyes, DoodForm, DoodPose } from "@labradoodle/core";
+import type { DoodEyes, DoodForm, Dood as DoodLook, DoodPose } from "@labradoodle/core";
 import { DOOD_INK, DOOD_PATHS, DOOD_VIEWBOX, doodEyeShapes, shippedHash } from "@labradoodle/core";
 import type { CSSProperties } from "react";
 import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore } from "react";
@@ -61,12 +61,15 @@ export function Dood({
   pose = RESTING,
   size = 24,
   motion = true,
+  gaze,
   className,
 }: {
   dood: DoodLook;
   pose?: DoodPose;
   size?: number;
   motion?: boolean;
+  /** Where the eyes look, in units of the 24-unit box; set, the SVG dood is drawn instead of Rive. */
+  gaze?: { x: number; y: number };
   className?: string;
 }) {
   const canMove = motion && size >= RIVE_MIN_SIZE;
@@ -80,9 +83,9 @@ export function Dood({
   const [wantsRive, setWantsRive] = useState(false);
   const [riveShown, setRiveShown] = useState(false);
   useEffect(() => {
-    if (riveAvailable && canMove && visible && !reducedMotion) setWantsRive(true);
-  }, [canMove, visible, reducedMotion]);
-  const rive = wantsRive && canMove && !reducedMotion;
+    if (riveAvailable && canMove && visible && !reducedMotion && !gaze) setWantsRive(true);
+  }, [canMove, visible, reducedMotion, gaze]);
+  const rive = wantsRive && canMove && !reducedMotion && !gaze;
   const eyes = pose.eyes ?? dood.eyes;
   const { ink, tone } = DOOD_INK[dood.color];
   const busy = pose.state === "thinking" || pose.state === "working";
@@ -97,12 +100,14 @@ export function Dood({
       data-state={pose.state}
       data-form={form}
       data-rive={rive && riveShown ? "shown" : rive ? "loading" : undefined}
+      data-gaze={gaze ? "" : undefined}
       style={
         {
           "--dood-size": `${size}px`,
           "--dood-ink": ink,
           "--dood-tone": tone,
           "--dood-phase": (shippedHash(`${dood.shape}-${dood.eyes}`) % 997) / 997,
+          ...(gaze ? { "--dood-gaze-x": gaze.x, "--dood-gaze-y": gaze.y } : {}),
         } as CSSProperties
       }
     >

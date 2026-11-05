@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { IconTooltip } from "../components/IconTooltip";
 import { PasskeySignIn } from "../components/PasskeySignIn";
+import { WatchingDood } from "../components/WatchingDood";
 import { authClient } from "../lib/auth";
 import type { AuthCapabilities } from "../lib/auth-capabilities";
 import { fetchAuthCapabilities } from "../lib/auth-capabilities";
@@ -581,10 +582,7 @@ export function AuthFrame({
       </div>
       <div className="flex flex-1 items-center justify-center px-6 pb-16">
         <form onSubmit={onSubmit} className="flex w-full max-w-[460px] flex-col items-center">
-          <div className="flex h-[74px] w-[74px] items-center justify-center gap-[11px] rounded-full bg-muted">
-            <span className="h-5 w-[9px] rounded-full bg-primary" />
-            <span className="h-5 w-[9px] rounded-full bg-primary" />
-          </div>
+          <WatchingDood size={74} />
           <h1 aria-live="polite" className="mb-9 mt-7 text-4xl font-medium tracking-tight">
             {title}
           </h1>

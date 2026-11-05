@@ -20,6 +20,7 @@ vi.mock("@lingui/react/macro", () => ({
   Trans: ({ children }: { children: ReactNode }) => children,
 }));
 vi.mock("@labradoodle/ui-web", () => ({
+  Dood: () => <span data-slot="dood" />,
   Button: ({
     children,
     variant,

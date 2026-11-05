@@ -7,7 +7,6 @@ export {
   defaultBotAvatarValue,
   parseBotAvatar,
   resolvePersonaColorDef,
-  Wordmark,
 } from "./bot-avatar.js";
 export type { BotAvatarActivitySource } from "./bot-avatar-activity.js";
 export { BotAvatarActivityProvider } from "./bot-avatar-activity.js";
