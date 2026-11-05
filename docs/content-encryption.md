@@ -16,7 +16,7 @@ directory, so a copied database dump, backup or disk does not reveal it.
 | Credentials and vault items, contacts included (unchanged scheme) | `secrets`, `vault_credentials`, `bot_secrets`, `integration_provider_configs` |
 
 Not yet encrypted, planned next: external conversation messages, outbound
-messaging bodies, steering messages, ticket comments, agent skills, taught
+messaging bodies, steering messages, agent skills, taught
 skill playbooks and recordings, and bot instruction history. Names and other
 metadata stay plaintext: bot, group, file and thread names, routine prompts,
 memory paths, timestamps, ids, block kinds and statuses.

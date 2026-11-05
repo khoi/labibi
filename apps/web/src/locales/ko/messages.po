@@ -1068,7 +1068,6 @@ msgstr "아바타 스튜디오"
 #: src/pages/AdminAccessPage.tsx
 #: src/pages/AdminPluginsPage.tsx
 #: src/pages/Auth.tsx
-#: src/pages/Board.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/NavLinkPage.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -1125,15 +1124,6 @@ msgstr "결제 주기"
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Block"
 msgstr "차단"
-
-#: src/lib/ticket-status.ts
-msgid "Blocked"
-msgstr ""
-
-#: src/components/SidebarFooter.tsx
-#: src/pages/Board.tsx
-msgid "Board"
-msgstr ""
 
 #: src/pages/shell/computer-view.tsx
 #: src/pages/shell/use-computer.tsx
@@ -1630,10 +1620,6 @@ msgstr ""
 #: src/components/SecretAskCard.tsx
 msgid "Command variable"
 msgstr "명령 변수"
-
-#: src/pages/Board.tsx
-msgid "Comment"
-msgstr ""
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Communication"
@@ -2537,7 +2523,6 @@ msgid "Country"
 msgstr ""
 
 #: src/components/CreateOrganizationDialog.tsx
-#: src/pages/Board.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
@@ -2810,7 +2795,6 @@ msgstr "거부"
 msgid "Deployment default ({0})"
 msgstr ""
 
-#: src/pages/Board.tsx
 #: src/pages/shell/agent-import.tsx
 msgid "Description"
 msgstr "설명"
@@ -2949,7 +2933,6 @@ msgstr "계정이 없나요?"
 
 #: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
-#: src/lib/ticket-status.ts
 #: src/pages/ActivityList.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/import-setup-card.tsx
@@ -3512,7 +3495,6 @@ msgstr "비밀번호 숨기기"
 msgid "Hide transcript"
 msgstr "대화 기록 숨기기"
 
-#: src/lib/ticket-priority.ts
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "High"
@@ -3605,14 +3587,6 @@ msgstr "에이전트 가져오기"
 #: src/components/AccountDataSettings.tsx
 msgid "Import data"
 msgstr "데이터 가져오기"
-
-#: src/lib/ticket-status.ts
-msgid "In progress"
-msgstr ""
-
-#: src/lib/ticket-status.ts
-msgid "In review"
-msgstr ""
 
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "In this bot"
@@ -3969,7 +3943,6 @@ msgstr ""
 msgid "Looks like it contains a key"
 msgstr "키가 포함된 것 같습니다"
 
-#: src/lib/ticket-priority.ts
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "Low"
@@ -4477,10 +4450,6 @@ msgstr "새 스킬"
 msgid "New space"
 msgstr "새 스페이스"
 
-#: src/pages/Board.tsx
-msgid "New ticket"
-msgstr ""
-
 #: src/components/VaultSettings.tsx
 msgid "New variable"
 msgstr ""
@@ -4612,10 +4581,6 @@ msgstr "아직 스킬이 없습니다"
 msgid "No submissions"
 msgstr ""
 
-#: src/pages/Board.tsx
-msgid "No tickets yet"
-msgstr ""
-
 #: src/pages/RoutineEditor.tsx
 msgid "No trigger"
 msgstr "트리거 없음"
@@ -4623,10 +4588,6 @@ msgstr "트리거 없음"
 #: src/components/SpendingLimitSettings.tsx
 #: src/components/vault/VaultItemEditor.tsx
 msgid "None"
-msgstr ""
-
-#: src/lib/ticket-priority.ts
-msgid "Normal"
 msgstr ""
 
 #: src/pages/shell/agent-import.tsx
@@ -4875,7 +4836,6 @@ msgstr "출력"
 #: src/components/pages/SharePopover.tsx
 #: src/components/SpaceMembersSettings.tsx
 #: src/lib/identity-display.ts
-#: src/pages/Board.tsx
 msgid "Owner"
 msgstr "소유자"
 
@@ -5127,10 +5087,6 @@ msgstr "이전 페이지"
 
 #: src/pages/SettingsOverlay.tsx
 msgid "Previous settings sections"
-msgstr ""
-
-#: src/pages/Board.tsx
-msgid "Priority"
 msgstr ""
 
 #: src/pages/shell/bot-panel.tsx
@@ -5714,7 +5670,6 @@ msgstr "토요일"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/AccountSettingsOverlay.tsx
-#: src/pages/Board.tsx
 #: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx
 #: src/pages/KnowledgeSection.tsx
@@ -6306,7 +6261,6 @@ msgid "State or region"
 msgstr ""
 
 #: src/pages/ActivityList.tsx
-#: src/pages/Board.tsx
 msgid "Status"
 msgstr ""
 
@@ -6762,10 +6716,6 @@ msgstr ""
 msgid "Timing may differ"
 msgstr "실행 시간이 달라질 수 있습니다"
 
-#: src/pages/Board.tsx
-msgid "Title"
-msgstr "역할"
-
 #: src/pages/ActivityList.tsx
 msgid "To"
 msgstr ""
@@ -6773,10 +6723,6 @@ msgstr ""
 #. placeholder {0}: filters.dateRange.to
 #: src/pages/ActivityList.tsx
 msgid "To {0}"
-msgstr ""
-
-#: src/lib/ticket-status.ts
-msgid "To do"
 msgstr ""
 
 #: src/pages/shell/bot-picker.tsx
@@ -6999,10 +6945,6 @@ msgstr ""
 #: src/pages/shell/avatar-studio-popover.tsx
 msgid "Upload"
 msgstr "업로드"
-
-#: src/lib/ticket-priority.ts
-msgid "Urgent"
-msgstr ""
 
 #: src/pages/settings-nav.ts
 msgid "Usage"
@@ -7272,10 +7214,6 @@ msgstr "Bot을 어디에서 실행할까요?"
 #: src/components/pages/SharePopover.tsx
 msgid "Who can open this page"
 msgstr "이 페이지를 열 수 있는 사람"
-
-#: src/lib/ticket-status.ts
-msgid "Won't do"
-msgstr ""
 
 #: src/components/SignupSurvey.tsx
 msgid "Work"

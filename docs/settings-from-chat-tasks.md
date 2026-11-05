@@ -72,7 +72,7 @@ rest on demand. Every step is measured with tool-choice evals before and after.
       notifications, thinking, voice, "which model are you?" must read only,
       "you're slow" must not switch model), product help (where is X, billing,
       credits, connect an integration), memory, files, shell, web, schedules,
-      scratchpad, tickets, skills, fleet, secrets, ask_user/message_user, and
+      scratchpad, skills, fleet, secrets, ask_user/message_user, and
       plain conversation that must call nothing. Target 60+ cases.
 - [ ] `--cases-file <path>` loads extra cases in the same format from a local
       file outside git, for the private held-out set paraphrased from

@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import type { BotSecretDestination, MessageBlock } from "@labradoodle/contracts";
 import { encodeCardSecret, encodeContactSecret, encodeLoginSecret } from "@labradoodle/contracts";
-import { allocateTicketNumber, createDb, createThreadMessage, ensureBoard } from "@labradoodle/db";
+import { createDb, createThreadMessage } from "@labradoodle/db";
 import { pageViewerCode } from "@labradoodle/page-kit/compile";
 import { PNG } from "pngjs";
 import { sessionCookieHeader } from "../index.js";
@@ -323,7 +323,6 @@ export async function seedIosScreenshotFixture(input: {
       spaceId: me.spaceId,
       userId: me.userId,
     });
-    await ensureTickets(db.prisma, me.spaceId, me.userId, [researcher.id, writer.id]);
     await ensureMemoryNotes(db.prisma, {
       spaceId: me.spaceId,
       userId: me.userId,
@@ -646,40 +645,6 @@ function briefPdf() {
   for (const offset of offsets) body += `${String(offset).padStart(10, "0")} 00000 n \n`;
   body += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
   return Buffer.from(body, "latin1");
-}
-
-const TICKETS = [
-  { title: "Draft the launch announcement", status: "doing" },
-  { title: "Collect customer quotes", status: "todo" },
-  { title: "Review pricing page copy", status: "review" },
-  { title: "Publish the changelog", status: "done" },
-] as const;
-
-/** Board cards in several columns. Only an API with the board enabled shows them. */
-async function ensureTickets(
-  prisma: ReturnType<typeof createDb>["prisma"],
-  spaceId: string,
-  userId: string,
-  botIds: string[],
-) {
-  const board = await ensureBoard(prisma, spaceId);
-  if (await prisma.ticket.count({ where: { boardId: board.id } })) return;
-  for (const [index, ticket] of TICKETS.entries()) {
-    await prisma.$transaction(async (tx) =>
-      tx.ticket.create({
-        data: {
-          boardId: board.id,
-          spaceId,
-          number: await allocateTicketNumber(tx, board.id),
-          title: ticket.title,
-          status: ticket.status,
-          assigneeBotId: botIds[index % botIds.length],
-          createdByUserId: userId,
-          completedAt: ticket.status === "done" ? new Date() : null,
-        },
-      }),
-    );
-  }
 }
 
 /** Subscribes through the API and the billing provider, so every billing screen reads it back. */

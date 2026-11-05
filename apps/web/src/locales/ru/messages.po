@@ -1068,7 +1068,6 @@ msgstr "Студия аватаров"
 #: src/pages/AdminAccessPage.tsx
 #: src/pages/AdminPluginsPage.tsx
 #: src/pages/Auth.tsx
-#: src/pages/Board.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/NavLinkPage.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -1125,15 +1124,6 @@ msgstr "Период оплаты"
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Block"
 msgstr "Блокировать"
-
-#: src/lib/ticket-status.ts
-msgid "Blocked"
-msgstr ""
-
-#: src/components/SidebarFooter.tsx
-#: src/pages/Board.tsx
-msgid "Board"
-msgstr ""
 
 #: src/pages/shell/computer-view.tsx
 #: src/pages/shell/use-computer.tsx
@@ -1630,10 +1620,6 @@ msgstr ""
 #: src/components/SecretAskCard.tsx
 msgid "Command variable"
 msgstr "Переменная команды"
-
-#: src/pages/Board.tsx
-msgid "Comment"
-msgstr ""
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Communication"
@@ -2537,7 +2523,6 @@ msgid "Country"
 msgstr ""
 
 #: src/components/CreateOrganizationDialog.tsx
-#: src/pages/Board.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
@@ -2810,7 +2795,6 @@ msgstr "Запретить"
 msgid "Deployment default ({0})"
 msgstr ""
 
-#: src/pages/Board.tsx
 #: src/pages/shell/agent-import.tsx
 msgid "Description"
 msgstr "Описание"
@@ -2949,7 +2933,6 @@ msgstr "У вас нет учетной записи?"
 
 #: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
-#: src/lib/ticket-status.ts
 #: src/pages/ActivityList.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/import-setup-card.tsx
@@ -3512,7 +3495,6 @@ msgstr "Скрыть пароль"
 msgid "Hide transcript"
 msgstr "Скрыть расшифровку"
 
-#: src/lib/ticket-priority.ts
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "High"
@@ -3605,14 +3587,6 @@ msgstr "Импорт агента"
 #: src/components/AccountDataSettings.tsx
 msgid "Import data"
 msgstr "Импорт данных"
-
-#: src/lib/ticket-status.ts
-msgid "In progress"
-msgstr ""
-
-#: src/lib/ticket-status.ts
-msgid "In review"
-msgstr ""
 
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "In this bot"
@@ -3969,7 +3943,6 @@ msgstr ""
 msgid "Looks like it contains a key"
 msgstr "Похоже, содержит ключ"
 
-#: src/lib/ticket-priority.ts
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "Low"
@@ -4477,10 +4450,6 @@ msgstr "Новый навык"
 msgid "New space"
 msgstr "Новое пространство"
 
-#: src/pages/Board.tsx
-msgid "New ticket"
-msgstr ""
-
 #: src/components/VaultSettings.tsx
 msgid "New variable"
 msgstr ""
@@ -4612,10 +4581,6 @@ msgstr "Навыков пока нет"
 msgid "No submissions"
 msgstr ""
 
-#: src/pages/Board.tsx
-msgid "No tickets yet"
-msgstr ""
-
 #: src/pages/RoutineEditor.tsx
 msgid "No trigger"
 msgstr "Нет триггера"
@@ -4623,10 +4588,6 @@ msgstr "Нет триггера"
 #: src/components/SpendingLimitSettings.tsx
 #: src/components/vault/VaultItemEditor.tsx
 msgid "None"
-msgstr ""
-
-#: src/lib/ticket-priority.ts
-msgid "Normal"
 msgstr ""
 
 #: src/pages/shell/agent-import.tsx
@@ -4875,7 +4836,6 @@ msgstr "Вывод"
 #: src/components/pages/SharePopover.tsx
 #: src/components/SpaceMembersSettings.tsx
 #: src/lib/identity-display.ts
-#: src/pages/Board.tsx
 msgid "Owner"
 msgstr "Владелец"
 
@@ -5127,10 +5087,6 @@ msgstr "Предыдущая страница"
 
 #: src/pages/SettingsOverlay.tsx
 msgid "Previous settings sections"
-msgstr ""
-
-#: src/pages/Board.tsx
-msgid "Priority"
 msgstr ""
 
 #: src/pages/shell/bot-panel.tsx
@@ -5714,7 +5670,6 @@ msgstr "суббота"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/AccountSettingsOverlay.tsx
-#: src/pages/Board.tsx
 #: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx
 #: src/pages/KnowledgeSection.tsx
@@ -6306,7 +6261,6 @@ msgid "State or region"
 msgstr ""
 
 #: src/pages/ActivityList.tsx
-#: src/pages/Board.tsx
 msgid "Status"
 msgstr ""
 
@@ -6762,10 +6716,6 @@ msgstr ""
 msgid "Timing may differ"
 msgstr "Время запуска может отличаться"
 
-#: src/pages/Board.tsx
-msgid "Title"
-msgstr "Заголовок"
-
 #: src/pages/ActivityList.tsx
 msgid "To"
 msgstr ""
@@ -6773,10 +6723,6 @@ msgstr ""
 #. placeholder {0}: filters.dateRange.to
 #: src/pages/ActivityList.tsx
 msgid "To {0}"
-msgstr ""
-
-#: src/lib/ticket-status.ts
-msgid "To do"
 msgstr ""
 
 #: src/pages/shell/bot-picker.tsx
@@ -6999,10 +6945,6 @@ msgstr ""
 #: src/pages/shell/avatar-studio-popover.tsx
 msgid "Upload"
 msgstr "Загрузить"
-
-#: src/lib/ticket-priority.ts
-msgid "Urgent"
-msgstr ""
 
 #: src/pages/settings-nav.ts
 msgid "Usage"
@@ -7272,10 +7214,6 @@ msgstr "Где должны работать боты?"
 #: src/components/pages/SharePopover.tsx
 msgid "Who can open this page"
 msgstr "Кто может открыть эту страницу"
-
-#: src/lib/ticket-status.ts
-msgid "Won't do"
-msgstr ""
 
 #: src/components/SignupSurvey.tsx
 msgid "Work"

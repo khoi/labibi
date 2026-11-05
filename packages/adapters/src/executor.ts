@@ -245,7 +245,6 @@ import {
   materializeRecentThreadFiles,
   recentThreadFilesInstruction,
 } from "./thread-artifacts.js";
-import { loadAgentTicketContext } from "./ticket-context.js";
 import { appendToolCompletionAudit } from "./tool-completion-audit.js";
 import { toolResultFingerprint } from "./tool-loop.js";
 import { restoreTurnCheckpoint } from "./turn-checkpoint.js";
@@ -902,33 +901,21 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
                 context,
               )
             : Promise.resolve(null);
-        const [
-          discovered,
-          currentTurnImages,
-          memoryContext,
-          scratchpadContext,
-          ticketContext,
-          recalled,
-        ] = await Promise.all([
-          discoveredPromise,
-          loadCurrentTurnImages(deps, turnBlocks, context),
-          nonOwnerChatRun
-            ? Promise.resolve("")
-            : loadAgentMemoryContext(deps.memory, bot.id, context),
-          nonOwnerChatRun
-            ? Promise.resolve("")
-            : loadAgentScratchpadContext(deps, {
-                spaceId: run.spaceId,
-                botId: bot.id,
-              }),
-          nonOwnerChatRun || !deps.ticketBoardEnabled
-            ? Promise.resolve(undefined)
-            : loadAgentTicketContext(deps, {
-                spaceId: run.spaceId,
-                text: task.prompt,
-              }),
-          recallPromise,
-        ]);
+        const [discovered, currentTurnImages, memoryContext, scratchpadContext, recalled] =
+          await Promise.all([
+            discoveredPromise,
+            loadCurrentTurnImages(deps, turnBlocks, context),
+            nonOwnerChatRun
+              ? Promise.resolve("")
+              : loadAgentMemoryContext(deps.memory, bot.id, context),
+            nonOwnerChatRun
+              ? Promise.resolve("")
+              : loadAgentScratchpadContext(deps, {
+                  spaceId: run.spaceId,
+                  botId: bot.id,
+                }),
+            recallPromise,
+          ]);
         const semanticMemoryEnabled = Boolean(semanticMemory) && !nonOwnerChatRun;
         let recalledMemory = "";
         let recallSucceeded = false;
@@ -1386,7 +1373,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
         }
         const builtins = [
           ...selectBuiltinToolsForRun({
-            ticketBoardEnabled: deps.ticketBoardEnabled,
             phoneCallsEnabled: deps.phoneCallsEnabled,
             historyRetrievalEnabled: contextStrategy !== "current",
             graphicalToolsAllowed,
@@ -1892,9 +1878,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
                   : undefined,
                 redactedScratchpadContext: scratchpadContext
                   ? redactSecrets(scratchpadContext, runSecrets)
-                  : undefined,
-                redactedTicketContext: ticketContext
-                  ? redactSecrets(ticketContext, runSecrets)
                   : undefined,
                 hasHistoricalContext: historicalContext.length > 0,
                 historyRetrievalEnabled: contextStrategy !== "current",

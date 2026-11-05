@@ -43,7 +43,6 @@ import {
   createRunSandbox,
   createRunSecretWriter,
   createStrategicInitiativeReconciler,
-  createTicketChangeNotifier,
   createWebProvider,
   databaseCapacityBackoffMs,
   deploymentModelUsageLookup,
@@ -87,7 +86,6 @@ import {
 } from "@labradoodle/adapters";
 import { resolveEncryptionKey, resolveSupervisorToken, uploadSizeFromEnv } from "@labradoodle/core";
 import {
-  createBoardEvents,
   createDb,
   createSecurityEventPruner,
   createThreadEvents,
@@ -150,8 +148,6 @@ async function main() {
     analytics,
     runSecretWriter: createRunSecretWriter(secrets),
   });
-  const ticketBoardEnabled = process.env.TICKET_BOARD_ENABLED === "true";
-  const boardEvents = createBoardEvents(realtime);
   const dataDir = process.env.DATA_DIR ?? "./data";
   const runtime =
     process.env.AGENT_RUNTIME === "scripted"
@@ -254,12 +250,6 @@ async function main() {
     legacyMessaging,
     jobs,
   );
-  const ticketChanges = createTicketChangeNotifier({
-    boardEvents,
-    jobs,
-    prisma,
-    ticketBoardEnabled,
-  });
   // One provider instance so emulator launches and polls share the same Map.
   const cloudAgent = createCloudAgentConnection();
   const paymentWallet = await createPaymentWalletProvider();
@@ -313,8 +303,6 @@ async function main() {
     notifications,
     jobs,
     events,
-    onTicketChange: ticketChanges,
-    ticketBoardEnabled,
     ...phoneCallSettings(process.env),
     messaging: messaging ? createMessagingContextLoader(prisma) : undefined,
     web: createWebProvider(),

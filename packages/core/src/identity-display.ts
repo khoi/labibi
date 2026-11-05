@@ -149,12 +149,6 @@ export function displayIdentityResult(
   if (procedure === "messaging/channels/respond") return channel(result);
   if (procedure === "messaging/connections/list") return list(connection)(result);
   if (procedure === "messaging/connections/respond") return connection(result);
-  const comment: Project = (value) => {
-    const source = value as { authorBotId?: string | null };
-    return fields(value, { authorName: label(source.authorBotId ? labels.bot : labels.member) });
-  };
-  if (procedure === "tickets/comments") return list(comment)(result);
-  if (procedure === "tickets/comment") return comment(result);
   if (procedure === "computer/status")
     return fields(result, {
       busyBotName: (name) => (name === null ? null : label(labels.bot)(name)),

@@ -377,22 +377,6 @@ export function createRouterContext(deps: RouterDeps) {
     return next();
   });
 
-  const boardEnabled = os
-    .use(async ({ next }) => {
-      if (!deps.env?.ticketBoardEnabled) throw new ORPCError("NOT_FOUND");
-      return next();
-    })
-    .use(async ({ context, next }) => {
-      const actor = context.actor;
-      if (!actor) throw new ORPCError("UNAUTHORIZED");
-      return asTenant(actor, () => next({ context: { ...context, actor } }));
-    });
-  const ticketDeps = {
-    prisma: deps.prisma,
-    ticketBoardEnabled: deps.env?.ticketBoardEnabled,
-    onTicketChange: deps.ticketChanges,
-  };
-
   return {
     deps,
     os,
@@ -423,8 +407,6 @@ export function createRouterContext(deps: RouterDeps) {
     agentSkills,
     authed,
     callsEnabled,
-    boardEnabled,
-    ticketDeps,
   };
 }
 

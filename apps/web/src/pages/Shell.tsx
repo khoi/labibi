@@ -1075,7 +1075,6 @@ function SpaceShell() {
         }
         footerLogos={footerLogos}
         user={session.data?.user}
-        ticketBoardEnabled={Boolean(bootstrapMe?.ticketBoardEnabled)}
         navLinks={desktopBridge() ? [] : (bootstrapMe?.navLinks ?? [])}
         openSettings={openSettings}
         openIntegrations={() => setOverlay({ kind: "integrations" })}

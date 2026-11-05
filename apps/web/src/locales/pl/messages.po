@@ -1068,7 +1068,6 @@ msgstr "Studio awatara"
 #: src/pages/AdminAccessPage.tsx
 #: src/pages/AdminPluginsPage.tsx
 #: src/pages/Auth.tsx
-#: src/pages/Board.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/NavLinkPage.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -1125,15 +1124,6 @@ msgstr "Okres rozliczeniowy"
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Block"
 msgstr "Zablokuj"
-
-#: src/lib/ticket-status.ts
-msgid "Blocked"
-msgstr "Zablokowane"
-
-#: src/components/SidebarFooter.tsx
-#: src/pages/Board.tsx
-msgid "Board"
-msgstr "Tablica"
 
 #: src/pages/shell/computer-view.tsx
 #: src/pages/shell/use-computer.tsx
@@ -1630,10 +1620,6 @@ msgstr "Menu poleceń"
 #: src/components/SecretAskCard.tsx
 msgid "Command variable"
 msgstr "Zmienna polecenia"
-
-#: src/pages/Board.tsx
-msgid "Comment"
-msgstr "Komentarz"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Communication"
@@ -2537,7 +2523,6 @@ msgid "Country"
 msgstr "Kraj"
 
 #: src/components/CreateOrganizationDialog.tsx
-#: src/pages/Board.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
@@ -2810,7 +2795,6 @@ msgstr "Odmów"
 msgid "Deployment default ({0})"
 msgstr "Domyślne dla wdrożenia ({0})"
 
-#: src/pages/Board.tsx
 #: src/pages/shell/agent-import.tsx
 msgid "Description"
 msgstr "Opis"
@@ -2949,7 +2933,6 @@ msgstr "Nie masz konta?"
 
 #: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
-#: src/lib/ticket-status.ts
 #: src/pages/ActivityList.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/import-setup-card.tsx
@@ -3512,7 +3495,6 @@ msgstr "Ukryj hasło"
 msgid "Hide transcript"
 msgstr "Ukryj transkrypcję"
 
-#: src/lib/ticket-priority.ts
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "High"
@@ -3605,14 +3587,6 @@ msgstr "Importuj agenta"
 #: src/components/AccountDataSettings.tsx
 msgid "Import data"
 msgstr "Importuj dane"
-
-#: src/lib/ticket-status.ts
-msgid "In progress"
-msgstr "W toku"
-
-#: src/lib/ticket-status.ts
-msgid "In review"
-msgstr "Do weryfikacji"
 
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "In this bot"
@@ -3969,7 +3943,6 @@ msgstr "Loginy"
 msgid "Looks like it contains a key"
 msgstr "Wygląda na to, że zawiera klucz"
 
-#: src/lib/ticket-priority.ts
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "Low"
@@ -4477,10 +4450,6 @@ msgstr "Nowa umiejętność"
 msgid "New space"
 msgstr "Nowa przestrzeń"
 
-#: src/pages/Board.tsx
-msgid "New ticket"
-msgstr "Nowe zgłoszenie"
-
 #: src/components/VaultSettings.tsx
 msgid "New variable"
 msgstr "Nowa zmienna"
@@ -4612,10 +4581,6 @@ msgstr "Brak umiejętności"
 msgid "No submissions"
 msgstr "Brak zgłoszeń"
 
-#: src/pages/Board.tsx
-msgid "No tickets yet"
-msgstr "Brak zgłoszeń"
-
 #: src/pages/RoutineEditor.tsx
 msgid "No trigger"
 msgstr "Brak wyzwalacza"
@@ -4624,10 +4589,6 @@ msgstr "Brak wyzwalacza"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "None"
 msgstr "Brak"
-
-#: src/lib/ticket-priority.ts
-msgid "Normal"
-msgstr "Normalny"
 
 #: src/pages/shell/agent-import.tsx
 msgid "Not a valid skill"
@@ -4875,7 +4836,6 @@ msgstr "Dane wyjściowe"
 #: src/components/pages/SharePopover.tsx
 #: src/components/SpaceMembersSettings.tsx
 #: src/lib/identity-display.ts
-#: src/pages/Board.tsx
 msgid "Owner"
 msgstr "Właściciel"
 
@@ -5128,10 +5088,6 @@ msgstr "Poprzednia strona"
 #: src/pages/SettingsOverlay.tsx
 msgid "Previous settings sections"
 msgstr "Poprzednie sekcje ustawień"
-
-#: src/pages/Board.tsx
-msgid "Priority"
-msgstr "Priorytet"
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Private"
@@ -5714,7 +5670,6 @@ msgstr "sobota"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/AccountSettingsOverlay.tsx
-#: src/pages/Board.tsx
 #: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx
 #: src/pages/KnowledgeSection.tsx
@@ -6306,7 +6261,6 @@ msgid "State or region"
 msgstr "Stan lub region"
 
 #: src/pages/ActivityList.tsx
-#: src/pages/Board.tsx
 msgid "Status"
 msgstr "Status"
 
@@ -6762,10 +6716,6 @@ msgstr "Strefa czasowa"
 msgid "Timing may differ"
 msgstr "Czas uruchomienia może się różnić"
 
-#: src/pages/Board.tsx
-msgid "Title"
-msgstr "Tytuł"
-
 #: src/pages/ActivityList.tsx
 msgid "To"
 msgstr "Do"
@@ -6774,10 +6724,6 @@ msgstr "Do"
 #: src/pages/ActivityList.tsx
 msgid "To {0}"
 msgstr "Do {0}"
-
-#: src/lib/ticket-status.ts
-msgid "To do"
-msgstr "Do zrobienia"
 
 #: src/pages/shell/bot-picker.tsx
 msgid "To:"
@@ -6999,10 +6945,6 @@ msgstr "Przejdź na wyższy plan teraz"
 #: src/pages/shell/avatar-studio-popover.tsx
 msgid "Upload"
 msgstr "Prześlij"
-
-#: src/lib/ticket-priority.ts
-msgid "Urgent"
-msgstr "Pilne"
 
 #: src/pages/settings-nav.ts
 msgid "Usage"
@@ -7272,10 +7214,6 @@ msgstr "Gdzie mają działać boty?"
 #: src/components/pages/SharePopover.tsx
 msgid "Who can open this page"
 msgstr "Kto może otworzyć tę stronę"
-
-#: src/lib/ticket-status.ts
-msgid "Won't do"
-msgstr "Nie będzie robione"
 
 #: src/components/SignupSurvey.tsx
 msgid "Work"

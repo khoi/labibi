@@ -21,7 +21,6 @@ import type { CloudAgentConnection } from "./cloud-agent-factory.js";
 import type { MemoryProviderResolver } from "./memory-provider-factory.js";
 import type { CodexLiveCatalog } from "./pi-codex-catalog.js";
 import type { RemoteTransportDependencies } from "./remote-mcp.js";
-import type { TicketChangeNotifier } from "./ticket-changes.js";
 import type { UserDeviceGateway } from "./user-device-protocol.js";
 
 export interface ExecutorDeps {
@@ -51,9 +50,6 @@ export interface ExecutorDeps {
   dataDir?: string;
   notifications?: NotificationProvider;
   jobs: JobPublisher;
-  /** Publishes board-change signals and wakes ticket owners; absent disables both. */
-  onTicketChange?: TicketChangeNotifier;
-  ticketBoardEnabled?: boolean;
   phoneCallsEnabled?: boolean;
   phoneCallCooldownMinutes?: number;
   phoneCallRingSeconds?: number;

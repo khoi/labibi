@@ -27,12 +27,8 @@ export function runPromotesMidTurnNarration(trigger: string): boolean {
   return trigger !== "routine" && trigger !== "bot_message" && !isBackgroundRunTrigger(trigger);
 }
 
-export const TICKET_SILENT_REPLY_GUIDANCE =
-  "Ticket work is reported on the board, not in chat. Put updates and results in ticket_comment and keep the ticket status current with ticket_update. Use the existing ask or approval mechanism when user input is needed. Leave the final reply empty.";
-
 export function runReplyGuidance(trigger: string): string {
   if (trigger === "reaction") return REACTION_SILENT_REPLY_GUIDANCE;
-  if (isBackgroundRunTrigger(trigger)) return TICKET_SILENT_REPLY_GUIDANCE;
   return runAllowsSilentEmpty(trigger) ? ROUTINE_SILENT_REPLY_GUIDANCE : longWorkProgressGuidance();
 }
 

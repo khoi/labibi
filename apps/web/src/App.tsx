@@ -20,7 +20,6 @@ import { PageLoading } from "./components/PageLoading";
 import { SignInEntrance } from "./components/SignInEntrance";
 import { SubscriptionGate } from "./components/SubscriptionGate";
 import { authClient } from "./lib/auth";
-import { getTicketBoardEnabled, subscribeTicketBoardEnabled } from "./lib/bootstrap";
 import { syncCallIdentity } from "./lib/call-session";
 import { desktopBridge } from "./lib/desktop";
 import { syncWebLogoAvatarIdentity } from "./lib/logo-avatar-activity";
@@ -66,7 +65,6 @@ const NotFoundPage = lazyComponent(() =>
 const ArtifactsPage = lazyComponent(() =>
   import("./pages/Artifacts").then((module) => module.ArtifactsPage),
 );
-const BoardPage = lazyComponent(() => import("./pages/Board").then((module) => module.BoardPage));
 const AdminPluginsPage = lazyComponent(() =>
   import("./pages/AdminPluginsPage").then((module) => module.AdminPluginsPage),
 );
@@ -118,11 +116,6 @@ export function App() {
 function SessionApp() {
   const [searchParams] = useSearchParams();
   const next = signInNext(searchParams.get("next"));
-  const ticketBoardEnabled = useSyncExternalStore(
-    subscribeTicketBoardEnabled,
-    getTicketBoardEnabled,
-    () => false,
-  );
   const session = authClient.useSession();
   const { pathname, search } = useLocation();
   const screen = analyticsScreen(pathname);
@@ -297,7 +290,6 @@ function SessionApp() {
                   <Route path="/onboarding/:step?" element={<OnboardingPage />} />
                   <Route path="/app/artifacts" element={<ArtifactsPage />} />
                   <Route path="/app/artifacts/:artifactId" element={<ArtifactsPage />} />
-                  {ticketBoardEnabled ? <Route path="/app/board" element={<BoardPage />} /> : null}
                   <Route path="/app/x/:linkId" element={<NavLinkPage />} />
                 </Route>
               </Route>

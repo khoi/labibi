@@ -1068,7 +1068,6 @@ msgstr "Avatarstudio"
 #: src/pages/AdminAccessPage.tsx
 #: src/pages/AdminPluginsPage.tsx
 #: src/pages/Auth.tsx
-#: src/pages/Board.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/NavLinkPage.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -1125,15 +1124,6 @@ msgstr "Factuurperiode"
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Block"
 msgstr "Blokkeren"
-
-#: src/lib/ticket-status.ts
-msgid "Blocked"
-msgstr "Geblokkeerd"
-
-#: src/components/SidebarFooter.tsx
-#: src/pages/Board.tsx
-msgid "Board"
-msgstr "Bord"
 
 #: src/pages/shell/computer-view.tsx
 #: src/pages/shell/use-computer.tsx
@@ -1630,10 +1620,6 @@ msgstr ""
 #: src/components/SecretAskCard.tsx
 msgid "Command variable"
 msgstr "Commandovariabele"
-
-#: src/pages/Board.tsx
-msgid "Comment"
-msgstr "Opmerking"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Communication"
@@ -2537,7 +2523,6 @@ msgid "Country"
 msgstr ""
 
 #: src/components/CreateOrganizationDialog.tsx
-#: src/pages/Board.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
@@ -2810,7 +2795,6 @@ msgstr "Weigeren"
 msgid "Deployment default ({0})"
 msgstr ""
 
-#: src/pages/Board.tsx
 #: src/pages/shell/agent-import.tsx
 msgid "Description"
 msgstr "Beschrijving"
@@ -2949,7 +2933,6 @@ msgstr "Heb je geen account?"
 
 #: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
-#: src/lib/ticket-status.ts
 #: src/pages/ActivityList.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/import-setup-card.tsx
@@ -3512,7 +3495,6 @@ msgstr "Wachtwoord verbergen"
 msgid "Hide transcript"
 msgstr "Transcript verbergen"
 
-#: src/lib/ticket-priority.ts
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "High"
@@ -3605,14 +3587,6 @@ msgstr "Een agent importeren"
 #: src/components/AccountDataSettings.tsx
 msgid "Import data"
 msgstr "Gegevens importeren"
-
-#: src/lib/ticket-status.ts
-msgid "In progress"
-msgstr "Bezig"
-
-#: src/lib/ticket-status.ts
-msgid "In review"
-msgstr "In beoordeling"
 
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "In this bot"
@@ -3969,7 +3943,6 @@ msgstr ""
 msgid "Looks like it contains a key"
 msgstr "Lijkt een sleutel te bevatten"
 
-#: src/lib/ticket-priority.ts
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "Low"
@@ -4477,10 +4450,6 @@ msgstr "Nieuwe skill"
 msgid "New space"
 msgstr "Nieuwe space"
 
-#: src/pages/Board.tsx
-msgid "New ticket"
-msgstr "Nieuw ticket"
-
 #: src/components/VaultSettings.tsx
 msgid "New variable"
 msgstr ""
@@ -4612,10 +4581,6 @@ msgstr "Nog geen skills"
 msgid "No submissions"
 msgstr ""
 
-#: src/pages/Board.tsx
-msgid "No tickets yet"
-msgstr "Nog geen tickets"
-
 #: src/pages/RoutineEditor.tsx
 msgid "No trigger"
 msgstr "Geen trigger"
@@ -4624,10 +4589,6 @@ msgstr "Geen trigger"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "None"
 msgstr ""
-
-#: src/lib/ticket-priority.ts
-msgid "Normal"
-msgstr "Normaal"
 
 #: src/pages/shell/agent-import.tsx
 msgid "Not a valid skill"
@@ -4875,7 +4836,6 @@ msgstr "Uitvoer"
 #: src/components/pages/SharePopover.tsx
 #: src/components/SpaceMembersSettings.tsx
 #: src/lib/identity-display.ts
-#: src/pages/Board.tsx
 msgid "Owner"
 msgstr "Eigenaar"
 
@@ -5128,10 +5088,6 @@ msgstr "Vorige pagina"
 #: src/pages/SettingsOverlay.tsx
 msgid "Previous settings sections"
 msgstr ""
-
-#: src/pages/Board.tsx
-msgid "Priority"
-msgstr "Prioriteit"
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Private"
@@ -5714,7 +5670,6 @@ msgstr "zaterdag"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/AccountSettingsOverlay.tsx
-#: src/pages/Board.tsx
 #: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx
 #: src/pages/KnowledgeSection.tsx
@@ -6306,7 +6261,6 @@ msgid "State or region"
 msgstr ""
 
 #: src/pages/ActivityList.tsx
-#: src/pages/Board.tsx
 msgid "Status"
 msgstr "Status"
 
@@ -6762,10 +6716,6 @@ msgstr "Tijdzone"
 msgid "Timing may differ"
 msgstr "Het tijdstip kan afwijken"
 
-#: src/pages/Board.tsx
-msgid "Title"
-msgstr "Titel"
-
 #: src/pages/ActivityList.tsx
 msgid "To"
 msgstr "Aan"
@@ -6774,10 +6724,6 @@ msgstr "Aan"
 #: src/pages/ActivityList.tsx
 msgid "To {0}"
 msgstr "Tot {0}"
-
-#: src/lib/ticket-status.ts
-msgid "To do"
-msgstr "Te doen"
 
 #: src/pages/shell/bot-picker.tsx
 msgid "To:"
@@ -6999,10 +6945,6 @@ msgstr ""
 #: src/pages/shell/avatar-studio-popover.tsx
 msgid "Upload"
 msgstr "Uploaden"
-
-#: src/lib/ticket-priority.ts
-msgid "Urgent"
-msgstr "Dringend"
 
 #: src/pages/settings-nav.ts
 msgid "Usage"
@@ -7272,10 +7214,6 @@ msgstr "Waar moeten bots draaien?"
 #: src/components/pages/SharePopover.tsx
 msgid "Who can open this page"
 msgstr "Wie deze pagina kan openen"
-
-#: src/lib/ticket-status.ts
-msgid "Won't do"
-msgstr "Wordt niet gedaan"
 
 #: src/components/SignupSurvey.tsx
 msgid "Work"

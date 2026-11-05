@@ -21,7 +21,6 @@ import {
   runAllowsSilentEmpty,
   runPromotesMidTurnNarration,
   runReplyGuidance,
-  TICKET_SILENT_REPLY_GUIDANCE,
 } from "./run-replies.js";
 import { handoffEndedTurn } from "./run-turn.js";
 import {
@@ -286,8 +285,7 @@ describe("background ticket runs", () => {
     expect(subagentMarksUnread("tickets", "failed")).toBe(false);
     expect(runSendsFinishNotification("tickets")).toBe(false);
     expect(runSendsFinishNotification("user")).toBe(true);
-    expect(runReplyGuidance("tickets")).toBe(TICKET_SILENT_REPLY_GUIDANCE);
-    expect(runReplyGuidance("tickets")).toContain("ticket_comment");
+    expect(runReplyGuidance("tickets")).toBe(ROUTINE_SILENT_REPLY_GUIDANCE);
   });
 
   it("drops a tool-only ticket final so the transcript gets no bubble", () => {

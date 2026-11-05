@@ -28,7 +28,6 @@ describe("parseNavLinks", () => {
     "javascript:alert(1)",
     "ext/clients",
     "/app",
-    "/app/board",
     "/api/me",
     "/rpc/me",
     "/novnc/",

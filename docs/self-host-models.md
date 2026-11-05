@@ -183,8 +183,7 @@ posts the finished video to the chat that asked for it, once; the bot then gets 
 turn to follow up. A video that fails, or is still unfinished after an hour, is
 marked failed and the bot gets a turn to say so. The bot can also call the tool
 again with `jobId` to check progress. Use the existing per-bot tool switches and action approval rules to
-control access. Both tools require approval by default. Ticket board runs keep
-these chat-only media tools unavailable so ticket work stays on the board.
+control access. Both tools require approval by default.
 
 Each run allows at most two submissions (including failures). Submissions are
 never retried automatically: a lost response can mean the provider accepted and

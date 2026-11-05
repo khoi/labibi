@@ -61,24 +61,20 @@ export async function readAccountExport(
     prisma.spaceMember.findMany({
       where: { userId, space: { deletingAt: null } },
       orderBy: [{ space: { createdAt: "asc" } }, { spaceId: "asc" }],
-      select: { role: true, space: { select: { id: true, name: true, createdAt: true } } },
+      select: { space: { select: { id: true, name: true, createdAt: true } } },
     }),
   ]);
   return {
     userId,
     user,
-    spaces: memberships.map(({ role, space }) => {
+    spaces: memberships.map(({ space }) => {
       const tenant = { spaceId: space.id, userId };
       const written: Written = { artifacts: [], botIds: [] };
       return {
         id: space.id,
         name: space.name,
         createdAt: space.createdAt.toISOString(),
-        records: () =>
-          runGeneratorAsTenant(
-            tenant,
-            spaceRecords(prisma, tenant, { owner: role === "owner", written }),
-          ),
+        records: () => runGeneratorAsTenant(tenant, spaceRecords(prisma, tenant, written)),
         artifacts: async function* () {
           yield* written.artifacts;
         },
@@ -117,9 +113,8 @@ const isoOrNull = (date: Date | null) => date?.toISOString() ?? null;
 async function* spaceRecords(
   prisma: PrismaClient,
   tenant: Tenant,
-  { owner, written }: { owner: boolean; written: Written },
+  written: Written,
 ): AsyncGenerator<AccountExportRecord> {
-  const { spaceId, userId } = tenant;
   const sections = await prisma.botSection.findMany({
     where: tenant,
     orderBy: [{ position: "asc" }, { createdAt: "asc" }, { id: "asc" }],
@@ -435,65 +430,4 @@ async function* spaceRecords(
       files: json(skill.files),
       createdAt: iso(skill.createdAt),
     };
-
-  if (!owner) return;
-  const board = await prisma.board.findUnique({ where: { spaceId } });
-  if (!board) return;
-  yield { type: "board", id: board.id, name: board.name, ticketPrefix: board.ticketPrefix };
-  for (let number = 0; ; ) {
-    const tickets = await prisma.ticket.findMany({
-      where: { boardId: board.id, spaceId, number: { gt: number } },
-      orderBy: { number: "asc" },
-      take: PAGE,
-    });
-    for (const ticket of tickets) {
-      yield {
-        type: "ticket",
-        id: ticket.id,
-        number: ticket.number,
-        title: ticket.title,
-        description: ticket.description,
-        status: ticket.status,
-        priority: ticket.priority,
-        assigneeBotId: ownBot(ticket.assigneeBotId),
-        createdByBotId: ownBot(ticket.createdByBotId),
-        createdByExporter: ticket.createdByUserId === userId,
-        createdAt: iso(ticket.createdAt),
-        updatedAt: iso(ticket.updatedAt),
-        completedAt: isoOrNull(ticket.completedAt),
-      };
-      for (let cursor: { createdAt: Date; id: string } | null = null; ; ) {
-        const comments: Awaited<ReturnType<typeof prisma.ticketComment.findMany>> =
-          await prisma.ticketComment.findMany({
-            where: {
-              ticketId: ticket.id,
-              ...(cursor
-                ? {
-                    OR: [
-                      { createdAt: { gt: cursor.createdAt } },
-                      { createdAt: cursor.createdAt, id: { gt: cursor.id } },
-                    ],
-                  }
-                : {}),
-            },
-            orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-            take: PAGE,
-          });
-        for (const comment of comments)
-          yield {
-            type: "ticket_comment",
-            id: comment.id,
-            ticketId: ticket.id,
-            authorBotId: ownBot(comment.authorBotId),
-            authoredByExporter: comment.authorUserId === userId,
-            body: comment.body,
-            createdAt: iso(comment.createdAt),
-          };
-        if (comments.length < PAGE) break;
-        cursor = comments.at(-1)!;
-      }
-    }
-    if (tickets.length < PAGE) break;
-    number = tickets.at(-1)!.number;
-  }
 }

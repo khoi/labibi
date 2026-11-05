@@ -82,7 +82,6 @@ ceiling because Node's HTTP client stops waiting at that point on its own.
 
 | Variable | Default | Effect |
 | --- | --- | --- |
-| `TICKET_BOARD_ENABLED` | `false` | Turns on the ticket board. Set it on the API and worker. |
 | `USER_DEVICES_ENABLED` | on | `false` stops signed-in desktop apps from letting bots run commands on the user's own computer. Set it on the API and worker. |
 | `PI_SESSION_RECORDING` | off | `true` records agent sessions as JSONL under `DATA_DIR/pi-sessions`. The files are not encrypted, so do not use it on a shared or multi-tenant install. |
 | `PRIVACY_POLICY_URL` | Labradoodle's policy | The privacy policy linked from the AI data-sharing notice. Set it on the API. |
@@ -106,7 +105,7 @@ password, and grants it the `rakazo_app` role. When migrations run as a role wit
 `GRANT rakazo_app TO <login>`.
 
 Messages, events, threads, memory, artifacts, secrets, model and voice credentials, skills, bots,
-runs, tasks, routines, connections, MCP servers and sign-ins, computers, boards and tickets,
+runs, tasks, routines, connections, MCP servers and sign-ins, computers,
 messaging identities and outbox, external conversations, steering messages, usage, scratchpad
 items and approval rules have row-level security. Each signed-in request sees only its Space's
 rows, plus the user's own account-level credentials. A query that leaves out its Space filter

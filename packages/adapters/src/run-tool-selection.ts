@@ -29,8 +29,6 @@ export const READ_ONLY_AGENT_TOOLS = new Set([
   "recall_memory",
   "schedule_list",
   "scratchpad_list",
-  "board_tickets",
-  "ticket_get",
   "skill_read",
   "web_search",
   "web_fetch",
@@ -58,7 +56,6 @@ export const FLEET_WRITE_TOOL_NAMES_SET: ReadonlySet<string> = new Set(FLEET_WRI
 const CREATED_RUN_TOOL_NAMES = new Set(["ask_user", "update_bot"]);
 
 export function selectBuiltinToolsForRun(options: {
-  ticketBoardEnabled?: boolean;
   phoneCallsEnabled?: boolean;
   historyRetrievalEnabled?: boolean;
   graphicalToolsAllowed: boolean;
@@ -115,8 +112,6 @@ export function selectBuiltinToolsForRun(options: {
       (options.paymentWalletEnabled || !PURCHASE_TOOL_NAMES.has(tool.name)) &&
       (options.mediaImagesEnabled || tool.name !== "generate_image") &&
       (options.mediaVideoEnabled || tool.name !== "generate_video") &&
-      (options.ticketBoardEnabled ||
-        (tool.name !== "board_tickets" && !tool.name.startsWith("ticket_"))) &&
       (!isBackgroundRunTrigger(options.trigger) ||
         ![
           "message_user",
@@ -149,10 +144,8 @@ export function selectBuiltinToolsForRun(options: {
             "recall_memory",
             "forget_memory",
             "task_catalog",
-            "board_tickets",
           ].includes(tool.name) &&
-          !tool.name.startsWith("scratchpad_") &&
-          !tool.name.startsWith("ticket_"))),
+          !tool.name.startsWith("scratchpad_"))),
   );
 }
 

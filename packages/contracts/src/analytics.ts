@@ -14,7 +14,6 @@ export const AnalyticsScreen = z.enum([
   "settings",
   "integrations",
   "artifacts",
-  "board",
   "computer",
   "search",
   "bot_profile",
