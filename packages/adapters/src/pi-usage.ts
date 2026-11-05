@@ -16,6 +16,7 @@ import type {
   UsageOperationKind,
 } from "@labradoodle/adapter-kit";
 import { Agent } from "undici";
+import { withAnthropicFastMode, withAnthropicFastPricing } from "./anthropic-fast-mode.js";
 import { withChatCompletionsCompatibility } from "./chat-completions-compat.js";
 import type { ContextBudget } from "./context-selection.js";
 import { withGoogleToolHistory } from "./google-tool-history.js";
@@ -329,6 +330,7 @@ export function observedPiStream(
     onProviderError?: (message: AssistantMessage) => void;
   },
 ) {
+  model = withAnthropicFastPricing(model);
   const stream = createAssistantMessageEventStream();
   const reported: ReportedUsageFields = new Set();
   const callId = randomUUID();
@@ -403,13 +405,16 @@ export function observedPiStream(
         const collectRawUsage =
           /^(openai-|anthropic-)/.test(model.api) && !model.provider.startsWith("google");
         // Each guarded reservation covers one HTTP attempt, not hidden SDK retries.
-        const streamOptions = withGoogleToolHistory(
+        const streamOptions = withAnthropicFastMode(
           model,
-          withChatCompletionsCompatibility(model, {
-            ...options,
-            ...(cacheRetention ? { cacheRetention } : {}),
-            ...(observer ? { maxRetries: 0 } : {}),
-          }),
+          withGoogleToolHistory(
+            model,
+            withChatCompletionsCompatibility(model, {
+              ...options,
+              ...(cacheRetention ? { cacheRetention } : {}),
+              ...(observer ? { maxRetries: 0 } : {}),
+            }),
+          ),
         );
         let upstream: ReturnType<Models["streamSimple"]>;
         try {
