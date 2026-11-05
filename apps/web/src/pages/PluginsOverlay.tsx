@@ -1507,7 +1507,7 @@ export function PluginsOverlay({
     >
       <DialogContent
         showCloseButton={false}
-        className="flex h-[760px] max-h-[calc(100%-2rem)] w-[1080px] max-w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden rounded-2xl bg-card p-0 sm:max-w-[1080px]"
+        className="flex h-[760px] max-h-[calc(100%-2rem)] w-[1080px] max-w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden rounded-2xl bg-card p-0 sm:max-w-[1080px] data-open:zoom-in-98 data-closed:zoom-out-98"
       >
         <DialogHeader className="flex-row items-start justify-between px-8 pt-7">
           <DialogTitle className="text-heading2 text-foreground">
@@ -1649,30 +1649,37 @@ export function PluginsOverlay({
             </div>
           ) : null}
 
-          {plugin ? (
-            <PluginDetail
-              key={plugin.installedSource}
-              selection={plugin}
-              installs={pluginInstalls}
-              servers={mcpServers}
-              assigned={assigned}
-              activeBotId={activeBotId}
-              managed={managedLink(plugin)}
-              onBack={() => setPlugin(null)}
-              onChanged={refresh}
-            />
-          ) : detailItem ? (
-            renderDetail(detailItem)
-          ) : view === "manage" ? (
-            renderManage()
-          ) : view === "github" ? (
-            renderGithubImport()
-          ) : view === "source" ? (
-            renderSourceForm()
-          ) : view === "domain" ? (
-            renderDomainSearch()
-          ) : view === "browseMcp" ? (
-            renderBrowseMcp()
+          {plugin || detailItem || view !== "browse" ? (
+            <div
+              key={plugin?.installedSource ?? (detailItem ? catalogItemKey(detailItem) : view)}
+              className="animate-in fade-in-0 slide-in-from-end-2 duration-200 ease-snappy"
+            >
+              {plugin ? (
+                <PluginDetail
+                  key={plugin.installedSource}
+                  selection={plugin}
+                  installs={pluginInstalls}
+                  servers={mcpServers}
+                  assigned={assigned}
+                  activeBotId={activeBotId}
+                  managed={managedLink(plugin)}
+                  onBack={() => setPlugin(null)}
+                  onChanged={refresh}
+                />
+              ) : detailItem ? (
+                renderDetail(detailItem)
+              ) : view === "manage" ? (
+                renderManage()
+              ) : view === "github" ? (
+                renderGithubImport()
+              ) : view === "source" ? (
+                renderSourceForm()
+              ) : view === "domain" ? (
+                renderDomainSearch()
+              ) : view === "browseMcp" ? (
+                renderBrowseMcp()
+              ) : null}
+            </div>
           ) : (
             <>
               {catalogLoaded && showFeatured && !category ? (

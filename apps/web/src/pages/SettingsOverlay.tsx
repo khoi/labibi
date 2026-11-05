@@ -246,7 +246,7 @@ export function SettingsOverlay({
         initialFocus={() =>
           section === "usage" ? (usageRef.current ?? panelRef.current) : panelRef.current
         }
-        className="flex h-[min(760px,calc(100%-2rem))] max-h-[calc(100%-2rem)] w-[min(1080px,calc(100%-2rem))] flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-h-[calc(100%-5rem)] sm:max-w-[1080px]"
+        className="flex h-[min(760px,calc(100%-2rem))] max-h-[calc(100%-2rem)] w-[min(1080px,calc(100%-2rem))] flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-h-[calc(100%-5rem)] sm:max-w-[1080px] data-open:zoom-in-98 data-closed:zoom-out-98"
       >
         <div className="flex min-h-0 flex-1 flex-col md:flex-row">
           <div className="flex shrink-0 items-center gap-1 border-b border-border px-3 md:contents">
@@ -388,15 +388,17 @@ export function SettingsOverlay({
                     </div>
                   ) : null}
                   {section === "space" && space ? (
-                    <SpaceSettingsPanel
-                      key={space.id}
-                      space={space}
-                      onRename={(name) => onRenameSpace?.(space.id, name) ?? Promise.resolve()}
-                      onDelete={() => onDeleteSpace?.(space.id) ?? Promise.resolve()}
-                      onLeft={(activeSpaceId) => onLeftSpace?.(space.id, activeSpaceId)}
-                      onClose={requestClose}
-                      onBusyChange={setVoiceBusy}
-                    />
+                    <div className="animate-in fade-in-0 slide-in-from-end-2 duration-200 ease-snappy">
+                      <SpaceSettingsPanel
+                        key={space.id}
+                        space={space}
+                        onRename={(name) => onRenameSpace?.(space.id, name) ?? Promise.resolve()}
+                        onDelete={() => onDeleteSpace?.(space.id) ?? Promise.resolve()}
+                        onLeft={(activeSpaceId) => onLeftSpace?.(space.id, activeSpaceId)}
+                        onClose={requestClose}
+                        onBusyChange={setVoiceBusy}
+                      />
+                    </div>
                   ) : null}
                   {section === "organization" ? (
                     <OrganizationSettingsPanel onBusyChange={setVoiceBusy} />
