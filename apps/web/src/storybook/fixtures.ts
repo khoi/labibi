@@ -260,6 +260,25 @@ export const DEFAULT_API: ApiFixtures = {
   connections: { catalog: [], list: [] },
   agentSkills: { list: [] },
   trustedLinkSites: { list: [] },
+  spaces: {
+    members: {
+      list: {
+        spaceName: SPACE.name,
+        members: [
+          {
+            userId: USER_ID,
+            name: SESSION.user.name,
+            email: SESSION.user.email,
+            image: null,
+            role: "owner",
+          },
+        ],
+        canManage: true,
+        openInvites: 0,
+      },
+    },
+  },
+  spendingLimit: { get: { limit: null, spent: 0, shown: false } },
   memory: { providerConfig: null },
   computer: { updates: [] },
   messaging: {

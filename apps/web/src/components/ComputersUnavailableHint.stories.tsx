@@ -32,8 +32,6 @@ type Story = StoryObj<typeof meta>;
 
 export const ComputersOff: Story = {};
 
-export const NotResponding: Story = { args: { sandboxProvider: "desktop" } };
-
 export const WithoutActions: Story = { args: { showRetry: false } };
 
 export const Checking: Story = {
