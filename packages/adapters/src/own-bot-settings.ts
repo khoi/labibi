@@ -27,13 +27,10 @@ export function modelLabel(provider: string | null, model: string | null): strin
 }
 
 export type OwnBotSettingsRow = {
-  name: string;
   instructions: string;
-  notifyOnFinish: boolean;
   modelProvider: string | null;
   modelId: string | null;
   thinkingLevel: string | null;
-  autoSpeak: boolean;
   voiceId: string | null;
 };
 
@@ -54,7 +51,7 @@ const endsWholeCharacter = (text: string, end: number) => {
   return last < 0xd800 || last > 0xdbff;
 };
 
-/** `update_bot` with no fields: this bot's settings and the values it may set. */
+/** `update_bot` with no fields: Doodle's settings and the values the owner may set. */
 export async function readOwnBotSettings(
   deps: BotSettingsDeps,
   scope: Pick<Actor, "userId" | "spaceId">,
@@ -82,12 +79,9 @@ export async function readOwnBotSettings(
     instructions: string,
     paging: { length: number; nextOffset: number | null } | null,
   ) => ({
-    name: bot.name,
     instructions,
-    notifyOnFinish: bot.notifyOnFinish,
     model: `${modelLabel(effective.provider, effective.model)}${bot.modelId ? "" : " (default)"}`,
     thinkingLevel: bot.thinkingLevel ?? "default",
-    readAloud: bot.autoSpeak,
     voice: bot.voiceId ?? "default",
     models: [...providers].map(([provider, ids]) => ({
       provider,
@@ -193,19 +187,15 @@ export function resolveVoiceChoice(
   };
 }
 
-/** The model, thinking, voice and read-aloud fields of `update_bot`, checked like the settings screen. */
+/** The model, thinking and voice fields of `update_bot`, checked like the settings screen. */
 export async function prepareOwnBotSettings(
   deps: BotSettingsDeps,
   scope: Pick<Actor, "userId" | "spaceId">,
   bot: Pick<OwnBotSettingsRow, "modelProvider" | "modelId" | "thinkingLevel">,
-  args: { model?: unknown; thinkingLevel?: unknown; readAloud?: unknown; voice?: unknown },
+  args: { model?: unknown; thinkingLevel?: unknown; voice?: unknown },
   listVoices: () => Promise<VoiceInfo[] | null> = async () => null,
 ): Promise<{ data: BotSettingsValues } | { error: string }> {
   const data: BotSettingsValues = {};
-  if (args.readAloud !== undefined) {
-    if (typeof args.readAloud !== "boolean") return { error: "readAloud must be true or false." };
-    data.autoSpeak = args.readAloud;
-  }
   if (typeof args.voice === "string" && args.voice.trim()) {
     let voices: VoiceInfo[] | null;
     try {

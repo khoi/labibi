@@ -1,9 +1,10 @@
 import { createHash } from "node:crypto";
 import type {
   AdapterContext,
-  DurableMemoryScope,
+  MemoryScope,
   SemanticMemoryForgetRequest,
   SemanticMemoryProvider,
+  SemanticMemoryPurgeHistoryRequest,
   SemanticMemoryRecallRequest,
   SemanticMemoryResponse,
   SemanticMemoryResult,
@@ -158,36 +159,11 @@ export function sanitizeSerenityBrainLabel(label: string): string {
 
 // Serenity entity refs are exactly `type/slug`, so a label joins the slug rather than
 // adding a path segment.
-export function serenityBotEntity(botId: string, brainLabel = ""): string {
+export function serenityScopeEntity(scope: MemoryScope, brainLabel = ""): string {
+  const [type, id] =
+    scope.kind === "chat" ? ["rakazo-chat", scope.threadId] : ["rakazo-person", scope.userId];
   const label = sanitizeSerenityBrainLabel(brainLabel);
-  return label ? `rakazo-bot/${label}--${botId}` : `rakazo-bot/${botId}`;
-}
-
-export function serenitySpaceEntity(spaceId: string, brainLabel = ""): string {
-  const label = sanitizeSerenityBrainLabel(brainLabel);
-  return label ? `rakazo-space/${label}--${spaceId}` : `rakazo-space/${spaceId}`;
-}
-
-function recallEntities(
-  scope: DurableMemoryScope,
-  botId: string,
-  spaceId: string,
-  brainLabel: string,
-): string[] {
-  const bot = serenityBotEntity(botId, brainLabel);
-  return scope === "shared" ? [serenitySpaceEntity(spaceId, brainLabel), bot] : [bot];
-}
-
-// Shared facts are written once to the Space so each save costs one hosted write.
-function saveEntity(
-  scope: DurableMemoryScope,
-  botId: string,
-  spaceId: string,
-  brainLabel: string,
-): string {
-  return scope === "shared"
-    ? serenitySpaceEntity(spaceId, brainLabel)
-    : serenityBotEntity(botId, brainLabel);
+  return label ? `${type}/${label}--${id}` : `${type}/${id}`;
 }
 
 /** Same run + entity + fact replays on retry instead of writing a duplicate fact. */
@@ -263,12 +239,7 @@ export class SerenityMemoryProvider implements SemanticMemoryProvider {
     context: AdapterContext,
   ): Promise<SemanticMemoryResponse<SemanticMemoryResult[]>> {
     // History compaction stays in Labradoodle; Serenity is the durable brain only.
-    const entities = recallEntities(
-      request.scope,
-      request.botId,
-      context.spaceId,
-      this.connection.brainLabel,
-    );
+    const entities = [serenityScopeEntity(request.scope, this.connection.brainLabel)];
     const results = await Promise.all(
       entities.map(async (entity) => ({
         entity,
@@ -316,13 +287,8 @@ export class SerenityMemoryProvider implements SemanticMemoryProvider {
           "Serenity writes are disabled for this Space. Enable writing in Memory settings to save durable facts.",
       };
     }
-    const entity = saveEntity(
-      request.scope,
-      request.botId,
-      context.spaceId,
-      this.connection.brainLabel,
-    );
-    const provenance = `rakazo space:${context.spaceId} bot:${request.botId}`;
+    const entity = serenityScopeEntity(request.scope, this.connection.brainLabel);
+    const provenance = `rakazo space:${context.spaceId} ${entity}`;
     const result = await rememberSerenity(request.content, provenance, this.connection, {
       entity,
       operationKey: rememberOperationKey(
@@ -336,7 +302,7 @@ export class SerenityMemoryProvider implements SemanticMemoryProvider {
   }
 
   async purgeHistory(
-    _request: { botId: string; generations: number[] },
+    _request: SemanticMemoryPurgeHistoryRequest,
     _context: AdapterContext,
   ): Promise<SemanticMemoryResponse> {
     // History generations are never written to Serenity.
@@ -354,16 +320,11 @@ export class SerenityMemoryProvider implements SemanticMemoryProvider {
           "Serenity writes are disabled for this Space. Enable writing in Memory settings to forget facts.",
       };
     }
-    // Serenity forget deletes any fact id in the brain, so confirm the fact sits in one of
-    // this bot's recall namespaces first and fail closed when that cannot be shown.
-    const allowed = recallEntities(
-      request.scope,
-      request.botId,
-      context.spaceId,
-      this.connection.brainLabel,
-    );
+    // Serenity forget deletes any fact id in the brain, so confirm the fact sits in this
+    // memory's namespace first and fail closed when that cannot be shown.
+    const allowed = [serenityScopeEntity(request.scope, this.connection.brainLabel)];
     if (request.entity && !allowed.includes(request.entity)) {
-      return { ok: false, error: "That memory belongs to another bot or Space." };
+      return { ok: false, error: "That memory belongs to another chat or person." };
     }
     const factId = request.id.trim();
     if (!factId) return { ok: false, error: "id is required" };
@@ -385,8 +346,8 @@ export class SerenityMemoryProvider implements SemanticMemoryProvider {
       return {
         ok: false,
         error: errors.length
-          ? `Could not confirm this memory belongs to this bot: ${errors.join("; ")}`
-          : "No memory with that id was found in this bot's recall results.",
+          ? `Could not confirm this memory belongs here: ${errors.join("; ")}`
+          : "No memory with that id was found in this memory's recall results.",
       };
     }
     const result = await forgetSerenity(factId, this.connection, {

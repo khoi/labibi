@@ -378,16 +378,16 @@ export class RunWorkerHost implements JobWorkerHost {
       select: {
         id: true,
         createdAt: true,
-        botId: true,
+        spaceId: true,
+        userId: true,
         status: true,
-        bot: { select: { computerId: true } },
       },
     });
-    // The executor still acquires the lease atomically to handle races here.
+    // A run takes its computer only once it needs it, so every row starts now.
     const blockers = await findRunRecoveryBlockers(this.prisma, rows, now);
-    const runnable = rows.filter((row) => !blockers.has(row.id));
-    // A takeover request holds its bot's computer. Chat work must not wait behind one the user
-    // has not acted on, so end it; the freed rows start on the next scan.
+    const runnable = rows;
+    // A takeover request holds its person's computer. Their chat work must not wait behind one
+    // they have not acted on, so end it.
     if (lane === "interactive") {
       const holders = new Set(
         rows.flatMap((row) => {

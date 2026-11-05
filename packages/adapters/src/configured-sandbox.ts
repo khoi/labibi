@@ -157,11 +157,9 @@ export async function loadComputerOwnerSettings(
   strict = false,
 ) {
   const computer = await runAsSystem("read computer owner", () =>
-    prisma.computer.findUnique({ where: { homeKey }, select: { userId: true, scope: true } }),
+    prisma.computer.findUnique({ where: { homeKey }, select: { userId: true } }),
   );
-  return computer?.scope === "team"
-    ? loadAccountComputerSettings(prisma, secrets, computer.userId, strict)
-    : null;
+  return computer ? loadAccountComputerSettings(prisma, secrets, computer.userId, strict) : null;
 }
 export async function refreshComputerProvider(sandbox: SandboxProvider) {
   if (sandbox instanceof ConfiguredSandbox) await sandbox.refresh();

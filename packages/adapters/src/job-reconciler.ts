@@ -208,8 +208,8 @@ export function createJobReconciler(
           id: true,
           status: true,
           updatedAt: true,
-          botId: true,
-          bot: { select: { computerId: true } },
+          spaceId: true,
+          userId: true,
         },
       });
 
@@ -218,19 +218,19 @@ export function createJobReconciler(
       // leaves the job while attempts remain, and still replaces one that is exhausted.
       // A locked job whose worker died is never unlocked, so it is replaced: any lock
       // for a run whose lease expired, and for a queued run only a lock older than
-      // a lease, since a live worker finishing a failed attempt still holds it.
-      const blockers = await findRunRecoveryBlockers(deps.prisma, runs, now);
+      // a lease, since a live worker finishing a failed attempt still holds it. A run
+      // waits for its computer only once it runs, so none is held back here; the scan
+      // still expires takeover holds whose run is gone.
+      await findRunRecoveryBlockers(deps.prisma, runs, now);
       const abandonedQueuedLockAt = new Date(now.getTime() - ABANDONED_QUEUED_LOCK_MS);
       await publishAll([
-        ...runs
-          .filter((run) => !blockers.has(run.id))
-          .map((run) =>
-            deps.jobs.enqueue({
-              ...runContinueJob(run.id),
-              keepExisting: true,
-              replaceLockedBefore: run.status === "queued" ? abandonedQueuedLockAt : now,
-            }),
-          ),
+        ...runs.map((run) =>
+          deps.jobs.enqueue({
+            ...runContinueJob(run.id),
+            keepExisting: true,
+            replaceLockedBefore: run.status === "queued" ? abandonedQueuedLockAt : now,
+          }),
+        ),
       ]);
 
       const lastRun = runs.at(-1);
@@ -274,7 +274,6 @@ export function createJobReconciler(
           Array<{ id: string; nextRunAt: Date | null }>,
           Array<{
             id: string;
-            controlBotId: string | null;
             controlLeaseId: string | null;
             controlLeaseExpiresAt: Date | null;
           }>,
@@ -314,7 +313,6 @@ export function createJobReconciler(
                 take: batchSize,
                 select: {
                   id: true,
-                  controlBotId: true,
                   controlLeaseId: true,
                   controlLeaseExpiresAt: true,
                 },

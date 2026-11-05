@@ -58,12 +58,13 @@ export async function pollCloudAgent(
         where: { id: agent.messageId ?? "", threadId: agent.threadId },
         select: { id: true },
       }),
-      deps.prisma.spaceMember.findUnique({
-        where: { spaceId_userId: { spaceId: agent.spaceId, userId: agent.userId } },
+      deps.prisma.threadMember.findUnique({
+        where: { threadId_userId: { threadId: agent.threadId, userId: agent.userId } },
         select: { id: true },
       }),
-      deps.prisma.bot.findFirst({
-        where: { id: agent.botId, spaceId: agent.spaceId, archivedAt: null },
+      deps.prisma.thread.findFirst({
+        where: { id: agent.threadId, spaceId: agent.spaceId, doodle: true },
+        select: { id: true },
       }),
     ]);
     const abandoned = !card || !member || !bot;
@@ -298,12 +299,12 @@ async function finishPoll(
         })
       : null;
     const [member, bot] = await Promise.all([
-      tx.spaceMember.findUnique({
-        where: { spaceId_userId: { spaceId: agent.spaceId, userId: agent.userId } },
+      tx.threadMember.findUnique({
+        where: { threadId_userId: { threadId: agent.threadId, userId: agent.userId } },
         select: { id: true },
       }),
-      tx.bot.findFirst({
-        where: { id: agent.botId, spaceId: agent.spaceId, archivedAt: null },
+      tx.thread.findFirst({
+        where: { id: agent.threadId, spaceId: agent.spaceId, doodle: true },
         select: { id: true },
       }),
     ]);

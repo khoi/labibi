@@ -8,12 +8,12 @@ import {
 } from "@labradoodle/adapter-kit";
 import { ROUTINE_WATCH_DEFAULT_MINUTES } from "@labradoodle/contracts";
 import {
-  displayName,
+  DOODLE_NAME,
   expandSkillReferencesInPrompt,
   isOneShotRoutineCrons,
   nextRoutineRunDateAcross,
 } from "@labradoodle/core";
-import { accountDeactivated } from "@labradoodle/db";
+import { accountDeactivated, routineCreatorInChat } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { sanitizedError } from "@labradoodle/logging/monitoring";
 import { protectedComputerLifecycleRefusal } from "./desktop-command-guard.js";
@@ -96,18 +96,13 @@ async function notifyFailedRoutineRun(
   failed: Parameters<typeof notifyRun>[1] & { error: string | null },
   options: { retryOnFailure?: boolean } = {},
 ) {
-  const bot = await deps.prisma.bot.findUniqueOrThrow({
-    where: { id: failed.botId },
-    select: { name: true },
-  });
   await notifyRun(
     deps,
     failed,
     {
       kind: "failure",
-      title: `${displayName(bot.name, "Bot")} failed`,
+      title: `${DOODLE_NAME} failed`,
       body: failed.error ?? "",
-      botId: failed.botId,
       threadId: failed.threadId,
     },
     options,
@@ -159,38 +154,24 @@ export async function wakeRoutine(deps: ExecutorDeps, routineId: string, schedul
       await deps.jobs.enqueue(routineWakeupJob(routine.id, nextRunAt));
     return;
   }
-  const bot = await deps.prisma.bot.findUnique({
-    where: { id: routine.botId },
-    include: { thread: true },
-  });
-  if (bot?.archivedAt) {
-    // Archiving pauses a bot's routines; re-pause one that slipped back to active.
+  const [thread, creatorInChat] = await Promise.all([
+    deps.prisma.thread.findFirst({
+      where: { id: routine.threadId, spaceId: routine.spaceId },
+      select: { id: true, doodle: true },
+    }),
+    routineCreatorInChat(deps.prisma, routine),
+  ]);
+  if (!thread) return;
+  if (!thread.doodle || !creatorInChat) {
+    // Doodle leaving the chat or its creator leaving pauses a routine; re-pause one that slipped
+    // back to active.
     await deps.prisma.routine.updateMany({
       where: { id: routine.id, active: true },
       data: { active: false, nextRunAt: null },
     });
     return;
   }
-  if (!bot?.thread) return;
-  const targetThread = routine.threadId
-    ? await deps.prisma.thread.findFirst({
-        where: {
-          id: routine.threadId,
-          spaceId: routine.spaceId,
-          OR: [
-            { botId: bot.id },
-            {
-              group: {
-                archivedAt: null,
-                members: { some: { botId: bot.id } },
-              },
-            },
-          ],
-        },
-        select: { id: true },
-      })
-    : null;
-  const thread = targetThread ?? bot.thread;
+  const bot = { id: routine.botId };
   // A change trigger checks first, without a model; only news becomes a run.
   const watchTick =
     routine.watch == null
@@ -219,7 +200,7 @@ export async function wakeRoutine(deps: ExecutorDeps, routineId: string, schedul
         userId: routine.userId,
         active: true,
         nextRunAt: scheduledAt,
-        bot: { archivedAt: null },
+        thread: { doodle: true },
       },
       data: {
         lastRunAt: new Date(),
@@ -383,7 +364,8 @@ export async function retryRoutineRun(deps: ExecutorDeps, runId: string) {
       crons: true,
       nextRunAt: true,
       userId: true,
-      bot: { select: { archivedAt: true } },
+      threadId: true,
+      thread: { select: { doodle: true } },
     },
   });
   const laterRun = await deps.prisma.run.findFirst({
@@ -402,7 +384,8 @@ export async function retryRoutineRun(deps: ExecutorDeps, runId: string) {
     !routine ||
     routine.userId !== failed.userId ||
     (!routine.active && !isOneShotRoutineCrons(routine.crons)) ||
-    routine.bot.archivedAt
+    !routine.thread.doodle ||
+    !(await routineCreatorInChat(deps.prisma, routine))
   ) {
     await notifyAbandonedRetry();
     return;
@@ -426,7 +409,7 @@ export async function retryRoutineRun(deps: ExecutorDeps, runId: string) {
           userId: failed.userId,
           active: routine.active,
           ...(!routine.active ? { crons: { equals: routine.crons } } : {}),
-          bot: { archivedAt: null },
+          thread: { doodle: true },
         },
         data: { active: routine.active },
       });
@@ -436,23 +419,6 @@ export async function retryRoutineRun(deps: ExecutorDeps, runId: string) {
         select: { id: true },
       });
       if (laterRun) return null;
-      const targetThread = await tx.thread.findFirst({
-        where: {
-          id: failed.threadId,
-          spaceId: failed.spaceId,
-          OR: [
-            { botId: failed.botId },
-            {
-              group: {
-                archivedAt: null,
-                members: { some: { botId: failed.botId } },
-              },
-            },
-          ],
-        },
-        select: { id: true },
-      });
-      if (!targetThread) return null;
       const retryTask = await tx.task.create({
         data: {
           spaceId: failed.spaceId,

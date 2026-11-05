@@ -19,7 +19,12 @@ import {
   zonedDateTime,
 } from "@labradoodle/core";
 import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
-import { Prisma, runAsSystemInTransaction } from "@labradoodle/db";
+import {
+  Prisma,
+  ROUTINE_CREATOR_LEFT_ERROR,
+  routineCreatorInChat,
+  runAsSystemInTransaction,
+} from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 
 import { localDateTime } from "./current-time.js";
@@ -655,13 +660,7 @@ async function createWatchFromTool(
   const parsed = scheduleWatch(input.schedule);
   if (!parsed.success) return { error: parsed.error };
   try {
-    // Match routine editing's space boundary before creating unattended work.
-    const bot = await deps.prisma.bot.findFirst({
-      where: { id: input.botId, spaceId: input.spaceId, archivedAt: null },
-      include: { computer: true },
-    });
-    if (!bot) return { error: "Bot not found." };
-    await validateRoutineWatch(deps, parsed.data, input, bot.computer);
+    await validateRoutineWatch(deps, parsed.data, input);
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Invalid change trigger." };
   }
@@ -810,10 +809,11 @@ export async function updateScheduleFromTool(
     botId: input.botId,
     ...(input.scopeThreadId ? { threadId: input.scopeThreadId } : {}),
   };
-  const existing = await deps.prisma.routine.findFirst({
-    where: { ...scope, id: routineId, bot: { archivedAt: null } },
-  });
+  const existing = await deps.prisma.routine.findFirst({ where: { ...scope, id: routineId } });
   if (!existing) return { error: "Schedule not found." };
+  if (existing.userId !== input.userId && !(await routineCreatorInChat(deps.prisma, existing))) {
+    return { error: ROUTINE_CREATOR_LEFT_ERROR };
+  }
 
   let timezone = existing.timezone;
   if (input.timezone !== undefined) {
@@ -883,7 +883,6 @@ export async function updateScheduleFromTool(
       ...scope,
       userId: existing.userId,
       id: existing.id,
-      bot: { archivedAt: null },
       ...(timingChanged ? { active: existing.active, nextRunAt: existing.nextRunAt } : {}),
     },
     data: {

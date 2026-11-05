@@ -6,6 +6,7 @@ import type {
 import { runContinueJob } from "@labradoodle/adapter-kit";
 import type { StuckWorkStatus } from "@labradoodle/core";
 import {
+  DOODLE_NAME,
   isStuckWorkStatus,
   STUCK_WORK_NOTICE,
   STUCK_WORK_STATUSES,
@@ -24,7 +25,7 @@ import {
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { ExpoPushProvider } from "./expo-push.js";
-import { notificationIdentity } from "./notification-identity.js";
+import { doodleNotificationIdentity } from "./notification-identity.js";
 import { publishChatAlert } from "./run-notifications.js";
 
 type StuckCursor = { at: Date; id: string };
@@ -38,8 +39,6 @@ type StuckCandidate = {
   botId: string;
   userId: string;
   taskId: string;
-  bot: { name: string; color: string; notifyOnFinish: boolean };
-  thread: { groupId: string | null };
 };
 
 /**
@@ -95,8 +94,6 @@ export async function reconcileStuckWork(deps: {
       botId: true,
       userId: true,
       taskId: true,
-      bot: { select: { name: true, color: true, notifyOnFinish: true } },
-      thread: { select: { groupId: true } },
     },
   });
 
@@ -145,7 +142,6 @@ function readyStuckRun(
   if (!(run.updatedAt instanceof Date)) return null;
   if (stuckWorkAgeMs(run.updatedAt, now) < stuckWorkDueAfterMs(run.status)) return null;
   if (!run.spaceId || !run.threadId || !run.botId || !run.userId || !run.taskId) return null;
-  if (!run.bot || !run.thread) return null;
   return {
     id: run.id,
     status: run.status,
@@ -155,13 +151,7 @@ function readyStuckRun(
     botId: run.botId,
     userId: run.userId,
     taskId: run.taskId,
-    bot: run.bot,
-    thread: run.thread,
   };
-}
-
-function noticesEnabled(run: StuckCandidate): boolean {
-  return Boolean(run.thread.groupId || run.bot.notifyOnFinish);
 }
 
 type StuckNoticePayload = {
@@ -215,7 +205,7 @@ async function remindStuckRun(
 ) {
   // A skipped push (notices off, no provider, or no push token yet) stays unmarked
   // so a later sweep can still remind during this same wait.
-  if (!deps.notifications || !noticesEnabled(run)) return;
+  if (!deps.notifications) return;
   if (!(await pushCanDeliver(deps.notifications, run.userId))) return;
   const claimId = await withTransactionRetry(() =>
     deps.prisma.$transaction(
@@ -224,18 +214,17 @@ async function remindStuckRun(
     ),
   );
   if (!claimId) return;
-  const reminder = stuckWorkReminder(run.status, run.bot.name);
+  const reminder = stuckWorkReminder(run.status, DOODLE_NAME);
   const message = {
     kind: reminder.kind,
     title: reminder.title,
     body: reminder.body,
-    botId: run.botId,
     threadId: run.threadId,
   };
   const delivery = await sendStuckNotice(deps.notifications, run, message);
   if (delivery === "delivered") {
     // After the push, so a failed push that is retried does not alert open apps twice.
-    publishChatAlert(deps.events, run, message, run.thread.groupId);
+    publishChatAlert(deps.events, run, message);
     await withTransactionRetry(() =>
       deps.prisma.$transaction(
         (tx) => markStuckNoticeDelivered(tx, claimId, run),
@@ -359,16 +348,14 @@ async function expireOne(
       getLogger().error("stuck work continuation", error);
     });
   }
-  if (!noticesEnabled(run)) return;
-  const stopped = stuckWorkStoppedNotification(run.status, run.bot.name);
+  const stopped = stuckWorkStoppedNotification(run.status, DOODLE_NAME);
   const message = {
     kind: stopped.kind,
     title: stopped.title,
     body: stopped.body,
-    botId: run.botId,
     threadId: run.threadId,
   };
-  publishChatAlert(deps.events, run, message, run.thread.groupId);
+  publishChatAlert(deps.events, run, message);
   if (deps.notifications) await sendStuckNotice(deps.notifications, run, message);
 }
 
@@ -390,8 +377,7 @@ async function sendStuckNotice(
   try {
     const notice = {
       ...message,
-      sender: await notificationIdentity({ id: run.botId, ...run.bot }),
-      ...(run.thread.groupId ? { groupId: run.thread.groupId } : {}),
+      sender: await doodleNotificationIdentity(),
     };
     if (notifications instanceof ExpoPushProvider) {
       return await notifications.deliver(notice, context);

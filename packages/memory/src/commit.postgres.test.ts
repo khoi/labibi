@@ -40,14 +40,7 @@ describePostgres("memory commits (PostgreSQL)", () => {
           create: {
             id: context.spaceId,
             name: "Memory Test Space",
-            bots: {
-              create: {
-                id: "memory-commit-bot",
-                userId: context.userId,
-                name: "Memory Test Bot",
-                color: "ink",
-              },
-            },
+            bots: { create: { id: "memory-commit-bot" } },
           },
         },
       },
@@ -65,7 +58,7 @@ describePostgres("memory commits (PostgreSQL)", () => {
 
   function request(path: string, content: string): MemoryCommitRequest {
     return {
-      scope: "user",
+      scope: { kind: "person", userId: context.userId },
       path,
       content,
       sourceRunId: `run-${content}`,
@@ -80,15 +73,13 @@ describePostgres("memory commits (PostgreSQL)", () => {
     });
   }
 
-  it.each(["user", "bot"] as const)(
+  it.each(["person"] as const)(
     "retries overlapping %s saves with fresh revisions and matching history",
     (scope) =>
       runAsSystem(MEMORY_SAVE, async () => {
         const path = `concurrent-${scope}.md`;
         const write = (content: string): MemoryCommitRequest => ({
           ...request(path, content),
-          scope,
-          botId: scope === "bot" ? "memory-commit-bot" : undefined,
         });
         const initial = await store.commit(write("initial"), context);
         let reads = 0;

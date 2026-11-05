@@ -6,7 +6,7 @@ import type {
   ComputerRef,
   SandboxProvider,
 } from "@labradoodle/adapter-kit";
-import type { ComputerMode, MessageBlock } from "@labradoodle/contracts";
+import type { MessageBlock } from "@labradoodle/contracts";
 import {
   ARTIFACT_DESCRIPTION_MAX_LENGTH,
   ARTIFACT_NAME_MAX_LENGTH,
@@ -25,7 +25,7 @@ import {
 import type { Artifact, Prisma, PrismaClient } from "@labradoodle/db";
 import { withResolvedArtifactVersion } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
-import { resolveBotWorkspacePath } from "./computer-support.js";
+import { resolveWorkspacePath } from "./computer-support.js";
 
 export type MaterializedThreadFile = {
   name: string;
@@ -44,7 +44,7 @@ export async function attachWorkspaceFileToThread(
     spaceId: string;
     userId: string;
     botId: string;
-    groupId?: string;
+    threadId: string;
     runId: string;
     filePath: string;
     bytes: Uint8Array;
@@ -80,19 +80,13 @@ export async function attachWorkspaceFileToThread(
   const hash = createHash("sha256").update(input.bytes).digest("hex");
   const row = await withResolvedArtifactVersion(
     deps.prisma,
-    {
-      spaceId: input.spaceId,
-      botId: input.botId,
-      groupId: input.groupId,
-      name,
-    },
+    { spaceId: input.spaceId, threadId: input.threadId, name },
     async (tx, { rootArtifactId, version }) => {
       const artifact = await tx.artifact.create({
         data: {
           spaceId: input.spaceId,
           userId: input.userId,
-          botId: input.botId,
-          groupId: input.groupId,
+          threadId: input.threadId,
           runId: input.runId,
           name,
           description: input.description?.trim().slice(0, ARTIFACT_DESCRIPTION_MAX_LENGTH) || null,
@@ -181,7 +175,6 @@ export async function materializeCurrentTurnFiles(
     context: AdapterContext & { botId: string };
     /** Starts the computer; called only when there is a file to copy onto it. */
     computer: () => Promise<ComputerRef>;
-    computerMode: ComputerMode;
     markWorkspaceDirty?: () => void;
   },
 ): Promise<MaterializedThreadFile[]> {
@@ -205,11 +198,7 @@ async function materializeThreadFiles(
     const row = byId.get(block.artifactId);
     if (!row) throw new Error(`Attached file is unavailable: ${block.name}`);
     const metadata = threadFileMetadata(row);
-    const workspacePath = resolveBotWorkspacePath(
-      input.computerMode,
-      input.context.botId,
-      metadata.path,
-    );
+    const workspacePath = resolveWorkspacePath(metadata.path);
     const exists = preserveExisting
       ? await deps.sandbox.readFile(await input.computer(), workspacePath, input.context).then(
           () => true,
@@ -392,7 +381,7 @@ export function recentThreadFilesInstruction(files: readonly MaterializedThreadF
 }
 
 /**
- * Keeps an MCP app's HTML as a hidden artifact of the thread's bot or group, so its card can load
+ * Keeps an MCP app's HTML as a hidden artifact of the chat, so its card can load
  * it later through the same authorized read as attachments. One copy per document: a later call
  * with the same app reuses it. The artifact list and search leave this type out.
  */
@@ -402,7 +391,7 @@ export async function storeMcpAppHtml(
     spaceId: string;
     userId: string;
     botId: string;
-    groupId?: string;
+    threadId: string;
     runId: string;
     server: string;
     html: string;
@@ -411,12 +400,7 @@ export async function storeMcpAppHtml(
 ): Promise<string> {
   const bytes = new TextEncoder().encode(input.html);
   const hash = createHash("sha256").update(bytes).digest("hex");
-  const owner = {
-    spaceId: input.spaceId,
-    userId: input.userId,
-    botId: input.botId,
-    groupId: input.groupId ?? null,
-  };
+  const owner = { spaceId: input.spaceId, userId: input.userId, threadId: input.threadId };
   const existing = await deps.prisma.artifact.findFirst({
     where: { ...owner, hash, mimeType: MCP_APP_MIME_TYPE },
     select: { id: true },

@@ -12,12 +12,18 @@ import { editMemory } from "./memory-tools.js";
 import type { RunContext } from "./run-context.js";
 import type { ToolCall, ToolHandlers } from "./run-tool-gate.js";
 
-/** Cross-chat history requires a surviving direct human request in this app thread. */
+/**
+ * Other chats' history needs a surviving direct request from the person in this chat, and a chat
+ * with no one else in it: in a chat with several people it would show the others what they
+ * cannot see.
+ */
 export function historyMyChatsAllowed(
   run: { trigger: string; threadId: string },
   source: { role: string; threadId: string } | null,
+  soloChat: boolean,
 ): boolean {
   return (
+    soloChat &&
     (run.trigger === "user" || run.trigger === "follow_up") &&
     source?.role === "user" &&
     source.threadId === run.threadId
@@ -37,7 +43,7 @@ async function readHistoryTool(ctx: RunContext, call: ToolCall) {
   const scope = {
     spaceId: run.spaceId,
     threadId: run.threadId,
-    botId: run.botId,
+    userId: run.userId,
     searchBeforeSeq: ctx.source.historySearchBeforeSeq,
     allowMyChats,
     searchAt: run.createdAt,
@@ -73,13 +79,14 @@ async function readHistoryTool(ctx: RunContext, call: ToolCall) {
 /** Memory documents, semantic memory and thread history. */
 export const memoryTools: ToolHandlers = {
   async remember(ctx, call) {
-    const { deps, runId, bot, thread, context } = ctx;
+    const { deps, runId, thread, context } = ctx;
     const { args } = call;
-    // One document per bot keeps the size cap meaningful.
+    // One document per chat keeps the size cap meaningful.
     const path = MEMORY_INDEX_PATH;
+    const scope = { kind: "chat" as const, threadId: thread.id };
     // A concurrent save changes the revision, so re-read and apply the edit again.
     for (let attempt = 1; ; attempt += 1) {
-      const snapshot = await deps.memory.read({ scope: "bot", botId: bot.id, path }, context);
+      const snapshot = await deps.memory.read({ scope, path }, context);
       const existing = snapshot.documents[0];
       const edit = editMemory(
         existing?.content ?? "",
@@ -92,8 +99,7 @@ export const memoryTools: ToolHandlers = {
       try {
         await deps.memory.commit(
           {
-            scope: "bot",
-            botId: bot.id,
+            scope,
             path,
             content,
             expectedRevision: existing?.revision ?? 0,
@@ -110,19 +116,23 @@ export const memoryTools: ToolHandlers = {
     }
   },
   async save_shared_memory(ctx, call) {
-    const { deps, runId, thread, context } = ctx;
+    const { deps, run, runId, thread, context } = ctx;
     const { args } = call;
     const invalid = sharedMemorySaveError(args);
     if (invalid) return call.finish({ error: invalid });
+    if (!ctx.soloChat) {
+      return call.finish({ error: "Personal memory is saved only in a chat with no one else." });
+    }
     const path = String(args.path ?? "").trim();
+    const scope = { kind: "person" as const, userId: run.userId };
     // The save replaces the whole document. Pass the revision just read so a
     // concurrent edit is rejected instead of overwritten.
-    const snapshot = await deps.memory.read({ scope: "user", path }, context);
+    const snapshot = await deps.memory.read({ scope, path }, context);
     const expectedRevision = snapshot.documents[0]?.revision ?? 0;
     try {
       const saved = await deps.memory.commit(
         {
-          scope: "user",
+          scope,
           path,
           content: String(args.content ?? ""),
           expectedRevision,
@@ -139,16 +149,15 @@ export const memoryTools: ToolHandlers = {
     }
   },
   async recall_memory(ctx, call) {
-    const { bot, thread, context } = ctx;
+    const { thread, context } = ctx;
     const { args } = call;
     return ctx.memory.semantic!.recall(
       {
         query: String(args.query ?? ""),
-        scope: ctx.memory.scope!,
-        botId: bot.id,
+        scope: ctx.memory.scope,
         ...(thread.historyCompactedUpToSeq == null
           ? {}
-          : { historyGeneration: thread.historyCompactionGeneration }),
+          : { history: { threadId: thread.id, generation: thread.historyCompactionGeneration } }),
         limit: MAX_RECALLED_MEMORIES,
       },
       context,
@@ -157,14 +166,13 @@ export const memoryTools: ToolHandlers = {
   search_history: readHistoryTool,
   read_history: readHistoryTool,
   async save_memory(ctx, call) {
-    const { bot, context } = ctx;
+    const { context } = ctx;
     const { args } = call;
     return call.finish(
       await ctx.memory.semantic!.save(
         {
           content: String(args.content ?? ""),
-          scope: ctx.memory.scope!,
-          botId: bot.id,
+          scope: ctx.memory.scope,
           source: { kind: "durable" },
         },
         context,
@@ -172,7 +180,7 @@ export const memoryTools: ToolHandlers = {
     );
   },
   async forget_memory(ctx, call) {
-    const { bot, context } = ctx;
+    const { context } = ctx;
     const { args } = call;
     if (!ctx.memory.semantic?.forget) {
       return call.finish({
@@ -183,8 +191,7 @@ export const memoryTools: ToolHandlers = {
       await ctx.memory.semantic.forget(
         {
           id: String(args.id ?? ""),
-          scope: ctx.memory.scope!,
-          botId: bot.id,
+          scope: ctx.memory.scope,
           ...(typeof args.entity === "string" && args.entity.trim()
             ? { entity: args.entity.trim() }
             : {}),

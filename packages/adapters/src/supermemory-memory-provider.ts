@@ -1,8 +1,10 @@
 import { randomUUID } from "node:crypto";
 import type {
   AdapterContext,
-  DurableMemoryScope,
+  MemoryScope,
+  SemanticMemoryHistory,
   SemanticMemoryProvider,
+  SemanticMemoryPurgeHistoryRequest,
   SemanticMemoryRecallRequest,
   SemanticMemoryResponse,
   SemanticMemoryResult,
@@ -113,22 +115,17 @@ export function decodeLegacySupermemoryCredentials(
   return plaintext.trim() ? { apiKey: plaintext } : null;
 }
 
-function durableContainerTags(scope: DurableMemoryScope, botId: string, spaceId: string): string[] {
-  const isolated = `rakazo:${botId}`;
-  // This external namespace predates the Space rename. Keep it stable so
-  // existing durable memories remain recallable; the identifier is a Space ID.
-  return scope === "shared" ? [`rakazo:workspace:${spaceId}`, isolated] : [isolated];
+function durableContainerTag(scope: MemoryScope): string {
+  return scope.kind === "chat" ? `rakazo:chat:${scope.threadId}` : `rakazo:person:${scope.userId}`;
 }
 
-function historyContainerTag(botId: string, generation: number): string {
-  return `rakazo:${botId}:history:${generation}`;
+function historyContainerTag(history: SemanticMemoryHistory): string {
+  return `rakazo:chat:${history.threadId}:history:${history.generation}`;
 }
 
-function recallContainerTags(request: SemanticMemoryRecallRequest, spaceId: string): string[] {
-  const tags = durableContainerTags(request.scope, request.botId, spaceId);
-  return request.historyGeneration === undefined
-    ? tags
-    : [...tags, historyContainerTag(request.botId, request.historyGeneration)];
+function recallContainerTags(request: SemanticMemoryRecallRequest): string[] {
+  const tag = durableContainerTag(request.scope);
+  return request.history ? [tag, historyContainerTag(request.history)] : [tag];
 }
 
 export class SupermemoryMemoryProvider implements SemanticMemoryProvider {
@@ -172,7 +169,7 @@ export class SupermemoryMemoryProvider implements SemanticMemoryProvider {
     if (blocked) return { ok: false, error: blocked };
     const result = await searchSupermemoryContainers(
       request.query,
-      recallContainerTags(request, context.spaceId),
+      recallContainerTags(request),
       this.connectionForRequest(),
       request.limit,
       context.signal,
@@ -197,8 +194,8 @@ export class SupermemoryMemoryProvider implements SemanticMemoryProvider {
     if (blocked) return { ok: false, error: blocked };
     const tags =
       request.source.kind === "history"
-        ? [historyContainerTag(request.botId, request.source.generation)]
-        : durableContainerTags(request.scope, request.botId, context.spaceId);
+        ? [historyContainerTag(request.source)]
+        : [durableContainerTag(request.scope)];
     const result = await saveSupermemoryMemoryToContainers(
       request.content,
       tags,
@@ -209,7 +206,7 @@ export class SupermemoryMemoryProvider implements SemanticMemoryProvider {
   }
 
   async purgeHistory(
-    request: { botId: string; generations: number[] },
+    request: SemanticMemoryPurgeHistoryRequest,
     context: AdapterContext,
   ): Promise<SemanticMemoryResponse> {
     const blocked = await this.localBaseUrlBlock();
@@ -217,7 +214,7 @@ export class SupermemoryMemoryProvider implements SemanticMemoryProvider {
     const results = await Promise.all(
       [...new Set(request.generations)].map((generation) =>
         deleteSupermemoryContainer(
-          historyContainerTag(request.botId, generation),
+          historyContainerTag({ threadId: request.threadId, generation }),
           this.connectionForRequest(),
           context.signal,
         ),

@@ -6,27 +6,22 @@ import type {
   SandboxProvider,
 } from "@labradoodle/adapter-kit";
 import { computerControlExpireJobKey, skillTeachingExpireJobKey } from "@labradoodle/adapter-kit";
-import type { Actor, MessageBlock, TaughtSkill } from "@labradoodle/contracts";
+import type { Actor, TaughtSkill } from "@labradoodle/contracts";
 import type { SkillPlaybook, TeachRecordingEvent, TeachSnapshot } from "@labradoodle/core";
 import {
   buildPlaybookFromRecording,
   computerInputForDomKey,
   sanitizeTeachRecordingEvent,
 } from "@labradoodle/core";
-import type { Prisma, PrismaClient, ThreadEvents } from "@labradoodle/db";
-import {
-  appendEventInTransaction,
-  createThreadMessageInTransaction,
-  IsolationError,
-} from "@labradoodle/db";
+import type { Computer, PrismaClient, ThreadEvents } from "@labradoodle/db";
 import { revokeScreenControl } from "./computer-control.js";
 import { scheduleComputerSleep } from "./computer-idle.js";
 import { toComputerRef } from "./computer-support.js";
+import { findPersonComputer } from "./person-computer.js";
 
 export type TaughtSkillRow = {
   id: string;
   spaceId: string;
-  botId: string;
   userId: string;
   name: string;
   goal: string;
@@ -100,7 +95,6 @@ export function parsePlaybook(value: unknown): SkillPlaybook {
 export function mapTaughtSkill(row: TaughtSkillRow): TaughtSkill {
   return {
     id: row.id,
-    botId: row.botId,
     name: row.name,
     goal: row.goal,
     status: row.status as TaughtSkill["status"],
@@ -125,20 +119,21 @@ function computerContext(actor: Actor, botId: string, operationId: string): Adap
   };
 }
 
-export async function getActiveTeachingSession(
+/** The demo this person is recording, wherever they started it; one at a time. */
+export async function getActiveTeachingSession(prisma: PrismaClient, userId: string) {
+  return prisma.taughtSkill.findFirst({ where: { userId, status: "recording" } });
+}
+
+/** A recording runs on its person's computer in its workspace, with Doodle's screen there. */
+export async function teachingTarget(
   prisma: PrismaClient,
-  spaceId: string,
-  botId: string,
-  userId?: string,
-) {
-  return prisma.taughtSkill.findFirst({
-    where: {
-      spaceId,
-      botId,
-      status: "recording",
-      ...(userId ? { userId } : {}),
-    },
-  });
+  owner: { spaceId: string; userId: string },
+): Promise<{ botId: string; computer: Computer | null }> {
+  const [doodle, computer] = await Promise.all([
+    prisma.bot.findUnique({ where: { spaceId: owner.spaceId }, select: { id: true } }),
+    findPersonComputer(prisma, owner),
+  ]);
+  return { botId: doodle?.id ?? "default", computer };
 }
 
 function recordingEventKey(event: TeachRecordingEvent): string {
@@ -173,13 +168,13 @@ async function mutateRecording(
 export async function observeStopSnapshot(
   deps: TeachingSessionDeps,
   actor: Actor,
-  bot: { id: string; computer: { providerRef: string | null } | null },
+  target: { botId: string; computer: { providerRef: string | null } | null },
 ): Promise<TeachSnapshot | undefined> {
-  if (!bot.computer?.providerRef) return undefined;
+  if (!target.computer?.providerRef) return undefined;
   try {
     const observation = await deps.sandbox.observe(
-      toComputerRef(bot.computer as never),
-      computerContext(actor, bot.id, "skills.snapshot"),
+      toComputerRef(target.computer as never),
+      computerContext(actor, target.botId, "skills.snapshot"),
     );
     const summary =
       typeof observation === "object" &&
@@ -198,17 +193,13 @@ export async function observeStopSnapshot(
 
 async function finalizeTeachingRecording(
   deps: TeachingSessionDeps,
-  actor: Actor,
   skillId: string,
-  reason: "stopped" | "expired",
   stopSnapshot?: TeachSnapshot,
-): Promise<{ skill: TaughtSkillRow; stopped: { threadId: string; seq: number } | null }> {
+): Promise<TaughtSkillRow> {
   return deps.prisma.$transaction(async (tx) => {
     await tx.$executeRaw`SELECT id FROM taught_skills WHERE id = ${skillId} FOR UPDATE`;
     const skill = await tx.taughtSkill.findUniqueOrThrow({ where: { id: skillId } });
-    if (skill.status === "draft" || skill.status === "saved") {
-      return { skill, stopped: null };
-    }
+    if (skill.status === "draft" || skill.status === "saved") return skill;
     if (skill.status !== "recording" && skill.status !== "drafting") {
       throw new Error("Teaching session is not active");
     }
@@ -222,7 +213,7 @@ async function finalizeTeachingRecording(
       });
     }
     const playbook = buildPlaybookFromRecording(skill.goal, recording.events, recording.snapshots);
-    const updated = await tx.taughtSkill.update({
+    return tx.taughtSkill.update({
       where: { id: skillId },
       data: {
         status: "draft",
@@ -231,24 +222,6 @@ async function finalizeTeachingRecording(
         stoppedAt: new Date(),
       },
     });
-    // The stopped event must commit with the status flip; appended afterwards it is lost for
-    // good when the process dies in between, because retries see a draft and skip it.
-    const bot = await tx.bot.findUnique({
-      where: { id: skill.botId },
-      include: { thread: true },
-    });
-    let stopped: { threadId: string; seq: number } | null = null;
-    if (bot?.thread) {
-      const event = await appendEventInTransaction(tx, {
-        spaceId: actor.spaceId,
-        threadId: bot.thread.id,
-        botId: skill.botId,
-        type: "skill.teaching.stopped",
-        payload: { skillId: skill.id, reason },
-      });
-      stopped = { threadId: bot.thread.id, seq: event.seq };
-    }
-    return { skill: updated, stopped };
   });
 }
 
@@ -274,59 +247,26 @@ export async function appendRecordingEvent(
   );
 }
 
-export async function releaseTeachingComputerControlForBot(
+/** Gives the person's computer back to Doodle once their recording ends. */
+export async function releaseTeachingComputerControl(
   deps: TeachingSessionDeps,
   actor: Actor,
-  botId: string,
   expectedLeaseId?: string | null,
 ): Promise<void> {
-  const bot = await deps.prisma.bot.findUnique({
-    where: { id: botId },
-    include: { computer: true },
-  });
-  if (!bot) return;
-  await releaseTeachingComputerControl(deps, actor, bot, expectedLeaseId);
-}
-
-async function releaseTeachingComputerControl(
-  deps: TeachingSessionDeps,
-  actor: Actor,
-  bot: {
-    id: string;
-    computer: {
-      id: string;
-      homeKey: string;
-      kind: string;
-      providerRef: string | null;
-      controlHolder: string;
-      controlBotId: string | null;
-      controlLeaseId: string | null;
-      controlRunId: string | null;
-    } | null;
-  },
-  expectedLeaseId?: string | null,
-): Promise<void> {
-  const computer = bot.computer;
-  if (
-    computer?.controlHolder !== "user" ||
-    computer.controlBotId !== bot.id ||
-    !computer.controlLeaseId
-  ) {
-    return;
-  }
+  const { botId, computer } = await teachingTarget(deps.prisma, actor);
+  if (computer?.controlHolder !== "user" || !computer.controlLeaseId) return;
   if (!expectedLeaseId || computer.controlLeaseId !== expectedLeaseId) return;
   const leaseId = computer.controlLeaseId;
   await revokeScreenControl(
     deps,
     computer,
-    computerContext(actor, bot.id, "skills.release"),
+    computerContext(actor, botId, "skills.release"),
     leaseId,
   );
   await deps.jobs.cancel(computerControlExpireJobKey(computer.id, leaseId));
   await deps.events.finalizeComputerControlRelease({
     spaceId: actor.spaceId,
     computerId: computer.id,
-    botId: bot.id,
     runId: computer.controlRunId,
     leaseId,
     holder: "bot",
@@ -335,132 +275,18 @@ async function releaseTeachingComputerControl(
   await scheduleComputerSleep(deps.jobs, computer.id);
 }
 
-function skillDraftBlocks(skill: TaughtSkillRow): MessageBlock[] {
-  return [
-    {
-      kind: "skill_draft",
-      skillId: skill.id,
-      name: skill.name || skill.goal.slice(0, 80),
-      goal: skill.goal,
-      playbook: parsePlaybook(skill.playbook),
-      status: "draft",
-    },
-  ];
-}
-
-async function findSkillDraftMessage(
-  prisma: { message: { findMany: PrismaClient["message"]["findMany"] } },
-  threadId: string,
-  skillId: string,
-): Promise<{ id: string; blocks: MessageBlock[] } | null> {
-  const messages = await prisma.message.findMany({
-    where: { threadId, role: "bot" },
-    orderBy: { seq: "desc" },
-    take: 100,
-    select: { id: true, blocks: true },
-  });
-  for (const message of messages) {
-    const blocks = message.blocks as MessageBlock[];
-    if (
-      Array.isArray(blocks) &&
-      blocks.some((block) => block.kind === "skill_draft" && block.skillId === skillId)
-    ) {
-      return { id: message.id, blocks };
-    }
-  }
-  return null;
-}
-
-async function hasSkillDraftCreatedEvent(
-  prisma: { event: { findMany: PrismaClient["event"]["findMany"] } },
-  threadId: string,
-  skillId: string,
-): Promise<boolean> {
-  const events = await prisma.event.findMany({
-    where: { threadId, type: "skill.draft.created" },
-    select: { payload: true },
-    take: 50,
-  });
-  return events.some((event) => {
-    const payload = event.payload;
-    return (
-      payload !== null &&
-      typeof payload === "object" &&
-      "skillId" in payload &&
-      payload.skillId === skillId
-    );
-  });
-}
-
-async function emitSkillDraftMessages(
-  deps: TeachingSessionDeps,
-  actor: Actor,
-  skill: TaughtSkillRow,
-  bot: { id: string; thread: { id: string } | null },
-): Promise<void> {
-  if (skill.status !== "draft" || !bot.thread) return;
-  const threadId = bot.thread.id;
-  const published = await deps.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    await tx.$executeRaw`SELECT id FROM taught_skills WHERE id = ${skill.id} FOR UPDATE`;
-    let created = await findSkillDraftMessage(tx, threadId, skill.id);
-    if (!created) {
-      const blocks = skillDraftBlocks(skill);
-      const message = await createThreadMessageInTransaction(tx, {
-        threadId,
-        role: "bot",
-        blocks,
-      });
-      created = { id: message.id, blocks };
-    }
-    if (await hasSkillDraftCreatedEvent(tx, threadId, skill.id)) return null;
-    await appendEventInTransaction(tx, {
-      spaceId: actor.spaceId,
-      threadId,
-      botId: bot.id,
-      type: "thread.message.created",
-      payload: { messageId: created.id, role: "bot", blocks: created.blocks },
-    });
-    const draftEvent = await appendEventInTransaction(tx, {
-      spaceId: actor.spaceId,
-      threadId,
-      botId: bot.id,
-      type: "skill.draft.created",
-      payload: { skillId: skill.id, name: skill.name || skill.goal.slice(0, 80) },
-    });
-    return draftEvent.seq;
-  });
-  if (published != null) await deps.events.notify(threadId, published);
-}
-
 export async function completeTeachingSession(
   deps: TeachingSessionDeps,
   actor: Actor,
   skillId: string,
-  reason: "stopped" | "expired",
   stopSnapshot?: TeachSnapshot,
 ): Promise<TaughtSkillRow> {
-  const { skill: finalized, stopped } = await finalizeTeachingRecording(
+  const finalized = await finalizeTeachingRecording(deps, skillId, stopSnapshot);
+  await releaseTeachingComputerControl(
     deps,
     actor,
-    skillId,
-    reason,
-    stopSnapshot,
-  );
-  const bot = await deps.prisma.bot.findUnique({
-    where: { id: finalized.botId },
-    include: { thread: true, computer: true },
-  });
-  if (!bot) throw new IsolationError();
-  await releaseTeachingComputerControlForBot(
-    deps,
-    actor,
-    bot.id,
     parseRecording(finalized.recording).controlLeaseId,
   );
-  if (finalized.status === "draft") {
-    await emitSkillDraftMessages(deps, actor, finalized, bot);
-  }
-  if (stopped) await deps.events.notify(stopped.threadId, stopped.seq);
   return finalized;
 }
 
@@ -473,28 +299,18 @@ export async function expireTaughtSkillTeaching(
   const actor = { spaceId: skill.spaceId, userId: skill.userId } as Actor;
   if (skill.status !== "recording") {
     const leaseId = parseRecording(skill.recording).controlLeaseId;
-    if (leaseId) await releaseTeachingComputerControlForBot(deps, actor, skill.botId, leaseId);
-    if (skill.status === "draft") {
-      const bot = await deps.prisma.bot.findUnique({
-        where: { id: skill.botId },
-        include: { thread: true },
-      });
-      if (bot) await emitSkillDraftMessages(deps, actor, skill, bot);
-    }
+    if (leaseId) await releaseTeachingComputerControl(deps, actor, leaseId);
     return skill;
   }
   if (!skill.expiresAt || skill.expiresAt.getTime() > Date.now()) {
     return skill;
   }
-  const bot = await deps.prisma.bot.findUnique({
-    where: { id: skill.botId },
-    include: { thread: true, computer: true },
-  });
-  if (!bot) return skill;
-  const stopSnapshot = bot.computer?.providerRef
-    ? await observeStopSnapshot(deps, actor, bot)
-    : undefined;
-  const finalized = await completeTeachingSession(deps, actor, skill.id, "expired", stopSnapshot);
+  const stopSnapshot = await observeStopSnapshot(
+    deps,
+    actor,
+    await teachingTarget(deps.prisma, actor),
+  );
+  const finalized = await completeTeachingSession(deps, actor, skill.id, stopSnapshot);
   await deps.jobs.cancel(skillTeachingExpireJobKey(skill.id));
   return finalized;
 }
@@ -554,10 +370,11 @@ function protectedInputMissesRecording(
 export async function recordTeachingInputEvent(
   deps: TeachingSessionDeps,
   actor: Actor,
-  botId: string,
   mapped: TeachComputerInput,
 ): Promise<"recorded" | "idle" | "stale"> {
-  const skill = await getActiveTeachingSession(deps.prisma, actor.spaceId, botId, actor.userId);
+  const active = await getActiveTeachingSession(deps.prisma, actor.userId);
+  // A recording runs in the workspace it started in.
+  const skill = active?.spaceId === actor.spaceId ? active : null;
   // Protected input names the recording it was queued for, so a later one cannot receive it.
   if (protectedInputMissesRecording(mapped, skill?.id)) return "stale";
   if (!skill) return "idle";
@@ -595,34 +412,26 @@ export async function recordTeachingInputEvent(
     if (current.expiresAt && current.expiresAt.getTime() <= Date.now()) {
       return { kind: "expired" as const };
     }
-    const bot = await tx.bot.findUnique({
-      where: { id: botId },
-      include: { computer: true },
-    });
-    return { kind: "ready" as const, computer: bot?.computer ?? null };
+    return { kind: "ready" as const };
   });
   if (prepared.kind === "expired") {
     await expireTaughtSkillTeaching(deps, skill.id);
     return "stale";
   }
   if (prepared.kind === "stale") return "stale";
-  if (prepared.computer?.providerRef) {
+  const target = await teachingTarget(deps.prisma, actor);
+  if (target.computer?.providerRef) {
     // The row lock above does not cover sandbox IO. Only protected input is
     // bound to a recording, so ordinary events skip this extra read.
     if (mapped.sensitive === true && mapped.skillId) {
-      const active = await getActiveTeachingSession(
-        deps.prisma,
-        actor.spaceId,
-        botId,
-        actor.userId,
-      );
-      if (protectedInputMissesRecording(mapped, active?.id)) return "stale";
+      const current = await getActiveTeachingSession(deps.prisma, actor.userId);
+      if (protectedInputMissesRecording(mapped, current?.id)) return "stale";
     }
     await applyTeachingDesktopInput(
       deps.sandbox,
-      prepared.computer,
+      target.computer,
       mapped,
-      computerContext(actor, botId, "input"),
+      computerContext(actor, target.botId, "input"),
     );
   }
   const recorded = await deps.prisma.$transaction(async (tx) => {
@@ -648,10 +457,9 @@ export async function recordTeachingInputEvent(
 export async function captureTeachingSnapshot(
   deps: TeachingSessionDeps,
   actor: Actor,
-  bot: { id: string; computer: { id: string; kind: string; providerRef: string | null } | null },
   skill: TaughtSkillRow,
 ): Promise<TaughtSkillRow> {
-  const snapshot = await observeStopSnapshot(deps, actor, bot);
+  const snapshot = await observeStopSnapshot(deps, actor, await teachingTarget(deps.prisma, actor));
   if (!snapshot) return skill;
   return mutateRecording(deps, skill.id, (recording) => {
     recording.snapshots.push(snapshot);

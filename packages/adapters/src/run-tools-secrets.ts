@@ -1,6 +1,6 @@
 import { runContinueJob } from "@labradoodle/adapter-kit";
 import { BotSecretName, botSecretSubmissionSchema } from "@labradoodle/contracts";
-import { createStreamingRedactor, displayName } from "@labradoodle/core";
+import { createStreamingRedactor, DOODLE_NAME } from "@labradoodle/core";
 import { runCodeKind, runLoginKind, runSecretKind, spaceIsShared } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import {
@@ -103,7 +103,7 @@ export const secretTools: ToolHandlers = {
     }
   },
   async request_secret(ctx, call) {
-    const { deps, run, runId, bot, thread, context } = ctx;
+    const { deps, run, runId, thread, context } = ctx;
     const { name, args, executionId, effectKey, applied } = call;
     const { reply } = ctx.state;
     const resolvedSecret = resolveRequestSecretDestination(args);
@@ -383,8 +383,7 @@ export const secretTools: ToolHandlers = {
     }
     await notifyRun(deps, run, {
       kind: "help",
-      ...secretAskNotification(displayName(bot.name, "Bot"), askText, ctx.secrets),
-      botId: bot.id,
+      ...secretAskNotification(DOODLE_NAME, askText, ctx.secrets),
       threadId: thread.id,
     });
     return pauseForSecret(ctx);

@@ -1204,19 +1204,10 @@ export const builtinAgentTools: ConnectorTool[] = [
   {
     name: "update_bot",
     description:
-      "Read or change your own settings. Call with no fields to read them and the models and thinking levels you can pick. Long instructions come in pages; follow instructionsNextOffset before replacing them. If a read comes back with contextTruncated, it was shortened: say so, do not rewrite. Pass fields to change them, only when the user asks; setting your name and first instructions when you have none is fine. Never claim a change without calling this.",
+      "Read or change your own settings. Call with no fields to read them and the models and thinking levels you can pick. Long instructions come in pages; follow instructionsNextOffset before replacing them. If a read comes back with contextTruncated, it was shortened: say so, do not rewrite. Pass fields to change them, only when the person asks; only the workspace's owner can change them. Never claim a change without calling this.",
     inputSchema: {
       type: "object",
       properties: {
-        name: {
-          type: "string",
-          description: "Display name shown in the chat header and bot list.",
-        },
-        // Explained in the update_bot instructions; kept short for the listed-tool budget.
-        notifyOnFinish: {
-          type: "boolean",
-          description: "Notify the user when this bot finishes a run.",
-        },
         instructions: {
           type: "string",
           maxLength: BOT_INSTRUCTIONS_MAX_LENGTH,
@@ -1237,10 +1228,6 @@ export const builtinAgentTools: ConnectorTool[] = [
           enum: [...ThinkingLevelSchema.options],
           description:
             "How hard you reason; raise it when asked to think harder, lower it for speed.",
-        },
-        readAloud: {
-          type: "boolean",
-          description: "Read your replies aloud.",
         },
         voice: {
           type: "string",

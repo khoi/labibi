@@ -15,20 +15,19 @@ import type { RoutineWatch, RoutineWatchState } from "@labradoodle/contracts";
 import { RoutineWatchSchema, RoutineWatchStateSchema } from "@labradoodle/contracts";
 import type { ActionApprovalRule } from "@labradoodle/core";
 import { connectorKindFromToolName, redactSecrets, watchToolRefusal } from "@labradoodle/core";
-import type { ComputerMode, PrismaClient, ThreadEvents } from "@labradoodle/db";
+import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
 import {
   appendEventInTransaction,
   createThreadMessageInTransaction,
   listApprovalRules,
-  parseComputerMode,
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { loadLoginPasswordRedactions, shellCommandEnvironment } from "./bot-secrets.js";
 import { scheduleComputerSleep } from "./computer-idle.js";
 import { ComputerBusyError, provisionComputer } from "./computer-lifecycle.js";
-import { resolveBotWorkspaceCwd, teamBotWorkspaceDirectory } from "./computer-support.js";
 import { connectedContext, selectRunConnections } from "./connection-context.js";
 import { nativeShellCommandArgv, usesNativeShell } from "./native-shell.js";
+import { ensurePersonComputer } from "./person-computer.js";
 import { loadPurchaseRedactions } from "./purchase-service.js";
 
 /**
@@ -377,20 +376,9 @@ for p in "$@"; do
 done
 exit "$status"`;
 
-/** Team file checks stay in this bot's folder, including absolute paths. */
-export function resolveWatchPath(mode: ComputerMode, botId: string, path: string): string {
-  const folder = watchFolder(mode, botId);
-  const resolved = posix.resolve(folder, path);
-  if (mode === "team" && resolved !== folder && !resolved.startsWith(`${folder}/`)) {
-    throw new RoutineWatchError("The watched path must stay inside the bot's folder.");
-  }
-  return resolved;
-}
-
-/** Where a bot's relative paths and commands start. */
-export function watchFolder(mode: ComputerMode, botId: string): string {
-  // Not resolveBotWorkspacePath(mode, botId, "."): a team computer refuses "." as escaping.
-  return mode === "team" ? `${WORKSPACE}/${teamBotWorkspaceDirectory(botId)}` : WORKSPACE;
+/** A watched path on the routine's person's computer; relative ones start at its home. */
+export function resolveWatchPath(path: string): string {
+  return posix.resolve(WORKSPACE, path);
 }
 
 async function readComputer(
@@ -398,16 +386,13 @@ async function readComputer(
   routine: RoutineWatchTarget,
   watch: RoutineWatch,
 ): Promise<Reading> {
-  const bot = await deps.prisma.bot.findUnique({
-    where: { id: routine.botId },
-    include: { computer: true },
+  const stored = await ensurePersonComputer(deps.prisma, {
+    spaceId: routine.spaceId,
+    userId: routine.userId,
   });
-  if (!bot?.computer) throw new RoutineWatchError("This bot has no computer to check.");
-  const mode = parseComputerMode(bot.computer.scope);
   if (watch.kind === "command") {
     // The guard reads bash, so it protects the Linux desktop and never a native shell.
-    const guarded =
-      !usesNativeShell(bot.computer.kind) && deps.sandbox.describe().capabilities.graphical;
+    const guarded = !usesNativeShell(stored.kind) && deps.sandbox.describe().capabilities.graphical;
     const refusal = guarded ? deps.commandRefusal?.(watch.command ?? "") : undefined;
     if (refusal) {
       throw new RoutineWatchError(
@@ -416,7 +401,7 @@ async function readComputer(
     }
   }
   const ctx = context(routine);
-  const computerId = bot.computer.id;
+  const computerId = stored.id;
   let computer: Awaited<ReturnType<typeof provisionComputer>>;
   try {
     computer = await getLogger().withContext({ reason: "watch", watchKind: watch.kind }, () =>
@@ -432,12 +417,11 @@ async function readComputer(
     ) {
       throw new RoutineWatchRetry();
     }
-    throw new RoutineWatchError(`Could not start the bot's computer: ${errorText(error)}`);
+    throw new RoutineWatchError(`Could not start the computer: ${errorText(error)}`);
   }
-  scheduleComputerSleep(deps.jobs, bot.computer.id);
+  scheduleComputerSleep(deps.jobs, stored.id);
   // The check's own time budget starts once the computer is up.
-  const botFolder = watchFolder(mode, bot.id);
-  const cwd = resolveBotWorkspaceCwd(mode, bot.id, undefined);
+  const cwd = undefined;
   ctx.signal = AbortSignal.timeout(CHECK_TIMEOUT_MS);
 
   if (watch.kind === "command") {
@@ -462,7 +446,7 @@ async function readComputer(
         ])
       : [undefined, [], []];
     for (const value of [...loginRedactions, ...purchaseRedactions]) secrets.add(value);
-    const shellEnvironment = usesNativeShell(bot.computer.kind)
+    const shellEnvironment = usesNativeShell(stored.kind)
       ? await deps.sandbox.environment?.(computer, ctx)
       : undefined;
     const argv = shellEnvironment
@@ -494,12 +478,12 @@ async function readComputer(
   }
 
   const paths = (watch.paths ?? []).map((path) => {
-    const resolved = resolveWatchPath(mode, bot.id, path);
-    const relative = posix.relative(botFolder, resolved);
+    const resolved = resolveWatchPath(path);
+    const relative = posix.relative(WORKSPACE, resolved);
     // Inside the workspace, pass the path relative to the provider's working
     // directory so a desktop computer resolves it under its own home.
     const outside = relative === ".." || relative.startsWith("../");
-    if (mode !== "team" && (outside || posix.isAbsolute(relative))) return resolved;
+    if (outside || posix.isAbsolute(relative)) return resolved;
     // `./` keeps a name such as `-reports` from being read as a `find` option.
     return !relative ? "." : outside ? relative : `./${relative}`;
   });
@@ -507,7 +491,7 @@ async function readComputer(
     deps,
     computer,
     ctx,
-    ["sh", "-c", FILES_SCRIPT, "watch", mode === "team" ? "." : "", ...paths],
+    ["sh", "-c", FILES_SCRIPT, "watch", "", ...paths],
     cwd,
   );
   if (result.code !== 0) {
@@ -841,12 +825,7 @@ export async function validateRoutineWatch(
   deps: { connector?: ConnectorProvider; prisma?: PrismaClient },
   watch: RoutineWatch,
   target: { spaceId: string; userId: string; botId: string },
-  computer?: { scope: string } | null,
 ): Promise<void> {
-  if (watch.kind === "files" && computer) {
-    for (const path of watch.paths ?? [])
-      resolveWatchPath(parseComputerMode(computer.scope), target.botId, path);
-  }
   // The API composition root has a registry, not the run's authorized connector.
   // Without that provider, tool metadata must be checked by readTool at runtime.
   if (watch.kind !== "tool" || !deps.connector) return;

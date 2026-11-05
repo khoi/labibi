@@ -37,7 +37,8 @@ export function selectBuiltinToolsForRun(options: {
   graphicalToolsAllowed: boolean;
   /** Page browser tools need a graphical computer (Chrome), not model vision. */
   pageBrowserAllowed?: boolean;
-  groupId: string | null;
+  /** Only the asker is in the chat, so their personal memory is in reach. */
+  soloChat: boolean;
   trigger: string;
   semanticMemoryEnabled: boolean;
   /** The configured provider can forget individual facts. */
@@ -75,6 +76,7 @@ export function selectBuiltinToolsForRun(options: {
     (tool) =>
       !disabled.has(tool.name) &&
       (ownerStartedRun || (tool.name !== "update_preferences" && tool.name !== "feedback")) &&
+      (options.soloChat || tool.name !== "save_shared_memory") &&
       (options.paymentWalletEnabled || !PURCHASE_TOOL_NAMES.has(tool.name)) &&
       (options.mediaImagesEnabled || tool.name !== "generate_image") &&
       (options.mediaVideoEnabled || tool.name !== "generate_video") &&

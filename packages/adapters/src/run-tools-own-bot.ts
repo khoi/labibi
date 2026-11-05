@@ -2,12 +2,12 @@ import { BotSettingsValuesSchema } from "@labradoodle/contracts";
 import {
   appendEventInTransaction,
   commitBotUpdate,
+  commitBotUpdateInTransaction,
   InstructionConflictError,
+  SpaceOwnerRequiredError,
   THREAD_LOCK_TRANSACTION_OPTIONS,
-  writeBotInstructions,
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
-import type { ExecutorDeps } from "./executor-deps.js";
 import {
   listDefaultVoices,
   prepareOwnBotSettings,
@@ -22,9 +22,9 @@ import { mayOpenModelStream } from "./run-lifecycle.js";
 import { publishMessage } from "./run-messages.js";
 import { botSettingsDeps } from "./run-model.js";
 import type { ToolHandlers } from "./run-tool-gate.js";
-import { argumentGiven, parseUpdateBotPatch } from "./update-bot-patch.js";
+import { argumentGiven, OWNER_ONLY_SETTINGS_ERROR } from "./update-bot-patch.js";
 
-/** Writes this bot's instructions quietly; earlier versions stay restorable in its settings. */
+/** Writes Doodle's instructions quietly; earlier versions stay restorable in its settings. */
 async function commitOwnInstructions(
   ctx: RunContext,
   input: {
@@ -48,46 +48,47 @@ async function commitOwnInstructions(
     if (!mayOpenModelStream(live, ctx.workerId, ctx.fence, context.signal.aborted)) {
       throw new Error("Instruction update run is no longer active.");
     }
-    let undoVersionId: string | null;
+    let changed: boolean;
     try {
-      undoVersionId = await writeBotInstructions(tx, {
-        botId,
-        instructions: input.instructions,
+      ({ instructionsChanged: changed } = await commitBotUpdateInTransaction(tx, {
+        actor: { spaceId: run.spaceId, userId: run.userId },
+        data: { instructions: input.instructions },
         reason: input.reason,
         expectedInstructions: previousInstructions,
-      });
+      }));
     } catch (error) {
+      if (error instanceof SpaceOwnerRequiredError) return { error: OWNER_ONLY_SETTINGS_ERROR };
       if (!(error instanceof InstructionConflictError)) throw error;
       // Re-reading cannot rebase this attempt, so point the model at a fresh run.
       return { error: OWN_INSTRUCTIONS_CHANGED_ERROR };
     }
-    if (!undoVersionId) return null;
-    const bot = await tx.bot.findUniqueOrThrow({
-      where: { id: botId },
-      select: { name: true },
-    });
+    if (!changed) return null;
     return appendEventInTransaction(tx, {
       spaceId: run.spaceId,
       threadId: run.threadId,
       botId,
       runId,
       type: "bot.updated",
-      payload: { botId, name: bot.name },
+      payload: { botId },
     });
   }, THREAD_LOCK_TRANSACTION_OPTIONS);
   if (committed && "error" in committed) return committed;
-  if (committed)
+  if (committed) {
     await deps.events
       .notify(run.threadId, committed.seq)
       .catch((error) => getLogger().error("instruction update realtime notification", error));
+    await deps.events
+      .publishDoodleChanged?.(run.spaceId)
+      .catch((error) => getLogger().error("doodle change signal", error));
+  }
   ctx.state.ownInstructionsBaseline = input.instructions;
   return { ok: true };
 }
 
-/** update_bot: this bot reads and changes its own settings. */
+/** update_bot: Doodle reads its settings, and changes them for the workspace's owner. */
 export const ownBotTools: ToolHandlers = {
   async update_bot(ctx, call) {
-    const { deps, run, bot, thread, context } = ctx;
+    const { deps, run, bot, context } = ctx;
     const { args } = call;
     // A held change (see prepareOwnBotUpdate) runs only once the owner or Auto Review approves it.
     if (typeof args.previousInstructions === "string") {
@@ -105,24 +106,21 @@ export const ownBotTools: ToolHandlers = {
         }),
       );
     }
-    const { instructions, model, thinkingLevel, readAloud, voice, ...profile } = args;
+    const { instructions, model, thinkingLevel, voice } = args;
     const modelDeps = await botSettingsDeps(deps, run);
     const live = await deps.prisma.bot.findUniqueOrThrow({
       where: { id: bot.id },
       select: {
-        name: true,
         instructions: true,
-        notifyOnFinish: true,
         modelProvider: true,
         modelId: true,
         thinkingLevel: true,
-        autoSpeak: true,
         voiceId: true,
       },
     });
     // `instructions_offset` pages through long instructions on a read; it is not a write field.
     const instructionsOffsetArg = args.instructions_offset ?? args.instructionsOffset;
-    const writeArgs = { ...args, instructions_offset: undefined, instructionsOffset: undefined };
+    const writeArgs = { instructions, model, thinkingLevel, voice };
     const read = !Object.values(writeArgs).some(argumentGiven);
     let readOffset = 0;
     if (argumentGiven(instructionsOffsetArg)) {
@@ -146,7 +144,7 @@ export const ownBotTools: ToolHandlers = {
       modelDeps,
       run,
       live,
-      { model, thinkingLevel, readAloud, voice },
+      { model, thinkingLevel, voice },
       () => listDefaultVoices(deps, run, context),
     );
     if ("error" in settings) return call.finish(settings);
@@ -155,11 +153,6 @@ export const ownBotTools: ToolHandlers = {
         Object.keys(settings.data).map((key) => [key, live[key as keyof typeof settings.data]]),
       ),
     );
-    // The profile goes first, so a rejected field leaves everything else unchanged for a retry.
-    const updated = Object.values(profile).some(argumentGiven)
-      ? await updateOwnBotFromTool(deps, run, thread.id, bot, profile)
-      : undefined;
-    if (updated && "error" in updated) return call.finish(updated);
     if (
       Object.entries(settings.data).some(
         ([key, value]) => before[key as keyof typeof before] !== value,
@@ -168,19 +161,20 @@ export const ownBotTools: ToolHandlers = {
       try {
         await commitBotUpdate({
           prisma: deps.prisma,
-          notify: (threadId, seq) => deps.events.notify(threadId, seq),
-          spaceId: run.spaceId,
-          threadId: thread.id,
-          botId: bot.id,
-          emitBotUpdated: true,
+          actor: { spaceId: run.spaceId, userId: run.userId },
           expectedSettings: before,
           data: settings.data,
         });
       } catch (error) {
+        if (error instanceof SpaceOwnerRequiredError)
+          return call.finish({ error: OWNER_ONLY_SETTINGS_ERROR });
         if (!(error && typeof error === "object" && "code" in error && error.code === "P2025"))
           throw error;
         return call.finish({ error: "Your settings changed meanwhile; read them and try again." });
       }
+      await deps.events
+        .publishDoodleChanged?.(run.spaceId)
+        .catch((error) => getLogger().error("doodle change signal", error));
       await publishMessage(deps, run, "bot", [
         {
           kind: "ask",
@@ -201,56 +195,19 @@ export const ownBotTools: ToolHandlers = {
       });
       if ("error" in set)
         return call.finish({
-          error: `${updated || Object.keys(settings.data).length ? "Your other changes were saved, but your instructions were not: " : ""}${set.error}`,
+          error: `${Object.keys(settings.data).length ? "Your other changes were saved, but your instructions were not: " : ""}${set.error}`,
         });
     }
     return call.finish({
       ok: true,
-      ...updated,
       ...(settings.data.modelId !== undefined
         ? { model: `${settings.data.modelProvider}/${settings.data.modelId}` }
         : {}),
       ...(settings.data.thinkingLevel !== undefined
         ? { thinkingLevel: settings.data.thinkingLevel ?? "default" }
         : {}),
-      ...(settings.data.autoSpeak !== undefined ? { readAloud: settings.data.autoSpeak } : {}),
       ...(settings.data.voiceId !== undefined ? { voice: settings.data.voiceId ?? "default" } : {}),
       ...(argumentGiven(instructions) ? { instructions: "updated" } : {}),
     });
   },
 };
-
-/** update_bot on the calling bot's own profile. */
-async function updateOwnBotFromTool(
-  deps: ExecutorDeps,
-  run: { id: string; spaceId: string },
-  threadId: string,
-  bot: { id: string },
-  args: Record<string, unknown>,
-) {
-  const parsed = parseUpdateBotPatch(args);
-  if ("error" in parsed) return parsed;
-  const updated = await deps.prisma.bot.update({
-    where: { id: bot.id },
-    data: parsed.patch,
-    select: { id: true, name: true, notifyOnFinish: true },
-  });
-  try {
-    await deps.events.append({
-      spaceId: run.spaceId,
-      threadId: threadId,
-      botId: bot.id,
-      runId: run.id,
-      type: "bot.updated",
-      payload: { botId: updated.id, name: updated.name },
-    });
-  } catch (error) {
-    getLogger().error("bot.updated notification", error);
-  }
-  return {
-    ok: true,
-    botId: updated.id,
-    name: updated.name,
-    notifyOnFinish: updated.notifyOnFinish,
-  };
-}

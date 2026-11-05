@@ -94,13 +94,10 @@ function builtinParameters(tool: ConnectorTool) {
   }
   if (tool.name === "update_bot") {
     return Type.Object({
-      name: Type.Optional(Type.String()),
       instructions: Type.Optional(Type.String()),
       instructions_offset: Type.Optional(Type.Integer({ minimum: 0 })),
-      notifyOnFinish: Type.Optional(Type.Boolean()),
       model: Type.Optional(Type.String()),
       thinkingLevel: Type.Optional(stringEnum(ThinkingLevelSchema.options, {})),
-      readAloud: Type.Optional(Type.Boolean()),
       voice: Type.Optional(Type.String()),
     });
   }
@@ -255,8 +252,7 @@ function fieldOptions(definition: Record<string, unknown>): FieldOptions {
     : {};
 }
 
-const UPDATE_BOT_STRING_ARGS = ["name", "model", "thinkingLevel", "voice", "instructions"] as const;
-const UPDATE_BOT_FLAG_ARGS = ["readAloud"] as const;
+const UPDATE_BOT_STRING_ARGS = ["model", "thinkingLevel", "voice", "instructions"] as const;
 
 /**
  * Keeps only the `update_bot` arguments a model sent, coerced to their declared types.
@@ -268,11 +264,6 @@ export function prepareUpdateBotArguments(raw: Record<string, unknown>): Record<
   for (const key of UPDATE_BOT_STRING_ARGS) {
     if (argumentGiven(raw[key])) out[key] = String(raw[key]);
   }
-  for (const key of UPDATE_BOT_FLAG_ARGS) {
-    if (argumentGiven(raw[key])) out[key] = raw[key];
-  }
-  const notify = raw.notifyOnFinish ?? raw.notify_on_finish;
-  if (argumentGiven(notify)) out.notifyOnFinish = notify;
   // The read pager's offset is a number; the handler validates it.
   if (argumentGiven(raw.instructions_offset)) out.instructions_offset = raw.instructions_offset;
   return out;

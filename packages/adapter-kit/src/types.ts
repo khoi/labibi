@@ -337,9 +337,11 @@ export interface ConnectorCapabilities {
 
 export type ConnectorCatalogItem = ConnectionCatalogItem;
 
+/** A chat's memory, which everyone in it shares, or one person's own in the workspace. */
+export type MemoryScope = { kind: "chat"; threadId: string } | { kind: "person"; userId: string };
+
 export interface MemoryReadRequest {
-  scope: "bot" | "user";
-  botId?: string;
+  scope: MemoryScope;
   path?: string;
 }
 
@@ -355,8 +357,7 @@ export interface MemorySnapshot {
 
 export interface MemorySearchRequest {
   query: string;
-  scope: "bot" | "user" | "all";
-  botId?: string;
+  scope: MemoryScope;
 }
 
 export interface MemorySearchResult {
@@ -370,8 +371,7 @@ export const MEMORY_REVISION_CONFLICT_ERROR =
   "Shared memory changed since it was read. Read the latest version and save again.";
 
 export interface MemoryCommitRequest {
-  scope: "bot" | "user";
-  botId?: string;
+  scope: MemoryScope;
   path: string;
   content: string;
   /** When set, commit fails if the live document revision is no longer this value. */
@@ -383,8 +383,7 @@ export interface MemoryCommitRequest {
 export interface MemoryRemoveRequest {
   /** When set, only this exact document is removed, never a newer one at the same path. */
   id?: string;
-  scope: "bot" | "user";
-  botId?: string;
+  scope: MemoryScope;
   path: string;
 }
 
@@ -396,8 +395,7 @@ export interface MemoryRevision {
 }
 
 export interface MemoryExportRequest {
-  scope: "bot" | "user" | "all";
-  botId?: string;
+  scope: MemoryScope;
 }
 
 export interface MemoryCapabilities {
@@ -405,8 +403,6 @@ export interface MemoryCapabilities {
   revisions: boolean;
   markdownPortable: boolean;
 }
-
-export type DurableMemoryScope = "isolated" | "shared";
 
 export interface SemanticMemoryCapabilities {
   recall: true;
@@ -429,9 +425,8 @@ export interface SemanticMemoryResult {
 
 export interface SemanticMemoryForgetRequest {
   id: string;
-  /** Same scope as recall: providers delete only facts inside these namespaces. */
-  scope: DurableMemoryScope;
-  botId: string;
+  /** Same scope as recall: providers delete only facts inside it. */
+  scope: MemoryScope;
   reason?: string;
   /** Entity/namespace from a prior recall citation, when the backend scopes deletes. */
   entity?: string;
@@ -443,22 +438,26 @@ export type SemanticMemoryResponse<T = void> =
 
 export interface SemanticMemoryRecallRequest {
   query: string;
-  scope: DurableMemoryScope;
-  botId: string;
-  /** Omit until a thread has compacted history; the provider can then skip that namespace. */
-  historyGeneration?: number;
+  scope: MemoryScope;
+  /** The chat's compacted history to search too; omitted until it has some. */
+  history?: SemanticMemoryHistory;
   limit: number;
+}
+
+/** One compaction generation of a chat's history. */
+export interface SemanticMemoryHistory {
+  threadId: string;
+  generation: number;
 }
 
 export interface SemanticMemorySaveRequest {
   content: string;
-  scope: DurableMemoryScope;
-  botId: string;
-  source: { kind: "durable" } | { kind: "history"; generation: number };
+  scope: MemoryScope;
+  source: { kind: "durable" } | ({ kind: "history" } & SemanticMemoryHistory);
 }
 
 export interface SemanticMemoryPurgeHistoryRequest {
-  botId: string;
+  threadId: string;
   generations: number[];
 }
 
@@ -644,7 +643,7 @@ export interface ScriptedTurn {
   ask?: { text: string; detail?: string; actions?: Array<{ id: string; label: string }> };
   takeover?: { reason: string };
   files?: Array<{ path: string; content: string }>;
-  memory?: Array<{ scope: "bot" | "user"; path: string; content: string }>;
+  memory?: Array<{ scope: "chat" | "person"; path: string; content: string }>;
   complete?: boolean;
 }
 
@@ -874,17 +873,14 @@ export interface ArtifactPut {
 }
 
 export interface NotificationMessage {
-  /** Verified sender metadata. Avatar is a bounded JPEG thumbnail, base64 encoded. */
-  sender?: { botId: string; name: string; avatar?: string };
-  kind: "completion" | "failure" | "help" | "takeover";
+  /** Who wrote it: Doodle or a person. Avatar is a bounded JPEG thumbnail, base64 encoded. */
+  sender?: { name: string; avatar?: string };
+  kind: "message" | "completion" | "failure" | "help" | "takeover";
   title: string;
   body: string;
-  botId: string;
   threadId: string;
   /** The finished run, so a device that also polls for finished work does not alert twice. */
   runId?: string;
-  /** Group chat that owns threadId, so a tap does not open the bot's direct thread. */
-  groupId?: string;
   /** Unread chats to show on the app icon, when the sender knows them. */
   badge?: number;
 }

@@ -11,16 +11,14 @@ export async function resolveNextArtifactVersion(
   prisma: Pick<PrismaClient, "artifact">,
   params: {
     spaceId: string;
-    botId: string;
-    groupId?: string | null;
+    threadId: string;
     name: string;
   },
 ): Promise<{ rootArtifactId: string | null; version: number }> {
   const previous = await prisma.artifact.findFirst({
     where: {
       spaceId: params.spaceId,
-      botId: params.botId,
-      groupId: params.groupId ?? null,
+      threadId: params.threadId,
       name: { equals: params.name, mode: "insensitive" },
       // An MCP app's hidden HTML never starts or joins a file's version history.
       ...LISTED_ARTIFACT,
@@ -42,14 +40,13 @@ type ArtifactVersionWrite = {
   version: number;
 };
 
-// A family is the space's: any member's same-name publish is its next version.
+// A family is the chat's: anyone's same-name publish there is its next version.
 // Advisory lock queues same-name publishes; retry a unique family-version clash.
 export async function withResolvedArtifactVersion<T>(
   prisma: Pick<PrismaClient, "$transaction">,
   params: {
     spaceId: string;
-    botId: string;
-    groupId?: string | null;
+    threadId: string;
     name: string;
   },
   attempt: (db: Prisma.TransactionClient, version: ArtifactVersionWrite) => Promise<T>,
@@ -75,13 +72,10 @@ export async function withResolvedArtifactVersion<T>(
 // Same identity as the name lookup, so those publishes share one lock.
 function artifactVersionLockKey(params: {
   spaceId: string;
-  botId: string;
-  groupId?: string | null;
+  threadId: string;
   name: string;
 }): string {
-  return [params.spaceId, params.botId, params.groupId ?? "", params.name.toLowerCase()].join(
-    "\u001f",
-  );
+  return [params.spaceId, params.threadId, params.name.toLowerCase()].join("\u001f");
 }
 
 function isArtifactVersionConflict(error: unknown): boolean {

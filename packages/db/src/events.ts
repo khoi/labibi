@@ -41,6 +41,7 @@ import { approvalEffectKey } from "@labradoodle/core/node/approval-effect-key";
 import { getLogger } from "@labradoodle/logging";
 import { saveApprovalRule, storedBatchActions } from "./approval-settings.js";
 import { cancelRunsInTransaction } from "./cancel-runs.js";
+import type { ChatAlertSignal } from "./chat-alerts.js";
 import { createChatAlerts } from "./chat-alerts.js";
 import type { Prisma, PrismaClient } from "./client.js";
 import { expireComputerExecutionLeases } from "./computers.js";
@@ -54,6 +55,7 @@ import {
   partialReplyClientNonce,
   RunHistoryWriteError,
 } from "./messages.js";
+import { runAsSystem } from "./row-security.js";
 import { deleteRunSecretsInTransaction } from "./run-secrets.js";
 import { isRunResponse, readRunTimingFields } from "./run-timing.js";
 import { RUN_TURN_CHECKPOINT_KIND } from "./run-turn-checkpoint.js";
@@ -99,11 +101,13 @@ export function transientRunEventsWhere(): Prisma.EventWhereInput {
 
 export interface ThreadEvents {
   publishChatAlert?(userId: string, alert: ChatAlert): Promise<void>;
+  /** Tells everyone in the workspace that open apps should read its Doodle again. */
+  publishDoodleChanged?(spaceId: string): Promise<void>;
   followChatAlerts?(
     userId: string,
     spaceId: string,
     signal?: AbortSignal,
-  ): AsyncGenerator<ChatAlert>;
+  ): AsyncGenerator<ChatAlertSignal>;
   answerRunInput(input: AnswerRunInput): Promise<boolean>;
   append(input: AppendEventInput): Promise<ProductEvent>;
   claimSteering(input: ClaimSteeringInput): Promise<ClaimedSteeringMessage[]>;
@@ -133,7 +137,6 @@ export interface ClearThreadResult {
 export interface FinalizeComputerControlReleaseInput {
   spaceId: string;
   computerId: string;
-  botId: string;
   runId: string | null;
   leaseId: string | null;
   holder: "bot" | "none";
@@ -346,6 +349,14 @@ export function createThreadEvents(
   const chatAlerts = createChatAlerts(realtime);
   return {
     publishChatAlert: chatAlerts.publish,
+    publishDoodleChanged: async (spaceId) => {
+      const members = await runAsSystem("tell a workspace's people its Doodle changed", () =>
+        prisma.spaceMember.findMany({ where: { spaceId }, select: { userId: true } }),
+      );
+      await Promise.all(
+        members.map((member) => chatAlerts.publishDoodleChanged(member.userId, spaceId)),
+      );
+    },
     followChatAlerts: chatAlerts.follow,
     answerRunInput: (input) => answerRunInput(prisma, input, realtime, options.runSecretWriter),
     append: (input) => appendEvent(prisma, input, realtime, options.analytics),
@@ -1399,7 +1410,7 @@ export async function finalizeComputerControlRelease(
     let waiting = controlRunId
       ? await tx.run.findUnique({
           where: { id: controlRunId },
-          select: { threadId: true, status: true },
+          select: { threadId: true, status: true, botId: true },
         })
       : null;
     const runThreadId = waiting?.threadId ?? null;
@@ -1407,7 +1418,7 @@ export async function finalizeComputerControlRelease(
       await tx.$queryRaw`SELECT id FROM threads WHERE id = ${runThreadId} FOR UPDATE`;
       waiting = await tx.run.findUnique({
         where: { id: controlRunId! },
-        select: { threadId: true, status: true },
+        select: { threadId: true, status: true, botId: true },
       });
     }
     const cleared = await tx.computer.updateMany({
@@ -1442,7 +1453,6 @@ export async function finalizeComputerControlRelease(
           where: {
             id: controlRunId,
             spaceId: input.spaceId,
-            botId: input.botId,
             status: "waiting_takeover",
           },
           data: {
@@ -1459,7 +1469,6 @@ export async function finalizeComputerControlRelease(
             where: {
               id: controlRunId,
               spaceId: input.spaceId,
-              botId: input.botId,
               status: { in: ["leased", "running"] },
             },
             data: { checkpoint },
@@ -1467,14 +1476,14 @@ export async function finalizeComputerControlRelease(
         : { count: 0 };
     const runId = resumed.count === 1 || stamped.count === 1 ? controlRunId : null;
 
-    if (!runThreadId) return { threadId: null, seq: null, runId };
+    if (!runThreadId || !waiting) return { threadId: null, seq: null, runId };
 
     // Stopped runs cannot write history.
     if (controlRunId && waiting?.status !== "cancelled") {
       await settleReleasedTakeoverCardsInTransaction(tx, {
         spaceId: input.spaceId,
         threadId: runThreadId,
-        botId: input.botId,
+        botId: waiting.botId,
         runId: controlRunId,
         reason: input.reason,
       });
@@ -1483,7 +1492,7 @@ export async function finalizeComputerControlRelease(
     const event = await appendEventInTransaction(tx, {
       spaceId: input.spaceId,
       threadId: runThreadId,
-      botId: input.botId,
+      botId: waiting.botId,
       runId: runId ?? undefined,
       type: "computer.takeover.released",
       payload: {

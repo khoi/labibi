@@ -29,19 +29,17 @@ const MAX_PUSH_PAYLOAD_BYTES = 3300;
 export const MAX_EXPO_PUSH_RESPONSE_BYTES = 64 * 1024;
 const RESPONSE_TOO_LARGE = "Expo push response is too large.";
 
-/** Data a notification tap uses to open the bot or group thread in its space.
+/** Data a notification tap uses to open the chat in its workspace.
  * `deliveryId` distinguishes this send from another push for the same thread:
  * the Expo request identifier stays the thread id. */
 export function expoPushData(message: NotificationMessage, spaceId: string, deliveryId: string) {
   return {
     kind: message.kind,
     ...(message.sender ? { sender: message.sender } : {}),
-    botId: message.botId,
     threadId: message.threadId,
     ...(message.runId ? { runId: message.runId } : {}),
     deliveryId,
     ...(spaceId ? { spaceId } : {}),
-    ...(message.groupId ? { groupId: message.groupId } : {}),
   };
 }
 

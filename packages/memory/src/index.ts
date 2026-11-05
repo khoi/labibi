@@ -5,6 +5,7 @@ import type {
   MemoryReadRequest,
   MemoryRemoveRequest,
   MemoryRevision,
+  MemoryScope,
   MemorySearchRequest,
   MemorySearchResult,
   MemorySnapshot,
@@ -15,7 +16,13 @@ import { MEMORY_REVISION_CONFLICT_ERROR } from "@labradoodle/adapter-kit";
 import type { PrismaClient } from "@labradoodle/db";
 import { Prisma, withTransactionRetry } from "@labradoodle/db";
 
-/** Memory is the Space's: every member's runs read and write the same documents. */
+/** A chat's documents are its people's; a person's own have no chat. */
+function scopeWhere(scope: MemoryScope, context: AdapterContext) {
+  return scope.kind === "chat"
+    ? { spaceId: context.spaceId, threadId: scope.threadId }
+    : { spaceId: context.spaceId, threadId: null, userId: scope.userId };
+}
+
 export class MarkdownMemoryStore implements MemoryStore {
   constructor(private readonly prisma: PrismaClient) {}
 
@@ -31,9 +38,7 @@ export class MarkdownMemoryStore implements MemoryStore {
   async read(request: MemoryReadRequest, context: AdapterContext): Promise<MemorySnapshot> {
     const documents = await this.prisma.memoryDocument.findMany({
       where: {
-        spaceId: context.spaceId,
-        scope: request.scope,
-        ...(request.botId ? { botId: request.botId } : {}),
+        ...scopeWhere(request.scope, context),
         ...(request.path ? { path: request.path } : {}),
       },
       orderBy: [{ updatedAt: "desc" }, { path: "asc" }],
@@ -54,11 +59,7 @@ export class MarkdownMemoryStore implements MemoryStore {
     context: AdapterContext,
   ): Promise<MemorySearchResult[]> {
     const documents = await this.prisma.memoryDocument.findMany({
-      where: {
-        spaceId: context.spaceId,
-        ...(request.scope === "all" ? {} : { scope: request.scope }),
-        ...(request.botId ? { botId: request.botId } : {}),
-      },
+      where: scopeWhere(request.scope, context),
     });
     const q = request.query.toLowerCase();
     return documents
@@ -77,12 +78,7 @@ export class MarkdownMemoryStore implements MemoryStore {
       this.prisma.$transaction(
         async (tx) => {
           const existing = await tx.memoryDocument.findFirst({
-            where: {
-              spaceId: context.spaceId,
-              scope: request.scope,
-              botId: request.botId ?? null,
-              path: request.path,
-            },
+            where: { ...scopeWhere(request.scope, context), path: request.path },
           });
           if (request.expectedRevision !== undefined) {
             const live = existing?.revision ?? 0;
@@ -96,9 +92,8 @@ export class MarkdownMemoryStore implements MemoryStore {
             : await tx.memoryDocument.create({
                 data: {
                   spaceId: context.spaceId,
-                  userId: context.userId,
-                  botId: request.botId,
-                  scope: request.scope,
+                  userId: request.scope.kind === "person" ? request.scope.userId : context.userId,
+                  threadId: request.scope.kind === "chat" ? request.scope.threadId : null,
                   path: request.path,
                   content: request.content,
                 },
@@ -127,9 +122,7 @@ export class MarkdownMemoryStore implements MemoryStore {
     const { count } = await this.prisma.memoryDocument.deleteMany({
       where: {
         ...(request.id ? { id: request.id } : {}),
-        spaceId: context.spaceId,
-        scope: request.scope,
-        botId: request.botId ?? null,
+        ...scopeWhere(request.scope, context),
         path: request.path,
       },
     });
@@ -140,10 +133,7 @@ export class MarkdownMemoryStore implements MemoryStore {
     request: MemoryExportRequest,
     context: AdapterContext,
   ): AsyncIterable<PortableFile> {
-    const snapshot = await this.read(
-      { scope: request.scope === "all" ? "user" : request.scope, botId: request.botId },
-      context,
-    );
+    const snapshot = await this.read({ scope: request.scope }, context);
     for (const doc of snapshot.documents) {
       yield { path: doc.path, content: new TextEncoder().encode(doc.content) };
     }
@@ -157,7 +147,7 @@ export class MarkdownMemoryStore implements MemoryStore {
     for await (const file of files) {
       last = await this.commit(
         {
-          scope: "user",
+          scope: { kind: "person", userId: context.userId },
           path: file.path,
           content: new TextDecoder().decode(file.content),
         },

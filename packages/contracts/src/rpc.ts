@@ -1065,11 +1065,14 @@ export const appContract = {
     accountToken: oc.output(z.object({ token: z.string() })),
   },
   notifications: {
-    /** Alerts for the signed-in user's chats in this workspace, live while connected. */
+    /**
+     * Alerts for the signed-in user's chats in this workspace, live while connected. `doodle`
+     * means the workspace's Doodle settings changed: read `doodle.get` again.
+     */
     subscribe: oc.output(
       eventIterator(
         z.object({
-          type: z.enum(["alert", "heartbeat"]),
+          type: z.enum(["alert", "heartbeat", "doodle"]),
           alert: ChatAlertSchema.optional(),
         }),
       ),

@@ -43,7 +43,7 @@ import {
 import { BUILTIN_AGENT_TOOL_NAMES } from "./run-tool-selection.js";
 import { scheduleCreateRefusal } from "./run-tools-tasks.js";
 import { USER_COMPUTER_TOOLS } from "./run-tools-user-computer.js";
-import { argumentGiven } from "./update-bot-patch.js";
+import { argumentGiven, isSpaceOwner, OWNER_ONLY_SETTINGS_ERROR } from "./update-bot-patch.js";
 import type { VaultCardUse } from "./vault-card-use.js";
 import { cardUseSummary, requestedCardUse, vaultCardUseOf } from "./vault-card-use.js";
 
@@ -396,18 +396,15 @@ export async function prepareToolRequest(
   return undefined;
 }
 
-/** Settings that change what this bot runs on or how it speaks; only the owner's chat sets them. */
-const OWNER_SETTINGS = ["model", "thinkingLevel", "voice", "readAloud"];
+/** Settings that change what Doodle runs on or how it speaks. */
+const OWNER_SETTINGS = ["model", "thinkingLevel", "voice"];
 
-/** Everything a bot may change on itself. Credentials, tools and access stay in Settings. */
+/** Everything Doodle may change on itself. Credentials, tools and access stay in Settings. */
 const OWN_FIELDS = new Set([
   ...OWNER_SETTINGS,
-  "name",
   "instructions",
   "instructions_offset",
   "instructionsOffset",
-  "notifyOnFinish",
-  "notify_on_finish",
 ]);
 
 /**
@@ -432,17 +429,20 @@ async function prepareOwnBotUpdate(
   );
   if (settingsOnly.length)
     return { error: `Only the owner can change ${settingsOnly.join(", ")}, in Settings.` };
+  const writes = [...OWNER_SETTINGS, "instructions"].some((key) => argumentGiven(args[key]));
+  if (writes && !(await isSpaceOwner(ctx.deps.prisma, run))) {
+    return { error: OWNER_ONLY_SETTINGS_ERROR };
+  }
   const unguarded = await neverAsks(ctx);
   if (OWNER_SETTINGS.some((key) => argumentGiven(args[key]))) {
     if (isSubagentToolExecution(executionId) || (!unguarded && !ctx.source.ownerStartedRun))
       return {
-        error:
-          "Only the owner can change your model, thinking, voice or read-aloud, from their own chat.",
+        error: "Only the owner can change your model, thinking or voice, from their own message.",
       };
     if (!unguarded && (await isRunTainted(ctx)))
       return refuseOwnerSettingsChange(
         ctx,
-        "Model, thinking, voice and read-aloud changes are blocked for the rest of this run because it read outside content.",
+        "Model, thinking and voice changes are blocked for the rest of this run because it read outside content.",
       );
   }
   if (!argumentGiven(args.instructions)) return undefined;

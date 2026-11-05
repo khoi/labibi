@@ -16,7 +16,6 @@ import {
 } from "@labradoodle/adapter-kit";
 import type { ComputerSize, ComputerUpdate } from "@labradoodle/contracts";
 import {
-  ACTIVE_RUN_STATUSES,
   abortableDelay,
   isRetryableError,
   parseScreenLeaseId,
@@ -25,7 +24,6 @@ import {
 import type { Prisma, PrismaClient, ThreadEvents } from "@labradoodle/db";
 import {
   expireComputerExecutionLeases,
-  parseComputerMode,
   planComputerSize,
   recordComputerRunEnd,
   recordComputerRunStart,
@@ -41,9 +39,7 @@ import {
 import { toComputerRef } from "./computer-support.js";
 import {
   checkpointComputerWorkspace,
-  ensureComputerWorkspaceLayout,
   mountsServerHome,
-  removeDeletedBotWorkspaces,
   restoreComputerWorkspace,
 } from "./computer-workspace.js";
 import { resolveAgentHomePath } from "./home.js";
@@ -116,42 +112,36 @@ function heldByNobodyElse(lease: { ownerId: string; fence: number } | null) {
 }
 
 /**
- * A live execution lease held by some OTHER bot on this computer.
- *
- * replaceComputer already holds the lease for its own bot, so "any live lease" would always
- * be true there; a shared Team Computer mid-boot for a different bot must still be refused.
+ * A live execution lease on this computer that is not `own`: a run or a person's action using it.
+ * Maintenance holds its own lease, so it must not count that one.
  */
 async function hasForeignExecutionLease(
   prisma: PrismaClient,
   computerId: string,
-  botId: string,
+  own: { ownerId: string; fence: number } | null,
 ): Promise<boolean> {
   const live = await prisma.computerExecutionLease.findFirst({
-    where: { computerId, botId: { not: botId }, expiresAt: { gt: new Date() } },
+    where: {
+      computerId,
+      expiresAt: { gt: new Date() },
+      ...(own ? { NOT: { runId: own.ownerId, fence: own.fence } } : {}),
+    },
     select: { id: true },
   });
   return live !== null;
 }
 
-/**
- * A live worker lease on another run that uses this computer.
- *
- * Dedicated boots never take a computer execution lease, so after BOOT_CLAIM_STALE_MS the
- * claim stamp alone would look abandoned while provision is still running. A heartbeating
- * run lease proves the provisioner is alive. exceptRunId lets a recovering continueRun
- * reclaim its own abandoned boot without treating itself as foreign.
- */
+/** A live lease of another run on this computer: a boot it holds is still in progress. */
 async function hasLiveForeignRunLease(
   prisma: PrismaClient,
   computerId: string,
   exceptRunId?: string,
 ): Promise<boolean> {
-  const live = await prisma.run.findFirst({
+  const live = await prisma.computerExecutionLease.findFirst({
     where: {
-      status: { in: [...ACTIVE_RUN_STATUSES] },
-      bot: { computerId },
-      leaseExpiresAt: { gt: new Date() },
-      ...(exceptRunId ? { id: { not: exceptRunId } } : {}),
+      computerId,
+      expiresAt: { gt: new Date() },
+      ...(exceptRunId ? { runId: { not: exceptRunId } } : {}),
     },
     select: { id: true },
   });
@@ -217,7 +207,6 @@ export async function provisionComputer(
           kind: existing.kind,
           screenGeneration: existing.screenGeneration,
           maintenanceId: existing.maintenanceId ?? null,
-          ...(context.botId ? { bots: { some: { id: context.botId, archivedAt: null } } } : {}),
         },
         // A row activated by an older release has no clock yet; start it now.
         data: { updatedAt: new Date(), runningSince },
@@ -233,13 +222,6 @@ export async function provisionComputer(
         },
       );
       if (!damaged) {
-        await ensureComputerWorkspaceLayout(
-          deps.sandbox,
-          ref,
-          parseComputerMode(existing.scope),
-          context.botId,
-          context,
-        );
         log.info("computer.provisioned", {
           provider: ref.kind,
           operation: "reuse",
@@ -360,7 +342,6 @@ export async function provisionComputer(
       // A start this one reclaims from may have marked its new machine since it was read.
       restorePending: existing.restorePending,
       maintenanceId: existing.maintenanceId ?? null,
-      ...(context.botId ? { bots: { some: { id: context.botId, archivedAt: null } } } : {}),
     },
     data: { state: "booting", updatedAt: claimStamp },
   });
@@ -493,20 +474,6 @@ export async function provisionComputer(
       await restoreComputerWorkspace(deps.home, deps.sandbox, existing.homeKey, ref, context);
     }
     await onProgress?.("reconnecting");
-    await ensureComputerWorkspaceLayout(
-      deps.sandbox,
-      ref,
-      parseComputerMode(existing.scope),
-      context.botId,
-      context,
-    );
-    // Bots deleted while this computer was not running could not remove their folders then.
-    // Skip only plain reconnects; a provider may start or replace the computer during one.
-    if (existing.scope === "team" && (!reconnecting || replacement || ref.started === true)) {
-      await removeDeletedBotWorkspaces(deps, ref, existing.spaceId, context).catch((error) => {
-        getLogger().error("team bot folder cleanup", error);
-      });
-    }
     const activeControl = hasActiveComputerControl(existing);
     // A reconnect to a computer that stayed up continues its stretch; any start begins one.
     const continued =
@@ -519,7 +486,6 @@ export async function provisionComputer(
         updatedAt: claimStamp,
         ...previousRef,
         maintenanceId: existing.maintenanceId ?? null,
-        ...(context.botId ? { bots: { some: { id: context.botId, archivedAt: null } } } : {}),
       },
       data: {
         state: "running",
@@ -535,7 +501,6 @@ export async function provisionComputer(
                     controlLeaseId: null,
                     controlUserId: null,
                     controlLeaseExpiresAt: null,
-                    controlBotId: null,
                     controlRunId: null,
                   }
                 : {}),
@@ -719,7 +684,6 @@ async function rollbackProvisionedComputer(
 
 export interface ComputerExecutionLease {
   computerId: string;
-  botId: string;
   runId: string;
   fence: number;
 }
@@ -732,95 +696,13 @@ export function screenLeaseIdForRun(
   return screenLeaseId(lease?.runId ?? runId, lease?.fence ?? fence);
 }
 
-/** Dedicated screen leases serialize workers and retain the fence after release. */
-export async function acquireDedicatedScreenLeaseFence(
-  prisma: PrismaClient,
-  input: {
-    computerId: string;
-    runId: string;
-    botId: string;
-    workerId: string;
-    runFence: number;
-  },
-): Promise<ComputerExecutionLease> {
-  return prisma.$transaction(async (tx) => {
-    // Lock in a fixed order and fail fast if assignment or worker ownership is changing.
-    const assignedBot = await tx.$queryRaw<Array<{ id: string }>>`
-      SELECT id FROM bots
-      WHERE id = ${input.botId}
-        AND "computerId" = ${input.computerId}
-        AND "computerSwitching" = false
-      FOR UPDATE SKIP LOCKED`;
-    if (assignedBot.length !== 1) throw new ComputerBusyError();
-
-    const computer = await tx.$queryRaw<Array<{ id: string; scope: string }>>`
-      SELECT id, scope FROM computers WHERE id = ${input.computerId} FOR UPDATE SKIP LOCKED`;
-    if (computer.length !== 1 || computer[0]?.scope !== "dedicated") {
-      throw new ComputerBusyError();
-    }
-
-    await lockOwnedRun(tx, input);
-
-    // An unexpired holder owns the screen until release, pause, or expiry. Keep the
-    // expired row so explicit release never resets the next worker's screen fence.
-    // The current worker ownership check also permits resuming this run's held takeover.
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + EXECUTION_LEASE_MS);
-    const [existing] = await tx.computerExecutionLease.updateManyAndReturn({
-      where: {
-        computerId: input.computerId,
-        botId: input.botId,
-        OR: [{ expiresAt: { lte: now } }, { runId: input.runId }],
-      },
-      data: { runId: input.runId, expiresAt, fence: { increment: 1 } },
-      select: { fence: true },
-    });
-    if (existing) {
-      return {
-        computerId: input.computerId,
-        botId: input.botId,
-        runId: input.runId,
-        fence: existing.fence,
-      };
-    }
-
-    const history = await tx.run.aggregate({
-      where: { botId: input.botId },
-      _max: { leaseFence: true },
-    });
-    const fence = Math.max(input.runFence, history._max.leaseFence ?? 0) + 1;
-    try {
-      const created = await tx.computerExecutionLease.create({
-        data: {
-          computerId: input.computerId,
-          botId: input.botId,
-          runId: input.runId,
-          fence,
-          expiresAt,
-        },
-        select: { fence: true },
-      });
-      return {
-        computerId: input.computerId,
-        botId: input.botId,
-        runId: input.runId,
-        fence: created.fence,
-      };
-    } catch (error) {
-      if (isUniqueConstraintError(error)) throw new ComputerBusyError();
-      throw error;
-    }
-  });
-}
-
 async function lockOwnedRun(
   tx: Prisma.TransactionClient,
-  input: { runId: string; botId: string; workerId: string; runFence: number },
+  input: { runId: string; workerId: string; runFence: number },
 ): Promise<void> {
   const currentRun = await tx.$queryRaw<Array<{ id: string }>>`
     SELECT id FROM runs
     WHERE id = ${input.runId}
-      AND "botId" = ${input.botId}
       AND status = 'running'
       AND "leaseOwner" = ${input.workerId}
       AND "leaseFence" = ${input.runFence}
@@ -829,18 +711,20 @@ async function lockOwnedRun(
   if (currentRun.length !== 1) throw new ComputerBusyError();
 }
 
+/**
+ * One run or one person's action uses a computer at a time. The lease row stays as an expired
+ * tombstone between holders, so each new holder gets a higher screen fence.
+ */
 export async function acquireComputerExecutionLease(
   prisma: PrismaClient,
   input: {
     computerId: string;
     runId: string;
-    botId: string;
   } & ({ workerId: string; runFence: number } | { workerId?: never; runFence?: never }),
-): Promise<ComputerExecutionLease | null> {
+): Promise<ComputerExecutionLease> {
   const computer = await prisma.computer.findUniqueOrThrow({ where: { id: input.computerId } });
   if (computer.maintenanceId && computer.maintenanceId !== input.runId)
     throw new ComputerBusyError();
-  if (computer.scope !== "team") return null;
   if (isLiveSuspending(computer)) throw new ComputerBusyError();
   return prisma.$transaction(async (tx) => {
     // Only the locked current worker claim may reclaim a live same-run lease.
@@ -852,7 +736,6 @@ export async function acquireComputerExecutionLease(
     const [reclaimed] = await tx.computerExecutionLease.updateManyAndReturn({
       where: {
         computerId: input.computerId,
-        botId: input.botId,
         OR: [{ expiresAt: { lt: now } }, ...(ownsRun ? [{ runId: input.runId }] : [])],
       },
       data: {
@@ -865,25 +748,17 @@ export async function acquireComputerExecutionLease(
     if (reclaimed) {
       return validateAcquiredComputerLease(tx, {
         computerId: input.computerId,
-        botId: input.botId,
         runId: input.runId,
         fence: reclaimed.fence,
       });
     }
     try {
       const created = await tx.computerExecutionLease.create({
-        data: {
-          computerId: input.computerId,
-          botId: input.botId,
-          runId: input.runId,
-          fence: 1,
-          expiresAt,
-        },
+        data: { computerId: input.computerId, runId: input.runId, fence: 1, expiresAt },
         select: { fence: true },
       });
       return validateAcquiredComputerLease(tx, {
         computerId: input.computerId,
-        botId: input.botId,
         runId: input.runId,
         fence: created.fence,
       });
@@ -892,6 +767,39 @@ export async function acquireComputerExecutionLease(
       throw error;
     }
   });
+}
+
+/** How long a run waits for its person's computer before going on without it. */
+export const COMPUTER_LEASE_WAIT_MS = 20_000;
+
+/** The computer is still busy after the wait; the model gets this as the tool's error. */
+export class ComputerInUseError extends Error {
+  constructor() {
+    super(
+      "This person's computer is busy with other work right now. Carry on without it, or try again in a moment.",
+    );
+    this.name = "ComputerInUseError";
+  }
+}
+
+/** A run's lease on its person's computer, retried while another holder has it. */
+export async function waitForComputerExecutionLease(
+  prisma: PrismaClient,
+  input: { computerId: string; runId: string; workerId: string; runFence: number },
+  signal: AbortSignal,
+  waitMs = COMPUTER_LEASE_WAIT_MS,
+): Promise<ComputerExecutionLease> {
+  const deadline = Date.now() + waitMs;
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await acquireComputerExecutionLease(prisma, input);
+    } catch (error) {
+      if (!(error instanceof ComputerBusyError)) throw error;
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) throw new ComputerInUseError();
+      await abortableDelay(Math.min(remaining, 250 * 2 ** Math.min(attempt, 3)), signal);
+    }
+  }
 }
 
 async function validateAcquiredComputerLease(
@@ -919,7 +827,6 @@ export async function renewComputerExecutionLease(
   const renewed = await prisma.computerExecutionLease.updateMany({
     where: {
       computerId: lease.computerId,
-      botId: lease.botId,
       runId: lease.runId,
       fence: lease.fence,
       expiresAt: { gt: now },
@@ -938,7 +845,6 @@ export async function holdComputerExecutionLeaseForTakeover(
   const held = await prisma.computerExecutionLease.updateMany({
     where: {
       computerId: lease.computerId,
-      botId: lease.botId,
       runId: lease.runId,
       fence: lease.fence,
       expiresAt: { gt: now },
@@ -953,12 +859,11 @@ export async function releaseComputerExecutionLease(
   lease: ComputerExecutionLease | null,
 ): Promise<void> {
   if (!lease) return;
-  // Keep the row as an expired tombstone so the next run for this bot increments
-  // its fence. Deleting it resets the fence to 1, which lets a still-open screen
-  // session from the previous run reject the new run as stale.
+  // Keep the row as an expired tombstone so the next holder increments the fence. Deleting it
+  // resets the fence to 1, which lets a still-open screen session from the previous run
+  // reject the new one as stale.
   await expireComputerExecutionLeases(prisma, {
     computerId: lease.computerId,
-    botId: lease.botId,
     runId: lease.runId,
     fence: lease.fence,
   });
@@ -1007,19 +912,13 @@ export async function replaceComputer(
   let existing = await deps.prisma.computer.findUniqueOrThrow({ where: { id: computerId } });
   if (existing.maintenanceId && existing.maintenanceId !== context.operationId)
     throw new ComputerBusyError();
-  const botId = context.botId;
-  if (!botId) throw new Error("computer replacement requires a bot id");
+  const ownLease = context.screenLeaseId ? parseScreenLeaseId(context.screenLeaseId) : null;
   // Leave a takeover a run is waiting on. Expiry would resume that run.
-  if (
-    options?.handBackIdleTakeover &&
-    existing.controlHolder === "user" &&
-    existing.controlBotId === botId &&
-    existing.controlRunId
-  ) {
+  if (options?.handBackIdleTakeover && existing.controlHolder === "user" && existing.controlRunId) {
     throw new ComputerBusyError();
   }
   const handBackIdleTakeover =
-    options?.handBackIdleTakeover === true && isIdleOwnComputerTakeover(existing, botId);
+    options?.handBackIdleTakeover === true && isIdleOwnComputerTakeover(existing);
   if (!handBackIdleTakeover && existing.controlLeaseId && !hasActiveComputerControl(existing)) {
     if (options?.handBackIdleTakeover && existing.controlRunId) throw new ComputerBusyError();
     const expired = await expireComputerControl(deps, existing.id, existing.controlLeaseId);
@@ -1050,27 +949,16 @@ export async function replaceComputer(
   if (existing.state === "suspending" && mode !== "reset") {
     throw new ComputerBusyError();
   }
-  // Allow Reset on a stale "booting" or "suspending" row unless another bot still holds a live
-  // lease. Dedicated computers never create an execution-lease row, so the foreign-lease check
-  // alone cannot see an in-flight dedicated boot or idle stop. Refuse claim stamps younger than
-  // an execution-lease TTL (not merely the boot-wait poll) so a slow dedicated provision or
-  // suspend is not destroyed mid-flight. Also refuse while a run still uses the computer —
-  // before claiming suspending — so rollback cannot bump @updatedAt under an in-flight boot.
+  // Allow Reset on a stale "booting" or "suspending" row unless something else still holds a
+  // live lease. Refuse claim stamps younger than an execution-lease TTL (not merely the
+  // boot-wait poll) so a slow provision or suspend is not destroyed mid-flight.
   if (existing.state === "booting" || existing.state === "suspending") {
-    if (await hasForeignExecutionLease(deps.prisma, computerId, botId)) {
+    if (await hasForeignExecutionLease(deps.prisma, computerId, ownLease)) {
       throw new ComputerBusyError();
     }
     if (!isAbandonedLifecycleClaim(existing.updatedAt)) {
       throw new ComputerBusyError();
     }
-    const activeBootRun = await deps.prisma.run.findFirst({
-      where: {
-        status: { in: [...ACTIVE_RUN_STATUSES] },
-        bot: { computerId },
-      },
-      select: { id: true },
-    });
-    if (activeBootRun) throw new ComputerBusyError();
   }
 
   const previousState = existing.state;
@@ -1079,7 +967,6 @@ export async function replaceComputer(
         controlHolder: "user" as const,
         controlLeaseId: existing.controlLeaseId,
         controlLeaseExpiresAt: existing.controlLeaseExpiresAt,
-        controlBotId: existing.controlBotId,
         controlUserId: existing.controlUserId,
         controlRunId: null,
       }
@@ -1095,11 +982,10 @@ export async function replaceComputer(
       ...(previousState === "booting" || previousState === "suspending"
         ? { updatedAt: existing.updatedAt }
         : {}),
-      executionLeases: { none: { botId: { not: botId }, expiresAt: { gt: now } } },
+      ...heldByNobodyElse(ownLease),
       ...(handBackIdleTakeover
         ? {
             controlHolder: "user" as const,
-            controlBotId: botId,
             controlRunId: null,
             controlLeaseId: existing.controlLeaseId,
           }
@@ -1121,7 +1007,6 @@ export async function replaceComputer(
             controlLeaseId: null,
             controlUserId: null,
             controlLeaseExpiresAt: null,
-            controlBotId: null,
             controlRunId: null,
           }
         : {}),
@@ -1133,23 +1018,9 @@ export async function replaceComputer(
       where: { id: computerId, state: "suspending", updatedAt: claimStamp },
       data: { state: previousState, ...previousControl },
     });
-  // Re-check after the claim in case a run started between the pre-check and CAS. Under this
-  // operation's maintenance reservation, runs that arrived later wait for it without touching
-  // the computer, so only a live lease means one is still using it.
-  const inUse =
-    existing.maintenanceId === context.operationId
-      ? await deps.prisma.computerExecutionLease.findFirst({
-          where: { computerId, expiresAt: { gt: new Date() } },
-          select: { id: true },
-        })
-      : await deps.prisma.run.findFirst({
-          where: {
-            status: { in: [...ACTIVE_RUN_STATUSES] },
-            bot: { computerId },
-          },
-          select: { id: true },
-        });
-  if (inUse) {
+  // Re-check after the claim in case a run took the computer between the pre-check and CAS. A run
+  // uses it only while holding a lease.
+  if (await hasForeignExecutionLease(deps.prisma, computerId, ownLease)) {
     await releaseClaim();
     throw new ComputerBusyError();
   }
@@ -1176,30 +1047,6 @@ export async function replaceComputer(
         getLogger().error("computer control expiry cancellation", error);
       });
   }
-  if (previousControl) {
-    try {
-      const bot = await deps.prisma.bot.findFirst({
-        where: { id: botId },
-        select: { thread: { select: { id: true } } },
-      });
-      if (bot?.thread) {
-        await deps.events.append({
-          spaceId: context.spaceId,
-          threadId: bot.thread.id,
-          botId,
-          type: "computer.takeover.released",
-          payload: {
-            holder: "none",
-            leaseId: previousControl.controlLeaseId,
-            reason: "released",
-          },
-        });
-      }
-    } catch (error) {
-      getLogger().error("maintenance takeover release event", error);
-    }
-  }
-
   const oldRef = existing.providerRef ? toComputerRef(existing) : null;
   // Until teardown starts the old computer is still running, so a failure before then leaves it
   // running, and a later Recover tries to save its work first.
@@ -1268,7 +1115,6 @@ export async function replaceComputer(
         controlLeaseId: null,
         controlUserId: null,
         controlLeaseExpiresAt: null,
-        controlBotId: null,
         controlRunId: null,
         // The replacement is a new machine; damage to the old one is no reason to hold it back.
         autoRecoveredAt: null,

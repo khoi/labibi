@@ -1,8 +1,4 @@
-import type {
-  DurableMemoryScope,
-  SecretStore,
-  SemanticMemoryProvider,
-} from "@labradoodle/adapter-kit";
+import type { SecretStore, SemanticMemoryProvider } from "@labradoodle/adapter-kit";
 import type { PrismaClient } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import {
@@ -46,7 +42,6 @@ export interface PreparedMemoryProviderConnection {
 
 export interface ConfiguredMemoryProvider {
   provider: SemanticMemoryProvider;
-  defaultScope: DurableMemoryScope;
 }
 
 export interface MemoryProviderResolver {
@@ -202,7 +197,6 @@ export class SpaceMemoryProviderResolver implements MemoryProviderResolver {
     );
     return {
       provider: createMemoryProvider(config.provider, settings, credentials),
-      defaultScope: config.defaultMemoryScope === "shared" ? "shared" : "isolated",
     };
   }
 }

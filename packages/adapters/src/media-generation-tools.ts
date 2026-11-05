@@ -141,7 +141,12 @@ export async function generateMediaFromTool(options: {
     const saved = savedJob.parse(reservation.result);
     if (saved.artifactId) {
       const artifact = await prisma.artifact.findFirst({
-        where: { id: saved.artifactId, spaceId: run.spaceId, userId: run.userId, botId: run.botId },
+        where: {
+          id: saved.artifactId,
+          spaceId: run.spaceId,
+          userId: run.userId,
+          threadId: run.threadId,
+        },
       });
       if (!artifact) return { error: "Generated attachment is unavailable." };
       await options.publish(messageBlockForArtifact(artifact), reservation.id, artifact.id);

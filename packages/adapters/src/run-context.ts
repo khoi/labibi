@@ -4,14 +4,15 @@ import type {
   ComputerRef,
   ConnectorTool,
   MediaGenerationProvider,
+  MemoryScope,
   SandboxProvider,
   SemanticMemoryProvider,
   WebProvider,
 } from "@labradoodle/adapter-kit";
-import type { ComputerMode, MessageBlock } from "@labradoodle/contracts";
+import type { MessageBlock } from "@labradoodle/contracts";
 import { createStreamingRedactor } from "@labradoodle/core";
 import { toolEffectIdempotencyKey } from "@labradoodle/core/node/approval-effect-key";
-import type { Bot, Computer, effectiveMemoryScope, Run, Task, Thread } from "@labradoodle/db";
+import type { Bot, Computer, Run, Task, Thread } from "@labradoodle/db";
 import { dropRunTurnCheckpoint, saveRunTurnCheckpoint } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import type {
@@ -198,11 +199,14 @@ export interface RunState {
 }
 
 export interface RunComputerContext {
-  stored: Computer;
+  /** The asker's computer as the run found it, or what its first use would make. */
+  stored: { kind: string; homeKey: string };
+  /** The computer's record, once the run started it; throws before. */
+  record: () => Computer;
   /** Where the computer starts this run, which can differ from `stored` before it provisions. */
   kind?: string;
-  mode: ComputerMode;
-  lease: ComputerExecutionLease | null;
+  /** Taken at the computer's first use in this run. */
+  lease: () => ComputerExecutionLease | null;
   lazy: ReturnType<typeof lazyRunComputer>;
   /** Starts the computer on first use and copies the turn's files before each tool. */
   get: (reason: "tool" | "takeover" | "script", tool?: string) => Promise<ComputerRef>;
@@ -260,7 +264,7 @@ export interface RunContext {
   workerId: string;
   fence: number;
   attempt: { id: string };
-  bot: Bot & { computer: Computer | null };
+  bot: Bot;
   thread: Thread;
   task: Task;
   /** Provider context for this run's calls; aborting the run aborts its signal. */
@@ -274,13 +278,14 @@ export interface RunContext {
   trust: RunTrust;
   memory: {
     semantic: SemanticMemoryProvider | null;
-    scope: ReturnType<typeof effectiveMemoryScope> | null;
+    /** The chat's, or in a chat with one person, that person's own. */
+    scope: MemoryScope;
   };
+  /** Only the asker is in the chat. */
+  soloChat: boolean;
   scripted: boolean;
   script: ReturnType<typeof inferScript> | undefined;
   allowSilentEmptyRun: boolean;
-  /** A group message that named no member: this member may end without replying. */
-  groupReplyOptional: boolean;
   state: RunState;
   settleRunningHelpers: () => Promise<void>;
   stopHeartbeatAfterCompletion: () => void;

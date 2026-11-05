@@ -48,7 +48,7 @@ function parseEdits(value: unknown): PageEdit[] | string {
 }
 
 async function savePage(ctx: RunContext, call: ToolCall) {
-  const { deps, run, bot, thread } = ctx;
+  const { deps, run, thread } = ctx;
   const { args } = call;
   if (args.help === true) return { guide: PAGE_KIT_GUIDE };
   const pageId = argumentGiven(args.pageId) ? String(args.pageId) : undefined;
@@ -63,14 +63,12 @@ async function savePage(ctx: RunContext, call: ToolCall) {
     title = redactSecrets(parsed.data, ctx.secrets).slice(0, PAGE_TITLE_MAX_LENGTH);
   }
 
-  // A bot reaches its own pages and its group's pages, from any of its chats or routines; another
-  // bot's page answers as if it did not exist, since its source may hold that chat's text.
-  const reachable = thread.groupId
-    ? [{ botId: bot.id }, { groupId: thread.groupId }]
-    : [{ botId: bot.id }];
+  // Doodle reaches the pages of this chat that this run's person asked for; any other answers as
+  // if it did not exist, since its source may hold another chat's text, and its link is someone
+  // else's to share.
   const page = pageId
     ? await deps.prisma.page.findFirst({
-        where: { id: pageId, spaceId: run.spaceId, userId: run.userId, OR: reachable },
+        where: { id: pageId, spaceId: run.spaceId, userId: run.userId, threadId: thread.id },
         select: {
           id: true,
           title: true,
@@ -79,7 +77,7 @@ async function savePage(ctx: RunContext, call: ToolCall) {
         },
       })
     : null;
-  if (pageId && !page) return { error: "No page with that pageId belongs to this bot or chat." };
+  if (pageId && !page) return { error: "No page with that pageId belongs to this chat." };
   const current = page?.versions[0]?.source ?? "";
 
   if (page && !hasSource && !hasEdits && !title) {
@@ -120,8 +118,7 @@ async function savePage(ctx: RunContext, call: ToolCall) {
           data: {
             spaceId: run.spaceId,
             userId: run.userId,
-            botId: bot.id,
-            groupId: thread.groupId,
+            threadId: thread.id,
             title: title!,
             versions: { create: { version: 1, title: title!, source, code: check.code } },
           },

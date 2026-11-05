@@ -1,7 +1,7 @@
 import type { MessageBlock } from "@labradoodle/contracts";
 import { ATTACHMENT_MAX_BYTES } from "@labradoodle/contracts";
 import { inferAttachmentMimeType, isBackgroundRunTrigger } from "@labradoodle/core";
-import { resolveBotWorkspacePath } from "./computer-support.js";
+import { resolveWorkspacePath } from "./computer-support.js";
 import { desktopGuardApplies, desktopProtectionGuardMessage } from "./desktop-command-guard.js";
 import { protectedActivateScriptWriteRefusal } from "./desktop-guard-words.js";
 import { generateMediaFromTool } from "./media-generation-tools.js";
@@ -20,7 +20,6 @@ export type AttachmentBlock = Extract<MessageBlock, { kind: "image" | "file" }>;
 function runWorkspace(ctx: RunContext, call: ToolCall): RunWorkspace {
   return {
     botId: ctx.bot.id,
-    computerMode: ctx.computer.mode,
     computer: () => ctx.computer.get("tool", call.name),
     markDirty: () => ctx.computer.checkpoint.markDirty(),
     context: ctx.context,
@@ -52,7 +51,6 @@ export async function callMediaTool(ctx: RunContext, call: ToolCall, recoverOnly
     threadGeneration: thread.historyCompactionGeneration,
     ...mediaDelivery({ ...deps, artifacts: deps.artifacts }, run, {
       providerId: mediaGeneration.id,
-      groupId: thread.groupId ?? undefined,
       operationId: executionId,
     }),
   });
@@ -87,7 +85,7 @@ export const fileTools: ToolHandlers = {
     return readFileFromTool(deps.sandbox, workspace, args);
   },
   async write_file(ctx, call) {
-    const { deps, bot, context } = ctx;
+    const { deps, context } = ctx;
     const { name, args } = call;
     const filePath = String(args.path ?? "notes/result.txt");
     if (desktopGuardApplies(ctx.computer)) {
@@ -101,7 +99,7 @@ export const fileTools: ToolHandlers = {
     try {
       await deps.sandbox.writeFile(
         await ctx.computer.get("tool", name),
-        { path: resolveBotWorkspacePath(ctx.computer.mode, bot.id, filePath), content },
+        { path: resolveWorkspacePath(filePath), content },
         context,
       );
     } catch (error) {
@@ -122,7 +120,7 @@ export const fileTools: ToolHandlers = {
     return renderPlotFromTool(deps, run, args, executionId, workspace, call.finish);
   },
   async attach_file(ctx, call) {
-    const { deps, run, bot, thread } = ctx;
+    const { deps, run } = ctx;
     const filePath = String(call.args.path ?? "");
     const fail = async (error: string) => {
       await recordComputerAction(ctx, call, "attach_file", filePath, { error });
@@ -131,18 +129,10 @@ export const fileTools: ToolHandlers = {
     const read = await readWorkspaceFile(ctx, call, filePath);
     if ("error" in read) return fail(read.error);
     try {
-      const saved = await saveWorkspaceFile(
-        ctx,
-        call,
-        filePath,
-        read.bytes,
-        { botId: bot.id, groupId: thread.groupId ?? undefined },
-        {
-          name: typeof call.args.name === "string" ? call.args.name : undefined,
-          description:
-            typeof call.args.description === "string" ? call.args.description : undefined,
-        },
-      );
+      const saved = await saveWorkspaceFile(ctx, call, filePath, read.bytes, {
+        name: typeof call.args.name === "string" ? call.args.name : undefined,
+        description: typeof call.args.description === "string" ? call.args.description : undefined,
+      });
       await publishMessage(deps, run, "bot", [saved.block]);
       await recordComputerAction(ctx, call, "attach_file", filePath);
       return call.finish({ ok: true, artifactId: saved.artifactId, path: filePath });
@@ -152,19 +142,19 @@ export const fileTools: ToolHandlers = {
   },
 };
 
-/** Read a file from this bot's computer that can become an attachment, without saving it. */
+/** Read a file from the run's computer that can become an attachment, without saving it. */
 export async function readWorkspaceFile(
   ctx: RunContext,
   call: ToolCall,
   filePath: string,
 ): Promise<{ error: string } | { bytes: Uint8Array }> {
-  const { deps, bot, context } = ctx;
+  const { deps, context } = ctx;
   if (!deps.artifacts) return { error: "artifact storage unavailable" };
   let bytes: Uint8Array;
   try {
     bytes = await deps.sandbox.readFile(
       await ctx.computer.get("tool", call.name),
-      resolveBotWorkspacePath(ctx.computer.mode, bot.id, filePath),
+      resolveWorkspacePath(filePath),
       context,
       { maxBytes: deps.maxUploadSizeBytes ?? ATTACHMENT_MAX_BYTES },
     );
@@ -175,16 +165,12 @@ export async function readWorkspaceFile(
   return { bytes };
 }
 
-/**
- * Save a file read from this bot's computer as an attachment of the chat that will show it:
- * a bot's own chat, or a group's.
- */
+/** Save a file read from the computer as an attachment of the run's chat. */
 export async function saveWorkspaceFile(
   ctx: RunContext,
   call: ToolCall,
   filePath: string,
   bytes: Uint8Array,
-  owner: { botId: string; groupId?: string },
   meta: { name?: string; description?: string } = {},
 ): Promise<{ artifactId: string; block: AttachmentBlock }> {
   const { deps, run } = ctx;
@@ -194,8 +180,8 @@ export async function saveWorkspaceFile(
     {
       spaceId: run.spaceId,
       userId: run.userId,
-      botId: owner.botId,
-      groupId: owner.groupId,
+      botId: run.botId,
+      threadId: run.threadId,
       runId: run.id,
       filePath,
       bytes,

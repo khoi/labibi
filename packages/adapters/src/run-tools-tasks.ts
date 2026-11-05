@@ -62,7 +62,7 @@ export const taskTools: ToolHandlers = {
       spaceId: run.spaceId,
       botId: bot.id,
       userId: run.userId,
-      ...(thread.groupId ? { threadId: thread.id } : {}),
+      threadId: thread.id,
       tools: ctx.tools.offered,
     });
   },
@@ -89,7 +89,7 @@ export const taskTools: ToolHandlers = {
         botId: bot.id,
         userId: run.userId,
         threadId: thread.id,
-        ...(thread.groupId ? { scopeThreadId: thread.id } : {}),
+        scopeThreadId: thread.id,
         routineId: String(args.routineId ?? ""),
         name: isScheduleValueProvided(args.name) ? String(args.name) : undefined,
         prompt: isScheduleValueProvided(args.prompt) ? String(args.prompt) : undefined,
@@ -112,7 +112,7 @@ export const taskTools: ToolHandlers = {
     return listSchedulesFromTool(deps, {
       spaceId: run.spaceId,
       botId: bot.id,
-      ...(thread.groupId ? { threadId: thread.id } : {}),
+      threadId: thread.id,
     });
   },
   async schedule_cancel(ctx, call) {
@@ -121,7 +121,7 @@ export const taskTools: ToolHandlers = {
     const cancelled = await cancelScheduleFromTool(deps, {
       spaceId: run.spaceId,
       botId: bot.id,
-      ...(thread.groupId ? { threadId: thread.id } : {}),
+      threadId: thread.id,
       routineId: args.routineId ? String(args.routineId) : undefined,
       name: args.name ? String(args.name) : undefined,
     });

@@ -6,11 +6,3 @@ export function findSpaceMemoryConfig(
 ) {
   return prisma.spaceMemoryConfig.findUnique({ where: { spaceId } });
 }
-
-export function effectiveMemoryScope(
-  botScope: string | null,
-  defaultScope: string,
-): "isolated" | "shared" {
-  const scope = botScope ?? defaultScope;
-  return scope === "shared" ? "shared" : "isolated";
-}

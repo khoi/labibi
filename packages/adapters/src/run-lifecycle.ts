@@ -1,5 +1,5 @@
 import { runContinueJob } from "@labradoodle/adapter-kit";
-import { displayName } from "@labradoodle/core";
+import { DOODLE_NAME } from "@labradoodle/core";
 import type { PrismaClient } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { sleepDeferReason } from "./computer-idle.js";
@@ -70,7 +70,6 @@ export async function failRunBeforeTurn(
     routineId?: string | null;
     sourceMessageId?: string | null;
   },
-  botName: string,
   lease: { attemptId: string; workerId: string; fence: number },
   message: string,
 ): Promise<boolean> {
@@ -95,9 +94,8 @@ export async function failRunBeforeTurn(
   if (!failed.continuationRunId) {
     await notifyRun(deps, run, {
       kind: "failure",
-      title: `${displayName(botName, "Bot")} failed`,
+      title: `${DOODLE_NAME} failed`,
       body: message,
-      botId: run.botId,
       threadId: run.threadId,
     });
   }
@@ -154,29 +152,6 @@ export function computerRetryDelay(fence: number): number {
  */
 export function providerOutageRetryDelay(priorFailures: number): number {
   return Math.min(5 * 60_000, 15_000 * 2 ** Math.min(priorFailures, 5));
-}
-
-/**
- * A bot uses its computer for one run at a time, and runs that found it held wait without
- * a retry timer. The run releasing it starts the next one due. Runs backing off after a
- * failure keep their delay.
- */
-export async function startNextWaitingRun(
-  deps: ExecutorDeps,
-  botId: string,
-  releasedBy: string,
-): Promise<void> {
-  const next = await deps.prisma.run.findFirst({
-    where: {
-      botId,
-      status: "queued",
-      id: { not: releasedBy },
-      OR: [{ wakeAt: null }, { wakeAt: { lte: new Date() } }],
-    },
-    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-    select: { id: true },
-  });
-  if (next) await deps.jobs.enqueue(runContinueJob(next.id));
 }
 
 /** Open the model only while this worker still owns the running lease. */
@@ -288,10 +263,7 @@ export async function requeueRunAfterShutdown(
   return true;
 }
 
-/**
- * `untilReleased` is for a computer another run of the same bot holds: the run waits
- * without a retry timer, and the run releasing the computer starts it.
- */
+/** Queue the run again after a short delay, keeping a takeover's resume point. */
 export async function requeueComputerRun(
   deps: ExecutorDeps,
   runId: string,
@@ -299,7 +271,6 @@ export async function requeueComputerRun(
   fence: number,
   resumeCheckpoint: TakeoverResumeCheckpoint | null,
   heldForTakeover = false,
-  untilReleased = false,
 ): Promise<void> {
   const retryAt = new Date(Date.now() + computerRetryDelay(fence));
   const released = await writeComputerRunRequeue(
@@ -310,9 +281,9 @@ export async function requeueComputerRun(
     resumeCheckpoint,
     heldForTakeover,
     null,
-    untilReleased ? null : retryAt,
+    retryAt,
   );
-  if (!released || untilReleased) return;
+  if (!released) return;
   await deps.jobs.enqueue({
     ...runContinueJob(runId),
     availableAt: retryAt,

@@ -1,4 +1,4 @@
-import type { NotificationMessage } from "@labradoodle/adapter-kit";
+import type { NotificationMessage, NotificationProvider } from "@labradoodle/adapter-kit";
 import type { MessageBlock } from "@labradoodle/contracts";
 import {
   isBackgroundRunTrigger,
@@ -10,128 +10,147 @@ import {
 import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
 import { countUnreadInboxChats } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
-import type { ExecutorDeps } from "./executor-deps.js";
-import { notificationIdentity } from "./notification-identity.js";
+import { doodleNotificationIdentity } from "./notification-identity.js";
 
 const COMPLETION_NOTIFICATION_MAX_CHARS = 180;
 
-export async function runNotificationsEnabled(
-  prisma: PrismaClient,
-  run: { spaceId: string; userId: string; botId: string; threadId: string },
-): Promise<boolean> {
-  return (await runNotice(prisma, run)).enabled;
-}
+export type ChatNotifier = {
+  prisma: PrismaClient;
+  notifications?: NotificationProvider;
+  events?: Pick<ThreadEvents, "publishChatAlert">;
+};
 
-async function runNotice(
-  prisma: PrismaClient,
-  run: { spaceId: string; userId: string; botId: string; threadId: string },
-  routineId?: string | null,
-): Promise<{
-  enabled: boolean;
-  groupId: string | null;
-  bot?: { id: string; name: string; color: string };
-}> {
-  // A routine carries its own notify setting, which decides on its failures.
-  const routine = routineId
-    ? await prisma.routine.findUnique({ where: { id: routineId }, select: { notify: true } })
-    : null;
-  const source = await prisma.run.findFirst({
-    where: {
-      botId: run.botId,
-      threadId: run.threadId,
-      spaceId: run.spaceId,
-      userId: run.userId,
-    },
-    select: {
-      bot: { select: { id: true, name: true, color: true, notifyOnFinish: true } },
-      thread: { select: { groupId: true } },
-    },
-  });
-  if (!source) return { enabled: false, groupId: null };
-  return {
-    enabled: routine ? routine.notify : Boolean(source.thread.groupId || source.bot.notifyOnFinish),
-    groupId: source.thread.groupId,
-    bot: source.bot,
-  };
-}
+/** Kinds a muted chat stays quiet for; the others ask something of one person. */
+const MUTED_KINDS = new Set<NotificationMessage["kind"]>(["message", "completion"]);
 
-export async function notifyRun(
-  deps: ExecutorDeps,
-  run: {
+/**
+ * Alerts people in a chat, in open apps and by push: the people in `to`, else everyone in it but
+ * `except`. Whoever muted the chat gets none of its new messages.
+ */
+export async function notifyChat(
+  deps: ChatNotifier,
+  input: {
     spaceId: string;
-    userId: string;
-    botId: string;
     threadId: string;
-    trigger: string;
-    routineId?: string | null;
+    to?: readonly string[];
+    except?: string;
+    message: NotificationMessage;
   },
-  message: NotificationMessage,
   options: { retryOnFailure?: boolean } = {},
 ) {
-  if (
-    (!deps.notifications && !deps.events.publishChatAlert) ||
-    (isBackgroundRunTrigger(run.trigger) && message.kind !== "help" && message.kind !== "takeover")
-  )
-    return;
-  const routineId = message.kind === "failure" ? run.routineId : null;
-  const notice = await runNotice(deps.prisma, run, routineId).catch((error) => {
-    if (options.retryOnFailure) throw error;
-    getLogger().error("notification preference lookup", error);
-    return null;
-  });
-  if (!notice?.enabled) return;
-  publishChatAlert(deps.events, run, message, notice.groupId);
+  if (!deps.notifications && !deps.events?.publishChatAlert) return;
+  const recipients = await deps.prisma.threadMember
+    .findMany({
+      where: {
+        threadId: input.threadId,
+        spaceId: input.spaceId,
+        AND: [
+          input.to ? { userId: { in: [...input.to] } } : {},
+          input.except ? { userId: { not: input.except } } : {},
+        ],
+        ...(MUTED_KINDS.has(input.message.kind) ? { muted: false } : {}),
+      },
+      select: { userId: true },
+    })
+    .catch((error) => {
+      if (options.retryOnFailure) throw error;
+      getLogger().error("chat notification recipients", error);
+      return [];
+    });
+  await Promise.all(
+    recipients.map(({ userId }) =>
+      notifyPerson(deps, { spaceId: input.spaceId, userId }, input.message, options),
+    ),
+  );
+}
+
+async function notifyPerson(
+  deps: ChatNotifier,
+  person: { spaceId: string; userId: string },
+  message: NotificationMessage,
+  options: { retryOnFailure?: boolean },
+) {
+  publishChatAlert(deps.events, person, message);
   if (!deps.notifications) return;
-  // The icon shows what the inbox shows: unread chats across the user's Spaces. Without a
-  // count the push leaves the badge as it is.
-  const badge = await countUnreadInboxChats(deps.prisma, {
-    spaceId: run.spaceId,
-    userId: run.userId,
-  }).catch((error) => {
+  // The icon shows what the inbox shows: unread chats across the person's workspaces. Without
+  // a count the push leaves the badge as it is.
+  const badge = await countUnreadInboxChats(deps.prisma, person).catch((error) => {
     getLogger().error("unread chat count", error);
     return undefined;
   });
-  const bot = notice.bot;
-  const sender = bot && (await notificationIdentity(bot));
   await deps.notifications
     .send(
-      {
-        ...message,
-        ...(sender ? { sender } : {}),
-        ...(notice.groupId ? { groupId: notice.groupId } : {}),
-        ...(badge === undefined ? {} : { badge }),
-      },
+      { ...message, ...(badge === undefined ? {} : { badge }) },
       {
         operationId: "notify",
-        traceId: run.botId,
-        spaceId: run.spaceId,
-        userId: run.userId,
-        botId: run.botId,
+        traceId: message.threadId,
+        spaceId: person.spaceId,
+        userId: person.userId,
         signal: new AbortController().signal,
       },
     )
     .catch((error) => {
       if (options.retryOnFailure) throw error;
-      getLogger().error("run notification", error);
+      getLogger().error("chat notification", error);
     });
+}
+
+/**
+ * What Doodle did in a run, for the people it concerns. Its reply goes to the person who asked,
+ * or for a routine to everyone in the chat when the routine notifies. Questions, takeovers and
+ * failures go to the person who asked.
+ */
+export async function notifyRun(
+  deps: ChatNotifier,
+  run: {
+    spaceId: string;
+    userId: string;
+    threadId: string;
+    trigger: string;
+    routineId?: string | null;
+  },
+  message: Omit<NotificationMessage, "sender">,
+  options: { retryOnFailure?: boolean } = {},
+) {
+  if (isBackgroundRunTrigger(run.trigger) && message.kind !== "help" && message.kind !== "takeover")
+    return;
+  const routine = run.routineId
+    ? await deps.prisma.routine
+        .findUnique({ where: { id: run.routineId }, select: { notify: true } })
+        .catch(() => null)
+    : null;
+  if (routine && !routine.notify && (message.kind === "completion" || message.kind === "failure"))
+    return;
+  const everyone = Boolean(routine) && message.kind === "completion";
+  await notifyChat(
+    deps,
+    {
+      spaceId: run.spaceId,
+      threadId: run.threadId,
+      ...(everyone ? {} : { to: [run.userId] }),
+      message: {
+        ...message,
+        kind: message.kind === "completion" ? "message" : message.kind,
+        sender: await doodleNotificationIdentity(),
+      },
+    },
+    options,
+  );
 }
 
 /** Open apps alert from the same message. Not awaited, so it never holds up the push. */
 export function publishChatAlert(
   events: Pick<ThreadEvents, "publishChatAlert"> | undefined,
-  run: { spaceId: string; userId: string },
+  person: { spaceId: string; userId: string },
   message: NotificationMessage,
-  groupId: string | null,
 ) {
   void (async () =>
-    events?.publishChatAlert?.(run.userId, {
+    events?.publishChatAlert?.(person.userId, {
       kind: message.kind,
       title: truncatePlainText(message.title, COMPLETION_NOTIFICATION_MAX_CHARS),
       body: truncatePlainText(message.body, COMPLETION_NOTIFICATION_MAX_CHARS),
-      spaceId: run.spaceId,
-      botId: message.botId,
+      spaceId: person.spaceId,
       threadId: message.threadId,
-      ...(groupId ? { groupId } : {}),
     }))().catch((error) => getLogger().error("chat alert publish", error));
 }
 

@@ -3,22 +3,33 @@ import type { PrismaClient } from "@labradoodle/db";
 import { expireComputerExecutionLeases } from "@labradoodle/db";
 import { EXECUTION_LEASE_MS } from "./computer-lifecycle.js";
 
-type RecoveryRun = { id: string; botId: string; bot: { computerId: string | null } };
+type RecoveryRun = { id: string; spaceId: string; userId: string };
 
 /**
- * Leave resource waits untouched so recovery preserves their age and execution history.
- * A takeover hold whose run ended or was deleted is expired instead: leases have no relation
- * to runs, so nothing else would free the bot's computer before the hold lapses a day later.
+ * The runs whose person's computer another run holds. A takeover hold whose run ended or was
+ * deleted is expired instead: leases have no relation to runs, so nothing else would free the
+ * computer before the hold lapses a day later.
  */
 export async function findRunRecoveryBlockers(
   prisma: PrismaClient,
   runs: readonly RecoveryRun[],
   now: Date,
 ): Promise<Map<string, string>> {
-  const leases = runs.length
+  // A run uses its person's computer in its workspace, so another run's live lease on that
+  // computer is what it would wait behind.
+  const computers = runs.length
+    ? await prisma.computer.findMany({
+        where: { OR: runs.map((run) => ({ spaceId: run.spaceId, userId: run.userId })) },
+        select: { id: true, spaceId: true, userId: true },
+      })
+    : [];
+  const leases = computers.length
     ? await prisma.computerExecutionLease.findMany({
-        where: { botId: { in: runs.map((run) => run.botId) }, expiresAt: { gt: now } },
-        select: { computerId: true, botId: true, runId: true, expiresAt: true },
+        where: {
+          computerId: { in: computers.map((computer) => computer.id) },
+          expiresAt: { gt: now },
+        },
+        select: { computerId: true, runId: true, expiresAt: true },
       })
     : [];
   const abandoned = await findAbandonedTakeoverHolds(prisma, leases, now);
@@ -31,13 +42,17 @@ export async function findRunRecoveryBlockers(
   }
   const blockers = new Map<string, string>();
   for (const run of runs) {
-    const lease = leases.find(
-      (lease) =>
-        lease.botId === run.botId &&
-        lease.computerId === run.bot.computerId &&
-        lease.runId !== run.id &&
-        !abandoned.has(lease.runId),
+    const computer = computers.find(
+      (computer) => computer.spaceId === run.spaceId && computer.userId === run.userId,
     );
+    const lease = computer
+      ? leases.find(
+          (lease) =>
+            lease.computerId === computer.id &&
+            lease.runId !== run.id &&
+            !abandoned.has(lease.runId),
+        )
+      : undefined;
     if (lease) blockers.set(run.id, lease.runId);
   }
   return blockers;

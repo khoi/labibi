@@ -556,3 +556,18 @@ export async function listChatMembers(
     ),
   );
 }
+
+/** A routine runs with its creator's accounts, so once they leave its chat nobody else revives it. */
+export async function routineCreatorInChat(
+  db: Pick<Db, "threadMember">,
+  routine: { threadId: string; userId: string },
+): Promise<boolean> {
+  const member = await db.threadMember.findUnique({
+    where: { threadId_userId: { threadId: routine.threadId, userId: routine.userId } },
+    select: { id: true },
+  });
+  return Boolean(member);
+}
+
+export const ROUTINE_CREATOR_LEFT_ERROR =
+  "The person who made this routine left the chat, so it stays paused. Make a new one instead.";

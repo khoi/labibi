@@ -92,29 +92,18 @@ async function settle(
       where: {
         id: purchase.threadId,
         spaceId: purchase.spaceId,
-        userId: purchase.userId,
+        doodle: true,
         historyCompactionGeneration: purchase.threadGeneration,
       },
       data: { nextEventSeq: { increment: 0 } },
     });
-    const [member, bot] = await Promise.all([
-      tx.spaceMember.findUnique({
-        where: { spaceId_userId: { spaceId: purchase.spaceId, userId: purchase.userId } },
-        select: { id: true },
-      }),
-      tx.bot.findFirst({
-        where: {
-          id: purchase.botId,
-          spaceId: purchase.spaceId,
-          userId: purchase.userId,
-          archivedAt: null,
-        },
-        select: { id: true },
-      }),
-    ]);
-    const attached = thread.count > 0 && Boolean(member) && Boolean(bot);
+    const member = await tx.threadMember.findUnique({
+      where: { threadId_userId: { threadId: purchase.threadId, userId: purchase.userId } },
+      select: { id: true },
+    });
+    const attached = thread.count > 0 && Boolean(member);
     const pending = PENDING_PURCHASE_STATUSES.has(next.status);
-    // Nobody is left to tell once the bot, its chat or its owner is gone, or the chat was cleared, so
+    // Nobody is left to tell once Doodle left the chat, the person left it, or it was cleared, so
     // nothing is woken; the purchase is still polled until it settles or expires, so a purchase that
     // never went through stops counting against the spending limit.
     const nextPollAt = pending ? new Date(Date.now() + PURCHASE_POLL_MS) : null;

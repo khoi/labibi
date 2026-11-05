@@ -61,7 +61,6 @@ export function mediaDelivery(
   run: MediaRun,
   options: {
     providerId: string;
-    groupId?: string;
     operationId: string;
     /** Background delivery outlives the turn that asked, even one that was stopped. */
     afterRun?: boolean;
@@ -85,7 +84,7 @@ export function mediaDelivery(
           spaceId: run.spaceId,
           userId: run.userId,
           botId: run.botId,
-          groupId: options.groupId,
+          threadId: run.threadId,
           runId: run.id,
           filePath: fileName,
           bytes: output.bytes,
@@ -158,22 +157,17 @@ async function recipientRemains(
     where: {
       id: run.threadId,
       spaceId: run.spaceId,
+      doodle: true,
       ...(threadGeneration === undefined ? {} : { historyCompactionGeneration: threadGeneration }),
     },
     data: { nextEventSeq: { increment: 0 } },
   });
   if (!thread.count) return false;
-  const [member, bot] = await Promise.all([
-    db.spaceMember.findUnique({
-      where: { spaceId_userId: { spaceId: run.spaceId, userId: run.userId } },
-      select: { id: true },
-    }),
-    db.bot.findFirst({
-      where: { id: run.botId, spaceId: run.spaceId, archivedAt: null },
-      select: { id: true },
-    }),
-  ]);
-  return Boolean(member && bot);
+  const member = await db.threadMember.findUnique({
+    where: { threadId_userId: { threadId: run.threadId, userId: run.userId } },
+    select: { id: true },
+  });
+  return Boolean(member);
 }
 
 /**
@@ -197,13 +191,12 @@ export async function pollMediaVideo(deps: MediaVideoDeps, payload: { jobId: str
           botId: true,
           userId: true,
           spaceId: true,
-          thread: { select: { groupId: true } },
         },
       },
     },
   });
   if (!job) return;
-  const { thread, ...run } = job.run;
+  const { run } = job;
   const saved = (job.request as { threadGeneration?: unknown }).threadGeneration;
   const threadGeneration = typeof saved === "number" ? saved : undefined;
   const expired = Date.now() - job.createdAt.getTime() >= MEDIA_POLL_DEADLINE_MS;
@@ -249,7 +242,6 @@ export async function pollMediaVideo(deps: MediaVideoDeps, payload: { jobId: str
     run,
     ...mediaDelivery({ ...deps, artifacts }, run, {
       providerId: provider.id,
-      groupId: thread.groupId ?? undefined,
       operationId,
       afterRun: true,
       onSettled,

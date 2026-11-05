@@ -1,10 +1,13 @@
 import type { ComputerRef } from "@labradoodle/adapter-kit";
+import { ComputerInUseError } from "./computer-lifecycle.js";
 
 /**
  * A run's computer, started the first time a tool needs it.
  *
  * Remote computers bill while they run, so a run that never touches its computer must not
  * create or resume one. A failed start is kept: every later use rethrows it as a setup failure.
+ * A computer busy with other work is not a failure: that use gets the error, and a later one
+ * tries again.
  */
 export function lazyRunComputer(start: () => Promise<ComputerRef>, onFailure?: () => void) {
   let started: Promise<ComputerRef> | undefined;
@@ -19,6 +22,10 @@ export function lazyRunComputer(start: () => Promise<ComputerRef>, onFailure?: (
           return computer;
         },
         (error: unknown) => {
+          if (error instanceof ComputerInUseError) {
+            started = undefined;
+            throw error;
+          }
           failed = true;
           failure = error;
           onFailure?.();

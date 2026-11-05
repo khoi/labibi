@@ -45,21 +45,11 @@ export function hasActiveComputerControl(
   );
 }
 
-/** User takeover of this bot with no run bound to it. Maintenance may claim it. */
+/** The owner's takeover of their computer with no run bound to it. Maintenance may claim it. */
 export function isIdleOwnComputerTakeover(
-  computer:
-    | {
-        controlHolder: string;
-        controlBotId: string | null;
-        controlRunId: string | null;
-      }
-    | null
-    | undefined,
-  botId: string,
+  computer: { controlHolder: string; controlRunId: string | null } | null | undefined,
 ): boolean {
-  return Boolean(
-    computer?.controlHolder === "user" && computer.controlBotId === botId && !computer.controlRunId,
-  );
+  return Boolean(computer?.controlHolder === "user" && !computer.controlRunId);
 }
 
 export function scheduleComputerControlExpiry(
@@ -96,25 +86,16 @@ export async function extendActiveComputerControl(
     controlHolder: string;
     controlLeaseId: string | null;
     controlLeaseExpiresAt: Date | null;
-    controlBotId: string | null;
   },
-  botId: string,
   until: Date,
   now = new Date(),
 ): Promise<boolean> {
-  if (
-    !hasActiveComputerControl(computer, now) ||
-    computer.controlBotId !== botId ||
-    !computer.controlLeaseId
-  ) {
-    return false;
-  }
+  if (!hasActiveComputerControl(computer, now) || !computer.controlLeaseId) return false;
   const expiresAt = teachingControlLeaseExpiresAt(until, now);
   const extended = await prisma.computer.updateMany({
     where: {
       id: computer.id,
       controlHolder: "user",
-      controlBotId: botId,
       controlLeaseId: computer.controlLeaseId,
     },
     data: { controlLeaseExpiresAt: expiresAt },
@@ -145,7 +126,6 @@ export async function clearInactiveUserComputerControl(
       controlLeaseId: null,
       controlUserId: null,
       controlLeaseExpiresAt: null,
-      controlBotId: null,
       controlRunId: null,
     },
   });
@@ -202,60 +182,6 @@ export async function expireComputerControl(
 ): Promise<boolean> {
   const computer = await deps.prisma.computer.findUnique({ where: { id: computerId } });
   if (!computer || computer.controlLeaseId !== leaseId) return false;
-  const botId = computer.controlBotId;
-  if (!botId) {
-    if (
-      computer.controlLeaseExpiresAt &&
-      computer.controlLeaseExpiresAt.getTime() > now.getTime()
-    ) {
-      await scheduleComputerControlExpiry(
-        deps.jobs,
-        computer.id,
-        leaseId,
-        computer.controlLeaseExpiresAt,
-      );
-      return false;
-    }
-    // Orphaned user control: revoke the provider stream, then clear this lease id.
-    if (computer.providerRef) {
-      const context: AdapterContext = {
-        operationId: "computer.control-expire",
-        traceId: "computer.control-expire",
-        spaceId: computer.spaceId,
-        userId: computer.userId,
-        signal: new AbortController().signal,
-      };
-      try {
-        await revokeScreenControl(deps, computer, context, leaseId);
-      } catch {
-        // Keep the lease id and try to reschedule so reconciler/status can retry.
-        try {
-          await scheduleComputerControlExpiry(
-            deps.jobs,
-            computer.id,
-            leaseId,
-            new Date(now.getTime() + 30_000),
-          );
-        } catch (error) {
-          getLogger().error("orphan computer control expiry reschedule", error);
-        }
-        return false;
-      }
-    }
-    const cleared = await deps.prisma.computer.updateMany({
-      where: { id: computer.id, controlLeaseId: leaseId },
-      data: {
-        controlHolder: "none",
-        controlLeaseId: null,
-        controlUserId: null,
-        controlLeaseExpiresAt: null,
-        controlBotId: null,
-        controlRunId: null,
-      },
-    });
-    return cleared.count === 1;
-  }
-
   if (computer.controlLeaseExpiresAt && computer.controlLeaseExpiresAt.getTime() > now.getTime()) {
     await scheduleComputerControlExpiry(
       deps.jobs,
@@ -275,12 +201,16 @@ export async function expireComputerControl(
   if (claimed.count !== 1) return false;
 
   if (computer.providerRef) {
+    const doodle = await deps.prisma.bot.findUnique({
+      where: { spaceId: computer.spaceId },
+      select: { id: true },
+    });
     const context: AdapterContext = {
       operationId: "computer.control-expire",
       traceId: "computer.control-expire",
       spaceId: computer.spaceId,
       userId: computer.userId,
-      botId,
+      ...(doodle ? { botId: doodle.id } : {}),
       signal: new AbortController().signal,
     };
     await revokeScreenControl(deps, computer, context, leaseId);
@@ -289,7 +219,6 @@ export async function expireComputerControl(
   const released = await deps.events.finalizeComputerControlRelease({
     spaceId: computer.spaceId,
     computerId: computer.id,
-    botId,
     runId: computer.controlRunId,
     leaseId,
     holder: "none",

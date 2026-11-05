@@ -1,5 +1,5 @@
 import { constants } from "node:fs";
-import { mkdir, open, rm, statfs } from "node:fs/promises";
+import { mkdir, open, statfs } from "node:fs/promises";
 import path from "node:path";
 import type {
   AdapterContext,
@@ -12,12 +12,9 @@ import type {
   WorkspaceExportLimits,
 } from "@labradoodle/adapter-kit";
 import { WorkspaceTooLargeError } from "@labradoodle/adapter-kit";
-import type { ComputerMode } from "@labradoodle/contracts";
-import { parseScreenLeaseId } from "@labradoodle/core";
-import { browserProfilePathForScreen } from "@labradoodle/core/node/desktop-runtime";
 import type { PrismaClient } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
-import { normalizeWorkspacePath, teamBotWorkspaceDirectory } from "./computer-support.js";
+import { normalizeWorkspacePath } from "./computer-support.js";
 import { createStagingDirectory, LocalAgentHomeStore } from "./home.js";
 import { isSandboxDamagedError } from "./sandbox-errors.js";
 import { shouldSkipPortableWorkspaceFile, WORKSPACE_SAVE_LIMITS } from "./workspace-save-policy.js";
@@ -63,36 +60,6 @@ export async function restoreComputerWorkspace(
 ): Promise<void> {
   if (await homeIsMounted(home, sandbox, computer, context)) return;
   await sandbox.importWorkspace(computer, home.exportHome(homeKey, context), context);
-}
-
-export async function ensureComputerWorkspaceLayout(
-  sandbox: SandboxProvider,
-  computer: ComputerRef,
-  scope: ComputerMode,
-  botId: string | undefined,
-  context: AdapterContext,
-): Promise<void> {
-  if (scope !== "team" || !botId) return;
-  await manageComputerWorkspaceDirectories(
-    sandbox,
-    computer,
-    { action: "ensure", paths: ["shared", teamBotWorkspaceDirectory(botId)] },
-    context,
-  );
-}
-
-const TEAM_BOT_FOLDER_NAME = /^[A-Za-z0-9_-]+$/;
-
-/** A bot id that names exactly one folder under bots/ on a Team Computer. */
-export function isTeamBotFolderName(botId: string) {
-  return TEAM_BOT_FOLDER_NAME.test(botId);
-}
-
-/** The bot's browser profile folder under .browser-profiles on a Team Computer. */
-export function teamBrowserProfileName(botId: string) {
-  const name = path.posix.basename(browserProfilePathForScreen(botId));
-  if (!/^chromium-bot-[0-9a-f]{32}$/.test(name)) return null;
-  return name;
 }
 
 const REMOVE_CONTAINED_DIRECTORIES = [
@@ -165,25 +132,6 @@ export async function removeComputerWorkspaceDirectories(
   }
 }
 
-const DELETED_BOT_FOLDER_BATCH = 200;
-const DELETED_BOT_FOLDER_BUDGET_MS = 20_000;
-
-/**
- * Remove folders and browser profiles left by bots deleted while this Team Computer was asleep
- * or unreachable. Waits at most budgetMs; anything left is retried on a later boot.
- */
-export async function removeDeletedBotWorkspaces(
-  deps: { prisma: PrismaClient; sandbox: SandboxProvider },
-  computer: ComputerRef,
-  spaceId: string,
-  context: AdapterContext,
-  budgetMs = DELETED_BOT_FOLDER_BUDGET_MS,
-): Promise<void> {
-  await withCleanupDeadline(context, budgetMs, (cleanupContext) =>
-    removeDeletedBotFolders(deps, computer, spaceId, cleanupContext),
-  );
-}
-
 /**
  * Run best-effort cleanup for at most budgetMs. Its commands are aborted at the deadline, and
  * a provider that ignores the abort still cannot hold the caller past it. Running out of time is
@@ -214,47 +162,6 @@ export async function withCleanupDeadline(
     await Promise.race([work({ ...context, signal }), expired]);
   } finally {
     clearTimeout(timer);
-  }
-}
-
-async function removeDeletedBotFolders(
-  deps: { prisma: PrismaClient; sandbox: SandboxProvider },
-  computer: ComputerRef,
-  spaceId: string,
-  context: AdapterContext,
-) {
-  // Work follows what is still on the computer, not the space's whole deletion history, so
-  // every boot makes progress on the leftovers.
-  const present = new Set(await listTeamBotEntries(deps.sandbox, computer, context));
-  if (!present.size) return;
-  const deleted = await deps.prisma.botDeletion.findMany({
-    where: { spaceId },
-    select: { id: true },
-  });
-  const folders: string[] = [];
-  const profiles: string[] = [];
-  for (const { id } of deleted) {
-    if (!isTeamBotFolderName(id)) continue;
-    if (present.has(`bots/${id}`)) folders.push(id);
-    const profile = teamBrowserProfileName(id);
-    if (profile && present.has(`.browser-profiles/${profile}`)) profiles.push(profile);
-  }
-  for (const [parent, names] of [
-    ["bots", folders],
-    [".browser-profiles", profiles],
-  ] as const) {
-    for (let start = 0; start < names.length; start += DELETED_BOT_FOLDER_BATCH) {
-      if (context.signal.aborted) return;
-      await removeComputerWorkspaceDirectories(
-        deps.sandbox,
-        computer,
-        parent,
-        names.slice(start, start + DELETED_BOT_FOLDER_BATCH),
-        context,
-      ).catch((error) => {
-        getLogger().error("team bot folder cleanup", error);
-      });
-    }
   }
 }
 
@@ -291,38 +198,16 @@ async function listTeamBotEntries(
   return stdout.split("\n").filter(Boolean);
 }
 
-/**
- * Folders of the space's deleted bots, as `bots/<id>` and `.browser-profiles/<name>`. A Team
- * Computer that has not removed them yet must not save them back into its stored home.
- */
-export async function deletedTeamBotFolders(
-  prisma: Pick<PrismaClient, "botDeletion">,
-  computer: { scope: string; spaceId: string },
-): Promise<Set<string> | undefined> {
-  if (computer.scope !== "team") return undefined;
-  const deleted = await prisma.botDeletion.findMany({
-    where: { spaceId: computer.spaceId },
-    select: { id: true },
-  });
-  const folders = new Set<string>();
-  for (const { id } of deleted) {
-    if (isTeamBotFolderName(id)) folders.add(`bots/${id}`);
-    const profile = teamBrowserProfileName(id);
-    if (profile) folders.add(`.browser-profiles/${profile}`);
-  }
-  return folders;
-}
-
 export async function checkpointComputerWorkspace(
   home: AgentHomeStore,
   sandbox: SandboxProvider,
   homeKey: string,
   computer: ComputerRef,
   context: AdapterContext,
-  /** The computer saved; its deleted bots' folders are read after the export, just before saving. */
+  /** The computer saved, read again after the export so a start meanwhile cancels the save. */
   record?: {
-    prisma: Pick<PrismaClient, "botDeletion" | "computer">;
-    computer: { id: string; scope: string; spaceId: string };
+    prisma: Pick<PrismaClient, "computer">;
+    computer: { id: string };
     /** Called once the export has finished, just before the files are stored. */
     onExported?: () => void;
   },
@@ -374,10 +259,6 @@ export async function checkpointComputerWorkspace(
     }
     record?.onExported?.();
     if ((await lifecycle())?.screenGeneration !== before?.screenGeneration) return undefined;
-    const excluded = record && (await deletedTeamBotFolders(record.prisma, record.computer));
-    for (const folder of excluded ?? []) {
-      await rm(path.join(staging.path, folder), { recursive: true, force: true });
-    }
     return await home.commit(homeKey, staging.path, context);
   } finally {
     await staging.remove();
@@ -400,54 +281,9 @@ async function freeDisk(directory: string) {
   return Number(disk.bavail) * Number(disk.bsize) - SAVE_DISK_RESERVE_BYTES;
 }
 
-/** Remote exports quiesce browsers, so a run must not checkpoint while peers are driving them. */
-export async function checkpointRunComputerWorkspace(
-  deps: { home: AgentHomeStore; sandbox: SandboxProvider; prisma: PrismaClient },
-  computerRecord: { id: string; homeKey: string; scope: string; spaceId: string },
-  computer: ComputerRef,
-  context: AdapterContext,
-): Promise<string | undefined> {
-  if (computerRecord.scope !== "team" || computer.kind === "docker") {
-    return checkpointAndRecordComputerWorkspace(deps, computerRecord, computer, context);
-  }
-  const now = new Date();
-  const ownLease = context.screenLeaseId ? parseScreenLeaseId(context.screenLeaseId) : undefined;
-  const claimed = await deps.prisma.computer.updateMany({
-    where: {
-      id: computerRecord.id,
-      state: "running",
-      providerRef: computer.providerRef,
-      executionLeases: {
-        none: {
-          expiresAt: { gt: now },
-          ...(ownLease ? { NOT: { runId: ownLease.ownerId, fence: ownLease.fence } } : {}),
-        },
-      },
-      OR: [
-        { controlHolder: { not: "user" } },
-        { controlLeaseId: null },
-        { controlLeaseExpiresAt: null },
-        { controlLeaseExpiresAt: { lte: now } },
-        ...(context.botId ? [{ controlBotId: context.botId }] : []),
-      ],
-    },
-    data: { state: "suspending", updatedAt: now },
-  });
-  // The last finishing run or the already scheduled idle job will checkpoint the shared home.
-  if (claimed.count !== 1) return undefined;
-  try {
-    return await checkpointAndRecordComputerWorkspace(deps, computerRecord, computer, context);
-  } finally {
-    await deps.prisma.computer.updateMany({
-      where: { id: computerRecord.id, state: "suspending", providerRef: computer.providerRef },
-      data: { state: "running" },
-    });
-  }
-}
-
 export async function checkpointAndRecordComputerWorkspace(
   deps: { home: AgentHomeStore; sandbox: SandboxProvider; prisma: PrismaClient },
-  computerRecord: { id: string; homeKey: string; scope: string; spaceId: string },
+  computerRecord: { id: string; homeKey: string },
   computer: ComputerRef,
   context: AdapterContext,
 ): Promise<string | undefined> {
@@ -475,7 +311,7 @@ export async function checkpointAndRecordComputerWorkspace(
  */
 export async function checkpointAndStopComputer(
   deps: { home: AgentHomeStore; sandbox: SandboxProvider; prisma: PrismaClient },
-  computerRecord: { id: string; homeKey: string; scope: string; spaceId: string },
+  computerRecord: { id: string; homeKey: string },
   computer: ComputerRef,
   context: AdapterContext,
   onStop?: () => void,

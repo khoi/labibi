@@ -2,7 +2,6 @@ import type { AdapterContext } from "@labradoodle/adapter-kit";
 import { computerControlExpireJobKey, SandboxAllowanceUsedError } from "@labradoodle/adapter-kit";
 import type { ComputerUpdate } from "@labradoodle/contracts";
 import { ComputerUpdateSchema } from "@labradoodle/contracts";
-import { ACTIVE_RUN_STATUSES } from "@labradoodle/core";
 import type { Prisma, PrismaClient, ThreadEvents } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import {
@@ -34,20 +33,13 @@ const PENDING_HANDBACK_STATUSES = ["reserving", "revoking", "revoked"] as const;
 export function computerUpdateView(row: {
   action: string;
   id: string;
-  botId: string;
   status: string;
   stage: string;
-  computer: { scope: string; bots: { id: string; name: string }[] };
 }): ComputerUpdate {
   return ComputerUpdateSchema.parse({
     canReleaseReservation: false,
     action: row.action,
     id: row.id,
-    botId: row.computer.bots.some((bot) => bot.id === row.botId)
-      ? row.botId
-      : (row.computer.bots[0]?.id ?? row.botId),
-    name: row.computer.bots.find((bot) => bot.id === row.botId)?.name ?? "",
-    mode: row.computer.scope === "team" ? "team" : "dedicated",
     status: row.status,
     stage: row.stage,
   });
@@ -67,14 +59,10 @@ export async function queueComputerUpdate(
     if (action === "update" && !computerSupportsUpdate(computer.kind))
       throw new Error("Computer update is not available on this device");
     // A run bound to this takeover must keep it. Maintenance does not resume that run.
-    if (
-      computer.controlHolder === "user" &&
-      computer.controlBotId === botId &&
-      computer.controlRunId
-    ) {
+    if (computer.controlHolder === "user" && computer.controlRunId) {
       throw new ComputerBusyError();
     }
-    const idleTakeover = isIdleOwnComputerTakeover(computer, botId);
+    const idleTakeover = isIdleOwnComputerTakeover(computer);
     // Holder "none" plus a lease means a provider revoke failed and control may remain.
     if (computer.controlLeaseId && !idleTakeover) throw new ComputerBusyError();
 
@@ -84,7 +72,6 @@ export async function queueComputerUpdate(
         where: {
           id: computerId,
           controlHolder: "user",
-          controlBotId: botId,
           controlRunId: null,
           controlLeaseId: computer.controlLeaseId,
         },
@@ -93,7 +80,6 @@ export async function queueComputerUpdate(
           : {
               controlHolder: "none",
               controlLeaseExpiresAt: null,
-              controlBotId: null,
               controlRunId: null,
             },
       });
@@ -115,7 +101,6 @@ export async function queueComputerUpdate(
     const update = await tx.computerUpdate.create({
       data: {
         computerId,
-        botId,
         action,
         // Stay reserving until the provider release is attempted. Reconciliation gives that
         // takeover back. revoking is written before the call and is not proof of release.
@@ -131,15 +116,6 @@ export async function queueComputerUpdate(
         controlHolder: { not: "user" },
         controlLeaseId: revokeLeaseId,
         executionLeases: { none: { expiresAt: { gt: new Date() } } },
-        bots: {
-          some: { id: botId, archivedAt: null },
-          none: {
-            OR: [
-              { computerSwitching: true },
-              { runs: { some: { status: { in: [...ACTIVE_RUN_STATUSES] } } } },
-            ],
-          },
-        },
       },
       data: { maintenanceId: update.id },
     });
@@ -148,12 +124,7 @@ export async function queueComputerUpdate(
       where: { computerId, status: "failed" },
       data: { status: "dismissed" },
     });
-    const row = await tx.computerUpdate.findUniqueOrThrow({
-      where: { id: update.id },
-      include: {
-        computer: { include: { bots: { where: { id: botId }, select: { id: true, name: true } } } },
-      },
-    });
+    const row = await tx.computerUpdate.findUniqueOrThrow({ where: { id: update.id } });
     return { row, handback };
   });
 
@@ -218,9 +189,6 @@ export async function queueComputerUpdate(
               getLogger().error("computer control expiry cancellation", error);
             });
           await enqueueTakeoverContinuation(deps.jobs, released.runId);
-          if (released.runId) {
-            await recordTakeoverHandback(deps, botId, prepared.handback, released.runId);
-          }
         }
         throw new ComputerBusyError();
       }
@@ -245,13 +213,12 @@ export async function queueComputerUpdate(
         controlLeaseId: null,
         controlUserId: null,
         controlLeaseExpiresAt: null,
-        controlBotId: null,
         controlRunId: null,
       },
     });
     if (released.count !== 1) {
       if (prepared.row.status === "revoked") {
-        await abandonRevokedHandback(deps.prisma, computerId, prepared.row.id, prepared.handback);
+        await abandonRevokedHandback(deps.prisma, computerId, prepared.row.id);
       } else {
         await undoQueuedMaintenance(deps.prisma, computerId, prepared.row.id, prepared.handback);
       }
@@ -267,7 +234,6 @@ export async function queueComputerUpdate(
     }
     prepared.row.status = "queued";
   }
-  if (prepared.handback) await recordTakeoverHandback(deps, botId, prepared.handback);
 
   // The reconciler republishes durable queued intent if publishing fails.
   await deps.jobs
@@ -310,7 +276,6 @@ async function undoQueuedMaintenance(
         data: {
           maintenanceId: null,
           controlHolder: "user",
-          controlBotId: handback.botId,
           controlRunId: null,
         },
       });
@@ -373,7 +338,6 @@ async function releaseConfirmedHandback(
         where: {
           id: computerId,
           controlLeaseId: handback.leaseId,
-          controlBotId: handback.botId,
           OR: [{ maintenanceId: updateId }, { maintenanceId: null, controlHolder: "user" }],
         },
         select: { controlRunId: true },
@@ -383,7 +347,6 @@ async function releaseConfirmedHandback(
         where: {
           id: computerId,
           controlLeaseId: handback.leaseId,
-          controlBotId: handback.botId,
           controlRunId: current.controlRunId,
           OR: [{ maintenanceId: updateId }, { maintenanceId: null, controlHolder: "user" }],
         },
@@ -393,7 +356,6 @@ async function releaseConfirmedHandback(
           controlLeaseId: null,
           controlUserId: null,
           controlLeaseExpiresAt: null,
-          controlBotId: null,
           controlRunId: null,
         },
       });
@@ -438,15 +400,10 @@ async function resumeBoundTakeoverRun(
   return resumed.count === 1 || stamped.count === 1 ? runId : null;
 }
 
-async function abandonRevokedHandback(
-  prisma: PrismaClient,
-  computerId: string,
-  updateId: string,
-  handback: IdleTakeoverHandback,
-) {
+async function abandonRevokedHandback(prisma: PrismaClient, computerId: string, updateId: string) {
   try {
     await prisma.$transaction(async (tx) => {
-      await clearRevokedTakeover(tx.computer, computerId, updateId, handback.botId);
+      await clearRevokedTakeover(tx.computer, computerId, updateId);
       await tx.computerUpdate.deleteMany({
         where: { id: updateId, status: { in: [...PENDING_HANDBACK_STATUSES] } },
       });
@@ -459,9 +416,7 @@ async function abandonRevokedHandback(
         data: { status: "dismissed" },
       })
       .catch(() => undefined);
-    await clearRevokedTakeover(prisma.computer, computerId, updateId, handback.botId).catch(
-      () => undefined,
-    );
+    await clearRevokedTakeover(prisma.computer, computerId, updateId).catch(() => undefined);
   }
 }
 
@@ -469,14 +424,12 @@ async function clearRevokedTakeover(
   computer: PrismaClient["computer"],
   computerId: string,
   updateId: string,
-  botId: string,
 ) {
   const cleared = await computer.updateMany({
     where: {
       id: computerId,
       maintenanceId: updateId,
       controlHolder: "none",
-      controlBotId: botId,
       controlRunId: null,
     },
     data: {
@@ -485,7 +438,6 @@ async function clearRevokedTakeover(
       controlLeaseId: null,
       controlUserId: null,
       controlLeaseExpiresAt: null,
-      controlBotId: null,
       controlRunId: null,
     },
   });
@@ -494,32 +446,6 @@ async function clearRevokedTakeover(
     where: { id: computerId, maintenanceId: updateId },
     data: { maintenanceId: null },
   });
-}
-
-async function recordTakeoverHandback(
-  deps: QueueDeps,
-  botId: string,
-  handback: IdleTakeoverHandback,
-  runId?: string,
-) {
-  if (!deps.events || !deps.prisma.bot) return;
-  try {
-    const bot = await deps.prisma.bot.findFirst({
-      where: { id: botId },
-      select: { thread: { select: { id: true } } },
-    });
-    if (!bot?.thread) return;
-    await deps.events.append({
-      spaceId: handback.spaceId,
-      threadId: bot.thread.id,
-      botId,
-      ...(runId ? { runId } : {}),
-      type: "computer.takeover.released",
-      payload: { holder: "none", leaseId: handback.leaseId, reason: "released" },
-    });
-  } catch (error) {
-    getLogger().error("maintenance takeover release event", error);
-  }
 }
 
 export async function performComputerUpdate(deps: Deps, updateId: string) {
@@ -542,11 +468,10 @@ export async function performComputerUpdate(deps: Deps, updateId: string) {
       .catch(() => controller.abort());
   }, 30_000);
   try {
-    const bot = await deps.prisma.bot.findFirst({
-      where: { id: update.botId, computerId: update.computerId, archivedAt: null },
-      select: { userId: true },
+    const doodle = await deps.prisma.bot.findUnique({
+      where: { spaceId: update.computer.spaceId },
+      select: { id: true },
     });
-    if (!bot) throw new Error("Computer update target is unavailable");
     await replaceComputer(
       deps,
       update.computerId,
@@ -554,9 +479,9 @@ export async function performComputerUpdate(deps: Deps, updateId: string) {
       {
         operationId: updateId,
         traceId: updateId,
-        botId: update.botId,
+        ...(doodle ? { botId: doodle.id } : {}),
         spaceId: update.computer.spaceId,
-        userId: bot.userId,
+        userId: update.computer.userId,
         signal: controller.signal,
       },
       "none",
@@ -650,7 +575,7 @@ export async function reconcileComputerUpdates(deps: Pick<Deps, "prisma" | "jobs
         if (status === "revoked") {
           // The provider release returned. Clear the lease with the holder so a later
           // takeover grants a new lease.
-          await clearRevokedTakeover(tx.computer, update.computerId, update.id, update.botId);
+          await clearRevokedTakeover(tx.computer, update.computerId, update.id);
           return;
         }
         // The provider release has not returned, so control can still belong to the user.
@@ -659,7 +584,6 @@ export async function reconcileComputerUpdates(deps: Pick<Deps, "prisma" | "jobs
             id: update.computerId,
             maintenanceId: update.id,
             controlHolder: "none",
-            controlBotId: update.botId,
             controlRunId: null,
             controlLeaseId: { not: null },
           },

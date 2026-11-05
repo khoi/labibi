@@ -11,7 +11,7 @@ import {
 } from "@labradoodle/adapter-kit";
 import {
   containsSecret,
-  displayName,
+  DOODLE_NAME,
   humanizeToolName,
   isBackgroundRunTrigger,
   redactSecrets,
@@ -26,7 +26,7 @@ import { sanitizedError } from "@labradoodle/logging/monitoring";
 import { isToolPauseResult } from "./approval-effect.js";
 import { scheduleComputerSleep } from "./computer-idle.js";
 import { holdComputerExecutionLeaseForTakeover } from "./computer-lifecycle.js";
-import { resolveBotWorkspacePath } from "./computer-support.js";
+import { resolveWorkspacePath } from "./computer-support.js";
 import {
   COMPACTION_BATCH_SIZE,
   HISTORY_WINDOW_SIZE,
@@ -54,9 +54,7 @@ import {
   canPublishDurableNarration,
   flushPendingTools,
   flushProgress,
-  mayBeSilentEnding,
   nextProgressNonce,
-  progressHeldForSilence,
   publishMidTurnNarration,
   publishNarrationBeforeAsk,
   recordExplicitNoResponse,
@@ -71,12 +69,7 @@ import {
 import { scheduleRoutineRetry } from "./run-routines.js";
 import { applyTool } from "./run-tools.js";
 import { withRuntimeCleanup } from "./runtime-stream.js";
-import {
-  isNoResponseReply,
-  isPlaceholderReply,
-  stripNoResponseReply,
-  stripStrayNoResponse,
-} from "./silent-reply.js";
+import { stripNoResponseReply, stripStrayNoResponse } from "./silent-reply.js";
 import { takeoverCheckpointOf } from "./takeover-resume.js";
 import { appendToolCompletionAudit, toolCompletionFromResult } from "./tool-completion-audit.js";
 import {
@@ -290,7 +283,7 @@ async function streamProgress(ctx: RunContext, event: RuntimeEvent<"progress">) 
   if (event.activity && reply.narrationStatusShowing) return;
   // Flush batched text deltas first so an activity line cannot land
   // ahead of text the model streamed before the tool call.
-  if (reply.pendingProgress && !progressHeldForSilence(ctx)) {
+  if (reply.pendingProgress) {
     await deps.events.append({
       spaceId: run.spaceId,
       threadId: thread.id,
@@ -335,11 +328,7 @@ async function onSteered(ctx: RunContext, event: RuntimeEvent<"steered">) {
     await flushProgress(ctx);
     const before = extractNarrationText(reply.messageSegments, reply.currentTextSegment).text;
     const text = redactSecretsAfter(reply.narrationSoFar, before, ctx.secrets).trim();
-    if (
-      text.length <= USER_PROGRESS_MESSAGE_MAX_LENGTH &&
-      canPublishDurableNarration(ctx) &&
-      !mayBeSilentEnding(ctx, text)
-    )
+    if (text.length <= USER_PROGRESS_MESSAGE_MAX_LENGTH && canPublishDurableNarration(ctx))
       await publishMidTurnNarration(ctx);
     reply.steeringReplyPending = true;
     return;
@@ -349,7 +338,7 @@ async function onSteered(ctx: RunContext, event: RuntimeEvent<"steered">) {
   await flushProgress(ctx);
   const before = extractNarrationText(reply.messageSegments, reply.currentTextSegment);
   const text = redactSecretsAfter(reply.narrationSoFar, before.text, ctx.secrets).trim();
-  if (text && runPromotesMidTurnNarration(run.trigger) && !mayBeSilentEnding(ctx, text)) {
+  if (text && runPromotesMidTurnNarration(run.trigger)) {
     reply.narrationSoFar += before.text;
     reply.messageSegments = before.remaining;
     reply.currentTextSegment = "";
@@ -376,7 +365,7 @@ async function onSteered(ctx: RunContext, event: RuntimeEvent<"steered">) {
 }
 
 async function pauseForAnswer(ctx: RunContext, event: RuntimeEvent<"ask">) {
-  const { deps, run, runId, bot, thread, workerId, fence } = ctx;
+  const { deps, run, runId, thread, workerId, fence } = ctx;
   if (!(await renewRunLease(deps, runId, workerId, fence))) return;
   await publishNarrationBeforeAsk(ctx);
   const safeText = redactSecrets(event.text, ctx.secrets);
@@ -416,15 +405,14 @@ async function pauseForAnswer(ctx: RunContext, event: RuntimeEvent<"ask">) {
   }
   await notifyRun(deps, run, {
     kind: "help",
-    title: `${displayName(bot.name, "Bot")} needs an answer`,
+    title: `${DOODLE_NAME} needs an answer`,
     body: safeText,
-    botId: bot.id,
     threadId: thread.id,
   });
 }
 
 async function pauseForTakeover(ctx: RunContext, event: RuntimeEvent<"takeover">) {
-  const { deps, run, runId, bot, thread, workerId, fence } = ctx;
+  const { deps, run, runId, thread, workerId, fence } = ctx;
   const { reply } = ctx.state;
   if (!(await renewRunLease(deps, runId, workerId, fence))) return;
   // The user takes over the computer's screen, so it must be up before the run waits.
@@ -455,7 +443,7 @@ async function pauseForTakeover(ctx: RunContext, event: RuntimeEvent<"takeover">
     reply.pendingProgress = "";
   }
   // Give the user a full idle period to answer before the computer may suspend.
-  scheduleComputerSleep(deps.jobs, ctx.computer.stored.id);
+  scheduleComputerSleep(deps.jobs, ctx.computer.record().id);
   await publishMessage(
     deps,
     run,
@@ -464,7 +452,7 @@ async function pauseForTakeover(ctx: RunContext, event: RuntimeEvent<"takeover">
     true,
   );
   await ctx.computer.checkpoint.flush();
-  if (!(await holdComputerExecutionLeaseForTakeover(deps.prisma, ctx.computer.lease))) {
+  if (!(await holdComputerExecutionLeaseForTakeover(deps.prisma, ctx.computer.lease()))) {
     throw new Error("Computer lease expired before takeover");
   }
   await persistTurnCheckpoint(ctx, event.executionId);
@@ -478,7 +466,7 @@ async function pauseForTakeover(ctx: RunContext, event: RuntimeEvent<"takeover">
     leaseOwner: workerId,
     leaseFence: fence,
     reason: safeReason,
-    computerId: ctx.computer.stored.id,
+    computerId: ctx.computer.record().id,
   });
   if (!paused) return;
   if (typeof paused === "object") {
@@ -490,9 +478,8 @@ async function pauseForTakeover(ctx: RunContext, event: RuntimeEvent<"takeover">
   ctx.state.lease.retainComputer = true;
   await notifyRun(deps, run, {
     kind: "takeover",
-    title: `${displayName(bot.name, "Bot")} needs you on the screen`,
+    title: `${DOODLE_NAME} needs you on the screen`,
     body: safeReason,
-    botId: bot.id,
     threadId: thread.id,
   });
 }
@@ -688,24 +675,6 @@ async function publishSubagent(ctx: RunContext, event: RuntimeEvent<"subagent">)
   }
 }
 
-/**
- * Silence needs the send to still call the reply optional (a person who names the member while
- * it works makes it required) and nothing of this run already in the chat, such as an ask card.
- */
-async function groupSilenceStillAllowed(ctx: RunContext) {
-  const { prisma } = ctx.deps;
-  const current = await prisma.run.findUnique({
-    where: { id: ctx.runId },
-    select: { groupReplyOptional: true },
-  });
-  if (current?.groupReplyOptional !== true) return false;
-  const earlier = await prisma.message.findFirst({
-    where: { runId: ctx.runId, role: "bot" },
-    select: { id: true },
-  });
-  return !earlier;
-}
-
 /** The turn ended: apply a scripted runtime's files and memory, then finalize the reply. */
 export async function completeRun(ctx: RunContext) {
   const { deps, run, runId, bot, thread, context } = ctx;
@@ -723,7 +692,7 @@ export async function completeRun(ctx: RunContext) {
       await deps.sandbox.writeFile(
         await ctx.computer.get("script"),
         {
-          path: resolveBotWorkspacePath(ctx.computer.mode, bot.id, file.path),
+          path: resolveWorkspacePath(file.path),
           content: new TextEncoder().encode(file.content),
         },
         context,
@@ -732,8 +701,10 @@ export async function completeRun(ctx: RunContext) {
     for (const mem of turn.memory ?? []) {
       await deps.memory.commit(
         {
-          scope: mem.scope,
-          botId: mem.scope === "bot" ? bot.id : undefined,
+          scope:
+            mem.scope === "chat"
+              ? { kind: "chat", threadId: thread.id }
+              : { kind: "person", userId: run.userId },
           path: mem.path,
           content: mem.content,
           sourceRunId: runId,
@@ -789,31 +760,15 @@ export async function completeRun(ctx: RunContext) {
   flushPendingTools(reply);
   // Silent-allowed runs can choose an explicit NO_RESPONSE or finish empty.
   // Other runs still drop a stray sentinel at the edges of a real reply.
-  // A member a group message named nobody for may end silently with the sentinel, a placeholder
-  // such as a lone dot, or nothing at all, as long as it did no work: tool steps or a posted
-  // message are still shown.
-  const groupSilentEnd =
-    ctx.groupReplyOptional &&
-    !ctx.allowSilentEmptyRun &&
-    (isNoResponseReply(reply.assembled, reply.messageSegments) ||
-      isPlaceholderReply(reply.assembled, reply.messageSegments) ||
-      !(reply.assembled.trim() || reply.messageSegments.length)) &&
-    !reply.publishedMidTurnUserMessage &&
-    !reply.publishedTerminalSubagent &&
-    reply.messageSegments.every((block) => block.kind === "text") &&
-    (await groupSilenceStillAllowed(ctx));
-  const silentReply = groupSilentEnd
-    ? { assembled: "", blocks: [] }
-    : ctx.allowSilentEmptyRun || ctx.groupReplyOptional
-      ? stripNoResponseReply(reply.assembled, reply.messageSegments)
-      : stripStrayNoResponse(reply.assembled, reply.messageSegments);
+  const silentReply = ctx.allowSilentEmptyRun
+    ? stripNoResponseReply(reply.assembled, reply.messageSegments)
+    : stripStrayNoResponse(reply.assembled, reply.messageSegments);
   let completionBlocks = silentReply.blocks;
   if (!silentReply.assembled || isBackgroundRunTrigger(run.trigger)) {
     // Mid-turn progress already posted durable chat messages; skip the empty
     // "…" fallback so we do not add a junk final bubble.
     completionBlocks = completionMessageSegments(completionBlocks, {
-      allowSilentEmpty:
-        ctx.allowSilentEmptyRun || reply.publishedMidTurnUserMessage || groupSilentEnd,
+      allowSilentEmpty: ctx.allowSilentEmptyRun || reply.publishedMidTurnUserMessage,
       suppressOutput: isBackgroundRunTrigger(run.trigger),
       skipEmptyFallback: reply.publishedTerminalSubagent || reply.publishedMidTurnUserMessage,
     });
@@ -842,7 +797,7 @@ export async function completeRun(ctx: RunContext) {
     leaseFence: ctx.fence,
     outcome: "completed",
     blocks,
-    markUnread: !groupSilentEnd && completionMarksUnread(run.trigger, text),
+    markUnread: completionMarksUnread(run.trigger, text),
   });
   if (!completed) return;
   ctx.stopHeartbeatAfterCompletion();
@@ -860,9 +815,8 @@ export async function completeRun(ctx: RunContext) {
   if (runSendsFinishNotification(run.trigger) && notifyBody && !completed.continuationRunId) {
     await notifyRun(deps, run, {
       kind: "completion",
-      title: `${displayName(bot.name, "Bot")} finished`,
+      title: `${DOODLE_NAME} finished`,
       body: notifyBody,
-      botId: bot.id,
       threadId: thread.id,
       runId: run.id,
     });
@@ -1003,9 +957,8 @@ export async function failRun(
   if (runSendsFinishNotification(run.trigger) && !failed.continuationRunId && !retrying) {
     await notifyRun(deps, run, {
       kind: "failure",
-      title: `${displayName(bot.name, "Bot")} failed`,
+      title: `${DOODLE_NAME} failed`,
       body: message,
-      botId: bot.id,
       threadId: thread.id,
     });
   }

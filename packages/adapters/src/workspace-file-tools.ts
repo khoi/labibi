@@ -1,10 +1,9 @@
 import type { AdapterContext, ComputerRef, SandboxProvider } from "@labradoodle/adapter-kit";
-import type { ComputerMode } from "@labradoodle/contracts";
 import { ATTACHMENT_MAX_BYTES } from "@labradoodle/contracts";
 import { redactSecrets } from "@labradoodle/core";
 import { getLogger } from "@labradoodle/logging";
 import { JSDOM } from "jsdom";
-import { displayBotWorkspacePath, resolveBotWorkspacePath } from "./computer-support.js";
+import { resolveWorkspacePath } from "./computer-support.js";
 import type { ExecutorDeps } from "./executor-deps.js";
 import { TOOL_RESULT_TEXT_LIMIT } from "./pi-runtime-limits.js";
 import type { PlotSpec } from "./plot-tool.js";
@@ -18,10 +17,9 @@ import {
 } from "./plot-tool.js";
 import { publishMessage } from "./run-messages.js";
 import { attachWorkspaceFileToThread } from "./thread-artifacts.js";
-/** The bot workspace a run reaches on its computer. */
+/** The computer workspace a run reaches. */
 export type RunWorkspace = {
   botId: string;
-  computerMode: ComputerMode;
   computer: () => Promise<ComputerRef>;
   markDirty: () => void;
   context: AdapterContext;
@@ -158,11 +156,11 @@ export async function listFilesFromTool(
   workspace: RunWorkspace,
   args: Record<string, unknown>,
 ) {
-  const { botId, computerMode, computer, context, runSecrets } = workspace;
+  const { computer, context, runSecrets } = workspace;
   const requestedPath = String(args.path ?? "");
   const entries = await sandbox.listFiles(
     await computer(),
-    resolveBotWorkspacePath(computerMode, botId, requestedPath),
+    resolveWorkspacePath(requestedPath),
     context,
   );
   return {
@@ -170,10 +168,7 @@ export async function listFilesFromTool(
     entries: entries.map((entry) => ({
       ...entry,
       // A file name can carry a value an earlier command or page wrote.
-      path: redactSecrets(
-        displayBotWorkspacePath(computerMode, botId, requestedPath, entry.path),
-        runSecrets,
-      ),
+      path: redactSecrets(entry.path, runSecrets),
     })),
   };
 }
@@ -183,9 +178,9 @@ export async function readFileFromTool(
   workspace: RunWorkspace,
   args: Record<string, unknown>,
 ) {
-  const { botId, computerMode, computer, context, runSecrets } = workspace;
+  const { computer, context, runSecrets } = workspace;
   const filePath = String(args.path ?? "");
-  const storedPath = resolveBotWorkspacePath(computerMode, botId, filePath);
+  const storedPath = resolveWorkspacePath(filePath);
   let bytes: Uint8Array;
   try {
     bytes = await sandbox.readFile(await computer(), storedPath, context, {
@@ -237,7 +232,7 @@ export async function renderPlotFromTool(
   workspace: RunWorkspace,
   finish: (result: unknown) => Promise<unknown>,
 ) {
-  const { botId, computerMode, computer, context, runSecrets } = workspace;
+  const { botId, computer, context, runSecrets } = workspace;
   if (args.charts !== undefined) {
     const query = typeof args.charts === "string" ? args.charts : undefined;
     return {
@@ -258,7 +253,7 @@ export async function renderPlotFromTool(
     if (!rows && dataPath) {
       const bytes = await deps.sandbox.readFile(
         await computer(),
-        resolveBotWorkspacePath(computerMode, botId, dataPath),
+        resolveWorkspacePath(dataPath),
         context,
         { maxBytes: deps.maxUploadSizeBytes ?? ATTACHMENT_MAX_BYTES },
       );
@@ -276,7 +271,7 @@ export async function renderPlotFromTool(
     await deps.sandbox.writeFile(
       await computer(),
       {
-        path: resolveBotWorkspacePath(computerMode, botId, outPath),
+        path: resolveWorkspacePath(outPath),
         content: png,
       },
       context,
@@ -312,6 +307,7 @@ export async function renderPlotFromTool(
           spaceId: run.spaceId,
           userId: run.userId,
           botId,
+          threadId: run.threadId,
           runId: run.id,
           filePath: outPath,
           bytes: png,

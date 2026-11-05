@@ -109,7 +109,6 @@ async function createBaseRunSandbox(
               controlLeaseId: null,
               controlUserId: null,
               controlLeaseExpiresAt: null,
-              controlBotId: null,
               controlRunId: null,
             },
           });

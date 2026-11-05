@@ -80,8 +80,12 @@ export function createBackgroundJobHandlers(deps: {
     deps.prisma.routine.findUnique({ where: { id: routineId }, select: OWNER });
   const computer = ({ computerId }: { computerId: string }) =>
     deps.prisma.computer.findUnique({ where: { id: computerId }, select: OWNER });
-  const thread = ({ threadId }: { threadId: string }) =>
-    deps.prisma.thread.findUnique({ where: { id: threadId }, select: OWNER });
+  // A chat's work acts for the person whose turn asked for it, who can see the chat; its
+  // creator may have left it.
+  const thread = async ({ threadId, userId }: { threadId: string; userId?: string }) => {
+    const row = await deps.prisma.thread.findUnique({ where: { id: threadId }, select: OWNER });
+    return row && { spaceId: row.spaceId, userId: userId ?? row.userId };
+  };
   const skill = ({ skillId }: { skillId: string }) =>
     deps.prisma.taughtSkill.findUnique({ where: { id: skillId }, select: OWNER });
   const cloudAgent = ({ agentId }: { agentId: string }) =>

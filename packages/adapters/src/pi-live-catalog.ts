@@ -292,7 +292,11 @@ export async function savedCatalogSelections(
       where: { userId },
       select: { modelId: true, credential: { select: { provider: true } } },
     }),
-    prisma.bot.findMany({ where: { userId }, select: { modelProvider: true, modelId: true } }),
+    // Doodle's model in each workspace this person owns.
+    prisma.bot.findMany({
+      where: { space: { memberships: { some: { userId, role: { contains: "owner" } } } } },
+      select: { modelProvider: true, modelId: true },
+    }),
     prisma.routine.findMany({ where: { userId }, select: { modelProvider: true, modelId: true } }),
     prisma.userModelRoleChoice.findMany({
       where: { userId },

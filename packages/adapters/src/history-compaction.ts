@@ -1,18 +1,13 @@
 import type { AgentRunRequest, AgentRuntime, JobPublisher } from "@labradoodle/adapter-kit";
 import { historyCompactJob } from "@labradoodle/adapter-kit";
 import type { MessageBlock } from "@labradoodle/contracts";
-import { blocksToAgentHistoryText, escapePromptData } from "@labradoodle/core";
+import { blocksToAgentHistoryText, DOODLE_NAME, escapePromptData } from "@labradoodle/core";
 import type { PrismaClient } from "@labradoodle/db";
 import { recordUsage, runAsTenant } from "@labradoodle/db";
 import { getLogger, unwrapJobPayload } from "@labradoodle/logging";
 import { formatCurrentTimeInstruction } from "./current-time.js";
 import { resolveDeploymentModel } from "./deployment-model.js";
-import {
-  loadBotNames,
-  loadSpacePeople,
-  personLineSpeaker,
-  UNKNOWN_BOT_SPEAKER,
-} from "./history-speakers.js";
+import { loadChatPeople, personLineSpeaker } from "./history-speakers.js";
 import type {
   ConfiguredMemoryProvider,
   MemoryProviderResolver,
@@ -242,14 +237,18 @@ export async function compactHistory(
   requesterId?: string,
 ): Promise<void> {
   const thread = await deps.prisma.thread.findUniqueOrThrow({ where: { id: threadId } });
-  if (!thread.botId) return;
-  // The member whose turn asked for the summary pays for it, as for the turn. One who has since
-  // left pays nothing: the next member's turn asks again.
+  const doodle = await deps.prisma.bot.findUnique({
+    where: { spaceId: thread.spaceId },
+    select: { id: true },
+  });
+  if (!doodle) return;
+  const botId = doodle.id;
+  // The person whose turn asked for the summary pays for it, as for the turn. One who has since
+  // left the chat pays nothing: the next person's turn asks again.
   if (
     requesterId &&
-    requesterId !== thread.userId &&
-    !(await deps.prisma.spaceMember.findUnique({
-      where: { spaceId_userId: { spaceId: thread.spaceId, userId: requesterId } },
+    !(await deps.prisma.threadMember.findUnique({
+      where: { threadId_userId: { threadId, userId: requesterId } },
       select: { id: true },
     }))
   ) {
@@ -343,21 +342,12 @@ export async function compactHistory(
   if (batch.length === 0) return;
 
   // The summarizer reads who said what, labelled the way a run's history is: each person as "User"
-  // (by name only in a space several people share) and each bot by its current name, including a
-  // bot that has since been archived.
-  const authorBotId = (message: (typeof batch)[number]) =>
-    message.role === "bot" ? (message.botId ?? thread.botId!) : undefined;
-  const [botNames, people] = await Promise.all([
-    loadBotNames(deps.prisma, thread.spaceId, [
-      ...new Set(batch.flatMap((message) => authorBotId(message) ?? [])),
-    ]),
-    deps.prisma.spaceMember
-      .count({ where: { spaceId: thread.spaceId } })
-      .then((count) => loadSpacePeople(deps.prisma, count, thread.userId, batch)),
-  ]);
+  // (by name only in a chat several people are in) and Doodle by its name.
+  const people = await deps.prisma.threadMember
+    .count({ where: { threadId } })
+    .then((count) => loadChatPeople(deps.prisma, count, thread.userId, batch));
   const speaker = (message: (typeof batch)[number]) => {
-    const botId = authorBotId(message);
-    if (botId) return botNames.get(botId) ?? UNKNOWN_BOT_SPEAKER;
+    if (message.role === "bot") return DOODLE_NAME;
     return message.role === "user" ? personLineSpeaker(people, message) : message.role;
   };
   const transcriptParts = batch.map(
@@ -401,8 +391,7 @@ export async function compactHistory(
   // text keyed off the prompt, so summarizing with it would save nonsense to external memory and
   // advance the cursor past messages that are then lost from both stores. Skip instead.
   const deploymentFallback = resolveDeploymentModel();
-  // Departure hands a shared thread to the Space's owner, so this is always a member.
-  const { spaceId, botId } = thread;
+  const { spaceId } = thread;
   const userId = requesterId ?? thread.userId;
   const resolveModel = deps.resolveModel;
   const model = resolveModel
@@ -434,7 +423,7 @@ export async function compactHistory(
   let runtimeReportedFailure = false;
   for await (const event of deps.runtime.run(
     {
-      botId: thread.botId,
+      botId,
       threadId,
       runId: `compact:${threadId}:${fromSeqExclusive}`,
       usageOperationKind: "compaction",
@@ -442,7 +431,7 @@ export async function compactHistory(
         await recordUsage(deps.prisma, event, {
           spaceId: thread.spaceId,
           userId,
-          botId: thread.botId!,
+          botId,
           operationId: `compact:${threadId}:${fromSeqExclusive}`,
           operationKind: "compaction",
         });
@@ -472,7 +461,7 @@ export async function compactHistory(
       await recordUsage(deps.prisma, event, {
         spaceId: thread.spaceId,
         userId,
-        botId: thread.botId,
+        botId,
         operationId: `compact:${threadId}:${fromSeqExclusive}`,
         operationKind: "compaction",
       });
@@ -542,7 +531,7 @@ export async function compactHistory(
     traceId: `history-compact:${threadId}`,
     spaceId: thread.spaceId,
     userId,
-    botId: thread.botId,
+    botId,
     signal: new AbortController().signal,
   };
   if (semanticMemory) {
@@ -551,9 +540,8 @@ export async function compactHistory(
       const result = await semanticMemory.provider.save(
         {
           content: summary,
-          scope: "isolated",
-          botId: thread.botId,
-          source: { kind: "history", generation: previousGeneration },
+          scope: { kind: "chat", threadId },
+          source: { kind: "history", threadId, generation: previousGeneration },
         },
         memoryContext,
       );
@@ -583,7 +571,7 @@ export async function compactHistory(
   ) {
     try {
       const removed = await semanticMemory.provider.purgeHistory(
-        { botId: thread.botId, generations: [previousGeneration] },
+        { threadId, generations: [previousGeneration] },
         memoryContext,
       );
       if (!removed.ok) {

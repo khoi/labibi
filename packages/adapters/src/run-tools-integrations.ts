@@ -97,7 +97,7 @@ async function showConnectorApp(
         spaceId: run.spaceId,
         userId: run.userId,
         botId: bot.id,
-        groupId: thread.groupId ?? undefined,
+        threadId: thread.id,
         runId: run.id,
         server: app.server,
         html: redactSecrets(app.html, ctx.secrets),

@@ -20,13 +20,7 @@ import {
   redactBrowserResult,
 } from "./browser-tools.js";
 import { BACKGROUND_WORK_LAUNCH } from "./computer-idle.js";
-import {
-  displayBotWorkspacePath,
-  resolveBotUploadPath,
-  resolveBotWorkspaceCwd,
-  resolveBotWorkspacePath,
-  teamBotWorkspaceDirectory,
-} from "./computer-support.js";
+import { resolveWorkspacePath } from "./computer-support.js";
 import {
   advanceUnchangedVisualGuard,
   computerVisualActionKey,
@@ -137,7 +131,7 @@ function formatObservation(
 
 async function screenBlocked(ctx: RunContext): Promise<string | undefined> {
   if (ctx.computer.heldForTakeover) return DESKTOP_HELD_FOR_TAKEOVER_MESSAGE;
-  if (await getActiveTeachingSession(ctx.deps.prisma, ctx.run.spaceId, ctx.run.botId)) {
+  if (await getActiveTeachingSession(ctx.deps.prisma, ctx.run.userId)) {
     return "Teaching is in progress. Stop teaching before using the computer.";
   }
   return undefined;
@@ -180,7 +174,7 @@ function releaseUnpressedPayment(ctx: RunContext, call: ToolCall): Promise<void>
 }
 
 export async function pageBrowserTool(ctx: RunContext, call: ToolCall) {
-  const { deps, run, bot, context } = ctx;
+  const { deps, run, context } = ctx;
   const { name, args } = call;
   const blocked = await screenBlocked(ctx);
   if (blocked) return call.finish({ error: blocked });
@@ -189,12 +183,11 @@ export async function pageBrowserTool(ctx: RunContext, call: ToolCall) {
   const redactions = () => [...ctx.secrets];
   const desktopTools =
     ctx.computer.graphicalToolsAllowed && builtinOffered(ctx.tools.disabled, "computer_act");
-  // A file the page downloads goes to the bot's own Downloads folder. Its name is redacted like any
-  // page text, so one that echoes a secret is listed under another name than it has on disk.
+  // A file the page downloads goes to the computer's Downloads folder. Its name is redacted like
+  // any page text, so one that echoes a secret is listed under another name than it has on disk.
   const downloads = {
-    folder: resolveBotWorkspacePath(ctx.computer.mode, bot.id, "Downloads"),
-    botPath: (path: string) =>
-      displayBotWorkspacePath(ctx.computer.mode, bot.id, "Downloads", path),
+    folder: resolveWorkspacePath("Downloads"),
+    botPath: (path: string) => path,
   };
   const tool =
     name === "browser_navigate"
@@ -225,16 +218,6 @@ export async function pageBrowserTool(ctx: RunContext, call: ToolCall) {
             approvedPurchase: paying,
             countPurchase: () => countPayment(ctx, call),
             releasePurchase: () => releaseUnpressedPayment(ctx, call),
-            // Team bots may send only their own folder or shared/ off the computer; a
-            // private computer's helper already confines uploads to its home folder.
-            uploadRoots:
-              ctx.computer.mode === "team"
-                ? [teamBotWorkspaceDirectory(bot.id), "shared"]
-                : undefined,
-            resolveUploadPath: (path) =>
-              ctx.computer.mode === "team"
-                ? resolveBotUploadPath(ctx.computer.mode, bot.id, path)
-                : path,
             resolveSecretFill: async (step) => {
               const resolved = await resolveLoginFill({
                 prisma: deps.prisma,
@@ -371,18 +354,14 @@ export const computerTools: ToolHandlers = {
     }, call.finish);
   },
   async shell(ctx, call) {
-    const { deps, run, runId, bot, context } = ctx;
+    const { deps, run, runId, context } = ctx;
     const { name, args, executionId, observer } = call;
     const command = String(args.command ?? args.cmd ?? "");
     const refusal = protectedComputerLifecycleRefusal(command);
     if (desktopGuardApplies(ctx.computer) && refusal) {
       return call.finish({ error: desktopProtectionGuardMessage(refusal) });
     }
-    const cwd = resolveBotWorkspaceCwd(
-      ctx.computer.mode,
-      bot.id,
-      args.cwd ? String(args.cwd) : undefined,
-    );
+    const cwd = args.cwd ? String(args.cwd) : undefined;
     // Loaded per command so a command variable added, replaced, or removed mid-run
     // applies to the next command. Registered for redaction before anything runs.
     const commandEnvironment = await shellCommandEnvironment({
@@ -456,7 +435,7 @@ export const computerTools: ToolHandlers = {
                   "rakazo-background-launch",
                   // Marker id must match sleepComputerIfIdle's probe (DB id), not ComputerRef.id
                   // (providerRef via toComputerRef). Scope launches to this run for cancel teardown.
-                  ctx.computer.stored.id,
+                  ctx.computer.record().id,
                   runId,
                   randomUUID(),
                   command,
@@ -523,7 +502,7 @@ export const computerTools: ToolHandlers = {
     }
   },
   async open_path(ctx, call) {
-    const { deps, bot, context } = ctx;
+    const { deps, context } = ctx;
     const { name, args } = call;
     const blocked = await screenBlocked(ctx);
     if (blocked) return call.finish({ error: blocked });
@@ -539,7 +518,7 @@ export const computerTools: ToolHandlers = {
                 kind: "open",
                 path: /^https?:\/\//i.test(requestedPath)
                   ? requestedPath
-                  : resolveBotWorkspacePath(ctx.computer.mode, bot.id, requestedPath),
+                  : resolveWorkspacePath(requestedPath),
               },
             ],
             observe: true,

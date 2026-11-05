@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
 import path from "node:path";
 import type { ComputerAction, ComputerObservation, ComputerRef } from "@labradoodle/adapter-kit";
-import type { ComputerMode } from "@labradoodle/contracts";
 
 export function toComputerRef(computer: {
   homeKey: string;
@@ -76,83 +75,14 @@ export function workspacePath(root: string, relative: string): string {
   return normalized ? path.posix.join(root, normalized) : root;
 }
 
-export function teamBotWorkspaceDirectory(botId: string): string {
-  return path.posix.join("bots", normalizeWorkspacePath(botId));
+/** A path a person or Doodle gives, as stored on the computer: the home is the root. */
+export function resolveWorkspacePath(rawPath: string): string {
+  return expandHomePrefix(rawPath);
 }
 
-export function resolveBotWorkspacePath(
-  scope: ComputerMode,
-  botId: string,
-  rawPath: string,
-): string {
-  const requestedPath = expandHomePrefix(rawPath);
-  if (scope !== "team") return requestedPath;
-  const explicitRootPath = stripVirtualWorkspaceRoot(requestedPath);
-  const normalized = normalizeWorkspacePath(explicitRootPath ?? requestedPath);
-  if (explicitRootPath !== null || isTeamRootPath(normalized)) return normalized;
-  return path.posix.join(teamBotWorkspaceDirectory(botId), normalized);
-}
-
-export function resolveBotWorkspaceCwd(
-  scope: ComputerMode,
-  botId: string,
-  requestedCwd: string | undefined,
-): string | undefined {
-  if (scope !== "team") return requestedCwd;
-  if (!requestedCwd || requestedCwd === ".") return teamBotWorkspaceDirectory(botId);
-  if (path.posix.isAbsolute(requestedCwd) || path.win32.isAbsolute(requestedCwd))
-    return requestedCwd;
-  return resolveBotWorkspacePath(scope, botId, requestedCwd);
-}
-
-/** Paths a user may write while controlling this bot: its home, or shared/. */
-export function resolveBotUploadPath(
-  scope: ComputerMode,
-  botId: string,
-  requestedPath: string,
-): string {
-  const stored = resolveBotWorkspacePath(scope, botId, requestedPath);
-  if (scope !== "team") return normalizeWorkspacePath(stored);
-  const normalized = normalizeWorkspacePath(stored);
-  const botDirectory = teamBotWorkspaceDirectory(botId);
-  if (
-    normalized === botDirectory ||
-    normalized.startsWith(`${botDirectory}/`) ||
-    normalized === "shared" ||
-    normalized.startsWith("shared/")
-  ) {
-    return normalized;
-  }
-  throw new Error("Path escapes the bot workspace");
-}
-
-export function displayBotWorkspacePath(
-  scope: ComputerMode,
-  botId: string,
-  requestedPath: string,
-  storedPath: string,
-): string {
-  if (scope !== "team" || !isBotRelativeRequest(requestedPath)) return storedPath;
-  const normalized = normalizeWorkspacePath(storedPath);
-  const botDirectory = teamBotWorkspaceDirectory(botId);
-  if (normalized === botDirectory) return "";
-  return normalized.startsWith(`${botDirectory}/`)
-    ? normalized.slice(botDirectory.length + 1)
-    : normalized;
-}
-
-function isBotRelativeRequest(value: string): boolean {
-  if (stripVirtualWorkspaceRoot(expandHomePrefix(value)) !== null) return false;
-  return !isTeamRootPath(normalizeWorkspacePath(value));
-}
-
-function isTeamRootPath(value: string): boolean {
-  return (
-    value === "shared" ||
-    value.startsWith("shared/") ||
-    value === "bots" ||
-    value.startsWith("bots/")
-  );
+/** Paths a person may write to while controlling their computer: anywhere in its home. */
+export function resolveUploadPath(requestedPath: string): string {
+  return normalizeWorkspacePath(expandHomePrefix(requestedPath));
 }
 
 // A leading ~ or /home/rakazo means the workspace root, the same as a leading /.
@@ -161,12 +91,6 @@ function expandHomePrefix(value: string): string {
     /^(?:~|[\\/]home[\\/]rakazo)([\\/]|$)/,
     (_, separator: string) => separator || "/",
   );
-}
-
-function stripVirtualWorkspaceRoot(value: string): string | null {
-  const portable = value.replace(/\\/g, "/");
-  if (portable === "/") return "";
-  return portable.startsWith("/") ? portable.slice(1) : null;
 }
 
 export { shellQuote } from "@labradoodle/core/node/desktop-runtime";

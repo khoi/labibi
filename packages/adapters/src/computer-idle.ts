@@ -15,14 +15,14 @@ import {
 } from "@labradoodle/adapter-kit";
 import { COMPUTER_ALLOWANCE_USED_ERROR } from "@labradoodle/contracts";
 import { QUEUE_HOLDING_RUN_STATUSES, withAbort } from "@labradoodle/core";
-import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
+import type { PrismaClient, RunTeardownTarget, ThreadEvents } from "@labradoodle/db";
 import {
   appendEventInTransaction,
   clearEndedExecutionRunBinding,
-  createGroupRepos,
   createThreadMessageInTransaction,
   recordComputerRunEnd,
   recordComputerRunSeen,
+  releaseCancelledRunLeases,
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { activeCodingAgent } from "./coding-agent-activity.js";
@@ -249,26 +249,19 @@ export async function cancelComputerRunWork(
   }
 }
 
-/** Stop a group's cancelled runs on their computers, then expire their leases. */
-export async function stopCancelledGroupRuns(
+/** Stop cancelled runs' work on the computers they held, then expire their leases. */
+export async function stopCancelledRuns(
   deps: {
     prisma: PrismaClient;
     jobs: Pick<JobPublisher, "cancel">;
     sandbox: Pick<SandboxProvider, "execute" | "cancelRunWork" | "releaseScreen">;
   },
   actor: { spaceId: string; userId: string },
-  cancelled: {
-    cancelledRunIds: string[];
-    computers: Array<
-      Parameters<typeof toComputerRef>[0] & {
-        id: string;
-        botId: string;
-        runId: string;
-        fence: number;
-      }
-    >;
-  },
+  cancelled: { cancelledRunIds: string[]; computers: RunTeardownTarget[] },
 ): Promise<void> {
+  const doodle = cancelled.computers.length
+    ? await deps.prisma.bot.findUnique({ where: { spaceId: actor.spaceId }, select: { id: true } })
+    : null;
   await Promise.all(
     cancelled.cancelledRunIds.map((runId) =>
       deps.jobs.cancel(runJobKey(runId)).catch(() => undefined),
@@ -282,7 +275,7 @@ export async function stopCancelledGroupRuns(
         traceId: "stop",
         spaceId: actor.spaceId,
         userId: actor.userId,
-        botId: computer.botId,
+        ...(doodle ? { botId: doodle.id } : {}),
         runId: computer.runId,
         screenLeaseId: screenLeaseIdForRun(computer, computer.runId),
         cancelRunWork: true,
@@ -295,7 +288,7 @@ export async function stopCancelledGroupRuns(
   );
   // Expire the leases only after teardown: while they were live, no other run could claim
   // these screens.
-  await createGroupRepos(deps.prisma).releaseArchivedRunLeases(cancelled.cancelledRunIds);
+  await releaseCancelledRunLeases(deps.prisma, cancelled.cancelledRunIds);
 }
 
 export const BACKGROUND_WORK_PROBE = [
@@ -435,7 +428,7 @@ export async function sleepComputerIfIdle(
   // Native computers have no provisioned runtime to suspend; Electron owns their lifetime.
   if (computer.kind === "desktop") return;
 
-  if (computer.controlBotId && computer.controlLeaseId && !hasActiveComputerControl(computer)) {
+  if (computer.controlLeaseId && !hasActiveComputerControl(computer)) {
     try {
       await expireComputerControl(deps, computer.id, computer.controlLeaseId);
     } catch (error) {
@@ -461,7 +454,6 @@ export async function sleepComputerIfIdle(
     traceId: "computer.sleep",
     spaceId: computer.spaceId,
     userId: computer.userId,
-    botId: computer.controlBotId ?? undefined,
     signal: new AbortController().signal,
   };
   // A status read that never answers counts as not seen rather than holding up the check.
@@ -594,7 +586,6 @@ export async function sleepComputerIfIdle(
           controlLeaseId: null,
           controlUserId: null,
           controlLeaseExpiresAt: null,
-          controlBotId: null,
           controlRunId: null,
         },
       });
@@ -699,7 +690,6 @@ export async function sleepComputerIfIdle(
       controlLeaseId: null,
       controlUserId: null,
       controlLeaseExpiresAt: null,
-      controlBotId: null,
       controlRunId: null,
     },
   });
@@ -717,7 +707,6 @@ export async function sleepComputerIfIdle(
     reason,
     activeMs: computer.runningSince ? Date.now() - computer.runningSince.getTime() : undefined,
   });
-  await announceSuspended(deps, computer);
   if (allowanceUsed)
     await postComputerNote(
       deps,
@@ -760,7 +749,6 @@ async function suspendStoppedComputer(
       controlLeaseId: null,
       controlUserId: null,
       controlLeaseExpiresAt: null,
-      controlBotId: null,
       controlRunId: null,
     },
   });
@@ -771,7 +759,6 @@ async function suspendStoppedComputer(
     provider: computer.kind,
     reason: "provider_stopped",
   });
-  await announceSuspended(deps, computer);
   return true;
 }
 
@@ -781,57 +768,29 @@ async function suspendStoppedComputer(
  */
 async function changedSinceSave(
   prisma: PrismaClient,
-  computer: { id: string; spaceId: string; controlHolder: string },
+  computer: { id: string; spaceId: string; userId: string; controlHolder: string },
   savedAt: Date,
 ): Promise<boolean> {
   if (computer.controlHolder === "user") return true;
-  const bots = await prisma.bot.findMany({
-    where: { computerId: computer.id },
+  // A computer is its person's, so only their runs in this workspace touch it; a takeover is
+  // always one of those runs.
+  const run = await prisma.run.findFirst({
+    where: { spaceId: computer.spaceId, userId: computer.userId, updatedAt: { gt: savedAt } },
     select: { id: true },
   });
-  const botIds = bots.map((bot) => bot.id);
-  const [run, takeover] = await Promise.all([
-    prisma.run.findFirst({
-      where: { botId: { in: botIds }, updatedAt: { gt: savedAt } },
-      select: { id: true },
-    }),
-    prisma.event.findFirst({
-      where: {
-        spaceId: computer.spaceId,
-        createdAt: { gt: savedAt },
-        type: "computer.takeover.granted",
-        botId: { in: botIds },
-      },
-      select: { id: true },
-    }),
-  ]);
-  return Boolean(run || takeover);
-}
-
-async function announceSuspended(
-  deps: { prisma: PrismaClient; events: ThreadEvents },
-  computer: { id: string; spaceId: string },
-): Promise<void> {
-  const bots = await deps.prisma.bot.findMany({
-    where: { computerId: computer.id },
-    select: { id: true, thread: { select: { id: true } } },
-  });
-  for (const bot of bots) {
-    if (!bot.thread) continue;
-    await deps.events.append({
-      spaceId: computer.spaceId,
-      threadId: bot.thread.id,
-      botId: bot.id,
-      type: "computer.status",
-      payload: { status: "suspended" },
-    });
-  }
+  return Boolean(run);
 }
 
 /** System notes reach users and the bot through the existing thread history. */
 async function announceUnsavedHome(
   deps: { prisma: PrismaClient; events: ThreadEvents },
-  computer: { id: string; spaceId: string; homeRevisionAt: Date | null; runningSince: Date | null },
+  computer: {
+    id: string;
+    spaceId: string;
+    userId: string;
+    homeRevisionAt: Date | null;
+    runningSince: Date | null;
+  },
   error: WorkspaceTooLargeError,
 ): Promise<void> {
   // A successful save or a new runtime starts a new episode. The unique message nonce also
@@ -844,21 +803,24 @@ async function announceUnsavedHome(
   );
 }
 
-/** Posts a system note once per `clientNonce` to the thread of every bot on the computer. */
+/**
+ * Posts a system note once per `clientNonce` to the chat its person last used Doodle in, so they
+ * and Doodle read it there.
+ */
 async function postComputerNote(
   deps: { prisma: PrismaClient; events: ThreadEvents },
-  computer: { id: string; spaceId: string },
+  computer: { id: string; spaceId: string; userId: string },
   clientNonce: string,
   text: string,
 ): Promise<void> {
   const blocks = [{ kind: "meta" as const, text }];
-  const bots = await deps.prisma.bot.findMany({
-    where: { computerId: computer.id },
-    select: { id: true, thread: { select: { id: true } } },
+  const latest = await deps.prisma.run.findFirst({
+    where: { spaceId: computer.spaceId, userId: computer.userId },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    select: { botId: true, threadId: true },
   });
-  for (const bot of bots) {
-    if (!bot.thread) continue;
-    const threadId = bot.thread.id;
+  for (const bot of latest ? [{ id: latest.botId, threadId: latest.threadId }] : []) {
+    const threadId = bot.threadId;
     try {
       const seq = await deps.prisma.$transaction(async (tx) => {
         const existing = await tx.message.findUnique({
@@ -995,14 +957,12 @@ function loadComputer(prisma: PrismaClient, computerId: string) {
       homeKey: true,
       providerRef: true,
       kind: true,
-      scope: true,
       state: true,
       spaceId: true,
       userId: true,
       controlHolder: true,
       controlLeaseId: true,
       controlLeaseExpiresAt: true,
-      controlBotId: true,
       executionRunId: true,
       runningSince: true,
       homeRevisionAt: true,
@@ -1011,15 +971,21 @@ function loadComputer(prisma: PrismaClient, computerId: string) {
   });
 }
 
-function findActiveRun(
+/** A run uses its person's computer only while it holds the computer's lease. */
+async function findActiveRun(
   prisma: PrismaClient,
   computerId: string,
   statuses: readonly string[],
   liveLeaseOnly = false,
 ) {
+  const leases = await prisma.computerExecutionLease.findMany({
+    where: { computerId, expiresAt: { gt: new Date(Date.now()) } },
+    select: { runId: true },
+  });
+  if (leases.length === 0) return null;
   return prisma.run.findFirst({
     where: {
-      bot: { computerId },
+      id: { in: leases.map((lease) => lease.runId) },
       status: { in: statuses as (typeof QUEUE_HOLDING_RUN_STATUSES)[number][] },
       ...(liveLeaseOnly ? { leaseExpiresAt: { gt: new Date(Date.now()) } } : {}),
     },
@@ -1056,10 +1022,16 @@ async function noBlockingExecutionLease(prisma: PrismaClient, computerId: string
 
 /** When the newest takeover request of a run still waiting on this computer stops holding it. */
 async function takeoverGraceEndsAt(prisma: PrismaClient, computerId: string): Promise<Date | null> {
-  const waiting = await prisma.run.findMany({
-    where: { bot: { computerId }, status: "waiting_takeover" },
-    select: { id: true },
+  const leases = await prisma.computerExecutionLease.findMany({
+    where: { computerId, expiresAt: { gt: new Date() } },
+    select: { runId: true },
   });
+  const waiting = leases.length
+    ? await prisma.run.findMany({
+        where: { id: { in: leases.map((lease) => lease.runId) }, status: "waiting_takeover" },
+        select: { id: true },
+      })
+    : [];
   if (waiting.length === 0) return null;
   const requested = await prisma.event.findFirst({
     where: {

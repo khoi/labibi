@@ -9,7 +9,6 @@ export * from "./aws-kms-key-provider.js";
 export * from "./background-job-handlers.js";
 export * from "./billing-emulator.js";
 export * from "./boat-sandbox.js";
-export * from "./bot-lifecycle.js";
 export {
   defaultVaultItemTitle,
   forgetBotSecret,
@@ -126,6 +125,7 @@ export * from "./page-share-secrets.js";
 export * from "./parallel-web.js";
 export * from "./payment-wallet-factory.js";
 export * from "./payment-wallets.js";
+export * from "./person-computer.js";
 export * from "./pi-catalog-availability.js";
 export * from "./pi-codex-catalog.js";
 export * from "./pi-credentials.js";

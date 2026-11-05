@@ -1,7 +1,7 @@
 import type { PrismaClient } from "@labradoodle/db";
 import { loadMessageAuthors } from "@labradoodle/db";
 
-/** What the model reads for the person of a personal space: never their real name. */
+/** What the model reads for the person of a chat with no one else: never their real name. */
 export const USER_SPEAKER = "User";
 /** Label for a bot whose record is gone, so its messages are still not mistaken for the receiver's own. */
 export const UNKNOWN_BOT_SPEAKER = "another bot";
@@ -36,10 +36,10 @@ function labelText(name: string): string {
 }
 
 /**
- * Labels for the people of a space several people share, by user id: the runner and every author
- * in `rows`, former members included. Null in a personal space, whose prompts never name anyone.
+ * Labels for the people of a chat several people are in, by user id: the runner and every author
+ * in `rows`, former members included. Null in a chat with one person, whose prompts never name anyone.
  */
-export async function loadSpacePeople(
+export async function loadChatPeople(
   prisma: Pick<PrismaClient, "user">,
   memberCount: number,
   runnerUserId: string,
@@ -53,7 +53,7 @@ export async function loadSpacePeople(
   return new Map([...authors].map(([id, author]) => [id, personSpeakerName(author.name)]));
 }
 
-/** The label of a person's line: their name in a shared space, otherwise "User". */
+/** The label of a person's line: their name in a chat with several people, otherwise "User". */
 export function personSpeaker(
   people: ReadonlyMap<string, string> | null | undefined,
   userId: string | null | undefined,
@@ -70,9 +70,8 @@ export function neutralizeSpeakerLabels(text: string): string {
 }
 
 /**
- * Who is speaking in a group thread or a space several people share, from the receiving bot's
- * side. A direct chat in a personal space has no speakers: the bot and the user are the only two
- * parties there, so roles say it all.
+ * Who is speaking in a chat several people are in, from Doodle's side. A chat with one person has
+ * no speakers: Doodle and the person are the only two parties there, so roles say it all.
  */
 export interface ThreadSpeakers {
   /** The receiving bot; its own messages stay unlabelled assistant turns. */
@@ -90,39 +89,12 @@ type SpeakerRow = {
   blocks?: unknown;
 };
 
-/** Names for bot ids in the space, deleted bots simply absent. No archived filter on purpose. */
-export async function loadBotNames(
-  prisma: Pick<PrismaClient, "bot">,
-  spaceId: string,
-  ids: string[],
-): Promise<Map<string, string>> {
-  if (ids.length === 0) return new Map();
-  const bots = await prisma.bot.findMany({
-    where: { id: { in: ids }, spaceId },
-    select: { id: true, name: true },
-  });
-  return new Map(bots.map((bot) => [bot.id, speakerName(bot.name)]));
-}
-
-/** Null for a direct chat in a personal space, which needs neither labels nor a lookup. */
-export async function loadThreadSpeakers(
-  prisma: Pick<PrismaClient, "bot">,
-  thread: { groupId?: string | null },
-  run: { spaceId: string; bot: { id: string } },
-  rows: SpeakerRow[],
-  people?: ReadonlyMap<string, string> | null,
-): Promise<ThreadSpeakers | null> {
-  if (!thread.groupId && !people) return null;
-  const others = new Set(
-    rows.flatMap((row) =>
-      row.role === "bot" && row.botId && row.botId !== run.bot.id ? [row.botId] : [],
-    ),
-  );
-  return {
-    botId: run.bot.id,
-    names: await loadBotNames(prisma, run.spaceId, [...others]),
-    ...(people ? { people } : {}),
-  };
+/** Null for a chat with one person, which needs no labels. */
+export function chatSpeakers(
+  botId: string,
+  people: ReadonlyMap<string, string> | null,
+): ThreadSpeakers | null {
+  return people ? { botId, names: new Map(), people } : null;
 }
 
 /** The label of a person's line. */

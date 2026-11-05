@@ -34,11 +34,7 @@ export async function taskCatalogFromTool(deps: TaskCatalogToolDeps, input: Task
       ...(input.threadId ? { threadId: input.threadId } : {}),
     }),
     deps.prisma.taughtSkill.findMany({
-      where: {
-        spaceId: input.spaceId,
-        botId: input.botId,
-        status: "saved",
-      },
+      where: { userId: input.userId, status: "saved" },
       orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
       select: { id: true, name: true, goal: true, status: true },
     }),

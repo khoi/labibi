@@ -42,18 +42,17 @@ const USER_COMPUTER_UNAVAILABLE =
   "The user's computer is not connected. Ask them to open the Labradoodle desktop app.";
 
 /**
- * Whose own computer this run may reach: the person whose message started it, when they own the
- * bot. Routines, webhooks, other bots and other people's messages reach no one's.
+ * Whose own computer this run may reach: the person whose message started it. Routines and
+ * webhooks reach no one's.
  */
 export function userComputerOwner(input: {
   trigger: string;
   sourceRole: string | undefined;
   runUserId: string;
-  botUserId: string;
 }): string | undefined {
   if (input.trigger !== "user" && input.trigger !== "follow_up") return undefined;
   if (input.sourceRole !== "user") return undefined;
-  return input.runUserId === input.botUserId ? input.runUserId : undefined;
+  return input.runUserId;
 }
 
 /**

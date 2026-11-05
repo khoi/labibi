@@ -13,8 +13,8 @@ import {
   connectorKindFromToolName,
   connectorReadRequiresApproval,
   connectorToolRequiresApproval,
+  DOODLE_NAME,
   decisiveActionApprovalRules,
-  displayName,
   humanizeToolName,
   newSiteOutcome,
   outboundSiteGate,
@@ -624,7 +624,7 @@ export async function auditToolCall(
   metadata: AuditEventInput["metadata"],
   recorded: Pick<AuditEventInput, "action" | "actor"> = {
     action: "tool.call",
-    actor: { type: "bot", id: ctx.bot.id, label: ctx.bot.name },
+    actor: { type: "bot", id: ctx.bot.id, label: DOODLE_NAME },
   },
 ): Promise<void> {
   await recordAuditEvent({
@@ -757,9 +757,8 @@ async function showApprovalCard(ctx: RunContext, call: ToolCall, card: ApprovalC
   }
   await notifyRun(deps, run, {
     kind: "help",
-    title: `${displayName(bot.name, "Bot")} needs approval`,
+    title: `${DOODLE_NAME} needs approval`,
     body: `Review before ${name}`,
-    botId: bot.id,
     threadId: thread.id,
   });
   return pauseForApproval(ctx);
@@ -778,7 +777,7 @@ async function reviewToolCall(
   const { injectedReview, checker, reviewSettings, memberChecker } = review;
   if (!injectedReview && !checker && !reviewSettings?.backups.length) return;
   try {
-    const botDescription = redactSecrets(bot.name, ctx.secrets);
+    const botDescription = DOODLE_NAME;
     // A new site is judged on the full URL and the owner's own words only: the task
     // prompt of a webhook or bot-started run carries text someone else wrote.
     const reviewRequest: AutoReviewRequest =
