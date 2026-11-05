@@ -76,6 +76,7 @@ const invalidEntry = () => new AccountImportError("The export contains an unexpe
 const outOfOrder = () => new AccountImportError("The export's files are out of order.");
 const missingRecord = () => new AccountImportError("The export refers to a missing record.");
 const tooLarge = () => new AccountImportError("The export is too large.", 413);
+const RETIRED_RECORD_TYPES = new Set<unknown>(["board", "ticket", "ticket_comment"]);
 
 export type AccountImportDeps = SpaceDeletionDeps & { maxArtifactBytes: number };
 
@@ -269,8 +270,6 @@ class SpaceImport {
   readonly homes = new Map<string, string>();
   readonly receivedArtifacts = new Set<string>();
   readonly receivedHomeFiles = new Set<string>();
-  boardId: string | null = null;
-  maxTicketNumber = 0;
   recordsDone = false;
   executablesDone = false;
   messages: WriteStream | null = null;
@@ -488,6 +487,7 @@ class AccountImporter implements ArchiveSink {
     } catch {
       throw unreadable();
     }
+    if (RETIRED_RECORD_TYPES.has((parsed as { type?: unknown } | null)?.type)) return;
     const record = AccountExportRecordSchema.safeParse(parsed);
     if (!record.success) throw unreadable();
     await this.tenant(() => this.importRecord(record.data));
@@ -514,11 +514,6 @@ class AccountImporter implements ArchiveSink {
         if (parentBotId)
           await prisma.bot.update({ where: { id: link.botId }, data: { parentBotId } });
       }
-      if (space.boardId)
-        await prisma.board.update({
-          where: { id: space.boardId },
-          data: { nextNumber: space.maxTicketNumber + 1 },
-        });
     });
     space.recordsDone = true;
   }
@@ -749,56 +744,6 @@ class AccountImporter implements ArchiveSink {
           },
         });
         return;
-      case "board":
-        if (space.boardId) throw unreadable();
-        space.boardId = newId();
-        await prisma.board.create({
-          data: {
-            id: space.boardId,
-            spaceId,
-            name: record.name,
-            ticketPrefix: record.ticketPrefix,
-          },
-        });
-        return;
-      case "ticket": {
-        if (!space.boardId) throw missingRecord();
-        space.maxTicketNumber = Math.max(space.maxTicketNumber, record.number);
-        await prisma.ticket.create({
-          data: {
-            id: newId(),
-            boardId: space.boardId,
-            spaceId,
-            number: record.number,
-            title: record.title,
-            description: record.description,
-            status: record.status,
-            priority: record.priority,
-            assigneeBotId: space.optional(record.assigneeBotId),
-            createdByBotId: space.optional(record.createdByBotId),
-            createdByUserId: record.createdByExporter ? userId : null,
-            createdAt: new Date(record.createdAt),
-            updatedAt: new Date(record.updatedAt),
-            completedAt: date(record.completedAt),
-          },
-        });
-        return;
-      }
-      case "ticket_comment": {
-        const ticketId = space.mapped(record.ticketId);
-        await prisma.ticketComment.create({
-          data: {
-            id: newId(),
-            ticketId,
-            spaceId,
-            authorBotId: space.optional(record.authorBotId),
-            authorUserId: record.authoredByExporter ? userId : null,
-            body: record.body,
-            createdAt: new Date(record.createdAt),
-          },
-        });
-        return;
-      }
     }
   }
 

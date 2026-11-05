@@ -118,15 +118,6 @@ it("keeps server-projected subagent names localizable at the client boundary", (
   });
 });
 
-it("guards newly posted board comments", () => {
-  expect(
-    displayIdentityResult(
-      ["tickets", "comment"],
-      { authorName: "__TestTok1__", authorBotId: null },
-      labels,
-    ),
-  ).toMatchObject({ authorName: "Участник" });
-});
 it("guards message search titles while preserving link URLs", () => {
   const result = displayIdentityResult(
     ["search", "query"],

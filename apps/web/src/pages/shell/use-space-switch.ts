@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { discardPrimedBootstrap, primeSpaceBootstrap } from "../../lib/bootstrap";
 import { initialBootstrapTarget } from "../../lib/bootstrap-target";
-import { getSnapshot as getCallSnapshot } from "../../lib/call-session";
 import { leaveOrganization } from "../../lib/organizations";
 import { queryClient, spaceSeedKey } from "../../lib/query";
 import { selectedSpaceId, selectSpace } from "../../lib/rpc";
@@ -67,9 +66,9 @@ export function useOpenSpaceChat({
           : `${path}${searchString(withShellOverlay(new URLSearchParams(), readShellOverlay(new URLSearchParams(window.location.search))))}`;
       // Another space is an auth boundary: its bootstrap is loaded first, under that
       // space's header, then the shell remounts so none of this space's state survives.
-      // A call in progress, or a page outside the shell, still reloads.
+      // A page outside the shell still reloads.
       const target = initialBootstrapTarget(path, false);
-      if (!target || getCallSnapshot()) {
+      if (!target) {
         reload();
         return;
       }
@@ -81,7 +80,6 @@ export function useOpenSpaceChat({
             startedIndex === window.history.state?.idx,
           startedAt,
           window.location.pathname,
-          Boolean(getCallSnapshot()),
         );
       const current = () => decision() !== "abandon";
       // A space visited before opens at once with what it showed then, refreshing behind it.
@@ -89,15 +87,8 @@ export function useOpenSpaceChat({
       const primed = primeSpaceBootstrap(spaceId, target.botId, cached);
       const remount = () =>
         remountShellForSpace(() => {
-          const action = decision();
-          if (action !== "commit") {
+          if (!current()) {
             discardPrimedBootstrap(primed);
-            if (action === "reload") {
-              // Leave the view-transition update before starting a full navigation.
-              window.setTimeout(() => {
-                if (current()) reload();
-              }, 0);
-            }
             return false;
           }
           if (!selectSpace(spaceId)) {
@@ -118,12 +109,6 @@ export function useOpenSpaceChat({
         () => {
           if (!current()) {
             discardPrimedBootstrap(primed);
-            return;
-          }
-          // A call started while the bootstrap loaded belongs to this space.
-          if (getCallSnapshot()) {
-            discardPrimedBootstrap(primed);
-            reload();
             return;
           }
           remount();

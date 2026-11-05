@@ -1,4 +1,3 @@
-import type { ThreadItem } from "@labradoodle/core";
 import { threadWindowMessages } from "@labradoodle/core";
 import type { ReactElement, ReactNode } from "react";
 import { useMemo } from "react";
@@ -19,8 +18,8 @@ const styles = StyleSheet.create({
 });
 const messageListPosition = { minIndexForVisible: 0 };
 const liveMessageListPosition = { ...messageListPosition, autoscrollToTopThreshold: 80 };
-function threadItemKey(item: ThreadItem<MobileMessage>) {
-  return item.kind === "voiceChat" ? item.key : item.message.id;
+function threadItemKey(item: MobileMessage) {
+  return item.id;
 }
 
 /**
@@ -54,8 +53,8 @@ export function ThreadMessageList({
   /** Message inset. Applied to the content, never the scroll view frame. */
   columnPadding: ThreadColumnPadding;
   visibleMessages: MobileMessage[];
-  liveItems: ThreadItem<MobileMessage>[];
-  renderItem: ListRenderItem<ThreadItem<MobileMessage>>;
+  liveItems: MobileMessage[];
+  renderItem: ListRenderItem<MobileMessage>;
   renderMessageRow: (
     message: MobileMessage,
     options?: { enableJump?: boolean; index?: number },

@@ -105,7 +105,6 @@ describe("archived thread read authorization", () => {
     ],
     ["threads/clear", { botId: "bot-1" }],
     ["threads/stop", { botId: "bot-1" }],
-    ["threads/followUp", { botId: "bot-1", text: "Cannot run" }],
     ["threads/markRead", { botId: "bot-1" }],
     ["computer/boot", { botId: "bot-1" }],
   ])("%s still rejects an archived bot", async (proc, input) => {

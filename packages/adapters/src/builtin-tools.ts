@@ -17,11 +17,6 @@ import {
   SecretAskPurpose,
   SecretHttpRequest,
   ThinkingLevelSchema,
-  TICKET_COMMENT_MAX_LENGTH,
-  TICKET_DESCRIPTION_MAX_LENGTH,
-  TICKET_PRIORITIES,
-  TICKET_STATUSES,
-  TICKET_TITLE_MAX_LENGTH,
 } from "@labradoodle/contracts";
 import { z } from "zod";
 import { allowPrivateHttpSecretOrigins } from "./bot-secrets.js";
@@ -1180,95 +1175,6 @@ export const builtinAgentTools: ConnectorTool[] = [
     },
   },
   {
-    name: "board_tickets",
-    description: "List tickets. Continue with nextCursor when returned.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        status: { type: "string", enum: TICKET_STATUSES, description: "Filter by status." },
-        ownerBotId: { type: "string", description: "Filter by owner bot id." },
-        cursor: {
-          type: "string",
-          description: "nextCursor from the previous page. Omit for the first page.",
-        },
-      },
-    },
-    readOnly: true,
-  },
-  {
-    name: "ticket_get",
-    description: "Read a ticket by reference or id, with comments.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        ref: { type: "string", description: "Ticket reference such as RAK-42, or the ticket id." },
-      },
-      required: ["ref"],
-    },
-    readOnly: true,
-  },
-  {
-    name: "ticket_create",
-    description: "Create a ticket. Owner defaults to you.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        title: {
-          type: "string",
-          maxLength: TICKET_TITLE_MAX_LENGTH,
-          description: "Short ticket title.",
-        },
-        description: {
-          type: "string",
-          maxLength: TICKET_DESCRIPTION_MAX_LENGTH,
-          description: "Optional detail.",
-        },
-        priority: {
-          type: "string",
-          enum: TICKET_PRIORITIES,
-          description: "Priority. Defaults to normal.",
-        },
-        ownerBotId: {
-          type: "string",
-          description: "Bot in this space to own it. Defaults to you.",
-        },
-      },
-      required: ["title"],
-    },
-  },
-  {
-    name: "ticket_update",
-    description: "Update a ticket, including status and owner.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        id: { type: "string", description: "Ticket id." },
-        title: { type: "string", maxLength: TICKET_TITLE_MAX_LENGTH },
-        description: { type: "string", maxLength: TICKET_DESCRIPTION_MAX_LENGTH },
-        priority: { type: "string", enum: TICKET_PRIORITIES },
-        status: { type: "string", enum: TICKET_STATUSES },
-        ownerBotId: { type: "string" },
-      },
-      required: ["id"],
-    },
-  },
-  {
-    name: "ticket_comment",
-    description: "Add a ticket comment.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        id: { type: "string", description: "Ticket id." },
-        body: {
-          type: "string",
-          maxLength: TICKET_COMMENT_MAX_LENGTH,
-          description: "Comment text.",
-        },
-      },
-      required: ["id", "body"],
-    },
-  },
-  {
     name: "schedule_create",
     description:
       'Create a reminder or recurring job for this bot. Use for "remind me in 10 minutes" or "every morning send a joke". Repeats: cron or every/unit (min 1 minute), optionally from startAt. One-shot: runAt, delayMinutes, or delaySeconds. A repeating job carries out the user\'s lasting request each time, not a copy of what was decided today.',
@@ -1309,46 +1215,6 @@ export const builtinAgentTools: ConnectorTool[] = [
         routineId: { type: "string" },
         name: { type: "string" },
       },
-    },
-  },
-  {
-    name: "end_call",
-    description:
-      "End the current voice call. Call this when the user asks to hang up or end the call, or the conversation is clearly finished. Your farewell is spoken as the call ends, so do not also say goodbye in text; finish any remaining work in chat afterwards.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        title: {
-          type: "string",
-          description: 'What the call was about, 2-5 words, e.g. "AI stack flow". Max 40 chars.',
-        },
-        farewell: {
-          type: "string",
-          description: "One short sentence spoken as you hang up. Max 160 chars.",
-        },
-      },
-      required: ["title", "farewell"],
-    },
-  },
-  {
-    name: "call_user",
-    description:
-      "Ring the user's devices for a voice call. Use when the user asked you to call them, or when you have reminded them about the same thing three times and they have not replied. Your opening is spoken the moment they answer, then the conversation continues on the call. If they miss or decline it, the chat shows a missed call. Never call for routine updates a message can carry.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        reason: {
-          type: "string",
-          description:
-            'Why you are calling, shown on the incoming call, e.g. "3 reminders without a reply: send the report". Max 120 chars.',
-        },
-        opening: {
-          type: "string",
-          description:
-            "The first thing you say when they answer, one or two short spoken sentences in the user's language. Max 240 chars.",
-        },
-      },
-      required: ["reason", "opening"],
     },
   },
   {

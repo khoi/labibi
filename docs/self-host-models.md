@@ -183,8 +183,7 @@ posts the finished video to the chat that asked for it, once; the bot then gets 
 turn to follow up. A video that fails, or is still unfinished after an hour, is
 marked failed and the bot gets a turn to say so. The bot can also call the tool
 again with `jobId` to check progress. Use the existing per-bot tool switches and action approval rules to
-control access. Both tools require approval by default. Ticket board runs keep
-these chat-only media tools unavailable so ticket work stays on the board.
+control access. Both tools require approval by default.
 
 Each run allows at most two submissions (including failures). Submissions are
 never retried automatically: a lost response can mean the provider accepted and
@@ -213,12 +212,3 @@ Off by default. Set `VOICE_SUMMARY_MIN_CHARS` (for example `600`) to have a voic
 `FISH_TTS_MODEL` sets the Fish Audio speech model for connections that do not choose one (default
 `s2.1-pro`), and `FISH_ASR_MODEL` the transcription model (default `transcribe-1-pro`). Set them on
 the API and worker.
-
-### Calls
-
-Bots can call a user in the app, and users can hold to talk, when `PHONE_CALLS_ENABLED=true` is set on
-the API and worker. `PHONE_CALL_COOLDOWN_MINUTES` (default `2`) is the minimum time between a bot's
-calls to the same person, and `PHONE_CALL_RING_SECONDS` (default `45`) how long an unanswered call
-rings.
-
-For native mobile ringing and optional APNs VoIP configuration, see [Mobile incoming calls](./self-host-clients.md#mobile-incoming-calls).

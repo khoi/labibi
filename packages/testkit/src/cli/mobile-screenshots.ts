@@ -1,5 +1,4 @@
 import { execFile, execFileSync } from "node:child_process";
-import { randomUUID } from "node:crypto";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import type { Server } from "node:http";
 import { createServer } from "node:http";
@@ -13,7 +12,6 @@ import {
   PipedreamConnector,
   ThirdPartyConnectorEmulator,
 } from "@labradoodle/adapters";
-import { callRequestClientNonce } from "@labradoodle/core";
 import type { PrismaClient } from "@labradoodle/db";
 import { createThreadMessage } from "@labradoodle/db";
 import { sessionCookieHeader } from "../index.js";
@@ -98,7 +96,7 @@ async function main() {
     hostname: "0.0.0.0",
     port: API_PORT,
   }) as Server;
-  const deviceControl = startDeviceControlServer(handles.app, handles.prisma, fixture);
+  const deviceControl = startDeviceControlServer();
 
   try {
     await waitForHealth(`${HOST_API_URL}/health`, 15_000);
@@ -202,11 +200,7 @@ async function runFlow(flow: string, fixture: Awaited<ReturnType<typeof seedFixt
  * Android shade without flaky status-bar swipes, share text in from another app, ring
  * the user from the Researcher, and connect the scripted voice provider.
  */
-function startDeviceControlServer(
-  app: App,
-  prisma: PrismaClient,
-  fixture: Awaited<ReturnType<typeof seedFixture>>,
-): Server {
+function startDeviceControlServer(): Server {
   const routes: Record<string, () => Promise<unknown>> = {
     "/expand-notifications": () => adb(["shell", "cmd", "statusbar", "expand-notifications"]),
     "/share-text": () =>
@@ -216,12 +210,6 @@ function startDeviceControlServer(
         "--es android.intent.extra.TEXT 'Shared from another app'",
         "-n com.rakazo.app/.MainActivity",
       ]),
-    "/ring": () => ringFromResearcher(prisma, fixture),
-    "/connect-voice": () =>
-      rpc(app, fixture.cookie, "voice/connect", {
-        provider: "scripted",
-        apiKey: "fixture-voice-key",
-      }),
   };
   const server = createServer((req, res) => {
     const route = req.method === "GET" ? routes[req.url ?? ""] : undefined;
@@ -249,30 +237,6 @@ function startDeviceControlServer(
 function adb(args: string[]) {
   return new Promise<void>((resolve, reject) => {
     execFile("adb", args, { timeout: 15_000 }, (error) => (error ? reject(error) : resolve()));
-  });
-}
-
-/** A ringing call request, as the bot's call_user tool writes it, without a model run. */
-async function ringFromResearcher(
-  prisma: PrismaClient,
-  fixture: Awaited<ReturnType<typeof seedFixture>>,
-) {
-  const callId = randomUUID();
-  await createThreadMessage(prisma, {
-    threadId: fixture.threadId,
-    role: "bot",
-    botId: fixture.botId,
-    clientNonce: callRequestClientNonce(callId),
-    blocks: [
-      {
-        kind: "call_request",
-        callId,
-        reason: "The fixture launch checklist changed.",
-        opening: "Hi, the launch checklist changed.",
-        status: "ringing",
-        expiresAt: new Date(Date.now() + 120_000).toISOString(),
-      },
-    ],
   });
 }
 
@@ -349,8 +313,6 @@ export function configureEnvironment() {
     DATA_DIR,
     SIGNUPS_ENABLED: "true",
     SIGNUP_ALLOWLIST: "",
-    // Incoming calls ring through the open app's call feed, so no push service is needed.
-    PHONE_CALLS_ENABLED: "true",
     CI: "1",
   });
 }

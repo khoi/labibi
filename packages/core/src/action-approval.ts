@@ -193,12 +193,12 @@ export function toolRequiresExplicitApproval(toolName: string): boolean {
 }
 
 /**
- * A run the owner started: their own message, a follow-up they wrote, or the close of their call.
+ * A run the owner started: their own message or a follow-up they wrote.
  * Bot messages, channels, spawns, tickets, webhooks and routines are not, nor is anything new.
  */
 export function isOwnerStartedRun(trigger: string, followUpFromUser: boolean): boolean {
   if (trigger === "follow_up") return followUpFromUser;
-  return trigger === "user" || trigger === "call_end";
+  return trigger === "user";
 }
 
 /** External webhook runs may inspect state unattended, but side effects always need the owner. */
@@ -226,7 +226,6 @@ const OWN_STATE_RESULT_TOOLS = new Set([
   "ask_user",
   "connect_app",
   "attach_file",
-  "end_call",
   "feedback",
   "generate_secret",
   "list_fleet",

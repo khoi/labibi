@@ -9,7 +9,6 @@ export function analyticsScreen(pathname: string): AnalyticsScreen | undefined {
     ["/artifacts", "/artifact", "/image"].includes(pathname)
   )
     return "artifacts";
-  if (pathname === "/app/board") return "board";
   if (/^\/app\/(?:g\/)?[^/]+$/.test(pathname) || ["/thread", "/group-thread"].includes(pathname))
     return "chat";
   if (pathname === "/computer") return "computer";

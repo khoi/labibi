@@ -1095,12 +1095,12 @@ describe("executor paused transcript", () => {
             type: "tool",
             id: "unoffered",
             name: "use_tool",
-            arguments: { name: "call_user", arguments: { reason: "Fixture" } },
+            arguments: { name: "generate_video", arguments: { prompt: "Fixture" } },
           },
         },
         {
           expect(request) {
-            expect(toolResult(request, "unoffered")).toContain("call_user is not available");
+            expect(toolResult(request, "unoffered")).toContain("generate_video is not available");
           },
           response: {
             type: "tool",
@@ -1125,7 +1125,7 @@ describe("executor paused transcript", () => {
       const pending = state.effects.filter((effect) => effect.status === "intended");
       expect(pending.map((effect) => effect.kind)).toEqual(["scratchpad_add"]);
       expect(pending[0]!.request).toEqual(args);
-      expect(state.effects.some((effect) => effect.kind === "call_user")).toBe(false);
+      expect(state.effects.some((effect) => effect.kind === "generate_video")).toBe(false);
       for (const effect of pending) effect.status = "approved";
       state.run.status = "queued";
       await state.executor.continueRun(state.run.id, "fixture-worker");

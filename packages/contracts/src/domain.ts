@@ -141,30 +141,8 @@ export const BotSchema = z.object({
   webhookConfigured: z.boolean(),
   /** Present when created with an idempotency key (e.g. onboarding:first). */
   spawnKey: z.string().nullable(),
-  /** The bot is ringing the user right now. */
-  incomingCall: z
-    .object({
-      callId: z.string(),
-      reason: z.string(),
-      opening: z.string(),
-      expiresAt: z.string(),
-    })
-    .nullable()
-    .optional(),
 });
 export type Bot = z.infer<typeof BotSchema>;
-
-/** The caller identity and request needed by every incoming-call surface. */
-export const IncomingBotCallSchema = BotSchema.pick({
-  id: true,
-  spaceId: true,
-  name: true,
-  color: true,
-  avatarSet: true,
-}).extend({
-  incomingCall: BotSchema.shape.incomingCall.unwrap().unwrap(),
-});
-export type IncomingBotCall = z.infer<typeof IncomingBotCallSchema>;
 
 /** A run alert the server also pushes to phones, already filtered by the chat's mute settings. */
 export const ChatAlertSchema = z.object({
@@ -1969,8 +1947,6 @@ export type ServerUpdateRequest = z.infer<typeof ServerUpdateRequestSchema>;
 export const MeSchema = z.object({
   maxUploadSizeBytes: z.number().int().positive().optional(),
   maxAttachmentsPerMessage: z.number().int().positive().optional(),
-  ticketBoardEnabled: z.boolean(),
-  phoneCallsEnabled: z.boolean().default(false),
   /** Operator-configured menu links. Absent from older servers. */
   navLinks: z.array(NavLinkSchema).default([]),
   userId: Id,

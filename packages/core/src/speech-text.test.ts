@@ -1,12 +1,6 @@
 import fc from "fast-check";
 import { describe, expect, it, vi } from "vitest";
-import {
-  narrateTool,
-  speakable,
-  speechFromBlocks,
-  spokenDecision,
-  toUtterances,
-} from "./speech-text.js";
+import { narrateTool, speakable, speechFromBlocks, toUtterances } from "./speech-text.js";
 
 describe("speakable", () => {
   it("names a code block instead of reading it", () => {
@@ -263,40 +257,5 @@ describe("narrateTool", () => {
   it("falls back to naming an unknown tool, without reading its argv", () => {
     expect(narrateTool("deploy_thing")).toBe("running deploy_thing");
     expect(narrateTool('curl -X POST "https://x/y" --data @{}')).toBeNull();
-  });
-});
-
-describe("spokenDecision", () => {
-  it("accepts a clear yes or no and refuses a sentence that merely contains one", () => {
-    expect(spokenDecision("yes")).toBe("yes");
-    expect(spokenDecision("No thanks")).toBe("no");
-    expect(spokenDecision("I'm sure that's fine, go look at the logs")).toBeNull();
-    expect(spokenDecision("")).toBeNull();
-  });
-
-  it.each([
-    ["Sí", "yes"],
-    ["¡Sí, hazlo!", "yes"],
-    ["Vale", "yes"],
-    ["De acuerdo, adelante", "yes"],
-    ["No, gracias", "no"],
-    ["mejor no", "no"],
-    ["Cancélalo", "no"],
-  ])("hears the Spanish %j as %j", (said, decision) => {
-    expect(spokenDecision(said)).toBe(decision);
-  });
-
-  it.each(["¿No?", "No?", "¿Sí", "si", "sí uno dos tres cuatro cinco seis"])(
-    "does not approve or reject %j",
-    (text) => expect(spokenDecision(text)).toBeNull(),
-  );
-
-  it("accepts accented sí", () => expect(spokenDecision("sí")).toBe("yes"));
-
-  it("does not hear a yes in a Spanish condition, question or instruction", () => {
-    expect(spokenDecision("si puedes, revisa los logs")).toBeNull();
-    expect(spokenDecision("sino revisa el deploy")).toBeNull();
-    expect(spokenDecision("¿Sí? ¿Cuáles?")).toBeNull();
-    expect(spokenDecision("dale los permisos de admin")).toBeNull();
   });
 });

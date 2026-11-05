@@ -42,18 +42,18 @@ export const fishAudio: VoiceProvider = {
   h1: "Fish Audio for AI agents: pricing, API and setup",
   intro: [
     "[Fish Audio](https://fish.audio) is a hosted voice platform for text to speech, voice cloning and speech to text. It has a large library of voices that its users have published, and you can clone a voice of your own from a short recording. Everything it does in the app is also available through its API.",
-    "[Labradoodle](/) is an open source app for AI teammates that do real work. You talk to each bot in chat, and you can also talk to it by voice: hold the mic to speak, have replies read aloud, or call a bot in real time. With a Fish Audio key, your bots speak in a Fish Audio voice and Fish Audio turns what you say into text.",
+    "[Labradoodle](/) is an open source app for AI teammates that do real work. You talk to each bot in chat, and you can also talk to it by voice: hold the mic to speak or have replies read aloud. With a Fish Audio key, your bots speak in a Fish Audio voice and Fish Audio turns what you say into text.",
     "This page covers Fish Audio's plans and API prices as of November 2026, what a bot that talks every day costs, its open models and licensing, and how it compares with ElevenLabs and others.",
   ],
   scene: {
     bot: "Chief of Staff",
     color: "#4FAA52",
     where: "Voice from Fish Audio",
-    ask: "call me at 5 to go over the day",
-    reply: "will do. i'll ring you at 5.",
+    ask: "read me today's summary",
+    reply: "two things need you. the rest is handled.",
     results: [
       { k: "Voice", v: "Your cloned voice, from Fish Audio" },
-      { k: "Call", v: "4 min, transcript in chat" },
+      { k: "Read aloud", v: "2 min, every reply" },
       { k: "Heard", v: "Your answers, transcribed by Fish Audio" },
     ],
   },
@@ -154,13 +154,11 @@ export const fishAudio: VoiceProvider = {
     {
       heading: "What you can do with Fish Audio in Labradoodle",
       paragraphs: [
-        "Fish Audio both speaks and transcribes, so one key covers every voice feature. The [voice and calls guide](/docs/voice-and-calls/) walks through each one.",
+        "Fish Audio both speaks and transcribes, so one key covers every voice feature. The [voice guide](/docs/voice-and-calls/) walks through each one.",
       ],
       bullets: [
         "Talk instead of typing. Hold the mic in the composer and speak; Fish Audio transcribes it and the bot gets your message.",
         "Hear replies. Choose **Speak this reply** on any message, or turn on **Read replies aloud** in a bot's settings to hear every reply in its voice.",
-        "Call a bot. Choose **Call** at the top of the chat to talk in real time. The transcript stays in the chat afterwards.",
-        "Let bots call you. Ask \"call me at 5 to go over the day\", and the bot rings you at five.",
         "Give each bot its own voice. The **Voice** picker lists your own Fish Audio voices first, including ones you cloned, then popular public voices. A bot's settings can override your default.",
         "Choose the speech model. Enter another Fish Audio model name under **Speech model**, such as `s2-pro`, instead of the default `s2.1-pro`.",
       ],
@@ -182,7 +180,7 @@ export const fishAudio: VoiceProvider = {
         "Labradoodle asks Fish Audio for each reply as a finished clip. It doesn't use Fish Audio's realtime streaming API.",
         "The voice picker shows your own voices and the top public voices, not the whole library.",
         "When your Fish Audio balance runs out or the key is rejected, speaking and transcribing stop until you fix the account.",
-        "On the mobile app, calls can use your phone's own voices if you pick a **Device voice** in the bot's settings. Otherwise replies use this provider.",
+        "On the mobile app, a bot can speak with your phone's own voices if you pick a **Device voice** in its settings. Otherwise replies use this provider.",
       ],
     },
     {
@@ -195,7 +193,7 @@ export const fishAudio: VoiceProvider = {
         "In Labradoodle, open **Settings → Voice**, set **Provider** to **Fish Audio** and paste the key.",
         "Pick a **Voice**, then choose **Hear a sample** to check it.",
         "Optionally enter a **Speech model** to use a Fish Audio model other than the default `s2.1-pro`.",
-        "If you host Labradoodle yourself, set `PHONE_CALLS_ENABLED=true` on the API and worker to turn on hold-to-talk and calls. Server admins can change the defaults with `FISH_TTS_MODEL` and `FISH_ASR_MODEL`.",
+        "If you host Labradoodle yourself, server admins can change the default models with `FISH_TTS_MODEL` and `FISH_ASR_MODEL`.",
       ],
     },
   ],
@@ -228,7 +226,7 @@ export const fishAudio: VoiceProvider = {
     {
       question: "Does the Fish Audio API do speech to text?",
       answer:
-        `Yes. Labradoodle uses it to transcribe what you say when you hold the mic or talk on a call, with \`transcribe-1-pro\` by default, at ${usd(RATES.fishTranscribeHour)} per hour of audio.`,
+        `Yes. Labradoodle uses it to transcribe what you say when you hold the mic, with \`transcribe-1-pro\` by default, at ${usd(RATES.fishTranscribeHour)} per hour of audio.`,
     },
     {
       question: "Which Fish Audio model does Labradoodle use?",

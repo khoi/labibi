@@ -6,7 +6,6 @@ import {
   IntegrationProviderSettings,
   unwrapEnvFromKeyManager,
 } from "@labradoodle/adapters";
-import { phoneCallSettings } from "@labradoodle/core";
 import { loadRootEnv } from "@labradoodle/core/node/load-root-env";
 import { stopOnShutdownSignals } from "@labradoodle/core/node/shutdown-signals";
 import { startWorkerHealth, watchEventLoopStalls } from "./health.js";
@@ -16,13 +15,11 @@ loadRootEnv();
 await unwrapEnvFromKeyManager();
 
 import {
-  apnsVoipConfig,
   auditLogConfig,
   ChatSdkMessagingSurface,
   CodexCatalogCache,
   contentKeyProviderFromEnv,
   createAgentHomeStore,
-  createApnsVoipProvider,
   createArtifactStore,
   createAuditLogReconciler,
   createBackgroundJobHandlers,
@@ -43,7 +40,6 @@ import {
   createRunSandbox,
   createRunSecretWriter,
   createStrategicInitiativeReconciler,
-  createTicketChangeNotifier,
   createWebProvider,
   databaseCapacityBackoffMs,
   deploymentModelUsageLookup,
@@ -87,7 +83,6 @@ import {
 } from "@labradoodle/adapters";
 import { resolveEncryptionKey, resolveSupervisorToken, uploadSizeFromEnv } from "@labradoodle/core";
 import {
-  createBoardEvents,
   createDb,
   createSecurityEventPruner,
   createThreadEvents,
@@ -150,8 +145,6 @@ async function main() {
     analytics,
     runSecretWriter: createRunSecretWriter(secrets),
   });
-  const ticketBoardEnabled = process.env.TICKET_BOARD_ENABLED === "true";
-  const boardEvents = createBoardEvents(realtime);
   const dataDir = process.env.DATA_DIR ?? "./data";
   const runtime =
     process.env.AGENT_RUNTIME === "scripted"
@@ -254,12 +247,6 @@ async function main() {
     legacyMessaging,
     jobs,
   );
-  const ticketChanges = createTicketChangeNotifier({
-    boardEvents,
-    jobs,
-    prisma,
-    ticketBoardEnabled,
-  });
   // One provider instance so emulator launches and polls share the same Map.
   const cloudAgent = createCloudAgentConnection();
   const paymentWallet = await createPaymentWalletProvider();
@@ -272,7 +259,6 @@ async function main() {
     sessionExpiresAt: (sessionId) => pushSessionExpiresAt(prisma, sessionId),
     jobs,
     accessToken: process.env.EXPO_ACCESS_TOKEN,
-    voip: await createApnsVoipProvider(apnsVoipConfig(process.env)),
   });
   const executor = createRunExecutor({
     maxUploadSizeBytes,
@@ -313,9 +299,6 @@ async function main() {
     notifications,
     jobs,
     events,
-    onTicketChange: ticketChanges,
-    ticketBoardEnabled,
-    ...phoneCallSettings(process.env),
     messaging: messaging ? createMessagingContextLoader(prisma) : undefined,
     web: createWebProvider(),
     cloudAgent,

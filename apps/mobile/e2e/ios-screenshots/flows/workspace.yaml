@@ -5,45 +5,38 @@ name: Workspace
     file: ../subflows/sign-in.yaml
     env:
       RAKAZO_ACTIVE_EMAIL: ${RAKAZO_SCREENSHOT_EMAIL}
-- openLink: "rakazo:///board"
-- extendedWaitUntil:
-    visible: ".*Draft the launch announcement.*"
-    timeout: 15000
-- waitForAnimationToEnd:
-    timeout: 3000
-- takeScreenshot: 01-board
 - openLink: "rakazo:///approvals"
 - extendedWaitUntil:
     visible: ".*example.com.*"
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 3000
-- takeScreenshot: 02-approval-rules
+- takeScreenshot: 01-approval-rules
 - openLink: "rakazo:///vault"
 - extendedWaitUntil:
     visible: ".*deploy_token.*"
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 3000
-- takeScreenshot: 03-vault
+- takeScreenshot: 02-vault
 - tapOn: "Help desk"
 - waitForAnimationToEnd:
     timeout: 3000
-- takeScreenshot: 04-vault-item
+- takeScreenshot: 03-vault-item
 - tapOn: "Remove"
 - waitForAnimationToEnd:
     timeout: 3000
-- takeScreenshot: 05-vault-remove
+- takeScreenshot: 04-vault-remove
 - tapOn: "Cancel"
 - tapOn: "Done"
 - tapOn: "New item"
 - waitForAnimationToEnd:
     timeout: 3000
-- takeScreenshot: 06-vault-new
+- takeScreenshot: 05-vault-new
 - tapOn: "Card"
 - waitForAnimationToEnd:
     timeout: 3000
-- takeScreenshot: 07-vault-new-card
+- takeScreenshot: 06-vault-new-card
 - tapOn: "Cancel"
 - openLink: "rakazo:///archived-bots"
 - extendedWaitUntil:
@@ -51,18 +44,18 @@ name: Workspace
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 3000
-- takeScreenshot: 08-archived-bots
+- takeScreenshot: 07-archived-bots
 - openLink: "rakazo:///space?spaceId=${RAKAZO_SCREENSHOT_TEAM_SPACE_ID}"
 - extendedWaitUntil:
     visible: ".*Customize.*"
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 3000
-- takeScreenshot: 09-space-settings
+- takeScreenshot: 08-space-settings
 - openLink: "rakazo:///space-members?spaceId=${RAKAZO_SCREENSHOT_TEAM_SPACE_ID}"
 - extendedWaitUntil:
     visible: "Owner"
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 3000
-- takeScreenshot: 10-space-members
+- takeScreenshot: 09-space-members

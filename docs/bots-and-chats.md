@@ -26,7 +26,7 @@ the current run.
 - Type **/** at the start of a message to use a [skill](./skills.md).
 - Hover a message to **React**, **Reply** or **Copy**. Select text in a reply to quote just that
   part.
-- Hold the microphone to talk instead of typing. See [Voice and calls](./voice-and-calls.md).
+- Hold the microphone to talk instead of typing. See [Voice](./voice-and-calls.md).
 
 Bots reply with formatted text, tables, charts and files. Files they send open in a preview and can
 be downloaded. Every file a bot has sent is also listed under **Artifacts** in the account menu.

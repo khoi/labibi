@@ -235,22 +235,6 @@ describePostgres("account export (PostgreSQL)", () => {
           },
         ],
       });
-      for (const spaceId of [ownedSpace, sharedSpace]) {
-        const board = await prisma.board.create({ data: { spaceId, name: `Board ${spaceId}` } });
-        const ticket = await prisma.ticket.create({
-          data: {
-            boardId: board.id,
-            spaceId,
-            number: 1,
-            title: `Ticket in ${spaceId}`,
-            assigneeBotId: spaceId === ownedSpace ? `mine-${suffix}` : `theirs-${suffix}`,
-            createdByUserId: spaceId === ownedSpace ? exporter : other,
-          },
-        });
-        await prisma.ticketComment.create({
-          data: { ticketId: ticket.id, spaceId, authorUserId: exporter, body: "Looks good" },
-        });
-      }
     }),
   );
 
@@ -328,9 +312,6 @@ describePostgres("account export (PostgreSQL)", () => {
       "memory_document",
       "memory_revision",
       "agent_skill",
-      "board",
-      "ticket",
-      "ticket_comment",
     ]);
     const owns = <T extends AccountExportRecord["type"]>(type: T) =>
       owned.filter(
@@ -349,10 +330,6 @@ describePostgres("account export (PostgreSQL)", () => {
     expect(owns("memory_document")[0]!.content).toBe("Remember TANGERINE");
     expect(owns("memory_revision")[0]!.content).toBe("Remember TANGERINE");
     expect(owns("artifact").map((artifact) => artifact.version)).toEqual([1, 2]);
-    expect(owns("ticket")[0]).toMatchObject({
-      assigneeBotId: `mine-${suffix}`,
-      createdByExporter: true,
-    });
     for (const artifact of owns("artifact"))
       expect(entries[accountExportPaths.artifact(ownedSpace, artifact.id)]).toBeDefined();
     const rawBlocks = await db.pool.query<{ blocks: string }>(
@@ -515,12 +492,6 @@ describePostgres("account export (PostgreSQL)", () => {
               return record.content.includes("TANGERINE") ? [`revision ${record.content}`] : [];
             case "agent_skill":
               return [`skill ${record.name}`];
-            case "board":
-              return [`board ${record.name}`];
-            case "ticket":
-              return [`ticket ${record.number} ${record.title} ${record.createdByExporter}`];
-            case "ticket_comment":
-              return [`comment ${record.body} ${record.authoredByExporter}`];
             default:
               return [];
           }

@@ -20,7 +20,6 @@ import {
 import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
 import { runAsSystem, runAsTenant } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
-import { settleCallRequest } from "./call-request.js";
 import type { CloudAgentConnection } from "./cloud-agent-factory.js";
 import { pollCloudAgent } from "./cloud-agent-poll.js";
 import { expireComputerControl, scheduleComputerControlExpiry } from "./computer-control.js";
@@ -204,9 +203,6 @@ export function createBackgroundJobHandlers(deps: {
     }),
     "skill.teaching-expire": asOwner(skill, async (payload) => {
       await expireTaughtSkillTeaching(deps, payload.skillId);
-    }),
-    "call.expire": asOwner(thread, async (payload) => {
-      await settleCallRequest(deps, { ...payload, from: ["ringing"], status: "missed" });
     }),
     "cloud_agent.poll": asOwner(cloudAgent, async (payload) => {
       await pollCloudAgent(

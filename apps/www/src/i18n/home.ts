@@ -12,7 +12,7 @@ export const HOME_CHANNELS = [
   { id: "telegram", name: "Telegram", selfHosted: true },
 ] as const;
 
-export const HOME_FEATURE_KINDS = ["apps", "teach", "memory", "triggers", "team", "call"] as const;
+export const HOME_FEATURE_KINDS = ["apps", "teach", "memory", "triggers", "team"] as const;
 export type HomeFeatureKind = (typeof HOME_FEATURE_KINDS)[number];
 
 
@@ -75,7 +75,6 @@ export type HomeCopy = {
     heading: string;
     items: Record<HomeFeatureKind, { title: string; body: string }>;
     mock: {
-      calling: string;
       memory: string;
       memoryNotes: [string, string];
       triggers: [string, string, string];
@@ -1008,7 +1007,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
     features: {
       heading: "Rozmowa i działanie",
       items: {
-        call: { title: "Dzwoni do Ciebie", body: "Gdy potrzebuje Twojej decyzji, bot dzwoni przez aplikację. Możecie omówić sprawę." },
         apps: { title: "Pracuje w Twoich aplikacjach", body: "Połącz Gmail, GitHub, Notion i dowolny serwer MCP." },
         memory: { title: "Pamięta", body: "Boty zapamiętują to, czego się uczą, i dzielą się wiedzą z zespołem." },
         triggers: { title: "Sam zaczyna pracę", body: "Uruchamia go harmonogram, webhook, zdarzenie na GitHubie lub obserwowana zmiana." },
@@ -1016,7 +1014,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
         teach: { title: "Uczy się, obserwując", body: "Pokaż raz zadanie na komputerze bota. Zapisze kroki jako umiejętność." },
       },
       mock: {
-        calling: "Dzwonienie…",
         memory: "Pamięć",
         memoryNotes: ["Preferuje krótkie odpowiedzi", "Acme odnawia umowę w marcu"],
         triggers: ["W dni robocze o 9:00", "Nowe zgłoszenie na GitHubie", "Webhook"],
@@ -1168,7 +1165,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
     features: {
       heading: "More than chat",
       items: {
-        call: { title: "It calls you", body: "When something needs you, your bot calls you in the app. Talk it through." },
         apps: { title: "Works in your apps", body: "Connect Gmail, GitHub, Notion, and any MCP server." },
         memory: { title: "Remembers", body: "Bots keep what they learn and share it with the team." },
         triggers: { title: "Wakes up on its own", body: "On a schedule, a webhook, a GitHub event, or a change it watches." },
@@ -1176,7 +1172,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
         teach: { title: "Learns by watching", body: "Show a task once on its computer. It saves the steps as a skill." },
       },
       mock: {
-        calling: "Calling…",
         memory: "Memory",
         memoryNotes: ["Prefers short replies", "Acme renews in March"],
         triggers: ["Weekdays at 9:00", "New GitHub issue", "Webhook"],
@@ -1325,7 +1320,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
     features: {
       heading: "Mehr als Chat",
       items: {
-        call: { title: "Er ruft dich an", body: "Wenn etwas dich braucht, ruft dein Bot dich in der App an. Sprecht es durch." },
         apps: { title: "Arbeitet in deinen Apps", body: "Verbinde Gmail, GitHub, Notion und jeden MCP-Server." },
         memory: { title: "Merkt sich Dinge", body: "Bots behalten, was sie lernen, und teilen es mit dem Team." },
         triggers: { title: "Wird von selbst aktiv", body: "Nach Zeitplan, per Webhook, bei GitHub-Events oder wenn sich etwas ändert." },
@@ -1333,7 +1327,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
         teach: { title: "Lernt durch Zuschauen", body: "Zeig eine Aufgabe einmal auf seinem Computer. Er speichert die Schritte als Skill." },
       },
       mock: {
-        calling: "Ruft an…",
         memory: "Gedächtnis",
         memoryNotes: ["Mag kurze Antworten", "Acme verlängert im März"],
         triggers: ["Mo–Fr um 9:00", "Neues GitHub-Issue", "Webhook"],
@@ -1485,7 +1478,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
     features: {
       heading: "채팅 그 이상",
       items: {
-        call: { title: "먼저 전화해요", body: "당신이 필요할 때 봇이 앱에서 전화를 걸어요. 말로 해결하세요." },
         apps: { title: "쓰던 앱에서 일해요", body: "Gmail, GitHub, Notion, 그리고 모든 MCP 서버를 연결하세요." },
         memory: { title: "기억해요", body: "봇은 배운 것을 기억하고 팀과 공유해요." },
         triggers: { title: "스스로 깨어나요", body: "일정, 웹훅, GitHub 이벤트, 또는 지켜보던 변화에 맞춰 움직여요." },
@@ -1493,7 +1485,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
         teach: { title: "보고 배워요", body: "봇의 컴퓨터에서 한 번 보여 주세요. 그 과정을 스킬로 저장해요." },
       },
       mock: {
-        calling: "전화 거는 중…",
         memory: "메모리",
         memoryNotes: ["짧은 답장을 선호함", "Acme 3월 갱신"],
         triggers: ["평일 9:00", "새 GitHub 이슈", "웹훅"],
@@ -1645,7 +1636,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
     features: {
       heading: "不止聊天",
       items: {
-        call: { title: "它会给你打电话", body: "需要你的时候，机器人会在应用里给你打电话。当面说清楚。" },
         apps: { title: "在你的应用里工作", body: "连接 Gmail、GitHub、Notion 以及任何 MCP 服务器。" },
         memory: { title: "记得住", body: "机器人会记住学到的东西，并与团队共享。" },
         triggers: { title: "自己醒来", body: "按计划、Webhook、GitHub 事件，或它关注的变化触发。" },
@@ -1653,7 +1643,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
         teach: { title: "看一遍就会", body: "在它的电脑上演示一次任务，它会把步骤存成技能。" },
       },
       mock: {
-        calling: "呼叫中…",
         memory: "记忆",
         memoryNotes: ["喜欢简短回复", "Acme 三月续约"],
         triggers: ["工作日 9:00", "新的 GitHub issue", "Webhook"],
@@ -1806,7 +1795,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
     features: {
       heading: "チャットだけじゃない",
       items: {
-        call: { title: "ボットから電話", body: "あなたが必要なとき、ボットがアプリで電話をかけてきます。話して片付けましょう。" },
         apps: { title: "いつものアプリで", body: "Gmail、GitHub、Notion、あらゆる MCP サーバーとつなげます。" },
         memory: { title: "覚えている", body: "ボットは学んだことを覚え、チームと共有します。" },
         triggers: { title: "自分で動き出す", body: "スケジュール、Webhook、GitHub のイベント、見張っている変化をきっかけに動きます。" },
@@ -1814,7 +1802,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
         teach: { title: "見て覚える", body: "ボットのコンピューターで一度やって見せれば、手順をスキルとして保存します。" },
       },
       mock: {
-        calling: "発信中…",
         memory: "メモリー",
         memoryNotes: ["短い返信が好み", "Acme は3月に更新"],
         triggers: ["平日 9:00", "新しい GitHub issue", "Webhook"],
@@ -1967,7 +1954,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
     features: {
       heading: "Más que un chat",
       items: {
-        call: { title: "Te llama", body: "Cuando algo te necesita, tu bot te llama en la app. Háblalo con él." },
         apps: { title: "Trabaja en tus apps", body: "Conecta Gmail, GitHub, Notion y cualquier servidor MCP." },
         memory: { title: "Recuerda", body: "Los bots guardan lo que aprenden y lo comparten con el equipo." },
         triggers: { title: "Se activa solo", body: "Según un horario, un webhook, un evento de GitHub o un cambio que vigila." },
@@ -1975,7 +1961,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
         teach: { title: "Aprende observando", body: "Muéstrale una tarea una vez en su computadora. Guarda los pasos como una habilidad." },
       },
       mock: {
-        calling: "Llamando…",
         memory: "Memoria",
         memoryNotes: ["Prefiere respuestas cortas", "Acme renueva en marzo"],
         triggers: ["Días laborables a las 9:00", "Nuevo issue de GitHub", "Webhook"],
@@ -2128,7 +2113,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
     features: {
       heading: "Plus qu’un chat",
       items: {
-        call: { title: "Il vous appelle", body: "Quand quelque chose a besoin de vous, votre bot vous appelle dans l’app. Parlez-en ensemble." },
         apps: { title: "Travaille dans vos apps", body: "Connectez Gmail, GitHub, Notion et n’importe quel serveur MCP." },
         memory: { title: "Se souvient", body: "Les bots retiennent ce qu’ils apprennent et le partagent avec l’équipe." },
         triggers: { title: "Se lance tout seul", body: "Selon un planning, un webhook, un événement GitHub ou un changement qu’il surveille." },
@@ -2136,7 +2120,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
         teach: { title: "Apprend en observant", body: "Montrez-lui une tâche une fois sur son ordinateur. Il enregistre les étapes comme compétence." },
       },
       mock: {
-        calling: "Appel en cours…",
         memory: "Mémoire",
         memoryNotes: ["Préfère les réponses courtes", "Acme renouvelle en mars"],
         triggers: ["Jours ouvrés à 9:00", "Nouvelle issue GitHub", "Webhook"],
@@ -2289,7 +2272,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
     features: {
       heading: "Mais que um chat",
       items: {
-        call: { title: "Ele liga para você", body: "Quando algo precisa de você, seu bot liga para você no app. Converse com ele." },
         apps: { title: "Funciona nos seus apps", body: "Conecte Gmail, GitHub, Notion e qualquer servidor MCP." },
         memory: { title: "Lembra", body: "Os bots guardam o que aprendem e compartilham com a equipe." },
         triggers: { title: "Entra em ação sozinho", body: "Por agendamento, webhook, evento do GitHub ou uma mudança que ele monitora." },
@@ -2297,7 +2279,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
         teach: { title: "Aprende observando", body: "Mostre uma tarefa uma vez no computador dele. Ele salva os passos como uma habilidade." },
       },
       mock: {
-        calling: "Ligando…",
         memory: "Memória",
         memoryNotes: ["Prefere respostas curtas", "Acme renova em março"],
         triggers: ["Dias úteis às 9:00", "Nova issue no GitHub", "Webhook"],
@@ -2450,7 +2431,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
     features: {
       heading: "Meer dan chat",
       items: {
-        call: { title: "Hij belt je", body: "Als iets jou nodig heeft, belt je bot je in de app. Bespreek het samen." },
         apps: { title: "Werkt in je apps", body: "Koppel Gmail, GitHub, Notion en elke MCP-server." },
         memory: { title: "Onthoudt", body: "Bots bewaren wat ze leren en delen het met het team." },
         triggers: { title: "Komt zelf in actie", body: "Volgens schema, via een webhook, bij een GitHub-event of bij een wijziging die hij in de gaten houdt." },
@@ -2458,7 +2438,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
         teach: { title: "Leert door te kijken", body: "Doe een taak één keer voor op zijn computer. Hij slaat de stappen op als skill." },
       },
       mock: {
-        calling: "Belt…",
         memory: "Geheugen",
         memoryNotes: ["Houdt van korte antwoorden", "Acme verlengt in maart"],
         triggers: ["Werkdagen om 9:00", "Nieuw GitHub-issue", "Webhook"],
@@ -2611,7 +2590,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
     features: {
       heading: "Больше, чем чат",
       items: {
-        call: { title: "Он вам звонит", body: "Когда нужно ваше участие, бот звонит вам в приложении. Обсудите всё голосом." },
         apps: { title: "Работает в ваших приложениях", body: "Подключите Gmail, GitHub, Notion и любой MCP-сервер." },
         memory: { title: "Помнит", body: "Боты сохраняют то, что узнали, и делятся этим с командой." },
         triggers: { title: "Запускается сам", body: "По расписанию, по вебхуку, по событию GitHub или при изменении, за которым он следит." },
@@ -2619,7 +2597,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
         teach: { title: "Учится, наблюдая", body: "Покажите задачу один раз на его компьютере. Он сохранит шаги как навык." },
       },
       mock: {
-        calling: "Вызов…",
         memory: "Память",
         memoryNotes: ["Предпочитает короткие ответы", "Acme продлевает в марте"],
         triggers: ["По будням в 9:00", "Новый issue в GitHub", "Вебхук"],
@@ -2772,7 +2749,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
     features: {
       heading: "Sohbetten fazlası",
       items: {
-        call: { title: "Sizi arar", body: "Size ihtiyaç duyulduğunda botunuz sizi uygulamada arar. Konuşarak halledin." },
         apps: { title: "Uygulamalarınızda çalışır", body: "Gmail, GitHub, Notion ve herhangi bir MCP sunucusunu bağlayın." },
         memory: { title: "Hatırlar", body: "Botlar öğrendiklerini saklar ve ekiple paylaşır." },
         triggers: { title: "Kendiliğinden devreye girer", body: "Bir zamanlamayla, bir webhook ile, bir GitHub olayıyla veya izlediği bir değişiklikle." },
@@ -2780,7 +2756,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
         teach: { title: "İzleyerek öğrenir", body: "Bir görevi kendi bilgisayarında bir kez gösterin. Adımları beceri olarak kaydeder." },
       },
       mock: {
-        calling: "Aranıyor…",
         memory: "Hafıza",
         memoryNotes: ["Kısa yanıtları tercih eder", "Acme mart ayında yeniliyor"],
         triggers: ["Hafta içi 9:00'da", "Yeni GitHub issue'su", "Webhook"],
@@ -2933,7 +2908,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
     features: {
       heading: "יותר מצ'אט",
       items: {
-        call: { title: "הוא מתקשר אליך", body: "כשמשהו צריך אותך, הבוט מתקשר אליך באפליקציה. מדברים על זה." },
         apps: { title: "עובד באפליקציות שלך", body: "אפשר לחבר את Gmail, GitHub, Notion וכל שרת MCP." },
         memory: { title: "זוכר", body: "הבוטים שומרים את מה שהם לומדים ומשתפים את זה עם הצוות." },
         triggers: { title: "מתעורר מעצמו", body: "לפי לוח זמנים, דרך Webhook, באירוע GitHub או כשמשהו שהוא עוקב אחריו משתנה." },
@@ -2941,7 +2915,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
         teach: { title: "לומד מצפייה", body: "מראים לו משימה פעם אחת במחשב שלו. הוא שומר את השלבים כמיומנות." },
       },
       mock: {
-        calling: "מתקשר…",
         memory: "זיכרון",
         memoryNotes: ["מעדיף תשובות קצרות", "Acme מחדשת במרץ"],
         triggers: ["שני עד שישי ב-9:00", "Issue חדש ב-GitHub", "Webhook"],
@@ -3094,7 +3067,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
     features: {
       heading: "चैट से कहीं ज़्यादा",
       items: {
-        call: { title: "यह आपको कॉल करता है", body: "जब किसी काम में आपकी ज़रूरत हो, आपका बॉट ऐप में आपको कॉल करता है। बात करके सुलझाएं।" },
         apps: { title: "आपके ऐप्स में काम करता है", body: "Gmail, GitHub, Notion और किसी भी MCP सर्वर से कनेक्ट करें।" },
         memory: { title: "याद रखता है", body: "बॉट्स जो सीखते हैं उसे याद रखते हैं और टीम के साथ शेयर करते हैं।" },
         triggers: { title: "अपने आप जाग जाता है", body: "शेड्यूल पर, Webhook से, GitHub इवेंट पर, या जिस चीज़ पर वह नज़र रखता है उसमें बदलाव होने पर।" },
@@ -3102,7 +3074,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
         teach: { title: "देखकर सीखता है", body: "उसके कंप्यूटर पर एक बार काम करके दिखाएं। वह उन स्टेप्स को स्किल के रूप में सहेज लेता है।" },
       },
       mock: {
-        calling: "कॉल हो रही है…",
         memory: "मेमोरी",
         memoryNotes: ["छोटे जवाब पसंद हैं", "Acme का रिन्यूअल मार्च में है"],
         triggers: ["कार्यदिवस, 9:00 बजे", "नया GitHub issue", "Webhook"],
@@ -3254,7 +3225,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
     features: {
       heading: "不只是聊天",
       items: {
-        call: { title: "它會打電話給你", body: "需要你的時候，機器人會在 App 裡打電話給你。直接講清楚。" },
         apps: { title: "在你的 App 裡工作", body: "連接 Gmail、GitHub、Notion 和任何 MCP 伺服器。" },
         memory: { title: "記得住", body: "機器人會記住學到的東西，並與團隊分享。" },
         triggers: { title: "自動啟動", body: "依排程、Webhook、GitHub 事件，或它關注的變化觸發。" },
@@ -3262,7 +3232,6 @@ const HOME_COPY: Record<Locale, HomeCopy> = {
         teach: { title: "看一次就會", body: "在它的電腦上示範一次任務，它會把步驟存成技能。" },
       },
       mock: {
-        calling: "撥號中…",
         memory: "記憶",
         memoryNotes: ["偏好簡短回覆", "Acme 三月續約"],
         triggers: ["工作日 9:00", "新的 GitHub issue", "Webhook"],

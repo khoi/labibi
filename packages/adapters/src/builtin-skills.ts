@@ -27,7 +27,7 @@ const RAKAZO_DOCS: ReadonlyArray<readonly [topics: string, url: string]> = [
   ["Skills", "https://labradoodle.com/docs/skills.md"],
   ["Approvals, Allow and Block lists", "https://labradoodle.com/docs/approvals.md"],
   ["Group chats, bots working together, subagents", "https://labradoodle.com/docs/groups.md"],
-  ["Voice, calls, spoken replies", "https://labradoodle.com/docs/voice-and-calls.md"],
+  ["Voice, dictation, spoken replies", "https://labradoodle.com/docs/voice-and-calls.md"],
   ["Models, providers, API keys, fallbacks, usage", "https://labradoodle.com/docs/models.md"],
   ["Spaces", "https://labradoodle.com/docs/spaces.md"],
   ["Saved credentials and website logins", "https://labradoodle.com/docs/bot-secrets.md"],

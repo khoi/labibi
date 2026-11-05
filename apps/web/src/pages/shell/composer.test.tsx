@@ -1048,7 +1048,7 @@ it.each([false, true])(
       onFinal = options.onFinal;
     });
     try {
-      const textarea = renderComposer(onSend, { phoneCallsEnabled: true });
+      const textarea = renderComposer(onSend);
       const mic = container?.querySelector<HTMLButtonElement>('button[aria-label="Hold to talk"]');
       expect(mic).not.toBeNull();
       act(() => mic?.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 0 })));
@@ -1087,7 +1087,7 @@ it.each([
       onFinal = options.onFinal;
     });
     try {
-      const original = renderComposer(onSend, { phoneCallsEnabled: true });
+      const original = renderComposer(onSend);
       const mic = container?.querySelector<HTMLButtonElement>('button[aria-label="Hold to talk"]');
       act(() => mic?.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 0 })));
       act(() => onFinal("late dictation"));
@@ -1133,9 +1133,6 @@ it("ignores dictation after switching draft keys on the same instance", async ()
         new Promise<boolean>((resolve) => {
           finish = resolve;
         }),
-      {
-        phoneCallsEnabled: true,
-      },
     );
     const mic = container?.querySelector<HTMLButtonElement>('button[aria-label="Hold to talk"]');
     act(() => mic?.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 0 })));
@@ -1176,7 +1173,7 @@ it.each([false, true])(
       onFinal = options.onFinal;
     });
     try {
-      const textarea = renderComposer(onSend, { phoneCallsEnabled: true });
+      const textarea = renderComposer(onSend);
       const mic = container?.querySelector<HTMLButtonElement>('button[aria-label="Hold to talk"]');
       expect(mic).not.toBeNull();
       act(() => mic?.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 0 })));
@@ -1208,11 +1205,6 @@ it.each([false, true])(
     }
   },
 );
-
-it("hides call dictation until the server enables it", () => {
-  renderComposer(vi.fn().mockResolvedValue(true));
-  expect(container?.querySelector('button[aria-label="Hold to talk"]')).toBeNull();
-});
 
 it("shows file confirmation only for a recognized server response", () => {
   renderComposer(async () => false, {

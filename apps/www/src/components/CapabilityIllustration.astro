@@ -17,19 +17,7 @@ const APP_LOGOS = [gmailLogo, githubLogo, notionLogo, slackLogo, linearLogo, goo
 ---
 
 <div class:list={["capability-art", `capability-art--${kind}`]} aria-hidden="true">
-  {kind === "call" ? (
-    <div class="art-call">
-      <span class="art-call__ring"><img src="/brand/job-bots/inbox-manager.svg" alt="" width="52" height="52" loading="lazy" /></span>
-      <div class="art-call__who">
-        <b>Inbox Manager</b>
-        <span>{labels.calling}</span>
-      </div>
-      <div class="art-call__actions">
-        <span class="art-call__decline"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" /></svg></span>
-        <span class="art-call__accept"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z" /></svg></span>
-      </div>
-    </div>
-  ) : kind === "apps" ? (
+  {kind === "apps" ? (
     <div class="art-apps">
       {APP_LOGOS.map((logo) => <span class="art-apps__tile"><Fragment set:html={logo} /></span>)}
       <span class="art-apps__tile art-apps__mcp">MCP</span>
@@ -79,7 +67,6 @@ const APP_LOGOS = [gmailLogo, githubLogo, notionLogo, slackLogo, linearLogo, goo
     font-size: 12px;
     line-height: 1.4;
   }
-  .capability-art--call { --accent: var(--green); --accent-soft: var(--green-soft); }
   .capability-art--apps { --accent: var(--blue); --accent-soft: var(--blue-soft-2); }
   .capability-art--memory { --accent: var(--violet); --accent-soft: var(--violet-soft); }
   .capability-art--triggers { --accent: var(--amber); --accent-soft: var(--amber-soft); }
@@ -100,39 +87,6 @@ const APP_LOGOS = [gmailLogo, githubLogo, notionLogo, slackLogo, linearLogo, goo
   .art-row { display: flex; align-items: center; gap: 9px; padding: 6px 0; }
   .art-row + .art-row { border-top: 1px solid var(--line); }
   .art-row svg { color: var(--accent); }
-
-  .art-call {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: center;
-    gap: 12px 14px;
-    width: 100%;
-    max-width: 240px;
-    padding: 14px;
-    border-radius: 18px;
-    background: var(--panel);
-    color: var(--panel-copy);
-    box-shadow: var(--shadow-demo);
-  }
-  .art-call__ring { position: relative; display: block; width: 44px; height: 44px; }
-  .art-call__ring img { width: 44px; height: 44px; border-radius: 50%; }
-  .art-call__ring::after {
-    content: "";
-    position: absolute;
-    inset: -5px;
-    border: 2px solid var(--success);
-    border-radius: 50%;
-    opacity: 0.55;
-  }
-  .art-call__who { display: grid; gap: 2px; }
-  .art-call__who b { font-size: 13px; font-weight: 600; color: var(--surface); }
-  .art-call__who span { color: var(--panel-muted); }
-  .art-call__actions { grid-column: 1 / -1; display: flex; gap: 10px; }
-  .art-call__actions span { flex: 1; display: flex; justify-content: center; padding: 7px; border-radius: 999px; color: var(--surface); }
-  .art-call__actions svg { width: 16px; height: 16px; fill: currentColor; stroke: none; }
-  .art-call__decline { background: var(--coral); }
-  .art-call__decline svg { transform: rotate(135deg); }
-  .art-call__accept { background: var(--success); }
 
   .art-apps { display: grid; grid-template-columns: repeat(4, 44px); gap: 10px; }
   .art-apps__tile {

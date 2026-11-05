@@ -202,7 +202,6 @@ describe("resolveActionApprovalDetail", () => {
 describe("isOwnerStartedRun", () => {
   it.each([
     ["user", false, true],
-    ["call_end", false, true],
     ["follow_up", true, true],
     ["follow_up", false, false],
     ["bot_message", true, false],

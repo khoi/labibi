@@ -1,18 +1,12 @@
 import { posix } from "node:path";
 import { ATTACHMENT_MAX_COUNT } from "@labradoodle/contracts";
-import {
-  BOT_MESSAGE_MAX_LENGTH,
-  isBackgroundRunTrigger,
-  redactSecrets,
-  resolveBotAddress,
-} from "@labradoodle/core";
+import { BOT_MESSAGE_MAX_LENGTH, redactSecrets, resolveBotAddress } from "@labradoodle/core";
 import {
   connectAgent,
   messageConnectedAgent,
   respondAgentConnection,
 } from "./agent-connections.js";
 import { messageBot } from "./bot-messages.js";
-import { endCallFromTool, requestUserCall } from "./call-request.js";
 import { normalizeWorkspacePath, resolveBotWorkspacePath } from "./computer-support.js";
 import { handoffToGroupBot } from "./group-handoff.js";
 import type { RunContext } from "./run-context.js";
@@ -185,41 +179,8 @@ function deliveredMessage(
   return { message: `${text.trim()}${list}` };
 }
 
-/** Messages to the user, other bots and connected agents, and calls. */
+/** Messages to the user, other bots and connected agents. */
 export const messagingTools: ToolHandlers = {
-  async call_user(ctx, call) {
-    const { deps, run, thread } = ctx;
-    const { args } = call;
-    if (
-      ctx.source.messagingChannelRun ||
-      thread.groupId ||
-      ctx.source.voiceCall ||
-      isBackgroundRunTrigger(run.trigger)
-    ) {
-      return call.finish({ error: "Calls require a one-to-one chat." });
-    }
-    return call.finish(
-      await requestUserCall(deps, run, {
-        reason: String(args.reason ?? ""),
-        opening: String(args.opening ?? ""),
-      }),
-    );
-  },
-  async end_call(ctx, call) {
-    const { deps, run, bot, thread } = ctx;
-    const { args } = call;
-    return call.finish(
-      await endCallFromTool(
-        deps,
-        run,
-        thread.id,
-        bot.id,
-        args,
-        ctx.source.callClientNonce,
-        ctx.source.callEndRun,
-      ),
-    );
-  },
   async request_takeover() {
     return { ok: true };
   },

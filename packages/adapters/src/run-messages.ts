@@ -1,5 +1,5 @@
 import type { MessageBlock } from "@labradoodle/contracts";
-import { callIdFromClientNonce, isBackgroundRunTrigger, redactSecrets } from "@labradoodle/core";
+import { isBackgroundRunTrigger, redactSecrets } from "@labradoodle/core";
 import type { Prisma, RunLease } from "@labradoodle/db";
 import {
   appendEventInTransaction,
@@ -150,7 +150,6 @@ export async function persistMessageInTransaction(
       messageId: message.id,
       role,
       blocks,
-      callId: callIdFromClientNonce(clientNonce),
     },
   });
   return {

@@ -18,12 +18,10 @@ function readAloud(text: string, opts: { botId: string; messageId: string }) {
 export function useReadAloud({
   active,
   snapshot,
-  callBotId,
   activeBotId,
 }: {
   active: Bot | undefined;
   snapshot: ThreadSnapshot | null;
-  callBotId: string | undefined;
   activeBotId: RefObject<string | undefined>;
 }) {
   const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
@@ -47,7 +45,7 @@ export function useReadAloud({
       autoSpoken.current = lastBot?.id ?? null;
       return;
     }
-    if (callBotId === active.id || !active.autoSpeak) {
+    if (!active.autoSpeak) {
       autoSpoken.current = lastBot?.id ?? null;
       return;
     }
@@ -57,14 +55,7 @@ export function useReadAloud({
     if (!text) return;
     autoSpoken.current = lastBot.id;
     readAloud(text, { botId: active.id, messageId: lastBot.id });
-  }, [
-    snapshot?.messages,
-    snapshot?.run?.status,
-    snapshot?.botId,
-    active?.autoSpeak,
-    active?.id,
-    callBotId,
-  ]);
+  }, [snapshot?.messages, snapshot?.run?.status, snapshot?.botId, active?.autoSpeak, active?.id]);
 
   const speakingMessageIdRef = useRef(speakingMessageId);
   speakingMessageIdRef.current = speakingMessageId;

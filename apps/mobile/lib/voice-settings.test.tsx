@@ -34,13 +34,6 @@ vi.mock("./device-voice", () => ({
   loadDeviceVoiceEnabled: state.load,
   saveDeviceVoiceEnabled: state.save,
 }));
-vi.mock("./call-sounds", () => ({
-  loadCallSoundsEnabled: async () => true,
-  loadWaitSoundEnabled: async () => true,
-  saveCallSoundsEnabled: vi.fn(),
-  saveWaitSoundEnabled: vi.fn(),
-  playCallCue: vi.fn(),
-}));
 vi.mock("./voice", () => ({ speakText: vi.fn() }));
 vi.mock("./appearance", () => ({ mobileTokens: () => ({}) }));
 vi.mock("./native", () => ({ native: {}, useThemedStyles: (factory: () => unknown) => factory() }));
@@ -335,7 +328,6 @@ it("edits a Space's override in that Space, leaving this device's voice and soun
   expect(state.rpc).toHaveBeenCalledWith("voice/credentials", { scope: "space" }, spaceRead);
   expect(state.load).not.toHaveBeenCalled();
   expect(container.textContent).not.toContain("This device");
-  expect(container.textContent).not.toContain("Call sounds");
   selected("Fish Audio");
   await click("Other provider");
   expect(state.rpc).toHaveBeenCalledWith(

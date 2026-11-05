@@ -111,11 +111,6 @@ msgstr "{0} GB"
 msgid "{0} handling"
 msgstr "טיפול של {0}"
 
-#. placeholder {0}: bot.name
-#: src/components/call/IncomingCall.tsx
-msgid "{0} is calling you"
-msgstr ""
-
 #. placeholder {0}: updated.name
 #: src/pages/McpServersOverlay.tsx
 msgid "{0} is not working"
@@ -841,11 +836,6 @@ msgstr "עוזר אחר"
 msgid "Answer"
 msgstr "תשובה"
 
-#: src/components/call/IncomingCall.tsx
-msgctxt "incoming call"
-msgid "Answer"
-msgstr "תשובה"
-
 #: src/components/AskCard.tsx
 msgid "Answered"
 msgstr "נענה"
@@ -932,10 +922,6 @@ msgstr "אישורים"
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
 msgstr "אישור"
-
-#: src/lib/call-session.ts
-msgid "Approve or deny it on screen."
-msgstr "יש לאשר או לדחות על המסך."
 
 #: src/pages/shell/message-cards.tsx
 msgid "Approve this server to let your agent use its tools."
@@ -1068,7 +1054,6 @@ msgstr "Avatar Studio"
 #: src/pages/AdminAccessPage.tsx
 #: src/pages/AdminPluginsPage.tsx
 #: src/pages/Auth.tsx
-#: src/pages/Board.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/NavLinkPage.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -1125,15 +1110,6 @@ msgstr "תקופת חיוב"
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Block"
 msgstr "לחסום"
-
-#: src/lib/ticket-status.ts
-msgid "Blocked"
-msgstr "חסום"
-
-#: src/components/SidebarFooter.tsx
-#: src/pages/Board.tsx
-msgid "Board"
-msgstr "לוח"
 
 #: src/pages/shell/computer-view.tsx
 #: src/pages/shell/use-computer.tsx
@@ -1211,27 +1187,6 @@ msgstr "עיון בשרתי MCP"
 #: src/pages/shell/agent-import.tsx
 msgid "Built-in"
 msgstr "מובנה"
-
-#: src/pages/shell/chat-header.tsx
-msgid "Call"
-msgstr ""
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Call back"
-msgstr ""
-
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Call with {0}"
-msgstr ""
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Calling you…"
-msgstr ""
-
-#: src/components/call/CallCard.tsx
-msgid "Calling…"
-msgstr ""
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Calls"
@@ -1630,10 +1585,6 @@ msgstr ""
 #: src/components/SecretAskCard.tsx
 msgid "Command variable"
 msgstr "משתנה פקודה"
-
-#: src/pages/Board.tsx
-msgid "Comment"
-msgstr "תגובה"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Communication"
@@ -2414,11 +2365,6 @@ msgstr "לא ניתן לחפש בקטלוג"
 msgid "Could not send reset email"
 msgstr "לא ניתן לשלוח אימייל לאיפוס"
 
-#: src/components/call/IncomingCall.tsx
-#: src/lib/call-session.ts
-msgid "Could not send that"
-msgstr "לא ניתן לשלוח את זה"
-
 #: src/components/VaultSettings.tsx
 msgid "Could not show the credential"
 msgstr "לא ניתן היה להציג את פרטי הגישה"
@@ -2537,7 +2483,6 @@ msgid "Country"
 msgstr ""
 
 #: src/components/CreateOrganizationDialog.tsx
-#: src/pages/Board.tsx
 #: src/pages/shell/agent-import.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
@@ -2682,7 +2627,6 @@ msgstr "עבודה יומיומית"
 msgid "days"
 msgstr "ימים"
 
-#: src/components/call/IncomingCall.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Decline"
 msgstr "דחייה"
@@ -2810,7 +2754,6 @@ msgstr "דחייה"
 msgid "Deployment default ({0})"
 msgstr ""
 
-#: src/pages/Board.tsx
 #: src/pages/shell/agent-import.tsx
 msgid "Description"
 msgstr "תיאור"
@@ -2843,10 +2786,6 @@ msgstr ""
 #: src/pages/shell/keyboard-shortcuts-dialog.tsx
 msgid "Dictate"
 msgstr "הכתבה"
-
-#: src/lib/dictation.ts
-msgid "Dictation ended unexpectedly."
-msgstr ""
 
 #: src/lib/dictation.ts
 msgid "Dictation failed: {code}"
@@ -2935,10 +2874,6 @@ msgstr "Docker"
 msgid "Docker limits access to your computer for added security. Using {hostLabel} lets bots work with your local files and tools."
 msgstr "Docker מגביל את הגישה למחשב לאבטחה נוספת. שימוש ב-{hostLabel} מאפשר לבוטים לעבוד עם הקבצים והכלים המקומיים."
 
-#: src/components/SidebarFooter.tsx
-msgid "Docs"
-msgstr "תיעוד"
-
 #: src/pages/KnowledgeSection.tsx
 msgid "Document changed. Reopen to edit the latest version."
 msgstr "המסמך השתנה. יש לפתוח אותו מחדש כדי לערוך את הגרסה העדכנית."
@@ -2949,7 +2884,6 @@ msgstr "אין חשבון?"
 
 #: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
-#: src/lib/ticket-status.ts
 #: src/pages/ActivityList.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/import-setup-card.tsx
@@ -3452,18 +3386,6 @@ msgstr "הגדרות קבוצה"
 msgid "Group updates"
 msgstr "עדכוני קבוצה"
 
-#: src/components/call/CallCard.tsx
-msgid "Hang up"
-msgstr "ניתוק שיחה"
-
-#: src/lib/call-session.ts
-msgid "Hang up first, then enter the code on screen."
-msgstr "יש לנתק קודם את השיחה ואז להזין את הקוד שעל המסך."
-
-#: src/lib/call-session.ts
-msgid "Hang up, then enter the code on screen."
-msgstr "יש לנתק את השיחה ואז להזין את הקוד שעל המסך."
-
 #: src/pages/RoutineEditor.tsx
 msgid "header"
 msgstr "header"
@@ -3508,11 +3430,6 @@ msgstr "הסתרה"
 msgid "Hide password"
 msgstr "הסתרת הסיסמה"
 
-#: src/components/call/VoiceChatCard.tsx
-msgid "Hide transcript"
-msgstr "הסתרת התמליל"
-
-#: src/lib/ticket-priority.ts
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "High"
@@ -3606,14 +3523,6 @@ msgstr "ייבוא סוכן"
 msgid "Import data"
 msgstr "ייבוא נתונים"
 
-#: src/lib/ticket-status.ts
-msgid "In progress"
-msgstr "בתהליך"
-
-#: src/lib/ticket-status.ts
-msgid "In review"
-msgstr "בבדיקה"
-
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "In this bot"
 msgstr ""
@@ -3629,10 +3538,6 @@ msgstr "תיבת דואר נכנס ואימייל"
 #: src/pages/shell/agent-import.tsx
 msgid "Include API keys"
 msgstr "לכלול מפתחות API"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Incoming call"
-msgstr ""
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Inherit default"
@@ -3876,10 +3781,6 @@ msgstr "קישור SSO"
 msgid "List view"
 msgstr "תצוגת רשימה"
 
-#: src/components/call/CallCard.tsx
-msgid "Listening"
-msgstr "מאזין"
-
 #: src/components/composer/HoldToTalk.tsx
 msgid "Listening…"
 msgstr ""
@@ -3969,7 +3870,6 @@ msgstr ""
 msgid "Looks like it contains a key"
 msgstr "נראה שמכיל מפתח"
 
-#: src/lib/ticket-priority.ts
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "Low"
@@ -4176,7 +4076,6 @@ msgstr "נשלחה הודעה אל {peer}"
 msgid "Messaging"
 msgstr "הודעות"
 
-#: src/lib/call-session.ts
 #: src/lib/dictation.ts
 msgid "Microphone failed"
 msgstr "המיקרופון נכשל"
@@ -4199,10 +4098,6 @@ msgstr "מזעור"
 msgid "Minimize bots"
 msgstr "מזעור הבוטים"
 
-#: src/components/call/CallCard.tsx
-msgid "Minimize call"
-msgstr ""
-
 #: src/lib/cron.ts
 msgid "minute"
 msgstr "דקה"
@@ -4211,10 +4106,6 @@ msgstr "דקה"
 #: src/pages/RoutineEditor.tsx
 msgid "minutes"
 msgstr "דקות"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Missed call"
-msgstr ""
 
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Mode"
@@ -4316,14 +4207,6 @@ msgstr "העברה אל"
 #: src/pages/ModelRoleSettings.tsx
 msgid "Move up"
 msgstr "הזזה למעלה"
-
-#: src/components/call/CallCard.tsx
-msgid "Mute"
-msgstr "השתקה"
-
-#: src/components/call/CallCard.tsx
-msgid "Muted"
-msgstr ""
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "My computers"
@@ -4477,10 +4360,6 @@ msgstr "מיומנות חדשה"
 msgid "New space"
 msgstr "מרחב חדש"
 
-#: src/pages/Board.tsx
-msgid "New ticket"
-msgstr "כרטיס חדש"
-
 #: src/components/VaultSettings.tsx
 msgid "New variable"
 msgstr ""
@@ -4612,10 +4491,6 @@ msgstr "עדיין אין מיומנויות"
 msgid "No submissions"
 msgstr ""
 
-#: src/pages/Board.tsx
-msgid "No tickets yet"
-msgstr "עדיין אין כרטיסים"
-
 #: src/pages/RoutineEditor.tsx
 msgid "No trigger"
 msgstr "ללא טריגר"
@@ -4624,10 +4499,6 @@ msgstr "ללא טריגר"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "None"
 msgstr ""
-
-#: src/lib/ticket-priority.ts
-msgid "Normal"
-msgstr "רגיל"
 
 #: src/pages/shell/agent-import.tsx
 msgid "Not a valid skill"
@@ -4778,15 +4649,6 @@ msgstr "פתיחת {title}"
 msgid "Open <0>{0}</0> and enter this code:"
 msgstr "יש לפתוח את <0>{0}</0> ולהזין את הקוד הזה:"
 
-#: src/pages/shell/chat-header.tsx
-msgid "Open call"
-msgstr ""
-
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Open chat with {0}"
-msgstr ""
-
 #: src/components/ComputersUnavailableHint.tsx
 msgid "Open computer settings"
 msgstr "פתיחת הגדרות המחשב"
@@ -4875,7 +4737,6 @@ msgstr "פלט"
 #: src/components/pages/SharePopover.tsx
 #: src/components/SpaceMembersSettings.tsx
 #: src/lib/identity-display.ts
-#: src/pages/Board.tsx
 msgid "Owner"
 msgstr "בעלים"
 
@@ -5027,10 +4888,6 @@ msgstr ""
 msgid "Phone"
 msgstr ""
 
-#: src/components/call/VoiceChatCard.tsx
-msgid "Phone call"
-msgstr ""
-
 #: src/pages/shell/chat-context.tsx
 #: src/pages/shell/chat-shared.ts
 msgid "Photo"
@@ -5128,10 +4985,6 @@ msgstr "העמוד הקודם"
 #: src/pages/SettingsOverlay.tsx
 msgid "Previous settings sections"
 msgstr ""
-
-#: src/pages/Board.tsx
-msgid "Priority"
-msgstr "עדיפות"
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Private"
@@ -5601,11 +5454,6 @@ msgstr "לנסות שוב עכשיו"
 msgid "Retry screen"
 msgstr "טעינת המסך מחדש"
 
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Return to call with {0}"
-msgstr ""
-
 #: src/pages/McpOAuthCallback.tsx
 #: src/pages/SlackInstallCallback.tsx
 msgid "Return to Labradoodle"
@@ -5714,7 +5562,6 @@ msgstr "שבת"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/AccountSettingsOverlay.tsx
-#: src/pages/Board.tsx
 #: src/pages/ExternalConversationSettings.tsx
 #: src/pages/GroupPanel.tsx
 #: src/pages/KnowledgeSection.tsx
@@ -5775,10 +5622,6 @@ msgstr "שומר..."
 #: src/pages/shell/dialogs.tsx
 msgid "Saving…"
 msgstr "שומר…"
-
-#: src/lib/call-session.ts
-msgid "Say yes or no, or answer in a sentence."
-msgstr "אפשר לענות כן או לא, או במשפט."
 
 #: src/pages/RoutineEditor.tsx
 msgid "Schedule delayed"
@@ -5956,7 +5799,6 @@ msgstr "URL של השרת"
 msgid "Set"
 msgstr "הגדרה"
 
-#: src/components/call/CallCard.tsx
 #: src/components/SidebarFooter.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/SettingsOverlay.tsx
@@ -6058,10 +5900,6 @@ msgstr ""
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Show tool activity"
 msgstr "הצגת פעילות כלים"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Show transcript"
-msgstr "הצגת תמליל"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Sidebar density"
@@ -6233,10 +6071,6 @@ msgstr "הקראה"
 msgid "Speak this reply"
 msgstr "הקראת התשובה"
 
-#: src/components/call/CallCard.tsx
-msgid "Speaking"
-msgstr ""
-
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Speech model"
 msgstr "מודל דיבור"
@@ -6306,7 +6140,6 @@ msgid "State or region"
 msgstr ""
 
 #: src/pages/ActivityList.tsx
-#: src/pages/Board.tsx
 msgid "Status"
 msgstr "סטטוס"
 
@@ -6497,10 +6330,6 @@ msgstr "הבוט יוכל להשתמש בקובץ, אבל לא יראה את ה�
 msgid "The bot's browser stays signed in for everyone in this space"
 msgstr ""
 
-#: src/lib/dictation.ts
-msgid "The browser keeps dropping the microphone. Start dictation again to retry."
-msgstr ""
-
 #: src/lib/model-connection-preflight.ts
 msgid "The connection timed out."
 msgstr "תם הזמן הקצוב לחיבור."
@@ -6573,7 +6402,6 @@ msgstr "לא ניתן לקרוא את ההגדרות השמורות. יש להס
 msgid "They get {weeks} weeks free."
 msgstr "הם מקבלים {weeks} שבועות בחינם."
 
-#: src/components/call/CallCard.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
@@ -6606,16 +6434,7 @@ msgid "This bot runs on this computer, not a Linux desktop. Shell and files use 
 msgstr "הבוט הזה פועל על המחשב הזה, לא על שולחן עבודה של Linux. המעטפת והקבצים משתמשים בתיקיית הבית."
 
 #: src/lib/dictation.ts
-msgid "This browser can't detect when you stop talking. Use Chrome, the desktop app, or hold-to-talk in the composer."
-msgstr ""
-
-#: src/lib/dictation.ts
 msgid "This browser has no on-device dictation. Connect a voice provider with transcription, or use Chrome / the desktop app."
-msgstr ""
-
-#: src/components/call/IncomingCall.tsx
-#: src/lib/user-error.ts
-msgid "This call is no longer ringing."
 msgstr ""
 
 #: src/components/PasskeySettings.tsx
@@ -6762,10 +6581,6 @@ msgstr ""
 msgid "Timing may differ"
 msgstr "התזמון עשוי להשתנות"
 
-#: src/pages/Board.tsx
-msgid "Title"
-msgstr "כותרת"
-
 #: src/pages/ActivityList.tsx
 msgid "To"
 msgstr "עד"
@@ -6774,10 +6589,6 @@ msgstr "עד"
 #: src/pages/ActivityList.tsx
 msgid "To {0}"
 msgstr "עד {0}"
-
-#: src/lib/ticket-status.ts
-msgid "To do"
-msgstr "לביצוע"
 
 #: src/pages/shell/bot-picker.tsx
 msgid "To:"
@@ -6821,10 +6632,6 @@ msgstr "כלים"
 #: src/components/composer/HoldToTalk.tsx
 msgid "Transcribing…"
 msgstr ""
-
-#: src/components/call/CallCard.tsx
-msgid "Transcript"
-msgstr "תמליל"
 
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Transcription model"
@@ -6917,10 +6724,6 @@ msgstr "הסרת התקנה"
 msgid "Unlink"
 msgstr "ביטול קישור"
 
-#: src/components/call/CallCard.tsx
-msgid "Unmute"
-msgstr "ביטול השתקה"
-
 #: src/components/pages/PagesList.tsx
 #: src/pages/BotContextMenu.tsx
 msgid "Unpin"
@@ -6999,10 +6802,6 @@ msgstr ""
 #: src/pages/shell/avatar-studio-popover.tsx
 msgid "Upload"
 msgstr "העלאה"
-
-#: src/lib/ticket-priority.ts
-msgid "Urgent"
-msgstr "דחוף"
 
 #: src/pages/settings-nav.ts
 msgid "Usage"
@@ -7273,10 +7072,6 @@ msgstr "איפה הבוטים ירוצו?"
 msgid "Who can open this page"
 msgstr "מי יכול לפתוח את הדף הזה"
 
-#: src/lib/ticket-status.ts
-msgid "Won't do"
-msgstr "לא יבוצע"
-
 #: src/components/SignupSurvey.tsx
 msgid "Work"
 msgstr ""
@@ -7333,10 +7128,6 @@ msgstr "אפשר לסגור את הכרטיסייה אם אין הפניה או�
 #: src/pages/McpOAuthCallback.tsx
 msgid "You can close this window."
 msgstr "אפשר לסגור את החלון."
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "You declined"
-msgstr ""
 
 #: src/components/InviteDialog.tsx
 msgid "You get a free month when they start their trial with a new card."

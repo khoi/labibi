@@ -81,10 +81,7 @@ model User {
   botSecrets BotSecret[]
   vaultCredentials VaultCredential[]
   agentSecrets               AgentSecret[]
-  createdTickets              Ticket[]                     @relation("TicketCreatorUser")
-  ticketComments              TicketComment[]              @relation("TicketCommentAuthorUser")
   pushToken                   PushToken?
-  callPushDevices             CallPushDevice[]
   trustedLinkSites            TrustedLinkSite[]
   feedbackReports             FeedbackReport[]
   emailSends                  EmailSend[]
@@ -141,21 +138,6 @@ model PushToken {
   updatedAt DateTime @updatedAt
 
   @@map("push_tokens")
-}
-
-/// Encrypted call registrations per installation. Legacy message push remains compatible.
-model CallPushDevice {
-  id String @id
-  expoTokenDigest String? @unique
-  voipTokenDigest String? @unique
-  userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sessionId String
-  ciphertext String
-  updatedAt DateTime @updatedAt
-
-  @@index([userId, sessionId])
-  @@map("call_push_devices")
 }
 
 model EmailSend {
@@ -628,9 +610,6 @@ model Space {
   vaultCredentials            VaultCredential[]
   externalConversations       ExternalConversation[]
   agentSecrets                AgentSecret[]
-  board                       Board?
-  tickets                     Ticket[]
-  ticketComments              TicketComment[]
   agentSkillSpaces            AgentSkillSpace[]
   mcpServerSpaces             McpServerSpace[]
   capabilityInstallSpaces     CapabilityInstallSpace[]
@@ -963,9 +942,6 @@ model Bot {
   agentImports      AgentImport[]
   groupMembers      ChatGroupMember[]
   botSecrets BotSecret[]
-  assignedTickets   Ticket[]          @relation("TicketAssigneeBot")
-  createdTickets    Ticket[]          @relation("TicketCreatorBot")
-  ticketComments    TicketComment[]   @relation("TicketCommentAuthorBot")
 
   externalConversations ExternalConversation[]
 
@@ -2286,66 +2262,6 @@ model IntegrationProviderConfig {
   updatedAt  DateTime @updatedAt
 
   @@map("integration_provider_configs")
-}
-
-model Board {
-  id           String   @id @default(cuid())
-  spaceId      String   @unique
-  space        Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  name         String   @default("Board")
-  ticketPrefix String   @default("RAK")
-  nextNumber   Int      @default(1)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  tickets      Ticket[]
-
-  @@map("boards")
-}
-
-model Ticket {
-  id              String    @id @default(cuid())
-  boardId         String
-  board           Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  spaceId         String
-  space           Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  number          Int
-  title           String
-  description     String?
-  status          String    @default("todo")
-  priority        String?
-  assigneeBotId   String?
-  assigneeBot     Bot?      @relation("TicketAssigneeBot", fields: [assigneeBotId], references: [id], onDelete: SetNull)
-  createdByBotId  String?
-  createdByBot    Bot?      @relation("TicketCreatorBot", fields: [createdByBotId], references: [id], onDelete: SetNull)
-  createdByUserId String?
-  createdByUser   User?     @relation("TicketCreatorUser", fields: [createdByUserId], references: [id], onDelete: SetNull)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  completedAt       DateTime?
-  comments        TicketComment[]
-
-  @@unique([boardId, number])
-  @@index([spaceId, status])
-  @@index([boardId, status])
-  @@map("tickets")
-}
-
-model TicketComment {
-  id           String   @id @default(cuid())
-  ticketId     String
-  ticket       Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  spaceId      String
-  space        Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  authorBotId  String?
-  authorBot    Bot?     @relation("TicketCommentAuthorBot", fields: [authorBotId], references: [id], onDelete: SetNull)
-  authorUserId String?
-  authorUser   User?    @relation("TicketCommentAuthorUser", fields: [authorUserId], references: [id], onDelete: SetNull)
-  body         String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  @@index([ticketId, createdAt])
-  @@map("ticket_comments")
 }
 
 /// Wallet projection; financial deltas live in the append-only billing journal.

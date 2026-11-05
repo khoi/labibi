@@ -85,7 +85,6 @@ export function useHoldToTalk({
       recordingRef.current = next;
       setRecording(next);
       void dictation.listen({
-        mode: "hold",
         transcribe,
         onFinal: (text) => onTextRef.current(text),
       });

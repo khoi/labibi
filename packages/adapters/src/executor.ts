@@ -19,7 +19,6 @@ import {
   formatSkillRunPrompt,
   formatSkillsCatalogInstruction,
   isBackgroundRunTrigger,
-  isCallClientNonce,
   isMessagingChannelRun,
   isOwnerStartedRun,
   isTerminal,
@@ -161,7 +160,6 @@ import {
   runIdentityInstruction,
   threadContextForRun,
   userTurnInstructions,
-  voiceCallInstruction,
 } from "./run-instructions.js";
 import {
   computerRetryDelay,
@@ -245,7 +243,6 @@ import {
   materializeRecentThreadFiles,
   recentThreadFilesInstruction,
 } from "./thread-artifacts.js";
-import { loadAgentTicketContext } from "./ticket-context.js";
 import { appendToolCompletionAudit } from "./tool-completion-audit.js";
 import { toolResultFingerprint } from "./tool-loop.js";
 import { restoreTurnCheckpoint } from "./turn-checkpoint.js";
@@ -902,33 +899,21 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
                 context,
               )
             : Promise.resolve(null);
-        const [
-          discovered,
-          currentTurnImages,
-          memoryContext,
-          scratchpadContext,
-          ticketContext,
-          recalled,
-        ] = await Promise.all([
-          discoveredPromise,
-          loadCurrentTurnImages(deps, turnBlocks, context),
-          nonOwnerChatRun
-            ? Promise.resolve("")
-            : loadAgentMemoryContext(deps.memory, bot.id, context),
-          nonOwnerChatRun
-            ? Promise.resolve("")
-            : loadAgentScratchpadContext(deps, {
-                spaceId: run.spaceId,
-                botId: bot.id,
-              }),
-          nonOwnerChatRun || !deps.ticketBoardEnabled
-            ? Promise.resolve(undefined)
-            : loadAgentTicketContext(deps, {
-                spaceId: run.spaceId,
-                text: task.prompt,
-              }),
-          recallPromise,
-        ]);
+        const [discovered, currentTurnImages, memoryContext, scratchpadContext, recalled] =
+          await Promise.all([
+            discoveredPromise,
+            loadCurrentTurnImages(deps, turnBlocks, context),
+            nonOwnerChatRun
+              ? Promise.resolve("")
+              : loadAgentMemoryContext(deps.memory, bot.id, context),
+            nonOwnerChatRun
+              ? Promise.resolve("")
+              : loadAgentScratchpadContext(deps, {
+                  spaceId: run.spaceId,
+                  botId: bot.id,
+                }),
+            recallPromise,
+          ]);
         const semanticMemoryEnabled = Boolean(semanticMemory) && !nonOwnerChatRun;
         let recalledMemory = "";
         let recallSucceeded = false;
@@ -1344,17 +1329,11 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
           (run.trigger === "user" || run.trigger === "follow_up") && run.sourceMessageId
             ? await deps.prisma.message.findUnique({
                 where: { id: run.sourceMessageId },
-                select: { clientNonce: true, role: true, blocks: true, threadId: true },
+                select: { role: true, blocks: true, threadId: true },
               })
             : null;
-        // Calls carry no schema flag: the sending client encodes them in the clientNonce.
-        const sourceClientNonce = sourceMessage?.clientNonce ?? null;
         // A follow-up can be queued by a bot (group handoffs); only the user's own counts.
         const ownerStartedRun = isOwnerStartedRun(run.trigger, sourceMessage?.role === "user");
-        // A hang-up run has no source message: its own nonce carries the call it closes.
-        const callEndRun = run.trigger === "call_end";
-        const callClientNonceForRun = callEndRun ? run.clientNonce : sourceClientNonce;
-        const voiceCall = callEndRun || isCallClientNonce(sourceClientNonce);
         const acceptsImages =
           deps.runtime.describe().capabilities.scripted ||
           modelSeesImages ||
@@ -1386,8 +1365,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
         }
         const builtins = [
           ...selectBuiltinToolsForRun({
-            ticketBoardEnabled: deps.ticketBoardEnabled,
-            phoneCallsEnabled: deps.phoneCallsEnabled,
             historyRetrievalEnabled: contextStrategy !== "current",
             graphicalToolsAllowed,
             pageBrowserAllowed,
@@ -1400,7 +1377,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
             cloudAgentEnabled: cloudAgentsEnabled(cloudAgent, run.spaceId),
             paymentWalletEnabled,
             messagingChannelRun: nonOwnerChatRun,
-            voiceCall,
             // Every member already got a message that names nobody, so a handoff only repeats it.
             disabledBuiltinTools: groupReplyOptional
               ? [...(bot.disabledBuiltinTools ?? []), "handoff_to_bot"]
@@ -1583,9 +1559,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
                     messagingChannelId(sourceMessage?.blocks as MessageBlock[] | undefined),
                 ),
             ),
-            voiceCall,
-            callEndRun,
-            callClientNonce: callClientNonceForRun,
             peerMessage,
             userComputerOwner: userComputerOwnerId,
           },
@@ -1725,8 +1698,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
           run.trigger === "reaction" && replyContext ? undefined : basePrompt,
           takeoverResume?.promptNote,
           approvalContinuation,
-          // A hang-up turn is read, not heard: no spoken-reply constraint.
-          voiceCall && !callEndRun ? voiceCallInstruction(disabledBuiltinTools) : undefined,
           // Per-turn, not in the system prompt: the timestamp changes every call and would break the cacheable prefix.
           formatCurrentTimeInstruction(deps.now?.() ?? new Date(), userTimeZone),
           lateRoutineNote,
@@ -1892,9 +1863,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
                   : undefined,
                 redactedScratchpadContext: scratchpadContext
                   ? redactSecrets(scratchpadContext, runSecrets)
-                  : undefined,
-                redactedTicketContext: ticketContext
-                  ? redactSecrets(ticketContext, runSecrets)
                   : undefined,
                 hasHistoricalContext: historicalContext.length > 0,
                 historyRetrievalEnabled: contextStrategy !== "current",

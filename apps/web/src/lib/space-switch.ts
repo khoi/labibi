@@ -94,8 +94,6 @@ export function spaceSwitchDecision(
   currentRequest: boolean,
   startedPathname: string,
   pathname: string,
-  hasCall: boolean,
-): "abandon" | "reload" | "commit" {
-  if (!currentRequest || pathname !== startedPathname) return "abandon";
-  return hasCall ? "reload" : "commit";
+): "abandon" | "commit" {
+  return currentRequest && pathname === startedPathname ? "commit" : "abandon";
 }

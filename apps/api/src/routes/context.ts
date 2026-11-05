@@ -84,10 +84,7 @@ export function createRouterContext(deps: RouterDeps) {
     /** Re-runs the request's auth so a long-lived stream notices sign-out and revocation. */
     stillAuthorized?: () => Promise<boolean>;
   }>();
-  const repos = createRepos(deps.prisma, {
-    phoneCallsEnabled: deps.env?.phoneCallsEnabled,
-    phoneCallRingSeconds: deps.env?.phoneCallRingSeconds,
-  });
+  const repos = createRepos(deps.prisma);
   const onboardingDeps = { prisma: deps.prisma, events: deps.events, connectors: deps.connectors };
   const mcpOAuth = deps.mcpOAuth ?? new McpOAuthBroker(deps.prisma, deps.secrets);
   const {
@@ -372,27 +369,6 @@ export function createRouterContext(deps: RouterDeps) {
       return result;
     });
 
-  const callsEnabled = authed.use(async ({ next }) => {
-    if (!deps.env?.phoneCallsEnabled) throw new ORPCError("NOT_FOUND");
-    return next();
-  });
-
-  const boardEnabled = os
-    .use(async ({ next }) => {
-      if (!deps.env?.ticketBoardEnabled) throw new ORPCError("NOT_FOUND");
-      return next();
-    })
-    .use(async ({ context, next }) => {
-      const actor = context.actor;
-      if (!actor) throw new ORPCError("UNAUTHORIZED");
-      return asTenant(actor, () => next({ context: { ...context, actor } }));
-    });
-  const ticketDeps = {
-    prisma: deps.prisma,
-    ticketBoardEnabled: deps.env?.ticketBoardEnabled,
-    onTicketChange: deps.ticketChanges,
-  };
-
   return {
     deps,
     os,
@@ -422,9 +398,6 @@ export function createRouterContext(deps: RouterDeps) {
     taughtSkills,
     agentSkills,
     authed,
-    callsEnabled,
-    boardEnabled,
-    ticketDeps,
   };
 }
 
