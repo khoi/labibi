@@ -10,7 +10,6 @@ import {
 } from "@labradoodle/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
-  BookOpen,
   Check,
   Download,
   FolderOpen,
@@ -247,15 +246,6 @@ export function SidebarFooter({
                 <Trans>Invite friends</Trans>
               </Button>
             ) : null}
-            <a
-              className={`${buttonVariants({ variant: "ghost" })} h-9 w-full justify-start gap-2.5 font-normal`}
-              href="https://github.com/elie222/rakazo/blob/main/docs/self-host.md"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <BookOpen className="text-muted-foreground" strokeWidth={1.75} />
-              <Trans>Docs</Trans>
-            </a>
             <div className="my-1 border-t border-border" />
             <Button
               variant="ghost"
