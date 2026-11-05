@@ -52,10 +52,6 @@ import { errorText } from "../../lib/user-error";
 import { AvatarStudioPopover } from "./avatar-studio-popover";
 import { ChatModelPicker } from "./chat-model-picker";
 
-const ScratchpadSection = lazyComponent(() =>
-  import("../ScratchpadSection").then((module) => module.ScratchpadSection),
-);
-
 const KnowledgeSection = lazyComponent(() =>
   import("../KnowledgeSection").then((module) => module.KnowledgeSection),
 );
@@ -138,7 +134,6 @@ export function BotSettings({
     autoSpeak?: boolean;
     fleetManagement?: boolean;
     crossSpaceCommunication?: boolean;
-    dailyCheckIns?: boolean;
     voiceId?: string | null;
     modelProvider?: string | null;
     modelId?: string | null;
@@ -184,8 +179,6 @@ export function BotSettings({
     () => setCrossSpaceCommunication(bot.crossSpaceCommunication ?? true),
     [bot.crossSpaceCommunication],
   );
-  const [dailyCheckIns, setDailyCheckIns] = useState(bot.dailyCheckIns ?? true);
-  useEffect(() => setDailyCheckIns(bot.dailyCheckIns ?? true), [bot.dailyCheckIns]);
   const [fleetManagement, setFleetManagement] = useState(bot.fleetManagement);
   useEffect(() => setFleetManagement(bot.fleetManagement), [bot.fleetManagement]);
   const [voiceId, setVoiceId] = useState(bot.voiceId ?? "");
@@ -249,7 +242,6 @@ export function BotSettings({
         notifyOnFinish?: boolean;
         fleetManagement?: boolean;
         crossSpaceCommunication?: boolean;
-        dailyCheckIns?: boolean;
         disabledBuiltinTools?: string[];
         baseDisabledBuiltinTools?: string[];
       },
@@ -338,7 +330,6 @@ export function BotSettings({
       notifyOnFinish?: boolean;
       fleetManagement?: boolean;
       crossSpaceCommunication?: boolean;
-      dailyCheckIns?: boolean;
       disabledBuiltinTools?: string[];
       baseDisabledBuiltinTools?: string[];
     },
@@ -349,10 +340,6 @@ export function BotSettings({
       setError(null);
       if (patchOverrides?.crossSpaceCommunication !== undefined) {
         await onSave({ crossSpaceCommunication: patchOverrides.crossSpaceCommunication });
-        return;
-      }
-      if (patchOverrides?.dailyCheckIns !== undefined) {
-        await onSave({ dailyCheckIns: patchOverrides.dailyCheckIns });
         return;
       }
       if (patchOverrides?.fleetManagement !== undefined) {
@@ -461,8 +448,6 @@ export function BotSettings({
         setNotifyOnFinish(acceptedAutomatic.current.notifyOnFinish);
       if (patchOverrides?.crossSpaceCommunication !== undefined)
         setCrossSpaceCommunication(!patchOverrides.crossSpaceCommunication);
-      if (patchOverrides?.dailyCheckIns !== undefined)
-        setDailyCheckIns(!patchOverrides.dailyCheckIns);
       if (patchOverrides?.fleetManagement !== undefined)
         setFleetManagement(!patchOverrides.fleetManagement);
       setError(errorText(err, t`Could not save`));
@@ -495,7 +480,6 @@ export function BotSettings({
     notifyOnFinish?: boolean;
     fleetManagement?: boolean;
     crossSpaceCommunication?: boolean;
-    dailyCheckIns?: boolean;
     disabledBuiltinTools?: string[];
   }) {
     // Serialize full-object auto-saves so an older in-flight request cannot
@@ -571,7 +555,7 @@ export function BotSettings({
         <TabsContent value="pages" className="pt-4">
           {tab === "pages" ? <PagesList botId={bot.id} /> : null}
         </TabsContent>
-        {/* Stays mounted so scratchpad and knowledge drafts survive a tab switch. */}
+        {/* Stays mounted so knowledge drafts survive a tab switch. */}
         <TabsContent value="settings" keepMounted data-testid="bot-settings-advanced">
           <section className="mt-6">
             <SectionHeading variant="label" className="mb-2">
@@ -598,11 +582,6 @@ export function BotSettings({
               />
             </div>
           </section>
-          <ErrorBoundary fallback={<SectionLoadFailed />}>
-            <Suspense fallback={null}>
-              <ScratchpadSection botId={bot.id} />
-            </Suspense>
-          </ErrorBoundary>
           <ErrorBoundary fallback={<SectionLoadFailed />}>
             <Suspense fallback={null}>
               <KnowledgeSection botId={bot.id} />
@@ -732,20 +711,6 @@ export function BotSettings({
               ) : null}
             </SettingsGroup>
             <SettingsGroup label={t`Permissions`}>
-              <div className="flex min-h-11 items-center justify-between gap-3 text-sm">
-                <label htmlFor={`${ids}-daily-check-ins`} className={rowLabelClass}>
-                  <Trans>Daily check-ins on unfinished work</Trans>
-                </label>
-                <Switch
-                  id={`${ids}-daily-check-ins`}
-                  checked={dailyCheckIns}
-                  disabled={saving}
-                  onCheckedChange={(checked) => {
-                    setDailyCheckIns(checked);
-                    void enqueueSave({ dailyCheckIns: checked });
-                  }}
-                />
-              </div>
               <div className="flex min-h-11 items-center justify-between gap-3 text-sm">
                 <label htmlFor={`${ids}-cross-space`} className={rowLabelClass}>
                   <Trans>Allow cross-space bot communication</Trans>

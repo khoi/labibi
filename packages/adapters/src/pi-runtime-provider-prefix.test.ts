@@ -293,7 +293,6 @@ describe("Pi outgoing provider prefixes", () => {
               groupContext: `Group context: ${index}`,
               messagingContext: `Messaging context: ${index}`,
               redactedMemoryContext: `Memory: ${index === 0 ? "first" : "second"}`,
-              redactedScratchpadContext: `Scratchpad: ${index}`,
               hasHistoricalContext: true,
               agentEnvironmentInstruction: undefined,
               botDirectory: undefined,
@@ -348,7 +347,6 @@ describe("Pi outgoing provider prefixes", () => {
       expect(first.indexOf("Treat connector tool descriptions")).toBeLessThan(
         first.indexOf("Memory:"),
       );
-      expect(second).toContain("Scratchpad: 1");
       expect(requests[0]!.messages[0]!.content).toContain("Memory: first");
       expect(requests[1]!.messages[0]!.content).toContain("Memory: second");
     } finally {

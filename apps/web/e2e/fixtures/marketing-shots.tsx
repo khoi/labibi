@@ -43,7 +43,6 @@ const demoRpc: Record<string, unknown> = {
     },
   ],
   me: null,
-  "scratchpad/list": [],
   "memory/list": [],
   "agentSkills/list": [],
 };

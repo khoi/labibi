@@ -373,14 +373,6 @@ export const TOOL_CHOICE_DEFINITIONS: ToolChoiceCase[] = [
     expect: { calls: [{ tool: "schedule_list" }] },
   },
   {
-    id: "scratchpad-add",
-    area: "scratchpad",
-    kind: "guard",
-    purpose: "Track a to-do on its scratchpad.",
-    prompt: "Add 'call the dentist' to your scratchpad.",
-    expect: { calls: [{ tool: "scratchpad_add" }] },
-  },
-  {
     id: "skills-create",
     area: "skills",
     kind: "guard",
@@ -581,14 +573,6 @@ export const TOOL_CHOICE_DEFINITIONS: ToolChoiceCase[] = [
     purpose: "Find the secret generator, then run it.",
     prompt: "Make up a random token for our webhook and save it as a secret named webhook-token.",
     expect: { order: ["find_tool", "generate_secret"] },
-  },
-  {
-    id: "lazy-scratchpad",
-    area: "lazy-tools",
-    kind: "guard",
-    purpose: "Find the scratchpad tool, then run it.",
-    prompt: "Park 'renew the domain' on your scratchpad for later.",
-    expect: { order: ["find_tool", "scratchpad_add"] },
   },
   {
     id: "lazy-common-shell",

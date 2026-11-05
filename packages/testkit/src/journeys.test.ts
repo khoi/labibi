@@ -30,8 +30,6 @@ import {
   runAsSystem,
 } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import type { BotIntroHarness } from "./discard-bot-intro.js";
-import { discardBotIntroFromCreate } from "./discard-bot-intro.js";
 import { sessionCookieHeader } from "./index.js";
 import { createModelConnectionFixtureFetch } from "./model-connection-fixture.js";
 import { asSystem } from "./system-db.js";
@@ -43,7 +41,6 @@ process.env.AGENT_RUNTIME = "scripted";
 
 const hasDb = process.env.VERIFY_DATABASE === "1" && Boolean(process.env.DATABASE_URL);
 const describeJourneys = hasDb ? describe : describe.skip;
-let botIntroHarness: BotIntroHarness | undefined;
 
 describeJourneys("required product journeys", () => {
   let app: App;
@@ -148,7 +145,6 @@ describeJourneys("required product journeys", () => {
     executor = handles.executor;
     jobs = handles.jobs;
     sandbox = handles.sandbox;
-    botIntroHarness = handles;
   });
 
   afterAll(async () => {
@@ -4255,7 +4251,7 @@ async function rpc<T>(app: App, cookie: string, proc: string, body: unknown = {}
   if (res.status >= 400 || parsed.error) {
     throw new Error(`${proc} ${res.status}: ${parsed.error?.message ?? text}`);
   }
-  return discardBotIntroFromCreate(botIntroHarness, cookie, proc, parsed.json as T);
+  return parsed.json as T;
 }
 
 async function answerPendingApproval(

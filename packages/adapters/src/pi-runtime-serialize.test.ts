@@ -47,7 +47,6 @@ describe("serializeToolResult", () => {
         instructionsNextOffset: next,
         avatar: "#8B5CF6",
         notifyOnFinish: false,
-        dailyCheckIns: false,
         model: "Test Model (default)",
         thinkingLevel: "default",
         readAloud: false,

@@ -21,8 +21,6 @@ import {
   setSpaceSettingOverride,
 } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import type { BotIntroHarness } from "./discard-bot-intro.js";
-import { discardBotIntroFromCreate } from "./discard-bot-intro.js";
 import { sessionCookieHeader } from "./index.js";
 import { asSystem } from "./system-db.js";
 
@@ -43,7 +41,6 @@ process.env.AGENT_RUNTIME = "scripted";
 
 const hasDb = process.env.VERIFY_DATABASE === "1" && Boolean(process.env.DATABASE_URL);
 const describeWithDatabase = hasDb ? describe : describe.skip;
-let botIntroHarness: BotIntroHarness | undefined;
 
 describeWithDatabase("API authorization and resource isolation", () => {
   let handles: AppHandles;
@@ -70,7 +67,6 @@ describeWithDatabase("API authorization and resource isolation", () => {
     pushTokens = new PrismaPushTokenStore(handles.prisma, encryptionKey);
     app = handles.app;
     db = asSystem(handles.prisma);
-    botIntroHarness = handles;
   });
 
   afterAll(async () => {
@@ -367,10 +363,6 @@ describeWithDatabase("API authorization and resource isolation", () => {
       ["routines/remove", { routineId: "missing-routine" }],
       ["routines/testRun", { routineId: "missing-routine" }],
       ["routines/history"],
-      ["scratchpad/list", { botId: "missing-bot" }],
-      ["scratchpad/create", { botId: "missing-bot", title: "Nope" }],
-      ["scratchpad/update", { itemId: "missing-item", title: "Nope" }],
-      ["scratchpad/remove", { itemId: "missing-item" }],
       ["skills/list", { botId: "missing-bot" }],
       ["skills/get", { skillId: "missing-skill" }],
       ["skills/start", { botId: "missing-bot", goal: "Demonstrate export" }],
@@ -562,11 +554,6 @@ describeWithDatabase("API authorization and resource isolation", () => {
       "routines/create",
       routineInput(ownerBot.id),
     );
-    const ownerScratchpad = await rpc<{ id: string }>(app, owner, "scratchpad/create", {
-      botId: ownerBot.id,
-      title: "Owner open work",
-      notes: "private",
-    });
     const ownerSkill = await db.taughtSkill.create({
       data: {
         spaceId: ownerActor.spaceId,
@@ -679,8 +666,6 @@ describeWithDatabase("API authorization and resource isolation", () => {
       ["computer/heartbeat", { botId: ownerBot.id }],
       ["routines/list", { botId: ownerBot.id }],
       ["routines/create", routineInput(ownerBot.id)],
-      ["scratchpad/list", { botId: ownerBot.id }],
-      ["scratchpad/create", { botId: ownerBot.id, title: "Stolen item" }],
       ["skills/list", { botId: ownerBot.id }],
       ["skills/start", { botId: ownerBot.id, goal: "Intruder demo" }],
       ["artifacts/list", { botId: ownerBot.id }],
@@ -747,8 +732,6 @@ describeWithDatabase("API authorization and resource isolation", () => {
           routineIds: [ownerRoutine.id],
         },
       ],
-      ["scratchpad/update", { itemId: ownerScratchpad.id, title: "Stolen item" }],
-      ["scratchpad/remove", { itemId: ownerScratchpad.id }],
       ["skills/get", { skillId: ownerSkill.id }],
       [
         "skills/appendEvent",
@@ -809,11 +792,6 @@ describeWithDatabase("API authorization and resource isolation", () => {
     expect(
       await asSystem(handles.prisma).routine.findUniqueOrThrow({ where: { id: ownerRoutine.id } }),
     ).toMatchObject({ name: "Owner Routine" });
-    expect(
-      await asSystem(handles.prisma).scratchpadItem.findUniqueOrThrow({
-        where: { id: ownerScratchpad.id },
-      }),
-    ).toMatchObject({ title: "Owner open work", notes: "private" });
     expect(
       await db.memoryDocument.findUniqueOrThrow({ where: { id: ownerMemory.id } }),
     ).toMatchObject({ content: "owner-only-memory" });
@@ -2486,7 +2464,7 @@ async function rpc<T>(
   if (response.status >= 400 || payload.error) {
     throw new Error(`${procedure} ${response.status}: ${payload.error?.message ?? text}`);
   }
-  return discardBotIntroFromCreate(botIntroHarness, cookie, procedure, payload.json as T);
+  return payload.json as T;
 }
 
 async function expectDenied(

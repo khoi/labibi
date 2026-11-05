@@ -136,7 +136,7 @@ export function publishChatAlert(
 }
 
 export function runSendsFinishNotification(trigger: string): boolean {
-  return trigger !== "created" && !isBackgroundRunTrigger(trigger);
+  return !isBackgroundRunTrigger(trigger);
 }
 
 /** User-facing text for completion notifications; empty when only tool/step activity remains. */

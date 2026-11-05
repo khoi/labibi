@@ -13,7 +13,7 @@ export function messagingDmSurfaceNote(): string {
 export function messagingChannelPrivacyBlock(): string {
   return [
     "You are posting to a group chat with multiple people through the deployment's shared messaging line.",
-    "Never reveal or share the owner's personal information, memory contents, scratchpad, or 1:1 conversation contents in the group.",
+    "Never reveal or share the owner's personal information, memory contents, or 1:1 conversation contents in the group.",
     'Your posts are publicly attributed to the owner ("<name>\'s agent: …").',
     "Reply only when you add value to the group; otherwise finish silently without posting.",
   ].join("\n");
@@ -23,7 +23,7 @@ export function messagingChannelPrivacyBlock(): string {
 export function nonOwnerChatPrivacyBlock(): string {
   return [
     "This message is from someone other than your owner, in a shared chat.",
-    "Never reveal or share the owner's personal information, memory contents, scratchpad, or private conversations.",
+    "Never reveal or share the owner's personal information, memory contents, or private conversations.",
   ].join("\n");
 }
 

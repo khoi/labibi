@@ -79,7 +79,6 @@ function sourceRecords(): AccountExportRecord[] {
       teamChatAmbientEnabled: false,
       teamChatRules: "",
       crossSpaceCommunication: false,
-      dailyCheckIns: false,
       fleetManagement: false,
       createdAt: at,
     },
@@ -107,7 +106,6 @@ function sourceRecords(): AccountExportRecord[] {
       teamChatAmbientEnabled: false,
       teamChatRules: "",
       crossSpaceCommunication: false,
-      dailyCheckIns: false,
       fleetManagement: true,
       createdAt: at,
     },
@@ -255,16 +253,6 @@ function sourceRecords(): AccountExportRecord[] {
       thinkingLevel: null,
       watch: null,
       createdAt: at,
-    },
-    {
-      type: "scratchpad_item",
-      id: "src-scratch",
-      botId: "src-bot-child",
-      title: "Follow up",
-      status: "open",
-      notes: "",
-      createdAt: at,
-      updatedAt: at,
     },
     {
       type: "agent_skill",
@@ -425,8 +413,6 @@ describePostgres("account import (PostgreSQL)", () => {
     expect(child.parentBotId).toBe(parent.id);
     expect(child.pinned).toBe(true);
     expect(child.fleetManagement).toBe(false);
-    expect(child.dailyCheckIns).toBe(false);
-    expect(parent.dailyCheckIns).toBe(false);
     expect(child.disabledBuiltinTools).toEqual(["browser"]);
     const section = await system.botSection.findFirstOrThrow({ where: { spaceId } });
     expect(child.sectionId).toBe(section.id);

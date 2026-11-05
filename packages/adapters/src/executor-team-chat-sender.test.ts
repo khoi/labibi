@@ -14,7 +14,6 @@ vi.mock("./computer-lifecycle.js", async (importOriginal) => ({
 }));
 
 const OWNER_MEMORY = "Owner's door code is 4821";
-const OWNER_NOTE = "Plan the owner's surprise party";
 
 type Sender = { senderId: string; senderIsBot?: boolean };
 
@@ -149,21 +148,6 @@ async function teamChatRun(input: {
         },
       ]),
     },
-    scratchpadItem: {
-      findMany: vi.fn(async () => [
-        {
-          id: "scratch-1",
-          spaceId: run.spaceId,
-          botId: run.botId,
-          userId: run.userId,
-          title: OWNER_NOTE,
-          status: "open",
-          notes: "",
-          createdAt: new Date("2026-11-01T00:00:00.000Z"),
-          updatedAt: new Date("2026-11-01T00:00:00.000Z"),
-        },
-      ]),
-    },
     spaceSettingOverride: { findUnique: async () => null },
     userActionApprovalRule: { findMany: vi.fn(async () => []) },
     userActionAutoReviewPreference: { findUnique: vi.fn(async () => ({ enabled: false })) },
@@ -260,12 +244,12 @@ async function teamChatRun(input: {
   return {
     tools,
     context,
-    sawOwnerState: context.includes(OWNER_MEMORY) || context.includes(OWNER_NOTE),
+    sawOwnerState: context.includes(OWNER_MEMORY),
     toldNonOwner: context.includes("someone other than your owner"),
   };
 }
 
-const ownerOnlyTools = ["remember", "scratchpad_add"];
+const ownerOnlyTools = ["remember"];
 
 describe("team chat runs from people other than the owner", () => {
   it.each([

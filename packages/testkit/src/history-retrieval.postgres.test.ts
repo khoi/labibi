@@ -5,7 +5,6 @@ import path from "node:path";
 import { ComposioConnector, FakeComposioClient } from "@labradoodle/adapters";
 import type { PrismaClient } from "@labradoodle/db";
 import { describe, expect, it } from "vitest";
-import { discardBotIntroRun } from "./discard-bot-intro.js";
 import { sessionCookieHeader } from "./index.js";
 import type { ModelEmulatorRequest } from "./model-emulator.js";
 import { startModelEmulator } from "./model-emulator.js";
@@ -26,7 +25,6 @@ describe.skipIf(!enabled)("history retrieval through executor", () => {
     const assertActiveState = (request: ModelEmulatorRequest) => {
       const serialized = JSON.stringify(request.messages);
       expect(serialized).toContain("Aurora batch size must remain 37");
-      expect(serialized).toContain("Approval pending: only prepare a proposal");
       expect(serialized).not.toContain("old-filler-1:");
     };
     const assertRedacted = (request: ModelEmulatorRequest) => {
@@ -267,7 +265,6 @@ describe.skipIf(!enabled)("history retrieval through executor", () => {
         instructions: "Inspect original history without revealing credentials.",
         notifyOnFinish: false,
       });
-      await discardBotIntroRun(handles, cookie, bot.id);
       await handles.awaitIdle?.();
       await rpc("bots/update", {
         botId: bot.id,
@@ -313,16 +310,6 @@ describe.skipIf(!enabled)("history retrieval through executor", () => {
           revision: 1,
         },
       });
-      const openWork = await db.scratchpadItem.create({
-        data: {
-          spaceId: thread.spaceId,
-          userId: thread.userId,
-          botId: bot.id,
-          title: "Approval pending: only prepare a proposal",
-          notes: "Do not deploy any changes.",
-          status: "open",
-        },
-      });
       const run = await rpc<{ runId: string }>("threads/send", {
         botId: bot.id,
         text: "incoming-exclusive-canary: Check the redaction canary using both history tools, then write notes/proposal.txt following saved constraints.",
@@ -342,9 +329,6 @@ describe.skipIf(!enabled)("history retrieval through executor", () => {
         path: "notes/proposal.txt",
       });
       expect(proposal.content).toBe("batch=37; approval=pending; mode=proposal");
-      expect(
-        (await db.scratchpadItem.findUniqueOrThrow({ where: { id: openWork.id } })).status,
-      ).toBe("open");
       const actualCalls = await db.event.findMany({
         where: { runId: run.runId, type: "agent.tool.called" },
       });
@@ -356,7 +340,6 @@ describe.skipIf(!enabled)("history retrieval through executor", () => {
         instructions: "",
         notifyOnFinish: false,
       });
-      await discardBotIntroRun(handles, cookie, peer.id);
       const group = await rpc<{ id: string; threadId: string }>("groups/create", {
         name: "History group",
         botIds: [bot.id, peer.id],

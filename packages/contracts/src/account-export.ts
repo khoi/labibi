@@ -80,7 +80,6 @@ export const AccountExportRecordSchema = z.discriminatedUnion("type", [
     teamChatAmbientEnabled: z.boolean(),
     teamChatRules: z.string(),
     crossSpaceCommunication: z.boolean(),
-    dailyCheckIns: z.boolean().default(true),
     fleetManagement: z.boolean(),
     createdAt: IsoDate,
   }),
@@ -188,16 +187,6 @@ export const AccountExportRecordSchema = z.discriminatedUnion("type", [
     thinkingLevel: z.string().nullable(),
     watch: json.nullable(),
     createdAt: IsoDate,
-  }),
-  z.object({
-    type: z.literal("scratchpad_item"),
-    id: Id,
-    botId: Id,
-    title: z.string(),
-    status: z.string(),
-    notes: z.string(),
-    createdAt: IsoDate,
-    updatedAt: IsoDate,
   }),
   /** Skills the user wrote; built-in and plugin skills come with the install. */
   z.object({

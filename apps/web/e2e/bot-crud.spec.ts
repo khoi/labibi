@@ -5,7 +5,6 @@ import {
   createBotFromPicker,
   openBotPanelTab,
   openNewBot,
-  rpc,
   signup,
 } from "./helpers";
 
@@ -103,7 +102,6 @@ test("bot creation, editing, and deletion persist", async ({ page }, testInfo) =
   await studio.getByRole("button", { name: "Done", exact: true }).click();
   const modelSelect = settings.getByRole("combobox", { name: "Model", exact: true });
   const teamComputer = settings.getByRole("button", { name: "Team" });
-  const openWork = settings.getByTestId("bot-scratchpad");
   const notificationsHeading = settings.getByRole("heading", {
     name: "Notifications",
     exact: true,
@@ -117,35 +115,10 @@ test("bot creation, editing, and deletion persist", async ({ page }, testInfo) =
   await expect(
     settings.getByRole("switch", { name: "When it finishes or needs input", exact: true }),
   ).toBeVisible();
-  await expect(openWork).toHaveCount(0);
   await expect(settings.getByRole("button", { name: "Export", exact: true })).toBeVisible();
   await expect(settings.locator('label[for$="-model"]')).toHaveClass("sr-only");
   await expect(modelSelect).toBeVisible();
-  const dailyCheckIns = settings.getByRole("switch", {
-    name: "Daily check-ins on unfinished work",
-    exact: true,
-  });
-  await dailyCheckIns.scrollIntoViewIfNeeded();
-  await expect(dailyCheckIns).toBeChecked();
-  await captureScreenshot(page, testInfo, "bot-settings-daily-check-ins");
   await captureScreenshot(page, testInfo, "bot-settings-sections-advanced");
-  await rpc(page, "scratchpad/create", {
-    botId: deletedBotPath.split("/").at(-1),
-    title: "First fixture task",
-  });
-  await page.getByRole("button", { name: "Close panel" }).click();
-  await openBotPanelTab(page, "Advanced");
-  await expect(openWork.getByText("First fixture task", { exact: true })).toBeVisible();
-  await openWork.getByRole("button", { name: "Add open work" }).click();
-  await openWork.getByRole("textbox", { name: "New open-work item" }).fill("Second fixture task");
-  await openWork.getByRole("button", { name: "Add", exact: true }).click();
-  const workRows = openWork.locator(".group");
-  await expect(workRows).toHaveCount(2);
-  for (let index = 0; index < 2; index += 1) {
-    await workRows.first().hover();
-    await workRows.first().getByRole("button", { name: "Remove" }).click();
-  }
-  await expect(openWork).toHaveCount(0);
   const disabledTools = settings.getByLabel("Disable a tool");
   await expect(disabledTools).toBeVisible();
   await disabledTools.selectOption("web_search");

@@ -544,7 +544,6 @@ msgstr "Activiteit"
 #: src/components/SecretAskCard.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Add"
 msgstr "Toevoegen"
 
@@ -622,17 +621,9 @@ msgstr "Veld toevoegen"
 msgid "Add header"
 msgstr "Header toevoegen"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Add item"
-msgstr "Item toevoegen"
-
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Add MCP server"
 msgstr "MCP-server toevoegen"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Add open work"
-msgstr "Open taak toevoegen"
 
 #: src/components/PasskeyOffer.tsx
 #: src/components/PasskeySettings.tsx
@@ -1542,10 +1533,6 @@ msgstr ""
 msgid "Compact"
 msgstr "Compact"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Complete"
-msgstr "Voltooid"
-
 #: src/components/SubagentCard.tsx
 msgid "Completed"
 msgstr "Voltooid"
@@ -1812,10 +1799,6 @@ msgstr "Rijen kopiëren"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Cost"
 msgstr "Kosten"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not add"
-msgstr "Toevoegen mislukt"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Could not add MCP server"
@@ -2157,7 +2140,6 @@ msgstr ""
 #: src/components/ComputerDeviceSettings.tsx
 #: src/lib/user-devices.ts
 #: src/pages/KnowledgeSection.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Could not remove"
 msgstr "Verwijderen mislukt"
 
@@ -2333,10 +2315,6 @@ msgstr "MCP-server testen mislukt"
 #: src/lib/dictation.ts
 msgid "Could not transcribe that recording."
 msgstr ""
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not update"
-msgstr "Bijwerken mislukt"
 
 #: src/components/ModelCredits.tsx
 msgid "Could not update billing"
@@ -2521,10 +2499,6 @@ msgstr "Botavatar aanpassen"
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "Dagelijks"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Daily check-ins on unfinished work"
-msgstr "Dagelijks navragen over onafgemaakt werk"
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -4183,10 +4157,6 @@ msgstr ""
 msgid "New messages"
 msgstr "Nieuwe berichten"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "New open-work item"
-msgstr "Nieuw open werkpunt"
-
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Auth.tsx
 msgid "New password"
@@ -4494,10 +4464,6 @@ msgstr "Link openen"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "Navigatie openen"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Open work"
-msgstr "Openstaand werk"
 
 #: src/pages/Onboarding.tsx
 msgid "OpenAI API"
@@ -5016,7 +4982,6 @@ msgstr "Herladen"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Remove"
 msgstr "Verwijderen"
 
@@ -5084,10 +5049,6 @@ msgstr ""
 msgid "Remove webhook"
 msgstr "Webhook verwijderen"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Removed, but list refresh failed"
-msgstr "Verwijderd, maar het vernieuwen van de lijst mislukte"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "Removing…"
@@ -5108,10 +5069,6 @@ msgstr "Sectie hernoemen"
 #: src/lib/billing.ts
 msgid "Renews {day}"
 msgstr "Wordt verlengd op {day}"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Reopen"
-msgstr "Heropenen"
 
 #: src/pages/model-settings/connection-controls.tsx
 msgid "Replace API key"
@@ -5387,10 +5344,6 @@ msgstr "Opslaan in kluis"
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Saved"
 msgstr "Opgeslagen"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Saved, but list refresh failed"
-msgstr "Opgeslagen, maar het vernieuwen van de lijst mislukte"
 
 #: src/pages/model-settings/use-model-settings.ts
 msgid "Saved."
@@ -5679,7 +5632,6 @@ msgstr "Lijst tonen"
 #: src/components/pages/PagesList.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Show more"
 msgstr "Meer tonen"
 

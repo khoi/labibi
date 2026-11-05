@@ -10,7 +10,6 @@ import type { MessageBlock, ModelConnectInput, RunStatus } from "@labradoodle/co
 import { ACTIVE_RUN_STATUSES, attachmentComputerPath, isTerminal } from "@labradoodle/core";
 import type { createDb } from "@labradoodle/db";
 import { createThreadEvents } from "@labradoodle/db";
-import { discardBotIntroRun } from "../discard-bot-intro.js";
 import { sessionCookieHeader } from "../index.js";
 import { asSystem } from "../system-db.js";
 import type { EvalCase, Evidence, SettingsSnapshot } from "./cases.js";
@@ -211,7 +210,6 @@ export async function runTrial(
       });
       // Register before discard so a timeout still reaches cleanupActors.
       actors.push({ botId, cookie, ...persistedBot });
-      await discardBotIntroRun(trial, cookie, botId);
       await rpc(app, cookie, "bots/update", {
         botId,
         modelProvider: options.connection.provider,
@@ -246,7 +244,6 @@ export async function runTrial(
           notifyOnFinish: false,
           ...(scenario.peer.ownComputer ? { computerMode: "dedicated" } : {}),
         });
-        await discardBotIntroRun(trial, cookie, created.id);
         await rpc(app, cookie, "bots/update", {
           botId: created.id,
           modelProvider: options.connection.provider,
@@ -266,7 +263,6 @@ export async function runTrial(
             instructions: scenario.group.instructions?.[name] ?? "",
             notifyOnFinish: false,
           });
-          await discardBotIntroRun(trial, cookie, member.id);
           if (roles)
             await rpc(app, cookie, "bots/update", {
               botId: member.id,

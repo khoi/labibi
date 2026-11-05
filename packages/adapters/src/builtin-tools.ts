@@ -1102,77 +1102,9 @@ export const builtinAgentTools: ConnectorTool[] = [
   {
     name: "task_catalog",
     description:
-      "Read-only inventory and source of truth for this bot's real open tasks, saved routines, taught skills, reusable skills, and currently exposed tools. Call it before claiming a task or skill exists. Use the returned ids and exact names; do not infer capabilities from memory or conversation text.",
+      "Read-only inventory and source of truth for this bot's saved routines, taught skills, reusable skills, and currently exposed tools. Call it before claiming a task or skill exists. Use the returned ids and exact names; do not infer capabilities from memory or conversation text.",
     inputSchema: { type: "object", properties: {} },
     readOnly: true,
-  },
-  {
-    name: "scratchpad_list",
-    description:
-      "List this bot's scratchpad / open-work items (todos and parked work). By default omits completed items.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        includeDone: {
-          type: "boolean",
-          description: "When true, include completed items.",
-        },
-      },
-    },
-  },
-  {
-    name: "scratchpad_add",
-    description:
-      "Add an open-work item to this bot's scratchpad. Use for todos or parked work that should outlive this turn. Not a reminder or schedule.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        title: { type: "string", description: "Short title for the item." },
-        status: {
-          type: "string",
-          enum: ["open", "parked", "done"],
-          description: "Defaults to open.",
-        },
-        notes: { type: "string", description: "Optional notes." },
-      },
-      required: ["title"],
-    },
-  },
-  {
-    name: "scratchpad_update",
-    description: "Update a scratchpad item's title, status, or notes.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        itemId: { type: "string" },
-        title: { type: "string" },
-        status: { type: "string", enum: ["open", "parked", "done"] },
-        notes: { type: "string" },
-      },
-      required: ["itemId"],
-    },
-  },
-  {
-    name: "scratchpad_complete",
-    description: "Mark a scratchpad item done.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        itemId: { type: "string" },
-      },
-      required: ["itemId"],
-    },
-  },
-  {
-    name: "scratchpad_remove",
-    description: "Permanently remove a scratchpad item.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        itemId: { type: "string" },
-      },
-      required: ["itemId"],
-    },
   },
   {
     name: "schedule_create",
@@ -1395,7 +1327,6 @@ export const builtinAgentTools: ConnectorTool[] = [
           description: "Use the latest image attached to this message as the profile picture.",
         },
         // Explained in the update_bot instructions; kept short for the listed-tool budget.
-        dailyCheckIns: { type: "boolean" },
         notifyOnFinish: {
           type: "boolean",
           description: "Notify the user when this bot finishes a run.",

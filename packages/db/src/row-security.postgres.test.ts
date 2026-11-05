@@ -506,12 +506,6 @@ describePostgres("row-level security (PostgreSQL)", () => {
         }),
       );
       keep(
-        "scratchpadItem",
-        await o.scratchpadItem.create({
-          data: { spaceId: t.spaceId, botId: t.botId, userId: t.userId, title: "t" },
-        }),
-      );
-      keep(
         "actionApprovalRule",
         await o.actionApprovalRule.create({
           data: {
@@ -552,8 +546,8 @@ describePostgres("row-level security (PostgreSQL)", () => {
     // A tenant cannot write into another Space either.
     await expect(
       runAsTenant(b, () =>
-        db.scratchpadItem.create({
-          data: { spaceId: a.spaceId, botId: a.botId, userId: a.userId, title: "x" },
+        db.usageRecord.create({
+          data: { spaceId: a.spaceId, userId: a.userId, provider: "p", model: "m" },
         }),
       ),
     ).rejects.toThrow(/row-level security/);

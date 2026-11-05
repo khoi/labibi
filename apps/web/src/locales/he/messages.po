@@ -544,7 +544,6 @@ msgstr "פעילות"
 #: src/components/SecretAskCard.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Add"
 msgstr "הוספה"
 
@@ -622,17 +621,9 @@ msgstr "הוספת שדה"
 msgid "Add header"
 msgstr "הוספת header"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Add item"
-msgstr "הוספת פריט"
-
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Add MCP server"
 msgstr "הוספת שרת MCP"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Add open work"
-msgstr "הוספת עבודה פתוחה"
 
 #: src/components/PasskeyOffer.tsx
 #: src/components/PasskeySettings.tsx
@@ -1542,10 +1533,6 @@ msgstr ""
 msgid "Compact"
 msgstr "צפוף"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Complete"
-msgstr "הושלם"
-
 #: src/components/SubagentCard.tsx
 msgid "Completed"
 msgstr "הושלם"
@@ -1812,10 +1799,6 @@ msgstr "העתקת שורות"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Cost"
 msgstr "עלות"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not add"
-msgstr "לא ניתן להוסיף"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Could not add MCP server"
@@ -2157,7 +2140,6 @@ msgstr ""
 #: src/components/ComputerDeviceSettings.tsx
 #: src/lib/user-devices.ts
 #: src/pages/KnowledgeSection.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Could not remove"
 msgstr "לא ניתן להסיר"
 
@@ -2333,10 +2315,6 @@ msgstr "לא ניתן לבדוק את שרת ה-MCP"
 #: src/lib/dictation.ts
 msgid "Could not transcribe that recording."
 msgstr ""
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not update"
-msgstr "לא ניתן לעדכן"
 
 #: src/components/ModelCredits.tsx
 msgid "Could not update billing"
@@ -2521,10 +2499,6 @@ msgstr "התאמת תמונת הבוט"
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "יומי"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Daily check-ins on unfinished work"
-msgstr "מעקב יומי אחר עבודה שלא הושלמה"
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -4183,10 +4157,6 @@ msgstr ""
 msgid "New messages"
 msgstr ""
 
-#: src/pages/ScratchpadSection.tsx
-msgid "New open-work item"
-msgstr "פריט עבודה פתוחה חדש"
-
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Auth.tsx
 msgid "New password"
@@ -4494,10 +4464,6 @@ msgstr "פתיחת הקישור"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "פתיחת הניווט"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Open work"
-msgstr "עבודה פתוחה"
 
 #: src/pages/Onboarding.tsx
 msgid "OpenAI API"
@@ -5016,7 +4982,6 @@ msgstr "טעינה מחדש"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Remove"
 msgstr "הסרה"
 
@@ -5084,10 +5049,6 @@ msgstr ""
 msgid "Remove webhook"
 msgstr "הסרת ה-webhook"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Removed, but list refresh failed"
-msgstr "הוסר, אבל רענון הרשימה נכשל"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "Removing…"
@@ -5108,10 +5069,6 @@ msgstr "שינוי שם המקטע"
 #: src/lib/billing.ts
 msgid "Renews {day}"
 msgstr "מתחדש ב-{day}"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Reopen"
-msgstr "פתיחה מחדש"
 
 #: src/pages/model-settings/connection-controls.tsx
 msgid "Replace API key"
@@ -5387,10 +5344,6 @@ msgstr "שמירה בכספת"
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Saved"
 msgstr "נשמר"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Saved, but list refresh failed"
-msgstr "נשמר, אבל רענון הרשימה נכשל"
 
 #: src/pages/model-settings/use-model-settings.ts
 msgid "Saved."
@@ -5679,7 +5632,6 @@ msgstr "הצגת רשימה"
 #: src/components/pages/PagesList.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Show more"
 msgstr "הצגת עוד"
 

@@ -4,19 +4,6 @@ import { TASK_CATALOG_GUIDANCE, taskCatalogFromTool } from "./task-catalog.js";
 describe("task catalog", () => {
   it("returns the bot's real work records and exposed tool roster", async () => {
     const prisma = {
-      scratchpadItem: {
-        findMany: vi.fn(async () => [
-          {
-            id: "item-1",
-            botId: "bot-1",
-            title: "Check the inbox",
-            status: "open",
-            notes: "Use the connected mail tool.",
-            createdAt: new Date("2026-01-01T00:00:00.000Z"),
-            updatedAt: new Date("2026-01-02T00:00:00.000Z"),
-          },
-        ]),
-      },
       routine: {
         findMany: vi.fn(async () => [
           {
@@ -61,9 +48,6 @@ describe("task catalog", () => {
       },
     );
 
-    expect(result.tasks).toEqual([
-      expect.objectContaining({ id: "item-1", title: "Check the inbox", source: "scratchpad" }),
-    ]);
     expect(result.routines).toEqual([
       expect.objectContaining({ routineId: "routine-1", name: "Morning report", active: true }),
     ]);

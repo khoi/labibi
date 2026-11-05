@@ -106,8 +106,8 @@ password, and grants it the `rakazo_app` role. When migrations run as a role wit
 
 Messages, events, threads, memory, artifacts, secrets, model and voice credentials, skills, bots,
 runs, tasks, routines, connections, MCP servers and sign-ins, computers,
-messaging identities and outbox, external conversations, steering messages, usage, scratchpad
-items and approval rules have row-level security. Each signed-in request sees only its Space's
+messaging identities and outbox, external conversations, steering messages, usage and approval
+rules have row-level security. Each signed-in request sees only its Space's
 rows, plus the user's own account-level credentials. A query that leaves out its Space filter
 returns nothing from other Spaces. A background job that acts for one run, routine, computer,
 skill, thread or cloud agent runs as that row's Space and user, so agent tools get the same

@@ -61,17 +61,6 @@ function fixture(runId = "run-1") {
     id: "message-1",
     ...(data as object),
   }));
-  const scratchpadRows: Array<{
-    id: string;
-    spaceId: string;
-    botId: string;
-    userId: string;
-    title: string;
-    status: string;
-    notes: string;
-    createdAt: Date;
-    updatedAt: Date;
-  }> = [];
   const run = {
     id: runId,
     botId: "bot-1",
@@ -210,33 +199,6 @@ function fixture(runId = "run-1") {
     secret: { findMany: vi.fn(async () => []) },
     vaultCredential: { findMany: vi.fn(async () => []) },
     agentSkill: { findMany: vi.fn(async () => []) },
-    scratchpadItem: {
-      findMany: vi.fn(async () => scratchpadRows),
-      create: vi.fn(
-        async ({
-          data,
-        }: {
-          data: {
-            spaceId: string;
-            botId: string;
-            userId: string;
-            title: string;
-            status: string;
-            notes: string;
-          };
-        }) => {
-          const now = new Date("2026-09-14T00:00:00.000Z");
-          const row = {
-            id: `scratch-${scratchpadRows.length + 1}`,
-            ...data,
-            createdAt: now,
-            updatedAt: now,
-          };
-          scratchpadRows.push(row);
-          return row;
-        },
-      ),
-    },
     spaceSettingOverride: { findUnique: async () => null },
     userActionApprovalRule: { findMany: vi.fn(async () => []) },
     userActionAutoReviewPreference: { findUnique: vi.fn(async () => ({ enabled: false })) },
@@ -300,7 +262,6 @@ function fixture(runId = "run-1") {
     artifactPut,
     messageCreate,
     results,
-    scratchpadRows,
     memoryCommit,
     memoryDocuments,
     setCalls(next: ToolCall[]) {
@@ -434,42 +395,6 @@ describe("mutating tool effect idempotency keys", () => {
     await f.run();
     expect(f.results[0]).toMatchObject({ uncertain: true });
     expect(submit).not.toHaveBeenCalled();
-  });
-  it("executes different tools that share a reused provider tool-call id", async () => {
-    const f = fixture("run-a");
-    f.setCalls([
-      {
-        name: "remember",
-        args: { path: "MEMORY.md", content: "team preference" },
-        executionId: "call_0",
-      },
-      {
-        name: "scratchpad_add",
-        args: { title: "follow up with design" },
-        executionId: "call_0",
-      },
-    ]);
-
-    await f.run();
-
-    expect(f.memoryCommit).toHaveBeenCalledOnce();
-    expect(f.scratchpadRows).toHaveLength(1);
-    expect(f.effects.map((effect) => effect.idempotencyKey)).toEqual([
-      toolEffectIdempotencyKey("run-a", "remember", {
-        path: "MEMORY.md",
-        content: "team preference",
-      }),
-      toolEffectIdempotencyKey("run-a", "scratchpad_add", {
-        title: "follow up with design",
-      }),
-    ]);
-    expect(f.effects.every((effect) => effect.status === "completed")).toBe(true);
-    expect(f.results[0]).toEqual({ ok: true });
-    expect(f.results[1]).toEqual(
-      expect.objectContaining({
-        item: expect.objectContaining({ title: "follow up with design" }),
-      }),
-    );
   });
 
   it("appends a remembered fact to the bot's existing memory", async () => {

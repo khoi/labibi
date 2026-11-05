@@ -26,7 +26,7 @@ import {
   screenLeaseIdForRun,
   serializeModelSecret,
 } from "@labradoodle/adapters";
-import type { Actor, Bot, ProductEvent } from "@labradoodle/contracts";
+import type { Actor, ProductEvent } from "@labradoodle/contracts";
 import {
   CONNECTOR_AUTH_UNAVAILABLE,
   MCP_OAUTH_CLIENT_REQUIRED,
@@ -48,13 +48,7 @@ import { RPCHandler } from "@orpc/server/fetch";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { mainRole, withModelRoles } from "../../../packages/adapters/src/testing/model-roles.js";
 import type { RouterDeps } from "./router.js";
-import {
-  botIntroPrompt,
-  createRouter as createRouterWith,
-  enqueueBotIntroRun as enqueueBotIntroRunWith,
-  HEARTBEAT_MS,
-  SESSION_RECHECK_MS,
-} from "./router.js";
+import { createRouter as createRouterWith, HEARTBEAT_MS, SESSION_RECHECK_MS } from "./router.js";
 import { providerScopeKey } from "./routes/connections.js";
 
 const withRoleDeps = (deps: RouterDeps) => {
@@ -62,8 +56,6 @@ const withRoleDeps = (deps: RouterDeps) => {
   return deps;
 };
 const createRouter = (deps: RouterDeps) => createRouterWith(withRoleDeps(deps));
-const enqueueBotIntroRun = (deps: RouterDeps, ...rest: [Actor, Bot]) =>
-  enqueueBotIntroRunWith(withRoleDeps(deps), ...rest);
 
 type RouterHandler = RPCHandler<InferRouterInitialContext<ReturnType<typeof createRouter>>>;
 
@@ -5754,152 +5746,6 @@ describe("model disconnect", () => {
   });
 });
 
-describe("bot intro run", () => {
-  const actor = {
-    spaceId: "space-1",
-    userId: "user-1",
-    email: "user@rakazo.test",
-    isDeploymentOwner: true,
-  } satisfies Actor;
-  const bot = { id: "bot-1", threadId: "thread-1" } as unknown as Bot;
-
-  function introDeps(
-    options: { agentRuntime?: string; hasCredential?: boolean; existingRun?: boolean } = {},
-  ) {
-    let calls = 0;
-    const create = vi.fn(({ data }: { data: object }) => {
-      calls += 1;
-      return Promise.resolve({ id: `record-${calls}`, ...data });
-    });
-    const enqueue = vi.fn().mockResolvedValue(undefined);
-    const tx = {
-      $queryRaw: vi.fn().mockResolvedValue([]),
-      task: { create },
-      run: {
-        create,
-        findFirst: vi.fn().mockResolvedValue(options.existingRun ? { id: "run-0" } : null),
-      },
-    };
-    const hasCredential = options.hasCredential ?? true;
-    const preference = hasCredential
-      ? { modelId: "model-1", credential: { id: "cred-1", provider: "test" } }
-      : null;
-    const userModelPreference = { findFirst: vi.fn().mockResolvedValue(preference) };
-    const deps = {
-      prisma: {
-        $transaction: vi.fn(async (fn: (client: typeof tx) => unknown) => fn(tx)),
-        userModelPreference,
-        deploymentSettings: { findUnique: vi.fn().mockResolvedValue(null) },
-        user: { findUnique: vi.fn().mockResolvedValue({ name: "Ada Lovelace" }) },
-        space: {
-          findUnique: vi.fn().mockResolvedValue({ name: "Personal", isDefault: true }),
-        },
-      },
-      jobs: { enqueue },
-      env: { agentRuntime: options.agentRuntime ?? "pi" },
-    } as unknown as RouterDeps;
-    withModelRoles(
-      deps.prisma,
-      hasCredential ? [mainRole({ userId: "user-1" }, "test", "model-1")] : [],
-    );
-    return { create, enqueue, deps };
-  }
-
-  it("queues an invisible-prompt run so the bot asks what it is for", async () => {
-    const { create, enqueue, deps } = introDeps();
-
-    await enqueueBotIntroRun(deps, actor, bot);
-
-    expect(create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          spaceId: "space-1",
-          botId: "bot-1",
-          threadId: "thread-1",
-          userId: "user-1",
-          status: "queued",
-        }),
-      }),
-    );
-    const [taskCall, runCall] = create.mock.calls as Array<
-      [{ data: { prompt?: string; trigger?: string; taskId?: string } }]
-    >;
-    expect(taskCall?.[0].data.prompt).toBe(
-      botIntroPrompt({ userName: "Ada Lovelace", spaceName: null, disabledBuiltinTools: [] }),
-    );
-    expect(runCall?.[0].data.trigger).toBe("created");
-    // The Run must reference the Task this same call created, not a stale or
-    // mismatched id, and the enqueued job must target that Run.
-    expect(runCall?.[0].data.taskId).toBe("record-1");
-    expect(enqueue).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({ payload: { runId: "record-2" } }),
-    );
-    // The intro locks the thread row, which snapshot reads hold for up to 15s.
-    expect(deps.prisma.$transaction).toHaveBeenCalledWith(expect.any(Function), {
-      timeout: 20_000,
-    });
-  });
-
-  it("leaves a placeholder account name out of the intro", async () => {
-    const { create, deps } = introDeps();
-    vi.mocked(deps.prisma.user.findUnique).mockResolvedValue({
-      name: "__PrbLMrkR__",
-    } as never);
-
-    await enqueueBotIntroRun(deps, actor, bot);
-
-    const [taskCall] = create.mock.calls as Array<[{ data: { prompt?: string } }]>;
-    expect(taskCall?.[0].data.prompt).toBe(
-      botIntroPrompt({ userName: "", spaceName: null, disabledBuiltinTools: [] }),
-    );
-  });
-
-  it("does nothing when the bot has no thread", async () => {
-    const { create, enqueue, deps } = introDeps();
-
-    await enqueueBotIntroRun(deps, actor, { id: "bot-1", threadId: null } as unknown as Bot);
-
-    expect(create).not.toHaveBeenCalled();
-    expect(enqueue).not.toHaveBeenCalled();
-  });
-
-  it("does nothing on the scripted test/eval runtime", async () => {
-    const { create, enqueue, deps } = introDeps({ agentRuntime: "scripted" });
-
-    await enqueueBotIntroRun(deps, actor, bot);
-
-    expect(create).not.toHaveBeenCalled();
-    expect(enqueue).not.toHaveBeenCalled();
-  });
-
-  it("does nothing when no model is configured yet", async () => {
-    const { create, enqueue, deps } = introDeps({ hasCredential: false });
-
-    await enqueueBotIntroRun(deps, actor, bot);
-
-    expect(create).not.toHaveBeenCalled();
-    expect(enqueue).not.toHaveBeenCalled();
-  });
-
-  it("does not queue a second intro when an idempotent create returns an existing bot", async () => {
-    const { create, enqueue, deps } = introDeps({ existingRun: true });
-
-    await enqueueBotIntroRun(deps, actor, bot);
-
-    expect(create).not.toHaveBeenCalled();
-    expect(enqueue).not.toHaveBeenCalled();
-  });
-
-  it("names only the intro tools the bot still has", () => {
-    const prompt = (disabledBuiltinTools: string[]) =>
-      botIntroPrompt({ userName: "Ada", spaceName: null, disabledBuiltinTools });
-    expect(prompt([])).toContain("ask_user");
-    expect(prompt([])).toContain("update_bot");
-    expect(prompt(["ask_user", "update_bot"])).not.toContain("ask_user");
-    expect(prompt(["ask_user", "update_bot"])).not.toContain("update_bot");
-  });
-});
-
 describe("codex catalog auth", () => {
   const actor = {
     spaceId: "workspace-1",
@@ -7039,15 +6885,6 @@ describe("bot model auth on save", () => {
       handler: new RPCHandler(createRouter(deps)),
     };
   }
-
-  it("persists the daily check-in preference through the bot update route", async () => {
-    const { botUpdate, handler } = saveDeps({ modelId: spark, preferences: () => null });
-    const response = await call(handler, "bots/update", { botId: "bot-1", dailyCheckIns: false });
-    expect(response.status).toBe(200);
-    expect(botUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ dailyCheckIns: false }) }),
-    );
-  });
 
   it("saves a rename while resending an existing Spark override", async () => {
     const { preferenceFindFirst, secretFindFirst, botUpdate, handler } = saveDeps({

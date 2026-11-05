@@ -520,28 +520,13 @@ describe("runReplyGuidance", () => {
     expect(runReplyGuidance("routine")).not.toContain("Leave the final reply empty");
   });
 
-  it("gives the creation intro the profile fields its prompt asks about", () => {
-    const bot = {
-      name: "Ada",
-      description: "Reads and sorts mail.",
-      instructions: "Never send mail without asking.",
-    };
-    const intro = runIdentityInstruction(bot, "created");
-    expect(intro).toContain("Description: Reads and sorts mail.");
-    expect(intro).toContain("Never send mail without asking.");
-    expect(runIdentityInstruction({ ...bot, instructions: "" }, "created")).toContain(
-      "Instructions: (none)",
-    );
-    expect(runIdentityInstruction(bot, "user")).toContain(bot.instructions);
-  });
-
   it("keeps the public description and private instructions distinct on normal runs", () => {
     const bot = {
       name: "Ada",
       description: "Reads and sorts mail.",
       instructions: "Never send mail without asking.",
     };
-    const prompt = runIdentityInstruction(bot, "user");
+    const prompt = runIdentityInstruction(bot);
     expect(prompt).toContain("Ada\nReads and sorts mail.");
     expect(prompt).toContain("Teammates see only the profile above.");
     expect(prompt.endsWith("Never send mail without asking.")).toBe(true);
@@ -553,34 +538,25 @@ describe("runReplyGuidance", () => {
       description: "Reads and sorts mail.",
       instructions: "Reads and sorts mail.",
     };
-    expect(runIdentityInstruction(bot, "user")).toBe("Ada\nReads and sorts mail.");
-    expect(runIdentityInstruction({ ...bot, instructions: "" }, "user")).toBe(
-      "Ada\nReads and sorts mail.",
-    );
+    expect(runIdentityInstruction(bot)).toBe("Ada\nReads and sorts mail.");
+    expect(runIdentityInstruction({ ...bot, instructions: "" })).toBe("Ada\nReads and sorts mail.");
   });
 
   it("omits blank profile lines and treats missing fields as empty", () => {
     expect(
-      runIdentityInstruction({ name: "Ada", description: "", instructions: "Stay quiet." }, "user"),
+      runIdentityInstruction({ name: "Ada", description: "", instructions: "Stay quiet." }),
     ).toBe(
       "Ada\nTeammates see only the profile above. These instructions are private to you:\nStay quiet.",
     );
-    expect(runIdentityInstruction({ name: "Ada", description: "", instructions: "" }, "user")).toBe(
-      "Ada",
-    );
+    expect(runIdentityInstruction({ name: "Ada", description: "", instructions: "" })).toBe("Ada");
     expect(
-      runIdentityInstruction(
-        { name: "Ada", description: "Reads and sorts mail.", instructions: "" },
-        "user",
-      ),
+      runIdentityInstruction({
+        name: "Ada",
+        description: "Reads and sorts mail.",
+        instructions: "",
+      }),
     ).toBe("Ada\nReads and sorts mail.");
-    expect(runIdentityInstruction({ name: "Ada" }, "routine")).toBe("Ada");
-  });
-
-  it("does not send a finish notification for the creation intro", () => {
-    expect(runSendsFinishNotification("created")).toBe(false);
-    expect(runSendsFinishNotification("user")).toBe(true);
-    expect(runSendsFinishNotification("routine")).toBe(true);
+    expect(runIdentityInstruction({ name: "Ada" })).toBe("Ada");
   });
 
   it("opens the model stream only for the current running lease", () => {

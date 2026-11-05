@@ -54,7 +54,6 @@ import { threadsRoutes } from "./routes/threads.js";
 import type { VoiceDeps } from "./voice.js";
 
 export { nextConnectionLabel } from "./model-credentials.js";
-export { botIntroPrompt, enqueueBotIntroRun } from "./routes/bots.js";
 export { HEARTBEAT_MS, SESSION_RECHECK_MS } from "./routes/shared.js";
 
 export interface RouterDeps {

@@ -544,7 +544,6 @@ msgstr "Активность"
 #: src/components/SecretAskCard.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Add"
 msgstr "Добавить"
 
@@ -622,17 +621,9 @@ msgstr "Добавить поле"
 msgid "Add header"
 msgstr "Добавить заголовок"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Add item"
-msgstr "Добавить элемент"
-
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Add MCP server"
 msgstr "Добавить MCP-сервер"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Add open work"
-msgstr "Добавить задачу"
 
 #: src/components/PasskeyOffer.tsx
 #: src/components/PasskeySettings.tsx
@@ -1542,10 +1533,6 @@ msgstr ""
 msgid "Compact"
 msgstr ""
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Complete"
-msgstr "Завершить"
-
 #: src/components/SubagentCard.tsx
 msgid "Completed"
 msgstr "Завершено"
@@ -1812,10 +1799,6 @@ msgstr "Копировать строки"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Cost"
 msgstr "Стоимость"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not add"
-msgstr "Не удалось добавить"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Could not add MCP server"
@@ -2157,7 +2140,6 @@ msgstr ""
 #: src/components/ComputerDeviceSettings.tsx
 #: src/lib/user-devices.ts
 #: src/pages/KnowledgeSection.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Could not remove"
 msgstr "Не удалось удалить"
 
@@ -2333,10 +2315,6 @@ msgstr "Не удалось проверить MCP-сервер"
 #: src/lib/dictation.ts
 msgid "Could not transcribe that recording."
 msgstr ""
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not update"
-msgstr "Не удалось обновить"
 
 #: src/components/ModelCredits.tsx
 msgid "Could not update billing"
@@ -2521,10 +2499,6 @@ msgstr "Настроить аватар бота"
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "Ежедневно"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Daily check-ins on unfinished work"
-msgstr "Ежедневные напоминания о незавершённой работе"
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -4183,10 +4157,6 @@ msgstr ""
 msgid "New messages"
 msgstr "Новые сообщения"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "New open-work item"
-msgstr "Новая задача"
-
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Auth.tsx
 msgid "New password"
@@ -4494,10 +4464,6 @@ msgstr "Открыть ссылку"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "Открыть навигацию"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Open work"
-msgstr "Открытые задачи"
 
 #: src/pages/Onboarding.tsx
 msgid "OpenAI API"
@@ -5016,7 +4982,6 @@ msgstr "Перезагрузить"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Remove"
 msgstr "Удалить"
 
@@ -5084,10 +5049,6 @@ msgstr ""
 msgid "Remove webhook"
 msgstr "Удалить вебхук"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Removed, but list refresh failed"
-msgstr "Удалено, но обновить список не удалось."
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "Removing…"
@@ -5108,10 +5069,6 @@ msgstr "Переименовать раздел"
 #: src/lib/billing.ts
 msgid "Renews {day}"
 msgstr ""
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Reopen"
-msgstr "Открыть заново"
 
 #: src/pages/model-settings/connection-controls.tsx
 msgid "Replace API key"
@@ -5387,10 +5344,6 @@ msgstr "Сохранить в хранилище"
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Saved"
 msgstr "Сохранено"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Saved, but list refresh failed"
-msgstr "Сохранено, но обновить список не удалось."
 
 #: src/pages/model-settings/use-model-settings.ts
 msgid "Saved."
@@ -5679,7 +5632,6 @@ msgstr ""
 #: src/components/pages/PagesList.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Show more"
 msgstr "Показать ещё"
 

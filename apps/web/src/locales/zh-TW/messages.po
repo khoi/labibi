@@ -545,7 +545,6 @@ msgstr "動態"
 #: src/components/SecretAskCard.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Add"
 msgstr "新增"
 
@@ -623,17 +622,9 @@ msgstr "新增欄位"
 msgid "Add header"
 msgstr "新增標頭"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Add item"
-msgstr "新增項目"
-
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Add MCP server"
 msgstr "新增 MCP 伺服器"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Add open work"
-msgstr "新增待辦事項"
 
 #: src/components/PasskeyOffer.tsx
 #: src/components/PasskeySettings.tsx
@@ -1543,10 +1534,6 @@ msgstr ""
 msgid "Compact"
 msgstr "緊湊"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Complete"
-msgstr "完成"
-
 #: src/components/SubagentCard.tsx
 msgid "Completed"
 msgstr "已完成"
@@ -1813,10 +1800,6 @@ msgstr "複製列"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Cost"
 msgstr "費用"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not add"
-msgstr "無法新增"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Could not add MCP server"
@@ -2158,7 +2141,6 @@ msgstr ""
 #: src/components/ComputerDeviceSettings.tsx
 #: src/lib/user-devices.ts
 #: src/pages/KnowledgeSection.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Could not remove"
 msgstr "無法移除"
 
@@ -2334,10 +2316,6 @@ msgstr "無法測試 MCP 伺服器"
 #: src/lib/dictation.ts
 msgid "Could not transcribe that recording."
 msgstr ""
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not update"
-msgstr "無法更新"
 
 #: src/components/ModelCredits.tsx
 msgid "Could not update billing"
@@ -2522,10 +2500,6 @@ msgstr "自訂機器人頭像"
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "每天"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Daily check-ins on unfinished work"
-msgstr "每天追蹤未完成的工作"
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -4184,10 +4158,6 @@ msgstr ""
 msgid "New messages"
 msgstr "新訊息"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "New open-work item"
-msgstr "新的待辦"
-
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Auth.tsx
 msgid "New password"
@@ -4495,10 +4465,6 @@ msgstr "開啟連結"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "開啟導覽"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Open work"
-msgstr "待辦"
 
 #: src/pages/Onboarding.tsx
 msgid "OpenAI API"
@@ -5017,7 +4983,6 @@ msgstr "重新載入"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Remove"
 msgstr "移除"
 
@@ -5085,10 +5050,6 @@ msgstr ""
 msgid "Remove webhook"
 msgstr "移除 Webhook"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Removed, but list refresh failed"
-msgstr "已移除，但清單重新整理失敗"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "Removing…"
@@ -5109,10 +5070,6 @@ msgstr "重新命名分組"
 #: src/lib/billing.ts
 msgid "Renews {day}"
 msgstr "於 {day} 續訂"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Reopen"
-msgstr "重新開啟"
 
 #: src/pages/model-settings/connection-controls.tsx
 msgid "Replace API key"
@@ -5388,10 +5345,6 @@ msgstr "儲存到保管庫"
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Saved"
 msgstr "已儲存"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Saved, but list refresh failed"
-msgstr "已儲存，但清單重新整理失敗"
 
 #: src/pages/model-settings/use-model-settings.ts
 msgid "Saved."
@@ -5680,7 +5633,6 @@ msgstr "顯示清單"
 #: src/components/pages/PagesList.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Show more"
 msgstr "顯示更多"
 

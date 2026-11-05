@@ -7,7 +7,6 @@ import { recordUsage, runAsSystem } from "@labradoodle/db";
 import { describe, expect, it } from "vitest";
 import { runAutoReviewJudge } from "../../adapters/src/auto-review.js";
 import { compactHistory } from "../../adapters/src/history-compaction.js";
-import { discardBotIntroRun } from "./discard-bot-intro.js";
 import { sessionCookieHeader } from "./index.js";
 import { startModelEmulator } from "./model-emulator.js";
 import { asSystem } from "./system-db.js";
@@ -142,7 +141,6 @@ describe.skipIf(!enabled)("persisted Pi usage accounting", () => {
         instructions: "Complete the synthetic task.",
         notifyOnFinish: false,
       });
-      await discardBotIntroRun(handles, cookie, bot.id);
       await rpc("bots/update", {
         botId: bot.id,
         modelProvider: model.model.provider,

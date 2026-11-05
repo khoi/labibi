@@ -459,7 +459,6 @@ function fixture({
     botSection: { findMany: vi.fn(async () => []) },
     vaultCredential: { findMany: vi.fn(async () => []) },
     agentSkill: { findMany: vi.fn(async () => []) },
-    scratchpadItem: { findMany: vi.fn(async () => []) },
     spaceSettingOverride: {
       findUnique: vi.fn(
         async (query: { where: { spaceId_userId_setting: { setting: string } } }) =>
@@ -1501,7 +1500,7 @@ describe("own instructions through update_bot", () => {
     reviewMock.mockReset();
     reviewMock.mockResolvedValue({ decision: "pass", reason: "Asked for", model: "mock" });
   });
-  it.each(["user", "created", "routine"])(
+  it.each(["user", "routine"])(
     "sets instructions without a card once Auto Review passes them in a %s run",
     async (trigger) => {
       const f = emptyBot({ trigger, autoReview: true });

@@ -2,7 +2,6 @@ import { VoiceAccountError } from "@labradoodle/adapter-kit";
 import type { PrismaClient } from "@labradoodle/db";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FleetPrepareDeps } from "./fleet-tools.js";
-import { updateOwnBotFromTool } from "./fleet-tools.js";
 import type * as ModelSelection from "./model-selection.js";
 import { validateBotModelChange } from "./model-selection.js";
 import {
@@ -48,7 +47,6 @@ const bot = {
   instructions: "Cite sources.",
   color: "#8B5CF6",
   notifyOnFinish: true,
-  dailyCheckIns: true,
   modelProvider: null,
   modelId: null,
   thinkingLevel: null,
@@ -81,7 +79,6 @@ describe("readOwnBotSettings", () => {
       instructions: "Cite sources.",
       avatar: "#8B5CF6",
       notifyOnFinish: true,
-      dailyCheckIns: true,
       model: "Google: Gemini 3.8 Flash (default)",
       thinkingLevel: "default",
       readAloud: false,
@@ -324,20 +321,4 @@ describe("prepareOwnBotSettings voice", () => {
       await prepareOwnBotSettings(deps(), scope, bot, { voice: "Rachel" }, async () => null),
     ).toEqual({ error: "Connect a voice provider first." });
   });
-});
-
-it("update_bot persists a daily check-in opt-out and returns the saved value", async () => {
-  const update = vi.fn(async ({ data }) => ({ id: "bot-1", ...bot, ...data }));
-  const append = vi.fn();
-  const result = await updateOwnBotFromTool(
-    { prisma: { bot: { update } }, events: { append } } as never,
-    { id: "run-1", userId: "user-1", spaceId: "space-1", sourceMessageId: null },
-    "thread-1",
-    { id: "bot-1", name: "Scout" },
-    { dailyCheckIns: false },
-    {} as never,
-  );
-  expect(update).toHaveBeenCalledWith(expect.objectContaining({ data: { dailyCheckIns: false } }));
-  expect(result).toMatchObject({ ok: true, dailyCheckIns: false });
-  expect((await readSettings({ ...bot, dailyCheckIns: false })).dailyCheckIns).toBe(false);
 });

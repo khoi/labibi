@@ -544,7 +544,6 @@ msgstr "Actividad"
 #: src/components/SecretAskCard.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Add"
 msgstr "Agregar"
 
@@ -622,17 +621,9 @@ msgstr "Añadir campo"
 msgid "Add header"
 msgstr "Añadir encabezado"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Add item"
-msgstr "Agregar elemento"
-
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Add MCP server"
 msgstr "Agregar servidor MCP"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Add open work"
-msgstr "Añadir trabajo pendiente"
 
 #: src/components/PasskeyOffer.tsx
 #: src/components/PasskeySettings.tsx
@@ -1542,10 +1533,6 @@ msgstr "Comunicación"
 msgid "Compact"
 msgstr "Compacta"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Complete"
-msgstr "Completado"
-
 #: src/components/SubagentCard.tsx
 msgid "Completed"
 msgstr "Completado"
@@ -1812,10 +1799,6 @@ msgstr "Copiar filas"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Cost"
 msgstr "Coste"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not add"
-msgstr "No se pudo agregar"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Could not add MCP server"
@@ -2157,7 +2140,6 @@ msgstr "No se pudo rechazar el plugin"
 #: src/components/ComputerDeviceSettings.tsx
 #: src/lib/user-devices.ts
 #: src/pages/KnowledgeSection.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Could not remove"
 msgstr "No se pudo quitar"
 
@@ -2333,10 +2315,6 @@ msgstr "No se pudo probar el servidor MCP"
 #: src/lib/dictation.ts
 msgid "Could not transcribe that recording."
 msgstr "No se pudo transcribir esa grabación."
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not update"
-msgstr "No se pudo actualizar"
 
 #: src/components/ModelCredits.tsx
 msgid "Could not update billing"
@@ -2521,10 +2499,6 @@ msgstr "Personalizar avatar del bot"
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "Diario"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Daily check-ins on unfinished work"
-msgstr "Seguimiento diario del trabajo pendiente"
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -4183,10 +4157,6 @@ msgstr ""
 msgid "New messages"
 msgstr "Mensajes nuevos"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "New open-work item"
-msgstr "Nuevo elemento de trabajo abierto"
-
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Auth.tsx
 msgid "New password"
@@ -4494,10 +4464,6 @@ msgstr "Abrir enlace"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "Abrir navegación"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Open work"
-msgstr "Trabajo abierto"
 
 #: src/pages/Onboarding.tsx
 msgid "OpenAI API"
@@ -5016,7 +4982,6 @@ msgstr "Recargar"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Remove"
 msgstr "Quitar"
 
@@ -5084,10 +5049,6 @@ msgstr "Quitar habilidades"
 msgid "Remove webhook"
 msgstr "Quitar webhook"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Removed, but list refresh failed"
-msgstr "Eliminado, pero falló la actualización de la lista"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "Removing…"
@@ -5108,10 +5069,6 @@ msgstr "Renombrar sección"
 #: src/lib/billing.ts
 msgid "Renews {day}"
 msgstr "Se renueva el {day}"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Reopen"
-msgstr "Reabrir"
 
 #: src/pages/model-settings/connection-controls.tsx
 msgid "Replace API key"
@@ -5387,10 +5344,6 @@ msgstr "Guardar en la bóveda"
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Saved"
 msgstr "Guardado"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Saved, but list refresh failed"
-msgstr "Guardado, pero falló la actualización de la lista"
 
 #: src/pages/model-settings/use-model-settings.ts
 msgid "Saved."
@@ -5679,7 +5632,6 @@ msgstr "Mostrar lista"
 #: src/components/pages/PagesList.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Show more"
 msgstr "Mostrar más"
 

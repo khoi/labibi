@@ -579,7 +579,6 @@ model Space {
   tasks                       Task[]
   runs                        Run[]
   routines                    Routine[]
-  scratchpadItems             ScratchpadItem[]
   taughtSkills                TaughtSkill[]
   agentSkills                 AgentSkill[]
   connections                 Connection[]
@@ -924,10 +923,8 @@ model Bot {
   teamChatAmbientEnabled Boolean @default(false)
   teamChatRules          String  @default("")
   crossSpaceCommunication Boolean @default(true)
-  dailyCheckIns Boolean @default(true)
   fleetManagement        Boolean @default(true)
   routines          Routine[]
-  scratchpadItems   ScratchpadItem[]
   taughtSkills      TaughtSkill[]
   memoryDocuments   MemoryDocument[]
   agentHome         AgentHome?
@@ -1421,25 +1418,6 @@ model Routine {
   @@index([active, nextRunAt])
   @@index([spaceId, botId])
   @@map("routines")
-}
-
-model ScratchpadItem {
-  id        String   @id @default(cuid())
-  spaceId   String
-  space     Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  botId     String
-  bot       Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
-  userId    String
-  title     String
-  status    String   @default("open")
-  notes     String   @default("")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([spaceId, botId, status])
-  @@index([spaceId, botId, updatedAt])
-  @@index([botId, status, updatedAt, id])
-  @@map("scratchpad_items")
 }
 
 model TaughtSkill {

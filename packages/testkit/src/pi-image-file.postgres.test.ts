@@ -4,7 +4,6 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { ComposioConnector, FakeComposioClient } from "@labradoodle/adapters";
 import { describe, expect, it } from "vitest";
-import { discardBotIntroRun } from "./discard-bot-intro.js";
 import { sessionCookieHeader } from "./index.js";
 import { startModelEmulator } from "./model-emulator.js";
 import { asSystem } from "./system-db.js";
@@ -80,7 +79,6 @@ describe.skipIf(!databaseAvailable)("offline Pi product journey", () => {
         instructions: "Complete the task.",
         notifyOnFinish: false,
       });
-      await discardBotIntroRun(handles, cookie, bot.id);
       await rpc(handles.app, cookie, "bots/update", {
         botId: bot.id,
         modelProvider: model.model.provider,

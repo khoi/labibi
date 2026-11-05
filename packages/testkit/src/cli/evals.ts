@@ -27,12 +27,6 @@ import { GROUP_ROUTING_EVAL_CASES, GROUP_ROUTING_FIXTURE_VERSION } from "../eval
 import { HISTORY_FIXTURE_VERSION } from "../evals/history-fixtures.js";
 import type { DiagnosticToolObservation, HistoryDiagnostic } from "../evals/history-observer.js";
 import { observeSyntheticHistory } from "../evals/history-observer.js";
-import {
-  INITIATIVE_EVAL_CASES,
-  INITIATIVE_FIXTURE_VERSION,
-  INITIATIVE_JUDGE_CALIBRATION,
-  INITIATIVE_JUDGE_VERSION,
-} from "../evals/initiative.js";
 import type { EvalJudge, JudgeInput } from "../evals/judge.js";
 import { createEvalJudge } from "../evals/judge.js";
 import type { CacheDecisionMeasurement, EvalPricing, MeasuredCall } from "../evals/measurement.js";
@@ -117,11 +111,6 @@ async function main() {
       fixtureVersion: SILENCE_FIXTURE_VERSION,
       judge: { version: SILENCE_JUDGE_VERSION, calibration: SILENCE_JUDGE_CALIBRATION },
     },
-    initiative: {
-      cases: INITIATIVE_EVAL_CASES,
-      fixtureVersion: INITIATIVE_FIXTURE_VERSION,
-      judge: { version: INITIATIVE_JUDGE_VERSION, calibration: INITIATIVE_JUDGE_CALIBRATION },
-    },
     memory: {
       cases: MEMORY_EVAL_CASES,
       fixtureVersion: MEMORY_FIXTURE_VERSION,
@@ -151,7 +140,7 @@ async function main() {
   };
   if (!Object.hasOwn(suites, values.suite!))
     throw new Error(
-      "Unknown suite; use product, history, group, group-routing, silence, initiative, deliberation, memory, recall, tool-choice, bot-files, or approval",
+      "Unknown suite; use product, history, group, group-routing, silence, deliberation, memory, recall, tool-choice, bot-files, or approval",
     );
   const suite = suites[values.suite!]!;
   const suiteJudge = suite.judge;

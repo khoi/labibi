@@ -240,7 +240,6 @@ async function executorHarness(server: ReturnType<typeof statefulMcpServer>) {
     taughtSkill: { findMany: vi.fn(async () => []) },
     vaultCredential: { findMany: vi.fn(async () => []) },
     agentSkill: { findMany: vi.fn(async () => []) },
-    scratchpadItem: { findMany: vi.fn(async () => []) },
     steeringMessage: { findFirst: vi.fn(async () => null) },
     capabilityInstall: {
       findMany: vi.fn(async () => [server.install]),

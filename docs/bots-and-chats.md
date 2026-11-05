@@ -41,7 +41,6 @@ Click the bot's name at the top of the chat to open its settings.
 
 - **Name** and avatar: pick a shape and color, or upload an image.
 - **Notifications**: **When it finishes or needs input**.
-- **Open work**: the to-do list the bot keeps for itself. You can add, complete or remove items.
 - **Memory**: what the bot has written down. See [Memory](./memory.md).
 
 Under **Advanced**:

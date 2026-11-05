@@ -43,11 +43,6 @@ Once connected, **Default scope** decides what bots share in the provider:
 Each bot's settings also gain a **Memory scope** under **Advanced**, so one bot can differ from the
 default.
 
-## Open work
-
-Separate from memory, each bot keeps a short list of **Open work**: things it has started and not
-finished. It is in the bot's settings. You can add items for it, or mark them complete.
-
 ## Memory across spaces
 
 Memory never crosses [spaces](./spaces.md). A bot in one space can't read notes from another.

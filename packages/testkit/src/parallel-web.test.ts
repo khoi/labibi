@@ -90,7 +90,6 @@ function executorFixture(
     secret: { findMany: async () => [] },
     vaultCredential: { findMany: async () => [] },
     agentSkill: { findMany: async () => [] },
-    scratchpadItem: { findMany: async () => [] },
     userActionApprovalRule: { findMany: async () => [] },
     userActionAutoReviewPreference: { findUnique: async () => ({ enabled: false }) },
     externalEffect: { findMany: async () => [] },

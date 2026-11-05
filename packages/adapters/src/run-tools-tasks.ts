@@ -17,13 +17,6 @@ import {
   updateScheduleFromTool,
 } from "./schedule-tools.js";
 import {
-  addScratchpadItemFromTool,
-  completeScratchpadItemFromTool,
-  listScratchpadItemsFromTool,
-  removeScratchpadItemFromTool,
-  updateScratchpadItemFromTool,
-} from "./scratchpad-tools.js";
-import {
   skillCreateFromTool,
   skillDeleteFromTool,
   skillReadFromTool,
@@ -61,7 +54,7 @@ export async function scheduleCreateRefusal(
   return error ? { error } : undefined;
 }
 
-/** The task catalog, scratchpad, schedules and skills. */
+/** The task catalog, schedules and skills. */
 export const taskTools: ToolHandlers = {
   async task_catalog(ctx) {
     const { deps, run, bot, thread } = ctx;
@@ -72,64 +65,6 @@ export const taskTools: ToolHandlers = {
       ...(thread.groupId ? { threadId: thread.id } : {}),
       tools: ctx.tools.offered,
     });
-  },
-  async scratchpad_list(ctx, call) {
-    const { deps, run, bot } = ctx;
-    const { args } = call;
-    return listScratchpadItemsFromTool(deps, {
-      spaceId: run.spaceId,
-      botId: bot.id,
-      includeDone: Boolean(args.includeDone),
-    });
-  },
-  async scratchpad_add(ctx, call) {
-    const { deps, run, bot } = ctx;
-    const { args } = call;
-    const created = await addScratchpadItemFromTool(deps, {
-      spaceId: run.spaceId,
-      botId: bot.id,
-      userId: run.userId,
-      title: String(args.title ?? ""),
-      status: args.status ? String(args.status) : undefined,
-      notes: args.notes !== undefined ? String(args.notes) : undefined,
-    });
-    return call.finish(created);
-  },
-  async scratchpad_update(ctx, call) {
-    const { deps, run, bot } = ctx;
-    const { args } = call;
-    const updated = await updateScratchpadItemFromTool(deps, {
-      spaceId: run.spaceId,
-      botId: bot.id,
-      userId: run.userId,
-      itemId: String(args.itemId ?? ""),
-      title: args.title !== undefined ? String(args.title) : undefined,
-      status: args.status !== undefined ? String(args.status) : undefined,
-      notes: args.notes !== undefined ? String(args.notes) : undefined,
-    });
-    return call.finish(updated);
-  },
-  async scratchpad_complete(ctx, call) {
-    const { deps, run, bot } = ctx;
-    const { args } = call;
-    const completed = await completeScratchpadItemFromTool(deps, {
-      spaceId: run.spaceId,
-      botId: bot.id,
-      userId: run.userId,
-      itemId: String(args.itemId ?? ""),
-    });
-    return call.finish(completed);
-  },
-  async scratchpad_remove(ctx, call) {
-    const { deps, run, bot } = ctx;
-    const { args } = call;
-    const removed = await removeScratchpadItemFromTool(deps, {
-      spaceId: run.spaceId,
-      botId: bot.id,
-      userId: run.userId,
-      itemId: String(args.itemId ?? ""),
-    });
-    return call.finish(removed);
   },
   async schedule_create(ctx, call) {
     const { deps, run, bot, thread } = ctx;

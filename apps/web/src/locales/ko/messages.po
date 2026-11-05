@@ -544,7 +544,6 @@ msgstr "활동"
 #: src/components/SecretAskCard.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Add"
 msgstr "추가"
 
@@ -622,17 +621,9 @@ msgstr "필드 추가"
 msgid "Add header"
 msgstr "헤더 추가"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Add item"
-msgstr "항목 추가"
-
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Add MCP server"
 msgstr "MCP 서버 추가"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Add open work"
-msgstr "진행 중인 작업 추가"
 
 #: src/components/PasskeyOffer.tsx
 #: src/components/PasskeySettings.tsx
@@ -1542,10 +1533,6 @@ msgstr ""
 msgid "Compact"
 msgstr ""
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Complete"
-msgstr "완료"
-
 #: src/components/SubagentCard.tsx
 msgid "Completed"
 msgstr "완료"
@@ -1812,10 +1799,6 @@ msgstr "행 복사"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Cost"
 msgstr "비용"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not add"
-msgstr "추가하지 못했습니다."
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Could not add MCP server"
@@ -2157,7 +2140,6 @@ msgstr ""
 #: src/components/ComputerDeviceSettings.tsx
 #: src/lib/user-devices.ts
 #: src/pages/KnowledgeSection.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Could not remove"
 msgstr "삭제하지 못했습니다."
 
@@ -2333,10 +2315,6 @@ msgstr "MCP 서버를 테스트하지 못했습니다."
 #: src/lib/dictation.ts
 msgid "Could not transcribe that recording."
 msgstr ""
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not update"
-msgstr "업데이트하지 못했습니다."
 
 #: src/components/ModelCredits.tsx
 msgid "Could not update billing"
@@ -2521,10 +2499,6 @@ msgstr "봇 아바타 맞춤설정"
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "매일"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Daily check-ins on unfinished work"
-msgstr "미완료 작업 매일 확인"
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -4183,10 +4157,6 @@ msgstr ""
 msgid "New messages"
 msgstr ""
 
-#: src/pages/ScratchpadSection.tsx
-msgid "New open-work item"
-msgstr "새 진행 작업"
-
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Auth.tsx
 msgid "New password"
@@ -4494,10 +4464,6 @@ msgstr "링크 열기"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "메뉴 열기"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Open work"
-msgstr "진행 중인 작업"
 
 #: src/pages/Onboarding.tsx
 msgid "OpenAI API"
@@ -5016,7 +4982,6 @@ msgstr "새로고침"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Remove"
 msgstr "삭제"
 
@@ -5084,10 +5049,6 @@ msgstr ""
 msgid "Remove webhook"
 msgstr "웹훅 제거"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Removed, but list refresh failed"
-msgstr "삭제했지만 목록을 새로고침하지 못했습니다."
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "Removing…"
@@ -5108,10 +5069,6 @@ msgstr "섹션 이름 바꾸기"
 #: src/lib/billing.ts
 msgid "Renews {day}"
 msgstr ""
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Reopen"
-msgstr "다시 열기"
 
 #: src/pages/model-settings/connection-controls.tsx
 msgid "Replace API key"
@@ -5387,10 +5344,6 @@ msgstr "보관함에 저장"
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Saved"
 msgstr "저장됨"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Saved, but list refresh failed"
-msgstr "저장했지만 목록을 새로고침하지 못했습니다."
 
 #: src/pages/model-settings/use-model-settings.ts
 msgid "Saved."
@@ -5679,7 +5632,6 @@ msgstr ""
 #: src/components/pages/PagesList.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Show more"
 msgstr "더 보기"
 

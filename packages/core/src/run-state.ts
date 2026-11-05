@@ -23,16 +23,10 @@ const TERMINAL: RunStatus[] = ["completed", "failed", "cancelled"];
 /**
  * These turns carry their own prompt and must not take a user message as steering.
  * Routine and webhook runs are not the conversation, and neither is a wake from another bot:
- * its reply goes back to that bot. The creation intro can only ask what it is for; a message
- * that lands during any of them waits, and the continuation after the turn finishes answers it.
+ * its reply goes back to that bot. A message that lands during any of them waits, and the
+ * continuation after the turn finishes answers it.
  */
-const NON_CONVERSATIONAL_RUN_TRIGGERS = new Set([
-  "routine",
-  "webhook",
-  "created",
-  "tickets",
-  "bot_message",
-]);
+const NON_CONVERSATIONAL_RUN_TRIGGERS = new Set(["routine", "webhook", "tickets", "bot_message"]);
 
 /**
  * Background triggers do internal work that must not leak into the chat: the
@@ -87,9 +81,9 @@ export function isTerminal(status: string): boolean {
 /** Prompt of a run created to answer messages that waited behind another turn. */
 export const STEERING_CONTINUATION_PROMPT = "Respond to the user's steering context.";
 
-/** Routine runs and the creation intro stay isolated from thread history. */
+/** Routine runs stay isolated from thread history. */
 export function runReadsThreadHistory(trigger: string | null | undefined): boolean {
-  return trigger !== "created" && trigger !== "routine";
+  return trigger !== "routine";
 }
 
 /** Whether a run's turn is part of the thread's conversation and may take user steering. */

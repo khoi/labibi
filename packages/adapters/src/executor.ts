@@ -200,7 +200,6 @@ import {
 } from "./run-routines.js";
 import {
   BUILTIN_AGENT_TOOL_NAMES,
-  followUpsOffered,
   offeredFleetTools,
   selectBuiltinToolsForRun,
 } from "./run-tool-selection.js";
@@ -217,14 +216,9 @@ import {
   RECENT_TURN_IMAGE_TURNS,
   withRecentTurnImages,
 } from "./run-turn-images.js";
-import { loadAgentScratchpadContext } from "./scratchpad-context.js";
 import { inferScript } from "./scripted-runtime.js";
 import { loadSharedSpaceNote } from "./shared-space-note.js";
 import { builtinAgentSkillRecords, listAgentSkillRecords } from "./skill-tools.js";
-import {
-  filterStrategicInitiativeTools,
-  isStrategicInitiativeRun,
-} from "./strategic-initiative.js";
 import {
   continueRunClaimFence,
   refreshTakeoverContinuePlan,
@@ -899,21 +893,14 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
                 context,
               )
             : Promise.resolve(null);
-        const [discovered, currentTurnImages, memoryContext, scratchpadContext, recalled] =
-          await Promise.all([
-            discoveredPromise,
-            loadCurrentTurnImages(deps, turnBlocks, context),
-            nonOwnerChatRun
-              ? Promise.resolve("")
-              : loadAgentMemoryContext(deps.memory, bot.id, context),
-            nonOwnerChatRun
-              ? Promise.resolve("")
-              : loadAgentScratchpadContext(deps, {
-                  spaceId: run.spaceId,
-                  botId: bot.id,
-                }),
-            recallPromise,
-          ]);
+        const [discovered, currentTurnImages, memoryContext, recalled] = await Promise.all([
+          discoveredPromise,
+          loadCurrentTurnImages(deps, turnBlocks, context),
+          nonOwnerChatRun
+            ? Promise.resolve("")
+            : loadAgentMemoryContext(deps.memory, bot.id, context),
+          recallPromise,
+        ]);
         const semanticMemoryEnabled = Boolean(semanticMemory) && !nonOwnerChatRun;
         let recalledMemory = "";
         let recallSucceeded = false;
@@ -1389,24 +1376,15 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
           // Cross-owner agent connections only exist for chat-linked bots.
           ...(hasMessagingIdentity &&
           bot.crossSpaceCommunication === true &&
-          !isBackgroundRunTrigger(run.trigger) &&
-          run.trigger !== "created"
+          !isBackgroundRunTrigger(run.trigger)
             ? agentConnectionTools.filter((tool) => !disabledBuiltinTools.has(tool.name))
             : []),
         ];
-        const strategicBuiltins = filterStrategicInitiativeTools(builtins, {
-          trigger: run.trigger,
-          clientNonce: run.clientNonce,
-        });
         const exposedConnectorTools = discovered.filter(
           (tool) => !builtinAgentTools.some((builtin) => builtin.name === tool.name),
         );
-        const strategicConnectorTools = filterStrategicInitiativeTools(exposedConnectorTools, {
-          trigger: run.trigger,
-          clientNonce: run.clientNonce,
-        });
         const connectorTools = new Map(
-          strategicConnectorTools.map((tool) => [tool.name, tool] as const),
+          exposedConnectorTools.map((tool) => [tool.name, tool] as const),
         );
         const trustLoaders = createRunTrustLoaders(deps, {
           run,
@@ -1423,12 +1401,7 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
         const searchResultUrls = new Set<string>();
         const initiallyTainted =
           !ownerStartedRun || Boolean(turnCheckpoint) || Boolean(checkpointLoadError);
-        // The creation intro only asks what the bot is for (see selectBuiltinToolsForRun),
-        // so it gets no connector tools either.
-        const tools =
-          run.trigger === "created"
-            ? strategicBuiltins
-            : [...strategicBuiltins, ...strategicConnectorTools];
+        const tools = [...builtins, ...exposedConnectorTools];
         const taskCatalogInstruction = tools.some((tool) => tool.name === "task_catalog")
           ? TASK_CATALOG_GUIDANCE
           : undefined;
@@ -1580,7 +1553,7 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
           },
           tools: {
             offered: tools,
-            builtins: strategicBuiltins,
+            builtins,
             connector: connectorTools,
             disabled: disabledBuiltinTools,
             connectedPlugins,
@@ -1853,16 +1826,13 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
               // cache-aware context for connections declaring a cache window.
               contextStrategy: deps.contextStrategy,
               instructions: userTurnInstructions({
-                botInstructions: runIdentityInstruction(bot, run.trigger),
+                botInstructions: runIdentityInstruction(bot),
                 groupContext: groupReplyOptional
                   ? [groupContext, GROUP_UNADDRESSED_REPLY_GUIDANCE].filter(Boolean).join("\n")
                   : groupContext,
                 messagingContext,
                 redactedMemoryContext: memoryContext
                   ? redactSecrets(memoryContext, runSecrets)
-                  : undefined,
-                redactedScratchpadContext: scratchpadContext
-                  ? redactSecrets(scratchpadContext, runSecrets)
                   : undefined,
                 hasHistoricalContext: historicalContext.length > 0,
                 historyRetrievalEnabled: contextStrategy !== "current",
@@ -1876,15 +1846,8 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
                 agentSkillsLine,
                 taughtSkillsLine,
                 replyGuidance: runReplyGuidance(run.trigger),
-                disabledBuiltinTools: isStrategicInitiativeRun(run)
-                  ? new Set(
-                      builtinAgentTools
-                        .map((tool) => tool.name)
-                        .filter((name) => !strategicBuiltins.some((tool) => tool.name === name)),
-                    )
-                  : disabledBuiltinTools,
-                offeredFleetTools: offeredFleetTools(strategicBuiltins),
-                followUpsOffered: followUpsOffered(strategicBuiltins, ownerStartedRun),
+                disabledBuiltinTools,
+                offeredFleetTools: offeredFleetTools(builtins),
                 userComputer,
               })
                 .filter((instruction): instruction is string => Boolean(instruction))

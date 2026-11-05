@@ -18,7 +18,6 @@ import {
   runAsTenant,
 } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { discardBotIntroFromCreate } from "./discard-bot-intro.js";
 import { asSystem } from "./system-db.js";
 
 process.env.WAKEUP_DRIVER = "memory";
@@ -1421,6 +1420,6 @@ describeIntegration("run executor lifecycle", () => {
     if (!response.ok || payload.error) {
       throw new Error(payload.error?.message ?? `${procedure} failed (${response.status})`);
     }
-    return discardBotIntroFromCreate(handles, cookie, procedure, payload.json as T);
+    return payload.json as T;
   }
 });

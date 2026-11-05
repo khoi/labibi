@@ -96,7 +96,13 @@ vi.mock("@labradoodle/ui-web", () => ({
   ),
 }));
 vi.mock("./avatar-studio-popover", () => ({
-  AvatarStudioPopover: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
+  AvatarStudioPopover: ({
+    value,
+    onChange,
+  }: {
+    value: string;
+    onChange: (value: string) => void;
+  }) => (
     <button
       type="button"
       aria-label="Avatar color"
@@ -105,7 +111,6 @@ vi.mock("./avatar-studio-popover", () => ({
     />
   ),
 }));
-vi.mock("../ScratchpadSection", () => ({ ScratchpadSection: () => <h3>Open work</h3> }));
 vi.mock("../KnowledgeSection", () => ({
   KnowledgeSection: () => <h3>Memory and skills</h3>,
 }));

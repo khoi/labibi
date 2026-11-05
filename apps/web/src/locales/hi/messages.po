@@ -544,7 +544,6 @@ msgstr "गतिविधि"
 #: src/components/SecretAskCard.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Add"
 msgstr "जोड़ें"
 
@@ -622,17 +621,9 @@ msgstr "फ़ील्ड जोड़ें"
 msgid "Add header"
 msgstr "हेडर जोड़ें"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Add item"
-msgstr "आइटम जोड़ें"
-
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Add MCP server"
 msgstr "MCP सर्वर जोड़ें"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Add open work"
-msgstr "खुला कार्य जोड़ें"
 
 #: src/components/PasskeyOffer.tsx
 #: src/components/PasskeySettings.tsx
@@ -1542,10 +1533,6 @@ msgstr ""
 msgid "Compact"
 msgstr ""
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Complete"
-msgstr "पूर्ण"
-
 #: src/components/SubagentCard.tsx
 msgid "Completed"
 msgstr "पूर्ण"
@@ -1812,10 +1799,6 @@ msgstr "पंक्तियाँ कॉपी करें"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Cost"
 msgstr "लागत"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not add"
-msgstr "जोड़ा नहीं जा सका"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Could not add MCP server"
@@ -2157,7 +2140,6 @@ msgstr ""
 #: src/components/ComputerDeviceSettings.tsx
 #: src/lib/user-devices.ts
 #: src/pages/KnowledgeSection.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Could not remove"
 msgstr "हटाया नहीं जा सका"
 
@@ -2333,10 +2315,6 @@ msgstr "MCP सर्वर का परीक्षण नहीं हो स
 #: src/lib/dictation.ts
 msgid "Could not transcribe that recording."
 msgstr ""
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not update"
-msgstr "अपडेट नहीं हो सका"
 
 #: src/components/ModelCredits.tsx
 msgid "Could not update billing"
@@ -2521,10 +2499,6 @@ msgstr "बॉट अवतार अनुकूलित करें"
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "रोज़"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Daily check-ins on unfinished work"
-msgstr "अधूरे काम पर रोज़ पूछें"
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -4183,10 +4157,6 @@ msgstr ""
 msgid "New messages"
 msgstr ""
 
-#: src/pages/ScratchpadSection.tsx
-msgid "New open-work item"
-msgstr "नया खुला-कार्य आइटम"
-
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Auth.tsx
 msgid "New password"
@@ -4494,10 +4464,6 @@ msgstr "लिंक खोलें"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "नेविगेशन खोलें"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Open work"
-msgstr "खुला कार्य"
 
 #: src/pages/Onboarding.tsx
 msgid "OpenAI API"
@@ -5016,7 +4982,6 @@ msgstr "फिर से लोड करें"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Remove"
 msgstr "हटाएं"
 
@@ -5084,10 +5049,6 @@ msgstr ""
 msgid "Remove webhook"
 msgstr ""
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Removed, but list refresh failed"
-msgstr "हटाया गया, लेकिन सूची रिफ़्रेश विफल रही"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "Removing…"
@@ -5108,10 +5069,6 @@ msgstr "अनुभाग का नाम बदलें"
 #: src/lib/billing.ts
 msgid "Renews {day}"
 msgstr ""
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Reopen"
-msgstr "पुनः खोलें"
 
 #: src/pages/model-settings/connection-controls.tsx
 msgid "Replace API key"
@@ -5387,10 +5344,6 @@ msgstr "वॉल्ट में सहेजें"
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Saved"
 msgstr "सहेजा गया"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Saved, but list refresh failed"
-msgstr "सहेजा गया, लेकिन सूची रिफ़्रेश विफल रही"
 
 #: src/pages/model-settings/use-model-settings.ts
 msgid "Saved."
@@ -5679,7 +5632,6 @@ msgstr ""
 #: src/components/pages/PagesList.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Show more"
 msgstr "और दिखाएँ"
 

@@ -143,16 +143,6 @@ export async function promptFocus(
     if (recent.some((message) => message.role === "user")) return null;
     if (recent.some((message) => messageHasChoiceOrAsk(message.blocks as MessageBlock[])))
       return null;
-    // A bot whose creation intro is running asks what it is for itself (see enqueueBotIntroRun).
-    const intro = await tx.run.findFirst({
-      where: {
-        threadId: thread.id,
-        trigger: "created",
-        status: { notIn: ["failed", "cancelled"] },
-      },
-      select: { id: true },
-    });
-    if (intro) return null;
     const message = await createThreadMessageInTransaction(tx, {
       threadId: target.threadId,
       role: "bot",

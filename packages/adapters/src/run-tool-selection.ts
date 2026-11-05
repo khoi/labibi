@@ -28,7 +28,6 @@ export const READ_ONLY_AGENT_TOOLS = new Set([
   "task_catalog",
   "recall_memory",
   "schedule_list",
-  "scratchpad_list",
   "skill_read",
   "web_search",
   "web_fetch",
@@ -46,14 +45,6 @@ export const BUILTIN_AGENT_TOOL_NAMES = new Set(builtinAgentTools.map((tool) => 
 const FLEET_TOOL_NAMES_SET: ReadonlySet<string> = new Set(FLEET_TOOL_NAMES);
 
 export const FLEET_WRITE_TOOL_NAMES_SET: ReadonlySet<string> = new Set(FLEET_WRITE_TOOL_NAMES);
-
-/**
- * The creation intro asks what the bot is for and records the answer on its own profile.
- * It must not act (shell, computer, scheduling, spawning another bot, ...) before the user
- * has said what it is for. Answering its question resumes it as the user's turn, with
- * every tool (see commitAnswerRunInput).
- */
-const CREATED_RUN_TOOL_NAMES = new Set(["ask_user", "update_bot"]);
 
 export function selectBuiltinToolsForRun(options: {
   historyRetrievalEnabled?: boolean;
@@ -102,7 +93,6 @@ export function selectBuiltinToolsForRun(options: {
   ).filter(
     (tool) =>
       !disabled.has(tool.name) &&
-      (options.trigger !== "created" || CREATED_RUN_TOOL_NAMES.has(tool.name)) &&
       (!FLEET_TOOL_NAMES_SET.has(tool.name) ||
         (Boolean(options.fleetManagement) && ownerStartedRun)) &&
       (ownerStartedRun || (tool.name !== "update_preferences" && tool.name !== "feedback")) &&
@@ -133,8 +123,7 @@ export function selectBuiltinToolsForRun(options: {
             "recall_memory",
             "forget_memory",
             "task_catalog",
-          ].includes(tool.name) &&
-          !tool.name.startsWith("scratchpad_"))),
+          ].includes(tool.name))),
   );
 }
 
@@ -155,26 +144,4 @@ export function filterPageBrowserTools<T extends { name: string }>(
 /** The fleet tools this run was offered, the same decision as tool selection. */
 export function offeredFleetTools(tools: readonly { name: string }[]): string[] {
   return tools.map((tool) => tool.name).filter((name) => FLEET_TOOL_NAMES_SET.has(name));
-}
-
-const FOLLOW_UP_TOOL_NAMES = [
-  "scratchpad_add",
-  "scratchpad_complete",
-  "schedule_create",
-  "schedule_cancel",
-];
-
-/**
- * Whether this run can set its own follow-ups. Only a run the owner started can tell what is
- * still open with them; routines, webhooks, channels, subagents and hand-offs from other bots
- * are not, and some of them would need approval for every schedule.
- */
-export function followUpsOffered(
-  tools: readonly { name: string }[],
-  ownerStartedRun: boolean,
-): boolean {
-  return (
-    ownerStartedRun &&
-    FOLLOW_UP_TOOL_NAMES.every((name) => tools.some((tool) => tool.name === name))
-  );
 }

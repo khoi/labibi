@@ -60,7 +60,7 @@ describe("built-in tool bridge", () => {
     // read_file takes a line range.
     expect(definitionBytes(listed)).toBeLessThanOrEqual(32_344);
     expect(deferred.map((tool) => tool.name)).toEqual(
-      expect.arrayContaining(["render_plot", "create_space", "generate_secret", "scratchpad_add"]),
+      expect.arrayContaining(["render_plot", "create_space", "generate_secret"]),
     );
   });
 
@@ -95,8 +95,6 @@ describe("built-in tool bridge", () => {
     expect(names("chart")).toContain("render_plot");
     expect(names("new space")[0]).toBe("create_space");
     expect(names("generate password")[0]).toBe("generate_secret");
-    expect(names("scratchpad add")[0]).toBe("scratchpad_add");
-    expect(names("scratchpad").length).toBe(3);
     expect(findTools(deferred, { query: "zzzz" })).toMatchObject({
       tools: [],
       hint: expect.any(String),

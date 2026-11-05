@@ -1,5 +1,4 @@
 import { randomBytes } from "node:crypto";
-import { runContinueJob } from "@labradoodle/adapter-kit";
 import {
   archiveBot,
   checkpointAndStopComputer,
@@ -43,7 +42,6 @@ import {
   restoreBotUnderComputerQuota,
   SpaceDeletionInProgressError,
   settingsTarget,
-  THREAD_LOCK_TRANSACTION_OPTIONS,
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { ORPCError } from "@orpc/server";
@@ -53,12 +51,7 @@ import { requireIdentityConfirmation } from "../identity-confirmation.js";
 import type { RouterDeps } from "../router.js";
 import { loadMessagePage } from "../thread-message-pages.js";
 import type { RouterContext } from "./context.js";
-import {
-  computerContext,
-  isRecordNotFound,
-  modelSetup,
-  THREAD_MESSAGE_PAGE_SIZE,
-} from "./shared.js";
+import { computerContext, isRecordNotFound, THREAD_MESSAGE_PAGE_SIZE } from "./shared.js";
 
 /** Surface a Space deletion race as a retryable conflict instead of a generic failure. */
 function mapSpaceLifecycleError(error: unknown): unknown {
@@ -206,96 +199,6 @@ function botSecretMetadataDto(
   };
 }
 
-/** The creation intro's hidden prompt. It names only the tools this bot still has. */
-export function botIntroPrompt(input: {
-  userName: string;
-  spaceName: string | null;
-  disabledBuiltinTools: readonly string[];
-}): string {
-  const canAsk = !input.disabledBuiltinTools.includes("ask_user");
-  const canUpdate = !input.disabledBuiltinTools.includes("update_bot");
-  const canConnect = !input.disabledBuiltinTools.includes("connect_app");
-  const options =
-    "two to four short options that fit your name, anything your description or instructions already say, and what you know about them, never a stock list";
-  return [
-    [
-      "You were just created.",
-      input.userName ? `${input.userName} made you.` : undefined,
-      input.spaceName ? `Their team space is called "${input.spaceName}".` : undefined,
-    ]
-      .filter(Boolean)
-      .join(" "),
-    // The greeting goes in the question itself, so the card stands on its own.
-    canAsk
-      ? `Call ask_user right away, with no text before it. Its question greets them by first name in a few words and asks what they want you for, with ${options}. They can also type their own answer.`
-      : `Greet them by first name in a few words and ask in one sentence what they want you for, suggesting ${options}.`,
-    "If your profile already makes that clear, say in one line what you will do instead of asking.",
-    canUpdate
-      ? 'Once you know what you are for, use update_bot to set what is already clear: a one-line description of what you do, your instructions on how you do it, and a short name if yours is still a placeholder like "New Bot". Leave anything vague unset to fill in later as the work becomes clearer, and otherwise keep your name and look.'
-      : undefined,
-    canConnect
-      ? "Before you start, use connect_app for the one or two apps that would help most with that work, such as their email, calendar, or chat, so they can connect them right here. Skip any that is already connected or not available. Do not wait on the cards: say in one line that you will do more once they connect, and carry on with what you have."
-      : undefined,
-    "Then get started, asking one follow-up only if you cannot start without it.",
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
-
-/**
- * Creating a bot asks only for a name and a look, so one hidden-prompt turn greets the user and
- * asks what the bot is for. The executor limits the "created" trigger to that question and the
- * bot's own profile, and answering resumes the run as the user's turn.
- */
-export async function enqueueBotIntroRun(deps: RouterDeps, actor: Actor, bot: Bot): Promise<void> {
-  const threadId = bot.threadId;
-  if (!threadId) return;
-  // In the scripted test/eval runtime an automatic run would compete with the harness's next
-  // queued response.
-  if (deps.env.agentRuntime === "scripted") return;
-  if ((await modelSetup(deps, actor)).needsModel) return;
-  const [user, space] = await Promise.all([
-    deps.prisma.user.findUnique({ where: { id: actor.userId }, select: { name: true } }),
-    deps.prisma.space.findUnique({
-      where: { id: actor.spaceId },
-      select: { name: true, isDefault: true },
-    }),
-  ]);
-  const prompt = botIntroPrompt({
-    userName: displayName(user?.name, ""),
-    spaceName: space && !space.isDefault ? space.name.trim() || null : null,
-    disabledBuiltinTools: bot.disabledBuiltinTools ?? [],
-  });
-  const run = await deps.prisma.$transaction(async (tx) => {
-    // An idempotent create (spawnKey) returns the bot it already made; it gets one intro.
-    await tx.$queryRaw`SELECT id FROM threads WHERE id = ${threadId} FOR UPDATE`;
-    if (await tx.run.findFirst({ where: { botId: bot.id }, select: { id: true } })) return null;
-    const task = await tx.task.create({
-      data: {
-        spaceId: actor.spaceId,
-        botId: bot.id,
-        threadId,
-        userId: actor.userId,
-        prompt,
-        status: "queued",
-      },
-    });
-    return tx.run.create({
-      data: {
-        spaceId: actor.spaceId,
-        botId: bot.id,
-        threadId,
-        taskId: task.id,
-        userId: actor.userId,
-        status: "queued",
-        trigger: "created",
-      },
-      select: { id: true },
-    });
-  }, THREAD_LOCK_TRANSACTION_OPTIONS);
-  if (run) await deps.jobs.enqueue(runContinueJob(run.id));
-}
-
 export function botsRoutes(ctx: RouterContext) {
   const { deps, repos, botModelValidation, removeBot, groupRepos, authed } = ctx;
   return {
@@ -318,9 +221,6 @@ export function botsRoutes(ctx: RouterContext) {
         } catch (error) {
           throw mapSpaceLifecycleError(error);
         }
-        await enqueueBotIntroRun(deps, context.actor, bot).catch((error) => {
-          getLogger().error("bot intro run enqueue", error);
-        });
         return bot;
       }),
       duplicate: authed.bots.duplicate.handler(async ({ context, input }) => {
@@ -331,7 +231,6 @@ export function botsRoutes(ctx: RouterContext) {
             description: source.description,
             instructions: source.instructions,
             notifyOnFinish: source.notifyOnFinish,
-            dailyCheckIns: source.dailyCheckIns,
             color: source.color,
             avatarSet: resolveBotAvatarSet(source.avatarSet),
             avatarSetPinned: source.avatarSetPinned,
@@ -409,10 +308,7 @@ export function botsRoutes(ctx: RouterContext) {
           spaceId: context.actor.spaceId,
           threadId: existing.thread.id,
           botId: input.botId,
-          emitBotUpdated:
-            botProfileLabelsChanged(input) ||
-            input.expectedSettings !== undefined ||
-            input.dailyCheckIns !== undefined,
+          emitBotUpdated: botProfileLabelsChanged(input) || input.expectedSettings !== undefined,
           expectedInstructions: input.expectedInstructions,
           expectedSettings: input.expectedSettings,
           data: {
@@ -439,7 +335,6 @@ export function botsRoutes(ctx: RouterContext) {
             ...(input.crossSpaceCommunication !== undefined
               ? { crossSpaceCommunication: input.crossSpaceCommunication }
               : {}),
-            ...(input.dailyCheckIns !== undefined ? { dailyCheckIns: input.dailyCheckIns } : {}),
             ...(input.fleetManagement !== undefined
               ? { fleetManagement: input.fleetManagement }
               : {}),

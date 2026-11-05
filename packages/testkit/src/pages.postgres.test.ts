@@ -6,11 +6,10 @@ import { EncryptedSecretStore } from "@labradoodle/adapters";
 import type { createApp } from "@labradoodle/api/app";
 import type { PageDetail, PageSummary, ThreadSnapshot } from "@labradoodle/contracts";
 import { SHARED_PAGE_PATH_PREFIX } from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
 import { deletePageShareSecrets } from "@labradoodle/db";
 import { pageViewerCode } from "@labradoodle/page-kit/compile";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import type { BotIntroHarness } from "./discard-bot-intro.js";
-import { discardBotIntroFromCreate } from "./discard-bot-intro.js";
 import { sessionCookieHeader } from "./index.js";
 import { asSystem } from "./system-db.js";
 
@@ -22,7 +21,7 @@ process.env.AGENT_RUNTIME = "scripted";
 
 const hasDb = process.env.VERIFY_DATABASE === "1" && Boolean(process.env.DATABASE_URL);
 const describePages = hasDb ? describe : describe.skip;
-let harness: BotIntroHarness | undefined;
+let harness: { prisma: PrismaClient } | undefined;
 
 const page = (heading: string) =>
   `const App = () => (\n  <Page title="${heading}">\n    <Metrics metrics={[{ value: "42", label: "Users" }]} />\n  </Page>\n);\nexport default App;\n`;
@@ -1107,7 +1106,7 @@ async function rpc<T>(
   if (res.status >= 400 || parsed.error) {
     throw new Error(`${proc} ${res.status}: ${parsed.error?.message ?? text}`);
   }
-  return discardBotIntroFromCreate(harness, cookie, proc, parsed.json as T);
+  return parsed.json as T;
 }
 
 async function raw(app: App, cookie: string, proc: string, body: unknown, spaceId?: string) {

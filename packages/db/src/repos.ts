@@ -104,7 +104,6 @@ function mapBot(
     teamChatAmbientEnabled?: boolean;
     teamChatRules?: string;
     crossSpaceCommunication?: boolean;
-    dailyCheckIns?: boolean;
     fleetManagement?: boolean;
     disabledBuiltinTools?: string[];
     webhookSecretId?: string | null;
@@ -150,7 +149,6 @@ function mapBot(
     teamChatAmbientEnabled: bot.teamChatAmbientEnabled ?? false,
     teamChatRules: bot.teamChatRules ?? "",
     crossSpaceCommunication: bot.crossSpaceCommunication ?? true,
-    dailyCheckIns: bot.dailyCheckIns ?? true,
     fleetManagement: bot.fleetManagement ?? true,
     // Stored lists may name a tool that no longer exists; settings resend what they read.
     disabledBuiltinTools: [...disabledBuiltinToolSet(bot.disabledBuiltinTools)],
@@ -476,7 +474,6 @@ export function createRepos(prisma: PrismaClient) {
         description: string;
         instructions: string;
         notifyOnFinish: boolean;
-        dailyCheckIns?: boolean;
         fleetManagement?: boolean;
         color?: string;
         avatarSet?: BotAvatarSet;
@@ -572,7 +569,6 @@ export function createRepos(prisma: PrismaClient) {
               description: input.description,
               instructions: input.instructions,
               notifyOnFinish: input.notifyOnFinish,
-              dailyCheckIns: input.dailyCheckIns,
               fleetManagement: input.fleetManagement,
               color: avatar.color,
               avatarSet,

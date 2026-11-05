@@ -404,7 +404,6 @@ describe("bot settings device voice menu", () => {
     await act(async () => toggle.click());
     expect(mocks.rpc).toHaveBeenCalledWith("bots/update", {
       botId: "bot-fixture",
-      dailyCheckIns: false,
     });
   });
 
@@ -701,7 +700,6 @@ describe("bot settings device voice menu", () => {
       model: "Model",
       readAloud: "Read replies aloud",
       voice: "Device voice",
-      dailyCheckIns: "Daily check-ins on unfinished work",
       crossSpaceCommunication: "Allow cross-space bot communication",
       fleetManagement: "Manage other bots",
     };
@@ -723,7 +721,6 @@ describe("bot settings device voice menu", () => {
       "model",
       "readAloud",
       "voice",
-      "dailyCheckIns",
       "crossSpaceCommunication",
       "fleetManagement",
     ]);

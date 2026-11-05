@@ -4,7 +4,6 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { ComposioConnector, FakeComposioClient } from "@labradoodle/adapters";
 import { describe, expect, it } from "vitest";
-import { discardBotIntroRun } from "./discard-bot-intro.js";
 import { sessionCookieHeader } from "./index.js";
 import type { ModelEmulatorRequest } from "./model-emulator.js";
 import { startModelEmulator } from "./model-emulator.js";
@@ -119,7 +118,6 @@ describe.skipIf(!enabled)("earlier files through history tools", () => {
         instructions: "",
         notifyOnFinish: false,
       });
-      await discardBotIntroRun(handles, cookie, bot.id);
       await handles.awaitIdle?.();
       await rpc("bots/update", {
         botId: bot.id,

@@ -225,7 +225,6 @@ async function failRun(scenario: Scenario) {
     taughtSkill: { findMany: vi.fn(async () => []) },
     vaultCredential: { findMany: vi.fn(async () => []) },
     agentSkill: { findMany: vi.fn(async () => []) },
-    scratchpadItem: { findMany: vi.fn(async () => []) },
     externalEffect: { findMany: vi.fn(async () => []) },
     artifact: { findMany: vi.fn(async () => []) },
     $transaction: vi.fn(async () => null),
@@ -314,17 +313,6 @@ describe("routine failure notifications", () => {
 
     expect(send).toHaveBeenCalledWith(
       expect.objectContaining({ kind: "failure", title: "Assistant failed" }),
-      expect.anything(),
-    );
-  });
-
-  it("keeps a failed daily check-in quiet", async () => {
-    const { send } = await failRun({
-      error: new Error("Invalid API key"),
-      clientNonce: "strategic-initiative:bot-1:1",
-    });
-    expect(send).not.toHaveBeenCalledWith(
-      expect.objectContaining({ kind: "failure" }),
       expect.anything(),
     );
   });

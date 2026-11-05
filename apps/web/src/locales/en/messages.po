@@ -544,7 +544,6 @@ msgstr "Activity"
 #: src/components/SecretAskCard.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Add"
 msgstr "Add"
 
@@ -622,17 +621,9 @@ msgstr "Add field"
 msgid "Add header"
 msgstr "Add header"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Add item"
-msgstr "Add item"
-
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Add MCP server"
 msgstr "Add MCP server"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Add open work"
-msgstr "Add open work"
 
 #: src/components/PasskeyOffer.tsx
 #: src/components/PasskeySettings.tsx
@@ -1542,10 +1533,6 @@ msgstr "Communication"
 msgid "Compact"
 msgstr "Compact"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Complete"
-msgstr "Complete"
-
 #: src/components/SubagentCard.tsx
 msgid "Completed"
 msgstr "Completed"
@@ -1812,10 +1799,6 @@ msgstr "Copy rows"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Cost"
 msgstr "Cost"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not add"
-msgstr "Could not add"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Could not add MCP server"
@@ -2157,7 +2140,6 @@ msgstr "Could not reject plugin"
 #: src/components/ComputerDeviceSettings.tsx
 #: src/lib/user-devices.ts
 #: src/pages/KnowledgeSection.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Could not remove"
 msgstr "Could not remove"
 
@@ -2333,10 +2315,6 @@ msgstr "Could not test MCP server"
 #: src/lib/dictation.ts
 msgid "Could not transcribe that recording."
 msgstr "Could not transcribe that recording."
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not update"
-msgstr "Could not update"
 
 #: src/components/ModelCredits.tsx
 msgid "Could not update billing"
@@ -2521,10 +2499,6 @@ msgstr "Customize bot avatar"
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "Daily"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Daily check-ins on unfinished work"
-msgstr "Daily check-ins on unfinished work"
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -4183,10 +4157,6 @@ msgstr "New login"
 msgid "New messages"
 msgstr "New messages"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "New open-work item"
-msgstr "New open-work item"
-
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Auth.tsx
 msgid "New password"
@@ -4494,10 +4464,6 @@ msgstr "Open link"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "Open navigation"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Open work"
-msgstr "Open work"
 
 #: src/pages/Onboarding.tsx
 msgid "OpenAI API"
@@ -5016,7 +4982,6 @@ msgstr "Reload"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Remove"
 msgstr "Remove"
 
@@ -5084,10 +5049,6 @@ msgstr "Remove skills"
 msgid "Remove webhook"
 msgstr "Remove webhook"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Removed, but list refresh failed"
-msgstr "Removed, but list refresh failed"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "Removing…"
@@ -5108,10 +5069,6 @@ msgstr "Rename section"
 #: src/lib/billing.ts
 msgid "Renews {day}"
 msgstr "Renews {day}"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Reopen"
-msgstr "Reopen"
 
 #: src/pages/model-settings/connection-controls.tsx
 msgid "Replace API key"
@@ -5387,10 +5344,6 @@ msgstr "Save to Vault"
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Saved"
 msgstr "Saved"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Saved, but list refresh failed"
-msgstr "Saved, but list refresh failed"
 
 #: src/pages/model-settings/use-model-settings.ts
 msgid "Saved."
@@ -5679,7 +5632,6 @@ msgstr "Show list"
 #: src/components/pages/PagesList.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Show more"
 msgstr "Show more"
 

@@ -1,4 +1,4 @@
-import type { MemoryDocument, ScratchpadItem } from "@labradoodle/contracts";
+import type { MemoryDocument } from "@labradoodle/contracts";
 import { isEmptyBotMemory } from "@labradoodle/contracts";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
@@ -8,30 +8,19 @@ import { useI18n } from "../lib/i18n";
 import { native, useMobileTokens } from "../lib/native";
 import { errorText } from "../lib/user-error";
 import { NativeSymbol } from "./native-symbol";
-import { ProfileEditDialog } from "./profile-edit-dialog";
 
 export function BotContextCards({ botId }: { botId: string }) {
   const { t } = useI18n();
   const router = useRouter();
   const tokens = useMobileTokens();
-  const [work, setWork] = useState<ScratchpadItem[]>([]);
   const [docs, setDocs] = useState<MemoryDocument[]>([]);
-  const [allWork, setAllWork] = useState(false);
   const [allDocs, setAllDocs] = useState(false);
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Reload on return, so an edited or deleted note shows its saved state.
   useFocusEffect(
     useCallback(() => {
       let current = true;
       setError(null);
-      void rpc("scratchpad/list", { botId })
-        .then((items) => {
-          if (current) setWork(items);
-        })
-        .catch((err) => {
-          if (current) setError(errorText(err));
-        });
       void rpc("memory/list", { botId, scope: "bot" })
         .then((documents) => {
           if (current) setDocs(documents.filter((doc) => !isEmptyBotMemory(doc)));
@@ -48,95 +37,6 @@ export function BotContextCards({ botId }: { botId: string }) {
   const card = { backgroundColor: native.fill, borderRadius: 12, padding: 16, gap: 12 };
   return (
     <>
-      {work.length ? (
-        <View style={{ marginTop: 24 }}>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 8,
-              paddingEnd: 16,
-            }}
-          >
-            <Text accessibilityRole="header" style={heading}>
-              {t("Open work")}
-            </Text>
-            <ProfileEditDialog
-              value=""
-              label={t("Add open work")}
-              editLabel={t("Add open work")}
-              maxLength={200}
-              icon="plus"
-              onCommit={async (title) => {
-                if (!title || busy) return;
-                setBusy(true);
-                try {
-                  const item = await rpc("scratchpad/create", { botId, title });
-                  setWork((items) => [item, ...items]);
-                } catch (err) {
-                  setError(errorText(err));
-                } finally {
-                  setBusy(false);
-                }
-              }}
-            />
-          </View>
-          <View style={card}>
-            {(allWork ? work : work.slice(0, 5)).map((item) => (
-              <View
-                key={item.id}
-                style={{ minHeight: 44, flexDirection: "row", gap: 12, alignItems: "center" }}
-              >
-                <Pressable
-                  accessibilityLabel={`${t("Complete")} ${item.title}`}
-                  accessibilityRole="checkbox"
-                  accessibilityState={{ checked: false }}
-                  hitSlop={11}
-                  style={{
-                    width: 22,
-                    minHeight: 22,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                  disabled={busy}
-                  onPress={() => {
-                    setBusy(true);
-                    void rpc("scratchpad/update", { itemId: item.id, status: "done" })
-                      .then(() => setWork((items) => items.filter((entry) => entry.id !== item.id)))
-                      .catch((err) => setError(errorText(err)))
-                      .finally(() => setBusy(false));
-                  }}
-                >
-                  <NativeSymbol
-                    ios="circle"
-                    android="ellipse-outline"
-                    size={22}
-                    color={tokens.mutedForeground}
-                  />
-                </Pressable>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: tokens.foreground, fontSize: 14 }}>{item.title}</Text>
-                  {item.notes ? (
-                    <Text style={{ color: tokens.mutedForeground, fontSize: 12, marginTop: 4 }}>
-                      {item.notes}
-                    </Text>
-                  ) : null}
-                </View>
-              </View>
-            ))}
-            {!allWork && work.length > 5 ? (
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => setAllWork(true)}
-                style={{ minHeight: 44, alignItems: "center", justifyContent: "center" }}
-              >
-                <Text style={{ color: tokens.mutedForeground }}>{t("Show more")}</Text>
-              </Pressable>
-            ) : null}
-          </View>
-        </View>
-      ) : null}
       {docs.length ? (
         <View style={{ marginTop: 24 }}>
           <Text accessibilityRole="header" style={[heading, { marginBottom: 8 }]}>

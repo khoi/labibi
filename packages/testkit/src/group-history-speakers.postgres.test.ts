@@ -4,7 +4,6 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { ComposioConnector, FakeComposioClient } from "@labradoodle/adapters";
 import { describe, expect, it } from "vitest";
-import { discardBotIntroRun } from "./discard-bot-intro.js";
 import { sessionCookieHeader } from "./index.js";
 import type { ModelEmulatorRequest } from "./model-emulator.js";
 import { startModelEmulator } from "./model-emulator.js";
@@ -124,7 +123,6 @@ describe.skipIf(!databaseAvailable)("group history keeps roles and speakers", ()
           instructions: "Answer in one sentence.",
           notifyOnFinish: false,
         });
-        await discardBotIntroRun(handles, cookie, bot.id);
         await rpc(handles.app, cookie, "bots/update", {
           botId: bot.id,
           modelProvider: model.model.provider,

@@ -544,7 +544,6 @@ msgstr "Etkinlik"
 #: src/components/SecretAskCard.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Add"
 msgstr "Ekle"
 
@@ -622,17 +621,9 @@ msgstr "Alan ekle"
 msgid "Add header"
 msgstr "Üstbilgi ekle"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Add item"
-msgstr "Öğe ekle"
-
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Add MCP server"
 msgstr "MCP sunucusu ekle"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Add open work"
-msgstr "Açık iş ekle"
 
 #: src/components/PasskeyOffer.tsx
 #: src/components/PasskeySettings.tsx
@@ -1542,10 +1533,6 @@ msgstr "İletişim"
 msgid "Compact"
 msgstr "Sıkı"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Complete"
-msgstr "Tamamlandı"
-
 #: src/components/SubagentCard.tsx
 msgid "Completed"
 msgstr "Tamamlandı"
@@ -1812,10 +1799,6 @@ msgstr "Satırları kopyala"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Cost"
 msgstr "Maliyet"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not add"
-msgstr "Eklenemedi"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Could not add MCP server"
@@ -2157,7 +2140,6 @@ msgstr "Eklenti reddedilemedi"
 #: src/components/ComputerDeviceSettings.tsx
 #: src/lib/user-devices.ts
 #: src/pages/KnowledgeSection.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Could not remove"
 msgstr "Kaldırılamadı"
 
@@ -2333,10 +2315,6 @@ msgstr "MCP sunucusu test edilemedi"
 #: src/lib/dictation.ts
 msgid "Could not transcribe that recording."
 msgstr "Bu kayıt yazıya dökülemedi."
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not update"
-msgstr "Güncellenemedi"
 
 #: src/components/ModelCredits.tsx
 msgid "Could not update billing"
@@ -2521,10 +2499,6 @@ msgstr "Bot avatarını özelleştir"
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "Günlük"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Daily check-ins on unfinished work"
-msgstr "Tamamlanmamış işler için günlük takip"
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -4183,10 +4157,6 @@ msgstr "Yeni giriş"
 msgid "New messages"
 msgstr "Yeni mesajlar"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "New open-work item"
-msgstr "Yeni açık iş öğesi"
-
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Auth.tsx
 msgid "New password"
@@ -4494,10 +4464,6 @@ msgstr "Bağlantıyı aç"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "Gezinmeyi aç"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Open work"
-msgstr "Açık işler"
 
 #: src/pages/Onboarding.tsx
 msgid "OpenAI API"
@@ -5016,7 +4982,6 @@ msgstr "Yeniden yükle"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Remove"
 msgstr "Kaldır"
 
@@ -5084,10 +5049,6 @@ msgstr "Becerileri kaldır"
 msgid "Remove webhook"
 msgstr "Webhook'u kaldır"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Removed, but list refresh failed"
-msgstr "Kaldırıldı ama liste yenilenemedi"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "Removing…"
@@ -5108,10 +5069,6 @@ msgstr "Bölümü yeniden adlandır"
 #: src/lib/billing.ts
 msgid "Renews {day}"
 msgstr "{day} tarihinde yenileniyor"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Reopen"
-msgstr "Yeniden aç"
 
 #: src/pages/model-settings/connection-controls.tsx
 msgid "Replace API key"
@@ -5387,10 +5344,6 @@ msgstr "Kasaya kaydet"
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Saved"
 msgstr "Kaydedildi"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Saved, but list refresh failed"
-msgstr "Kaydedildi ama liste yenilenemedi"
 
 #: src/pages/model-settings/use-model-settings.ts
 msgid "Saved."
@@ -5679,7 +5632,6 @@ msgstr "Listeyi göster"
 #: src/components/pages/PagesList.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Show more"
 msgstr "Daha fazla göster"
 

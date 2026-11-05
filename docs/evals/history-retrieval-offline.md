@@ -53,11 +53,11 @@ window and 4,096-token output reserve; complete navigation metadata peaks at
 response rather than corrupt JSON; separate small-window tests cover that failure
 and successful within-message cursor navigation.
 
-A saved bot-memory constraint and an open scratchpad item are supplied to the
-actual model endpoint after 100 large old messages exceed active-context allowance.
-The fixture checks both constraints on the initial call and following history and
-file tool calls, confirms old filler has dropped, and inspects the persisted
-proposal file: batch size 37 and approval pending. The scratchpad remains open.
+A saved bot-memory constraint is supplied to the actual model endpoint after 100
+large old messages exceed active-context allowance. The fixture checks the
+constraint on the initial call and following history and file tool calls, confirms
+old filler has dropped, and inspects the persisted proposal file: batch size 37
+and approval pending.
 This proves state availability and the resulting scripted workflow, not live-model
 obedience to arbitrary historical constraints.
 

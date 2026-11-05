@@ -2,7 +2,6 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, it } from "vitest";
-import { discardBotIntroRun } from "../../../packages/testkit/src/discard-bot-intro.js";
 import { sessionCookieHeader } from "../../../packages/testkit/src/index.js";
 import { createApp } from "./app.js";
 
@@ -73,7 +72,6 @@ it.skipIf(!databaseUrl)(
       });
       expect(bot.status).toBe(200);
       const botId = ((await bot.json()) as { json: { id: string } }).json.id;
-      await discardBotIntroRun(handles, cookie, botId);
       // Above the 10 MiB default, within the configured limit.
       const upload = await call("artifacts/create", {
         botId,

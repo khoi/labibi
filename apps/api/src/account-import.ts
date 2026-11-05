@@ -710,23 +710,6 @@ class AccountImporter implements ArchiveSink {
         });
         return;
       }
-      case "scratchpad_item": {
-        const botId = space.mapped(record.botId);
-        await prisma.scratchpadItem.create({
-          data: {
-            id: newId(),
-            spaceId,
-            botId,
-            userId,
-            title: record.title,
-            status: record.status,
-            notes: record.notes,
-            createdAt: new Date(record.createdAt),
-            updatedAt: new Date(record.updatedAt),
-          },
-        });
-        return;
-      }
       case "agent_skill":
         // Scoped to the imported space so a second import cannot shadow skills elsewhere.
         await prisma.agentSkill.create({
@@ -779,7 +762,6 @@ class AccountImporter implements ArchiveSink {
             teamChatAmbientEnabled: record.teamChatAmbientEnabled,
             teamChatRules: record.teamChatRules,
             crossSpaceCommunication: record.crossSpaceCommunication,
-            dailyCheckIns: record.dailyCheckIns,
             createdAt: new Date(record.createdAt),
           },
         });

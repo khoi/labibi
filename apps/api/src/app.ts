@@ -56,7 +56,6 @@ import {
   createRunSandbox,
   createRunSecretWriter,
   createSecretStore,
-  createStrategicInitiativeReconciler,
   createWebProvider,
   deploymentModelUsageLookup,
   EmailEmulator,
@@ -757,11 +756,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
         reconcilePurchases: () => reconcilePurchases({ prisma, jobs, paymentWallet }),
         reconcileMediaVideos: () => reconcileMediaVideos({ prisma, jobs, mediaGeneration }),
         reconcileComputerUpdates: () => reconcileComputerUpdates({ prisma, jobs }),
-        reconcileStrategicInitiatives: createStrategicInitiativeReconciler({
-          prisma,
-          jobs,
-          billingEnabled: modelCreditsEnabled,
-        }),
         reconcileSecurityEventRetention: createSecurityEventPruner(
           prisma,
           securityEventRetentionDays(),

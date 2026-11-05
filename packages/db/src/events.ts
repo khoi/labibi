@@ -65,8 +65,6 @@ import { RUN_TURN_CHECKPOINT_KIND } from "./run-turn-checkpoint.js";
 import { recordSecurityEvent } from "./security-events.js";
 import { withTransactionRetry } from "./transaction-retry.js";
 
-export const STRATEGIC_INITIATIVE_NONCE_PREFIX = "strategic-initiative";
-
 /** A one-time answer longer than a saved value may be. Nothing is stored or echoed. */
 export class AnswerTooLongError extends Error {
   constructor() {
@@ -973,13 +971,6 @@ async function commitAnswerRunInput(
     }
   }
 
-  // Answering the creation intro's or a daily check-in's question resumes as the user's
-  // turn: with the conversation and every tool, to get going on that answer.
-  const answersOpener =
-    run.trigger === "created" ||
-    (run.trigger === "routine" &&
-      Boolean(run.clientNonce?.startsWith(`${STRATEGIC_INITIATIVE_NONCE_PREFIX}:`)));
-  const resumedTrigger = answersOpener && !approvalAsk && !secretAsk ? "user" : run.trigger;
   const queued = await tx.run.updateMany({
     where: {
       id: input.runId,
@@ -989,7 +980,6 @@ async function commitAnswerRunInput(
     },
     data: {
       status: "queued",
-      ...(resumedTrigger !== run.trigger ? { trigger: resumedTrigger } : {}),
       ...(choiceAsk ? { checkpoint: null } : {}),
     },
   });
@@ -1078,7 +1068,7 @@ async function commitAnswerRunInput(
       where: { runs: { some: { id: input.runId } } },
       data: {
         prompt: resumePrompt(
-          { ...run, trigger: resumedTrigger },
+          run,
           pendingAsk.text,
           selectedChoice ? `Selected choice ${selectedChoice.id}: ${resumeLabel}` : input.answer,
         ),

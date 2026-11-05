@@ -92,17 +92,6 @@ describe("promptFocus", () => {
     expect(deps.prisma.$transaction).toHaveBeenCalledWith(expect.any(Function), budget);
   });
 
-  it("leaves the question to a bot whose creation intro is queued or running", async () => {
-    const { deps, actor, run } = focusFixture({ introRun: true });
-    await promptFocus(deps, actor, "bot");
-    expect(posted).toEqual([]);
-    expect(run.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ threadId: "thread", trigger: "created" }),
-      }),
-    );
-  });
-
   it("does not post over a question the bot already asked", async () => {
     const { deps, actor } = focusFixture({
       blocks: [{ kind: "ask", text: "What do you want me for?", status: "answered" }],

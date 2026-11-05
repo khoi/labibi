@@ -113,7 +113,7 @@ describe("feedback", () => {
         messagingChannelRun: trigger === "messaging",
       }).some((tool) => tool.name === "feedback");
     expect(offered("user")).toBe(true);
-    for (const trigger of ["routine", "webhook", "bot_message", "created"])
+    for (const trigger of ["routine", "webhook", "bot_message"])
       expect(offered(trigger), trigger).toBe(false);
   });
 });

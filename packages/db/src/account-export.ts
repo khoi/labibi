@@ -160,7 +160,6 @@ async function* spaceRecords(
       teamChatAmbientEnabled: bot.teamChatAmbientEnabled,
       teamChatRules: bot.teamChatRules,
       crossSpaceCommunication: bot.crossSpaceCommunication,
-      dailyCheckIns: bot.dailyCheckIns,
       fleetManagement: bot.fleetManagement,
       createdAt: iso(bot.createdAt),
     };
@@ -398,22 +397,6 @@ async function* spaceRecords(
       thinkingLevel: routine.thinkingLevel,
       watch: json(routine.watch),
       createdAt: iso(routine.createdAt),
-    };
-
-  const scratchpad = await prisma.scratchpadItem.findMany({
-    where: { ...tenant, botId: { in: [...botIds] } },
-    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-  });
-  for (const item of scratchpad)
-    yield {
-      type: "scratchpad_item",
-      id: item.id,
-      botId: item.botId,
-      title: item.title,
-      status: item.status,
-      notes: item.notes,
-      createdAt: iso(item.createdAt),
-      updatedAt: iso(item.updatedAt),
     };
 
   const skills = await prisma.agentSkill.findMany({

@@ -544,7 +544,6 @@ msgstr "アクティビティ"
 #: src/components/SecretAskCard.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Add"
 msgstr "追加"
 
@@ -622,17 +621,9 @@ msgstr "フィールドを追加"
 msgid "Add header"
 msgstr "ヘッダーを追加"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Add item"
-msgstr "項目を追加"
-
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Add MCP server"
 msgstr "MCPサーバーを追加"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Add open work"
-msgstr "未完了の作業を追加"
 
 #: src/components/PasskeyOffer.tsx
 #: src/components/PasskeySettings.tsx
@@ -1542,10 +1533,6 @@ msgstr ""
 msgid "Compact"
 msgstr "コンパクト"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Complete"
-msgstr "完了"
-
 #: src/components/SubagentCard.tsx
 msgid "Completed"
 msgstr "完了"
@@ -1812,10 +1799,6 @@ msgstr "行をコピー"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Cost"
 msgstr "コスト"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not add"
-msgstr "追加できませんでした"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Could not add MCP server"
@@ -2157,7 +2140,6 @@ msgstr ""
 #: src/components/ComputerDeviceSettings.tsx
 #: src/lib/user-devices.ts
 #: src/pages/KnowledgeSection.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Could not remove"
 msgstr "削除できませんでした"
 
@@ -2333,10 +2315,6 @@ msgstr "MCPサーバーをテストできませんでした"
 #: src/lib/dictation.ts
 msgid "Could not transcribe that recording."
 msgstr ""
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Could not update"
-msgstr "更新できませんでした"
 
 #: src/components/ModelCredits.tsx
 msgid "Could not update billing"
@@ -2521,10 +2499,6 @@ msgstr "ボットのアバターをカスタマイズ"
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "毎日"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Daily check-ins on unfinished work"
-msgstr "未完了の作業を毎日確認"
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -4183,10 +4157,6 @@ msgstr ""
 msgid "New messages"
 msgstr "新着メッセージ"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "New open-work item"
-msgstr "新しい未完了の作業"
-
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Auth.tsx
 msgid "New password"
@@ -4494,10 +4464,6 @@ msgstr "リンクを開く"
 #: src/pages/shell/chat-header.tsx
 msgid "Open navigation"
 msgstr "ナビゲーションを開く"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Open work"
-msgstr "未完了の作業"
 
 #: src/pages/Onboarding.tsx
 msgid "OpenAI API"
@@ -5016,7 +4982,6 @@ msgstr "再読み込み"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Remove"
 msgstr "削除"
 
@@ -5084,10 +5049,6 @@ msgstr ""
 msgid "Remove webhook"
 msgstr "Webhookを削除"
 
-#: src/pages/ScratchpadSection.tsx
-msgid "Removed, but list refresh failed"
-msgstr "削除しましたが、一覧を更新できませんでした"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "Removing…"
@@ -5108,10 +5069,6 @@ msgstr "セクション名を変更"
 #: src/lib/billing.ts
 msgid "Renews {day}"
 msgstr "{day}に更新"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Reopen"
-msgstr "再度開く"
 
 #: src/pages/model-settings/connection-controls.tsx
 msgid "Replace API key"
@@ -5387,10 +5344,6 @@ msgstr "保管庫に保存"
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Saved"
 msgstr "保存しました"
-
-#: src/pages/ScratchpadSection.tsx
-msgid "Saved, but list refresh failed"
-msgstr "保存しましたが、一覧を更新できませんでした"
 
 #: src/pages/model-settings/use-model-settings.ts
 msgid "Saved."
@@ -5679,7 +5632,6 @@ msgstr "一覧を表示"
 #: src/components/pages/PagesList.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/ScratchpadSection.tsx
 msgid "Show more"
 msgstr "さらに表示"
 

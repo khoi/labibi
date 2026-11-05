@@ -65,7 +65,6 @@ import {
   CreateBotInput,
   CreateGroupInput,
   CreateRoutineInput,
-  CreateScratchpadItemInput,
   DeploymentSettingsSchema,
   ExportManifestSchema,
   ExternalConversationPolicySchema,
@@ -104,8 +103,6 @@ import {
   ReorderBotsInput,
   ROUTINE_MENTION_BATCH_MAX,
   RoutineSchema,
-  ScratchpadItemSchema,
-  ScratchpadItemStatusSchema,
   ServerUpdateCheckSchema,
   ServerUpdateRequestSchema,
   ServerUpdateRunSchema,
@@ -852,29 +849,6 @@ export const appContract = {
         }),
       )
       .output(z.object({ runId: Id })),
-  },
-  scratchpad: {
-    list: oc
-      .input(
-        z.object({
-          botId: Id,
-          status: ScratchpadItemStatusSchema.optional(),
-          includeDone: z.boolean().optional(),
-        }),
-      )
-      .output(z.array(ScratchpadItemSchema)),
-    create: oc.input(CreateScratchpadItemInput).output(ScratchpadItemSchema),
-    update: oc
-      .input(
-        z.object({
-          itemId: Id,
-          title: z.string().min(1).max(200).optional(),
-          status: ScratchpadItemStatusSchema.optional(),
-          notes: z.string().max(4_000).optional(),
-        }),
-      )
-      .output(ScratchpadItemSchema),
-    remove: oc.input(z.object({ itemId: Id })).output(z.object({ ok: z.literal(true) })),
   },
   skills: {
     list: oc.input(botId).output(z.array(TaughtSkillSchema)),

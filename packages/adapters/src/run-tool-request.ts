@@ -483,7 +483,6 @@ const OWN_FIELDS = new Set([
   "artifact_id",
   "use_attached_image",
   "notifyOnFinish",
-  "dailyCheckIns",
   "notify_on_finish",
   "bot_id",
 ]);
@@ -532,7 +531,7 @@ async function prepareOwnBotUpdate(
     return { error: "Instructions cannot contain credentials." };
   request.args = { ...args, instructions };
   if (unguarded) return undefined;
-  if (!["created", "routine"].includes(run.trigger) && !ctx.source.ownerStartedRun)
+  if (run.trigger !== "routine" && !ctx.source.ownerStartedRun)
     return { error: "Instruction changes are blocked for runs someone else started." };
   if (Object.keys(args).some((key) => key !== "instructions"))
     return { error: "Change your instructions in their own update_bot call." };

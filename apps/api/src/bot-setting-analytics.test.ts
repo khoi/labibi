@@ -7,7 +7,6 @@ const bot = {
   description: "Runs the day",
   instructions: "Be brief.",
   color: "#8B5CF6",
-  dailyCheckIns: true,
   notifyOnFinish: true,
   modelProvider: "anthropic",
   modelId: "claude",
@@ -44,13 +43,6 @@ describe("changedBotSettings", () => {
     expect(
       changedBotSettings(bot, { botId: bot.id, modelProvider: "openrouter", modelId: "claude" }),
     ).toEqual(["model"]);
-  });
-
-  it("counts the daily check-in opt-out", () => {
-    expect(changedBotSettings(bot, { botId: bot.id, dailyCheckIns: false })).toEqual([
-      "daily_check_ins",
-    ]);
-    expect(changedBotSettings(bot, { botId: bot.id, dailyCheckIns: true })).toEqual([]);
   });
 
   it("leaves sidebar organization out", () => {
