@@ -2989,10 +2989,6 @@ msgstr "Son kullanıcı kimliği"
 msgid "Ends {day}"
 msgstr "{day} tarihinde sona eriyor"
 
-#: src/components/GitHubStarPrompt.tsx
-msgid "Enjoying Labradoodle?"
-msgstr ""
-
 #: src/lib/user-error.ts
 msgid "Enter a password"
 msgstr "Bir parola girin"
@@ -4529,7 +4525,6 @@ msgstr "Labradoodle kataloğunda yok"
 msgid "Not in the plugin catalog"
 msgstr "Eklenti kataloğunda yok"
 
-#: src/components/GitHubStarPrompt.tsx
 #: src/pages/shell/message-cards.tsx
 msgid "Not now"
 msgstr "Şimdi değil"
@@ -6091,10 +6086,6 @@ msgstr "SSO"
 #: src/lib/user-error.ts
 msgid "SSO is temporarily unavailable. Try again."
 msgstr "SSO geçici olarak kullanılamıyor. Yeniden deneyin."
-
-#: src/components/GitHubStarPrompt.tsx
-msgid "Star on GitHub"
-msgstr ""
 
 #: src/pages/shell/computer-overlay.tsx
 msgid "Start"
