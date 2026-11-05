@@ -399,6 +399,9 @@ importers:
       '@babel/core':
         specifier: 7.29.7
         version: 7.29.7
+      '@labradoodle/page-kit':
+        specifier: workspace:*
+        version: link:../../packages/page-kit
       '@lingui/babel-plugin-lingui-macro':
         specifier: 6.6.0
         version: 6.6.0(@babel/core@7.29.7)(@babel/types@7.29.8)

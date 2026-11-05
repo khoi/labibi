@@ -16,6 +16,11 @@ export type ApiFixtures<T = RpcClient> = {
 
 export type HttpFixtures = Record<string, unknown>;
 
+async function answerHttp(request: Request, value: unknown): Promise<Response> {
+  const answer = typeof value === "function" ? await value(request) : value;
+  return answer instanceof Response ? answer.clone() : Response.json(answer);
+}
+
 export function api(fixtures: ApiFixtures): ApiFixtures {
   return fixtures;
 }
@@ -64,7 +69,7 @@ window.fetch = async (input, init) => {
   }
   if (Object.hasOwn(http, url.pathname)) {
     action(`http ${url.pathname}`)(request.method);
-    return Response.json(http[url.pathname]);
+    return answerHttp(request, http[url.pathname]);
   }
   return realFetch(request);
 };

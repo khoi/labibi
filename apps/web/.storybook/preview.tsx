@@ -8,6 +8,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useLayoutEffect } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { applyUiDirection } from "../src/lib/apply-ui-direction";
+import { forgetAuthCapabilities } from "../src/lib/auth-capabilities";
 import { bootstrapI18n, i18n } from "../src/lib/i18n";
 import { QueryUserProvider, queryClient } from "../src/lib/query";
 import type { ResolvedAppearance } from "../src/lib/ui-appearance";
@@ -42,6 +43,7 @@ const preview: Preview = {
   loaders: [({ globals }) => bootstrapI18n(globals.locale as UiLocale)],
   beforeEach: ({ parameters }) => {
     serveFixtures(parameters);
+    forgetAuthCapabilities();
     queryClient.clear();
   },
   decorators: [
