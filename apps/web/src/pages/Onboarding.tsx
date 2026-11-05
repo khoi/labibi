@@ -562,7 +562,7 @@ export function OnboardingPage() {
   return (
     <div className="min-h-full bg-background px-6 py-12" data-rakazo-surface="onboarding">
       <AccountMenu signingOut={signingOut} onLogOut={() => void logOut()} />
-      <div className="mx-auto w-full max-w-[560px]">
+      <div key={step} className="rk-step-enter mx-auto w-full max-w-[560px]">
         {step === "survey" ? <SignupSurvey onDone={() => setSurveyDone(true)} /> : null}
         {step === "model" ? (
           <div>

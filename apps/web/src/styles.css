@@ -61,6 +61,26 @@ body,
   }
 }
 
+/* Onboarding steps are seen once, so each one settles in line by line. */
+.rk-step-enter > * > * {
+  animation: rk-step-in 300ms var(--ease-snappy) backwards;
+}
+.rk-step-enter > * > :nth-child(2) {
+  animation-delay: 50ms;
+}
+.rk-step-enter > * > :nth-child(3) {
+  animation-delay: 100ms;
+}
+.rk-step-enter > * > :nth-child(n + 4) {
+  animation-delay: 150ms;
+}
+@keyframes rk-step-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
 .rk-scroll::-webkit-scrollbar {
   width: 6px;
 }

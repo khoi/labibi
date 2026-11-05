@@ -70,7 +70,10 @@ export const QuoteSelectionButton = memo(function QuoteSelectionButton({
           event.stopPropagation();
         }}
         onClick={onQuote}
-        className="px-3 shadow-md"
+        className={cn(
+          "px-3 shadow-md animate-in fade-in-0 zoom-in-97 duration-150 ease-snappy",
+          placement?.above === false ? "origin-top" : "origin-bottom",
+        )}
       >
         <TextQuote strokeWidth={2} />
         {t`Reply`}
