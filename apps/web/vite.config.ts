@@ -475,6 +475,11 @@ export default defineConfig(({ command, mode }) => {
   const buildId = command === "build" ? buildIdAt(new Date()) : "";
   const rootEnv = loadEnv(mode, path.resolve(import.meta.dirname, "../.."), "");
   const api = process.env.API_PROXY_TARGET ?? rootEnv.API_PROXY_TARGET ?? "http://127.0.0.1:3100";
+  const webOrigin = process.env.WEB_ORIGIN ?? rootEnv.WEB_ORIGIN;
+  const publicUrl =
+    webOrigin && !["127.0.0.1", "localhost", "[::1]"].includes(new URL(webOrigin).hostname)
+      ? `${webOrigin}/`
+      : null;
   const previewHost = process.env.RAKAZO_HOST ?? rootEnv.RAKAZO_HOST ?? "localhost";
   const allowedHosts = [
     previewHost,
@@ -645,6 +650,17 @@ export default defineConfig(({ command, mode }) => {
         },
         configurePreviewServer: (server) => {
           proxyHosts = server.config.preview.allowedHosts;
+        },
+      },
+      {
+        name: "rakazo-public-url",
+        configureServer(server) {
+          if (!publicUrl) return;
+          const printUrls = server.printUrls.bind(server);
+          server.printUrls = () => {
+            printUrls();
+            server.config.logger.info(`  ➜  Public:  ${publicUrl}`);
+          };
         },
       },
       {
