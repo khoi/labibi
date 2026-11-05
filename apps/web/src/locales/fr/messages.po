@@ -878,14 +878,6 @@ msgstr ""
 msgid "Apps"
 msgstr ""
 
-#: src/pages/BotContextMenu.tsx
-msgid "Archive"
-msgstr "Archiver"
-
-#: src/pages/shell/archived-chats.tsx
-msgid "Archived"
-msgstr "Archivé"
-
 #: src/pages/McpServersOverlay.tsx
 msgid "Arguments"
 msgstr "Arguments"
@@ -978,10 +970,6 @@ msgstr ""
 msgid "Available to shell commands as {commandVariable}"
 msgstr "Disponible pour les commandes shell sous le nom {commandVariable}"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Avatar Studio"
-msgstr "Studio d'avatars"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/vault/VaultPageHeader.tsx
@@ -1053,7 +1041,6 @@ msgstr "Démarrage du bureau en direct…"
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/Shell.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
 msgid "Bot"
@@ -1154,7 +1141,6 @@ msgstr "Ne peut pas lire les images"
 #: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
-#: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
@@ -1253,10 +1239,6 @@ msgstr "Discutez avec votre bot depuis Slack."
 msgid "ChatGPT subscription"
 msgstr ""
 
-#: src/lib/identity-display.ts
-msgid "Chats"
-msgstr "Discussions"
-
 #: src/components/ComputersUnavailableHint.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Check again"
@@ -1310,10 +1292,6 @@ msgstr "Vérification de la connexion…"
 msgid "Checking…"
 msgstr "Vérification en cours…"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Choose a bot shape, color, or upload an image"
-msgstr "Choisissez une forme, une couleur de bot, ou téléchargez une image"
-
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/shell/composer-error.tsx
 msgid "Choose a model"
@@ -1326,10 +1304,6 @@ msgstr "Choisissez un nouveau mot de passe"
 #: src/pages/Onboarding.tsx
 msgid "Choose a provider"
 msgstr ""
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Choose file"
-msgstr "Choisir un fichier"
 
 #: src/components/ModelCredits.tsx
 #: src/components/SubscriptionGate.tsx
@@ -1376,7 +1350,6 @@ msgstr "Effacement en cours…"
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/chat-find-bar.tsx
 #: src/pages/WindowChrome.tsx
 msgid "Close"
@@ -1460,19 +1433,10 @@ msgctxt "email sign-in"
 msgid "Code"
 msgstr "Code"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Collapse {0}"
 msgstr "Réduire {0}"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Color"
-msgstr "Couleur"
-
-#. placeholder {0}: color.hex
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Color {0}"
-msgstr ""
 
 #: src/components/markdown-copy.tsx
 msgid "column {index}"
@@ -1872,10 +1836,6 @@ msgstr "Impossible de se connecter à l'écran de l'ordinateur"
 msgid "Could not continue"
 msgstr "Impossible de continuer"
 
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "Could not create bot"
-msgstr "Impossible de créer le bot"
-
 #: src/pages/GroupPanel.tsx
 msgid "Could not create group"
 msgstr "Impossible de créer le groupe"
@@ -1883,10 +1843,6 @@ msgstr "Impossible de créer le groupe"
 #: src/components/SpaceMembersSettings.tsx
 msgid "Could not create invite link"
 msgstr ""
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not create section"
-msgstr "Impossible de créer la section"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Could not create space"
@@ -1915,10 +1871,6 @@ msgstr "Impossible de supprimer la page"
 #: src/pages/shell/dialogs.tsx
 msgid "Could not delete routine"
 msgstr "Impossible de supprimer la routine"
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not delete section"
-msgstr "Impossible de supprimer la section"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Could not delete skill"
@@ -2139,10 +2091,6 @@ msgstr ""
 msgid "Could not rename connection"
 msgstr "Impossible de renommer la connexion"
 
-#: src/pages/shell/dialogs.tsx
-msgid "Could not rename section"
-msgstr "Impossible de renommer la section"
-
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Could not rename space"
 msgstr "Impossible de renommer l'espace"
@@ -2177,7 +2125,6 @@ msgstr "Impossible d'exécuter la routine"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/shell/use-space-roster.ts
 msgid "Could not save"
 msgstr "Impossible d'enregistrer"
 
@@ -2356,16 +2303,9 @@ msgid "Country"
 msgstr ""
 
 #: src/components/CreateOrganizationDialog.tsx
-#: src/pages/shell/create-bot-dialog.tsx
-#: src/pages/shell/dialogs.tsx
 #: src/pages/shell/sidebar-header.tsx
 msgid "Create"
 msgstr "Créer"
-
-#. placeholder {0}: bot.name
-#: src/pages/shell/dialogs.tsx
-msgid "Create a section and move {0} into it."
-msgstr "Créez une section et déplacez {0} dedans."
 
 #: src/pages/Auth.tsx
 msgid "Create account"
@@ -2459,10 +2399,6 @@ msgstr "Personnaliser"
 msgid "Customize {label}"
 msgstr "Personnaliser {label}"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Customize bot avatar"
-msgstr "Personnaliser l'avatar du bot"
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "Quotidienne"
@@ -2498,7 +2434,6 @@ msgstr "Refuser"
 #: src/pages/model-settings/role-model-picker.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Default"
 msgstr "Par défaut"
 
@@ -2521,7 +2456,6 @@ msgstr "Portée par défaut"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/archived-chats.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete"
@@ -2535,10 +2469,7 @@ msgid "Delete \"{0}\"?"
 msgstr "Supprimer « {0} » ?"
 
 #. placeholder {0}: artifact.name
-#. placeholder {0}: bot.name
-#. placeholder {0}: group.name
 #: src/pages/Artifacts.tsx
-#: src/pages/shell/archived-chats.tsx
 msgid "Delete {0}"
 msgstr "Supprimer {0}"
 
@@ -2567,10 +2498,6 @@ msgstr "Supprimer les mémoires également"
 #: src/pages/OrganizationSettingsPanel.tsx
 msgid "Delete organization"
 msgstr "Supprimer l’organisation"
-
-#: src/pages/shell/sidebar-roster.tsx
-msgid "Delete section"
-msgstr "Supprimer la section"
 
 #: src/pages/shell/shell-dialogs.tsx
 #: src/pages/SpaceSettingsPanel.tsx
@@ -2732,7 +2659,6 @@ msgstr "Vous n'avez pas de compte ?"
 #: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/ActivityList.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/message-view.tsx
 msgid "Done"
 msgstr "Terminé"
@@ -2770,14 +2696,6 @@ msgstr "Téléchargement en cours…"
 #: src/components/teach/SkillDraftCard.tsx
 msgid "Draft skill"
 msgstr "Compétence en brouillon"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Drag, drop, or paste an image"
-msgstr "Glissez, déposez ou collez une image"
-
-#: src/pages/BotContextMenu.tsx
-msgid "Duplicate"
-msgstr "Dupliquer"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Each name can be used once."
@@ -2954,7 +2872,7 @@ msgstr "Jeton de l'exécuteur"
 msgid "Expand"
 msgstr "Développer"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Expand {0}"
 msgstr "Développer {0}"
@@ -3311,10 +3229,6 @@ msgstr ""
 msgid "How often"
 msgstr "Fréquence"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "How other bots see it"
-msgstr "Comment les autres bots le voient"
-
 #: src/components/teach/SkillDraftCard.tsx
 msgid "How to check"
 msgstr "Comment vérifier"
@@ -3343,10 +3257,6 @@ msgstr "La saisie d’images n’est pas configurée pour ce modèle."
 #: src/lib/user-error.ts
 msgid "Image input is not configured for this model."
 msgstr "La saisie d’images n’est pas configurée pour ce modèle."
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Image upload area"
-msgstr "Zone de téléchargement d'image"
 
 #: src/components/AccountDataSettings.tsx
 msgid "Import"
@@ -3471,10 +3381,6 @@ msgstr "Aperçu isolé — aucun accès à votre compte"
 #: src/components/pages/PageViewHost.tsx
 msgid "It may have been deleted, or it belongs to someone else."
 msgstr "Elle a peut-être été supprimée, ou elle appartient à quelqu'un d'autre."
-
-#: src/pages/shell/shell-dialogs.tsx
-msgid "Its bots and groups are kept and leave the section."
-msgstr "Ses bots et groupes sont conservés et quittent la section."
 
 #: src/pages/shell/dialogs.tsx
 msgid "Its conversation, files, and routines will be permanently deleted. Bots it created stay in your list."
@@ -3979,10 +3885,6 @@ msgstr "Descendre"
 msgid "Move them to your shared memory."
 msgstr "Déplacez-les dans votre mémoire partagée."
 
-#: src/pages/BotContextMenu.tsx
-msgid "Move to"
-msgstr "Déplacer vers"
-
 #: src/pages/ModelRoleSettings.tsx
 msgid "Move up"
 msgstr "Monter"
@@ -4003,7 +3905,6 @@ msgstr ""
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Name"
@@ -4021,10 +3922,6 @@ msgstr "Nommez ce groupe"
 #: src/pages/RoutineEditor.tsx
 msgid "Name this routine"
 msgstr "Nommez cette routine"
-
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "Name your Bot"
-msgstr ""
 
 #: src/lib/roster-status.ts
 msgid "Needs an answer"
@@ -4067,12 +3964,6 @@ msgstr ""
 msgid "New API key"
 msgstr ""
 
-#: src/pages/Shell.tsx
-#: src/pages/shell/bot-picker.tsx
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "New bot"
-msgstr "Nouveau bot"
-
 #: src/components/VaultSettings.tsx
 msgid "New card"
 msgstr ""
@@ -4112,11 +4003,6 @@ msgstr "Nouveau mot de passe"
 #: src/pages/shell/bot-picker.tsx
 msgid "New private space"
 msgstr "Nouvel espace privé"
-
-#: src/pages/BotContextMenu.tsx
-#: src/pages/shell/dialogs.tsx
-msgid "New section"
-msgstr "Nouvelle section"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "New skill"
@@ -4366,7 +4252,7 @@ msgstr "Vous uniquement"
 msgid "Open"
 msgstr "Ouvrir"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Open {0}"
 msgstr "Ouvrir {0}"
@@ -4620,12 +4506,10 @@ msgid "Pick a tool to check"
 msgstr "Choisissez un outil à vérifier"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/BotContextMenu.tsx
 msgid "Pin"
 msgstr "Épingler"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/Shell.tsx
 msgid "Pinned"
 msgstr "Épinglés"
 
@@ -4997,12 +4881,6 @@ msgstr "Retrait en cours…"
 msgid "Rename"
 msgstr "Renommer"
 
-#: src/pages/BotContextMenu.tsx
-#: src/pages/shell/dialogs.tsx
-#: src/pages/shell/sidebar-roster.tsx
-msgid "Rename section"
-msgstr "Renommer la section"
-
 #: src/lib/billing.ts
 msgid "Renews {day}"
 msgstr ""
@@ -5055,7 +4933,6 @@ msgstr "Recherche et rédaction"
 
 #: src/components/ComputerMaintenanceActions.tsx
 #: src/pages/ExternalConversationSettings.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Reset"
 msgstr "Réinitialiser"
 
@@ -5104,7 +4981,6 @@ msgid "Restart to update"
 msgstr "Redémarrez pour mettre à jour"
 
 #: src/components/InstructionSettings.tsx
-#: src/pages/shell/archived-chats.tsx
 msgid "Restore"
 msgstr "Restaurer"
 
@@ -5261,7 +5137,6 @@ msgstr "samedi"
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Save"
 msgstr "Enregistrer"
 
@@ -5515,14 +5390,8 @@ msgid "Setup help"
 msgstr "Aide à la configuration"
 
 #: src/components/ComputerProviderSettings.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Shape"
 msgstr "Forme"
-
-#. placeholder {0}: shapeIndex + 1
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Shape {0}"
-msgstr ""
 
 #: src/components/pages/PagesList.tsx
 #: src/components/pages/SharePopover.tsx
@@ -6343,11 +6212,6 @@ msgstr ""
 msgid "Type your answer"
 msgstr "Saisissez votre réponse"
 
-#: src/pages/BotContextMenu.tsx
-#: src/pages/Shell.tsx
-msgid "Unassigned"
-msgstr "Non assigné"
-
 #: src/components/AskCard.tsx
 msgid "Undo"
 msgstr "Annuler"
@@ -6361,7 +6225,6 @@ msgid "Unlink"
 msgstr "Déconnecter"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/BotContextMenu.tsx
 msgid "Unpin"
 msgstr "Désépingler"
 
@@ -6426,10 +6289,6 @@ msgstr "Passer à l’offre payante"
 #: src/components/ModelCredits.tsx
 msgid "Upgrade now"
 msgstr ""
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Upload"
-msgstr "Télécharger"
 
 #: src/pages/settings-nav.ts
 msgid "Usage"
@@ -6649,10 +6508,6 @@ msgstr "Quel résultat allez-vous démontrer ?"
 #: src/pages/RoutineEditor.tsx
 msgid "What should this routine do each time it runs?"
 msgstr "Que devrait faire cette routine à chaque exécution ?"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "What this bot is for"
-msgstr "À quoi sert ce bot"
 
 #: src/components/teach/SkillDraftCard.tsx
 msgid "What to return"

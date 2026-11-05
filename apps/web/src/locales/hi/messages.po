@@ -878,14 +878,6 @@ msgstr ""
 msgid "Apps"
 msgstr ""
 
-#: src/pages/BotContextMenu.tsx
-msgid "Archive"
-msgstr "आर्काइव करें"
-
-#: src/pages/shell/archived-chats.tsx
-msgid "Archived"
-msgstr "आर्काइव किया गया"
-
 #: src/pages/McpServersOverlay.tsx
 msgid "Arguments"
 msgstr "आर्ग्युमेंट"
@@ -978,10 +970,6 @@ msgstr ""
 msgid "Available to shell commands as {commandVariable}"
 msgstr "शेल कमांड के लिए {commandVariable} के रूप में उपलब्ध"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Avatar Studio"
-msgstr "अवतार स्टूडियो"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/vault/VaultPageHeader.tsx
@@ -1053,7 +1041,6 @@ msgstr "लाइव डेस्कटॉप शुरू हो रहा ह�
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/Shell.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
 msgid "Bot"
@@ -1154,7 +1141,6 @@ msgstr "तस्वीरें नहीं पढ़ सकता"
 #: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
-#: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
@@ -1253,10 +1239,6 @@ msgstr "Slack से अपने बॉट से चैट करें।"
 msgid "ChatGPT subscription"
 msgstr ""
 
-#: src/lib/identity-display.ts
-msgid "Chats"
-msgstr "चैट"
-
 #: src/components/ComputersUnavailableHint.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Check again"
@@ -1310,10 +1292,6 @@ msgstr "कनेक्शन जाँचा जा रहा है…"
 msgid "Checking…"
 msgstr "जांच हो रही है…"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Choose a bot shape, color, or upload an image"
-msgstr "बॉट का आकार और रंग चुनें, या छवि अपलोड करें"
-
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/shell/composer-error.tsx
 msgid "Choose a model"
@@ -1326,10 +1304,6 @@ msgstr "नया पासवर्ड चुनें"
 #: src/pages/Onboarding.tsx
 msgid "Choose a provider"
 msgstr ""
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Choose file"
-msgstr "फ़ाइल चुनें"
 
 #: src/components/ModelCredits.tsx
 #: src/components/SubscriptionGate.tsx
@@ -1376,7 +1350,6 @@ msgstr "साफ़ किया जा रहा है…"
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/chat-find-bar.tsx
 #: src/pages/WindowChrome.tsx
 msgid "Close"
@@ -1460,18 +1433,9 @@ msgctxt "email sign-in"
 msgid "Code"
 msgstr "कोड"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Collapse {0}"
-msgstr ""
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Color"
-msgstr "रंग"
-
-#. placeholder {0}: color.hex
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Color {0}"
 msgstr ""
 
 #: src/components/markdown-copy.tsx
@@ -1872,10 +1836,6 @@ msgstr ""
 msgid "Could not continue"
 msgstr "जारी नहीं रखा जा सका"
 
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "Could not create bot"
-msgstr "बॉट नहीं बनाया जा सका"
-
 #: src/pages/GroupPanel.tsx
 msgid "Could not create group"
 msgstr "समूह नहीं बनाया जा सका"
@@ -1883,10 +1843,6 @@ msgstr "समूह नहीं बनाया जा सका"
 #: src/components/SpaceMembersSettings.tsx
 msgid "Could not create invite link"
 msgstr ""
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not create section"
-msgstr "सेक्शन नहीं बनाया जा सका"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Could not create space"
@@ -1915,10 +1871,6 @@ msgstr "पेज हटाया नहीं जा सका"
 #: src/pages/shell/dialogs.tsx
 msgid "Could not delete routine"
 msgstr "रूटीन डिलीट नहीं किया जा सका"
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not delete section"
-msgstr "अनुभाग हटाया नहीं जा सका"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Could not delete skill"
@@ -2139,10 +2091,6 @@ msgstr ""
 msgid "Could not rename connection"
 msgstr ""
 
-#: src/pages/shell/dialogs.tsx
-msgid "Could not rename section"
-msgstr "अनुभाग का नाम नहीं बदला जा सका"
-
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Could not rename space"
 msgstr "स्पेस का नाम नहीं बदला जा सका"
@@ -2177,7 +2125,6 @@ msgstr ""
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/shell/use-space-roster.ts
 msgid "Could not save"
 msgstr "सहेजा नहीं जा सका"
 
@@ -2356,16 +2303,9 @@ msgid "Country"
 msgstr ""
 
 #: src/components/CreateOrganizationDialog.tsx
-#: src/pages/shell/create-bot-dialog.tsx
-#: src/pages/shell/dialogs.tsx
 #: src/pages/shell/sidebar-header.tsx
 msgid "Create"
 msgstr "बनाएं"
-
-#. placeholder {0}: bot.name
-#: src/pages/shell/dialogs.tsx
-msgid "Create a section and move {0} into it."
-msgstr "एक सेक्शन बनाएं और {0} को उसमें ले जाएं।"
 
 #: src/pages/Auth.tsx
 msgid "Create account"
@@ -2459,10 +2399,6 @@ msgstr "अनुकूलित करें"
 msgid "Customize {label}"
 msgstr "{label} अनुकूलित करें"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Customize bot avatar"
-msgstr "बॉट अवतार अनुकूलित करें"
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "रोज़"
@@ -2498,7 +2434,6 @@ msgstr "अस्वीकार करें"
 #: src/pages/model-settings/role-model-picker.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Default"
 msgstr "डिफ़ॉल्ट"
 
@@ -2521,7 +2456,6 @@ msgstr "डिफ़ॉल्ट स्कोप"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/archived-chats.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete"
@@ -2535,10 +2469,7 @@ msgid "Delete \"{0}\"?"
 msgstr "\"{0}\" हटाएं?"
 
 #. placeholder {0}: artifact.name
-#. placeholder {0}: bot.name
-#. placeholder {0}: group.name
 #: src/pages/Artifacts.tsx
-#: src/pages/shell/archived-chats.tsx
 msgid "Delete {0}"
 msgstr "{0} डिलीट करें"
 
@@ -2567,10 +2498,6 @@ msgstr "मेमोरी भी डिलीट करें"
 #: src/pages/OrganizationSettingsPanel.tsx
 msgid "Delete organization"
 msgstr "संगठन हटाएँ"
-
-#: src/pages/shell/sidebar-roster.tsx
-msgid "Delete section"
-msgstr "अनुभाग हटाएँ"
 
 #: src/pages/shell/shell-dialogs.tsx
 #: src/pages/SpaceSettingsPanel.tsx
@@ -2732,7 +2659,6 @@ msgstr "खाता नहीं है?"
 #: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/ActivityList.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/message-view.tsx
 msgid "Done"
 msgstr "पूर्ण"
@@ -2770,14 +2696,6 @@ msgstr ""
 #: src/components/teach/SkillDraftCard.tsx
 msgid "Draft skill"
 msgstr "ड्राफ़्ट स्किल"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Drag, drop, or paste an image"
-msgstr "छवि खींचें, छोड़ें या पेस्ट करें"
-
-#: src/pages/BotContextMenu.tsx
-msgid "Duplicate"
-msgstr "डुप्लिकेट"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Each name can be used once."
@@ -2954,7 +2872,7 @@ msgstr "Executor टोकन"
 msgid "Expand"
 msgstr "विस्तृत करें"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Expand {0}"
 msgstr ""
@@ -3311,10 +3229,6 @@ msgstr ""
 msgid "How often"
 msgstr "कितनी बार"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "How other bots see it"
-msgstr "दूसरे बॉट इसे कैसे देखते हैं"
-
 #: src/components/teach/SkillDraftCard.tsx
 msgid "How to check"
 msgstr "जांच कैसे करें"
@@ -3343,10 +3257,6 @@ msgstr "इस मॉडल के लिए चित्र इनपुट क
 #: src/lib/user-error.ts
 msgid "Image input is not configured for this model."
 msgstr "इस मॉडल के लिए चित्र इनपुट कॉन्फ़िगर नहीं है।"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Image upload area"
-msgstr "छवि अपलोड क्षेत्र"
 
 #: src/components/AccountDataSettings.tsx
 msgid "Import"
@@ -3471,10 +3381,6 @@ msgstr ""
 #: src/components/pages/PageViewHost.tsx
 msgid "It may have been deleted, or it belongs to someone else."
 msgstr "हो सकता है इसे हटा दिया गया हो, या यह किसी और का हो।"
-
-#: src/pages/shell/shell-dialogs.tsx
-msgid "Its bots and groups are kept and leave the section."
-msgstr "इसके बॉट और समूह बने रहेंगे और अनुभाग से बाहर हो जाएँगे।"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Its conversation, files, and routines will be permanently deleted. Bots it created stay in your list."
@@ -3979,10 +3885,6 @@ msgstr "नीचे ले जाएँ"
 msgid "Move them to your shared memory."
 msgstr "उन्हें अपनी साझा मेमोरी में ले जाएं।"
 
-#: src/pages/BotContextMenu.tsx
-msgid "Move to"
-msgstr "यहां ले जाएं"
-
 #: src/pages/ModelRoleSettings.tsx
 msgid "Move up"
 msgstr "ऊपर ले जाएँ"
@@ -4003,7 +3905,6 @@ msgstr ""
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Name"
@@ -4020,10 +3921,6 @@ msgstr "इस समूह को नाम दें"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Name this routine"
-msgstr ""
-
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "Name your Bot"
 msgstr ""
 
 #: src/lib/roster-status.ts
@@ -4067,12 +3964,6 @@ msgstr ""
 msgid "New API key"
 msgstr ""
 
-#: src/pages/Shell.tsx
-#: src/pages/shell/bot-picker.tsx
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "New bot"
-msgstr "नया बॉट"
-
 #: src/components/VaultSettings.tsx
 msgid "New card"
 msgstr ""
@@ -4112,11 +4003,6 @@ msgstr "नया पासवर्ड"
 #: src/pages/shell/bot-picker.tsx
 msgid "New private space"
 msgstr "नया निजी स्पेस"
-
-#: src/pages/BotContextMenu.tsx
-#: src/pages/shell/dialogs.tsx
-msgid "New section"
-msgstr "नया अनुभाग"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "New skill"
@@ -4366,7 +4252,7 @@ msgstr "सिर्फ़ आप"
 msgid "Open"
 msgstr "खोलें"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Open {0}"
 msgstr ""
@@ -4620,12 +4506,10 @@ msgid "Pick a tool to check"
 msgstr "जाँचने के लिए टूल चुनें"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/BotContextMenu.tsx
 msgid "Pin"
 msgstr "पिन करें"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/Shell.tsx
 msgid "Pinned"
 msgstr "पिन किए गए"
 
@@ -4997,12 +4881,6 @@ msgstr "हटाया जा रहा है…"
 msgid "Rename"
 msgstr "नाम बदलें"
 
-#: src/pages/BotContextMenu.tsx
-#: src/pages/shell/dialogs.tsx
-#: src/pages/shell/sidebar-roster.tsx
-msgid "Rename section"
-msgstr "अनुभाग का नाम बदलें"
-
 #: src/lib/billing.ts
 msgid "Renews {day}"
 msgstr ""
@@ -5055,7 +4933,6 @@ msgstr ""
 
 #: src/components/ComputerMaintenanceActions.tsx
 #: src/pages/ExternalConversationSettings.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Reset"
 msgstr "रीसेट करें"
 
@@ -5104,7 +4981,6 @@ msgid "Restart to update"
 msgstr ""
 
 #: src/components/InstructionSettings.tsx
-#: src/pages/shell/archived-chats.tsx
 msgid "Restore"
 msgstr "बहाल करें"
 
@@ -5261,7 +5137,6 @@ msgstr "शनिवार"
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Save"
 msgstr "सहेजें"
 
@@ -5515,14 +5390,8 @@ msgid "Setup help"
 msgstr "सेटअप सहायता"
 
 #: src/components/ComputerProviderSettings.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Shape"
 msgstr "आकार"
-
-#. placeholder {0}: shapeIndex + 1
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Shape {0}"
-msgstr ""
 
 #: src/components/pages/PagesList.tsx
 #: src/components/pages/SharePopover.tsx
@@ -6343,11 +6212,6 @@ msgstr ""
 msgid "Type your answer"
 msgstr "अपना उत्तर लिखें"
 
-#: src/pages/BotContextMenu.tsx
-#: src/pages/Shell.tsx
-msgid "Unassigned"
-msgstr "असाइन नहीं किया गया"
-
 #: src/components/AskCard.tsx
 msgid "Undo"
 msgstr "पूर्ववत करें"
@@ -6361,7 +6225,6 @@ msgid "Unlink"
 msgstr ""
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/BotContextMenu.tsx
 msgid "Unpin"
 msgstr "पिन हटाएं"
 
@@ -6426,10 +6289,6 @@ msgstr "अपग्रेड करें"
 #: src/components/ModelCredits.tsx
 msgid "Upgrade now"
 msgstr ""
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Upload"
-msgstr "अपलोड"
 
 #: src/pages/settings-nav.ts
 msgid "Usage"
@@ -6649,10 +6508,6 @@ msgstr "आप कौन-सा परिणाम दिखाकर बता�
 #: src/pages/RoutineEditor.tsx
 msgid "What should this routine do each time it runs?"
 msgstr ""
-
-#: src/pages/shell/bot-panel.tsx
-msgid "What this bot is for"
-msgstr "यह बॉट किस लिए है"
 
 #: src/components/teach/SkillDraftCard.tsx
 msgid "What to return"

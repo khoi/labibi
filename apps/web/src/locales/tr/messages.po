@@ -878,14 +878,6 @@ msgstr "Onaylanıyor…"
 msgid "Apps"
 msgstr "Uygulamalar"
 
-#: src/pages/BotContextMenu.tsx
-msgid "Archive"
-msgstr "Arşivle"
-
-#: src/pages/shell/archived-chats.tsx
-msgid "Archived"
-msgstr "Arşivlendi"
-
 #: src/pages/McpServersOverlay.tsx
 msgid "Arguments"
 msgstr "Argümanlar"
@@ -978,10 +970,6 @@ msgstr "Kullanılabilir:"
 msgid "Available to shell commands as {commandVariable}"
 msgstr "Kabuk komutlarında {commandVariable} olarak kullanılabilir"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Avatar Studio"
-msgstr "Avatar Stüdyosu"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/vault/VaultPageHeader.tsx
@@ -1053,7 +1041,6 @@ msgstr "Canlı masaüstü başlatılıyor…"
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/Shell.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
 msgid "Bot"
@@ -1154,7 +1141,6 @@ msgstr "Görselleri okuyamaz"
 #: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
-#: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
@@ -1253,10 +1239,6 @@ msgstr "Slack üzerinden botunuzla sohbet edin."
 msgid "ChatGPT subscription"
 msgstr "ChatGPT aboneliği"
 
-#: src/lib/identity-display.ts
-msgid "Chats"
-msgstr "Sohbetler"
-
 #: src/components/ComputersUnavailableHint.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Check again"
@@ -1310,10 +1292,6 @@ msgstr "Bağlantı kontrol ediliyor…"
 msgid "Checking…"
 msgstr "Kontrol ediliyor…"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Choose a bot shape, color, or upload an image"
-msgstr "Bir bot şekli ve rengi seçin veya görüntü yükleyin"
-
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/shell/composer-error.tsx
 msgid "Choose a model"
@@ -1326,10 +1304,6 @@ msgstr "Yeni bir parola seçin"
 #: src/pages/Onboarding.tsx
 msgid "Choose a provider"
 msgstr "Sağlayıcı seç"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Choose file"
-msgstr "Dosya seç"
 
 #: src/components/ModelCredits.tsx
 #: src/components/SubscriptionGate.tsx
@@ -1376,7 +1350,6 @@ msgstr "Temizleniyor…"
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/chat-find-bar.tsx
 #: src/pages/WindowChrome.tsx
 msgid "Close"
@@ -1460,19 +1433,10 @@ msgctxt "email sign-in"
 msgid "Code"
 msgstr "Kod"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Collapse {0}"
 msgstr "{0} bölümünü daralt"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Color"
-msgstr "Renk"
-
-#. placeholder {0}: color.hex
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Color {0}"
-msgstr ""
 
 #: src/components/markdown-copy.tsx
 msgid "column {index}"
@@ -1872,10 +1836,6 @@ msgstr "Bilgisayar ekranına bağlanılamadı"
 msgid "Could not continue"
 msgstr "Devam edilemedi"
 
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "Could not create bot"
-msgstr "Bot oluşturulamadı"
-
 #: src/pages/GroupPanel.tsx
 msgid "Could not create group"
 msgstr "Grup oluşturulamadı"
@@ -1883,10 +1843,6 @@ msgstr "Grup oluşturulamadı"
 #: src/components/SpaceMembersSettings.tsx
 msgid "Could not create invite link"
 msgstr ""
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not create section"
-msgstr "Bölüm oluşturulamadı"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Could not create space"
@@ -1915,10 +1871,6 @@ msgstr "Sayfa silinemedi"
 #: src/pages/shell/dialogs.tsx
 msgid "Could not delete routine"
 msgstr "Rutin silinemedi"
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not delete section"
-msgstr "Bölüm silinemedi"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Could not delete skill"
@@ -2139,10 +2091,6 @@ msgstr "Kimlik bilgisi kaldırılamadı"
 msgid "Could not rename connection"
 msgstr "Bağlantı yeniden adlandırılamadı"
 
-#: src/pages/shell/dialogs.tsx
-msgid "Could not rename section"
-msgstr "Bölüm yeniden adlandırılamadı"
-
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Could not rename space"
 msgstr "Space yeniden adlandırılamadı"
@@ -2177,7 +2125,6 @@ msgstr "Rutin çalıştırılamadı"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/shell/use-space-roster.ts
 msgid "Could not save"
 msgstr "Kaydedilemedi"
 
@@ -2356,16 +2303,9 @@ msgid "Country"
 msgstr "Ülke"
 
 #: src/components/CreateOrganizationDialog.tsx
-#: src/pages/shell/create-bot-dialog.tsx
-#: src/pages/shell/dialogs.tsx
 #: src/pages/shell/sidebar-header.tsx
 msgid "Create"
 msgstr "Oluştur"
-
-#. placeholder {0}: bot.name
-#: src/pages/shell/dialogs.tsx
-msgid "Create a section and move {0} into it."
-msgstr "Bir bölüm oluştur ve {0} botunu içine taşı."
 
 #: src/pages/Auth.tsx
 msgid "Create account"
@@ -2459,10 +2399,6 @@ msgstr "Özelleştir"
 msgid "Customize {label}"
 msgstr "{label}: özelleştir"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Customize bot avatar"
-msgstr "Bot avatarını özelleştir"
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "Günlük"
@@ -2498,7 +2434,6 @@ msgstr "Reddet"
 #: src/pages/model-settings/role-model-picker.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Default"
 msgstr "Varsayılan"
 
@@ -2521,7 +2456,6 @@ msgstr "Varsayılan kapsam"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/archived-chats.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete"
@@ -2535,10 +2469,7 @@ msgid "Delete \"{0}\"?"
 msgstr "\"{0}\" silinsin mi?"
 
 #. placeholder {0}: artifact.name
-#. placeholder {0}: bot.name
-#. placeholder {0}: group.name
 #: src/pages/Artifacts.tsx
-#: src/pages/shell/archived-chats.tsx
 msgid "Delete {0}"
 msgstr "{0} sil"
 
@@ -2567,10 +2498,6 @@ msgstr "Hafızayı da sil"
 #: src/pages/OrganizationSettingsPanel.tsx
 msgid "Delete organization"
 msgstr "Kuruluşu sil"
-
-#: src/pages/shell/sidebar-roster.tsx
-msgid "Delete section"
-msgstr "Bölümü sil"
 
 #: src/pages/shell/shell-dialogs.tsx
 #: src/pages/SpaceSettingsPanel.tsx
@@ -2732,7 +2659,6 @@ msgstr "Hesabın yok mu?"
 #: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/ActivityList.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/message-view.tsx
 msgid "Done"
 msgstr "Bitti"
@@ -2770,14 +2696,6 @@ msgstr "İndiriliyor…"
 #: src/components/teach/SkillDraftCard.tsx
 msgid "Draft skill"
 msgstr "Taslak beceri"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Drag, drop, or paste an image"
-msgstr "Görüntüyü sürükleyip bırakın veya yapıştırın"
-
-#: src/pages/BotContextMenu.tsx
-msgid "Duplicate"
-msgstr "Çoğalt"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Each name can be used once."
@@ -2954,7 +2872,7 @@ msgstr "Executor belirteci"
 msgid "Expand"
 msgstr "Genişlet"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Expand {0}"
 msgstr "{0} bölümünü genişlet"
@@ -3311,10 +3229,6 @@ msgstr "Bizi nereden duydun?"
 msgid "How often"
 msgstr "Ne sıklıkla"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "How other bots see it"
-msgstr "Diğer botlar onu nasıl görüyor"
-
 #: src/components/teach/SkillDraftCard.tsx
 msgid "How to check"
 msgstr "Nasıl kontrol edilir"
@@ -3343,10 +3257,6 @@ msgstr "Bu model için görüntü girişi yapılandırılmamış."
 #: src/lib/user-error.ts
 msgid "Image input is not configured for this model."
 msgstr "Bu model için görüntü girişi yapılandırılmamış."
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Image upload area"
-msgstr "Görüntü yükleme alanı"
 
 #: src/components/AccountDataSettings.tsx
 msgid "Import"
@@ -3471,10 +3381,6 @@ msgstr "Yalıtılmış önizleme — hesabına erişimi yok"
 #: src/components/pages/PageViewHost.tsx
 msgid "It may have been deleted, or it belongs to someone else."
 msgstr "Silinmiş veya başka birine ait olabilir."
-
-#: src/pages/shell/shell-dialogs.tsx
-msgid "Its bots and groups are kept and leave the section."
-msgstr "Botları ve grupları korunur ve bölümden çıkarılır."
 
 #: src/pages/shell/dialogs.tsx
 msgid "Its conversation, files, and routines will be permanently deleted. Bots it created stay in your list."
@@ -3979,10 +3885,6 @@ msgstr "Aşağı taşı"
 msgid "Move them to your shared memory."
 msgstr "Bunları ortak hafızana taşı."
 
-#: src/pages/BotContextMenu.tsx
-msgid "Move to"
-msgstr "Taşı"
-
 #: src/pages/ModelRoleSettings.tsx
 msgid "Move up"
 msgstr "Yukarı taşı"
@@ -4003,7 +3905,6 @@ msgstr "Bilgisayarlarım"
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Name"
@@ -4021,10 +3922,6 @@ msgstr "Gruba bir ad ver"
 #: src/pages/RoutineEditor.tsx
 msgid "Name this routine"
 msgstr "Bu rutine isim ver"
-
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "Name your Bot"
-msgstr "Botuna isim ver"
 
 #: src/lib/roster-status.ts
 msgid "Needs an answer"
@@ -4067,12 +3964,6 @@ msgstr "Yeni"
 msgid "New API key"
 msgstr "Yeni API anahtarı"
 
-#: src/pages/Shell.tsx
-#: src/pages/shell/bot-picker.tsx
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "New bot"
-msgstr "Yeni bot"
-
 #: src/components/VaultSettings.tsx
 msgid "New card"
 msgstr "Yeni kart"
@@ -4112,11 +4003,6 @@ msgstr "Yeni parola"
 #: src/pages/shell/bot-picker.tsx
 msgid "New private space"
 msgstr "Yeni özel alan"
-
-#: src/pages/BotContextMenu.tsx
-#: src/pages/shell/dialogs.tsx
-msgid "New section"
-msgstr "Yeni bölüm"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "New skill"
@@ -4366,7 +4252,7 @@ msgstr "Yalnızca siz"
 msgid "Open"
 msgstr "Aç"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Open {0}"
 msgstr "{0} aç"
@@ -4620,12 +4506,10 @@ msgid "Pick a tool to check"
 msgstr "Kontrol edilecek bir araç seçin"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/BotContextMenu.tsx
 msgid "Pin"
 msgstr "Sabitle"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/Shell.tsx
 msgid "Pinned"
 msgstr "Sabitlenenler"
 
@@ -4997,12 +4881,6 @@ msgstr "Kaldırılıyor…"
 msgid "Rename"
 msgstr "Yeniden adlandır"
 
-#: src/pages/BotContextMenu.tsx
-#: src/pages/shell/dialogs.tsx
-#: src/pages/shell/sidebar-roster.tsx
-msgid "Rename section"
-msgstr "Bölümü yeniden adlandır"
-
 #: src/lib/billing.ts
 msgid "Renews {day}"
 msgstr "{day} tarihinde yenileniyor"
@@ -5055,7 +4933,6 @@ msgstr "Araştırma ve yazma"
 
 #: src/components/ComputerMaintenanceActions.tsx
 #: src/pages/ExternalConversationSettings.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Reset"
 msgstr "Sıfırla"
 
@@ -5104,7 +4981,6 @@ msgid "Restart to update"
 msgstr "Güncellemek için yeniden başlat"
 
 #: src/components/InstructionSettings.tsx
-#: src/pages/shell/archived-chats.tsx
 msgid "Restore"
 msgstr "Geri yükle"
 
@@ -5261,7 +5137,6 @@ msgstr "Cumartesi"
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Save"
 msgstr "Kaydet"
 
@@ -5515,14 +5390,8 @@ msgid "Setup help"
 msgstr "Kurulum yardımı"
 
 #: src/components/ComputerProviderSettings.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Shape"
 msgstr "Şekil"
-
-#. placeholder {0}: shapeIndex + 1
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Shape {0}"
-msgstr "Şekil {0}"
 
 #: src/components/pages/PagesList.tsx
 #: src/components/pages/SharePopover.tsx
@@ -6343,11 +6212,6 @@ msgstr "Kayıt yapmadan yaz"
 msgid "Type your answer"
 msgstr "Yanıtını yaz"
 
-#: src/pages/BotContextMenu.tsx
-#: src/pages/Shell.tsx
-msgid "Unassigned"
-msgstr "Atanmamış"
-
 #: src/components/AskCard.tsx
 msgid "Undo"
 msgstr "Geri al"
@@ -6361,7 +6225,6 @@ msgid "Unlink"
 msgstr "Bağlantıyı kaldır"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/BotContextMenu.tsx
 msgid "Unpin"
 msgstr "Sabitlemeyi kaldır"
 
@@ -6426,10 +6289,6 @@ msgstr "Yükselt"
 #: src/components/ModelCredits.tsx
 msgid "Upgrade now"
 msgstr "Şimdi yükselt"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Upload"
-msgstr "Yükle"
 
 #: src/pages/settings-nav.ts
 msgid "Usage"
@@ -6649,10 +6508,6 @@ msgstr "Hangi sonucu göstereceksin?"
 #: src/pages/RoutineEditor.tsx
 msgid "What should this routine do each time it runs?"
 msgstr "Bu rutin her çalıştığında ne yapmalı?"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "What this bot is for"
-msgstr "Bu botun amacı"
 
 #: src/components/teach/SkillDraftCard.tsx
 msgid "What to return"

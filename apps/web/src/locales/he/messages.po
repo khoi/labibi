@@ -878,14 +878,6 @@ msgstr ""
 msgid "Apps"
 msgstr ""
 
-#: src/pages/BotContextMenu.tsx
-msgid "Archive"
-msgstr "העברה לארכיון"
-
-#: src/pages/shell/archived-chats.tsx
-msgid "Archived"
-msgstr "בארכיון"
-
 #: src/pages/McpServersOverlay.tsx
 msgid "Arguments"
 msgstr "ארגומנטים"
@@ -978,10 +970,6 @@ msgstr ""
 msgid "Available to shell commands as {commandVariable}"
 msgstr "זמין לפקודות shell בתור {commandVariable}"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Avatar Studio"
-msgstr "Avatar Studio"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/vault/VaultPageHeader.tsx
@@ -1053,7 +1041,6 @@ msgstr "מפעיל שולחן עבודה חי…"
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/Shell.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
 msgid "Bot"
@@ -1154,7 +1141,6 @@ msgstr "לא ניתן לקרוא תמונות"
 #: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
-#: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
@@ -1253,10 +1239,6 @@ msgstr "שוחחו עם הבוט שלכם מ-Slack."
 msgid "ChatGPT subscription"
 msgstr ""
 
-#: src/lib/identity-display.ts
-msgid "Chats"
-msgstr "צ׳אטים"
-
 #: src/components/ComputersUnavailableHint.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Check again"
@@ -1310,10 +1292,6 @@ msgstr "בודק חיבור…"
 msgid "Checking…"
 msgstr "בודק…"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Choose a bot shape, color, or upload an image"
-msgstr "בחירת צורה או צבע לבוט, או העלאת תמונה"
-
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/shell/composer-error.tsx
 msgid "Choose a model"
@@ -1326,10 +1304,6 @@ msgstr "בחירת סיסמה חדשה"
 #: src/pages/Onboarding.tsx
 msgid "Choose a provider"
 msgstr ""
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Choose file"
-msgstr "בחירת קובץ"
 
 #: src/components/ModelCredits.tsx
 #: src/components/SubscriptionGate.tsx
@@ -1376,7 +1350,6 @@ msgstr "מנקה…"
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/chat-find-bar.tsx
 #: src/pages/WindowChrome.tsx
 msgid "Close"
@@ -1460,19 +1433,10 @@ msgctxt "email sign-in"
 msgid "Code"
 msgstr "קוד"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Collapse {0}"
 msgstr "כיווץ {0}"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Color"
-msgstr "צבע"
-
-#. placeholder {0}: color.hex
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Color {0}"
-msgstr ""
 
 #: src/components/markdown-copy.tsx
 msgid "column {index}"
@@ -1872,10 +1836,6 @@ msgstr "לא ניתן להתחבר למסך המחשב"
 msgid "Could not continue"
 msgstr "לא ניתן להמשיך"
 
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "Could not create bot"
-msgstr "לא ניתן ליצור את הבוט"
-
 #: src/pages/GroupPanel.tsx
 msgid "Could not create group"
 msgstr "לא ניתן ליצור את הקבוצה"
@@ -1883,10 +1843,6 @@ msgstr "לא ניתן ליצור את הקבוצה"
 #: src/components/SpaceMembersSettings.tsx
 msgid "Could not create invite link"
 msgstr ""
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not create section"
-msgstr "לא ניתן ליצור את המקטע"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Could not create space"
@@ -1915,10 +1871,6 @@ msgstr "לא ניתן היה למחוק את הדף"
 #: src/pages/shell/dialogs.tsx
 msgid "Could not delete routine"
 msgstr "לא ניתן למחוק את הרוטינה"
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not delete section"
-msgstr "לא ניתן למחוק את המקטע"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Could not delete skill"
@@ -2139,10 +2091,6 @@ msgstr "לא ניתן להסיר את פרטי הגישה"
 msgid "Could not rename connection"
 msgstr "לא ניתן לשנות את שם החיבור"
 
-#: src/pages/shell/dialogs.tsx
-msgid "Could not rename section"
-msgstr "לא ניתן לשנות את שם המקטע"
-
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Could not rename space"
 msgstr "לא ניתן לשנות את שם המרחב"
@@ -2177,7 +2125,6 @@ msgstr "לא ניתן להריץ את הרוטינה"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/shell/use-space-roster.ts
 msgid "Could not save"
 msgstr "השמירה נכשלה"
 
@@ -2356,16 +2303,9 @@ msgid "Country"
 msgstr ""
 
 #: src/components/CreateOrganizationDialog.tsx
-#: src/pages/shell/create-bot-dialog.tsx
-#: src/pages/shell/dialogs.tsx
 #: src/pages/shell/sidebar-header.tsx
 msgid "Create"
 msgstr "יצירה"
-
-#. placeholder {0}: bot.name
-#: src/pages/shell/dialogs.tsx
-msgid "Create a section and move {0} into it."
-msgstr "יצירת קטע והעברת {0} אליו."
 
 #: src/pages/Auth.tsx
 msgid "Create account"
@@ -2459,10 +2399,6 @@ msgstr "התאמה אישית"
 msgid "Customize {label}"
 msgstr "התאמה אישית של {label}"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Customize bot avatar"
-msgstr "התאמת תמונת הבוט"
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "יומי"
@@ -2498,7 +2434,6 @@ msgstr "דחייה"
 #: src/pages/model-settings/role-model-picker.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Default"
 msgstr "ברירת מחדל"
 
@@ -2521,7 +2456,6 @@ msgstr "היקף ברירת מחדל"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/archived-chats.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete"
@@ -2535,10 +2469,7 @@ msgid "Delete \"{0}\"?"
 msgstr "למחוק את \"{0}\"?"
 
 #. placeholder {0}: artifact.name
-#. placeholder {0}: bot.name
-#. placeholder {0}: group.name
 #: src/pages/Artifacts.tsx
-#: src/pages/shell/archived-chats.tsx
 msgid "Delete {0}"
 msgstr "מחיקת {0}"
 
@@ -2567,10 +2498,6 @@ msgstr "מחיקת הזיכרונות גם כן"
 #: src/pages/OrganizationSettingsPanel.tsx
 msgid "Delete organization"
 msgstr "מחיקת הארגון"
-
-#: src/pages/shell/sidebar-roster.tsx
-msgid "Delete section"
-msgstr "מחיקת המקטע"
 
 #: src/pages/shell/shell-dialogs.tsx
 #: src/pages/SpaceSettingsPanel.tsx
@@ -2732,7 +2659,6 @@ msgstr "אין חשבון?"
 #: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/ActivityList.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/message-view.tsx
 msgid "Done"
 msgstr "הושלם"
@@ -2770,14 +2696,6 @@ msgstr "מוריד…"
 #: src/components/teach/SkillDraftCard.tsx
 msgid "Draft skill"
 msgstr "טיוטת מיומנות"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Drag, drop, or paste an image"
-msgstr "אפשר לגרור, לשחרר או להדביק תמונה"
-
-#: src/pages/BotContextMenu.tsx
-msgid "Duplicate"
-msgstr "שכפול"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Each name can be used once."
@@ -2954,7 +2872,7 @@ msgstr "טוקן Executor"
 msgid "Expand"
 msgstr "הרחבה"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Expand {0}"
 msgstr "הרחבת {0}"
@@ -3311,10 +3229,6 @@ msgstr ""
 msgid "How often"
 msgstr "תדירות"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "How other bots see it"
-msgstr "איך בוטים אחרים רואים אותו"
-
 #: src/components/teach/SkillDraftCard.tsx
 msgid "How to check"
 msgstr "איך לבדוק"
@@ -3343,10 +3257,6 @@ msgstr "קלט תמונה לא מוגדר עבור המודל הזה."
 #: src/lib/user-error.ts
 msgid "Image input is not configured for this model."
 msgstr "קלט תמונה לא מוגדר עבור המודל הזה."
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Image upload area"
-msgstr "אזור העלאת תמונה"
 
 #: src/components/AccountDataSettings.tsx
 msgid "Import"
@@ -3471,10 +3381,6 @@ msgstr "תצוגה מקדימה מבודדת — ללא גישה לחשבון"
 #: src/components/pages/PageViewHost.tsx
 msgid "It may have been deleted, or it belongs to someone else."
 msgstr "ייתכן שהוא נמחק או שהוא שייך למישהו אחר."
-
-#: src/pages/shell/shell-dialogs.tsx
-msgid "Its bots and groups are kept and leave the section."
-msgstr "הבוטים והקבוצות שבו יישמרו ויוצאו מהמקטע."
 
 #: src/pages/shell/dialogs.tsx
 msgid "Its conversation, files, and routines will be permanently deleted. Bots it created stay in your list."
@@ -3979,10 +3885,6 @@ msgstr "הזזה למטה"
 msgid "Move them to your shared memory."
 msgstr "אפשר להעביר אותם לזיכרון המשותף."
 
-#: src/pages/BotContextMenu.tsx
-msgid "Move to"
-msgstr "העברה אל"
-
 #: src/pages/ModelRoleSettings.tsx
 msgid "Move up"
 msgstr "הזזה למעלה"
@@ -4003,7 +3905,6 @@ msgstr ""
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Name"
@@ -4021,10 +3922,6 @@ msgstr "שם לקבוצה"
 #: src/pages/RoutineEditor.tsx
 msgid "Name this routine"
 msgstr "שם לרוטינה"
-
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "Name your Bot"
-msgstr ""
 
 #: src/lib/roster-status.ts
 msgid "Needs an answer"
@@ -4067,12 +3964,6 @@ msgstr ""
 msgid "New API key"
 msgstr ""
 
-#: src/pages/Shell.tsx
-#: src/pages/shell/bot-picker.tsx
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "New bot"
-msgstr "בוט חדש"
-
 #: src/components/VaultSettings.tsx
 msgid "New card"
 msgstr ""
@@ -4112,11 +4003,6 @@ msgstr "סיסמה חדשה"
 #: src/pages/shell/bot-picker.tsx
 msgid "New private space"
 msgstr "מרחב פרטי חדש"
-
-#: src/pages/BotContextMenu.tsx
-#: src/pages/shell/dialogs.tsx
-msgid "New section"
-msgstr "מקטע חדש"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "New skill"
@@ -4366,7 +4252,7 @@ msgstr "רק את/ה"
 msgid "Open"
 msgstr "פתיחה"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Open {0}"
 msgstr "פתיחת {0}"
@@ -4620,12 +4506,10 @@ msgid "Pick a tool to check"
 msgstr ""
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/BotContextMenu.tsx
 msgid "Pin"
 msgstr "הצמדה"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/Shell.tsx
 msgid "Pinned"
 msgstr "מוצמדים"
 
@@ -4997,12 +4881,6 @@ msgstr "מסיר…"
 msgid "Rename"
 msgstr "שינוי שם"
 
-#: src/pages/BotContextMenu.tsx
-#: src/pages/shell/dialogs.tsx
-#: src/pages/shell/sidebar-roster.tsx
-msgid "Rename section"
-msgstr "שינוי שם המקטע"
-
 #: src/lib/billing.ts
 msgid "Renews {day}"
 msgstr "מתחדש ב-{day}"
@@ -5055,7 +4933,6 @@ msgstr "מחקר וכתיבה"
 
 #: src/components/ComputerMaintenanceActions.tsx
 #: src/pages/ExternalConversationSettings.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Reset"
 msgstr "איפוס"
 
@@ -5104,7 +4981,6 @@ msgid "Restart to update"
 msgstr "הפעלה מחדש לעדכון"
 
 #: src/components/InstructionSettings.tsx
-#: src/pages/shell/archived-chats.tsx
 msgid "Restore"
 msgstr "שחזור"
 
@@ -5261,7 +5137,6 @@ msgstr "שבת"
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Save"
 msgstr "שמירה"
 
@@ -5515,14 +5390,8 @@ msgid "Setup help"
 msgstr "עזרה בהגדרה"
 
 #: src/components/ComputerProviderSettings.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Shape"
 msgstr "צורה"
-
-#. placeholder {0}: shapeIndex + 1
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Shape {0}"
-msgstr ""
 
 #: src/components/pages/PagesList.tsx
 #: src/components/pages/SharePopover.tsx
@@ -6343,11 +6212,6 @@ msgstr "הקלדה בלי הקלטה"
 msgid "Type your answer"
 msgstr "יש להקליד תשובה"
 
-#: src/pages/BotContextMenu.tsx
-#: src/pages/Shell.tsx
-msgid "Unassigned"
-msgstr "ללא שיוך"
-
 #: src/components/AskCard.tsx
 msgid "Undo"
 msgstr "ביטול"
@@ -6361,7 +6225,6 @@ msgid "Unlink"
 msgstr "ביטול קישור"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/BotContextMenu.tsx
 msgid "Unpin"
 msgstr "ביטול הצמדה"
 
@@ -6426,10 +6289,6 @@ msgstr "שדרוג"
 #: src/components/ModelCredits.tsx
 msgid "Upgrade now"
 msgstr ""
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Upload"
-msgstr "העלאה"
 
 #: src/pages/settings-nav.ts
 msgid "Usage"
@@ -6649,10 +6508,6 @@ msgstr "איזו תוצאה תודגם?"
 #: src/pages/RoutineEditor.tsx
 msgid "What should this routine do each time it runs?"
 msgstr "מה הרוטינה הזו צריכה לעשות בכל הרצה?"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "What this bot is for"
-msgstr "למה הבוט הזה משמש"
 
 #: src/components/teach/SkillDraftCard.tsx
 msgid "What to return"

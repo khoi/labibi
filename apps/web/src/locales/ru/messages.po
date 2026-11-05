@@ -878,14 +878,6 @@ msgstr ""
 msgid "Apps"
 msgstr ""
 
-#: src/pages/BotContextMenu.tsx
-msgid "Archive"
-msgstr "Архивировать"
-
-#: src/pages/shell/archived-chats.tsx
-msgid "Archived"
-msgstr "В архиве"
-
 #: src/pages/McpServersOverlay.tsx
 msgid "Arguments"
 msgstr "Аргументы"
@@ -978,10 +970,6 @@ msgstr ""
 msgid "Available to shell commands as {commandVariable}"
 msgstr "Доступна командам оболочки как {commandVariable}"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Avatar Studio"
-msgstr "Студия аватаров"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/vault/VaultPageHeader.tsx
@@ -1053,7 +1041,6 @@ msgstr "Загрузка рабочего стола…"
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/Shell.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
 msgid "Bot"
@@ -1154,7 +1141,6 @@ msgstr "Не может читать изображения"
 #: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
-#: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
@@ -1253,10 +1239,6 @@ msgstr "Общайтесь с ботом из Slack."
 msgid "ChatGPT subscription"
 msgstr ""
 
-#: src/lib/identity-display.ts
-msgid "Chats"
-msgstr "Чаты"
-
 #: src/components/ComputersUnavailableHint.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Check again"
@@ -1310,10 +1292,6 @@ msgstr "Проверка подключения…"
 msgid "Checking…"
 msgstr "Проверка…"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Choose a bot shape, color, or upload an image"
-msgstr "Выберите форму и цвет бота или загрузите изображение"
-
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/shell/composer-error.tsx
 msgid "Choose a model"
@@ -1326,10 +1304,6 @@ msgstr "Выберите новый пароль"
 #: src/pages/Onboarding.tsx
 msgid "Choose a provider"
 msgstr ""
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Choose file"
-msgstr "Выбрать файл"
 
 #: src/components/ModelCredits.tsx
 #: src/components/SubscriptionGate.tsx
@@ -1376,7 +1350,6 @@ msgstr "Очистка…"
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/chat-find-bar.tsx
 #: src/pages/WindowChrome.tsx
 msgid "Close"
@@ -1460,19 +1433,10 @@ msgctxt "email sign-in"
 msgid "Code"
 msgstr "Код"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Collapse {0}"
 msgstr "Свернуть {0}"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Color"
-msgstr "Цвет"
-
-#. placeholder {0}: color.hex
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Color {0}"
-msgstr ""
 
 #: src/components/markdown-copy.tsx
 msgid "column {index}"
@@ -1872,10 +1836,6 @@ msgstr "Не удалось подключиться к экрану компь�
 msgid "Could not continue"
 msgstr "Не удалось продолжить"
 
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "Could not create bot"
-msgstr "Не удалось создать бота"
-
 #: src/pages/GroupPanel.tsx
 msgid "Could not create group"
 msgstr "Не удалось создать группу"
@@ -1883,10 +1843,6 @@ msgstr "Не удалось создать группу"
 #: src/components/SpaceMembersSettings.tsx
 msgid "Could not create invite link"
 msgstr ""
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not create section"
-msgstr "Не удалось создать раздел"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Could not create space"
@@ -1915,10 +1871,6 @@ msgstr "Не удалось удалить страницу"
 #: src/pages/shell/dialogs.tsx
 msgid "Could not delete routine"
 msgstr "Не удалось удалить задачу"
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not delete section"
-msgstr "Не удалось удалить раздел"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Could not delete skill"
@@ -2139,10 +2091,6 @@ msgstr ""
 msgid "Could not rename connection"
 msgstr "Не удалось переименовать соединение"
 
-#: src/pages/shell/dialogs.tsx
-msgid "Could not rename section"
-msgstr "Не удалось переименовать раздел"
-
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Could not rename space"
 msgstr "Не удалось переименовать пространство"
@@ -2177,7 +2125,6 @@ msgstr "Не удалось запустить задачу"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/shell/use-space-roster.ts
 msgid "Could not save"
 msgstr "Не удалось сохранить"
 
@@ -2356,16 +2303,9 @@ msgid "Country"
 msgstr ""
 
 #: src/components/CreateOrganizationDialog.tsx
-#: src/pages/shell/create-bot-dialog.tsx
-#: src/pages/shell/dialogs.tsx
 #: src/pages/shell/sidebar-header.tsx
 msgid "Create"
 msgstr "Создать"
-
-#. placeholder {0}: bot.name
-#: src/pages/shell/dialogs.tsx
-msgid "Create a section and move {0} into it."
-msgstr "Создайте раздел и переместите в него {0}."
 
 #: src/pages/Auth.tsx
 msgid "Create account"
@@ -2459,10 +2399,6 @@ msgstr "Настроить"
 msgid "Customize {label}"
 msgstr "Настроить: {label}"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Customize bot avatar"
-msgstr "Настроить аватар бота"
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "Ежедневно"
@@ -2498,7 +2434,6 @@ msgstr "Отклонить"
 #: src/pages/model-settings/role-model-picker.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Default"
 msgstr "По умолчанию"
 
@@ -2521,7 +2456,6 @@ msgstr "Область действия по умолчанию"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/archived-chats.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete"
@@ -2535,10 +2469,7 @@ msgid "Delete \"{0}\"?"
 msgstr "Удалить «{0}»?"
 
 #. placeholder {0}: artifact.name
-#. placeholder {0}: bot.name
-#. placeholder {0}: group.name
 #: src/pages/Artifacts.tsx
-#: src/pages/shell/archived-chats.tsx
 msgid "Delete {0}"
 msgstr "Удалить {0}"
 
@@ -2567,10 +2498,6 @@ msgstr "Удалите воспоминания тоже"
 #: src/pages/OrganizationSettingsPanel.tsx
 msgid "Delete organization"
 msgstr "Удалить организацию"
-
-#: src/pages/shell/sidebar-roster.tsx
-msgid "Delete section"
-msgstr "Удалить раздел"
 
 #: src/pages/shell/shell-dialogs.tsx
 #: src/pages/SpaceSettingsPanel.tsx
@@ -2732,7 +2659,6 @@ msgstr "У вас нет учетной записи?"
 #: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/ActivityList.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/message-view.tsx
 msgid "Done"
 msgstr "Готово"
@@ -2770,14 +2696,6 @@ msgstr "Скачивание…"
 #: src/components/teach/SkillDraftCard.tsx
 msgid "Draft skill"
 msgstr "Черновик навыка"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Drag, drop, or paste an image"
-msgstr "Перетащите или вставьте изображение"
-
-#: src/pages/BotContextMenu.tsx
-msgid "Duplicate"
-msgstr "Дублировать"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Each name can be used once."
@@ -2954,7 +2872,7 @@ msgstr "Токен Executor"
 msgid "Expand"
 msgstr "Развернуть"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Expand {0}"
 msgstr "Развернуть {0}"
@@ -3311,10 +3229,6 @@ msgstr ""
 msgid "How often"
 msgstr "Как часто"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "How other bots see it"
-msgstr "Как его видят другие боты"
-
 #: src/components/teach/SkillDraftCard.tsx
 msgid "How to check"
 msgstr "Как проверить"
@@ -3343,10 +3257,6 @@ msgstr "Ввод изображений не настроен для этой м
 #: src/lib/user-error.ts
 msgid "Image input is not configured for this model."
 msgstr "Ввод изображений не настроен для этой модели."
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Image upload area"
-msgstr "Область загрузки изображения"
 
 #: src/components/AccountDataSettings.tsx
 msgid "Import"
@@ -3471,10 +3381,6 @@ msgstr ""
 #: src/components/pages/PageViewHost.tsx
 msgid "It may have been deleted, or it belongs to someone else."
 msgstr "Возможно, она удалена или принадлежит другому человеку."
-
-#: src/pages/shell/shell-dialogs.tsx
-msgid "Its bots and groups are kept and leave the section."
-msgstr "Боты и группы из него сохранятся и выйдут из раздела."
 
 #: src/pages/shell/dialogs.tsx
 msgid "Its conversation, files, and routines will be permanently deleted. Bots it created stay in your list."
@@ -3979,10 +3885,6 @@ msgstr "Переместить вниз"
 msgid "Move them to your shared memory."
 msgstr "Переместите их в свою общую память."
 
-#: src/pages/BotContextMenu.tsx
-msgid "Move to"
-msgstr "Переместить в"
-
 #: src/pages/ModelRoleSettings.tsx
 msgid "Move up"
 msgstr "Переместить вверх"
@@ -4003,7 +3905,6 @@ msgstr ""
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Name"
@@ -4021,10 +3922,6 @@ msgstr "Назовите эту группу"
 #: src/pages/RoutineEditor.tsx
 msgid "Name this routine"
 msgstr "Назовите эту задачу"
-
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "Name your Bot"
-msgstr ""
 
 #: src/lib/roster-status.ts
 msgid "Needs an answer"
@@ -4067,12 +3964,6 @@ msgstr "Новые"
 msgid "New API key"
 msgstr ""
 
-#: src/pages/Shell.tsx
-#: src/pages/shell/bot-picker.tsx
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "New bot"
-msgstr "Новый бот"
-
 #: src/components/VaultSettings.tsx
 msgid "New card"
 msgstr ""
@@ -4112,11 +4003,6 @@ msgstr "Новый пароль"
 #: src/pages/shell/bot-picker.tsx
 msgid "New private space"
 msgstr "Новое личное пространство"
-
-#: src/pages/BotContextMenu.tsx
-#: src/pages/shell/dialogs.tsx
-msgid "New section"
-msgstr "Новый раздел"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "New skill"
@@ -4366,7 +4252,7 @@ msgstr "Только вы"
 msgid "Open"
 msgstr "Открыть"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Open {0}"
 msgstr "Открыть {0}"
@@ -4620,12 +4506,10 @@ msgid "Pick a tool to check"
 msgstr "Выберите инструмент для проверки"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/BotContextMenu.tsx
 msgid "Pin"
 msgstr "Закрепить"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/Shell.tsx
 msgid "Pinned"
 msgstr "Закреплённые"
 
@@ -4997,12 +4881,6 @@ msgstr "Удаление…"
 msgid "Rename"
 msgstr "Переименовать"
 
-#: src/pages/BotContextMenu.tsx
-#: src/pages/shell/dialogs.tsx
-#: src/pages/shell/sidebar-roster.tsx
-msgid "Rename section"
-msgstr "Переименовать раздел"
-
 #: src/lib/billing.ts
 msgid "Renews {day}"
 msgstr ""
@@ -5055,7 +4933,6 @@ msgstr ""
 
 #: src/components/ComputerMaintenanceActions.tsx
 #: src/pages/ExternalConversationSettings.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Reset"
 msgstr "Сбросить"
 
@@ -5104,7 +4981,6 @@ msgid "Restart to update"
 msgstr "Перезапустить для обновления"
 
 #: src/components/InstructionSettings.tsx
-#: src/pages/shell/archived-chats.tsx
 msgid "Restore"
 msgstr "Восстановить"
 
@@ -5261,7 +5137,6 @@ msgstr "суббота"
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Save"
 msgstr "Сохранить"
 
@@ -5515,14 +5390,8 @@ msgid "Setup help"
 msgstr "Помощь по настройке"
 
 #: src/components/ComputerProviderSettings.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Shape"
 msgstr "Форма"
-
-#. placeholder {0}: shapeIndex + 1
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Shape {0}"
-msgstr ""
 
 #: src/components/pages/PagesList.tsx
 #: src/components/pages/SharePopover.tsx
@@ -6343,11 +6212,6 @@ msgstr ""
 msgid "Type your answer"
 msgstr "Введите ответ"
 
-#: src/pages/BotContextMenu.tsx
-#: src/pages/Shell.tsx
-msgid "Unassigned"
-msgstr "Без раздела"
-
 #: src/components/AskCard.tsx
 msgid "Undo"
 msgstr "Отменить"
@@ -6361,7 +6225,6 @@ msgid "Unlink"
 msgstr "Отсоединить"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/BotContextMenu.tsx
 msgid "Unpin"
 msgstr "Открепить"
 
@@ -6426,10 +6289,6 @@ msgstr "Улучшить тариф"
 #: src/components/ModelCredits.tsx
 msgid "Upgrade now"
 msgstr ""
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Upload"
-msgstr "Загрузить"
 
 #: src/pages/settings-nav.ts
 msgid "Usage"
@@ -6649,10 +6508,6 @@ msgstr "Какой результат вы продемонстрируете?"
 #: src/pages/RoutineEditor.tsx
 msgid "What should this routine do each time it runs?"
 msgstr "Что должна делать эта задача при каждом запуске?"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "What this bot is for"
-msgstr "Для чего нужен этот бот"
 
 #: src/components/teach/SkillDraftCard.tsx
 msgid "What to return"

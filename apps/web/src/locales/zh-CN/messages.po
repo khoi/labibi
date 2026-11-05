@@ -878,14 +878,6 @@ msgstr "正在批准…"
 msgid "Apps"
 msgstr "应用"
 
-#: src/pages/BotContextMenu.tsx
-msgid "Archive"
-msgstr "归档"
-
-#: src/pages/shell/archived-chats.tsx
-msgid "Archived"
-msgstr "已归档"
-
 #: src/pages/McpServersOverlay.tsx
 msgid "Arguments"
 msgstr "参数"
@@ -978,10 +970,6 @@ msgstr "可用于"
 msgid "Available to shell commands as {commandVariable}"
 msgstr "Shell 命令可通过 {commandVariable} 使用"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Avatar Studio"
-msgstr "头像工作室"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/vault/VaultPageHeader.tsx
@@ -1053,7 +1041,6 @@ msgstr "正在启动实时桌面…"
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/Shell.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
 msgid "Bot"
@@ -1154,7 +1141,6 @@ msgstr "无法读取图像"
 #: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
-#: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
@@ -1253,10 +1239,6 @@ msgstr "在 Slack 中与你的机器人聊天。"
 msgid "ChatGPT subscription"
 msgstr "ChatGPT 订阅"
 
-#: src/lib/identity-display.ts
-msgid "Chats"
-msgstr "聊天"
-
 #: src/components/ComputersUnavailableHint.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Check again"
@@ -1310,10 +1292,6 @@ msgstr "正在检查连接…"
 msgid "Checking…"
 msgstr "正在检查…"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Choose a bot shape, color, or upload an image"
-msgstr "选择机器人形状和颜色，或上传图片"
-
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/shell/composer-error.tsx
 msgid "Choose a model"
@@ -1326,10 +1304,6 @@ msgstr "设置新密码"
 #: src/pages/Onboarding.tsx
 msgid "Choose a provider"
 msgstr "选择提供方"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Choose file"
-msgstr "选择文件"
 
 #: src/components/ModelCredits.tsx
 #: src/components/SubscriptionGate.tsx
@@ -1376,7 +1350,6 @@ msgstr "正在清空…"
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/chat-find-bar.tsx
 #: src/pages/WindowChrome.tsx
 msgid "Close"
@@ -1460,19 +1433,10 @@ msgctxt "email sign-in"
 msgid "Code"
 msgstr "验证码"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Collapse {0}"
 msgstr "折叠 {0}"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Color"
-msgstr "颜色"
-
-#. placeholder {0}: color.hex
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Color {0}"
-msgstr ""
 
 #: src/components/markdown-copy.tsx
 msgid "column {index}"
@@ -1872,10 +1836,6 @@ msgstr "无法连接电脑屏幕"
 msgid "Could not continue"
 msgstr "无法继续"
 
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "Could not create bot"
-msgstr "无法创建 Bot"
-
 #: src/pages/GroupPanel.tsx
 msgid "Could not create group"
 msgstr "无法创建群组"
@@ -1883,10 +1843,6 @@ msgstr "无法创建群组"
 #: src/components/SpaceMembersSettings.tsx
 msgid "Could not create invite link"
 msgstr ""
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not create section"
-msgstr "无法创建分组"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Could not create space"
@@ -1915,10 +1871,6 @@ msgstr "无法删除页面"
 #: src/pages/shell/dialogs.tsx
 msgid "Could not delete routine"
 msgstr "无法删除例行任务"
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not delete section"
-msgstr "无法删除分组"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Could not delete skill"
@@ -2139,10 +2091,6 @@ msgstr "无法移除凭据"
 msgid "Could not rename connection"
 msgstr "无法重命名连接"
 
-#: src/pages/shell/dialogs.tsx
-msgid "Could not rename section"
-msgstr "无法重命名分组"
-
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Could not rename space"
 msgstr "无法重命名工作区"
@@ -2177,7 +2125,6 @@ msgstr "无法运行例行任务"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/shell/use-space-roster.ts
 msgid "Could not save"
 msgstr "无法保存"
 
@@ -2356,16 +2303,9 @@ msgid "Country"
 msgstr ""
 
 #: src/components/CreateOrganizationDialog.tsx
-#: src/pages/shell/create-bot-dialog.tsx
-#: src/pages/shell/dialogs.tsx
 #: src/pages/shell/sidebar-header.tsx
 msgid "Create"
 msgstr "创建"
-
-#. placeholder {0}: bot.name
-#: src/pages/shell/dialogs.tsx
-msgid "Create a section and move {0} into it."
-msgstr "创建分组并把 {0} 移入。"
 
 #: src/pages/Auth.tsx
 msgid "Create account"
@@ -2459,10 +2399,6 @@ msgstr "自定义"
 msgid "Customize {label}"
 msgstr "自定义{label}"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Customize bot avatar"
-msgstr "自定义机器人头像"
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "每天"
@@ -2498,7 +2434,6 @@ msgstr "拒绝"
 #: src/pages/model-settings/role-model-picker.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Default"
 msgstr "默认"
 
@@ -2521,7 +2456,6 @@ msgstr "默认范围"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/archived-chats.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete"
@@ -2535,10 +2469,7 @@ msgid "Delete \"{0}\"?"
 msgstr "删除“{0}”？"
 
 #. placeholder {0}: artifact.name
-#. placeholder {0}: bot.name
-#. placeholder {0}: group.name
 #: src/pages/Artifacts.tsx
-#: src/pages/shell/archived-chats.tsx
 msgid "Delete {0}"
 msgstr "删除 {0}"
 
@@ -2567,10 +2498,6 @@ msgstr "同时删除记忆"
 #: src/pages/OrganizationSettingsPanel.tsx
 msgid "Delete organization"
 msgstr "删除组织"
-
-#: src/pages/shell/sidebar-roster.tsx
-msgid "Delete section"
-msgstr "删除分组"
 
 #: src/pages/shell/shell-dialogs.tsx
 #: src/pages/SpaceSettingsPanel.tsx
@@ -2732,7 +2659,6 @@ msgstr "还没有账户？"
 #: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/ActivityList.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/message-view.tsx
 msgid "Done"
 msgstr "完成"
@@ -2770,14 +2696,6 @@ msgstr "正在下载…"
 #: src/components/teach/SkillDraftCard.tsx
 msgid "Draft skill"
 msgstr "技能草稿"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Drag, drop, or paste an image"
-msgstr "拖放或粘贴图片"
-
-#: src/pages/BotContextMenu.tsx
-msgid "Duplicate"
-msgstr "复制"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Each name can be used once."
@@ -2954,7 +2872,7 @@ msgstr "Executor 令牌"
 msgid "Expand"
 msgstr "展开"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Expand {0}"
 msgstr "展开 {0}"
@@ -3311,10 +3229,6 @@ msgstr "你是怎么知道我们的？"
 msgid "How often"
 msgstr "频率"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "How other bots see it"
-msgstr "其他机器人如何了解它"
-
 #: src/components/teach/SkillDraftCard.tsx
 msgid "How to check"
 msgstr "如何检查"
@@ -3343,10 +3257,6 @@ msgstr "此模型尚未配置图片输入。"
 #: src/lib/user-error.ts
 msgid "Image input is not configured for this model."
 msgstr "此模型尚未配置图片输入。"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Image upload area"
-msgstr "图片上传区域"
 
 #: src/components/AccountDataSettings.tsx
 msgid "Import"
@@ -3471,10 +3381,6 @@ msgstr "隔离预览，访问不了你的账户"
 #: src/components/pages/PageViewHost.tsx
 msgid "It may have been deleted, or it belongs to someone else."
 msgstr "它可能已被删除，或属于其他人。"
-
-#: src/pages/shell/shell-dialogs.tsx
-msgid "Its bots and groups are kept and leave the section."
-msgstr "其中的 Bot 和群组会保留，并移出该分组。"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Its conversation, files, and routines will be permanently deleted. Bots it created stay in your list."
@@ -3979,10 +3885,6 @@ msgstr "下移"
 msgid "Move them to your shared memory."
 msgstr "把它们移到共享记忆。"
 
-#: src/pages/BotContextMenu.tsx
-msgid "Move to"
-msgstr "移动到"
-
 #: src/pages/ModelRoleSettings.tsx
 msgid "Move up"
 msgstr "上移"
@@ -4003,7 +3905,6 @@ msgstr ""
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Name"
@@ -4021,10 +3922,6 @@ msgstr "给这个群组命名"
 #: src/pages/RoutineEditor.tsx
 msgid "Name this routine"
 msgstr "给这个例行任务命名"
-
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "Name your Bot"
-msgstr "给 Bot 命名"
 
 #: src/lib/roster-status.ts
 msgid "Needs an answer"
@@ -4067,12 +3964,6 @@ msgstr "新消息"
 msgid "New API key"
 msgstr ""
 
-#: src/pages/Shell.tsx
-#: src/pages/shell/bot-picker.tsx
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "New bot"
-msgstr "新建 Bot"
-
 #: src/components/VaultSettings.tsx
 msgid "New card"
 msgstr ""
@@ -4112,11 +4003,6 @@ msgstr "新密码"
 #: src/pages/shell/bot-picker.tsx
 msgid "New private space"
 msgstr "新建私人空间"
-
-#: src/pages/BotContextMenu.tsx
-#: src/pages/shell/dialogs.tsx
-msgid "New section"
-msgstr "新建分组"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "New skill"
@@ -4366,7 +4252,7 @@ msgstr "仅自己"
 msgid "Open"
 msgstr "打开"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Open {0}"
 msgstr "打开 {0}"
@@ -4620,12 +4506,10 @@ msgid "Pick a tool to check"
 msgstr "选择要检查的工具"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/BotContextMenu.tsx
 msgid "Pin"
 msgstr "置顶"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/Shell.tsx
 msgid "Pinned"
 msgstr "置顶"
 
@@ -4997,12 +4881,6 @@ msgstr "正在移除…"
 msgid "Rename"
 msgstr "重命名"
 
-#: src/pages/BotContextMenu.tsx
-#: src/pages/shell/dialogs.tsx
-#: src/pages/shell/sidebar-roster.tsx
-msgid "Rename section"
-msgstr "重命名分组"
-
 #: src/lib/billing.ts
 msgid "Renews {day}"
 msgstr "将于 {day} 续订"
@@ -5055,7 +4933,6 @@ msgstr "调研和写作"
 
 #: src/components/ComputerMaintenanceActions.tsx
 #: src/pages/ExternalConversationSettings.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Reset"
 msgstr "重置"
 
@@ -5104,7 +4981,6 @@ msgid "Restart to update"
 msgstr "重启后更新"
 
 #: src/components/InstructionSettings.tsx
-#: src/pages/shell/archived-chats.tsx
 msgid "Restore"
 msgstr "恢复"
 
@@ -5261,7 +5137,6 @@ msgstr "周六"
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Save"
 msgstr "保存"
 
@@ -5515,14 +5390,8 @@ msgid "Setup help"
 msgstr "设置帮助"
 
 #: src/components/ComputerProviderSettings.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Shape"
 msgstr "形状"
-
-#. placeholder {0}: shapeIndex + 1
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Shape {0}"
-msgstr "形状 {0}"
 
 #: src/components/pages/PagesList.tsx
 #: src/components/pages/SharePopover.tsx
@@ -6343,11 +6212,6 @@ msgstr "直接输入，不录制"
 msgid "Type your answer"
 msgstr "输入你的回答"
 
-#: src/pages/BotContextMenu.tsx
-#: src/pages/Shell.tsx
-msgid "Unassigned"
-msgstr "未分配"
-
 #: src/components/AskCard.tsx
 msgid "Undo"
 msgstr "撤销"
@@ -6361,7 +6225,6 @@ msgid "Unlink"
 msgstr "取消关联"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/BotContextMenu.tsx
 msgid "Unpin"
 msgstr "取消置顶"
 
@@ -6426,10 +6289,6 @@ msgstr "升级"
 #: src/components/ModelCredits.tsx
 msgid "Upgrade now"
 msgstr "立即升级"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Upload"
-msgstr "上传"
 
 #: src/pages/settings-nav.ts
 msgid "Usage"
@@ -6649,10 +6508,6 @@ msgstr "你要示范什么结果？"
 #: src/pages/RoutineEditor.tsx
 msgid "What should this routine do each time it runs?"
 msgstr "每次运行时，这个例行任务应做什么？"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "What this bot is for"
-msgstr "这个 Bot 是做什么的"
 
 #: src/components/teach/SkillDraftCard.tsx
 msgid "What to return"

@@ -878,14 +878,6 @@ msgstr ""
 msgid "Apps"
 msgstr ""
 
-#: src/pages/BotContextMenu.tsx
-msgid "Archive"
-msgstr "보관"
-
-#: src/pages/shell/archived-chats.tsx
-msgid "Archived"
-msgstr "보관됨"
-
 #: src/pages/McpServersOverlay.tsx
 msgid "Arguments"
 msgstr "인자"
@@ -978,10 +970,6 @@ msgstr ""
 msgid "Available to shell commands as {commandVariable}"
 msgstr "셸 명령에서 {commandVariable}(으)로 사용 가능"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Avatar Studio"
-msgstr "아바타 스튜디오"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/vault/VaultPageHeader.tsx
@@ -1053,7 +1041,6 @@ msgstr "라이브 데스크톱 시작 중…"
 #: src/pages/IntegrationSetup.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/Shell.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
 msgid "Bot"
@@ -1154,7 +1141,6 @@ msgstr "이미지를 읽을 수 없음"
 #: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
-#: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
@@ -1253,10 +1239,6 @@ msgstr "Slack에서 봇과 채팅하세요."
 msgid "ChatGPT subscription"
 msgstr ""
 
-#: src/lib/identity-display.ts
-msgid "Chats"
-msgstr "채팅"
-
 #: src/components/ComputersUnavailableHint.tsx
 #: src/pages/HostComputerPrompt.tsx
 msgid "Check again"
@@ -1310,10 +1292,6 @@ msgstr "연결 확인 중…"
 msgid "Checking…"
 msgstr "확인 중…"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Choose a bot shape, color, or upload an image"
-msgstr "봇 모양과 색을 고르거나 이미지를 업로드하세요"
-
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/shell/composer-error.tsx
 msgid "Choose a model"
@@ -1326,10 +1304,6 @@ msgstr "새 비밀번호 선택"
 #: src/pages/Onboarding.tsx
 msgid "Choose a provider"
 msgstr ""
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Choose file"
-msgstr "파일 선택"
 
 #: src/components/ModelCredits.tsx
 #: src/components/SubscriptionGate.tsx
@@ -1376,7 +1350,6 @@ msgstr "비우는 중…"
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/chat-find-bar.tsx
 #: src/pages/WindowChrome.tsx
 msgid "Close"
@@ -1460,19 +1433,10 @@ msgctxt "email sign-in"
 msgid "Code"
 msgstr "인증 코드"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Collapse {0}"
 msgstr "{0} 접기"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Color"
-msgstr "색상"
-
-#. placeholder {0}: color.hex
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Color {0}"
-msgstr ""
 
 #: src/components/markdown-copy.tsx
 msgid "column {index}"
@@ -1872,10 +1836,6 @@ msgstr ""
 msgid "Could not continue"
 msgstr "계속 진행하지 못했습니다."
 
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "Could not create bot"
-msgstr "Bot을 만들지 못했습니다."
-
 #: src/pages/GroupPanel.tsx
 msgid "Could not create group"
 msgstr "그룹을 만들지 못했습니다."
@@ -1883,10 +1843,6 @@ msgstr "그룹을 만들지 못했습니다."
 #: src/components/SpaceMembersSettings.tsx
 msgid "Could not create invite link"
 msgstr ""
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not create section"
-msgstr "섹션을 만들지 못했습니다."
 
 #: src/pages/shell/dialogs.tsx
 msgid "Could not create space"
@@ -1915,10 +1871,6 @@ msgstr "페이지를 삭제하지 못했습니다"
 #: src/pages/shell/dialogs.tsx
 msgid "Could not delete routine"
 msgstr "자동 실행을 삭제하지 못했습니다."
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not delete section"
-msgstr "섹션을 삭제하지 못했습니다."
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Could not delete skill"
@@ -2139,10 +2091,6 @@ msgstr ""
 msgid "Could not rename connection"
 msgstr ""
 
-#: src/pages/shell/dialogs.tsx
-msgid "Could not rename section"
-msgstr "섹션 이름을 바꿀 수 없습니다"
-
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Could not rename space"
 msgstr "스페이스 이름을 바꿀 수 없습니다"
@@ -2177,7 +2125,6 @@ msgstr "루틴을 실행할 수 없습니다"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/shell/use-space-roster.ts
 msgid "Could not save"
 msgstr "저장하지 못했습니다."
 
@@ -2356,16 +2303,9 @@ msgid "Country"
 msgstr ""
 
 #: src/components/CreateOrganizationDialog.tsx
-#: src/pages/shell/create-bot-dialog.tsx
-#: src/pages/shell/dialogs.tsx
 #: src/pages/shell/sidebar-header.tsx
 msgid "Create"
 msgstr "만들기"
-
-#. placeholder {0}: bot.name
-#: src/pages/shell/dialogs.tsx
-msgid "Create a section and move {0} into it."
-msgstr "새 섹션을 만들고 {0}을 옮깁니다."
 
 #: src/pages/Auth.tsx
 msgid "Create account"
@@ -2459,10 +2399,6 @@ msgstr "맞춤설정"
 msgid "Customize {label}"
 msgstr "{label} 맞춤설정"
 
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Customize bot avatar"
-msgstr "봇 아바타 맞춤설정"
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "매일"
@@ -2498,7 +2434,6 @@ msgstr "거절"
 #: src/pages/model-settings/role-model-picker.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Default"
 msgstr "기본값"
 
@@ -2521,7 +2456,6 @@ msgstr "기본 기억 범위"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/archived-chats.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete"
@@ -2535,10 +2469,7 @@ msgid "Delete \"{0}\"?"
 msgstr "\"{0}\"을(를) 삭제할까요?"
 
 #. placeholder {0}: artifact.name
-#. placeholder {0}: bot.name
-#. placeholder {0}: group.name
 #: src/pages/Artifacts.tsx
-#: src/pages/shell/archived-chats.tsx
 msgid "Delete {0}"
 msgstr "{0} 삭제"
 
@@ -2567,10 +2498,6 @@ msgstr "기억도 함께 삭제"
 #: src/pages/OrganizationSettingsPanel.tsx
 msgid "Delete organization"
 msgstr "조직 삭제"
-
-#: src/pages/shell/sidebar-roster.tsx
-msgid "Delete section"
-msgstr "섹션 삭제"
 
 #: src/pages/shell/shell-dialogs.tsx
 #: src/pages/SpaceSettingsPanel.tsx
@@ -2732,7 +2659,6 @@ msgstr "계정이 없나요?"
 #: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/ActivityList.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 #: src/pages/shell/message-view.tsx
 msgid "Done"
 msgstr "완료"
@@ -2770,14 +2696,6 @@ msgstr ""
 #: src/components/teach/SkillDraftCard.tsx
 msgid "Draft skill"
 msgstr "작업 기술 초안"
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Drag, drop, or paste an image"
-msgstr "이미지를 끌어다 놓거나 붙여넣으세요"
-
-#: src/pages/BotContextMenu.tsx
-msgid "Duplicate"
-msgstr "복제"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Each name can be used once."
@@ -2954,7 +2872,7 @@ msgstr "Executor 토큰"
 msgid "Expand"
 msgstr "펼치기"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Expand {0}"
 msgstr "{0} 펼치기"
@@ -3311,10 +3229,6 @@ msgstr ""
 msgid "How often"
 msgstr "실행 주기"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "How other bots see it"
-msgstr "다른 봇이 이 봇을 보는 방식"
-
 #: src/components/teach/SkillDraftCard.tsx
 msgid "How to check"
 msgstr "완료 확인 방법"
@@ -3343,10 +3257,6 @@ msgstr "이 모델에는 이미지 입력이 설정되어 있지 않습니다."
 #: src/lib/user-error.ts
 msgid "Image input is not configured for this model."
 msgstr "이 모델에는 이미지 입력이 설정되어 있지 않습니다."
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Image upload area"
-msgstr "이미지 업로드 영역"
 
 #: src/components/AccountDataSettings.tsx
 msgid "Import"
@@ -3471,10 +3381,6 @@ msgstr ""
 #: src/components/pages/PageViewHost.tsx
 msgid "It may have been deleted, or it belongs to someone else."
 msgstr "삭제되었거나 다른 사람의 페이지일 수 있습니다."
-
-#: src/pages/shell/shell-dialogs.tsx
-msgid "Its bots and groups are kept and leave the section."
-msgstr "이 섹션의 Bot과 그룹은 유지되며 섹션에서 빠집니다."
 
 #: src/pages/shell/dialogs.tsx
 msgid "Its conversation, files, and routines will be permanently deleted. Bots it created stay in your list."
@@ -3979,10 +3885,6 @@ msgstr "아래로 이동"
 msgid "Move them to your shared memory."
 msgstr "공용 기억으로 옮깁니다."
 
-#: src/pages/BotContextMenu.tsx
-msgid "Move to"
-msgstr "섹션으로 이동"
-
 #: src/pages/ModelRoleSettings.tsx
 msgid "Move up"
 msgstr "위로 이동"
@@ -4003,7 +3905,6 @@ msgstr ""
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Name"
@@ -4021,10 +3922,6 @@ msgstr "그룹 이름"
 #: src/pages/RoutineEditor.tsx
 msgid "Name this routine"
 msgstr "이 루틴의 이름을 정하세요"
-
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "Name your Bot"
-msgstr ""
 
 #: src/lib/roster-status.ts
 msgid "Needs an answer"
@@ -4067,12 +3964,6 @@ msgstr ""
 msgid "New API key"
 msgstr ""
 
-#: src/pages/Shell.tsx
-#: src/pages/shell/bot-picker.tsx
-#: src/pages/shell/create-bot-dialog.tsx
-msgid "New bot"
-msgstr "새 Bot 만들기"
-
 #: src/components/VaultSettings.tsx
 msgid "New card"
 msgstr ""
@@ -4112,11 +4003,6 @@ msgstr "새 비밀번호"
 #: src/pages/shell/bot-picker.tsx
 msgid "New private space"
 msgstr "새 비공개 스페이스"
-
-#: src/pages/BotContextMenu.tsx
-#: src/pages/shell/dialogs.tsx
-msgid "New section"
-msgstr "새 섹션"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "New skill"
@@ -4366,7 +4252,7 @@ msgstr "나만"
 msgid "Open"
 msgstr "열기"
 
-#. placeholder {0}: headerName(group)
+#. placeholder {0}: group.title
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Open {0}"
 msgstr "{0} 열기"
@@ -4620,12 +4506,10 @@ msgid "Pick a tool to check"
 msgstr "확인할 도구 선택"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/BotContextMenu.tsx
 msgid "Pin"
 msgstr "고정"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/Shell.tsx
 msgid "Pinned"
 msgstr "고정됨"
 
@@ -4997,12 +4881,6 @@ msgstr "삭제 중…"
 msgid "Rename"
 msgstr "이름 변경"
 
-#: src/pages/BotContextMenu.tsx
-#: src/pages/shell/dialogs.tsx
-#: src/pages/shell/sidebar-roster.tsx
-msgid "Rename section"
-msgstr "섹션 이름 바꾸기"
-
 #: src/lib/billing.ts
 msgid "Renews {day}"
 msgstr ""
@@ -5055,7 +4933,6 @@ msgstr ""
 
 #: src/components/ComputerMaintenanceActions.tsx
 #: src/pages/ExternalConversationSettings.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Reset"
 msgstr "재설정"
 
@@ -5104,7 +4981,6 @@ msgid "Restart to update"
 msgstr ""
 
 #: src/components/InstructionSettings.tsx
-#: src/pages/shell/archived-chats.tsx
 msgid "Restore"
 msgstr "복원"
 
@@ -5261,7 +5137,6 @@ msgstr "토요일"
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/shell/dialogs.tsx
 msgid "Save"
 msgstr "저장"
 
@@ -5515,14 +5390,8 @@ msgid "Setup help"
 msgstr "설정 도움말"
 
 #: src/components/ComputerProviderSettings.tsx
-#: src/pages/shell/avatar-studio-popover.tsx
 msgid "Shape"
 msgstr "모양"
-
-#. placeholder {0}: shapeIndex + 1
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Shape {0}"
-msgstr ""
 
 #: src/components/pages/PagesList.tsx
 #: src/components/pages/SharePopover.tsx
@@ -6343,11 +6212,6 @@ msgstr ""
 msgid "Type your answer"
 msgstr "답변을 입력하세요"
 
-#: src/pages/BotContextMenu.tsx
-#: src/pages/Shell.tsx
-msgid "Unassigned"
-msgstr "섹션 없음"
-
 #: src/components/AskCard.tsx
 msgid "Undo"
 msgstr "실행 취소"
@@ -6361,7 +6225,6 @@ msgid "Unlink"
 msgstr "연결 해제"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/BotContextMenu.tsx
 msgid "Unpin"
 msgstr "고정 해제"
 
@@ -6426,10 +6289,6 @@ msgstr "업그레이드"
 #: src/components/ModelCredits.tsx
 msgid "Upgrade now"
 msgstr ""
-
-#: src/pages/shell/avatar-studio-popover.tsx
-msgid "Upload"
-msgstr "업로드"
 
 #: src/pages/settings-nav.ts
 msgid "Usage"
@@ -6649,10 +6508,6 @@ msgstr "어떤 작업을 직접 보여줄까요?"
 #: src/pages/RoutineEditor.tsx
 msgid "What should this routine do each time it runs?"
 msgstr "이 루틴이 실행될 때마다 무엇을 해야 하나요?"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "What this bot is for"
-msgstr "이 Bot을 언제, 어떤 일에 사용할지 적어주세요"
 
 #: src/components/teach/SkillDraftCard.tsx
 msgid "What to return"
