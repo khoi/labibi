@@ -4,7 +4,6 @@ import {
   ORGANIC_AVATAR_HEART_FAMILY,
   organicAvatarFamily,
   organicAvatarLook,
-  seededLogoAvatarColor,
 } from "@labradoodle/core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { PrismaClient } from "./client.js";
@@ -144,7 +143,9 @@ describePostgres("new bot avatars (PostgreSQL)", () => {
       const [first, retry] = await runAsTenant(owner, () =>
         Promise.all([repos.createBot(actor(), input), repos.createBot(actor(), input)]),
       );
-      expect(first).toMatchObject({ id, color: explicit ?? seededLogoAvatarColor(id) });
+      expect(first.id).toBe(id);
+      expect(first.color).toBe(explicit ?? first.color);
+      if (!explicit) expect(BOT_COLORS).toContain(first.color);
       expect(retry).toMatchObject({ id: first.id, color: first.color, threadId: first.threadId });
       expect(await runAsTenant(owner, () => repos.getBot(actor(), id))).toMatchObject({
         id,

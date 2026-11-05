@@ -1,0 +1,139 @@
+.labradoodle-dood {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  width: var(--dood-size);
+  height: var(--dood-size);
+  --dood-eye: #1a1a1a;
+}
+
+[data-theme="dark"] .labradoodle-dood {
+  --dood-eye: #f4f4f5;
+}
+
+.labradoodle-dood-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.labradoodle-dood[data-rive="shown"] .labradoodle-dood-svg {
+  visibility: hidden;
+}
+
+.labradoodle-dood-canvas {
+  position: absolute;
+  inset: -25%;
+  pointer-events: none;
+}
+
+.labradoodle-dood[data-rive="loading"] .labradoodle-dood-canvas {
+  visibility: hidden;
+}
+
+.labradoodle-dood-canvas canvas {
+  display: block;
+}
+
+.labradoodle-dood-body,
+.labradoodle-dood-flow > path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.4;
+}
+
+.labradoodle-dood-body {
+  stroke: var(--dood-ink);
+}
+
+.labradoodle-dood-flow > path {
+  stroke: color-mix(in oklch, var(--dood-ink) var(--mix), var(--dood-tone));
+  stroke-dasharray: calc(1 / 24 + 0.004) 1;
+  stroke-dashoffset: calc(var(--segment) / -24);
+  stroke-linecap: butt;
+}
+
+.labradoodle-dood-eyes {
+  fill: var(--dood-eye);
+  transform-origin: 12px 8px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .labradoodle-dood-svg[data-motion="true"] .labradoodle-dood-flow > path {
+    animation: labradoodle-dood-flow 1.6s linear infinite;
+    animation-delay: calc(var(--segment) / 24 * -1.6s);
+  }
+
+  .labradoodle-dood-svg[data-motion="true"] .labradoodle-dood-eyes {
+    animation: labradoodle-dood-blink 4.8s ease-in-out infinite;
+    animation-delay: calc(var(--dood-phase) * -4.8s);
+  }
+
+  .labradoodle-dood[data-state="idle"] .labradoodle-dood-svg[data-motion="true"] .labradoodle-dood-gaze {
+    animation: labradoodle-dood-wander 9s ease-in-out infinite;
+    animation-delay: calc(var(--dood-phase) * -9s);
+  }
+
+  .labradoodle-dood[data-state="thinking"] .labradoodle-dood-svg[data-motion="true"] .labradoodle-dood-gaze {
+    animation: labradoodle-dood-look-around 2.4s ease-in-out infinite;
+  }
+
+  .labradoodle-dood[data-state="working"] .labradoodle-dood-svg[data-motion="true"] .labradoodle-dood-gaze {
+    animation: labradoodle-dood-look-down 3s ease-in-out infinite;
+  }
+}
+
+@keyframes labradoodle-dood-flow {
+  to {
+    stroke-dashoffset: calc(var(--segment) / -24 - 1);
+  }
+}
+
+@keyframes labradoodle-dood-blink {
+  0%,
+  44%,
+  50%,
+  100% {
+    transform: scaleY(1);
+  }
+  47% {
+    transform: scaleY(0.12);
+  }
+}
+
+@keyframes labradoodle-dood-wander {
+  0%,
+  30%,
+  100% {
+    transform: translate(0, 0);
+  }
+  38%,
+  52% {
+    transform: translate(1px, 0);
+  }
+  62%,
+  78% {
+    transform: translate(-0.8px, 0.3px);
+  }
+}
+
+@keyframes labradoodle-dood-look-around {
+  0%,
+  100% {
+    transform: translate(-1.2px, -0.6px);
+  }
+  50% {
+    transform: translate(1.2px, -0.6px);
+  }
+}
+
+@keyframes labradoodle-dood-look-down {
+  0%,
+  100% {
+    transform: translate(-0.6px, 1px);
+  }
+  50% {
+    transform: translate(0.6px, 1px);
+  }
+}

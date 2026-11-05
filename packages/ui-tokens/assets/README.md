@@ -36,11 +36,9 @@ After exporting, run `pnpm exec tsx apps/www/scripts/render-og.mjs` to refresh t
 marketing page social cards; set `CHROME_PATH` to a headless Chrome executable when
 it is not available at the script's default location.
 
-## Animated vector avatars
+## Doods
 
-The animated Labradoodle avatar uses SVG paths and gradients in the shared
-`logo-avatar-art.ts` definition. Its contour is sampled from this canonical
-source's alpha silhouette. The hands and lighting are simplified vector shapes;
-the original photographic skin grain is intentionally not reproduced. No raster
-body is embedded or loaded by the vector renderer. The canonical icon and its
-platform exports remain unchanged.
+Bots are drawn as doods: one of eight hand-drawn strokes in one of seven inks, with
+eyes, defined in `packages/core/src/dood.ts`. On the web, `dood.riv` animates them;
+mobile and still images draw the same strokes as SVG. `apps/www/scripts/render-doods.ts`
+renders the site's job-bot doods and the press-kit mascot. The app icon is unchanged.

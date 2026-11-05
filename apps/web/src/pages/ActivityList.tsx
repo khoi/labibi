@@ -198,7 +198,6 @@ export function ActivityList({
                 <BotAvatar
                   identity={bot.id}
                   color={bot.color}
-                  avatarSet={bot.avatarSet}
                   size={28}
                 />
               }
@@ -455,7 +454,6 @@ function ActivityRow({
       <BotAvatar
         identity={run.botId}
         color={bot?.color ?? ""}
-        avatarSet={bot?.avatarSet}
         status={run.status}
         size={28}
       />

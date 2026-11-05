@@ -1,5 +1,5 @@
-import type { BotAvatarSet } from "@labradoodle/contracts";
-import type { AvatarEyes, AvatarMotionMode, LogoAvatarActivity } from "@labradoodle/core";
+import { parseBotAvatarValue } from "@labradoodle/contracts";
+import type { AvatarMotionMode, Dood, LogoAvatarActivity } from "@labradoodle/core";
 import {
   AVATAR_LID_CLOSE,
   AVATAR_MOTION_UNITS,
@@ -7,7 +7,6 @@ import {
   avatarClip,
   avatarClock,
   avatarFrame,
-  avatarIdentitySeed,
   avatarLifeState,
   avatarPokeFrame,
   avatarRestingBlink,
@@ -15,34 +14,25 @@ import {
   avatarThinkingDot,
   avatarWorkingDot,
   botAvatarActivity,
-  botEyeInk,
+  botDood,
+  DOOD_EYE_ORIGIN,
+  DOOD_INK,
+  DOOD_PATHS,
+  DOOD_STROKE_WIDTH,
+  DOOD_VIEWBOX,
+  doodEyeShapes,
   isRunWorking,
-  ORGANIC_AVATAR_EYES,
-  ORGANIC_AVATAR_VIEWBOX,
-  organicAvatarEyeTilt,
-  organicAvatarPath,
-  SHIPPED_BOT_AVATAR_EYES,
-  SHIPPED_BOT_AVATAR_VIEWBOX,
-  usesLogoAvatar,
 } from "@labradoodle/core";
-import { memo, useSyncExternalStore } from "react";
+import { memo, useMemo, useSyncExternalStore } from "react";
 import { Image, Pressable, View } from "react-native";
-import Animated, {
-  useAnimatedProps,
-  useAnimatedStyle,
-  useReducedMotion,
-} from "react-native-reanimated";
-import Svg, { G, Path, Rect } from "react-native-svg";
+import Animated, { useAnimatedStyle, useReducedMotion } from "react-native-reanimated";
+import Svg, { G, Path } from "react-native-svg";
 import type { AvatarLife } from "../lib/avatar-life";
 import { useAvatarOnScreen, useLife, usePoke, useSettling } from "../lib/avatar-life";
-import { mobileBotAvatarPresentation } from "../lib/bot-avatar";
 import { useI18n } from "../lib/i18n";
 import { mobileLogoAvatarActivity } from "../lib/logo-avatar-activity";
 import { useMobileTokens } from "../lib/native";
-import { LogoAvatar } from "./logo-avatar";
 import { NativeSymbol } from "./native-symbol";
-
-const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
 /** How far (0–1) the face has turned into the typing dots, for a morph of 0–1. */
 function morphGrow(morph: number): number {
@@ -52,11 +42,6 @@ function morphGrow(morph: number): number {
 }
 /** The face shrinks until it is the size of the middle typing dot. */
 const MORPH_SHRINK = 1 - (2 * AVATAR_TYPING_DOTS.radius) / AVATAR_MOTION_UNITS;
-/** How many units wide a view box is. */
-function viewBoxUnits(viewBox: string): number {
-  return Number(viewBox.split(" ")[2]);
-}
-
 /** The avatar's flat frame right now, a tap poke included; a worklet. */
 function liveFrame(life: AvatarLife) {
   "worklet";
@@ -119,61 +104,105 @@ export interface BotAvatarProps {
   size?: number;
   status?: string;
   identity?: string;
-  avatarSet?: BotAvatarSet;
   activity?: LogoAvatarActivity;
   muted?: boolean;
+  /**
+   * How the avatar may move: still (the default), lazy (inbox rows and pinned chats: still
+   * at rest, moving while the bot is busy), live (the call card: also blinks at rest) or
+   * running (the activity mark in a chat).
+   */
   motion?: AvatarMotionMode;
+  /**
+   * The bot is writing its reply: a moving avatar turns into the typing dots, and no avatar
+   * shows the working dot.
+   */
   composing?: boolean;
+  /** A tap plays a little reaction (the activity mark). */
   pokeable?: boolean;
 }
 
-/** Missing set metadata deliberately preserves every existing avatar. */
-export const BotAvatar = memo(function BotAvatar(props: BotAvatarProps) {
-  if (usesLogoAvatar(props)) {
-    return <LabradoodleBotAvatar {...props} />;
-  }
-  return <LegacyBotAvatar {...props} />;
-});
-
-function LabradoodleBotAvatar({
+export const BotAvatar = memo(function BotAvatar({
   color,
-  identity,
   size = 54,
   status,
+  identity,
   activity,
-  composing = false,
   muted = false,
   motion = "static",
+  composing = false,
   pokeable = false,
 }: BotAvatarProps) {
+  const tokens = useMobileTokens();
   const liveActivity = useSyncExternalStore(
     mobileLogoAvatarActivity.subscribe,
     () => mobileLogoAvatarActivity.getActivity(identity ?? "", status),
     (): LogoAvatarActivity => "idle",
   );
-  const resolved = botAvatarActivity(
-    { color, avatarSet: "rakazo" },
-    activity ??
-      (composing && (liveActivity === "working" || liveActivity === "idle")
-        ? "writing"
-        : liveActivity),
-  );
-  const working = isRunWorking(status) && resolved !== "writing" && motion !== "running";
-  return (
-    <View style={{ width: size, height: size }}>
-      <LogoAvatar
-        color={color}
-        identity={identity}
+  const resolved = botAvatarActivity({ color }, activity ?? liveActivity);
+  const writing = composing || resolved === "writing";
+  const state = avatarLifeState(status, writing);
+  // The working dot marks a bot at work, not one writing its reply; a running avatar is
+  // itself that sign, so it carries none.
+  const isWorking = isRunWorking(status) && !writing && motion !== "running";
+  const parsed = parseBotAvatarValue(color);
+  const dood = useMemo(() => botDood(color, identity ?? ""), [color, identity]);
+  const onScreen = useAvatarOnScreen();
+  const reducedMotion = useReducedMotion();
+  const settling = useSettling(state);
+  const clock = avatarClock({
+    mode: motion,
+    onScreen,
+    hasEyes: parsed.kind !== "image",
+    size,
+    state,
+    settling,
+    reducedMotion,
+  });
+  const life = useLife(state, clock, size, motion);
+  const poke = usePoke(life, pokeable && clock === "running");
+  const bodyStyle = useBodyStyle(life, size);
+  const picture =
+    parsed.kind === "image" && parsed.imageUrl ? (
+      <View
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          overflow: "hidden",
+          // A plain circle holds the photo's place while it loads, or if it fails to.
+          backgroundColor: tokens.secondary,
+        }}
+      >
+        <Image source={{ uri: parsed.imageUrl }} style={{ width: size, height: size }} />
+      </View>
+    ) : (
+      <DoodBody
+        dood={resolved === "error" ? { ...dood, eyes: "cross" } : dood}
+        eyeColor={tokens.foreground}
         size={size}
-        activity={resolved}
-        motion={motion}
-        pokeable={pokeable}
+        life={life}
+        bodyStyle={bodyStyle}
       />
-      {working ? <WorkingDot size={size} muted={muted} /> : null}
+    );
+  const avatar = (
+    <View style={{ width: size, height: size }}>
+      {picture}
+      {parsed.kind !== "image" && clock !== "still" ? (
+        <ThinkingDots color={DOOD_INK[dood.color].ink} size={size} life={life} />
+      ) : null}
+      {isWorking ? <WorkingDot size={size} muted={muted} /> : null}
       {muted ? <MutedBadge size={size} /> : null}
     </View>
   );
-}
+  // A tap is a little toy, not an action, so it stays out of the accessibility tree.
+  return pokeable ? (
+    <Pressable accessible={false} onPress={poke}>
+      {avatar}
+    </Pressable>
+  ) : (
+    avatar
+  );
+});
 
 function WorkingDot({ size, muted }: { size: number; muted: boolean }) {
   const tokens = useMobileTokens();
@@ -241,111 +270,6 @@ function MutedBadge({ size }: { size: number }) {
   );
 }
 
-function LegacyBotAvatar({
-  color,
-  size = 54,
-  status,
-  identity,
-  muted = false,
-  motion = "static",
-  composing = false,
-  pokeable = false,
-}: {
-  color: string;
-  size?: number;
-  status?: string;
-  identity?: string;
-  muted?: boolean;
-  /**
-   * How the avatar may move: still (the default), lazy (inbox rows and pinned chats: still
-   * at rest, moving while the bot is busy), live (the call card: also blinks at rest) or
-   * running (the activity mark in a chat).
-   */
-  motion?: AvatarMotionMode;
-  /**
-   * The bot is writing its reply: a moving avatar turns into the typing dots, and no avatar
-   * shows the working dot.
-   */
-  composing?: boolean;
-  /** A tap plays a little reaction (the activity mark). */
-  pokeable?: boolean;
-}) {
-  const tokens = useMobileTokens();
-  const state = avatarLifeState(status, composing);
-  // The working dot marks a bot at work, not one writing its reply; a running avatar is
-  // itself that sign, so it carries none.
-  const isWorking = isRunWorking(status) && !composing && motion !== "running";
-  const parsed = mobileBotAvatarPresentation(color);
-  const fillColor = parsed.kind === "shape" || parsed.kind === "color" ? parsed.color : color;
-  const eyeColor = botEyeInk(fillColor, tokens);
-  const onScreen = useAvatarOnScreen();
-  const reducedMotion = useReducedMotion();
-  const settling = useSettling(state);
-  const clock = avatarClock({
-    mode: motion,
-    onScreen,
-    hasEyes: parsed.kind !== "image",
-    size,
-    state,
-    settling,
-    reducedMotion,
-  });
-  const life = useLife(state, clock, size, motion);
-  const poke = usePoke(life, pokeable && clock === "running");
-  const bodyStyle = useBodyStyle(life, size);
-  const picture =
-    parsed.kind === "image" && parsed.imageUrl ? (
-      <View
-        style={{
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          overflow: "hidden",
-          // A plain circle holds the photo's place while it loads, or if it fails to.
-          backgroundColor: tokens.secondary,
-        }}
-      >
-        <Image source={{ uri: parsed.imageUrl }} style={{ width: size, height: size }} />
-      </View>
-    ) : parsed.kind === "shape" ? (
-      <ShippedShapeAvatar
-        color={parsed.color}
-        eyeColor={eyeColor}
-        shapePath={parsed.shapePath}
-        size={size}
-        life={life}
-        bodyStyle={bodyStyle}
-      />
-    ) : (
-      <OrganicAvatar
-        color={fillColor}
-        eyeColor={eyeColor}
-        identity={identity}
-        size={size}
-        life={life}
-        bodyStyle={bodyStyle}
-      />
-    );
-  const avatar = (
-    <View style={{ width: size, height: size }}>
-      {picture}
-      {parsed.kind !== "image" && clock !== "still" ? (
-        <ThinkingDots color={fillColor} size={size} life={life} />
-      ) : null}
-      {isWorking ? <WorkingDot size={size} muted={muted} /> : null}
-      {muted ? <MutedBadge size={size} /> : null}
-    </View>
-  );
-  // A tap is a little toy, not an action, so it stays out of the accessibility tree.
-  return pokeable ? (
-    <Pressable accessible={false} onPress={poke}>
-      {avatar}
-    </Pressable>
-  ) : (
-    avatar
-  );
-}
-
 /** The three typing dots a writing bot's avatar turns into; the middle one is its body. */
 function ThinkingDots({ color, size, life }: { color: string; size: number; life: AvatarLife }) {
   return (
@@ -386,86 +310,68 @@ function Dot({
 
 type BodyStyle = ReturnType<typeof useAnimatedStyle>;
 
-/** Bar eyes' live props: motion offsets scaled to the view box, closing about their centre. */
-function useBarEyes(eyes: AvatarEyes, viewBox: string, life: AvatarLife) {
-  const scale = viewBoxUnits(viewBox) / AVATAR_MOTION_UNITS;
-  const eyeProps = (cx: number) => () => {
-    "worklet";
-    const state = eyeState(life);
-    const height = state.hidden ? 0 : eyes.height * state.lid;
+/** The eyes glance by the motion offsets and close about their centre line. */
+function useDoodEyesStyle(life: AvatarLife, size: number) {
+  return useAnimatedStyle(() => {
+    const { x, y, lid, hidden } = eyeState(life);
+    const unit = size / AVATAR_MOTION_UNITS;
     return {
-      x: cx - eyes.width / 2 + state.x * scale,
-      y: eyes.cy - height / 2 + state.y * scale,
-      height,
+      opacity: hidden ? 0 : 1,
+      transform: [{ translateX: x * unit }, { translateY: y * unit }, { scaleY: lid }],
     };
-  };
-  return [useAnimatedProps(eyeProps(eyes.leftCx)), useAnimatedProps(eyeProps(eyes.rightCx))];
+  });
 }
 
-function ShippedShapeAvatar({
-  color,
+function DoodBody({
+  dood,
   eyeColor,
-  shapePath,
   size,
   life,
   bodyStyle,
 }: {
-  color: string;
+  dood: Dood;
   eyeColor: string;
-  shapePath: string;
   size: number;
   life: AvatarLife;
   bodyStyle: BodyStyle;
 }) {
-  const eyes = SHIPPED_BOT_AVATAR_EYES;
-  const [leftEye, rightEye] = useBarEyes(eyes, SHIPPED_BOT_AVATAR_VIEWBOX, life);
+  const eyesStyle = useDoodEyesStyle(life, size);
   return (
     <Animated.View style={[{ width: size, height: size }, bodyStyle]}>
-      <Svg width={size} height={size} viewBox={SHIPPED_BOT_AVATAR_VIEWBOX}>
-        <Path d={shapePath} fill={color} />
-        <G fill={eyeColor}>
-          <AnimatedRect animatedProps={leftEye} width={eyes.width} rx={eyes.width / 2} />
-          <AnimatedRect animatedProps={rightEye} width={eyes.width} rx={eyes.width / 2} />
-        </G>
+      <Svg width={size} height={size} viewBox={DOOD_VIEWBOX}>
+        <Path
+          d={DOOD_PATHS[dood.shape]}
+          fill="none"
+          stroke={DOOD_INK[dood.color].ink}
+          strokeWidth={DOOD_STROKE_WIDTH}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </Svg>
-    </Animated.View>
-  );
-}
-
-function OrganicAvatar({
-  color,
-  eyeColor,
-  identity,
-  size,
-  life,
-  bodyStyle,
-}: {
-  color: string;
-  eyeColor: string;
-  identity?: string;
-  size: number;
-  life: AvatarLife;
-  bodyStyle: BodyStyle;
-}) {
-  const seed = avatarIdentitySeed(identity || color || "#8B5CF6");
-  const eyes = ORGANIC_AVATAR_EYES;
-  const [leftEye, rightEye] = useBarEyes(eyes, ORGANIC_AVATAR_VIEWBOX, life);
-  return (
-    <Animated.View style={[{ width: size, height: size }, bodyStyle]}>
-      <Svg width={size} height={size} viewBox={ORGANIC_AVATAR_VIEWBOX}>
-        <Path d={organicAvatarPath(seed)} fill={color} />
-        <G transform={`rotate(${organicAvatarEyeTilt(seed)})`}>
-          {[leftEye, rightEye].map((props, index) => (
-            <AnimatedRect
-              key={index}
-              animatedProps={props}
-              width={eyes.width}
-              rx={eyes.width / 2}
-              fill={eyeColor}
-            />
-          ))}
-        </G>
-      </Svg>
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          {
+            position: "absolute",
+            width: size,
+            height: size,
+            transformOrigin: `${(DOOD_EYE_ORIGIN.x / 24) * 100}% ${(DOOD_EYE_ORIGIN.y / 24) * 100}%`,
+          },
+          eyesStyle,
+        ]}
+      >
+        <Svg width={size} height={size} viewBox={DOOD_VIEWBOX}>
+          <G fill={eyeColor}>
+            {doodEyeShapes(dood.eyes).map(({ d, rotate }, index) => (
+              <Path
+                key={index}
+                d={d}
+                transform={rotate ? `rotate(-45 ${rotate.cx} ${rotate.cy})` : undefined}
+              />
+            ))}
+          </G>
+        </Svg>
+      </Animated.View>
     </Animated.View>
   );
 }

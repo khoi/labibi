@@ -113,10 +113,6 @@ function MessageBubbleWithMentions({
         props.bots.find((bot) => bot.id === id)?.color ??
         props.members?.find((member) => member.botId === id)?.color
       }
-      avatarSetOf={(id) =>
-        props.bots.find((bot) => bot.id === id)?.avatarSet ??
-        props.members?.find((member) => member.botId === id)?.avatarSet
-      }
       tokens={mobileTokens()}
       onOpenBot={props.onOpenBot}
     >
@@ -323,7 +319,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
         peerBotId={peerBotId}
         peerBotName={peerExchange?.peerBotName ?? peer ?? t("Bot")}
         color={peerColor}
-        avatarSet={peerBot?.avatarSet ?? peerMember?.avatarSet}
         count={peerExchange?.count ?? 1}
         direction={sent ? "sent" : "received"}
         actionProps={actionProps}

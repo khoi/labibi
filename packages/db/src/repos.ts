@@ -599,16 +599,13 @@ export function createRepos(
             ? resolveBotAvatarSet(owner.botAvatarSet)
             : DEFAULT_NEW_BOT_AVATAR_SET;
           const avatarSet = input.avatarSet ?? defaultSet;
-          // Only Original balances existing looks; seeded logo colours need no roster read.
           const avatar = chooseBotAvatar(
-            avatarSet === "organic"
-              ? await tx.bot.findMany({
-                  where: { spaceId: actor.spaceId, userId: actor.userId, archivedAt: null },
-                  select: { id: true, color: true },
-                })
-              : [],
+            await tx.bot.findMany({
+              where: { spaceId: actor.spaceId, userId: actor.userId, archivedAt: null },
+              select: { id: true, color: true },
+            }),
             input.color,
-            { family: input.avatarFamily, avatarSet, id: input.id },
+            { family: input.avatarFamily, id: input.id },
           );
           const teamComputer = await ensureComputerRecord(tx, {
             mode: "team",

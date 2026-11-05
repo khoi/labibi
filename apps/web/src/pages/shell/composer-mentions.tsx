@@ -41,7 +41,6 @@ export function MentionOptionIcon({ mention }: { mention: ComposerMention }) {
   }
   return (
     <BotAvatar
-      avatarSet={mention.avatarSet}
       color={mention.color ?? FALLBACK_BOT_COLOR}
       identity={mention.id}
       size={16}
@@ -65,7 +64,6 @@ function MentionCardIcon({ mention }: { mention: ComposerMention }) {
   }
   return (
     <BotAvatar
-      avatarSet={mention.avatarSet}
       color={mention.color ?? FALLBACK_BOT_COLOR}
       identity={mention.id}
       size={12}

@@ -428,8 +428,13 @@ describe("removeInboxSpace", () => {
 describe("inbox attention pills", () => {
   beforeEach(() => mobileLogoAvatarActivity.clear());
 
-  it("does not count a read legacy row with a routine wait and no waiting indicator", () => {
-    const waiting = { ...bot, status: "waiting_input", sectionId: "custom" };
+  it("does not count a read photo row, which shows no waiting indicator", () => {
+    const waiting = {
+      ...bot,
+      color: "data:image/png;base64,AAAA",
+      status: "waiting_input",
+      sectionId: "custom",
+    };
     const items = spaceInboxItems([
       space({
         isDefault: true,
@@ -461,7 +466,7 @@ describe("inbox attention pills", () => {
   });
 
   it("still jumps to a genuinely waiting avatar above or below the viewport", () => {
-    const waiting = { ...bot, avatarSet: "rakazo" as const, status: "waiting_input" };
+    const waiting = { ...bot, status: "waiting_input" };
     const signals = [
       inboxSignal({ type: "heading", key: "custom", title: "Research" }),
       inboxSignal({ type: "bot", bot: waiting }),
@@ -490,7 +495,7 @@ describe("inbox attention pills", () => {
       cursor: 1,
       run: { id: "run", botId: bot.id, status: "running", trigger: "user" },
     });
-    const waiting = { ...bot, avatarSet: "rakazo" as const, status: "waiting_input" };
+    const waiting = { ...bot, status: "waiting_input" };
     expect(inboxSignal({ type: "bot", bot: waiting }).attention).toBe(0);
     expect(inboxSignal({ type: "pinned", chats: [{ kind: "bot", bot: waiting }] }).attention).toBe(
       0,
@@ -499,7 +504,7 @@ describe("inbox attention pills", () => {
   });
 
   it("follows background suppression and live waits without changing unread counts", () => {
-    const waiting = { ...bot, avatarSet: "rakazo" as const, status: "waiting_input", unread: true };
+    const waiting = { ...bot, status: "waiting_input", unread: true };
     const snapshot = {
       threadId: bot.threadId,
       botId: bot.id,
@@ -526,7 +531,7 @@ describe("inbox attention pills", () => {
   });
 
   it("does not count rows removed by a collapsed section or an archived avatar", () => {
-    const waiting = { ...bot, avatarSet: "rakazo" as const, pinned: true, status: "waiting_input" };
+    const waiting = { ...bot, pinned: true, status: "waiting_input" };
     const items = spaceInboxItems([space({ bots: [waiting] })], new Set(["space-work:pinned"]));
     expect(items.map(inboxSignal).every((signal) => signal.attention === 0)).toBe(true);
     expect(

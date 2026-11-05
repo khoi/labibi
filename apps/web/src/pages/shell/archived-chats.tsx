@@ -46,7 +46,6 @@ export function ArchivedChats({
         {archivedBots.map((bot) => (
           <div key={bot.id} className="flex items-center gap-2 rounded-lg px-2.5 py-2">
             <BotAvatar
-              avatarSet={bot.avatarSet}
               color={bot.color}
               identity={bot.id}
               size={28}

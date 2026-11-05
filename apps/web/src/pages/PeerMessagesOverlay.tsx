@@ -105,7 +105,7 @@ export function PeerMessagesOverlay({
             className="flex min-w-0 max-w-full items-center justify-self-center gap-2 rounded-full bg-muted px-4 py-2 text-[13px] font-medium"
             dir="auto"
           >
-            <BotAvatar avatarSet={botAvatarSet} color={botColor} identity={botId} size={20} />
+            <BotAvatar color={botColor} identity={botId} size={20} />
             <span className="truncate" style={{ color: botColor }}>
               {botName}
             </span>
@@ -113,7 +113,6 @@ export function PeerMessagesOverlay({
               ⇄
             </span>
             <BotAvatar
-              avatarSet={peerBotAvatarSet}
               color={peerBotColor}
               identity={peerBotId}
               size={20}

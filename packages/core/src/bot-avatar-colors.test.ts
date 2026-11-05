@@ -39,9 +39,9 @@ describe("chatUserBubbleColors", () => {
   );
 
   it("deepens bright colors without turning them muddy", () => {
-    const orange = chatUserBubbleColors("#FF781C", "bot-1")!;
+    const orange = chatUserBubbleColors("#FE6F02", "bot-1")!;
     // Darkening in RGB pulled orange toward brown; OKLCH keeps it orange.
-    expect(orange.background).toBe("#CD4A00");
+    expect(orange.background).toBe("#D04300");
     expect(contrastRatio(orange.background, orange.foreground)).toBeGreaterThanOrEqual(4.5);
   });
 
@@ -52,9 +52,8 @@ describe("chatUserBubbleColors", () => {
     expect(contrastRatio(bubble.background, bubble.foreground)).toBeGreaterThanOrEqual(4.5);
   });
 
-  it("keeps the neutral bubble for a photo or the white bot", () => {
+  it("keeps the neutral bubble for a photo", () => {
     expect(chatUserBubbleColors("data:image/png;base64,AAAA", "bot-1")).toBeUndefined();
-    expect(chatUserBubbleColors("#FFFFFF", "bot-1")).toBeUndefined();
   });
 });
 

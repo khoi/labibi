@@ -109,7 +109,6 @@ function MemberPicker({
                 className="flex min-w-0 flex-1 items-center gap-3 text-start"
               >
                 <BotAvatar
-                  avatarSet={bot.avatarSet}
                   color={bot.color}
                   identity={bot.id}
                   size={32}

@@ -114,7 +114,6 @@ export function BotCreatePicker({
                 className="gap-2"
               >
                 <BotAvatar
-                  avatarSet={bot.avatarSet}
                   color={bot.color}
                   identity={bot.id}
                   size={22}

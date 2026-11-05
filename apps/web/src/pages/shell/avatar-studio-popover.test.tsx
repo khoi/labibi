@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 
-import type { BotAvatarSet } from "@labradoodle/contracts";
-import { DEFAULT_BOT_AVATAR_COLOR } from "@labradoodle/ui-web";
+import { DOOD_SHAPES } from "@labradoodle/core";
 import type { ReactNode } from "react";
 import { act, useState } from "react";
 import type { Root } from "react-dom/client";
@@ -16,26 +15,17 @@ import { AvatarStudioPopover } from "./avatar-studio-popover";
 
 let container: HTMLDivElement;
 let root: Root;
-const changed = vi.fn<(value: string, avatarSet?: BotAvatarSet) => void>();
+const changed = vi.fn<(value: string) => void>();
 
-function Harness({
-  value: initial,
-  avatarSet: initialSet,
-}: {
-  value: string;
-  avatarSet?: BotAvatarSet;
-}) {
+function Harness({ value: initial }: { value: string }) {
   const [value, setValue] = useState(initial);
-  const [avatarSet, setAvatarSet] = useState(initialSet);
   return (
     <AvatarStudioPopover
       value={value}
       identity="sample-bot"
-      avatarSet={avatarSet}
-      onChange={(next, nextSet) => {
-        changed(next, nextSet);
+      onChange={(next) => {
+        changed(next);
         setValue(next);
-        if (nextSet !== undefined) setAvatarSet(nextSet);
       }}
     />
   );
@@ -68,49 +58,42 @@ function button(name: string) {
 async function click(name: string) {
   await act(async () => button(name).click());
 }
-async function render(value: string, avatarSet?: BotAvatarSet, key = "initial") {
-  await act(async () => root.render(<Harness key={key} value={value} avatarSet={avatarSet} />));
+async function render(value: string) {
+  await act(async () => root.render(<Harness value={value} />));
 }
 
-describe("selectable bot icon sets", () => {
-  it("keeps a legacy appearance on open, saves a Labradoodle switch, and restores the saved set on reload", async () => {
+function shown() {
+  return document.querySelector('[data-slot="dood"]')!;
+}
+
+describe("Avatar Studio", () => {
+  it("opens without saving and offers no icon set choice", async () => {
     await render("#10B981");
     await click("Customize bot avatar");
-    expect(button("Original").getAttribute("aria-selected")).toBe("true");
-    expect(document.querySelector(".rakazo-organic-avatar")).not.toBeNull();
     expect(changed).not.toHaveBeenCalled();
-    await click("Labradoodle");
-    expect(changed).toHaveBeenLastCalledWith("#10B981", "rakazo");
-    expect(document.querySelector(".labradoodle-logo-avatar")).not.toBeNull();
-    await render("#10B981", "rakazo", "reload");
-    await click("Customize bot avatar");
-    expect(button("Labradoodle").getAttribute("aria-selected")).toBe("true");
-    await click("Original");
-    expect(changed).toHaveBeenLastCalledWith("#10B981", "organic");
-    expect(document.querySelector(".rakazo-organic-avatar")).not.toBeNull();
-    expect(button("wedge")).toBeDefined();
+    expect(() => button("Original")).toThrow();
+    expect(shown().getAttribute("data-color")).toBe("green");
   });
 
-  it("leaves a photo intact until the user explicitly selects another set", async () => {
+  it("picks one of the eight dood bodies and keeps it while changing colour", async () => {
+    await render("#10B981");
+    await click("Customize bot avatar");
+    await click("Shape 3");
+    expect(changed).toHaveBeenLastCalledWith("#4FAA52::shape_2");
+    expect(shown().getAttribute("data-shape")).toBe(DOOD_SHAPES[2]);
+    await click("Color #1E98F5");
+    expect(changed).toHaveBeenLastCalledWith("#1E98F5::shape_2");
+    await click("Default");
+    expect(changed).toHaveBeenLastCalledWith("#1E98F5");
+  });
+
+  it("leaves a photo intact until a body is picked", async () => {
     const photo = "data:image/png;base64,abc";
     await render(photo);
-    expect(document.querySelector(`img[src="${photo}"]`)).not.toBeNull();
     await click("Customize bot avatar");
     expect(changed).not.toHaveBeenCalled();
     expect(document.querySelector(`img[src="${photo}"]`)).not.toBeNull();
-    await click("Labradoodle");
-    expect(changed).toHaveBeenLastCalledWith(DEFAULT_BOT_AVATAR_COLOR, "rakazo");
+    await click("Shape 1");
     expect(document.querySelector(`img[src="${photo}"]`)).toBeNull();
-  });
-
-  it("keeps explicit original shapes and their chosen set while changing colour", async () => {
-    await render("#8B5CF6::shape_2", "organic");
-    await click("Customize bot avatar");
-    expect(changed).not.toHaveBeenCalled();
-    await click("Color #00C972");
-    expect(changed).toHaveBeenLastCalledWith("#00C972::shape_2", undefined);
-    expect(button("Original").getAttribute("aria-selected")).toBe("true");
-    await click("Labradoodle");
-    expect(changed).toHaveBeenLastCalledWith("#00C972", "rakazo");
   });
 });

@@ -29,7 +29,7 @@ export function CollaborationMarker({
         className="inline-flex max-w-full items-center gap-1 rounded-full px-2.5 py-1 text-[13px] text-muted-foreground transition-colors hover:text-foreground/75 focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
       >
         {parts.before ? <span className="whitespace-pre-wrap">{parts.before}</span> : null}
-        <BotAvatar avatarSet={avatarSet} color={color} identity={identity} size={16} />
+        <BotAvatar color={color} identity={identity} size={16} />
         {parts.name ? (
           <span dir="auto" className="truncate font-medium">
             {parts.name}

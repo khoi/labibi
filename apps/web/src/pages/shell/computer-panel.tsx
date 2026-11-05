@@ -105,7 +105,6 @@ function ComputerPreview({
       >
         <div className="relative">
           <BotAvatar
-            avatarSet={bot.avatarSet}
             color={bot.color}
             identity={bot.id}
             size={44}

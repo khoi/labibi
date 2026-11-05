@@ -829,7 +829,7 @@ export function ProductDemo({ bots: initialBots, strings }: { bots: DemoBot[]; s
   }
 
   return (
-    <div className="product-demo" data-product-demo-ready={isHydrated ? "true" : undefined}>
+    <div className="product-demo" data-theme="dark" data-product-demo-ready={isHydrated ? "true" : undefined}>
       <div className={`product-demo__frame${panelOpen ? "" : " is-collapsed"}`}>
         <aside
           id="product-demo-bots"

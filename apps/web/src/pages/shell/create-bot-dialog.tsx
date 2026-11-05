@@ -1,12 +1,5 @@
-import type { BotAvatarSet } from "@labradoodle/contracts";
 import { BOT_NAME_MAX_LENGTH } from "@labradoodle/contracts";
-import {
-  newClientId,
-  ORGANIC_AVATAR_HEART_FAMILY,
-  ORGANIC_AVATAR_LOOKS,
-  organicAvatarFamily,
-  organicAvatarSampleIdentity,
-} from "@labradoodle/core";
+import { newClientId } from "@labradoodle/core";
 import {
   BOT_AVATAR_COLORS,
   BotAvatar,
@@ -17,15 +10,11 @@ import {
   DialogHeader,
   DialogTitle,
   Input,
-  parseBotAvatar,
 } from "@labradoodle/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useRef, useState } from "react";
 import { errorText } from "../../lib/user-error";
 import { BotLookPicker } from "./avatar-studio-popover";
-
-/** One preview identity per organic look, so the dialog can show a body before the bot has an id. */
-const ORGANIC_IDENTITIES = ORGANIC_AVATAR_LOOKS.map(organicAvatarSampleIdentity);
 
 function pick<T>(options: readonly T[]): T {
   return options[Math.floor(Math.random() * options.length)]!;
@@ -34,37 +23,23 @@ function pick<T>(options: readonly T[]): T {
 export interface CreateBotDialogInput {
   name: string;
   color: string;
-  /** Reserve the logo preview's persistent seed through creation and retries. */
-  id?: string;
-  /** The organic family the preview drew; omitted when a studio shape is picked. */
-  avatarFamily?: number;
+  /** The preview's id, reserved through creation and retries, so the bot keeps the dood it showed. */
+  id: string;
 }
 
 /** Mounted only while open; the parent unmounts it from `onCancel` or after `onCreate`. */
 export function CreateBotDialog({
-  avatarSet,
   onCancel,
   onCreate,
 }: {
-  /** The account's set: the server gives it to the new bot, so the preview draws it too. */
-  avatarSet: BotAvatarSet;
   onCancel: () => void;
   onCreate: (input: CreateBotDialogInput) => Promise<void>;
 }) {
   const { t } = useLingui();
   const nameRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState("");
-  const [previewId] = useState(() => {
-    let id: string;
-    do {
-      id = `c${newClientId().replaceAll("-", "").slice(0, 24)}`;
-    } while (organicAvatarFamily(id) === ORGANIC_AVATAR_HEART_FAMILY);
-    return id;
-  });
-  const [look, setLook] = useState(() => ({
-    value: pick(BOT_AVATAR_COLORS),
-    identity: pick(ORGANIC_IDENTITIES),
-  }));
+  const [previewId] = useState(() => `c${newClientId().replaceAll("-", "").slice(0, 24)}`);
+  const [look, setLook] = useState(() => pick(BOT_AVATAR_COLORS));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const trimmed = name.trim();
@@ -73,14 +48,8 @@ export function CreateBotDialog({
     if (!trimmed || submitting) return;
     setError(null);
     setSubmitting(true);
-    const organic = avatarSet === "organic" && parseBotAvatar(look.value).shapeIndex === undefined;
     try {
-      await onCreate({
-        name: trimmed,
-        color: look.value,
-        ...(avatarSet === "rakazo" ? { id: previewId } : {}),
-        ...(organic ? { avatarFamily: organicAvatarFamily(look.identity) } : {}),
-      });
+      await onCreate({ name: trimmed, color: look, id: previewId });
     } catch (err) {
       setError(errorText(err, t`Could not create bot`));
       setSubmitting(false);
@@ -114,12 +83,7 @@ export function CreateBotDialog({
             </DialogTitle>
           </DialogHeader>
           <div className="flex justify-center py-2">
-            <BotAvatar
-              color={look.value}
-              identity={avatarSet === "rakazo" ? previewId : look.identity}
-              size={96}
-              avatarSet={avatarSet}
-            />
+            <BotAvatar color={look} identity={previewId} size={96} />
           </div>
           <Input
             ref={nameRef}
@@ -135,15 +99,7 @@ export function CreateBotDialog({
               {error}
             </p>
           ) : null}
-          <BotLookPicker
-            value={look.value}
-            identity={avatarSet === "rakazo" ? previewId : look.identity}
-            organicIdentities={ORGANIC_IDENTITIES}
-            avatarSet={avatarSet}
-            onChange={(value, identity) => {
-              setLook((current) => ({ value, identity: identity ?? current.identity }));
-            }}
-          />
+          <BotLookPicker value={look} identity={previewId} onChange={setLook} />
           <DialogFooter>
             <Button type="button" variant="outline" disabled={submitting} onClick={onCancel}>
               <Trans>Cancel</Trans>

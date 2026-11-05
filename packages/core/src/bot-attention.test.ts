@@ -4,11 +4,11 @@ import {
   initialLogoAvatarSignals,
   logoAvatarActivity,
   logoAvatarNeedsAttention,
-  usesLogoAvatar,
+  drawsDood,
 } from "./logo-avatar-activity.js";
 import { createLogoAvatarActivityStore } from "./logo-avatar-activity-store.js";
 
-const bot = { avatarSet: "rakazo", color: "orange" };
+const bot = { color: "orange" };
 const needsAttention = (activity: ReturnType<typeof logoAvatarActivity>) =>
   logoAvatarNeedsAttention(botAvatarActivity(bot, activity));
 
@@ -41,10 +41,7 @@ describe("avatar attention", () => {
   });
 
   it.each([
-    { ...bot, avatarSet: "organic" },
-    { color: "orange" },
     { ...bot, color: "data:image/png;base64,fixture" },
-    { ...bot, color: "orange::shape_3" },
     { ...bot, archivedAt: "2026-01-01T00:00:00.000Z" },
   ])("excludes avatars without a visible waiting state: %j", (avatar) => {
     expect(logoAvatarNeedsAttention(botAvatarActivity(avatar, "waiting"))).toBe(false);
@@ -71,7 +68,9 @@ describe("avatar attention", () => {
   });
 
   it("uses the same avatar selection as rendering", () => {
-    expect(usesLogoAvatar(bot)).toBe(true);
-    expect(botAvatarActivity(bot, "waiting")).toBe("waiting");
+    for (const color of ["orange", "orange::shape_3"]) {
+      expect(drawsDood({ color })).toBe(true);
+      expect(botAvatarActivity({ color }, "waiting")).toBe("waiting");
+    }
   });
 });

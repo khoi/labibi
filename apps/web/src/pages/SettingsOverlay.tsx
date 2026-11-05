@@ -1,4 +1,4 @@
-import type { BotAvatarSet, SpaceMemoryConfig, UsageSummary } from "@labradoodle/contracts";
+import type { SpaceMemoryConfig, UsageSummary } from "@labradoodle/contracts";
 import { Button, Dialog, DialogClose, DialogContent, DialogTitle } from "@labradoodle/ui-web";
 import { useLingui } from "@lingui/react/macro";
 import { ChevronLeft, ChevronRight, XIcon } from "lucide-react";
@@ -43,8 +43,6 @@ export function SettingsOverlay({
   onNameSaved,
   timezone,
   onTimezoneChange,
-  botAvatarSet,
-  onBotAvatarSetChange,
   onAccountImported,
   onImportAgent,
   billingEnabled = false,
@@ -73,8 +71,6 @@ export function SettingsOverlay({
   onNameSaved?: () => Promise<void>;
   timezone: string | null;
   onTimezoneChange: (timezone: string) => Promise<void>;
-  botAvatarSet?: BotAvatarSet;
-  onBotAvatarSetChange?: (set: BotAvatarSet) => Promise<void>;
   onAccountImported?: () => Promise<void>;
   onImportAgent?: () => void;
   billingEnabled?: boolean;
@@ -361,8 +357,6 @@ export function SettingsOverlay({
                         onNameSaved={onNameSaved}
                         timezone={timezone}
                         onTimezoneChange={onTimezoneChange}
-                        botAvatarSet={botAvatarSet}
-                        onBotAvatarSetChange={onBotAvatarSetChange}
                         onAccountImported={onAccountImported}
                         onImportAgent={onImportAgent}
                       />

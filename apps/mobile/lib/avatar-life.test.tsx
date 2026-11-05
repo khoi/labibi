@@ -74,8 +74,15 @@ vi.mock("react-native-reanimated", () => {
   };
 });
 vi.mock("react-native-svg", () => {
-  const element = ({ children, fill }: { children?: ReactNode; fill?: string }) =>
-    createElement("div", { "data-fill": fill }, children);
+  const element = ({
+    children,
+    fill,
+    stroke,
+  }: {
+    children?: ReactNode;
+    fill?: string;
+    stroke?: string;
+  }) => createElement("div", { "data-fill": fill, "data-stroke": stroke }, children);
   return { default: element, Ellipse: element, G: element, Path: element, Rect: element };
 });
 vi.mock("react-native", () => ({
@@ -371,10 +378,10 @@ describe("activity mark", () => {
 
   it("shows each working member of a group in turn, every 2 s", () => {
     render(<ActivityMark bots={bots} atBottom />);
-    const shown = () => container.querySelector("[data-fill]")?.getAttribute("data-fill");
-    expect(shown()).toBe("#2A92FE");
+    const shown = () => container.querySelector("[data-stroke]")?.getAttribute("data-stroke");
+    expect(shown()).toBe("#1E98F5");
     act(() => vi.advanceTimersByTime(2000));
-    expect(shown()).toBe("#FF781C");
+    expect(shown()).toBe("#FE6F02");
   });
 
   it("stops cycling members and pulsing photo dots on a covered screen, and resumes on return", () => {

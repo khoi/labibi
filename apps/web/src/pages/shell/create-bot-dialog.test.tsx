@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 
-import type { BotAvatarSet } from "@labradoodle/contracts";
-import { ORGANIC_AVATAR_LOOKS } from "@labradoodle/core";
+import { DOOD_SHAPES } from "@labradoodle/core";
 import type { ReactNode } from "react";
 import { act } from "react";
 import type { Root } from "react-dom/client";
@@ -38,15 +37,14 @@ afterEach(() => {
   container.remove();
 });
 
-async function render(
-  onCreate: (input: CreateBotDialogInput) => Promise<void>,
-  avatarSet: BotAvatarSet = "organic",
-) {
+async function render(onCreate: (input: CreateBotDialogInput) => Promise<void>) {
   await act(async () => {
-    root.render(
-      <CreateBotDialog avatarSet={avatarSet} onCancel={() => undefined} onCreate={onCreate} />,
-    );
+    root.render(<CreateBotDialog onCancel={() => undefined} onCreate={onCreate} />);
   });
+}
+
+function preview() {
+  return document.querySelector('[data-testid="create-bot-dialog"] [data-slot="dood"]')!;
 }
 
 function button(name: string) {
@@ -82,73 +80,30 @@ describe("CreateBotDialog", () => {
     expect(button("Create").disabled).toBe(false);
   });
 
-  it("draws the account's set without offering another, and leaves the set to the server", async () => {
+  it("reserves the preview id, so the bot keeps the dood it showed", async () => {
     const onCreate = vi.fn(async (_input: CreateBotDialogInput) => undefined);
     await render(onCreate);
     expect(document.querySelector('[role="tablist"]')).toBeNull();
-    const family = Number(
-      document.querySelector(".rakazo-organic-avatar")?.getAttribute("data-shape-family"),
-    );
-    await typeName("Scout");
-    await click(button("Create"));
-    expect(onCreate.mock.lastCall?.[0]).toMatchObject({ name: "Scout", avatarFamily: family });
-    expect(onCreate.mock.lastCall?.[0]).not.toHaveProperty("avatarSet");
-    expect(onCreate.mock.lastCall?.[0]).not.toHaveProperty("id");
-  });
-
-  it("sends the Labradoodle preview id without an organic family", async () => {
-    const onCreate = vi.fn(async (_input: CreateBotDialogInput) => undefined);
-    await render(onCreate, "rakazo");
     await typeName("Scout");
     await click(button("Create"));
     const input = onCreate.mock.lastCall![0];
-    const preview = document.querySelector(".labradoodle-logo-avatar")!;
     expect(input).toMatchObject({ name: "Scout" });
     expect(input).not.toHaveProperty("avatarFamily");
     expect(input.id).toMatch(/^c[a-z0-9]{24}$/);
-    expect(input.color?.toUpperCase()).toBe(preview.getAttribute("data-color")?.toUpperCase());
   });
 
-  it("preserves an explicitly chosen Labradoodle colour through a failed create and retry", async () => {
-    const onCreate = vi
-      .fn(async (_input: CreateBotDialogInput) => undefined)
-      .mockRejectedValueOnce(new Error("Try again"));
-    await render(onCreate, "rakazo");
-    await click(button("Color #00C972"));
-    await typeName("Scout");
-    await click(button("Create"));
-    expect(onCreate.mock.lastCall?.[0]).toMatchObject({ color: "#00C972" });
-    await click(button("Create"));
-    expect(onCreate.mock.lastCall?.[0]).toMatchObject({ color: "#00C972" });
-  });
-
-  it("sends the organic family the preview draws", async () => {
+  it("sends the shape and colour picked in the dialog", async () => {
     const onCreate = vi.fn(async (_input: CreateBotDialogInput) => undefined);
     await render(onCreate);
+    await click(button("Color #4FAA52"));
     await click(button("Shape 2"));
-    await click(button("Color #00C972"));
-    const preview = document.querySelector(".rakazo-organic-avatar");
-    const family = Number(preview?.getAttribute("data-shape-family"));
+    expect(preview().getAttribute("data-shape")).toBe(DOOD_SHAPES[1]);
+    expect(preview().getAttribute("data-color")).toBe("green");
     await typeName("Scout");
     await click(button("Create"));
-    expect(onCreate).toHaveBeenCalledWith({
+    expect(onCreate.mock.lastCall?.[0]).toMatchObject({
       name: "Scout",
-      color: "#00C972",
-      avatarFamily: family,
-    });
-    expect(family).toBe(ORGANIC_AVATAR_LOOKS[1]);
-  });
-
-  it("sends a studio shape without an organic family", async () => {
-    const onCreate = vi.fn(async (_input: CreateBotDialogInput) => undefined);
-    await render(onCreate);
-    await click(button("Color #FF781C"));
-    await click(button("wedge"));
-    await typeName("Scout");
-    await click(button("Create"));
-    expect(onCreate).toHaveBeenCalledWith({
-      name: "Scout",
-      color: "#FF781C::shape_1",
+      color: "#4FAA52::shape_1",
     });
   });
 
@@ -169,13 +124,11 @@ it("retains the preview identity and colour through rerenders and a retry", asyn
   const onCreate = vi
     .fn(async (_input: CreateBotDialogInput) => undefined)
     .mockRejectedValueOnce(new Error("Try again"));
-  await render(onCreate, "rakazo");
-  const colour = document.querySelector(".labradoodle-logo-avatar")!.getAttribute("data-color");
+  await render(onCreate);
+  const look = preview().outerHTML;
   await typeName("First name");
-  await render(onCreate, "rakazo");
-  expect(document.querySelector(".labradoodle-logo-avatar")!.getAttribute("data-color")).toBe(
-    colour,
-  );
+  await render(onCreate);
+  expect(preview().outerHTML).toBe(look);
   await click(button("Create"));
   const first = onCreate.mock.lastCall![0];
   await typeName("Retry name");
@@ -184,5 +137,4 @@ it("retains the preview identity and colour through rerenders and a retry", asyn
   expect(first.id).toMatch(/^c[a-z0-9]{24}$/);
   expect(second.id).toBe(first.id);
   expect(second.color).toBe(first.color);
-  expect(second.color?.toUpperCase()).toBe(colour?.toUpperCase());
 });

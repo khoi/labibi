@@ -105,7 +105,6 @@ export function ActivityMark({
           ) : (
             <BotAvatar
               color={bot.color}
-              avatarSet={bot.avatarSet}
               identity={bot.id}
               size={MARK_SIZE}
               status={bot.status}

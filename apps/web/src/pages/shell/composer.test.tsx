@@ -280,7 +280,7 @@ describe("Composer", () => {
 
   it("draws each completed mention inline in the field instead of beside it", () => {
     const textarea = renderComposer(vi.fn(), {
-      mentionTargets: [{ ...bob, color: "#3366FF" }],
+      mentionTargets: [{ ...bob, color: "#1E98F5" }],
     });
     type(textarea, "ask @Bo");
     pressEnter(textarea);
@@ -288,7 +288,7 @@ describe("Composer", () => {
     const field = container?.querySelector('[data-testid="composer-field"]');
     const card = field?.querySelector('[data-testid="mention-chip"]');
     expect(card?.textContent).toBe("@Bob");
-    expect((card as HTMLElement | null)?.style.color).toBe("rgb(51, 102, 255)");
+    expect((card as HTMLElement | null)?.style.color).toBe("rgb(30, 152, 245)");
     expect(card?.closest("[inert]")?.textContent).toBe("ask @Bob now");
     expect(container?.querySelector('[aria-label="Remove mention Bob"]')).toBeNull();
     expect(textarea.className).toContain("text-transparent");

@@ -188,7 +188,7 @@ const structuredData = homeStructuredData({
           {
             copy.roster.bots.map((bot) => (
               <article class="roster-card">
-                <RosterBotAvatar color={bot.color} name={bot.name} />
+                <RosterBotAvatar name={bot.name} />
                 <h3>{bot.name}</h3>
                 <p>{bot.desc}</p>
               </article>
@@ -228,7 +228,7 @@ const structuredData = homeStructuredData({
             </div>
           </div>
           <div class="slack-mock__message">
-            <img src="/brand/job-bots/sales-outbound.webp" alt="" width="36" height="36" loading="lazy" />
+            <img src="/brand/job-bots/sales-outbound.svg" alt="" width="36" height="36" loading="lazy" />
             <div>
               <div class="slack-mock__name">Sales Outbound <span class="slack-mock__app">APP</span> <time>9:41</time></div>
               <p>{copy.channels.mock.reply}</p>

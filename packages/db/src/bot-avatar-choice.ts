@@ -1,12 +1,10 @@
 import { randomInt } from "node:crypto";
-import type { BotAvatarSet } from "@labradoodle/contracts";
 import { BOT_COLORS, parseBotAvatarValue } from "@labradoodle/contracts";
 import {
   ORGANIC_AVATAR_HEART_FAMILY,
   ORGANIC_AVATAR_LOOKS,
   organicAvatarFamily,
   organicAvatarLook,
-  seededLogoAvatarColor,
 } from "@labradoodle/core";
 
 /** A uniform number in [0, 1). */
@@ -89,19 +87,9 @@ export function chooseBotAvatar(
     random = cryptoRandom,
     now = Date.now(),
     family,
-    avatarSet = "organic",
     id: previewId,
-  }: { random?: Random; now?: number; family?: number; avatarSet?: BotAvatarSet; id?: string } = {},
+  }: { random?: Random; now?: number; family?: number; id?: string } = {},
 ): { id: string; color: string } {
-  if (avatarSet === "rakazo") {
-    // The logo uses no organic family. Keep automatic ids non-heart for a later
-    // Original-set switch, without scanning the roster or balancing unused shapes.
-    if (previewId) return { id: previewId, color: color ?? seededLogoAvatarColor(previewId) };
-    let id = family === undefined ? cuidShapedId(random, now) : idForFamily(family, random, now);
-    while (family === undefined && organicAvatarFamily(id) === ORGANIC_AVATAR_HEART_FAMILY)
-      id = cuidShapedId(random, now);
-    return { id, color: color ?? seededLogoAvatarColor(id) };
-  }
   const avatars = existing.map((bot) => {
     const avatar = parseBotAvatarValue(bot.color);
     return {

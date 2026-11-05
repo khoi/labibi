@@ -74,13 +74,7 @@ export function BotMemberPicker({
           const checked = selected.includes(bot.id);
           const identity = (
             <>
-              <BotAvatar
-                color={bot.color}
-                avatarSet={bot.avatarSet}
-                identity={bot.id}
-                size={34}
-                status={bot.status}
-              />
+              <BotAvatar color={bot.color} identity={bot.id} size={34} status={bot.status} />
               <Text style={[styles.name, { color: tokens.foreground }]}>{bot.name}</Text>
             </>
           );

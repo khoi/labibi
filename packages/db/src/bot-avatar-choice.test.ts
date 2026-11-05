@@ -4,7 +4,6 @@ import {
   ORGANIC_AVATAR_HEART_FAMILY,
   organicAvatarFamily,
   organicAvatarLook,
-  seededLogoAvatarColor,
 } from "@labradoodle/core";
 import { describe, expect, it } from "vitest";
 import { BOT_ID_ATTEMPTS, chooseBotAvatar, pickLeastUsed } from "./bot-avatar-choice.js";
@@ -41,27 +40,12 @@ describe("pickLeastUsed", () => {
 });
 
 describe("chooseBotAvatar", () => {
-  it("derives a Labradoodle colour from the chosen persistent id, independently of roster order", () => {
-    for (let seed = 1; seed <= 30; seed++) {
-      const chosen = chooseBotAvatar([], undefined, {
-        avatarSet: "rakazo",
-        random: seeded(seed),
-        now: 0,
-      });
-      expect(chosen.color).toBe(seededLogoAvatarColor(chosen.id));
-      expect(
-        chooseBotAvatar([], undefined, { avatarSet: "rakazo", random: seeded(seed), now: 0 }),
-      ).toEqual(chosen);
-    }
-  });
-
   it("uses the supplied preview identity for both the final id and generated colour", () => {
     const id = "c0123456789abcdef01234567";
-    expect(chooseBotAvatar([], undefined, { avatarSet: "rakazo", id })).toEqual({
-      id,
-      color: seededLogoAvatarColor(id),
-    });
-    expect(chooseBotAvatar([], "#123456", { avatarSet: "rakazo", id })).toEqual({
+    const chosen = chooseBotAvatar([], undefined, { id });
+    expect(chosen.id).toBe(id);
+    expect(BOT_COLORS).toContain(chosen.color);
+    expect(chooseBotAvatar([], "#123456", { id })).toEqual({
       id,
       color: "#123456",
     });
@@ -69,18 +53,16 @@ describe("chooseBotAvatar", () => {
 
   it("keeps an explicit identity ahead of an automatic organic family choice", () => {
     const id = "c0123456789abcdef01234567";
-    expect(chooseBotAvatar([], "#123456", { id, avatarSet: "organic", family: 9 })).toEqual({
+    expect(chooseBotAvatar([], "#123456", { id, family: 9 })).toEqual({
       id,
       color: "#123456",
     });
   });
 
   it.each(["#123456", "#abc", "#8B5CF6::shape_3", "data:image/png;base64,aGVsbG8="])(
-    "keeps explicit Labradoodle appearance %s",
+    "keeps explicit appearance %s",
     (color) => {
-      expect(
-        chooseBotAvatar([], color, { avatarSet: "rakazo", random: seeded(1), now: 0 }).color,
-      ).toBe(color);
+      expect(chooseBotAvatar([], color, { random: seeded(1), now: 0 }).color).toBe(color);
     },
   );
 
@@ -112,20 +94,20 @@ describe("chooseBotAvatar", () => {
   });
 
   it("breaks a colour tie away from colours already on the same look", () => {
-    // The round look is least used; orange and blue are the least-used colours, and orange is
+    // The round look is least used; yellow and blue are the least-used colours, and yellow is
     // already on a round bot.
     const [round] = idsForFamilies([2]);
     const others = idsForFamilies([0, 1, 3, 4, 5, 6, 7, 9, 0, 1, 3, 4, 5, 6, 7, 9]);
-    const spread = ["#3EC5A8", "#6A6BF5", "#9B5CF6", "#F2622A", "#D9508A"];
+    const spread = BOT_COLORS.slice(2);
     const existing = [
-      { id: round!, color: "#F5A03C" },
-      { id: others[0]!, color: "#3B82F6" },
+      { id: round!, color: BOT_COLORS[0] },
+      { id: others[0]!, color: BOT_COLORS[1] },
       ...others.slice(1).map((id, index) => ({ id, color: spread[index % spread.length]! })),
     ];
     for (let seed = 1; seed <= 20; seed++) {
       const chosen = chooseBotAvatar(existing, undefined, { random: seeded(seed), now: 0 });
       expect(organicAvatarLook(organicAvatarFamily(chosen.id))).toBe(2);
-      expect(chosen.color).toBe("#3B82F6");
+      expect(chosen.color).toBe(BOT_COLORS[1]);
     }
   });
 

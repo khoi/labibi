@@ -302,7 +302,6 @@ export function SidebarRoster({
                 const avatar =
                   item.kind === "bot" ? (
                     <BotAvatar
-                      avatarSet={item.chat.avatarSet}
                       color={item.chat.color}
                       identity={item.chat.id}
                       size={mini ? 40 : compact ? 28 : 38}

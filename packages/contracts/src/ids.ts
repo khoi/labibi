@@ -12,14 +12,15 @@ export const ActorSchema = z.object({
 });
 export type Actor = z.infer<typeof ActorSchema>;
 
+/** The seven dood inks; a new bot wears the least-used one. */
 export const BOT_COLORS = [
-  "#3EC5A8",
-  "#F5A03C",
-  "#6A6BF5",
-  "#9B5CF6",
-  "#3B82F6",
-  "#F2622A",
-  "#D9508A",
+  "#FFBC0A",
+  "#1E98F5",
+  "#ED6095",
+  "#FE6F02",
+  "#4FAA52",
+  "#FAB5E3",
+  "#9D9C9B",
 ] as const;
 
 export const RunStatus = z.enum([

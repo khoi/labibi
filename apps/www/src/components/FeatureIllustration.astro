@@ -7,7 +7,7 @@ interface Props {
 }
 
 const { kind, labels } = Astro.props;
-const avatar = (name: string) => `/brand/job-bots/${name}.webp`;
+const avatar = (name: string) => `/brand/job-bots/${name}.svg`;
 ---
 
 <div class:list={["feature-illustration", `feature-illustration--${kind}`]} aria-hidden="true">

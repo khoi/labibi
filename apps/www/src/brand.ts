@@ -23,7 +23,7 @@ export const BRAND_LOGOS = [
   {
     name: "Mascot",
     file: "/brand/kit/labradoodle-mascot.png",
-    preview: "/brand/kit/labradoodle-mascot-preview.webp",
+    preview: "/brand/kit/labradoodle-mascot-preview.png",
     format: "PNG · 700 × 700",
   },
 ] as const;

@@ -204,10 +204,10 @@ export function IncomingCall({
             style={{ borderColor: defaultBotAvatarValue(bot.color) }}
           />
           <span className="md:hidden">
-            <BotAvatar avatarSet={bot.avatarSet} color={bot.color} identity={bot.id} size={120} />
+            <BotAvatar color={bot.color} identity={bot.id} size={120} />
           </span>
           <span className="hidden md:block">
-            <BotAvatar avatarSet={bot.avatarSet} color={bot.color} identity={bot.id} size={52} />
+            <BotAvatar color={bot.color} identity={bot.id} size={52} />
           </span>
         </span>
         <span className="flex flex-col items-center gap-1 md:items-start">

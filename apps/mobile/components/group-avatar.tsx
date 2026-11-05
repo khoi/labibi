@@ -51,7 +51,6 @@ export const GroupAvatar = memo(function GroupAvatar({
     return (
       <BotAvatar
         color={firstMember.color}
-        avatarSet={firstMember.avatarSet}
         identity={firstMember.botId ?? firstMember.name}
         size={size}
         status={firstMember.status}
@@ -86,7 +85,6 @@ export const GroupAvatar = memo(function GroupAvatar({
         >
           <BotAvatar
             color={member.color}
-            avatarSet={member.avatarSet}
             identity={member.botId ?? member.name}
             size={miniSize}
             status={member.status}

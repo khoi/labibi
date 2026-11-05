@@ -120,7 +120,6 @@ export function CallCard({ onSettings }: { onSettings: () => void }) {
             />
           ) : null}
           <BotAvatar
-            avatarSet={call.botAvatarSet}
             color={call.botColor}
             identity={call.botId}
             size={96}

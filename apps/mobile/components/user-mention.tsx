@@ -43,7 +43,7 @@ export function UserMention({
         }}
       >
         {bot ? (
-          <BotAvatar color={bot.color} avatarSet={bot.avatarSet} identity={bot.id} size={size} />
+          <BotAvatar color={bot.color} identity={bot.id} size={size} />
         ) : (
           <NativeSymbol ios="person.3" android="people-outline" size={size} color={color} />
         )}

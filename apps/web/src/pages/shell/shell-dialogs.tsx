@@ -337,7 +337,6 @@ export function ShellDialogs({
 
       {createBotOpen ? (
         <CreateBotDialog
-          avatarSet={botAvatarSet}
           onCancel={() => setCreateBotOpen(false)}
           onCreate={createBot}
         />

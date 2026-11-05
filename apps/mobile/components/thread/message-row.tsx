@@ -1,5 +1,5 @@
 import { markdownCodeBlocks } from "@labradoodle/chat-ui/native";
-import type { BotAvatarSet, LoginFieldInput, MessageReaction } from "@labradoodle/contracts";
+import type { LoginFieldInput, MessageReaction } from "@labradoodle/contracts";
 import { canReactToThreadMessage, MESSAGE_REACTIONS } from "@labradoodle/contracts";
 import type { ChildBotBlock, PeerExchange } from "@labradoodle/core";
 import { canMarkMessageUnread, isPeerReceiptBlocks, liveMessageComposing } from "@labradoodle/core";
@@ -88,7 +88,6 @@ type MessageRowProps = {
   peerExchange?: PeerExchange;
   activityBotId?: string;
   activityColor?: string;
-  activityAvatarSet?: BotAvatarSet;
   activityStatus?: MobileBot["status"];
   userBubble?: UserBubble;
   inGroup: boolean;
@@ -124,7 +123,6 @@ export const MessageRow = memo(function MessageRow({
   peerExchange,
   activityBotId,
   activityColor,
-  activityAvatarSet,
   activityStatus,
   userBubble,
   inGroup,
@@ -389,7 +387,6 @@ export const MessageRow = memo(function MessageRow({
           <View style={{ paddingTop: 22 }}>
             <BotAvatar
               color={activityColor ?? tokens.mutedForeground}
-              avatarSet={activityAvatarSet}
               identity={activityBotId}
               size={inGroup ? 20 : 28}
               status={activityStatus}

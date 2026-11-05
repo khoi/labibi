@@ -528,14 +528,9 @@ export function BotSettings({
             identity={bot.id}
             status={bot.status}
             size={76}
-            avatarSet={avatarSet}
-            onChange={(newColor, nextAvatarSet) => {
+            onChange={(newColor) => {
               setColor(newColor);
-              if (nextAvatarSet !== undefined) setAvatarSet(nextAvatarSet);
-              void enqueueSave({
-                color: newColor,
-                ...(nextAvatarSet !== undefined ? { avatarSet: nextAvatarSet } : {}),
-              });
+              void enqueueSave({ color: newColor });
             }}
           />
         </div>

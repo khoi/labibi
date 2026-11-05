@@ -120,7 +120,6 @@ export default function BotProfile() {
         {bot ? (
           <BotAvatar
             color={bot.color}
-            avatarSet={bot.avatarSet}
             identity={bot.id}
             size={96}
             status={bot.status}

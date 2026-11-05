@@ -139,10 +139,11 @@ describe("GroupSeats", () => {
         />,
       ),
     );
-    const eyes = Array.from(container.querySelectorAll("svg-g[data-fill]"), (group) =>
-      group.getAttribute("data-fill"),
+    const eyes = Array.from(
+      container.querySelectorAll("svg-g:not(svg-mask svg-g)[data-fill]"),
+      (group) => group.getAttribute("data-fill"),
     );
-    // Both bodies are pale, so their eyes stay dark on a light page, as on the bot's own avatar.
+    // Doods' eyes take the page's ink, as on the bot's own avatar.
     expect(eyes).toEqual(["#141414", "#141414"]);
   });
 });

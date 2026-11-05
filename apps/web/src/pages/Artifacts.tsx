@@ -593,7 +593,7 @@ function FilterChip({
 
 function useBotColorHex(bot: Bot): string {
   return useMemo(() => {
-    const parsed = parseBotAvatar(bot.color, bot.id);
+    const parsed = parseBotAvatar(bot.color);
     const effectiveId = bot.id || parsed.color || "agent";
     return resolvePersonaColorDef(effectiveId, parsed.color).hex;
   }, [bot.color, bot.id]);
@@ -619,7 +619,6 @@ function BotFilterChip({
       className={active ? "text-foreground" : "text-muted-foreground"}
     >
       <BotAvatar
-        avatarSet={bot.avatarSet}
         color={bot.color}
         identity={bot.id}
         size={16}
@@ -673,7 +672,6 @@ function ArtifactCard({
           {bot ? (
             <>
               <BotAvatar
-                avatarSet={bot.avatarSet}
                 color={bot.color}
                 identity={bot.id}
                 size={20}
@@ -741,7 +739,6 @@ function ArtifactRow({
           {bot ? (
             <>
               <BotAvatar
-                avatarSet={bot.avatarSet}
                 color={bot.color}
                 identity={bot.id}
                 size={14}

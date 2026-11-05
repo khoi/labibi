@@ -22,18 +22,18 @@ export type LogoAvatarActivity =
   | "waiting"
   | "error";
 
-/** Logo activity displayed by the selected avatar. */
+/** Activity a bot's dood acts out; a photo avatar and an archived bot stay idle. */
 export function botAvatarActivity(
-  bot: { avatarSet?: string; color: string; archivedAt?: string | null },
+  bot: { color: string; archivedAt?: string | null },
   activity: LogoAvatarActivity,
 ): LogoAvatarActivity {
-  if (bot.archivedAt || !usesLogoAvatar(bot)) return "idle";
+  if (bot.archivedAt || !drawsDood(bot)) return "idle";
   return activity;
 }
 
-export function usesLogoAvatar(bot: { avatarSet?: string; color: string }): boolean {
-  const parsed = parseBotAvatarValue(bot.color);
-  return bot.avatarSet === "rakazo" && parsed.kind !== "image" && parsed.kind !== "shape";
+/** Every bot without a saved photo is drawn as a dood. */
+export function drawsDood(bot: { color: string }): boolean {
+  return parseBotAvatarValue(bot.color).kind !== "image";
 }
 
 export function logoAvatarNeedsAttention(activity: LogoAvatarActivity): boolean {

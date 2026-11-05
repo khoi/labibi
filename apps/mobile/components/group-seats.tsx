@@ -1,14 +1,5 @@
-import {
-  avatarEyeRects,
-  avatarIdentitySeed,
-  botEyeInk,
-  ORGANIC_AVATAR_EYES,
-  ORGANIC_AVATAR_VIEWBOX,
-  organicAvatarEyeTilt,
-  organicAvatarPath,
-  SHIPPED_BOT_AVATAR_EYES,
-  SHIPPED_BOT_AVATAR_VIEWBOX,
-} from "@labradoodle/core";
+import { parseBotAvatarValue } from "@labradoodle/contracts";
+import { botDood, DOOD_INK, DOOD_PATHS, DOOD_STROKE_WIDTH, doodEyeShapes } from "@labradoodle/core";
 import type { ReactNode } from "react";
 import { memo, useId } from "react";
 import type { ColorValue } from "react-native";
@@ -24,7 +15,6 @@ import Svg, {
   Rect,
   Text as SvgText,
 } from "react-native-svg";
-import { mobileBotAvatarPresentation } from "../lib/bot-avatar";
 import type { GroupSeat } from "../lib/group-seats";
 import {
   GROUP_SEAT_SIZE,
@@ -157,7 +147,7 @@ function seatArt(
   key: string,
   page: { background: string; foreground: string },
 ): SeatArt {
-  const parsed = mobileBotAvatarPresentation(member.color);
+  const parsed = parseBotAvatarValue(member.color);
   const r = size / 2;
   if (parsed.kind === "image" && parsed.imageUrl) {
     // Drawn in points, so the photo keeps its full resolution.
@@ -182,42 +172,40 @@ function seatArt(
       ),
     };
   }
-  if (parsed.kind === "shape") {
-    const [x, y, units] = SHIPPED_BOT_AVATAR_VIEWBOX.split(" ").map(Number) as [
-      number,
-      number,
-      number,
-    ];
-    return {
-      box: [x, y, units],
-      outline: (paint) => <Path d={parsed.shapePath} {...paint} />,
-      face: (
-        <>
-          <Path d={parsed.shapePath} fill={parsed.color} />
-          <G fill={botEyeInk(parsed.color, page)}>
-            {avatarEyeRects(SHIPPED_BOT_AVATAR_EYES).map((rect) => (
-              <Rect key={rect.x} {...rect} />
-            ))}
-          </G>
-        </>
-      ),
-    };
-  }
-  const color = parsed.kind === "color" ? parsed.color : member.color;
-  const seed = avatarIdentitySeed(member.botId ?? member.name ?? color);
-  const outline = organicAvatarPath(seed);
-  const [x, y, units] = ORGANIC_AVATAR_VIEWBOX.split(" ").map(Number) as [number, number, number];
+  const dood = botDood(member.color, member.botId ?? member.name ?? member.color);
+  const eyes = (fill: ColorValue) => (
+    <G fill={fill}>
+      {doodEyeShapes(dood.eyes).map(({ d, rotate }, index) => (
+        <Path
+          key={index}
+          d={d}
+          transform={rotate ? `rotate(-45 ${rotate.cx} ${rotate.cy})` : undefined}
+        />
+      ))}
+    </G>
+  );
+  const body = (stroke: ColorValue, extra = 0) => (
+    <Path
+      d={DOOD_PATHS[dood.shape]}
+      fill="none"
+      stroke={stroke}
+      strokeWidth={DOOD_STROKE_WIDTH + extra}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  );
   return {
-    box: [x, y, units],
-    outline: (paint) => <Path d={outline} {...paint} />,
+    box: [0, 0, 24],
+    outline: (paint) => (
+      <>
+        {body(paint.stroke ?? paint.fill, paint.strokeWidth)}
+        {eyes(paint.fill)}
+      </>
+    ),
     face: (
       <>
-        <Path d={outline} fill={color} />
-        <G transform={`rotate(${organicAvatarEyeTilt(seed)})`} fill={botEyeInk(color, page)}>
-          {avatarEyeRects(ORGANIC_AVATAR_EYES).map((rect) => (
-            <Rect key={rect.x} {...rect} />
-          ))}
-        </G>
+        {body(DOOD_INK[dood.color].ink)}
+        {eyes(page.foreground)}
       </>
     ),
   };

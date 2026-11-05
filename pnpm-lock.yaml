@@ -59,9 +59,6 @@ importers:
       '@hono/node-server':
         specifier: 2.1.6
         version: 2.1.6(hono@4.13.16)
-      '@orpc/server':
-        specifier: 1.16.1
-        version: 1.16.1(@opentelemetry/api@1.10.0)(crossws@0.3.5)(ws@8.22.0)
       '@labradoodle/adapter-kit':
         specifier: workspace:*
         version: link:../../packages/adapter-kit
@@ -89,6 +86,9 @@ importers:
       '@labradoodle/page-kit':
         specifier: workspace:*
         version: link:../../packages/page-kit
+      '@orpc/server':
+        specifier: 1.16.1
+        version: 1.16.1(@opentelemetry/api@1.10.0)(crossws@0.3.5)(ws@8.22.0)
       fflate:
         specifier: 0.8.3
         version: 0.8.3
@@ -124,9 +124,6 @@ importers:
         specifier: 3.3.6
         version: 3.3.6
     devDependencies:
-      '@playwright/test':
-        specifier: 1.64.1
-        version: 1.64.1
       '@labradoodle/adapters':
         specifier: workspace:*
         version: link:../../packages/adapters
@@ -136,6 +133,9 @@ importers:
       '@labradoodle/ui-tokens':
         specifier: workspace:*
         version: link:../../packages/ui-tokens
+      '@playwright/test':
+        specifier: 1.64.1
+        version: 1.64.1
       electron:
         specifier: 45.2.2
         version: 45.2.2
@@ -335,21 +335,6 @@ importers:
       '@better-auth/passkey':
         specifier: 1.7.16
         version: 1.7.16(t6jdk7bfxwwmxsqal4vqmiplfu)
-      '@lingui/core':
-        specifier: 6.6.0
-        version: 6.6.0(@babel/core@7.29.7)(@babel/types@7.29.8)
-      '@lingui/react':
-        specifier: 6.6.0
-        version: 6.6.0(@babel/core@7.29.7)(@babel/types@7.29.8)(react@19.2.3)
-      '@orpc/client':
-        specifier: 1.16.1
-        version: 1.16.1(@opentelemetry/api@1.10.0)
-      '@orpc/contract':
-        specifier: 1.16.1
-        version: 1.16.1(@opentelemetry/api@1.10.0)
-      '@orpc/tanstack-query':
-        specifier: 1.16.1
-        version: 1.16.1(@opentelemetry/api@1.10.0)(@orpc/client@1.16.1(@opentelemetry/api@1.10.0))(@tanstack/query-core@5.105.3)
       '@labradoodle/chat-ui':
         specifier: workspace:*
         version: link:../../packages/chat-ui
@@ -368,6 +353,21 @@ importers:
       '@labradoodle/ui-web':
         specifier: workspace:*
         version: link:../../packages/ui-web
+      '@lingui/core':
+        specifier: 6.6.0
+        version: 6.6.0(@babel/core@7.29.7)(@babel/types@7.29.8)
+      '@lingui/react':
+        specifier: 6.6.0
+        version: 6.6.0(@babel/core@7.29.7)(@babel/types@7.29.8)(react@19.2.3)
+      '@orpc/client':
+        specifier: 1.16.1
+        version: 1.16.1(@opentelemetry/api@1.10.0)
+      '@orpc/contract':
+        specifier: 1.16.1
+        version: 1.16.1(@opentelemetry/api@1.10.0)
+      '@orpc/tanstack-query':
+        specifier: 1.16.1
+        version: 1.16.1(@opentelemetry/api@1.10.0)(@orpc/client@1.16.1(@opentelemetry/api@1.10.0))(@tanstack/query-core@5.105.3)
       '@sentry/react':
         specifier: 11.10.0
         version: 11.10.0(react-router@7.18.5(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)
@@ -683,6 +683,24 @@ importers:
       '@kubernetes/client-node':
         specifier: 2.0.2
         version: 2.0.2
+      '@labradoodle/adapter-kit':
+        specifier: workspace:*
+        version: link:../adapter-kit
+      '@labradoodle/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@labradoodle/core':
+        specifier: workspace:*
+        version: link:../core
+      '@labradoodle/db':
+        specifier: workspace:*
+        version: link:../db
+      '@labradoodle/logging':
+        specifier: workspace:*
+        version: link:../logging
+      '@labradoodle/page-kit':
+        specifier: workspace:*
+        version: link:../page-kit
       '@larksuiteoapi/node-sdk':
         specifier: 1.76.0
         version: 1.76.0
@@ -710,24 +728,6 @@ importers:
       '@photon-ai/chat-adapter-imessage':
         specifier: 3.2.0
         version: 3.2.0(chat@4.44.0(zod@4.6.7))(typescript@7.0.2)(zod@4.6.7)
-      '@labradoodle/adapter-kit':
-        specifier: workspace:*
-        version: link:../adapter-kit
-      '@labradoodle/contracts':
-        specifier: workspace:*
-        version: link:../contracts
-      '@labradoodle/core':
-        specifier: workspace:*
-        version: link:../core
-      '@labradoodle/db':
-        specifier: workspace:*
-        version: link:../db
-      '@labradoodle/logging':
-        specifier: workspace:*
-        version: link:../logging
-      '@labradoodle/page-kit':
-        specifier: workspace:*
-        version: link:../page-kit
       '@stripe/link-sdk':
         specifier: 0.15.0
         version: 0.15.0
@@ -942,15 +942,15 @@ importers:
 
   packages/core:
     dependencies:
-      '@observablehq/plot':
-        specifier: 0.6.17
-        version: 0.6.17
       '@labradoodle/contracts':
         specifier: workspace:*
         version: link:../contracts
       '@labradoodle/ui-tokens':
         specifier: workspace:*
         version: link:../ui-tokens
+      '@observablehq/plot':
+        specifier: 0.6.17
+        version: 0.6.17
       '@tanstack/query-core':
         specifier: 5.105.3
         version: 5.105.3
@@ -1006,12 +1006,6 @@ importers:
 
   packages/db:
     dependencies:
-      '@prisma/adapter-pg':
-        specifier: 7.10.1
-        version: 7.10.1
-      '@prisma/client':
-        specifier: 7.10.1
-        version: 7.10.1(prisma@7.10.1(@types/node@26.5.0)(@types/react-dom@19.2.7(@types/react@19.2.18))(@types/react@19.2.18)(magicast@0.5.5)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@7.0.2))(typescript@7.0.2)
       '@labradoodle/adapter-kit':
         specifier: workspace:*
         version: link:../adapter-kit
@@ -1024,6 +1018,12 @@ importers:
       '@labradoodle/logging':
         specifier: workspace:*
         version: link:../logging
+      '@prisma/adapter-pg':
+        specifier: 7.10.1
+        version: 7.10.1
+      '@prisma/client':
+        specifier: 7.10.1
+        version: 7.10.1(prisma@7.10.1(@types/node@26.5.0)(@types/react-dom@19.2.7(@types/react@19.2.18))(@types/react@19.2.18)(magicast@0.5.5)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(typescript@7.0.2))(typescript@7.0.2)
       dotenv:
         specifier: 17.4.2
         version: 17.4.2
@@ -1149,15 +1149,15 @@ importers:
       '@aws-sdk/client-s3':
         specifier: 3.1161.0
         version: 3.1161.0
-      '@playwright/test':
-        specifier: 1.64.1
-        version: 1.64.1
       '@labradoodle/api':
         specifier: workspace:*
         version: link:../../apps/api
       '@labradoodle/sandbox-supervisor':
         specifier: workspace:*
         version: link:../../infra/sandboxes/supervisor
+      '@playwright/test':
+        specifier: 1.64.1
+        version: 1.64.1
       '@types/pngjs':
         specifier: 6.0.5
         version: 6.0.5
@@ -1194,6 +1194,12 @@ importers:
       '@labradoodle/ui-tokens':
         specifier: workspace:*
         version: link:../ui-tokens
+      '@rive-app/canvas':
+        specifier: 2.44.0
+        version: 2.44.0
+      '@rive-app/react-canvas':
+        specifier: 4.36.0
+        version: 4.36.0(react@19.2.3)
       class-variance-authority:
         specifier: 0.7.1
         version: 0.7.1
@@ -4545,6 +4551,14 @@ packages:
 
   '@repeaterjs/repeater@3.1.0':
     resolution: {integrity: sha512-TaoVksZRSx2KWYYpyLQtMQXXeS98VsgZImzW65xmiVgbYhXLk+aEsmzPLirqVuE4/XuUapH2iMtxUzaBNDzdSQ==}
+
+  '@rive-app/canvas@2.44.0':
+    resolution: {integrity: sha512-ak0GGwCbuWubi6rP9qB5YPy5CxYuTY3AiuTV4i1Vi7GXhuK2XB+M+4WJMuGcYGfGLzojaVMKaxtunD5OjjGzOQ==}
+
+  '@rive-app/react-canvas@4.36.0':
+    resolution: {integrity: sha512-34YVFivIXqRyOVzCTiKrkFkpFeXUUske3Zt9M+QPX1sjqxtoOkzqIkCij37LNNxxZm6xxydedEvo0DAPPAt5Fw==}
+    peerDependencies:
+      react: 19.2.3
 
   '@rolldown/binding-android-arm-eabi@1.2.14':
     resolution: {integrity: sha512-aWR+XKH9+rW7m5fWq/5360J3mHycrx/o6xZM2DQFdJnTMdyP7/WzxPjhtLbVWdKo2y612/4U1bWqb3HQhiF7vg==}
@@ -16036,6 +16050,13 @@ snapshots:
       '@types/react': 19.2.18
 
   '@repeaterjs/repeater@3.1.0': {}
+
+  '@rive-app/canvas@2.44.0': {}
+
+  '@rive-app/react-canvas@4.36.0(react@19.2.3)':
+    dependencies:
+      '@rive-app/canvas': 2.44.0
+      react: 19.2.3
 
   '@rolldown/binding-android-arm-eabi@1.2.14':
     optional: true

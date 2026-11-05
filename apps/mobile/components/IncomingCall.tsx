@@ -67,12 +67,7 @@ export function IncomingCall() {
         style={[styles.screen, { backgroundColor: tokens.background }]}
         accessibilityViewIsModal
       >
-        <BotAvatar
-          identity={incoming.id}
-          color={incoming.color}
-          avatarSet={incoming.avatarSet}
-          size={120}
-        />
+        <BotAvatar identity={incoming.id} color={incoming.color} size={120} />
         <Text style={[styles.name, { color: tokens.foreground }]}>{incoming.name}</Text>
         {error ? (
           <Text accessibilityRole="alert" style={{ color: tokens.destructive }}>

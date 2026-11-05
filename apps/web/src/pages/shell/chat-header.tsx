@@ -61,7 +61,6 @@ export function ChatHeader({
           <GroupAvatar members={activeSnapshot?.members ?? activeGroup?.members ?? []} size={26} />
         ) : active ? (
           <BotAvatar
-            avatarSet={active.avatarSet}
             color={active.color}
             identity={active.id}
             size={26}

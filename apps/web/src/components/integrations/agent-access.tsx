@@ -46,7 +46,6 @@ export function AgentAccessControl({
           <BotAvatar
             key={bot.id}
             color={bot.color}
-            avatarSet={bot.avatarSet}
             identity={bot.id}
             size={18}
           />
@@ -94,7 +93,7 @@ export function AgentAccessControl({
               checked={chosen.includes(bot.id)}
               onCheckedChange={() => toggle(bot.id)}
             >
-              <BotAvatar color={bot.color} avatarSet={bot.avatarSet} identity={bot.id} size={18} />
+              <BotAvatar color={bot.color} identity={bot.id} size={18} />
               {bot.name}
             </DropdownMenuCheckboxItem>
           ))}

@@ -174,7 +174,6 @@ export function useThreadRows({
           peerExchange={exchanges.lines.get(message.id)}
           activityBotId={activityBotId}
           activityColor={activityBot?.color}
-          activityAvatarSet={activityBot?.avatarSet}
           activityStatus={activityStatus}
           userBubble={userBubble}
           inGroup={inGroup}

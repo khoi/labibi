@@ -548,50 +548,6 @@ describe("bot settings device voice menu", () => {
     expect(container.textContent).not.toContain("Shape");
   });
 
-  it("keeps a legacy set until explicitly switched, saves the choice, and reloads it", async () => {
-    await render();
-    await act(async () =>
-      container.querySelector<HTMLButtonElement>('[aria-label="Edit avatar"]')!.click(),
-    );
-    const setMenu = () => container.querySelector('[data-menu="Icon set"]')!;
-    const option = (label: string) =>
-      [...setMenu().querySelectorAll<HTMLButtonElement>("button")].find(
-        (button) => button.textContent === label,
-      )!;
-    expect(option("Original").dataset.state).toBe("on");
-    expect(mocks.rpc).not.toHaveBeenCalled();
-    await act(async () => option("Labradoodle").click());
-    mocks.rpc.mockResolvedValueOnce({ avatarSet: "rakazo" });
-    await act(async () =>
-      [...container.querySelectorAll<HTMLButtonElement>("button")]
-        .find((button) => button.textContent === "Save")!
-        .click(),
-    );
-    expect(mocks.rpc).toHaveBeenCalledWith("bots/update", {
-      botId: "bot-fixture",
-      avatarSet: "rakazo",
-    });
-    act(() => root.unmount());
-    root = createRoot(container);
-    mocks.avatarSet = "rakazo";
-    await render();
-    await act(async () =>
-      container.querySelector<HTMLButtonElement>('[aria-label="Edit avatar"]')!.click(),
-    );
-    expect(option("Labradoodle").dataset.state).toBe("on");
-    await act(async () => option("Original").click());
-    mocks.rpc.mockResolvedValueOnce({ avatarSet: "organic" });
-    await act(async () =>
-      [...container.querySelectorAll<HTMLButtonElement>("button")]
-        .find((button) => button.textContent === "Save")!
-        .click(),
-    );
-    expect(mocks.rpc).toHaveBeenLastCalledWith("bots/update", {
-      botId: "bot-fixture",
-      avatarSet: "organic",
-    });
-  });
-
   it("expands Advanced for a native model deep link", async () => {
     mocks.focus = "model";
     await act(async () => root.render(<BotSettingsScreen />));

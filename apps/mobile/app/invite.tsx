@@ -1,8 +1,4 @@
-import {
-  BOT_COLORS,
-  DEFAULT_NEW_BOT_AVATAR_SET,
-  INVITED_TRIAL_WEEKS,
-} from "@labradoodle/contracts";
+import { BOT_COLORS, INVITED_TRIAL_WEEKS } from "@labradoodle/contracts";
 import { typeScale } from "@labradoodle/ui-tokens";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
@@ -51,7 +47,6 @@ export default function InviteScreen() {
             key={BOT_COLORS[index]}
             color={BOT_COLORS[index]!}
             identity={`invite-${index}`}
-            avatarSet={DEFAULT_NEW_BOT_AVATAR_SET}
             size={size}
           />
         ))}

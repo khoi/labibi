@@ -1,7 +1,6 @@
 export { AppMarkStack } from "./app-mark-stack.js";
 export {
   BOT_AVATAR_COLORS,
-  BOT_MASCOT_SHAPES,
   BotAvatar,
   BotShapePreview,
   DEFAULT_BOT_AVATAR_COLOR,
@@ -52,6 +51,6 @@ export * from "./components/ui/toggle-group.js";
 export * from "./components/ui/tooltip.js";
 export { GroupAvatar, type GroupAvatarMember, type GroupAvatarProps } from "./group-avatar.js";
 export { cn } from "./lib/utils.js";
-export { LogoAvatar } from "./logo-avatar.js";
+export { Dood } from "./dood/dood.js";
 export { ModelThinkingOptions } from "./model-thinking-options.js";
 export { SectionHeading } from "./section-heading.js";

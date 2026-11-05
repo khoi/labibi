@@ -249,7 +249,6 @@ export default function SearchSheet() {
               <BotAvatar
                 identity={item.bot.id}
                 color={item.bot.color || botColors[3]}
-                avatarSet={item.bot.avatarSet}
                 status={item.bot.status}
               />
             ) : (
