@@ -52,15 +52,17 @@ async function ico(input: Buffer, name: string, sizes: number[]) {
   await writeFile(path(name), Buffer.concat([header, ...frames]));
 }
 
+// Browser tabs show Doodle, the dood every bot starts as; app icons keep the character.
+const favicon = await sharp(path("packages/ui-tokens/assets/favicon.svg")).png().toBuffer();
 for (const app of ["web", "www"]) {
   const publicDir = `apps/${app}/public`;
-  await png(rounded, `${publicDir}/favicon-16x16.png`, 16);
-  await png(rounded, `${publicDir}/favicon-32x32.png`, 32);
-  await png(rounded, `${publicDir}/favicon.png`, 128);
+  await png(favicon, `${publicDir}/favicon-16x16.png`, 16);
+  await png(favicon, `${publicDir}/favicon-32x32.png`, 32);
+  await png(favicon, `${publicDir}/favicon.png`, 128);
   await png(square, `${publicDir}/apple-touch-icon.png`, 180);
   await png(square, `${publicDir}/icon-192.png`, 192);
   await png(square, `${publicDir}/icon-512.png`, 512);
-  await ico(rounded, `${publicDir}/favicon.ico`, [16, 32, 48]);
+  await ico(favicon, `${publicDir}/favicon.ico`, [16, 32, 48]);
 }
 await mkdir(path("apps/www/public/brand"), { recursive: true });
 await png(rounded, "apps/www/public/brand/labradoodle-mark.png", 256);
