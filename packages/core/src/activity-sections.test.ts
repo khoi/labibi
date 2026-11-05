@@ -4,8 +4,8 @@ import { activityAttention, activitySections } from "./activity-sections.js";
 import { STUCK_WORK_NOTIFY_AFTER_MS } from "./stuck-work.js";
 
 const now = new Date().toISOString();
-const run = (botId: string, status: RunStatus, groupId: string | null = null, updatedAt = now) =>
-  ({ botId, groupId, status, updatedAt }) as const;
+const run = (threadId: string, status: RunStatus, updatedAt = now) =>
+  ({ threadId, status, updatedAt }) as const;
 
 it.each([
   ["waiting_input", false, "needs_attention"],
@@ -22,34 +22,30 @@ it.each([
 
 it("calls out a queue that has sat past the reminder", () => {
   const old = new Date(Date.now() - STUCK_WORK_NOTIFY_AFTER_MS).toISOString();
-  expect(activityAttention(run("bot", "queued", null, old))).toBe("needs_attention");
+  expect(activityAttention(run("bot", "queued", old))).toBe("needs_attention");
 });
 
 it("puts each conversation in one section", () => {
   const ask = run("marketing", "waiting_input");
-  const work = run("research", "running", "launch");
+  const work = run("launch", "running");
   const failedUnread = run("writer", "failed");
   const done = run("editor", "completed");
   const doneUnread = run("chief", "completed");
   const sections = activitySections({
     active: [ask, work],
     recent: [failedUnread, done, doneUnread],
-    bots: [
+    chats: [
       { id: "research", unread: true },
       { id: "writer", unread: true },
       { id: "editor", unread: false },
       { id: "chief", unread: true },
       { id: "marketing", unread: true },
-    ],
-    groups: [
       { id: "launch", unread: true },
-      { id: "quiet", unread: true },
     ],
   });
   expect(sections.attention).toEqual([ask, failedUnread]);
   expect(sections.working).toEqual([work]);
-  expect(sections.unreadBots.map((bot) => bot.id)).toEqual(["research", "chief"]);
-  expect(sections.unreadGroups.map((group) => group.id)).toEqual(["quiet"]);
+  expect(sections.unreadChats.map((chat) => chat.id)).toEqual(["research", "chief"]);
   expect(sections.recent).toEqual([done]);
 });
 
@@ -57,29 +53,29 @@ it("judges a chat by its latest run only", () => {
   const sections = activitySections({
     active: [],
     recent: [run("writer", "completed"), run("writer", "failed"), run("editor", "failed")],
-    bots: [
+    chats: [
       { id: "writer", unread: true },
       { id: "editor", unread: true },
       { id: "chief", unread: true },
     ],
-    groups: [],
   });
   expect(sections.attention).toEqual([run("editor", "failed")]);
   // A failure older than the fetched runs still leaves the chat under Unread.
-  expect(sections.unreadBots.map((bot) => bot.id)).toEqual(["writer", "chief"]);
+  expect(sections.unreadChats.map((chat) => chat.id)).toEqual(["writer", "chief"]);
 });
 
 it("lets live work speak for a chat over its older outcome", () => {
   const working = run("writer", "running");
-  const asking = run("launcher", "waiting_input", "launch");
+  const asking = run("launch", "waiting_input");
   const sections = activitySections({
-    active: [working, run("launcher", "running", "launch"), asking],
-    recent: [run("writer", "failed"), run("launcher", "failed", "launch")],
-    bots: [{ id: "writer", unread: true }],
-    groups: [{ id: "launch", unread: true }],
+    active: [working, run("launch", "running"), asking],
+    recent: [run("writer", "failed"), run("launch", "failed")],
+    chats: [
+      { id: "writer", unread: true },
+      { id: "launch", unread: true },
+    ],
   });
   expect(sections.attention).toEqual([asking]);
   expect(sections.working).toEqual([working]);
-  expect(sections.unreadBots).toEqual([]);
-  expect(sections.unreadGroups).toEqual([]);
+  expect(sections.unreadChats).toEqual([]);
 });

@@ -11,8 +11,6 @@ import {
 
 const run: RoutineRun = {
   id: "run-1",
-  botId: "bot-1",
-  groupId: null,
   status: "completed",
   error: null,
   createdAt: "2026-01-02T11:59:00Z",

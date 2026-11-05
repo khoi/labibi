@@ -10,7 +10,7 @@ import {
   connectorToolRequiresApproval,
   decisiveActionApprovalRules,
   isApprovalAskBlock,
-  isOwnerStartedRun,
+  isPersonStartedRun,
   isSecretAskBlock,
   newSiteOutcome,
   outboundSiteGate,
@@ -170,7 +170,7 @@ describe("resolveActionApprovalDetail", () => {
   });
 });
 
-describe("isOwnerStartedRun", () => {
+describe("isPersonStartedRun", () => {
   it.each([
     ["user", false, true],
     ["follow_up", true, true],
@@ -183,7 +183,7 @@ describe("isOwnerStartedRun", () => {
     ["resume", true, false],
     ["unknown", true, false],
   ])("treats %s (follow-up from user: %s) as owner-started: %s", (trigger, fromUser, expected) => {
-    expect(isOwnerStartedRun(trigger, fromUser)).toBe(expected);
+    expect(isPersonStartedRun(trigger, fromUser)).toBe(expected);
   });
 });
 

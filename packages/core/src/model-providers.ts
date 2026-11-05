@@ -1,4 +1,4 @@
-import type { Bot, ModelApiProtocol, ModelCatalogEntry } from "@labradoodle/contracts";
+import type { ModelApiProtocol, ModelCatalogEntry } from "@labradoodle/contracts";
 import {
   canonicalPiProviderId,
   DEFAULT_MODEL_MAX_TOKENS,
@@ -8,13 +8,6 @@ import {
   withConnectionName,
 } from "@labradoodle/contracts";
 import { listSearch } from "./list-search.js";
-
-/** Bots that pick their own model ignore the space default and its changes. */
-export function botsWithOwnModel<T extends Pick<Bot, "modelProvider" | "modelId">>(
-  bots: readonly T[],
-): T[] {
-  return bots.filter((bot) => Boolean(bot.modelProvider && bot.modelId));
-}
 
 /** Effort choices an OpenAI-compatible endpoint stores when reasoning is enabled. */
 export const COMPATIBLE_THINKING_LEVELS = [

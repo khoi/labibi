@@ -1,5 +1,5 @@
 import { disabledBuiltinToolSet } from "@labradoodle/contracts";
-import { isBackgroundRunTrigger, isOwnerStartedRun } from "@labradoodle/core";
+import { isBackgroundRunTrigger, isPersonStartedRun } from "@labradoodle/core";
 import { builtinAgentTools } from "./builtin-tools.js";
 import { selectCloudAgentTools } from "./cloud-agent-tools-select.js";
 import { selectMemoryTools } from "./memory-tools.js";
@@ -57,7 +57,7 @@ export function selectBuiltinToolsForRun(options: {
   userComputerScreen?: boolean;
 }) {
   const disabled = disabledBuiltinToolSet(options.disabledBuiltinTools);
-  const ownerStartedRun = isOwnerStartedRun(options.trigger, Boolean(options.followUpFromUser));
+  const ownerStartedRun = isPersonStartedRun(options.trigger, Boolean(options.followUpFromUser));
   return selectCloudAgentTools(
     selectMemoryTools(
       filterBuiltinToolsForRun(

@@ -97,20 +97,6 @@ export function snippetAroundMatch(text: string, query: string, maxLen = 120): s
   return `${prefix}${text.slice(start, end)}${suffix}`;
 }
 
-export type SearchThreadTarget =
-  | { botId: string; groupId?: undefined }
-  | { groupId: string; botId?: undefined };
-
-export function searchHitThreadTarget(hit: {
-  botId?: string;
-  groupId?: string;
-}): SearchThreadTarget {
-  if (Boolean(hit.botId) === Boolean(hit.groupId)) {
-    throw new Error("Search hit must target exactly one of a bot or group");
-  }
-  return hit.groupId ? { groupId: hit.groupId } : { botId: hit.botId! };
-}
-
 /**
  * One row per hit, unique per kind and every id. File hits carry the message they were sent in,
  * so files sent together share a message id; links in one message differ only by URL.
@@ -118,7 +104,7 @@ export function searchHitThreadTarget(hit: {
 export function searchHitListKey(hit: SearchHit): string {
   return [
     hit.kind,
-    hit.groupId ?? hit.botId ?? "",
+    hit.threadId,
     hit.messageId ?? "",
     hit.artifactId ?? "",
     hit.routineId ?? "",

@@ -1,9 +1,6 @@
-import type { Dood as DoodLook } from "@labradoodle/core";
+import { DOODLE_DOOD } from "@labradoodle/core";
 import { Dood } from "@labradoodle/ui-web";
 import { useEffect, useRef, useState } from "react";
-
-/** Doodle, the dood every bot starts as. */
-const DOODLE: DoodLook = { shape: "coil", color: "yellow", eyes: "round" };
 
 /** How far the eyes travel toward the pointer, in units of the dood's 24-unit box. */
 const REACH = 1.8;
@@ -52,7 +49,7 @@ export function WatchingDood({ size }: { size: number }) {
   }, []);
   return (
     <span ref={ref} className="inline-flex" data-testid="watching-dood">
-      <Dood dood={DOODLE} size={size} gaze={gaze} />
+      <Dood dood={DOODLE_DOOD} size={size} gaze={gaze} />
     </span>
   );
 }

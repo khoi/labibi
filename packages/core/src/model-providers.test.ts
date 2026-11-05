@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  botsWithOwnModel,
   canUseCompatibleModelAsDefault,
   chatModelChoices,
   clampCatalogThinkingLevel,
@@ -16,16 +15,6 @@ import {
   savedCompatibleModelIds,
   toggleEnabledModelId,
 } from "./model-providers.js";
-
-it("counts only bots that pick both a provider and a model", () => {
-  expect(
-    botsWithOwnModel([
-      { modelProvider: "anthropic", modelId: "claude-opus-5-5" },
-      { modelProvider: null, modelId: null },
-      { modelProvider: "openai-codex", modelId: null },
-    ]),
-  ).toHaveLength(1);
-});
 
 describe("popularModelProvidersFirst", () => {
   it("lists the popular providers in curated order first, then the rest by name", () => {

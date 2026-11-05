@@ -4,9 +4,6 @@ import { createComputerUpdates } from "./computer-updates.js";
 
 const update: ComputerUpdate = {
   id: "update-1",
-  botId: "bot-1",
-  name: "Writer",
-  mode: "team",
   action: "update",
   status: "running",
   stage: "saving",

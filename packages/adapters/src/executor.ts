@@ -17,7 +17,7 @@ import {
   expandSkillReferencesInPrompt,
   formatSkillRunPrompt,
   formatSkillsCatalogInstruction,
-  isOwnerStartedRun,
+  isPersonStartedRun,
   isTerminal,
   MISSING_MODEL_RUN_ERROR,
   MODEL_ACCESS_REQUIRED_RUN_ERROR,
@@ -1245,7 +1245,7 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
                 select: { role: true, blocks: true, threadId: true },
               })
             : null;
-        const ownerStartedRun = isOwnerStartedRun(run.trigger, sourceMessage?.role === "user");
+        const ownerStartedRun = isPersonStartedRun(run.trigger, sourceMessage?.role === "user");
         const acceptsImages =
           deps.runtime.describe().capabilities.scripted ||
           modelSeesImages ||

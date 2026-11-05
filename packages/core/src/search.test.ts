@@ -7,7 +7,6 @@ import {
   extractLinksFromText,
   matchesSearchQuery,
   searchHitListKey,
-  searchHitThreadTarget,
   snippetAroundMatch,
 } from "./search.js";
 
@@ -217,23 +216,13 @@ describe("search helpers", () => {
     const body = `needle${"a".repeat(112)}😀`;
     expect(snippetAroundMatch(`${body}tail`, "needle")).toBe(`${body}…`);
   });
-
-  it("uses groupId for group search message jumps", () => {
-    expect(searchHitThreadTarget({ groupId: "group-1" })).toEqual({ groupId: "group-1" });
-    expect(searchHitThreadTarget({ botId: "bot-1" })).toEqual({ botId: "bot-1" });
-  });
-
-  it("rejects ambiguous search hit targets", () => {
-    expect(() => searchHitThreadTarget({})).toThrow();
-    expect(() => searchHitThreadTarget({ botId: "bot-1", groupId: "group-1" })).toThrow();
-  });
 });
 
 function link(url: string, messageId = "message-1"): SearchHit {
   return {
     kind: "link",
-    botId: "bot-1",
-    botName: "Scout",
+    threadId: "thread-1",
+    chatTitle: "Scout",
     title: url,
     snippet: "match",
     messageId,
@@ -245,8 +234,8 @@ function link(url: string, messageId = "message-1"): SearchHit {
 function file(artifactId: string): SearchHit {
   return {
     kind: "file",
-    botId: "bot-1",
-    botName: "Scout",
+    threadId: "thread-1",
+    chatTitle: "Scout",
     title: `${artifactId}.png`,
     snippet: "image/png, 10 bytes",
     messageId: "message-1",

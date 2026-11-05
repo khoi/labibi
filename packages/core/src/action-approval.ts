@@ -171,10 +171,11 @@ function innerToolSlugs(args: unknown): string[] {
 }
 
 /**
- * A run the owner started: their own message or a follow-up they wrote.
- * Bot messages, channels, spawns, tickets, webhooks and routines are not, nor is anything new.
+ * A run a person started: their own message or a follow-up they wrote. It says nothing about
+ * workspace ownership. Bot messages, channels, spawns, tickets, webhooks and routines are not,
+ * nor is anything new.
  */
-export function isOwnerStartedRun(trigger: string, followUpFromUser: boolean): boolean {
+export function isPersonStartedRun(trigger: string, followUpFromUser: boolean): boolean {
   if (trigger === "follow_up") return followUpFromUser;
   return trigger === "user";
 }
