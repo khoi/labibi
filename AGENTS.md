@@ -1,3 +1,10 @@
+# Prototyping phase
+
+We need to aim for faster prototyping speed
+- Backward compatibility is not needed, we can delete all the data if we want 
+- Dont write tests
+- push work directly to main
+
 # AGENTS.md
 
 - This is a public repository: assume all tracked content and diffs are public. Never commit secrets, `.env` files, private URLs, personal/customer data, or real production data; use fake placeholders. Review `git status` and the staged diff before committing, and never force-add ignored files. If private data appears, stop and alert the maintainer.
