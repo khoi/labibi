@@ -446,7 +446,7 @@ async function renderUtterance(
           method: "POST",
           headers: {
             "content-type": "application/json",
-            origin: "rakazo://",
+            origin: "labradoodle://",
             ...requestContext.headers,
           },
           body: JSON.stringify({
@@ -606,7 +606,7 @@ async function playWithNativeAudio(bytes: Uint8Array, session?: HostedSession): 
   });
   const file = new File(
     Paths.cache,
-    `rakazo-voice-${Date.now()}.${speechClipType(bytes).extension}`,
+    `labradoodle-voice-${Date.now()}.${speechClipType(bytes).extension}`,
   );
   file.create({ overwrite: true });
   file.write(bytesToBase64(bytes), { encoding: "base64" });

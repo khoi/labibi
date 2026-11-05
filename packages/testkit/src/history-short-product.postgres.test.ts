@@ -32,7 +32,7 @@ describe.skipIf(!enabled)("short original product history", () => {
           response: { type: "text" as const, text: "ORBIT-731. Batch size 37; approval pending." },
         })),
       });
-      const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-short-history-"));
+      const dataDir = await mkdtemp(path.join(tmpdir(), "labradoodle-short-history-"));
       try {
         const { createApp } = await import("@labradoodle/api/app");
         const result = await runTrial(

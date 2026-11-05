@@ -130,7 +130,7 @@ export function signInWithPasskey(): Promise<boolean> {
     if (!passkeys) throw new Error(t("Could not continue"));
     const options = await fetchMobileJson<RequestOptions>(
       `${flow.apiBase}/api/auth/passkey/generate-authenticate-options`,
-      { ...WITHOUT_COOKIE_JAR, headers: { origin: "rakazo://" } },
+      { ...WITHOUT_COOKIE_JAR, headers: { origin: "labradoodle://" } },
       {} as RequestOptions,
     );
     if (!options.response.ok || options.invalidJson)
@@ -151,7 +151,7 @@ export function signInWithPasskey(): Promise<boolean> {
       {
         ...WITHOUT_COOKIE_JAR,
         method: "POST",
-        headers: { "content-type": "application/json", origin: "rakazo://", cookie },
+        headers: { "content-type": "application/json", origin: "labradoodle://", cookie },
         body: JSON.stringify({ response: credential }),
       },
       {},
@@ -181,7 +181,7 @@ export function addPasskey(): Promise<boolean> {
     flow.requireCurrent();
     const options = await fetchMobileJson<CreationOptions>(
       `${flow.apiBase}/api/auth/passkey/generate-register-options`,
-      { ...WITHOUT_COOKIE_JAR, headers: { origin: "rakazo://", ...headers } },
+      { ...WITHOUT_COOKIE_JAR, headers: { origin: "labradoodle://", ...headers } },
       {} as CreationOptions,
     );
     if (!options.response.ok || options.invalidJson)
@@ -205,7 +205,7 @@ export function addPasskey(): Promise<boolean> {
         method: "POST",
         headers: {
           "content-type": "application/json",
-          origin: "rakazo://",
+          origin: "labradoodle://",
           cookie,
           ...headers,
         },
@@ -225,7 +225,7 @@ async function passkeyRequest<T>(path: string, body?: unknown): Promise<T> {
     {
       method: body === undefined ? "GET" : "POST",
       headers: {
-        origin: "rakazo://",
+        origin: "labradoodle://",
         ...(body === undefined ? {} : { "content-type": "application/json" }),
         ...(await authHeaders()),
       },
@@ -273,7 +273,7 @@ async function passkeyOfferDue(userId: string): Promise<boolean> {
     session?: { createdAt?: string };
   } | null>(
     `${currentApiBase()}/api/auth/get-session`,
-    { headers: { origin: "rakazo://", ...(await authHeaders()) } },
+    { headers: { origin: "labradoodle://", ...(await authHeaders()) } },
     null,
   );
   if (!response.ok || body?.user?.id !== userId || !body.user.createdAt || !body.session?.createdAt)

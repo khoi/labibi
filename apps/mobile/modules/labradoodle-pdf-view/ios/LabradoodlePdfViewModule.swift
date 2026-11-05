@@ -4,7 +4,7 @@ import PDFKit
 /** The system PDF viewer, so a PDF reads in the app with zoom and search like Files. */
 public final class LabradoodlePdfViewModule: Module {
   public func definition() -> ModuleDefinition {
-    Name("RakazoPdfView")
+    Name("LabradoodlePdfView")
 
     View(LabradoodlePdfView.self) {
       Events("onLoadError")

@@ -169,7 +169,7 @@ export function AppConnectCard({
         displayName: block.name,
       });
       if (started.authorizationUrl) {
-        window.open(started.authorizationUrl, "rakazo-app-connect", "popup,width=560,height=720");
+        window.open(started.authorizationUrl, "labradoodle-app-connect", "popup,width=560,height=720");
       }
       const result = await waitForConnection(
         started.connectionId,

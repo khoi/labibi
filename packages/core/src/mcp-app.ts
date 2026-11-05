@@ -124,7 +124,7 @@ const SHELL_CSP =
  * The shell passes JSON-RPC both ways and marks a view's message with the latest gesture, if
  * it is still fresh.
  */
-export const MCP_APP_SHELL_HTML = `<!DOCTYPE html><meta http-equiv="Content-Security-Policy" content="${SHELL_CSP}"><meta name="referrer" content="no-referrer"><meta name="viewport" content="width=device-width, initial-scale=1"><style>html,body{margin:0;background:transparent}iframe{display:block;width:100%;height:100%;border:0;background:transparent}html,body{height:100%}</style><iframe id="app" title="App" sandbox="allow-scripts allow-forms" referrerpolicy="no-referrer"></iframe><!--rakazo-app-boot--><script>
+export const MCP_APP_SHELL_HTML = `<!DOCTYPE html><meta http-equiv="Content-Security-Policy" content="${SHELL_CSP}"><meta name="referrer" content="no-referrer"><meta name="viewport" content="width=device-width, initial-scale=1"><style>html,body{margin:0;background:transparent}iframe{display:block;width:100%;height:100%;border:0;background:transparent}html,body{height:100%}</style><iframe id="app" title="App" sandbox="allow-scripts allow-forms" referrerpolicy="no-referrer"></iframe><!--labradoodle-app-boot--><script>
 (() => {
   const frame = document.getElementById("app");
   const native = Boolean(window.ReactNativeWebView);
@@ -133,7 +133,7 @@ export const MCP_APP_SHELL_HTML = `<!DOCTYPE html><meta http-equiv="Content-Secu
   let key = "", gesture = 0, gestureAt = 0;
   const guard = () => {
     key = Array.from(crypto.getRandomValues(new Uint32Array(4)), (n) => n.toString(36)).join("");
-    return \`<script>(() => { const up = parent, key = "\${key}"; document.currentScript.remove(); const apply = Reflect.apply, repeat = Object.getOwnPropertyDescriptor(KeyboardEvent.prototype, "repeat").get; const tell = () => up.postMessage({ type: "rakazo-app:gesture", key }, "*"); addEventListener("pointerup", (event) => { if (event.isTrusted) tell(); }, true); addEventListener("keydown", (event) => { if (event.isTrusted && !apply(repeat, event, [])) tell(); }, true); })();</\${"script"}>\`;
+    return \`<script>(() => { const up = parent, key = "\${key}"; document.currentScript.remove(); const apply = Reflect.apply, repeat = Object.getOwnPropertyDescriptor(KeyboardEvent.prototype, "repeat").get; const tell = () => up.postMessage({ type: "labradoodle-app:gesture", key }, "*"); addEventListener("pointerup", (event) => { if (event.isTrusted) tell(); }, true); addEventListener("keydown", (event) => { if (event.isTrusted && !apply(repeat, event, [])) tell(); }, true); })();</\${"script"}>\`;
   };
   const load = (app) => {
     if (!app || typeof app.head !== "string" || typeof app.body !== "string") return;
@@ -145,21 +145,21 @@ export const MCP_APP_SHELL_HTML = `<!DOCTYPE html><meta http-equiv="Content-Secu
     const data = event.data;
     if (event.source === frame.contentWindow) {
       const active = navigator.userActivation ? navigator.userActivation.isActive : false;
-      if (data && data.type === "rakazo-app:gesture") {
+      if (data && data.type === "labradoodle-app:gesture") {
         if (key && data.key === key && active) { gesture += 1; gestureAt = Date.now(); }
         return;
       }
       if (!rpc(data)) return;
       const fresh = active && gesture > 0 && Date.now() - gestureAt <= GESTURE_WINDOW_MS ? key + ":" + gesture : null;
-      up({ type: "rakazo-app:view", message: data, gesture: fresh });
+      up({ type: "labradoodle-app:view", message: data, gesture: fresh });
       return;
     }
     const fromHost = native ? event.source === window : event.source === parent && parent !== window;
     if (!fromHost || !data || typeof data !== "object") return;
-    if (data.type === "rakazo-app:load") load(data);
-    else if (data.type === "rakazo-app:host" && rpc(data.message)) frame.contentWindow.postMessage(data.message, "*");
+    if (data.type === "labradoodle-app:load") load(data);
+    else if (data.type === "labradoodle-app:host" && rpc(data.message)) frame.contentWindow.postMessage(data.message, "*");
   });
-  if (window.__rakazoApp) load(window.__rakazoApp);
+  if (window.__labradoodleApp) load(window.__labradoodleApp);
 })();
 </script>`;
 
@@ -171,8 +171,8 @@ export function mcpAppShellDocument(app: { head: string; body: string }): string
     .replace(/\u2029/g, "\\u2029");
   // A function, so `$&` and the like in the app's own code are not read as replacement patterns.
   return MCP_APP_SHELL_HTML.replace(
-    "<!--rakazo-app-boot-->",
-    () => `<script>window.__rakazoApp=${boot};</script>`,
+    "<!--labradoodle-app-boot-->",
+    () => `<script>window.__labradoodleApp=${boot};</script>`,
   );
 }
 
@@ -309,7 +309,7 @@ export function createMcpAppHost(options: McpAppHostOptions) {
       teardowns += 1;
       options.send({
         jsonrpc: "2.0",
-        id: `rakazo-teardown-${teardowns}`,
+        id: `labradoodle-teardown-${teardowns}`,
         method: "ui/resource-teardown",
         params: {},
       });

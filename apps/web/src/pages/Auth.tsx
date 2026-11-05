@@ -572,7 +572,7 @@ export function AuthFrame({
   return (
     <div
       className="flex min-h-full flex-col bg-background text-foreground"
-      data-rakazo-surface="auth"
+      data-labradoodle-surface="auth"
     >
       <div className="app-drag flex items-center gap-2 px-5 py-[18px]">
         <WindowChrome />

@@ -6,7 +6,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: pl\n"
-"Project-Id-Version: rakazo-web\n"
+"Project-Id-Version: labradoodle-web\n"
 "Report-Msgid-Bugs-To: \n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
@@ -5029,8 +5029,8 @@ msgid "Queued"
 msgstr "W kolejce"
 
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
-msgid "rakazo-shared and IDs starting with bot- are reserved for Labradoodle."
-msgstr "Nazwy rakazo-shared i identyfikatory zaczynające się od bot- są zastrzeżone dla Labradoodle."
+msgid "labradoodle-shared and IDs starting with bot- are reserved for Labradoodle."
+msgstr "Nazwy labradoodle-shared i identyfikatory zaczynające się od bot- są zastrzeżone dla Labradoodle."
 
 #: src/pages/shell/message-hover-actions.tsx
 msgid "React"

@@ -106,7 +106,7 @@ export const e2b: Sandbox = {
     {
       heading: "What a Labradoodle computer costs on E2B",
       paragraphs: [
-        `${METHOD_NOTE} Labradoodle's \`rakazo-computer\` template is exactly that size.`,
+        `${METHOD_NOTE} Labradoodle's \`labradoodle-computer\` template is exactly that size.`,
       ],
       table: {
         caption: "One 2 vCPU / 4 GB computer on E2B",
@@ -174,7 +174,7 @@ export const e2b: Sandbox = {
       bullets: [
         "On Hobby a session lasts at most one hour and 20 sandboxes can run at once. Pro raises that to 24 hours and 100.",
         "Labradoodle doesn't expose a region choice, a custom image, or E2B's own snapshots, volumes or network rules.",
-        `Computers use the \`rakazo-computer\` template at 2 vCPU and 4 GB once you build it. Before that, they use E2B's stock desktop at ${E2B_STOCK_SIZE.vcpus} vCPU and ${E2B_STOCK_SIZE.gb} GB. An existing computer keeps the size it was created with until it is replaced.`,
+        `Computers use the \`labradoodle-computer\` template at 2 vCPU and 4 GB once you build it. Before that, they use E2B's stock desktop at ${E2B_STOCK_SIZE.vcpus} vCPU and ${E2B_STOCK_SIZE.gb} GB. An existing computer keeps the size it was created with until it is replaced.`,
         "Like other hosted providers that bill while running, a computer is paused after two hours of continuous uptime by default unless a bot is still working on it or you are in control.",
         "Public status pages recorded short E2B outages in 2026, such as a few minutes of failed sandbox starts in March and August. Labradoodle keeps the saved workspace, so a failed start loses no work.",
       ],

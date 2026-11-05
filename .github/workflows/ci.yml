@@ -64,7 +64,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
         env:
-          DATABASE_URL: postgres://rakazo:rakazo@127.0.0.1:5433/rakazo
+          DATABASE_URL: postgres://labradoodle:labradoodle@127.0.0.1:5433/labradoodle
           BETTER_AUTH_SECRET: ci-build-auth-secret-at-least-32-characters
           ENCRYPTION_KEY: ci-build-encryption-key-at-least-32-characters
       - name: Electron smoke
@@ -111,7 +111,7 @@ jobs:
           git diff --exit-code -- apps/web/src/locales
       - run: pnpm db:generate
         env:
-          DATABASE_URL: postgres://rakazo:rakazo@127.0.0.1:5433/rakazo
+          DATABASE_URL: postgres://labradoodle:labradoodle@127.0.0.1:5433/labradoodle
       # Pull requests reuse main's typecheck results for packages whose inputs they leave unchanged.
       # Main starts with an empty cache, so it typechecks everything before a deploy.
       - name: Restore typecheck cache
@@ -183,7 +183,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:generate
         env:
-          DATABASE_URL: postgres://rakazo:rakazo@127.0.0.1:5433/rakazo
+          DATABASE_URL: postgres://labradoodle:labradoodle@127.0.0.1:5433/labradoodle
       - name: Install age for the encrypted backup round trip
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends age
       - name: Unit tests
@@ -237,7 +237,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:generate
         env:
-          DATABASE_URL: postgres://rakazo:rakazo@127.0.0.1:5433/rakazo
+          DATABASE_URL: postgres://labradoodle:labradoodle@127.0.0.1:5433/labradoodle
       - run: pnpm --filter @labradoodle/desktop build
       - run: pnpm exec vitest run packages/adapters/src/host-computer.test.ts packages/adapters/src/desktop-sandbox-command.test.ts packages/adapters/src/desktop-sandbox-paths.test.ts packages/adapters/src/desktop-workspace-cleanup.test.ts packages/adapters/src/computer-support.test.ts apps/desktop/src/host-computer.test.ts
       - name: Screen control on a real Windows desktop
@@ -473,7 +473,7 @@ jobs:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           if [[ -z "$EXPO_TOKEN" ]]; then
-            echo "Add an EXPO_TOKEN repository secret with access to the inbox-zero/rakazo Expo project." >&2
+            echo "Add an EXPO_TOKEN repository secret with access to the inbox-zero/labradoodle Expo project." >&2
             exit 1
           fi
 
@@ -581,10 +581,10 @@ jobs:
           test -n "$SSH_PRIVATE_KEY"
           test -n "$SSH_KNOWN_HOSTS"
           install -d -m 700 "$HOME/.ssh"
-          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/rakazo-production"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/labradoodle-production"
           printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
-          chmod 600 "$HOME/.ssh/rakazo-production" "$HOME/.ssh/known_hosts"
-          ssh-keygen -y -f "$HOME/.ssh/rakazo-production" >/dev/null
+          chmod 600 "$HOME/.ssh/labradoodle-production" "$HOME/.ssh/known_hosts"
+          ssh-keygen -y -f "$HOME/.ssh/labradoodle-production" >/dev/null
 
       - name: Deploy successful main revision
         env:
@@ -594,7 +594,7 @@ jobs:
           test -n "$SSH_HOST"
           test -n "$SSH_USER"
           ssh -F /dev/null \
-            -i "$HOME/.ssh/rakazo-production" \
+            -i "$HOME/.ssh/labradoodle-production" \
             -o BatchMode=yes \
             -o ConnectTimeout=15 \
             -o IdentitiesOnly=yes \

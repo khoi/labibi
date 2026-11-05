@@ -62,7 +62,7 @@ export const docker: Sandbox = {
       heading: "What Docker computers cost",
       paragraphs: [
         "Docker Engine and Labradoodle are free and open source, so the cost is the machine they run on. A server costs the same whether bots work one hour a day or all day, which is the main difference from hosted sandboxes that bill by the second.",
-        `Each computer is capped at ${DOCKER_MEMORY.computerGb} GB of memory and 2 CPUs by default. Most of the time a bot's desktop is waiting on the model, so memory usually runs out before CPU does. The table assumes about ${DOCKER_MEMORY.rakazoGb} GB for Labradoodle itself and its database, and ${DOCKER_MEMORY.computerGb} GB for each computer.`,
+        `Each computer is capped at ${DOCKER_MEMORY.computerGb} GB of memory and 2 CPUs by default. Most of the time a bot's desktop is waiting on the model, so memory usually runs out before CPU does. The table assumes about ${DOCKER_MEMORY.labradoodleGb} GB for Labradoodle itself and its database, and ${DOCKER_MEMORY.computerGb} GB for each computer.`,
       ],
       table: {
         caption: "Servers for a self-hosted Labradoodle with Docker computers",
@@ -82,7 +82,7 @@ export const docker: Sandbox = {
       },
       bullets: [
         `For comparison, one 2 vCPU / 4 GB computer working 4 hours a workday costs ${usd(monthly(RATES.e2b, WORKDAY_HOURS))} on [E2B](/sandboxes/e2b/) or [Daytona](/sandboxes/daytona/), and [Boat](/sandboxes/boat/)'s minimum is $${BOAT.minimum}. A ${euro(SERVERS.hetznerCx43)} server runs Labradoodle and several computers for less, but you look after it.`,
-        "Computers share the server's CPU. If several bots run heavy pages at once, raise `RAKAZO_COMPUTER_CPUS` and `RAKAZO_COMPUTER_MEMORY` or pick a bigger server.",
+        "Computers share the server's CPU. If several bots run heavy pages at once, raise `LABRADOODLE_COMPUTER_CPUS` and `LABRADOODLE_COMPUTER_MEMORY` or pick a bigger server.",
         "Docker Engine on Linux is free for any use. On a Mac or Windows PC, Docker Desktop is free for personal use and companies under 250 employees and $10 million revenue, and costs $9 to $24 per user a month otherwise. OrbStack is $8 per user a month for commercial use.",
         "You still pay your model provider, unless you run models yourself.",
       ],
@@ -114,7 +114,7 @@ export const docker: Sandbox = {
       ],
       bullets: [
         "A container shares your server's kernel. It is not a virtual machine, so a kernel bug could let a process escape it. If that matters to you, use a hosted provider or Kubernetes with gVisor or Kata.",
-        "Restricted networking gives computers the public internet but blocks your LAN, the Docker host and cloud metadata addresses. It needs Linux Docker Engine with iptables and the host rules from `infra/compose/restrict-computer-egress.sh`. By default the stack checks for those rules and falls back to open networking without them, so a server without the rules lets bots reach your LAN. Set `SANDBOX_COMPUTER_EGRESS=restricted` to refuse to start computers instead. Docker Desktop for Mac or Windows, rootless Docker and nftables hosts can't use restricted networking. The [Docker computers guide](https://github.com/elie222/rakazo/blob/main/docs/self-host-docker-computers.md) has the details.",
+        "Restricted networking gives computers the public internet but blocks your LAN, the Docker host and cloud metadata addresses. It needs Linux Docker Engine with iptables and the host rules from `infra/compose/restrict-computer-egress.sh`. By default the stack checks for those rules and falls back to open networking without them, so a server without the rules lets bots reach your LAN. Set `SANDBOX_COMPUTER_EGRESS=restricted` to refuse to start computers instead. Docker Desktop for Mac or Windows, rootless Docker and nftables hosts can't use restricted networking. The [Docker computers guide](https://github.com/khoi/labibi/blob/main/docs/self-host-docker-computers.md) has the details.",
         "There is no per-domain allowlist. A bot can reach any public website.",
         "Anyone who controls the supervisor controls Docker on that machine, which is why it stays on the internal network behind its own token.",
       ],
@@ -128,7 +128,7 @@ export const docker: Sandbox = {
         "Install Docker Engine 26 or newer with the Compose plugin on the machine that will run Labradoodle.",
         "Run the installer from the [self-hosting guide](/docs/self-host/). It writes a `.env` with random secrets, including the `SANDBOX_SUPERVISOR_TOKEN` the supervisor needs, and starts Labradoodle with `SANDBOX_PROVIDER=docker`.",
         "On Linux Docker Engine, let the installer apply the restricted-networking rules when it asks for sudo, or run `sudo bash infra/compose/restrict-computer-egress.sh` later.",
-        "Optionally change the limits with `RAKAZO_COMPUTER_MEMORY`, `RAKAZO_COMPUTER_CPUS` and `RAKAZO_COMPUTER_PIDS_LIMIT`, or share host folders with `SANDBOX_COMPUTER_MOUNTS`, as described in [Docker computers](/docs/self-host-docker-computers/).",
+        "Optionally change the limits with `LABRADOODLE_COMPUTER_MEMORY`, `LABRADOODLE_COMPUTER_CPUS` and `LABRADOODLE_COMPUTER_PIDS_LIMIT`, or share host folders with `SANDBOX_COMPUTER_MOUNTS`, as described in [Docker computers](/docs/self-host-docker-computers/).",
         "Sign up, open a bot and open its computer to check that the desktop comes up.",
       ],
     },

@@ -1,5 +1,5 @@
 /** The repository a stock Labradoodle deployment tracks. */
-export const OFFICIAL_REPO_URL = "https://github.com/elie222/rakazo";
+export const OFFICIAL_REPO_URL = "https://github.com/khoi/labibi";
 export const DEFAULT_UPDATE_BRANCH = "main";
 export const DEFAULT_UPDATE_REMOTE = "origin";
 
@@ -80,7 +80,7 @@ function normalizeRepoPath(raw: string): string | null {
   return segments.join("/");
 }
 
-/** `github.com/elie222/rakazo` for every spelling of the same remote, for comparison only. */
+/** `github.com/khoi/labibi` for every spelling of the same remote, for comparison only. */
 export function repoIdentity(url: string): string | null {
   const normalized = normalizeRepoUrl(url);
   if ("error" in normalized) return null;
@@ -237,7 +237,7 @@ export type RestartSupervisor =
   | { kind: "systemd" | "pm2" | "declared"; label: string }
   | { kind: "none"; label: null };
 
-export const RESTART_SUPERVISOR_ENV = "RAKAZO_UPDATE_RESTART_SUPERVISOR";
+export const RESTART_SUPERVISOR_ENV = "LABRADOODLE_UPDATE_RESTART_SUPERVISOR";
 
 /**
  * Whether something outside this process will start it again after it exits. Docker restart

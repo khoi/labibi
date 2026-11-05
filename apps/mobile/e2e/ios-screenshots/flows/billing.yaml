@@ -1,11 +1,11 @@
-appId: com.rakazo.app
+appId: com.labradoodle.app
 name: Billing
 ---
 - runFlow:
     file: ../subflows/sign-in.yaml
     env:
-      RAKAZO_ACTIVE_EMAIL: ${RAKAZO_SCREENSHOT_EMAIL}
-- openLink: "rakazo:///billing"
+      LABRADOODLE_ACTIVE_EMAIL: ${LABRADOODLE_SCREENSHOT_EMAIL}
+- openLink: "labradoodle:///billing"
 - extendedWaitUntil:
     visible: ".*Renews.*|.*Plan.*"
     timeout: 15000
@@ -19,14 +19,14 @@ name: Billing
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 02-billing-tiers
-- openLink: "rakazo:///wallet"
+- openLink: "labradoodle:///wallet"
 - extendedWaitUntil:
     visible: "Disconnect"
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 03-wallet
-- openLink: "rakazo:///spending-limit"
+- openLink: "labradoodle:///spending-limit"
 - extendedWaitUntil:
     visible: "Amount.*"
     timeout: 15000

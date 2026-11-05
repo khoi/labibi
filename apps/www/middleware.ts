@@ -9,8 +9,8 @@ import {
 
 const VARY_HEADER = "Accept, Accept-Encoding";
 const APEX_ORIGIN = "https://labradoodle.com";
-const REDIRECT_HOSTS = new Set(["www.labradoodle.com", "rakazo.com", "www.rakazo.com"]);
-const LEGACY_BLOG_PATH = "/blog/openclaw-vs-hermes-vs-rakazo/";
+const REDIRECT_HOSTS = new Set(["www.labradoodle.com", "labradoodle.com", "www.labradoodle.com"]);
+const LEGACY_BLOG_PATH = "/blog/openclaw-vs-hermes-vs-labradoodle/";
 const BLOG_PATH = "/blog/openclaw-vs-hermes-vs-labradoodle/";
 
 export const config = {

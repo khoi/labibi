@@ -67,7 +67,7 @@ it("runs a page from when its card nears view until newer previews push it out",
       const source = cards()[index]!.querySelector("iframe")!.contentWindow;
       window.dispatchEvent(
         new MessageEvent("message", {
-          data: { type: "rakazo-page:height", height: 300 },
+          data: { type: "labradoodle-page:height", height: 300 },
           source,
         }),
       );

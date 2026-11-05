@@ -24,7 +24,7 @@ settings needed. Do not disable authentication or URL validation to bypass the e
 ```
 
 Review proposed commands before running them. If the guide does not resolve the error,
-[report a bug](https://github.com/elie222/rakazo/issues) with the error code, version,
+[report a bug](https://github.com/khoi/labibi/issues) with the error code, version,
 installation method, and steps to reproduce. Remove secrets and personal information first.
 
 ## MCP OAuth redirect mismatch

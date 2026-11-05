@@ -138,7 +138,7 @@ describePostgres("shared spaces: invites and membership (PostgreSQL)", () => {
         screenProxySecret: "fake-test-secret",
         sandboxProvider: "fake",
       },
-      dataDir: "/tmp/rakazo-shared-spaces-test",
+      dataDir: "/tmp/labradoodle-shared-spaces-test",
     } as unknown as RouterDeps;
     // As the app does, so domain errors answer with their own status.
     handler = new RPCHandler(createRouter(deps), {

@@ -10,19 +10,19 @@ const resources = resolve(
   "modules/labradoodle-notifications/android/src/main/res",
 );
 const keys = [
-  "rakazo_channel_live",
-  "rakazo_channel_messages",
-  "rakazo_channel_scheduled",
-  "rakazo_channel_attention",
-  "rakazo_live_one",
-  "rakazo_live_many",
-  "rakazo_live_working",
-  "rakazo_scheduled_title",
-  "rakazo_replied_group",
-  "rakazo_replied",
-  "rakazo_attention_failed",
-  "rakazo_attention_takeover",
-  "rakazo_attention_input",
+  "labradoodle_channel_live",
+  "labradoodle_channel_messages",
+  "labradoodle_channel_scheduled",
+  "labradoodle_channel_attention",
+  "labradoodle_live_one",
+  "labradoodle_live_many",
+  "labradoodle_live_working",
+  "labradoodle_scheduled_title",
+  "labradoodle_replied_group",
+  "labradoodle_replied",
+  "labradoodle_attention_failed",
+  "labradoodle_attention_takeover",
+  "labradoodle_attention_input",
 ];
 
 const resourceDirectories = {

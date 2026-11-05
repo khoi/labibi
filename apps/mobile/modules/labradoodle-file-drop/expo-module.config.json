@@ -1,7 +1,7 @@
 {
   "platforms": ["android", "apple"],
   "android": {
-    "modules": ["com.rakazo.filedrop.LabradoodleFileDropModule"]
+    "modules": ["com.labradoodle.filedrop.LabradoodleFileDropModule"]
   },
   "apple": {
     "modules": ["LabradoodleFileDropModule"]

@@ -276,12 +276,12 @@ function messagingDeps(
       addresses: { sendblue: "+15550001111" },
       openSignup: false,
     },
-    dataDir: "/tmp/rakazo-router-test",
+    dataDir: "/tmp/labradoodle-router-test",
   } as unknown as RouterDeps;
   const actor = {
     spaceId: "ws-1",
     userId: "user-1",
-    email: "user@rakazo.test",
+    email: "user@labradoodle.test",
     isDeploymentOwner: false,
   } satisfies Actor;
   return {

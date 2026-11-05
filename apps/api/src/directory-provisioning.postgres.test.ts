@@ -36,7 +36,7 @@ describePostgres("directory provisioning over SCIM (PostgreSQL)", () => {
   };
 
   beforeAll(async () => {
-    dataDir = await mkdtemp(join(tmpdir(), "rakazo-directory-"));
+    dataDir = await mkdtemp(join(tmpdir(), "labradoodle-directory-"));
     handles = await createApp({
       databaseUrl: databaseUrl!,
       dataDir,

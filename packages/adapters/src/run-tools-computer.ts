@@ -453,7 +453,7 @@ export const computerTools: ToolHandlers = {
                   "bash",
                   "-c",
                   BACKGROUND_WORK_LAUNCH,
-                  "rakazo-background-launch",
+                  "labradoodle-background-launch",
                   // Marker id must match sleepComputerIfIdle's probe (DB id), not ComputerRef.id
                   // (providerRef via toComputerRef). Scope launches to this run for cancel teardown.
                   ctx.computer.stored.id,

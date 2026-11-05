@@ -47,7 +47,7 @@ function routerDeps(prisma: PrismaClient) {
       screenProxySecret: "fake-test-secret",
       sandboxProvider: "fake",
     },
-    dataDir: "/tmp/rakazo-router-test",
+    dataDir: "/tmp/labradoodle-router-test",
   } as unknown as RouterDeps;
 }
 

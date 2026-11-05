@@ -1,36 +1,36 @@
 -- Least-privilege runtime role and row-level security for user content.
 --
 -- Migrations keep running as the owner role. The app connects as a login role
--- that is a member of rakazo_app: DML on the app tables only, no CREATE on the
+-- that is a member of labradoodle_app: DML on the app tables only, no CREATE on the
 -- schema, no superuser, no BYPASSRLS. `pnpm db:migrate` creates that login from
--- DATABASE_URL and grants it rakazo_app (see apps/api/src/cli/provision-database.ts).
+-- DATABASE_URL and grants it labradoodle_app (see apps/api/src/cli/provision-database.ts).
 --
 -- Table owners and superusers bypass these policies, so an install that still
 -- connects the app as the owner keeps working unchanged until it switches.
 
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'rakazo_app') THEN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'labradoodle_app') THEN
     BEGIN
-      CREATE ROLE rakazo_app NOLOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION;
+      CREATE ROLE labradoodle_app NOLOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION;
     EXCEPTION WHEN insufficient_privilege THEN
-      RAISE WARNING 'Cannot create role rakazo_app (the migration role lacks CREATEROLE). Create it with NOLOGIN NOBYPASSRLS and rerun the grants in this migration; until then the app must connect as the owner and row-level security is not enforced.';
+      RAISE WARNING 'Cannot create role labradoodle_app (the migration role lacks CREATEROLE). Create it with NOLOGIN NOBYPASSRLS and rerun the grants in this migration; until then the app must connect as the owner and row-level security is not enforced.';
     END;
   END IF;
 
-  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'rakazo_app') THEN
-    EXECUTE format('GRANT CONNECT ON DATABASE %I TO rakazo_app', current_database());
-    GRANT USAGE ON SCHEMA public TO rakazo_app;
-    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO rakazo_app;
-    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO rakazo_app;
-    REVOKE ALL ON TABLE "_prisma_migrations" FROM rakazo_app;
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'labradoodle_app') THEN
+    EXECUTE format('GRANT CONNECT ON DATABASE %I TO labradoodle_app', current_database());
+    GRANT USAGE ON SCHEMA public TO labradoodle_app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO labradoodle_app;
+    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO labradoodle_app;
+    REVOKE ALL ON TABLE "_prisma_migrations" FROM labradoodle_app;
     -- Append-only: inserted and, past retention, deleted, never rewritten.
-    REVOKE UPDATE ON TABLE "security_events" FROM rakazo_app;
+    REVOKE UPDATE ON TABLE "security_events" FROM labradoodle_app;
     -- Tables created by later migrations (run by this same owner role).
     ALTER DEFAULT PRIVILEGES IN SCHEMA public
-      GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO rakazo_app;
+      GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO labradoodle_app;
     ALTER DEFAULT PRIVILEGES IN SCHEMA public
-      GRANT USAGE, SELECT ON SEQUENCES TO rakazo_app;
+      GRANT USAGE, SELECT ON SEQUENCES TO labradoodle_app;
   END IF;
 END $$;
 

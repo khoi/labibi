@@ -1,18 +1,18 @@
-appId: com.rakazo.app
+appId: com.labradoodle.app
 name: Workspace
 ---
 - runFlow:
     file: ../subflows/sign-in.yaml
     env:
-      RAKAZO_ACTIVE_EMAIL: ${RAKAZO_SCREENSHOT_EMAIL}
-- openLink: "rakazo:///approvals"
+      LABRADOODLE_ACTIVE_EMAIL: ${LABRADOODLE_SCREENSHOT_EMAIL}
+- openLink: "labradoodle:///approvals"
 - extendedWaitUntil:
     visible: ".*example.com.*"
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 01-approval-rules
-- openLink: "rakazo:///vault"
+- openLink: "labradoodle:///vault"
 - extendedWaitUntil:
     visible: ".*deploy_token.*"
     timeout: 15000
@@ -38,21 +38,21 @@ name: Workspace
     timeout: 3000
 - takeScreenshot: 06-vault-new-card
 - tapOn: "Cancel"
-- openLink: "rakazo:///archived-bots"
+- openLink: "labradoodle:///archived-bots"
 - extendedWaitUntil:
     visible: ".*Archived fixture.*"
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 07-archived-bots
-- openLink: "rakazo:///space?spaceId=${RAKAZO_SCREENSHOT_TEAM_SPACE_ID}"
+- openLink: "labradoodle:///space?spaceId=${LABRADOODLE_SCREENSHOT_TEAM_SPACE_ID}"
 - extendedWaitUntil:
     visible: ".*Customize.*"
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 08-space-settings
-- openLink: "rakazo:///space-members?spaceId=${RAKAZO_SCREENSHOT_TEAM_SPACE_ID}"
+- openLink: "labradoodle:///space-members?spaceId=${LABRADOODLE_SCREENSHOT_TEAM_SPACE_ID}"
 - extendedWaitUntil:
     visible: "Owner"
     timeout: 15000

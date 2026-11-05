@@ -76,7 +76,7 @@ describePostgres("Team Computer takeover recovery (PostgreSQL)", () => {
   ] as const)(
     "does not save a half-restored replacement over the last good save (next %s)",
     async (next) => {
-      const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-unrestored-"));
+      const dataDir = await mkdtemp(path.join(tmpdir(), "labradoodle-unrestored-"));
       const sandbox = new FakeSandboxProvider();
       const home = new LocalAgentHomeStore(dataDir);
       const deps = {
@@ -278,7 +278,7 @@ describePostgres("Team Computer takeover recovery (PostgreSQL)", () => {
   it.each(["before", "during"] as const)(
     "does not save a run's export when a start that replaces and restores the machine began %s it",
     async (when) => {
-      const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-run-save-aba-"));
+      const dataDir = await mkdtemp(path.join(tmpdir(), "labradoodle-run-save-aba-"));
       const sandbox = new FakeSandboxProvider();
       const home = new LocalAgentHomeStore(dataDir);
       const deps = {
@@ -379,7 +379,7 @@ describePostgres("Team Computer takeover recovery (PostgreSQL)", () => {
   );
 
   it("does not let a stale-start reclaim activate a machine the start marked meanwhile", async () => {
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-reclaim-marked-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "labradoodle-reclaim-marked-"));
     const sandbox = new FakeSandboxProvider();
     const home = new LocalAgentHomeStore(dataDir);
     const deps = {
@@ -451,7 +451,7 @@ describePostgres("Team Computer takeover recovery (PostgreSQL)", () => {
 
   it("updates under its maintenance while a later run waits, but not while a run holds a lease", async () => {
     const { spaceId, botId, threadId, userId } = identity;
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-maintenance-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "labradoodle-maintenance-"));
     const deps = {
       prisma,
       sandbox: new FakeSandboxProvider(),
@@ -524,7 +524,7 @@ describePostgres("Team Computer takeover recovery (PostgreSQL)", () => {
 
   it("frees a computer a vanished update left booting, then recovers it", async () => {
     const { botId } = identity;
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-abandoned-update-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "labradoodle-abandoned-update-"));
     const jobs = { enqueue: vi.fn(async () => {}), cancel: vi.fn() } as unknown as JobPublisher;
     const deps = {
       prisma,

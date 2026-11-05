@@ -46,10 +46,10 @@ async function provideComputerImage(docker: Docker, image: string, context: stri
     );
     return;
   }
-  // Every Labradoodle build path tags the stock image rakazo/computer. Any other name may be a custom
+  // Every Labradoodle build path tags the stock image labradoodle/computer. Any other name may be a custom
   // build, such as a Brave image, which a stock build must not replace. dockerode's tar packer
   // crashes the process on a context file it cannot read.
-  if (!/^rakazo\/computer(:[\w][\w.-]*)?$/.test(image) || !(await contextReadable(context))) {
+  if (!/^labradoodle\/computer(:[\w][\w.-]*)?$/.test(image) || !(await contextReadable(context))) {
     throw new Error(
       `Missing ${image}. Build it with: docker build -t ${image} infra/sandboxes/computer`,
     );

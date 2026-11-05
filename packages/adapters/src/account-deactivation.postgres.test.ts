@@ -43,7 +43,7 @@ describePostgres("a deactivated account's work (PostgreSQL)", () => {
     const { userId, spaceId, botId, threadId } = await runAsSystem("deactivation fixture", () =>
       provisionMessagingIdentity(
         db.prisma,
-        { provider: "email", address: `deactivation-${randomUUID()}@rakazo.test` },
+        { provider: "email", address: `deactivation-${randomUUID()}@labradoodle.test` },
         { signupsEnabled: undefined, signupAllowlist: undefined },
       ),
     );

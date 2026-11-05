@@ -1,4 +1,4 @@
-appId: com.rakazo.app
+appId: com.labradoodle.app
 name: Labradoodle organizations
 tags:
   - screenshots
@@ -21,9 +21,9 @@ tags:
 - tapOn: "Sign in"
 - runFlow: helpers/server.yaml
 - tapOn: "Email"
-- inputText: ${RAKAZO_SCREENSHOT_EMAIL}
+- inputText: ${LABRADOODLE_SCREENSHOT_EMAIL}
 - tapOn: "Password"
-- inputText: ${RAKAZO_SCREENSHOT_PASSWORD}
+- inputText: ${LABRADOODLE_SCREENSHOT_PASSWORD}
 - hideKeyboard
 - tapOn: "Sign in"
 - tapOn:
@@ -33,7 +33,7 @@ tags:
     visible: "Researcher"
     timeout: 30000
 
-- openLink: "rakazo:///account"
+- openLink: "labradoodle:///account"
 - scrollUntilVisible:
     element: "Organization"
     direction: DOWN
@@ -93,7 +93,7 @@ tags:
     timeout: 15000
 
 # Deleting Work leaves the fixture with its one organization again.
-- openLink: "rakazo:///account"
+- openLink: "labradoodle:///account"
 - extendedWaitUntil:
     visible: "Organization"
     timeout: 10000

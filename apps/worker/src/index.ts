@@ -118,7 +118,7 @@ async function main() {
   // A larger max competes for Postgres max_connections (53300).
   const created = createDb(databaseUrl, {
     poolMax,
-    applicationName: "rakazo-worker",
+    applicationName: "labradoodle-worker",
     keyProvider: contentKeyProviderFromEnv(),
   });
   const { pool } = created;

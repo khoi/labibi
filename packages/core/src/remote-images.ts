@@ -1,4 +1,4 @@
-export const REMOTE_IMAGES_STORAGE_KEY = "rakazo.loadRemoteImages";
+export const REMOTE_IMAGES_STORAGE_KEY = "labradoodle.loadRemoteImages";
 export type RemoteImagesPreference = "on" | "off";
 
 /**

@@ -289,7 +289,7 @@ describe("Stripe billing HTTP boundary", () => {
       id: "cbtxn_lost",
       customer: customerId,
       amount: -1000,
-      metadata: { rakazo_reference: "referral_2" },
+      metadata: { labradoodle_reference: "referral_2" },
     });
     await provider.grantBalanceCredit(customerId, 1000, "referral_2");
     expect(wire.balances.get(customerId)).toBe(-1000);

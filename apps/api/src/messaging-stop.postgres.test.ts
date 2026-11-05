@@ -214,7 +214,7 @@ describe.skipIf(!enabled)("a linked owner's stop command (PostgreSQL)", () => {
     expect(sandbox.execute).toHaveBeenCalledWith(
       expect.objectContaining({ providerRef: `ref-${running.id}` }),
       expect.objectContaining({
-        argv: expect.arrayContaining(["rakazo-cancel-run-work", computer.id, running.id]),
+        argv: expect.arrayContaining(["labradoodle-cancel-run-work", computer.id, running.id]),
       }),
       expect.objectContaining({ cancelRunWork: true, runId: running.id }),
     );

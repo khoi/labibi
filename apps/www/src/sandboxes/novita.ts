@@ -1,5 +1,5 @@
 import {
-  BOAT_RAKAZO,
+  BOAT_LABRADOODLE,
   E2B_PRO_FEE,
   METHOD_NOTE,
   MONTH_HOURS,
@@ -88,7 +88,7 @@ export const novita: Sandbox = {
     {
       heading: "What a Labradoodle computer costs on Novita",
       paragraphs: [
-        `${METHOD_NOTE} Labradoodle's \`rakazo-computer\` template on Novita is exactly that size, about ${usd(hour)} an hour while it runs.`,
+        `${METHOD_NOTE} Labradoodle's \`labradoodle-computer\` template on Novita is exactly that size, about ${usd(hour)} an hour while it runs.`,
       ],
       table: {
         caption: "One 2 vCPU / 4 GB computer a month",
@@ -109,8 +109,8 @@ export const novita: Sandbox = {
           {
             topic: "[Boat](/sandboxes/boat/)",
             cells: [
-              `${usd(boatMonthly(BOAT_RAKAZO.hour, WORKDAY_HOURS))} minimum, at the ${BOAT_RAKAZO.vcpus} vCPU / ${BOAT_RAKAZO.gb} GB size self-hosted Labradoodle uses`,
-              usd(boatMonthly(BOAT_RAKAZO.hour, MONTH_HOURS)),
+              `${usd(boatMonthly(BOAT_LABRADOODLE.hour, WORKDAY_HOURS))} minimum, at the ${BOAT_LABRADOODLE.vcpus} vCPU / ${BOAT_LABRADOODLE.gb} GB size self-hosted Labradoodle uses`,
+              usd(boatMonthly(BOAT_LABRADOODLE.hour, MONTH_HOURS)),
             ],
           },
         ],
@@ -159,7 +159,7 @@ export const novita: Sandbox = {
       ],
       steps: [
         "Create an API key in your Novita account.",
-        "Build the computer template in that same account: `NOVITA_API_KEY=<your-key> pnpm sandbox:novita-template`. It creates a template called `rakazo-computer` with 2 vCPU and 4 GB of memory, based on Novita's desktop image.",
+        "Build the computer template in that same account: `NOVITA_API_KEY=<your-key> pnpm sandbox:novita-template`. It creates a template called `labradoodle-computer` with 2 vCPU and 4 GB of memory, based on Novita's desktop image.",
         "Set `SANDBOX_PROVIDER=novita` and `NOVITA_API_KEY` on both the API and the worker, then restart them. Or, as an admin, open Settings → Computer and choose Novita under New computers run on.",
         "Open a bot's computer to check that it starts and shows a desktop.",
       ],

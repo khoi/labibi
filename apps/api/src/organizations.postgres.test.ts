@@ -78,7 +78,7 @@ describePostgres("organizations (PostgreSQL)", () => {
   async function signup(): Promise<Actor> {
     const userId = `orgs-${++sequence}-${suffix}`;
     users.push(userId);
-    const email = `${userId}@rakazo.test`;
+    const email = `${userId}@labradoodle.test`;
     await system.user.create({ data: { id: userId, name: userId, email, emailVerified: false } });
     const { spaceId } = await bootstrapUserSpace(
       system,
@@ -122,7 +122,7 @@ describePostgres("organizations (PostgreSQL)", () => {
     prisma = db.prisma;
     system = asSystem(prisma);
     installAuditEventStore(prisma);
-    root = await mkdtemp(path.join(tmpdir(), "rakazo-organizations-"));
+    root = await mkdtemp(path.join(tmpdir(), "labradoodle-organizations-"));
     home = new ObjectAgentHomeStore(
       root,
       new MemoryObjectStorage(),

@@ -181,7 +181,7 @@ describe("mobile API authentication", () => {
   describe.each([
     {
       name: "password reset",
-      request: () => requestPasswordReset("ada@example.test", "https://rakazo.test/reset-password"),
+      request: () => requestPasswordReset("ada@example.test", "https://labradoodle.test/reset-password"),
       fallback: "Could not send reset email",
     },
     {
@@ -225,7 +225,7 @@ describe("mobile API authentication", () => {
 
       await expect(request()).rejects.toThrow(message);
 
-      expect(SecureStore.deleteItemAsync).not.toHaveBeenCalledWith("rakazo.session_token");
+      expect(SecureStore.deleteItemAsync).not.toHaveBeenCalledWith("labradoodle.session_token");
       expect(await authHeaders(null)).toEqual({ authorization: "Bearer fake-session" });
     });
   });
@@ -242,13 +242,13 @@ describe("mobile API authentication", () => {
         method: "POST",
         headers: {
           "content-type": "application/json",
-          origin: "rakazo://",
+          origin: "labradoodle://",
           "accept-language": "en",
         },
         body: JSON.stringify({ email: "ada@example.com", password: "correct horse" }),
       }),
     );
-    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("rakazo.session_token", "session-token");
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("labradoodle.session_token", "session-token");
     expect(resumeLiveNotifications).not.toHaveBeenCalled();
   });
 
@@ -283,7 +283,7 @@ describe("mobile API authentication", () => {
         method: "POST",
         headers: {
           "content-type": "application/json",
-          origin: "rakazo://",
+          origin: "labradoodle://",
           "accept-language": "en",
         },
         body: JSON.stringify({
@@ -293,7 +293,7 @@ describe("mobile API authentication", () => {
         }),
       }),
     );
-    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("rakazo.session_token", "signup-token");
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("labradoodle.session_token", "signup-token");
   });
 
   it("emails a sign-in code and persists the session the code returns", async () => {
@@ -313,7 +313,7 @@ describe("mobile API authentication", () => {
         method: "POST",
         headers: {
           "content-type": "application/json",
-          origin: "rakazo://",
+          origin: "labradoodle://",
           "accept-language": "en",
         },
         body: JSON.stringify({ email: "ada@example.test", type: "sign-in" }),
@@ -326,13 +326,13 @@ describe("mobile API authentication", () => {
         method: "POST",
         headers: {
           "content-type": "application/json",
-          origin: "rakazo://",
+          origin: "labradoodle://",
           "accept-language": "en",
         },
         body: JSON.stringify({ email: "ada@example.test", otp: "123456", name: "Ada" }),
       }),
     );
-    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("rakazo.session_token", "code-token");
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("labradoodle.session_token", "code-token");
   });
 
   it.each([
@@ -361,7 +361,7 @@ describe("mobile API authentication", () => {
           passwordAuth: true,
           sso: null,
           passwordReset: true,
-          resetUrl: "https://rakazo.test/reset-password",
+          resetUrl: "https://labradoodle.test/reset-password",
         }),
       )
       .mockResolvedValueOnce(jsonResponse({ status: true }));
@@ -371,9 +371,9 @@ describe("mobile API authentication", () => {
       passwordAuth: true,
       sso: null,
       passwordReset: true,
-      resetUrl: "https://rakazo.test/reset-password",
+      resetUrl: "https://labradoodle.test/reset-password",
     });
-    await requestPasswordReset("ada@example.test", "https://rakazo.test/reset-password");
+    await requestPasswordReset("ada@example.test", "https://labradoodle.test/reset-password");
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
@@ -382,7 +382,7 @@ describe("mobile API authentication", () => {
         method: "POST",
         body: JSON.stringify({
           email: "ada@example.test",
-          redirectTo: "https://rakazo.test/reset-password",
+          redirectTo: "https://labradoodle.test/reset-password",
         }),
       }),
     );
@@ -394,7 +394,7 @@ describe("mobile API authentication", () => {
       vi.fn(async () =>
         jsonResponse({
           passwordReset: true,
-          resetUrl: "https://rakazo.test/reset-password",
+          resetUrl: "https://labradoodle.test/reset-password",
           billing: false,
         }),
       ),
@@ -403,7 +403,7 @@ describe("mobile API authentication", () => {
       passwordAuth: true,
       sso: null,
       passwordReset: true,
-      resetUrl: "https://rakazo.test/reset-password",
+      resetUrl: "https://labradoodle.test/reset-password",
       billing: false,
     });
   });
@@ -417,7 +417,7 @@ describe("mobile API authentication", () => {
     expect(fetchMock.mock.calls[0]?.[0]).toContain("/api/auth/update-user");
     expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({
       method: "POST",
-      headers: expect.objectContaining({ origin: "rakazo://" }),
+      headers: expect.objectContaining({ origin: "labradoodle://" }),
       body: JSON.stringify({ name: "Alex Rivera" }),
     });
   });
@@ -450,7 +450,7 @@ describe("mobile API authentication", () => {
 
   it("uses original password change and deletion endpoints after account-security 404", async () => {
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) =>
-      key === "rakazo.session_token" ? "fake-session" : null,
+      key === "labradoodle.session_token" ? "fake-session" : null,
     );
     const fetchMock = vi
       .fn()
@@ -536,7 +536,7 @@ describe("mobile API authentication", () => {
 
   it("keeps the session the server issues after revoking the others", async () => {
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) =>
-      key === "rakazo.session_token" ? "session-token" : null,
+      key === "labradoodle.session_token" ? "session-token" : null,
     );
     await selectInitialSpace("space-default");
     vi.mocked(resumeLiveNotifications).mockClear();
@@ -547,7 +547,7 @@ describe("mobile API authentication", () => {
 
     await changePassword("old-password", "new-password");
 
-    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("rakazo.session_token", "rotated-token");
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("labradoodle.session_token", "rotated-token");
     expect(resumeLiveNotifications).toHaveBeenCalledWith(
       "http://127.0.0.1:3100",
       "rotated-token",
@@ -556,7 +556,7 @@ describe("mobile API authentication", () => {
   });
 
   it("keeps the same account's unsent messages and their cache namespace across a password change", async () => {
-    const store = new Map<string, string>([["rakazo.session_token", "session-token"]]);
+    const store = new Map<string, string>([["labradoodle.session_token", "session-token"]]);
     mockSecureStore(store);
     const clear = vi.fn();
     configureUnsentSends({
@@ -579,8 +579,8 @@ describe("mobile API authentication", () => {
     expect(clear).not.toHaveBeenCalled();
     expect(await artifactCacheSession("rotated-token")).toBe(namespace);
     // A restart reads the new token and the namespace that names the queue.
-    expect(store.get("rakazo.session_token")).toBe("rotated-token");
-    expect(JSON.parse(store.get("rakazo.artifact-cache-session") ?? "null")).toEqual({
+    expect(store.get("labradoodle.session_token")).toBe("rotated-token");
+    expect(JSON.parse(store.get("labradoodle.artifact-cache-session") ?? "null")).toEqual({
       token: "rotated-token",
       namespace,
       previous: "session-token",
@@ -588,7 +588,7 @@ describe("mobile API authentication", () => {
   });
 
   it("finishes a pending session save before it submits another password change", async () => {
-    const store = new Map<string, string>([["rakazo.session_token", "session-token"]]);
+    const store = new Map<string, string>([["labradoodle.session_token", "session-token"]]);
     mockSecureStore(store);
     const namespace = await artifactCacheSession("session-token");
     const fetchMock = vi.fn(async (_url: string, init: RequestInit) =>
@@ -607,7 +607,7 @@ describe("mobile API authentication", () => {
     await expect(changePassword("old-password", "new-password")).rejects.toThrow(
       "keychain unavailable",
     );
-    expect(store.get("rakazo.session_token")).toBe("session-token");
+    expect(store.get("labradoodle.session_token")).toBe("session-token");
 
     // While the earlier session cannot be saved, nothing new is submitted.
     keychainFails();
@@ -625,8 +625,8 @@ describe("mobile API authentication", () => {
       currentPassword: "new-password",
       newPassword: "newer-password",
     });
-    expect(store.get("rakazo.session_token")).toBe("rotated-2");
-    expect(JSON.parse(store.get("rakazo.artifact-cache-session") ?? "null")).toEqual({
+    expect(store.get("labradoodle.session_token")).toBe("rotated-2");
+    expect(JSON.parse(store.get("labradoodle.artifact-cache-session") ?? "null")).toEqual({
       token: "rotated-2",
       namespace,
       previous: "rotated-1",
@@ -634,7 +634,7 @@ describe("mobile API authentication", () => {
   });
 
   it("completes a resubmitted password change after its session save failed, without resending it", async () => {
-    const store = new Map<string, string>([["rakazo.session_token", "session-token"]]);
+    const store = new Map<string, string>([["labradoodle.session_token", "session-token"]]);
     mockSecureStore(store);
     // The server accepted the first change, so the old password no longer matches.
     const fetchMock = vi.fn(async () =>
@@ -653,20 +653,20 @@ describe("mobile API authentication", () => {
     await changePassword("old-password", "new-password");
 
     expect(fetchMock).toHaveBeenCalledOnce();
-    expect(store.get("rakazo.session_token")).toBe("rotated-token");
+    expect(store.get("labradoodle.session_token")).toBe("rotated-token");
     // A different submission is still sent.
     await expect(changePassword("new-password", "newer-password")).rejects.toThrow();
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it("rotates the cache namespace from the token the password change was sent with", async () => {
-    const store = new Map<string, string>([["rakazo.session_token", "session-token"]]);
+    const store = new Map<string, string>([["labradoodle.session_token", "session-token"]]);
     mockSecureStore(store);
     const namespace = await artifactCacheSession("session-token");
     let sessionReads = 0;
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => {
       // One transient keychain failure while the password change starts.
-      if (key === "rakazo.session_token" && ++sessionReads === 1)
+      if (key === "labradoodle.session_token" && ++sessionReads === 1)
         throw new Error("keychain unavailable");
       return store.get(key) ?? null;
     });
@@ -681,10 +681,10 @@ describe("mobile API authentication", () => {
 
     await changePassword("old-password", "new-password").catch(() => undefined);
     // Whether or not that change went through, the saved session still names the queue.
-    expect(await artifactCacheSession(store.get("rakazo.session_token") ?? "")).toBe(namespace);
+    expect(await artifactCacheSession(store.get("labradoodle.session_token") ?? "")).toBe(namespace);
 
     await changePassword("old-password", "new-password");
-    expect(store.get("rakazo.session_token")).toBe("rotated-token");
+    expect(store.get("labradoodle.session_token")).toBe("rotated-token");
     expect(await artifactCacheSession("rotated-token")).toBe(namespace);
   });
 
@@ -697,7 +697,7 @@ describe("mobile API authentication", () => {
     ["a restored session", () => restoreSessionToken("fake-other")],
     ["a server change", () => saveApiBase("https://second-server.example")],
   ])("still deletes unsent messages for %s", async (_change, change) => {
-    const store = new Map<string, string>([["rakazo.session_token", "session-token"]]);
+    const store = new Map<string, string>([["labradoodle.session_token", "session-token"]]);
     mockSecureStore(store);
     vi.stubGlobal(
       "fetch",
@@ -724,7 +724,7 @@ describe("mobile API authentication", () => {
   });
 
   it("drops a rotated token when sign-out clears the session before the response", async () => {
-    const store = new Map<string, string>([["rakazo.session_token", "session-token"]]);
+    const store = new Map<string, string>([["labradoodle.session_token", "session-token"]]);
     mockSecureStore(store);
     await selectSpace("space-default");
     vi.mocked(resumeLiveNotifications).mockClear();
@@ -738,14 +738,14 @@ describe("mobile API authentication", () => {
     await pending;
 
     expect(SecureStore.setItemAsync).not.toHaveBeenCalledWith(
-      "rakazo.session_token",
+      "labradoodle.session_token",
       "rotated-token",
     );
     expect(resumeLiveNotifications).not.toHaveBeenCalled();
   });
 
   it("keeps the rotated token when the session store is unreadable at response time", async () => {
-    const store = new Map<string, string>([["rakazo.session_token", "session-token"]]);
+    const store = new Map<string, string>([["labradoodle.session_token", "session-token"]]);
     mockSecureStore(store);
     const { fetchMock, resolveFetch, fetchStarted } = deferredFetch();
     vi.stubGlobal("fetch", fetchMock);
@@ -756,7 +756,7 @@ describe("mobile API authentication", () => {
     resolveFetch(jsonResponse({ token: "rotated-token", user: { id: "user-1" } }));
     await pending;
 
-    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("rakazo.session_token", "rotated-token");
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("labradoodle.session_token", "rotated-token");
   });
 
   it("does not change the password when the session token cannot be read", async () => {
@@ -772,7 +772,7 @@ describe("mobile API authentication", () => {
   });
 
   it("keeps the rotated token in memory and reports a failed keychain write", async () => {
-    const store = new Map<string, string>([["rakazo.session_token", "session-token"]]);
+    const store = new Map<string, string>([["labradoodle.session_token", "session-token"]]);
     mockSecureStore(store);
     vi.stubGlobal(
       "fetch",
@@ -788,7 +788,7 @@ describe("mobile API authentication", () => {
   });
 
   it("resumes live notifications with the rotated token when the keychain write fails", async () => {
-    const store = new Map<string, string>([["rakazo.session_token", "session-token"]]);
+    const store = new Map<string, string>([["labradoodle.session_token", "session-token"]]);
     mockSecureStore(store);
     await selectSpace("space-default");
     vi.mocked(resumeLiveNotifications).mockClear();
@@ -810,7 +810,7 @@ describe("mobile API authentication", () => {
   });
 
   it("drops a rotated token when the server changes before the response", async () => {
-    const store = new Map<string, string>([["rakazo.session_token", "session-token"]]);
+    const store = new Map<string, string>([["labradoodle.session_token", "session-token"]]);
     mockSecureStore(store);
     await selectSpace("space-default");
     vi.mocked(resumeLiveNotifications).mockClear();
@@ -833,7 +833,7 @@ describe("mobile API authentication", () => {
         }),
       );
       expect(SecureStore.setItemAsync).not.toHaveBeenCalledWith(
-        "rakazo.session_token",
+        "labradoodle.session_token",
         "rotated-token",
       );
       expect(resumeLiveNotifications).not.toHaveBeenCalled();
@@ -844,8 +844,8 @@ describe("mobile API authentication", () => {
 
   it("does not send a password or bearer token to a persisted public HTTP server", async () => {
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.api_base") return "http://app.example.test";
-      if (key === "rakazo.session_token") return "session-token";
+      if (key === "labradoodle.api_base") return "http://app.example.test";
+      if (key === "labradoodle.session_token") return "session-token";
       return null;
     });
     const fetchMock = vi.fn(async () => jsonResponse({ status: true }));
@@ -868,7 +868,7 @@ describe("mobile API authentication", () => {
 
   it("starts notifications only after the inbox selects the default space", async () => {
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) =>
-      key === "rakazo.session_token" ? "session-token" : null,
+      key === "labradoodle.session_token" ? "session-token" : null,
     );
 
     await expect(selectInitialSpace("space-default")).resolves.toBe(true);
@@ -1150,7 +1150,7 @@ describe("mobile API authentication", () => {
     );
 
     await expect(signOut()).resolves.toBeUndefined();
-    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("rakazo.session_token");
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("labradoodle.session_token");
   });
 
   it("unregisters push delivery before invalidating the session", async () => {
@@ -1208,7 +1208,7 @@ describe("mobile API authentication", () => {
       "http://127.0.0.1:3100/rpc/notifications/unregisterPush",
       "http://127.0.0.1:3100/api/auth/sign-out",
     ]);
-    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("rakazo.session_token");
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("labradoodle.session_token");
   });
 
   it("clears the local session when the sign-out request stalls", async () => {
@@ -1224,8 +1224,8 @@ describe("mobile API authentication", () => {
     await vi.advanceTimersByTimeAsync(8_000);
     await pending;
 
-    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("rakazo.session_token");
-    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("rakazo.space_id");
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("labradoodle.session_token");
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("labradoodle.space_id");
   });
 
   it("does not unregister push delivery when deleting the account", async () => {
@@ -1256,7 +1256,7 @@ describe("mobile API authentication", () => {
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
       "http://127.0.0.1:3100/api/auth/delete-user",
     ]);
-    expect(SecureStore.deleteItemAsync).not.toHaveBeenCalledWith("rakazo.session_token");
+    expect(SecureStore.deleteItemAsync).not.toHaveBeenCalledWith("labradoodle.session_token");
   });
 
   it("sends authenticated RPC input and reports structured RPC errors", async () => {
@@ -1369,7 +1369,7 @@ describe("mobile API authentication", () => {
     ).rejects.toThrow("Model server returned 401 Unauthorized");
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(selectedSpaceId()).toBe("space-support");
-    expect(store.get("rakazo.space_id")).toBe("space-support");
+    expect(store.get("labradoodle.space_id")).toBe("space-support");
   });
 
   it("blocks mobile message and attachment submission when AI sharing is declined", async () => {
@@ -1599,14 +1599,14 @@ describe("mobile API authentication", () => {
 
     await expect(authHeaders()).resolves.toEqual({
       authorization: "Bearer session-token",
-      "x-rakazo-space-id": "space-support",
+      "x-labradoodle-space-id": "space-support",
     });
   });
 
   it("does not switch spaces when the selection cannot be persisted", async () => {
     await expect(selectSpace("space-support")).resolves.toBe(true);
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.space_id") throw new Error("device locked");
+      if (key === "labradoodle.space_id") throw new Error("device locked");
     });
 
     await expect(selectSpace("space-social")).resolves.toBe(false);
@@ -1619,14 +1619,14 @@ describe("mobile API authentication", () => {
   it("does not switch spaces when stale recovery cannot be cleared", async () => {
     await selectSpace("space-support");
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.space_rollback") throw new Error("device locked");
+      if (key === "labradoodle.space_rollback") throw new Error("device locked");
     });
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.space_rollback" && value === "") throw new Error("device locked");
+      if (key === "labradoodle.space_rollback" && value === "") throw new Error("device locked");
     });
 
     await expect(selectSpace("space-social")).resolves.toBe(false);
-    expect(SecureStore.setItemAsync).not.toHaveBeenCalledWith("rakazo.space_id", "space-social");
+    expect(SecureStore.setItemAsync).not.toHaveBeenCalledWith("labradoodle.space_id", "space-social");
     expect(selectedSpaceId()).toBe("space-support");
 
     vi.mocked(SecureStore.setItemAsync).mockReset();
@@ -1637,10 +1637,10 @@ describe("mobile API authentication", () => {
   it("refuses sign-in when a previous space cannot be cleared", async () => {
     await selectSpace("space-support");
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.space_rollback") throw new Error("device locked");
+      if (key === "labradoodle.space_rollback") throw new Error("device locked");
     });
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.space_rollback" && value === "") throw new Error("device locked");
+      if (key === "labradoodle.space_rollback" && value === "") throw new Error("device locked");
     });
     vi.stubGlobal(
       "fetch",
@@ -1651,7 +1651,7 @@ describe("mobile API authentication", () => {
       "Could not save your sign-in on this device. Try again.",
     );
     expect(SecureStore.setItemAsync).not.toHaveBeenCalledWith(
-      "rakazo.session_token",
+      "labradoodle.session_token",
       "new-session-token",
     );
     expect(selectedSpaceId()).toBe("space-support");
@@ -1667,8 +1667,8 @@ describe("mobile API authentication", () => {
 
     await expect(saveApiBase("https://second-server.example")).resolves.toMatchObject({ ok: true });
 
-    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("rakazo.session_token");
-    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("rakazo.space_id");
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("labradoodle.session_token");
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("labradoodle.space_id");
     await resetApiBase();
   });
 
@@ -1682,7 +1682,7 @@ describe("mobile API authentication", () => {
       error: "Could not clear the previous server session",
     });
     expect(SecureStore.setItemAsync).not.toHaveBeenCalledWith(
-      "rakazo.api_base",
+      "labradoodle.api_base",
       "https://second-server.example",
     );
   });
@@ -1690,17 +1690,17 @@ describe("mobile API authentication", () => {
   it("restores notifications to the selected space when endpoint rollback succeeds", async () => {
     const previousApiBase = currentApiBase();
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.session_token") return "session-token";
+      if (key === "labradoodle.session_token") return "session-token";
       return null;
     });
     await selectSpace("space-social");
     await selectSpace("space-support");
     vi.mocked(resumeLiveNotifications).mockClear();
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.space_id") throw new Error("device locked");
+      if (key === "labradoodle.space_id") throw new Error("device locked");
     });
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.session_token" || (key === "rakazo.space_id" && value === "")) {
+      if (key === "labradoodle.session_token" || (key === "labradoodle.space_id" && value === "")) {
         throw new Error("device locked");
       }
     });
@@ -1711,10 +1711,10 @@ describe("mobile API authentication", () => {
     });
     await expect(authHeaders()).resolves.toEqual({
       authorization: "Bearer session-token",
-      "x-rakazo-space-id": "space-support",
+      "x-labradoodle-space-id": "space-support",
     });
     expect(SecureStore.setItemAsync).not.toHaveBeenCalledWith(
-      "rakazo.api_base",
+      "labradoodle.api_base",
       "https://second-server.example",
     );
     expect(resumeLiveNotifications).toHaveBeenCalledWith(
@@ -1726,10 +1726,10 @@ describe("mobile API authentication", () => {
 
   it("reports a failed clear when the remembered organization Spaces stay on the device", async () => {
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.org_spaces") throw new Error("device locked");
+      if (key === "labradoodle.org_spaces") throw new Error("device locked");
     });
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.org_spaces") throw new Error("device locked");
+      if (key === "labradoodle.org_spaces") throw new Error("device locked");
     });
 
     await expect(clearSpace()).resolves.toBe(false);
@@ -1738,12 +1738,12 @@ describe("mobile API authentication", () => {
   it("restores credentials when the new endpoint cannot be persisted", async () => {
     const previous = currentApiBase();
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.session_token") return "session-token";
+      if (key === "labradoodle.session_token") return "session-token";
       return null;
     });
     await selectSpace("space-support");
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.api_base") throw new Error("device locked");
+      if (key === "labradoodle.api_base") throw new Error("device locked");
     });
 
     await expect(saveApiBase("https://second-server.example")).resolves.toEqual({
@@ -1753,9 +1753,9 @@ describe("mobile API authentication", () => {
     expect(currentApiBase()).toBe(previous);
     await expect(authHeaders()).resolves.toEqual({
       authorization: "Bearer session-token",
-      "x-rakazo-space-id": "space-support",
+      "x-labradoodle-space-id": "space-support",
     });
-    expect(SecureStore.deleteItemAsync).not.toHaveBeenCalledWith("rakazo.org_spaces");
+    expect(SecureStore.deleteItemAsync).not.toHaveBeenCalledWith("labradoodle.org_spaces");
   });
 
   it("restores a persisted space when its initial load failed", async () => {
@@ -1764,14 +1764,14 @@ describe("mobile API authentication", () => {
     const previous = currentApiBase();
     let spaceReads = 0;
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => {
-      if (key !== "rakazo.space_id") return null;
+      if (key !== "labradoodle.space_id") return null;
       spaceReads += 1;
       if (spaceReads === 1) throw new Error("device locked");
       return "space-support";
     });
     await loadApiBase();
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.api_base") throw new Error("device locked");
+      if (key === "labradoodle.api_base") throw new Error("device locked");
     });
 
     await expect(saveApiBase("https://second-server.example")).resolves.toEqual({
@@ -1780,16 +1780,16 @@ describe("mobile API authentication", () => {
     });
     expect(currentApiBase()).toBe(previous);
     await expect(authHeaders()).resolves.toEqual({
-      "x-rakazo-space-id": "space-support",
+      "x-labradoodle-space-id": "space-support",
     });
-    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("rakazo.space_id", "space-support");
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("labradoodle.space_id", "space-support");
   });
 
   it("refuses an endpoint switch when the active space cannot be snapshotted", async () => {
     vi.mocked(SecureStore.getItemAsync).mockResolvedValue(null);
     await loadApiBase();
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.space_id") throw new Error("device locked");
+      if (key === "labradoodle.space_id") throw new Error("device locked");
       return null;
     });
     await loadApiBase();
@@ -1821,11 +1821,11 @@ describe("mobile API authentication", () => {
     expect(SecureStore.deleteItemAsync).not.toHaveBeenCalled();
 
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) =>
-      key === "rakazo.session_token" ? "session-token" : null,
+      key === "labradoodle.session_token" ? "session-token" : null,
     );
     await expect(authHeaders()).resolves.toEqual({
       authorization: "Bearer session-token",
-      "x-rakazo-space-id": "space-support",
+      "x-labradoodle-space-id": "space-support",
     });
   });
 
@@ -1833,10 +1833,10 @@ describe("mobile API authentication", () => {
     await saveSessionToken("session-token");
     await selectSpace("space-support");
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.session_token") throw new Error("device locked");
+      if (key === "labradoodle.session_token") throw new Error("device locked");
     });
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.session_token" && value === "") throw new Error("device locked");
+      if (key === "labradoodle.session_token" && value === "") throw new Error("device locked");
     });
     await expect(clearSessionToken()).resolves.toBe(false);
     vi.mocked(SecureStore.getItemAsync).mockResolvedValue("stale-session-token");
@@ -1858,15 +1858,15 @@ describe("mobile API authentication", () => {
 
   it("keeps the in-memory session across consecutive failed endpoint switches", async () => {
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.session_token") return "session-token";
+      if (key === "labradoodle.session_token") return "session-token";
       return null;
     });
     await selectSpace("space-support");
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.space_id") throw new Error("device locked");
+      if (key === "labradoodle.space_id") throw new Error("device locked");
     });
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.session_token" || (key === "rakazo.space_id" && value === "")) {
+      if (key === "labradoodle.session_token" || (key === "labradoodle.space_id" && value === "")) {
         throw new Error("device locked");
       }
     });
@@ -1879,10 +1879,10 @@ describe("mobile API authentication", () => {
 
     await expect(authHeaders()).resolves.toEqual({
       authorization: "Bearer session-token",
-      "x-rakazo-space-id": "space-support",
+      "x-labradoodle-space-id": "space-support",
     });
     expect(SecureStore.setItemAsync).not.toHaveBeenCalledWith(
-      "rakazo.api_base",
+      "labradoodle.api_base",
       expect.stringMatching(/second-server|third-server/),
     );
   });
@@ -1891,12 +1891,12 @@ describe("mobile API authentication", () => {
     await saveApiBase("https://second-server.example");
     const previous = currentApiBase();
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.session_token") return "session-token";
+      if (key === "labradoodle.session_token") return "session-token";
       return null;
     });
     await selectSpace("space-support");
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.api_base") throw new Error("device locked");
+      if (key === "labradoodle.api_base") throw new Error("device locked");
     });
 
     await expect(resetApiBase()).resolves.toEqual({
@@ -1906,7 +1906,7 @@ describe("mobile API authentication", () => {
     expect(currentApiBase()).toBe(previous);
     await expect(authHeaders()).resolves.toEqual({
       authorization: "Bearer session-token",
-      "x-rakazo-space-id": "space-support",
+      "x-labradoodle-space-id": "space-support",
     });
 
     vi.mocked(SecureStore.getItemAsync).mockReset();
@@ -1916,13 +1916,13 @@ describe("mobile API authentication", () => {
   });
 
   it("recovers a deleted-space fallback over a stale saved selection after restart", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-deleted"]]);
+    const storage = new Map<string, string>([["labradoodle.space_id", "space-deleted"]]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
       storage.delete(key);
     });
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.space_id") throw new Error("device locked");
+      if (key === "labradoodle.space_id") throw new Error("device locked");
       storage.set(key, value);
     });
     await loadApiBase();
@@ -1931,8 +1931,8 @@ describe("mobile API authentication", () => {
     await expect(adoptDeletedSpaceFallback("space-personal")).resolves.toBe(true);
     expect(selectedSpaceId()).toBe("space-personal");
     // Stale deleted id is cleared even while the replacement write stays locked.
-    expect(storage.has("rakazo.space_id")).toBe(false);
-    expect(storage.get("rakazo.space_rollback")).toBe(
+    expect(storage.has("labradoodle.space_id")).toBe(false);
+    expect(storage.get("labradoodle.space_rollback")).toBe(
       JSON.stringify({ apiBase: "http://127.0.0.1:3100", spaceId: "space-personal" }),
     );
 
@@ -1943,12 +1943,12 @@ describe("mobile API authentication", () => {
     const restartedApi = await import("./api.js");
     await restartedApi.loadApiBase();
     expect(restartedApi.selectedSpaceId()).toBe("space-personal");
-    expect(storage.get("rakazo.space_id")).toBe("space-personal");
-    expect(storage.has("rakazo.space_rollback")).toBe(false);
+    expect(storage.get("labradoodle.space_id")).toBe("space-personal");
+    expect(storage.has("labradoodle.space_rollback")).toBe(false);
   });
 
   it("clears a deleted selection when every SecureStore write fails after delete", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-deleted"]]);
+    const storage = new Map<string, string>([["labradoodle.space_id", "space-deleted"]]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
       storage.delete(key);
@@ -1961,8 +1961,8 @@ describe("mobile API authentication", () => {
     await expect(selectSpace("space-personal")).resolves.toBe(false);
     await expect(adoptDeletedSpaceFallback("space-personal")).resolves.toBe(true);
     expect(selectedSpaceId()).toBe("space-personal");
-    expect(storage.has("rakazo.space_id")).toBe(false);
-    expect(storage.has("rakazo.space_rollback")).toBe(false);
+    expect(storage.has("labradoodle.space_id")).toBe(false);
+    expect(storage.has("labradoodle.space_rollback")).toBe(false);
 
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
       storage.set(key, value);
@@ -1974,14 +1974,14 @@ describe("mobile API authentication", () => {
     expect(restartedApi.selectedSpaceId()).toBeNull();
     await expect(restartedApi.selectInitialSpace("space-personal")).resolves.toBe(true);
     expect(restartedApi.selectedSpaceId()).toBe("space-personal");
-    expect(storage.get("rakazo.space_id")).toBe("space-personal");
+    expect(storage.get("labradoodle.space_id")).toBe("space-personal");
   });
 
   it("drops a stale deleted selection when rollback recovery cannot rewrite SPACE_KEY", async () => {
     const storage = new Map<string, string>([
-      ["rakazo.space_id", "space-deleted"],
+      ["labradoodle.space_id", "space-deleted"],
       [
-        "rakazo.space_rollback",
+        "labradoodle.space_rollback",
         JSON.stringify({ apiBase: "http://127.0.0.1:3100", spaceId: "space-personal" }),
       ],
     ]);
@@ -1997,14 +1997,14 @@ describe("mobile API authentication", () => {
     await restartedApi.loadApiBase();
 
     expect(restartedApi.selectedSpaceId()).toBe("space-personal");
-    expect(storage.has("rakazo.space_id")).toBe(false);
-    expect(storage.get("rakazo.space_rollback")).toBe(
+    expect(storage.has("labradoodle.space_id")).toBe(false);
+    expect(storage.get("labradoodle.space_rollback")).toBe(
       JSON.stringify({ apiBase: "http://127.0.0.1:3100", spaceId: "space-personal" }),
     );
   });
 
   it("recovers after restart when SecureStore could neither write nor clear after delete", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-deleted"]]);
+    const storage = new Map<string, string>([["labradoodle.space_id", "space-deleted"]]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async () => {
       throw new Error("device locked");
@@ -2017,7 +2017,7 @@ describe("mobile API authentication", () => {
     await expect(selectSpace("space-personal")).resolves.toBe(false);
     await expect(adoptDeletedSpaceFallback("space-personal")).resolves.toBe(false);
     expect(selectedSpaceId()).toBe("space-personal");
-    expect(storage.get("rakazo.space_id")).toBe("space-deleted");
+    expect(storage.get("labradoodle.space_id")).toBe("space-deleted");
 
     vi.resetModules();
     const restartedApi = await import("./api.js");
@@ -2033,35 +2033,35 @@ describe("mobile API authentication", () => {
     await expect(restartedApi.rpc("spaces/list")).resolves.toEqual({ spaces: [] });
     expect(restartedApi.selectedSpaceId()).toBeNull();
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(fetchMock.mock.calls[0]![1].headers["x-rakazo-space-id"]).toBe("space-deleted");
-    expect(fetchMock.mock.calls[1]![1].headers["x-rakazo-space-id"]).toBeUndefined();
+    expect(fetchMock.mock.calls[0]![1].headers["x-labradoodle-space-id"]).toBe("space-deleted");
+    expect(fetchMock.mock.calls[1]![1].headers["x-labradoodle-space-id"]).toBeUndefined();
   });
 
   it("does not let a stale rollback override a saved deleted-space fallback", async () => {
     const apiBase = "http://127.0.0.1:3100";
     const storage = new Map<string, string>([
-      ["rakazo.space_id", "space-deleted"],
-      ["rakazo.space_rollback", JSON.stringify({ apiBase, spaceId: "space-old" })],
+      ["labradoodle.space_id", "space-deleted"],
+      ["labradoodle.space_rollback", JSON.stringify({ apiBase, spaceId: "space-old" })],
     ]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.space_rollback") throw new Error("device locked");
+      if (key === "labradoodle.space_rollback") throw new Error("device locked");
       storage.delete(key);
     });
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
       // clearStoredValue falls back to writing ""; keep that failing for rollback
       // so only an overwrite of the rollback payload can neutralize it.
-      if (key === "rakazo.space_rollback" && value === "") throw new Error("device locked");
+      if (key === "labradoodle.space_rollback" && value === "") throw new Error("device locked");
       storage.set(key, value);
     });
     await loadApiBase();
 
     await expect(adoptDeletedSpaceFallback("space-personal")).resolves.toBe(true);
     expect(selectedSpaceId()).toBe("space-personal");
-    expect(storage.get("rakazo.space_id")).toBe("space-personal");
+    expect(storage.get("labradoodle.space_id")).toBe("space-personal");
     // Neutralization overwrote the stale rollback; best-effort clear may leave
     // the matching recovery payload when delete/empty writes stay locked.
-    expect(storage.get("rakazo.space_rollback")).toBe(
+    expect(storage.get("labradoodle.space_rollback")).toBe(
       JSON.stringify({ apiBase, spaceId: "space-personal" }),
     );
 
@@ -2069,25 +2069,25 @@ describe("mobile API authentication", () => {
     const restartedApi = await import("./api.js");
     await restartedApi.loadApiBase();
     expect(restartedApi.selectedSpaceId()).toBe("space-personal");
-    expect(storage.get("rakazo.space_id")).toBe("space-personal");
+    expect(storage.get("labradoodle.space_id")).toBe("space-personal");
   });
 
   it("does not write SPACE_KEY beside a stale rollback when neutralization fails", async () => {
     const apiBase = "http://127.0.0.1:3100";
     const storage = new Map<string, string>([
-      ["rakazo.space_id", "space-deleted"],
-      ["rakazo.space_rollback", JSON.stringify({ apiBase, spaceId: "space-old" })],
+      ["labradoodle.space_id", "space-deleted"],
+      ["labradoodle.space_rollback", JSON.stringify({ apiBase, spaceId: "space-old" })],
     ]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async () => {
       throw new Error("device locked");
     });
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.space_rollback") throw new Error("device locked");
+      if (key === "labradoodle.space_rollback") throw new Error("device locked");
       // Block recoverSpaceRollback during loadApiBase, and block SPACE_KEY clears.
       // Writes of the new fallback id would succeed — the bug was doing that write
       // before neutralization, then failing to undo it.
-      if (key === "rakazo.space_id" && (value === "" || value === "space-old")) {
+      if (key === "labradoodle.space_id" && (value === "" || value === "space-old")) {
         throw new Error("device locked");
       }
       storage.set(key, value);
@@ -2097,13 +2097,13 @@ describe("mobile API authentication", () => {
     await expect(adoptDeletedSpaceFallback("space-personal")).resolves.toBe(false);
     expect(selectedSpaceId()).toBe("space-personal");
     // Must not leave the new selection durable beside the stale rollback.
-    expect(storage.get("rakazo.space_id")).toBe("space-deleted");
-    expect(storage.get("rakazo.space_rollback")).toBe(
+    expect(storage.get("labradoodle.space_id")).toBe("space-deleted");
+    expect(storage.get("labradoodle.space_rollback")).toBe(
       JSON.stringify({ apiBase, spaceId: "space-old" }),
     );
 
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.space_rollback") throw new Error("device locked");
+      if (key === "labradoodle.space_rollback") throw new Error("device locked");
       storage.set(key, value);
     });
     vi.resetModules();
@@ -2112,13 +2112,13 @@ describe("mobile API authentication", () => {
     // Restart may still recover the old rollback target, but must not have
     // replaced a newer SPACE_KEY fallback with it.
     expect(restartedApi.selectedSpaceId()).toBe("space-old");
-    expect(storage.get("rakazo.space_id")).toBe("space-old");
+    expect(storage.get("labradoodle.space_id")).toBe("space-old");
   });
 
   it("keeps the Space selection when unauthorized is a session failure", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-support"]]);
+    const storage = new Map<string, string>([["labradoodle.space_id", "space-support"]]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.session_token") return "expired-token";
+      if (key === "labradoodle.session_token") return "expired-token";
       return storage.get(key) ?? null;
     });
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
@@ -2138,14 +2138,14 @@ describe("mobile API authentication", () => {
 
     await expect(rpc("spaces/list")).rejects.toThrow("Unauthorized");
     expect(selectedSpaceId()).toBe("space-support");
-    expect(storage.get("rakazo.space_id")).toBe("space-support");
+    expect(storage.get("labradoodle.space_id")).toBe("space-support");
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(fetchMock.mock.calls[0]![1].headers["x-rakazo-space-id"]).toBe("space-support");
-    expect(fetchMock.mock.calls[1]![1].headers["x-rakazo-space-id"]).toBeUndefined();
+    expect(fetchMock.mock.calls[0]![1].headers["x-labradoodle-space-id"]).toBe("space-support");
+    expect(fetchMock.mock.calls[1]![1].headers["x-labradoodle-space-id"]).toBeUndefined();
   });
 
   it("keeps a Space selected during unauthorized recovery when the retry succeeds", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-deleted"]]);
+    const storage = new Map<string, string>([["labradoodle.space_id", "space-deleted"]]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
       storage.delete(key);
@@ -2174,11 +2174,11 @@ describe("mobile API authentication", () => {
 
     await expect(pending).resolves.toEqual({ spaces: [] });
     expect(selectedSpaceId()).toBe("space-new");
-    expect(storage.get("rakazo.space_id")).toBe("space-new");
+    expect(storage.get("labradoodle.space_id")).toBe("space-new");
   });
 
   it("keeps a Space selected during unauthorized recovery when the retry fails", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-deleted"]]);
+    const storage = new Map<string, string>([["labradoodle.space_id", "space-deleted"]]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
       storage.delete(key);
@@ -2207,11 +2207,11 @@ describe("mobile API authentication", () => {
 
     await expect(pending).rejects.toThrow("Unauthorized");
     expect(selectedSpaceId()).toBe("space-new");
-    expect(storage.get("rakazo.space_id")).toBe("space-new");
+    expect(storage.get("labradoodle.space_id")).toBe("space-new");
   });
 
   it("ignores a 401 from a request sent before the user switched Spaces", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-a"]]);
+    const storage = new Map<string, string>([["labradoodle.space_id", "space-a"]]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
       storage.delete(key);
@@ -2233,7 +2233,7 @@ describe("mobile API authentication", () => {
 
     const stale = rpc("bots/list");
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-    expect(fetchMock.mock.calls[0]![1].headers["x-rakazo-space-id"]).toBe("space-a");
+    expect(fetchMock.mock.calls[0]![1].headers["x-labradoodle-space-id"]).toBe("space-a");
     await expect(selectSpace("space-b")).resolves.toBe(true);
     resolveStale(rpcErrorResponse(401, "UNAUTHORIZED", "Unauthorized"));
 
@@ -2242,11 +2242,11 @@ describe("mobile API authentication", () => {
     await expect(stale).rejects.toThrow("Unauthorized");
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(selectedSpaceId()).toBe("space-b");
-    expect(storage.get("rakazo.space_id")).toBe("space-b");
+    expect(storage.get("labradoodle.space_id")).toBe("space-b");
   });
 
   it("ignores a stale 401 after switching away and back to the same Space", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-a"]]);
+    const storage = new Map<string, string>([["labradoodle.space_id", "space-a"]]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
       storage.delete(key);
@@ -2268,7 +2268,7 @@ describe("mobile API authentication", () => {
 
     const stale = rpc("bots/list");
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
-    expect(fetchMock.mock.calls[0]![1].headers["x-rakazo-space-id"]).toBe("space-a");
+    expect(fetchMock.mock.calls[0]![1].headers["x-labradoodle-space-id"]).toBe("space-a");
     await expect(selectSpace("space-b")).resolves.toBe(true);
     await expect(selectSpace("space-a")).resolves.toBe(true);
     resolveStale(rpcErrorResponse(401, "UNAUTHORIZED", "Unauthorized"));
@@ -2279,11 +2279,11 @@ describe("mobile API authentication", () => {
     await expect(stale).rejects.toThrow("Unauthorized");
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(selectedSpaceId()).toBe("space-a");
-    expect(storage.get("rakazo.space_id")).toBe("space-a");
+    expect(storage.get("labradoodle.space_id")).toBe("space-a");
   });
 
   it("clears a session the server rejects and reports it once", async () => {
-    const store = new Map<string, string>([["rakazo.session_token", "revoked-token"]]);
+    const store = new Map<string, string>([["labradoodle.session_token", "revoked-token"]]);
     mockSecureStore(store);
     await loadApiBase();
     const rejected = vi.fn();
@@ -2300,11 +2300,11 @@ describe("mobile API authentication", () => {
         expect(rpc("bots/list")).rejects.toThrow("Unauthorized"),
       ]);
       expect(rejected).toHaveBeenCalledOnce();
-      expect(store.has("rakazo.session_token")).toBe(false);
+      expect(store.has("labradoodle.session_token")).toBe(false);
       expect(
         vi
           .mocked(SecureStore.deleteItemAsync)
-          .mock.calls.filter(([key]) => key === "rakazo.session_token"),
+          .mock.calls.filter(([key]) => key === "labradoodle.session_token"),
       ).toHaveLength(1);
 
       // Later requests carry no session and cannot reject it again.
@@ -2317,7 +2317,7 @@ describe("mobile API authentication", () => {
   });
 
   it("keeps the unsent queue of a session the server rejects", async () => {
-    const store = new Map<string, string>([["rakazo.session_token", "revoked-token"]]);
+    const store = new Map<string, string>([["labradoodle.session_token", "revoked-token"]]);
     mockSecureStore(store);
     await loadApiBase();
     const clear = vi.fn();
@@ -2339,14 +2339,14 @@ describe("mobile API authentication", () => {
     // those messages before a sign-in deletes them.
     await expect(rpc("bots/list")).rejects.toThrow("Unauthorized");
 
-    expect(store.has("rakazo.session_token")).toBe(false);
+    expect(store.has("labradoodle.session_token")).toBe(false);
     expect(clear).not.toHaveBeenCalled();
   });
 
   it("checks Space access before treating a 401 as a rejected session", async () => {
     const store = new Map<string, string>([
-      ["rakazo.session_token", "session-token"],
-      ["rakazo.space_id", "space-removed"],
+      ["labradoodle.session_token", "session-token"],
+      ["labradoodle.space_id", "space-removed"],
     ]);
     mockSecureStore(store);
     await loadApiBase();
@@ -2361,7 +2361,7 @@ describe("mobile API authentication", () => {
     try {
       await expect(rpc("spaces/list")).resolves.toEqual({ spaces: [] });
       expect(rejected).not.toHaveBeenCalled();
-      expect(store.get("rakazo.session_token")).toBe("session-token");
+      expect(store.get("labradoodle.session_token")).toBe("session-token");
       expect(selectedSpaceId()).toBeNull();
 
       // When the probe without a Space is refused too, the session itself is
@@ -2371,9 +2371,9 @@ describe("mobile API authentication", () => {
         .mockResolvedValueOnce(rpcErrorResponse(401, "UNAUTHORIZED", "Unauthorized"))
         .mockResolvedValueOnce(rpcErrorResponse(401, "UNAUTHORIZED", "Unauthorized"));
       await expect(rpc("bots/list")).rejects.toThrow("Unauthorized");
-      expect(fetchMock.mock.calls[3]![1].headers["x-rakazo-space-id"]).toBeUndefined();
+      expect(fetchMock.mock.calls[3]![1].headers["x-labradoodle-space-id"]).toBeUndefined();
       expect(rejected).toHaveBeenCalledOnce();
-      expect(store.has("rakazo.session_token")).toBe(false);
+      expect(store.has("labradoodle.session_token")).toBe(false);
       expect(selectedSpaceId()).toBe("space-support");
     } finally {
       unsubscribe();
@@ -2389,7 +2389,7 @@ describe("mobile API authentication", () => {
       async () => rpcErrorResponse(400, "BAD_REQUEST", "Model server returned 401 Unauthorized"),
     ],
   ])("keeps the session after %s", async (_failure, respond) => {
-    const store = new Map<string, string>([["rakazo.session_token", "session-token"]]);
+    const store = new Map<string, string>([["labradoodle.session_token", "session-token"]]);
     mockSecureStore(store);
     await loadApiBase();
     const rejected = vi.fn();
@@ -2399,14 +2399,14 @@ describe("mobile API authentication", () => {
     try {
       await expect(rpc("bots/list")).rejects.toThrow();
       expect(rejected).not.toHaveBeenCalled();
-      expect(store.get("rakazo.session_token")).toBe("session-token");
+      expect(store.get("labradoodle.session_token")).toBe("session-token");
     } finally {
       unsubscribe();
     }
   });
 
   it("keeps the session a password change on this device is replacing", async () => {
-    const store = new Map<string, string>([["rakazo.session_token", "session-token"]]);
+    const store = new Map<string, string>([["labradoodle.session_token", "session-token"]]);
     mockSecureStore(store);
     await loadApiBase();
     const rejected = vi.fn();
@@ -2431,14 +2431,14 @@ describe("mobile API authentication", () => {
       await pending;
 
       expect(rejected).not.toHaveBeenCalled();
-      expect(store.get("rakazo.session_token")).toBe("rotated-token");
+      expect(store.get("labradoodle.session_token")).toBe("rotated-token");
     } finally {
       unsubscribe();
     }
   });
 
   it("keeps a newer session when a request from the old one is refused", async () => {
-    const store = new Map<string, string>([["rakazo.session_token", "old-token"]]);
+    const store = new Map<string, string>([["labradoodle.session_token", "old-token"]]);
     mockSecureStore(store);
     await loadApiBase();
     const rejected = vi.fn();
@@ -2454,14 +2454,14 @@ describe("mobile API authentication", () => {
 
       await expect(stale).rejects.toThrow("Unauthorized");
       expect(rejected).not.toHaveBeenCalled();
-      expect(store.get("rakazo.session_token")).toBe("new-token");
+      expect(store.get("labradoodle.session_token")).toBe("new-token");
     } finally {
       unsubscribe();
     }
   });
 
   it("heals durable divergence when persisting a new Space fails", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-support"]]);
+    const storage = new Map<string, string>([["labradoodle.space_id", "space-support"]]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
       storage.delete(key);
@@ -2470,9 +2470,9 @@ describe("mobile API authentication", () => {
     await expect(selectSpace("space-support")).resolves.toBe(true);
     // A concurrent recovery persisted the claimed id, then the selection
     // write below fails and rolls the claim back.
-    storage.set("rakazo.space_id", "space-new");
+    storage.set("labradoodle.space_id", "space-new");
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.space_id" && value === "space-new") {
+      if (key === "labradoodle.space_id" && value === "space-new") {
         throw new Error("device locked");
       }
       storage.set(key, value);
@@ -2480,18 +2480,18 @@ describe("mobile API authentication", () => {
 
     await expect(selectSpace("space-new")).resolves.toBe(false);
     expect(selectedSpaceId()).toBe("space-support");
-    expect(storage.get("rakazo.space_id")).toBe("space-support");
+    expect(storage.get("labradoodle.space_id")).toBe("space-support");
   });
 
   it("keeps a newer overlapping selection when an older persist fails", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-support"]]);
+    const storage = new Map<string, string>([["labradoodle.space_id", "space-support"]]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
       storage.delete(key);
     });
     let rejectA!: (reason: Error) => void;
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.space_id" && value === "space-a") {
+      if (key === "labradoodle.space_id" && value === "space-a") {
         await new Promise<never>((_, reject) => {
           rejectA = reject;
         });
@@ -2507,16 +2507,16 @@ describe("mobile API authentication", () => {
 
     await expect(pendingA).resolves.toBe(false);
     expect(selectedSpaceId()).toBe("space-b");
-    expect(storage.get("rakazo.space_id")).toBe("space-b");
+    expect(storage.get("labradoodle.space_id")).toBe("space-b");
   });
 
   it("does not commit a selection superseded during rollback cleanup", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-current"]]);
+    const storage = new Map<string, string>([["labradoodle.space_id", "space-current"]]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     let releaseOlderCleanup!: () => void;
     let heldOlderCleanup = false;
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.space_rollback" && !heldOlderCleanup) {
+      if (key === "labradoodle.space_rollback" && !heldOlderCleanup) {
         heldOlderCleanup = true;
         await new Promise<void>((resolve) => {
           releaseOlderCleanup = resolve;
@@ -2538,24 +2538,24 @@ describe("mobile API authentication", () => {
     await expect(selectSpace("space-newer")).resolves.toBe(true);
     expect(spaceSelectionSeq()).toBe(previousSeq + 2);
     expect(selectedSpaceId()).toBe("space-newer");
-    expect(storage.get("rakazo.space_id")).toBe("space-newer");
+    expect(storage.get("labradoodle.space_id")).toBe("space-newer");
 
     releaseOlderCleanup();
     await expect(pendingOlder).resolves.toBe(false);
     expect(spaceSelectionSeq()).toBe(previousSeq + 2);
     expect(selectedSpaceId()).toBe("space-newer");
-    expect(storage.get("rakazo.space_id")).toBe("space-newer");
+    expect(storage.get("labradoodle.space_id")).toBe("space-newer");
   });
 
   it("converges durable state to the latest overlapping selection", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-support"]]);
+    const storage = new Map<string, string>([["labradoodle.space_id", "space-support"]]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
       storage.delete(key);
     });
     let resolveA!: () => void;
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.space_id" && value === "space-a") {
+      if (key === "labradoodle.space_id" && value === "space-a") {
         await new Promise<void>((resolve) => {
           resolveA = resolve;
         });
@@ -2572,7 +2572,7 @@ describe("mobile API authentication", () => {
 
     await expect(pendingA).resolves.toBe(true);
     expect(selectedSpaceId()).toBe("space-b");
-    expect(storage.get("rakazo.space_id")).toBe("space-b");
+    expect(storage.get("labradoodle.space_id")).toBe("space-b");
     expect(resumeLiveNotifications).toHaveBeenCalledTimes(1);
     expect(resumeLiveNotifications).toHaveBeenLastCalledWith(
       currentApiBase(),
@@ -2582,7 +2582,7 @@ describe("mobile API authentication", () => {
   });
 
   it("does not restore the first selection after switching away and back", async () => {
-    const storage = new Map<string, string>([["rakazo.session_token", "fake-token"]]);
+    const storage = new Map<string, string>([["labradoodle.session_token", "fake-token"]]);
     let releaseFirstA!: () => void;
     let firstA = true;
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
@@ -2590,7 +2590,7 @@ describe("mobile API authentication", () => {
       storage.delete(key);
     });
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.space_id" && value === "space-a" && firstA) {
+      if (key === "labradoodle.space_id" && value === "space-a" && firstA) {
         firstA = false;
         await new Promise<void>((resolve) => {
           releaseFirstA = resolve;
@@ -2606,7 +2606,7 @@ describe("mobile API authentication", () => {
     releaseFirstA();
     await expect(pendingA).resolves.toBe(true);
     expect(selectedSpaceId()).toBe("space-a");
-    expect(storage.get("rakazo.space_id")).toBe("space-a");
+    expect(storage.get("labradoodle.space_id")).toBe("space-a");
     expect(resumeLiveNotifications).toHaveBeenCalledTimes(2);
     expect(resumeLiveNotifications).toHaveBeenLastCalledWith(
       currentApiBase(),
@@ -2616,11 +2616,11 @@ describe("mobile API authentication", () => {
   });
 
   it("does not restore an obsolete selection after its token read finishes", async () => {
-    const storage = new Map<string, string>([["rakazo.session_token", "fake-token"]]);
+    const storage = new Map<string, string>([["labradoodle.session_token", "fake-token"]]);
     let releaseToken!: () => void;
     let tokenReadHeld = false;
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.session_token" && !tokenReadHeld) {
+      if (key === "labradoodle.session_token" && !tokenReadHeld) {
         tokenReadHeld = true;
         await new Promise<void>((resolve) => {
           releaseToken = resolve;
@@ -2642,25 +2642,25 @@ describe("mobile API authentication", () => {
     releaseToken();
     await expect(pendingA).resolves.toBe(true);
     expect(selectedSpaceId()).toBe("space-b");
-    expect(storage.get("rakazo.space_id")).toBe("space-b");
+    expect(storage.get("labradoodle.space_id")).toBe("space-b");
     expect(resumeLiveNotifications).toHaveBeenCalledOnce();
     expect(resumeLiveNotifications).toHaveBeenCalledWith(currentApiBase(), "fake-token", "space-b");
   });
 
   it("restores notifications for the previous selection when a newer persist fails", async () => {
-    const storage = new Map<string, string>([["rakazo.session_token", "fake-token"]]);
+    const storage = new Map<string, string>([["labradoodle.session_token", "fake-token"]]);
     let releaseA!: () => void;
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
       storage.delete(key);
     });
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.space_id" && value === "space-a") {
+      if (key === "labradoodle.space_id" && value === "space-a") {
         await new Promise<void>((resolve) => {
           releaseA = resolve;
         });
       }
-      if (key === "rakazo.space_id" && value === "space-b") throw new Error("device locked");
+      if (key === "labradoodle.space_id" && value === "space-b") throw new Error("device locked");
       storage.set(key, value);
     });
     await loadApiBase();
@@ -2668,20 +2668,20 @@ describe("mobile API authentication", () => {
     await vi.waitFor(() => expect(selectedSpaceId()).toBe("space-a"));
     // Let rollback's recovery write complete without waiting on the older write.
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.space_id" && value === "space-b") throw new Error("device locked");
+      if (key === "labradoodle.space_id" && value === "space-b") throw new Error("device locked");
       storage.set(key, value);
     });
     await expect(selectSpace("space-b")).resolves.toBe(false);
     releaseA();
     await expect(pendingA).resolves.toBe(true);
     expect(selectedSpaceId()).toBe("space-a");
-    expect(storage.get("rakazo.space_id")).toBe("space-a");
+    expect(storage.get("labradoodle.space_id")).toBe("space-a");
     expect(resumeLiveNotifications).toHaveBeenCalledOnce();
     expect(resumeLiveNotifications).toHaveBeenCalledWith(currentApiBase(), "fake-token", "space-a");
   });
 
   it("keeps a later A claim when an earlier A→B→A persist fails", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-support"]]);
+    const storage = new Map<string, string>([["labradoodle.space_id", "space-support"]]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
       storage.delete(key);
@@ -2689,7 +2689,7 @@ describe("mobile API authentication", () => {
     let firstAWriteCount = 0;
     let rejectFirstA!: (reason: Error) => void;
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.space_id" && value === "space-a") {
+      if (key === "labradoodle.space_id" && value === "space-a") {
         firstAWriteCount += 1;
         if (firstAWriteCount === 1) {
           await new Promise<never>((_, reject) => {
@@ -2705,16 +2705,16 @@ describe("mobile API authentication", () => {
     await vi.waitFor(() => expect(selectedSpaceId()).toBe("space-a"));
     await expect(selectSpace("space-b")).resolves.toBe(true);
     await expect(selectSpace("space-a")).resolves.toBe(true);
-    expect(storage.get("rakazo.space_id")).toBe("space-a");
+    expect(storage.get("labradoodle.space_id")).toBe("space-a");
     rejectFirstA(new Error("device locked"));
 
     await expect(pendingFirstA).resolves.toBe(false);
     expect(selectedSpaceId()).toBe("space-a");
-    expect(storage.get("rakazo.space_id")).toBe("space-a");
+    expect(storage.get("labradoodle.space_id")).toBe("space-a");
   });
 
   it("does not let auth cleanup overwrite a newer selection with a stale snapshot", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-deleted"]]);
+    const storage = new Map<string, string>([["labradoodle.space_id", "space-deleted"]]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     let injected = false;
     let holdCleanupReconcile = false;
@@ -2723,7 +2723,7 @@ describe("mobile API authentication", () => {
       releaseCleanupWrite = resolve;
     });
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.space_id" && !injected) {
+      if (key === "labradoodle.space_id" && !injected) {
         injected = true;
         // Finish selecting B before cleanup snapshots it for reconcile.
         await expect(selectSpace("space-b")).resolves.toBe(true);
@@ -2732,7 +2732,7 @@ describe("mobile API authentication", () => {
       storage.delete(key);
     });
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.space_id" && value === "space-b" && holdCleanupReconcile) {
+      if (key === "labradoodle.space_id" && value === "space-b" && holdCleanupReconcile) {
         holdCleanupReconcile = false;
         // Hold only the post-clear reconcile write of the B snapshot.
         await cleanupWriteHeld;
@@ -2750,20 +2750,20 @@ describe("mobile API authentication", () => {
     const pendingRpc = rpc("spaces/list");
     await vi.waitFor(() => expect(selectedSpaceId()).toBe("space-b"));
     await expect(selectSpace("space-c")).resolves.toBe(true);
-    expect(storage.get("rakazo.space_id")).toBe("space-c");
+    expect(storage.get("labradoodle.space_id")).toBe("space-c");
     releaseCleanupWrite();
 
     await expect(pendingRpc).resolves.toEqual({ spaces: [] });
     expect(selectedSpaceId()).toBe("space-c");
-    expect(storage.get("rakazo.space_id")).toBe("space-c");
+    expect(storage.get("labradoodle.space_id")).toBe("space-c");
   });
 
   it("re-persists a Space selected while recovery cleanup is in flight", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-deleted"]]);
+    const storage = new Map<string, string>([["labradoodle.space_id", "space-deleted"]]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     let injected = false;
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.space_id" && !injected) {
+      if (key === "labradoodle.space_id" && !injected) {
         injected = true;
         await expect(selectSpace("space-new")).resolves.toBe(true);
       }
@@ -2783,11 +2783,11 @@ describe("mobile API authentication", () => {
     await expect(rpc("spaces/list")).resolves.toEqual({ spaces: [] });
     expect(injected).toBe(true);
     expect(selectedSpaceId()).toBe("space-new");
-    expect(storage.get("rakazo.space_id")).toBe("space-new");
+    expect(storage.get("labradoodle.space_id")).toBe("space-new");
   });
 
   it("does not retry a mutating RPC against the default Space after Space auth failure", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-deleted"]]);
+    const storage = new Map<string, string>([["labradoodle.space_id", "space-deleted"]]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
       storage.delete(key);
@@ -2805,18 +2805,18 @@ describe("mobile API authentication", () => {
 
     await expect(rpc("bots/create", { name: "Wrong space bot" })).rejects.toThrow("Unauthorized");
     expect(selectedSpaceId()).toBeNull();
-    expect(storage.has("rakazo.space_id")).toBe(false);
+    expect(storage.has("labradoodle.space_id")).toBe(false);
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(String(fetchMock.mock.calls[0]![0])).toContain("/rpc/bots/create");
-    expect(fetchMock.mock.calls[0]![1].headers["x-rakazo-space-id"]).toBe("space-deleted");
+    expect(fetchMock.mock.calls[0]![1].headers["x-labradoodle-space-id"]).toBe("space-deleted");
     expect(String(fetchMock.mock.calls[1]![0])).toContain("/rpc/spaces/list");
-    expect(fetchMock.mock.calls[1]![1].headers["x-rakazo-space-id"]).toBeUndefined();
+    expect(fetchMock.mock.calls[1]![1].headers["x-labradoodle-space-id"]).toBeUndefined();
   });
 
   it("keeps the Space selection when a mutating RPC unauthorized is a session failure", async () => {
-    const storage = new Map<string, string>([["rakazo.space_id", "space-support"]]);
+    const storage = new Map<string, string>([["labradoodle.space_id", "space-support"]]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => {
-      if (key === "rakazo.session_token") return "expired-token";
+      if (key === "labradoodle.session_token") return "expired-token";
       return storage.get(key) ?? null;
     });
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
@@ -2835,12 +2835,12 @@ describe("mobile API authentication", () => {
 
     await expect(rpc("bots/create", { name: "Should not land" })).rejects.toThrow("Unauthorized");
     expect(selectedSpaceId()).toBe("space-support");
-    expect(storage.get("rakazo.space_id")).toBe("space-support");
+    expect(storage.get("labradoodle.space_id")).toBe("space-support");
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(String(fetchMock.mock.calls[0]![0])).toContain("/rpc/bots/create");
-    expect(fetchMock.mock.calls[0]![1].headers["x-rakazo-space-id"]).toBe("space-support");
+    expect(fetchMock.mock.calls[0]![1].headers["x-labradoodle-space-id"]).toBe("space-support");
     expect(String(fetchMock.mock.calls[1]![0])).toContain("/rpc/spaces/list");
-    expect(fetchMock.mock.calls[1]![1].headers["x-rakazo-space-id"]).toBeUndefined();
+    expect(fetchMock.mock.calls[1]![1].headers["x-labradoodle-space-id"]).toBeUndefined();
   });
 
   it("recovers the active space after rollback persistence fails", async () => {
@@ -2854,7 +2854,7 @@ describe("mobile API authentication", () => {
       storage.delete(key);
     });
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "rakazo.api_base" || (key === "rakazo.space_id" && value === "space-support")) {
+      if (key === "labradoodle.api_base" || (key === "labradoodle.space_id" && value === "space-support")) {
         throw new Error("device locked");
       }
       storage.set(key, value);
@@ -2865,9 +2865,9 @@ describe("mobile API authentication", () => {
       error: "Could not save the server URL",
     });
     await expect(authHeaders()).resolves.toEqual({
-      "x-rakazo-space-id": "space-support",
+      "x-labradoodle-space-id": "space-support",
     });
-    expect(storage.get("rakazo.space_rollback")).toBe(
+    expect(storage.get("labradoodle.space_rollback")).toBe(
       JSON.stringify({ apiBase: "http://127.0.0.1:3100", spaceId: "space-support" }),
     );
 
@@ -2879,15 +2879,15 @@ describe("mobile API authentication", () => {
     await restartedApi.loadApiBase();
 
     expect(restartedApi.selectedSpaceId()).toBe("space-support");
-    expect(storage.get("rakazo.space_id")).toBe("space-support");
-    expect(storage.has("rakazo.space_rollback")).toBe(false);
+    expect(storage.get("labradoodle.space_id")).toBe("space-support");
+    expect(storage.has("labradoodle.space_rollback")).toBe(false);
   });
 
   it("does not recover a space on a different endpoint", async () => {
     const storage = new Map([
-      ["rakazo.api_base", "https://second-server.example"],
+      ["labradoodle.api_base", "https://second-server.example"],
       [
-        "rakazo.space_rollback",
+        "labradoodle.space_rollback",
         JSON.stringify({ apiBase: "http://127.0.0.1:3100", spaceId: "space-support" }),
       ],
     ]);
@@ -2903,11 +2903,11 @@ describe("mobile API authentication", () => {
 
     await expect(restartedApi.loadApiBase()).resolves.toBe("https://second-server.example");
     expect(restartedApi.selectedSpaceId()).toBeNull();
-    expect(storage.has("rakazo.space_rollback")).toBe(false);
+    expect(storage.has("labradoodle.space_rollback")).toBe(false);
   });
 
   it("removes a malformed space rollback record", async () => {
-    const storage = new Map([["rakazo.space_rollback", "null"]]);
+    const storage = new Map([["labradoodle.space_rollback", "null"]]);
     vi.mocked(SecureStore.getItemAsync).mockImplementation(async (key) => storage.get(key) ?? null);
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
       storage.set(key, value);
@@ -2920,7 +2920,7 @@ describe("mobile API authentication", () => {
 
     await restartedApi.loadApiBase();
     expect(restartedApi.selectedSpaceId()).toBeNull();
-    expect(storage.has("rakazo.space_rollback")).toBe(false);
+    expect(storage.has("labradoodle.space_rollback")).toBe(false);
   });
 });
 

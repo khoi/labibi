@@ -64,7 +64,7 @@ async function stall(operation: "write" | "delete") {
   if (operation === "delete") {
     const remove = vi.mocked(SecureStore.deleteItemAsync).getMockImplementation()!;
     vi.mocked(SecureStore.deleteItemAsync).mockImplementation((key) =>
-      key === "rakazo.last_bot_id" ? new Promise<void>(() => {}) : remove(key),
+      key === "labradoodle.last_bot_id" ? new Promise<void>(() => {}) : remove(key),
     );
   } else {
     let started!: () => void;
@@ -88,7 +88,7 @@ describe("stalled last-bot storage", () => {
       const signedOut = vi.fn();
       void session.clearSessionToken().then(signedOut);
       await vi.advanceTimersByTimeAsync(1_000);
-      expect(saved.has("rakazo.session_token")).toBe(false);
+      expect(saved.has("labradoodle.session_token")).toBe(false);
       expect(signedOut).toHaveBeenCalledExactlyOnceWith(true);
 
       const signedIn = vi.fn();

@@ -21,7 +21,7 @@ function stopComputer(computer: unknown) {
 }
 
 test("unavailable computers say so plainly and link setup help", async ({ page }, testInfo) => {
-  await signup(page, `computers-off-${Date.now()}@rakazo.test`, "password12", "Computers Off");
+  await signup(page, `computers-off-${Date.now()}@labradoodle.test`, "password12", "Computers Off");
   await completeOnboarding(page);
   let sandboxProvider = "none";
   let meFails = false;
@@ -63,7 +63,7 @@ test("unavailable computers say so plainly and link setup help", async ({ page }
   await expect(hint.getByRole("button", { name: "Open computer settings" })).toBeVisible();
   await expect(hint.getByRole("link", { name: "Setup help" })).toHaveAttribute(
     "href",
-    "https://github.com/elie222/rakazo/blob/main/docs/self-host-sandbox-providers.md",
+    "https://github.com/khoi/labibi/blob/main/docs/self-host-sandbox-providers.md",
   );
   await expect(preview.getByTestId("computer-preview-open")).toHaveCount(0);
   await captureScreenshot(page, testInfo, "computers-unavailable-preview");

@@ -64,7 +64,7 @@ describe.skipIf(!enabled)("earlier files through history tools", () => {
         },
       ],
     });
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-history-files-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "labradoodle-history-files-"));
     let stop: (() => Promise<void>) | undefined;
     try {
       const { createApp } = await import("@labradoodle/api/app");
@@ -87,7 +87,7 @@ describe.skipIf(!enabled)("earlier files through history tools", () => {
         method: "POST",
         headers: { "content-type": "application/json", origin },
         body: JSON.stringify({
-          email: `history-files-${randomUUID()}@rakazo.test`,
+          email: `history-files-${randomUUID()}@labradoodle.test`,
           password: "password12",
           name: "History files fixture",
         }),

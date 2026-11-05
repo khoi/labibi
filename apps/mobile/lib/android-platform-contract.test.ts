@@ -26,13 +26,13 @@ describe("Android mobile platform contract", () => {
   it("requests live-update promotion and exposes its Android settings", () => {
     const nativeRoot = resolve(
       mobileRoot,
-      "modules/labradoodle-notifications/android/src/main/java/com/rakazo/notifications",
+      "modules/labradoodle-notifications/android/src/main/java/com/labradoodle/notifications",
     );
     const service = readFileSync(resolve(nativeRoot, "LabradoodleNotificationService.kt"), "utf8");
     const module = readFileSync(resolve(nativeRoot, "LabradoodleNotificationsModule.kt"), "utf8");
     const allowlist = readFileSync(resolve(nativeRoot, "EndpointAllowlist.kt"), "utf8");
     expect(service).toContain("android.requestPromotedOngoing");
-    expect(service).toContain(".setSmallIcon(R.drawable.ic_rakazo_notification)");
+    expect(service).toContain(".setSmallIcon(R.drawable.ic_labradoodle_notification)");
     expect(service).not.toContain("showStarting");
     expect(service).not.toContain("catch (_: IOException) {\n        stop()");
     expect(service).toContain("Expo push owns background completion and attention delivery");
@@ -46,7 +46,7 @@ describe("Android mobile platform contract", () => {
     expect(allowlist).toContain("isAllowedNotificationEndpoint");
     expect(allowlist).toContain('scheme == "https"');
     expect(allowlist).toContain("isLanOrLocalHost");
-    expect(service).toContain('connection.setRequestProperty("x-rakazo-space-id", spaceId)');
+    expect(service).toContain('connection.setRequestProperty("x-labradoodle-space-id", spaceId)');
     expect(service).toContain("storage.spaceId.isBlank()");
     expect(service).toContain("private fun prepareHistorySpace(");
     expect(service).toContain("knownCompleted.clear()");
@@ -87,9 +87,9 @@ describe("Android mobile platform contract", () => {
       "fun clearSession(context: Context) {\n      synchronized(sessionLock)",
     );
     expect(service).not.toContain("private fun postCompletion(");
-    expect(service).toContain('"rakazo://group-thread?groupId=');
+    expect(service).toContain('"labradoodle://group-thread?groupId=');
     expect(service).toMatch(/&spaceId=\$\{Uri\.encode\(run\.spaceId\)\}/);
-    expect(service).toContain('putString("rakazo.spaceId", run.spaceId)');
+    expect(service).toContain('putString("labradoodle.spaceId", run.spaceId)');
     expect(service).toMatch(/&threadId=\$\{Uri\.encode\(run\.threadId\)\}/);
     expect(service).toContain('if (run.groupId != null) put("groupId", run.groupId)');
     expect(service).toContain('if (message.optString("runId") != run.runId) continue');
@@ -101,7 +101,7 @@ describe("Android mobile platform contract", () => {
     const service = readFileSync(
       resolve(
         mobileRoot,
-        "modules/labradoodle-notifications/android/src/main/java/com/rakazo/notifications/LabradoodleNotificationService.kt",
+        "modules/labradoodle-notifications/android/src/main/java/com/labradoodle/notifications/LabradoodleNotificationService.kt",
       ),
       "utf8",
     );
@@ -114,7 +114,7 @@ describe("Android mobile platform contract", () => {
     expect(service).toMatch(
       /private fun showLive\(active: List<RunRecord>[\s\S]*val primary = active\.first\(\)/,
     );
-    expect(service).toContain('putString("rakazo.botId", run.botId)');
+    expect(service).toContain('putString("labradoodle.botId", run.botId)');
     expect(service).toMatch(/if \(working\.isEmpty\(\)\) \{[\s\S]*stop\(\)[\s\S]*return[\s\S]*\}/);
   });
 
@@ -122,7 +122,7 @@ describe("Android mobile platform contract", () => {
     const service = readFileSync(
       resolve(
         mobileRoot,
-        "modules/labradoodle-notifications/android/src/main/java/com/rakazo/notifications/LabradoodleNotificationService.kt",
+        "modules/labradoodle-notifications/android/src/main/java/com/labradoodle/notifications/LabradoodleNotificationService.kt",
       ),
       "utf8",
     );

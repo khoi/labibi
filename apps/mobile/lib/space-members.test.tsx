@@ -154,7 +154,7 @@ async function render(canManage: boolean) {
     if (procedure === "spaces/members/list")
       return { spaceName: "Home", members: [owner, member], canManage };
     if (procedure === "spaces/invites/create")
-      return { url: "https://rakazo.example/invite/token-1", expiresAt: "2026-10-29T00:00:00Z" };
+      return { url: "https://labradoodle.example/invite/token-1", expiresAt: "2026-10-29T00:00:00Z" };
     if (procedure === "spaces/members/leave") return { ok: true, activeSpaceId: "space-own" };
     return { ok: true };
   });
@@ -172,7 +172,7 @@ it("lets the owner share an invite link and remove a member after confirming", a
 
   await act(async () => header.invite?.());
   expect(rpc).toHaveBeenCalledWith("spaces/invites/create", { spaceId: "space-shared" });
-  expect(share).toHaveBeenCalledWith({ url: "https://rakazo.example/invite/token-1" });
+  expect(share).toHaveBeenCalledWith({ url: "https://labradoodle.example/invite/token-1" });
   // An open link can be cancelled until someone uses it.
   await act(async () => buttonNamed("Cancel open invites")?.click());
   expect(rpc).toHaveBeenCalledWith("spaces/invites/cancel", { spaceId: "space-shared" });

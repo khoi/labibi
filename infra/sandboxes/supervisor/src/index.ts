@@ -115,7 +115,7 @@ loadRootEnv();
 const dockerSocketPath = resolveDockerSocketPath();
 const docker = dockerSocketPath ? new Docker({ socketPath: dockerSocketPath }) : new Docker();
 const computerContext =
-  process.env.RAKAZO_COMPUTER_CONTEXT ??
+  process.env.LABRADOODLE_COMPUTER_CONTEXT ??
   path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../computer");
 const ensureComputerImage = computerImageEnsurer(docker, COMPUTER_IMAGE, computerContext);
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
@@ -228,7 +228,7 @@ app.post("/computers", async (c) => {
     })
     .parse(await c.req.json());
   try {
-    assertRequestIdentity(c.req.header("x-rakazo-bot-id"), c.req.header("x-rakazo-space-id"), {
+    assertRequestIdentity(c.req.header("x-labradoodle-bot-id"), c.req.header("x-labradoodle-space-id"), {
       botId: body.botId,
       spaceId: body.spaceId,
     });
@@ -449,8 +449,8 @@ app.get("/computers/:id", async (c) => {
   try {
     const { info } = await managedContainer(
       id,
-      c.req.header("x-rakazo-bot-id"),
-      c.req.header("x-rakazo-space-id"),
+      c.req.header("x-labradoodle-bot-id"),
+      c.req.header("x-labradoodle-space-id"),
     );
     return c.json({
       id,
@@ -479,13 +479,13 @@ app.post("/computers/:id/exec", async (c) => {
   try {
     const managed = await managedContainer(
       id,
-      c.req.header("x-rakazo-bot-id"),
-      c.req.header("x-rakazo-space-id"),
+      c.req.header("x-labradoodle-bot-id"),
+      c.req.header("x-labradoodle-space-id"),
     );
     // Docker would fail the exec inside the stream; answer up front so the caller can boot it.
     if (!managed.info.State.Running) return c.json({ error: "computer is not running" }, 409);
     container = managed.container;
-    const screenId = c.req.header("x-rakazo-screen-id") || c.req.header("x-rakazo-bot-id") || id;
+    const screenId = c.req.header("x-labradoodle-screen-id") || c.req.header("x-labradoodle-bot-id") || id;
     const screenIndex = computerScreens.get(id)?.get(screenId)?.index ?? 0;
     layout = screenPorts(screenIndex);
   } catch (error) {
@@ -514,7 +514,7 @@ app.post("/computers/:id/exec", async (c) => {
           container,
           body.argv.length ? body.argv : ["/bin/echo", "ready"],
           {
-            workingDir: body.cwd ?? "/home/rakazo",
+            workingDir: body.cwd ?? "/home/labradoodle",
             env: [
               ...computerCommandEnv(layout),
               ...Object.entries(body.env ?? {}).map(([k, v]) => `${k}=${v}`),
@@ -610,7 +610,7 @@ app.post("/computers/:id/browser", async (c) => {
               z.object({
                 kind: z.literal("click"),
                 ref: z.string().min(1).max(200),
-                // The user approved a purchase click on this site (see rakazo-page-browser).
+                // The user approved a purchase click on this site (see labradoodle-page-browser).
                 approved: z.boolean().optional(),
                 // Empty for a page without a host (about:blank, data:, file:).
                 site: z.string().max(253).optional(),
@@ -680,10 +680,10 @@ app.post("/computers/:id/browser", async (c) => {
   const screen = (reuseRecent: boolean) =>
     managedScreen(
       c.req.param("id"),
-      c.req.header("x-rakazo-bot-id"),
-      c.req.header("x-rakazo-space-id"),
-      c.req.header("x-rakazo-screen-id"),
-      c.req.header("x-rakazo-screen-lease-id"),
+      c.req.header("x-labradoodle-bot-id"),
+      c.req.header("x-labradoodle-space-id"),
+      c.req.header("x-labradoodle-screen-id"),
+      c.req.header("x-labradoodle-screen-lease-id"),
       true,
       reuseRecent,
     );
@@ -695,20 +695,20 @@ app.post("/computers/:id/browser", async (c) => {
       // also keep the argv copy so a computer still on an older image keeps working until it is
       // replaced.
       [
-        "/usr/local/bin/rakazo-page-browser",
+        "/usr/local/bin/labradoodle-page-browser",
         body.command,
         ...(carriesSavedLogin ? [] : [JSON.stringify(body)]),
       ],
       {
         env: [
           `DISPLAY=${layout.display}`,
-          `RAKAZO_CDP_PORT=${layout.debugPort}`,
-          "HOME=/home/rakazo",
+          `LABRADOODLE_CDP_PORT=${layout.debugPort}`,
+          "HOME=/home/labradoodle",
           "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
-          "RAKAZO_BROWSER_WATCH_STDIN=1",
-          "RAKAZO_BROWSER_ARGS_STDIN=1",
-          ...(process.env.RAKAZO_BROWSER_UPLOAD_MAX_BYTES !== undefined
-            ? [`RAKAZO_BROWSER_UPLOAD_MAX_BYTES=${process.env.RAKAZO_BROWSER_UPLOAD_MAX_BYTES}`]
+          "LABRADOODLE_BROWSER_WATCH_STDIN=1",
+          "LABRADOODLE_BROWSER_ARGS_STDIN=1",
+          ...(process.env.LABRADOODLE_BROWSER_UPLOAD_MAX_BYTES !== undefined
+            ? [`LABRADOODLE_BROWSER_UPLOAD_MAX_BYTES=${process.env.LABRADOODLE_BROWSER_UPLOAD_MAX_BYTES}`]
             : []),
         ],
         timeoutMs: 25_000,
@@ -761,10 +761,10 @@ app.post("/computers/:id/observe", async (c) => {
   try {
     const { container, info, layout, browserProfile } = await managedScreen(
       c.req.param("id"),
-      c.req.header("x-rakazo-bot-id"),
-      c.req.header("x-rakazo-space-id"),
-      c.req.header("x-rakazo-screen-id"),
-      c.req.header("x-rakazo-screen-lease-id"),
+      c.req.header("x-labradoodle-bot-id"),
+      c.req.header("x-labradoodle-space-id"),
+      c.req.header("x-labradoodle-screen-id"),
+      c.req.header("x-labradoodle-screen-lease-id"),
     );
     const control = computerControlEndpoint(info);
     const observation = await preferComputerControl(
@@ -802,10 +802,10 @@ app.post("/computers/:id/actions", async (c) => {
   try {
     const { container, info, layout, browserProfile } = await managedScreen(
       c.req.param("id"),
-      c.req.header("x-rakazo-bot-id"),
-      c.req.header("x-rakazo-space-id"),
-      c.req.header("x-rakazo-screen-id"),
-      c.req.header("x-rakazo-screen-lease-id"),
+      c.req.header("x-labradoodle-bot-id"),
+      c.req.header("x-labradoodle-space-id"),
+      c.req.header("x-labradoodle-screen-id"),
+      c.req.header("x-labradoodle-screen-lease-id"),
     );
     const endpoint = computerControlEndpoint(info);
     const control =
@@ -848,8 +848,8 @@ app.get("/computers/:id/files", async (c) => {
   try {
     const { container } = await managedContainer(
       c.req.param("id"),
-      c.req.header("x-rakazo-bot-id"),
-      c.req.header("x-rakazo-space-id"),
+      c.req.header("x-labradoodle-bot-id"),
+      c.req.header("x-labradoodle-space-id"),
     );
     const relative = normalizeWorkspaceRelative(c.req.query("path") ?? "");
     const target = workspaceTarget(relative);
@@ -911,8 +911,8 @@ app.post("/computers/:id/files", async (c) => {
   try {
     const { container } = await managedContainer(
       c.req.param("id"),
-      c.req.header("x-rakazo-bot-id"),
-      c.req.header("x-rakazo-space-id"),
+      c.req.header("x-labradoodle-bot-id"),
+      c.req.header("x-labradoodle-space-id"),
     );
     const target = workspaceTarget(normalizeWorkspaceRelative(body.path));
     await writeContainerFile(
@@ -933,10 +933,10 @@ app.get("/computers/:id/screen", async (c) => {
   try {
     const { container, info, layout, viewToken } = await managedScreen(
       id,
-      c.req.header("x-rakazo-bot-id"),
-      c.req.header("x-rakazo-space-id"),
-      c.req.header("x-rakazo-screen-id"),
-      c.req.header("x-rakazo-screen-lease-id"),
+      c.req.header("x-labradoodle-bot-id"),
+      c.req.header("x-labradoodle-space-id"),
+      c.req.header("x-labradoodle-screen-id"),
+      c.req.header("x-labradoodle-screen-lease-id"),
       false,
     );
     const screenUrl = await publishedScreenUrl(container, info, layout.viewPort);
@@ -962,10 +962,10 @@ app.post("/computers/:id/screen-mode", async (c) => {
     .parse(await c.req.json());
   try {
     const id = c.req.param("id");
-    const botId = c.req.header("x-rakazo-bot-id");
-    const spaceId = c.req.header("x-rakazo-space-id");
-    const screenId = c.req.header("x-rakazo-screen-id");
-    const screenLeaseId = c.req.header("x-rakazo-screen-lease-id");
+    const botId = c.req.header("x-labradoodle-bot-id");
+    const spaceId = c.req.header("x-labradoodle-space-id");
+    const screenId = c.req.header("x-labradoodle-screen-id");
+    const screenLeaseId = c.req.header("x-labradoodle-screen-lease-id");
     const { container, info } = await managedContainer(id, botId, spaceId);
     const { layout, viewToken } = await withComputerScreenLock(id, async () => {
       const screen = await ensureManagedScreen(
@@ -1019,11 +1019,11 @@ app.post("/computers/:id/terminal", async (c) => {
     .parse(await c.req.json());
   try {
     const id = c.req.param("id");
-    const botId = c.req.header("x-rakazo-bot-id");
+    const botId = c.req.header("x-labradoodle-bot-id");
     const { container, info } = await managedContainer(
       id,
       botId,
-      c.req.header("x-rakazo-space-id"),
+      c.req.header("x-labradoodle-space-id"),
     );
     const cwd = workspaceTarget(normalizeWorkspaceRelative(body.cwd));
     const terminalToken = randomUUID();
@@ -1032,8 +1032,8 @@ app.post("/computers/:id/terminal", async (c) => {
         id,
         container,
         botId,
-        c.req.header("x-rakazo-screen-id"),
-        c.req.header("x-rakazo-screen-lease-id"),
+        c.req.header("x-labradoodle-screen-id"),
+        c.req.header("x-labradoodle-screen-lease-id"),
         false,
       );
       const result = await runContainerCommand(
@@ -1083,10 +1083,10 @@ app.post("/computers/:id/input", async (c) => {
   try {
     const { container, layout } = await managedScreen(
       id,
-      c.req.header("x-rakazo-bot-id"),
-      c.req.header("x-rakazo-space-id"),
-      c.req.header("x-rakazo-screen-id"),
-      c.req.header("x-rakazo-screen-lease-id"),
+      c.req.header("x-labradoodle-bot-id"),
+      c.req.header("x-labradoodle-space-id"),
+      c.req.header("x-labradoodle-screen-id"),
+      c.req.header("x-labradoodle-screen-lease-id"),
     );
     const result = await runContainerCommand(container, [
       "env",
@@ -1110,14 +1110,14 @@ app.delete("/computers/:id/screen", async (c) => {
     const id = c.req.param("id");
     const { container } = await managedContainer(
       id,
-      c.req.header("x-rakazo-bot-id"),
-      c.req.header("x-rakazo-space-id"),
+      c.req.header("x-labradoodle-bot-id"),
+      c.req.header("x-labradoodle-space-id"),
     );
     containerFound = true;
-    const screenId = c.req.header("x-rakazo-screen-id") || c.req.header("x-rakazo-bot-id") || id;
-    const cancelRunWork = c.req.header("x-rakazo-cancel-run-work") === "1";
-    const keepScreenWarm = c.req.header("x-rakazo-preserve-screen") === "1" && !cancelRunWork;
-    const screenLeaseId = c.req.header("x-rakazo-screen-lease-id");
+    const screenId = c.req.header("x-labradoodle-screen-id") || c.req.header("x-labradoodle-bot-id") || id;
+    const cancelRunWork = c.req.header("x-labradoodle-cancel-run-work") === "1";
+    const keepScreenWarm = c.req.header("x-labradoodle-preserve-screen") === "1" && !cancelRunWork;
+    const screenLeaseId = c.req.header("x-labradoodle-screen-lease-id");
     await withComputerScreenLock(id, async () => {
       const info = await container.inspect();
       const assigned = currentComputerScreens(
@@ -1196,9 +1196,9 @@ app.delete("/computers/:id/screen", async (c) => {
 
 app.post("/computers/:id/stop", async (c) => {
   const id = c.req.param("id");
-  const botId = c.req.header("x-rakazo-bot-id");
+  const botId = c.req.header("x-labradoodle-bot-id");
   try {
-    const { container } = await managedContainer(id, botId, c.req.header("x-rakazo-space-id"));
+    const { container } = await managedContainer(id, botId, c.req.header("x-labradoodle-space-id"));
     await withComputerScreenLock(id, async () => {
       const info = await container.inspect();
       if (info.State.Running) {
@@ -1236,11 +1236,11 @@ app.post("/computers/:id/stop", async (c) => {
 
 app.delete("/computers/:id", async (c) => {
   const id = c.req.param("id");
-  const botId = c.req.header("x-rakazo-bot-id");
+  const botId = c.req.header("x-labradoodle-bot-id");
   try {
     if (!botId) throw new Error("missing computer identity");
     return await withBotLifecycleLock(botId, async () => {
-      const { container } = await managedContainer(id, botId, c.req.header("x-rakazo-space-id"));
+      const { container } = await managedContainer(id, botId, c.req.header("x-labradoodle-space-id"));
       await withComputerScreenLock(id, async () => {
         await container.remove({ force: true }).catch((error) => {
           // Already gone is deleted; any other failure may leave the computer running.
@@ -1265,7 +1265,7 @@ app.delete("/computers/:id", async (c) => {
 async function startSupervisor() {
   const logger = await createRootLogger(SERVICE_NAMES.supervisor);
   // Resolve the ceilings before binding the port. They are otherwise parsed inside
-  // containerCreateOptions, so a malformed RAKAZO_COMPUTER_* value would let the supervisor start
+  // containerCreateOptions, so a malformed LABRADOODLE_COMPUTER_* value would let the supervisor start
   // and pass its healthcheck, then fail the first POST /computers with a 500 that reads like a
   // Docker problem. Failing here names the variable while the deployment is still coming up.
   computerResourceLimits();
@@ -1317,7 +1317,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
   void startSupervisor();
 }
 
-// Enforcement is host-side (DOCKER-USER/INPUT on rakazo-c* bridges); the flag only
+// Enforcement is host-side (DOCKER-USER/INPUT on doodle-c* bridges); the flag only
 // names the interfaces. Refuse restricted computers until a probe shows the host
 // rules are in place. Only success is cached, so installing the rules needs no restart.
 // `auto` keeps the first answer a completed probe gives: restricted when the rules are in place,
@@ -1363,7 +1363,7 @@ async function findBotContainer(botId: string, spaceId: string) {
     filters: {
       // Space IDs were preserved when workspaces became Spaces. Search by the
       // stable bot label, then validate either generation of the Space label.
-      label: [`rakazo.botId=${botId}`],
+      label: [`labradoodle.botId=${botId}`],
     },
   });
   for (const item of listed) {
@@ -1376,8 +1376,8 @@ async function findBotContainer(botId: string, spaceId: string) {
 
 /** Count managed computers for a space, including legacy workspaceId / unlabeled-managed. */
 export async function countSpaceContainers(spaceId: string): Promise<number> {
-  // Do not filter by rakazo.managed=true: legacy computers are still managed via
-  // COMPUTER_IMAGE + rakazo.workspaceId (same rule as isLabradoodleContainer).
+  // Do not filter by labradoodle.managed=true: legacy computers are still managed via
+  // COMPUTER_IMAGE + labradoodle.workspaceId (same rule as isLabradoodleContainer).
   const listed = await docker.listContainers({ all: true });
   let count = 0;
   for (const item of listed) {
@@ -1392,10 +1392,10 @@ async function isManagedSpaceContainer(
 ): Promise<boolean> {
   const labels = item.Labels;
   if (labels) {
-    const listedSpaceId = labels["rakazo.spaceId"] ?? labels["rakazo.workspaceId"];
+    const listedSpaceId = labels["labradoodle.spaceId"] ?? labels["labradoodle.workspaceId"];
     // Labeled for another space (or no space identity) cannot count toward this cap.
     if (listedSpaceId !== spaceId) return false;
-    if (labels["rakazo.managed"] === "true" || item.Image === COMPUTER_IMAGE) return true;
+    if (labels["labradoodle.managed"] === "true" || item.Image === COMPUTER_IMAGE) return true;
     // Space matches but Image may be an ID after the tag moved — confirm via inspect.
   }
   // Missing list Labels: inspect with the same managed rule as isLabradoodleContainer.
@@ -1403,8 +1403,8 @@ async function isManagedSpaceContainer(
     const info = await docker.getContainer(item.Id).inspect();
     const infoLabels = info.Config?.Labels ?? {};
     const managed =
-      infoLabels["rakazo.managed"] === "true" || info.Config?.Image === COMPUTER_IMAGE;
-    const infoSpaceId = infoLabels["rakazo.spaceId"] ?? infoLabels["rakazo.workspaceId"];
+      infoLabels["labradoodle.managed"] === "true" || info.Config?.Image === COMPUTER_IMAGE;
+    const infoSpaceId = infoLabels["labradoodle.spaceId"] ?? infoLabels["labradoodle.workspaceId"];
     return managed && infoSpaceId === spaceId;
   } catch {
     // Container might have been removed concurrently
@@ -1580,7 +1580,7 @@ async function ensureManagedScreenAttempt(
     const browserLog = await runContainerCommand(container, [
       "bash",
       "-c",
-      `tail -c 4000 /tmp/rakazo/screen-${layout.displayNumber}-browser.log 2>/dev/null || true`,
+      `tail -c 4000 /tmp/labradoodle/screen-${layout.displayNumber}-browser.log 2>/dev/null || true`,
     ]).catch(() => ({ stdout: "", stderr: "", code: 1 }));
     releaseAssignedScreen(assigned, screenKey);
     await teardownReleasedScreen(assigned, screenKey, index, () =>
@@ -1618,8 +1618,8 @@ function assertBotHomePath(homePath: string, botId: string) {
 
 function computerControlEndpoint(info: Docker.ContainerInspectInfo) {
   const token = info.Config.Env?.find((value) =>
-    value.startsWith("RAKAZO_COMPUTER_CONTROL_TOKEN="),
-  )?.slice("RAKAZO_COMPUTER_CONTROL_TOKEN=".length);
+    value.startsWith("LABRADOODLE_COMPUTER_CONTROL_TOKEN="),
+  )?.slice("LABRADOODLE_COMPUTER_CONTROL_TOKEN=".length);
   const publishedHostPort = controlViaLoopback
     ? publishedLoopbackControlHostPort(info.NetworkSettings?.Ports)
     : undefined;
@@ -1767,7 +1767,7 @@ async function setInteractiveScreen(
     interactiveScreenCommand(interactive, controlToken, layout),
   ]);
   if (result.code !== 0) throw new Error(result.stderr || "control screen failed to start");
-  return interactive || !controlToken || result.stdout.includes("RAKAZO_CONTROL_RELEASED\n");
+  return interactive || !controlToken || result.stdout.includes("LABRADOODLE_CONTROL_RELEASED\n");
 }
 
 // Each bot's computer gets its own Docker network so containers cannot reach
@@ -1889,10 +1889,10 @@ export async function reclaimIdleComputerNetworks() {
   const runtime = await inspectSupervisorContainer();
   const owner = computerNetworkOwnerFor(dataDir, runtime);
   const networks = await docker.listNetworks({
-    filters: { label: [`rakazo.computerOwner=${owner}`] },
+    filters: { label: [`labradoodle.computerOwner=${owner}`] },
   });
   for (const { Name, Labels } of networks) {
-    const botId = Labels?.["rakazo.botId"];
+    const botId = Labels?.["labradoodle.botId"];
     if (!botId || Name !== computerNetworkNameFor(botId)) continue;
     await withBotLifecycleLock(botId, () => removeUnusedComputerNetwork(Name)).catch((error) => {
       getLogger().error("computer network reclaim failed", error);
@@ -2027,7 +2027,7 @@ async function stopBotContainers(containerIds: string[], botId: string) {
       const inspected = await container.inspect().catch(() => undefined);
       // A failed inspect is not proof this endpoint belongs to someone else.
       // Only a successful inspect of a different bot may skip the stop.
-      if (inspected && inspected.Config.Labels?.["rakazo.botId"] !== botId) return;
+      if (inspected && inspected.Config.Labels?.["labradoodle.botId"] !== botId) return;
       if (!inspected) return;
       await stopContainer(container);
       stoppedIds.add(containerId);
@@ -2064,7 +2064,7 @@ async function removeBotNetwork(botId: string) {
             .inspect()
             .catch(() => undefined)
         )?.Config.Labels ?? {};
-      const owner = labels["rakazo.botId"];
+      const owner = labels["labradoodle.botId"];
       owners.push(owner);
       if (owner === botId) {
         await network.disconnect({ Container: containerId, Force: true }).catch(() => undefined);
@@ -2130,7 +2130,7 @@ async function runContainerCommand(
   options.signal?.throwIfAborted();
   const timeoutMs = options.timeoutMs;
   const completionMarker = timeoutMs
-    ? `/tmp/rakazo-command-${randomUUID()}.completed-124`
+    ? `/tmp/labradoodle-command-${randomUUID()}.completed-124`
     : undefined;
   const command =
     completionMarker && timeoutMs !== undefined
@@ -2141,10 +2141,10 @@ async function runContainerCommand(
     AttachStdout: true,
     AttachStderr: true,
     ...(options.signal ? { AttachStdin: true } : {}),
-    WorkingDir: options.workingDir ?? "/home/rakazo",
+    WorkingDir: options.workingDir ?? "/home/labradoodle",
     Env: options.env ?? [
       "DISPLAY=:1",
-      "HOME=/home/rakazo",
+      "HOME=/home/labradoodle",
       "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
     ],
   });
@@ -2269,8 +2269,8 @@ async function writeContainerFile(
     AttachStdin: true,
     AttachStdout: true,
     AttachStderr: true,
-    WorkingDir: "/home/rakazo",
-    Env: ["HOME=/home/rakazo"],
+    WorkingDir: "/home/labradoodle",
+    Env: ["HOME=/home/labradoodle"],
   });
   const stream = await exec.start({ hijack: true, stdin: true });
   const chunks: Buffer[] = [];

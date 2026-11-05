@@ -50,7 +50,7 @@ export function welcomeEmail(
       </Text>
       <Text>
         {say("Labradoodle is open source. If you like it,")}{" "}
-        <Link href="https://github.com/elie222/rakazo" style={linkStyle}>
+        <Link href="https://github.com/khoi/labibi" style={linkStyle}>
           {say("a star on GitHub")}
         </Link>{" "}
         {say("helps others find it.")}
@@ -58,7 +58,7 @@ export function welcomeEmail(
       <Text>
         {say("Want to run it on your own servers?")}{" "}
         <Link
-          href="https://github.com/elie222/rakazo/blob/main/docs/self-host.md"
+          href="https://github.com/khoi/labibi/blob/main/docs/self-host.md"
           style={linkStyle}
         >
           {say("Self-host Labradoodle")}

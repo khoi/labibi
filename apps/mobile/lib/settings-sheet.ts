@@ -66,7 +66,7 @@ export function openFromSettingsSheet(router: { push(href: Href): void }, href: 
   router.push(href);
 }
 
-/** The screen a link (`rakazo:///models`, `rakazo://models` or `/models`) opens. */
+/** The screen a link (`labradoodle:///models`, `labradoodle://models` or `/models`) opens. */
 export function linkScreen(link: string): string {
   return (
     link

@@ -447,15 +447,15 @@ describe("serenity verbs", () => {
       content: [{ type: "text", text: JSON.stringify({ id: "fact-1", status: "inserted" }) }],
     }));
     const result = await rememberSerenity("Use metric units.", "labradoodle", LOOPBACK, {
-      entity: "rakazo-bot/bot-1",
-      operationKey: "rakazo:abc",
+      entity: "labradoodle-bot/bot-1",
+      operationKey: "labradoodle:abc",
       network: { fetch: server.fetch },
     });
     expect(result).toEqual({ ok: true, value: { id: "fact-1", status: "inserted" } });
     const call = server.calls.find((entry) => entry.rpc?.method === "tools/call");
     expect(call?.rpc?.params?.arguments).toMatchObject({
-      entity: "rakazo-bot/bot-1",
-      operation_key: "rakazo:abc",
+      entity: "labradoodle-bot/bot-1",
+      operation_key: "labradoodle:abc",
     });
     expect(server.calls.at(-1)?.method).toBe("DELETE");
   });
@@ -480,12 +480,12 @@ describe("serenity verbs", () => {
       ],
     }));
     const result = await recallSerenity(LOOPBACK, {
-      entity: "rakazo-bot/bot-1",
+      entity: "labradoodle-bot/bot-1",
       network: { fetch: server.fetch },
     });
     expect(result.ok && result.value).toHaveLength(100);
     const call = server.calls.find((entry) => entry.rpc?.method === "tools/call");
-    expect(call?.rpc?.params?.arguments).toEqual({ limit: 100, entity: "rakazo-bot/bot-1" });
+    expect(call?.rpc?.params?.arguments).toEqual({ limit: 100, entity: "labradoodle-bot/bot-1" });
   });
 
   it("rejects facts over the hosted byte limit before connecting", async () => {

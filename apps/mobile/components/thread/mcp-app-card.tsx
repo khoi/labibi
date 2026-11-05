@@ -96,7 +96,7 @@ export function McpAppCard({ block, target }: { block: AppBlock; target: MobileA
           deviceCapabilities: { touch: true, hover: false },
         },
         csp,
-        send: (message) => answer.current?.({ type: "rakazo-app:host", message }),
+        send: (message) => answer.current?.({ type: "labradoodle-app:host", message }),
         // One tap, one action.
         allowAction: () => {
           if (!pageActionAllowed(tappedAt.current, Date.now())) return false;
@@ -150,7 +150,7 @@ export function McpAppCard({ block, target }: { block: AppBlock; target: MobileA
             onMessage={(data, reply) => {
               answer.current = reply;
               const envelope = pageMessage(data) as { type?: unknown; message?: unknown } | null;
-              if (envelope?.type !== "rakazo-app:view") return;
+              if (envelope?.type !== "labradoodle-app:view") return;
               if ((envelope.message as { method?: unknown })?.method === "ui/initialize") {
                 setStarted(true);
               }

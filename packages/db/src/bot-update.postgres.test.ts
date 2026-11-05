@@ -67,7 +67,7 @@ describePostgres("commitBotUpdate against a moving default avatar set (PostgreSQ
         data: {
           id: ids.userId,
           name: ids.userId,
-          email: `${ids.userId}@rakazo.test`,
+          email: `${ids.userId}@labradoodle.test`,
           emailVerified: false,
           botAvatarSet: "organic",
         },
@@ -191,16 +191,16 @@ describePostgres("commitBotUpdate against a moving default avatar set (PostgreSQ
     const ops = started();
     const holder = await barrierClient("thread lock barrier");
     try {
-      // Request A saves the default rakazo, then its restyle reads the owner's row
+      // Request A saves the default labradoodle, then its restyle reads the owner's row
       // and waits on the thread lock with the share held.
       await runAsSystem("test fixture", () =>
-        prisma.user.update({ where: { id: ids.userId }, data: { botAvatarSet: "rakazo" } }),
+        prisma.user.update({ where: { id: ids.userId }, data: { botAvatarSet: "labradoodle" } }),
       );
       await holder.query("BEGIN");
       await holder.query("SELECT id FROM threads WHERE id = $1 FOR UPDATE", [ids.threadId]);
       const { rows: own } = await holder.query<{ pid: number }>("SELECT pg_backend_pid() AS pid");
       const deadline = performance.now() + BARRIER_POLL_BUDGET_MS;
-      const update = ops.track(restyle(unhurried(), "rakazo", ids));
+      const update = ops.track(restyle(unhurried(), "labradoodle", ids));
       const updatePid = await waitForBlockedOn(own[0]!.pid, "the restyle", deadline);
       // Request B saves the default organic while A waits: it queues on A's share of
       // the owner's row, so it cannot slip between A's read and A's write.
@@ -213,7 +213,7 @@ describePostgres("commitBotUpdate against a moving default avatar set (PostgreSQ
       await holder.query("COMMIT");
       await update;
       await newer;
-      // B's own pass lists the bot (now rakazo) and styles it to its own default.
+      // B's own pass lists the bot (now labradoodle) and styles it to its own default.
       await restyle(prisma, "organic", ids);
     } finally {
       await holder.query("ROLLBACK").catch(() => undefined);
@@ -231,7 +231,7 @@ describePostgres("commitBotUpdate against a moving default avatar set (PostgreSQ
     const holder = await barrierClient("bot row lock barrier");
     try {
       await runAsSystem("test fixture", () =>
-        prisma.user.update({ where: { id: ids.userId }, data: { botAvatarSet: "rakazo" } }),
+        prisma.user.update({ where: { id: ids.userId }, data: { botAvatarSet: "labradoodle" } }),
       );
       // The bot row is held, so the restyle sits between its FOR SHARE read of the
       // default and its bot write, provably past the read.
@@ -239,7 +239,7 @@ describePostgres("commitBotUpdate against a moving default avatar set (PostgreSQ
       await holder.query("SELECT id FROM bots WHERE id = $1 FOR UPDATE", [ids.botId]);
       const { rows: own } = await holder.query<{ pid: number }>("SELECT pg_backend_pid() AS pid");
       const deadline = performance.now() + BARRIER_POLL_BUDGET_MS;
-      const update = ops.track(restyle(unhurried(), "rakazo", ids));
+      const update = ops.track(restyle(unhurried(), "labradoodle", ids));
       const updatePid = await waitForBlockedOn(own[0]!.pid, "the restyle", deadline);
       const newer = ops.track(
         runAsSystem("test fixture", () =>
@@ -252,7 +252,7 @@ describePostgres("commitBotUpdate against a moving default avatar set (PostgreSQ
       await holder.query("COMMIT");
       await update;
       await newer;
-      // The newer pass lists the bot (now rakazo) and styles it to its own default.
+      // The newer pass lists the bot (now labradoodle) and styles it to its own default.
       await restyle(prisma, "organic", ids);
     } finally {
       await holder.query("ROLLBACK").catch(() => undefined);
@@ -284,7 +284,7 @@ describePostgres("commitBotUpdate against a moving default avatar set (PostgreSQ
     };
     try {
       await runAsSystem("test fixture", () =>
-        prisma.user.update({ where: { id: ids.userId }, data: { botAvatarSet: "rakazo" } }),
+        prisma.user.update({ where: { id: ids.userId }, data: { botAvatarSet: "labradoodle" } }),
       );
       const before = await deadlocks();
       // A routine wake holds its routine row and then inserts a task whose foreign
@@ -310,7 +310,7 @@ describePostgres("commitBotUpdate against a moving default avatar set (PostgreSQ
       await waitForBlockedOn(wakePid[0]!.pid, "the timezone save", deadline);
       // The restyle takes the user share first; taking the thread first instead would
       // close the cycle thread ← task ← routine ← user around its own write.
-      const update = ops.track(restyle(unhurried(), "rakazo", ids));
+      const update = ops.track(restyle(unhurried(), "labradoodle", ids));
       await waitForBlockedOn(zonePid[0]!.pid, "the restyle", deadline);
       const task = ops.track(
         routineWake.query(
@@ -329,7 +329,7 @@ describePostgres("commitBotUpdate against a moving default avatar set (PostgreSQ
       await zoneSave.query("COMMIT").catch(() => zoneSave.query("ROLLBACK"));
       await update;
       expect(await deadlocks()).toBe(before);
-      expect((await rows()).bot.avatarSet).toBe("rakazo");
+      expect((await rows()).bot.avatarSet).toBe("labradoodle");
     } finally {
       await routineWake.query("ROLLBACK").catch(() => undefined);
       await zoneSave.query("ROLLBACK").catch(() => undefined);

@@ -2,12 +2,12 @@ import * as z from "zod";
 import { BOT_COLORS } from "./ids.js";
 
 /** Per-bot set. Missing values belong to the original renderer. */
-export const BotAvatarSetSchema = z.enum(["organic", "rakazo"]);
+export const BotAvatarSetSchema = z.enum(["organic", "labradoodle"]);
 export type BotAvatarSet = z.infer<typeof BotAvatarSetSchema>;
 export const DEFAULT_NEW_BOT_AVATAR_SET: BotAvatarSet = "organic";
 
 export function resolveBotAvatarSet(value?: string | null): BotAvatarSet {
-  return value === "rakazo" ? "rakazo" : "organic";
+  return value === "labradoodle" ? "labradoodle" : "organic";
 }
 
 /** Matches the eight shipped mascot shapes in `@labradoodle/core`. */

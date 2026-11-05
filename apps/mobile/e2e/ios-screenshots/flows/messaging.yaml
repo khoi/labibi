@@ -1,11 +1,11 @@
-appId: com.rakazo.app
+appId: com.labradoodle.app
 name: Messaging
 ---
 - runFlow:
     file: ../subflows/sign-in.yaml
     env:
-      RAKAZO_ACTIVE_EMAIL: ${RAKAZO_SCREENSHOT_EMAIL}
-- openLink: "rakazo:///messaging"
+      LABRADOODLE_ACTIVE_EMAIL: ${LABRADOODLE_SCREENSHOT_EMAIL}
+- openLink: "labradoodle:///messaging"
 - extendedWaitUntil:
     visible: ".*#launch.*"
     timeout: 15000

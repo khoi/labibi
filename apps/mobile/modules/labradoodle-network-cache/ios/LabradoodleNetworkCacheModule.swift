@@ -2,14 +2,14 @@ import ExpoModulesCore
 
 public class LabradoodleNetworkCacheModule: Module {
   public func definition() -> ModuleDefinition {
-    Name("RakazoNetworkCache")
+    Name("LabradoodleNetworkCache")
 
     OnCreate {
       // Cookie deletions can be lost if the app is killed before they reach disk, so repeat
       // them on every launch; the app never uses cookies.
       clearCookies()
       // Builds before no-store replies left account and chat responses in the system cache.
-      let key = "rakazo.networkCacheCleared"
+      let key = "labradoodle.networkCacheCleared"
       if !UserDefaults.standard.bool(forKey: key) {
         URLCache.shared.removeAllCachedResponses()
         UserDefaults.standard.set(true, forKey: key)

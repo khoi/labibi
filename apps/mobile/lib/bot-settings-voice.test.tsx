@@ -15,7 +15,7 @@ const mocks = vi.hoisted(() => ({
   instructions: "",
   description: "",
   crossSpaceCommunication: false,
-  avatarSet: undefined as "organic" | "rakazo" | undefined,
+  avatarSet: undefined as "organic" | "labradoodle" | undefined,
   focus: undefined as string | undefined,
   os: "ios",
   work: [] as unknown[],
@@ -796,13 +796,13 @@ describe("bot settings device voice menu", () => {
       {
         request: {
           identifier: "direct-chat",
-          content: { data: { "rakazo.botId": "bot-fixture", "rakazo.threadId": "thread-fixture" } },
+          content: { data: { "labradoodle.botId": "bot-fixture", "labradoodle.threadId": "thread-fixture" } },
         },
       },
       {
         request: {
           identifier: "group-chat",
-          content: { data: { "rakazo.botId": "bot-fixture", "rakazo.threadId": "group-thread" } },
+          content: { data: { "labradoodle.botId": "bot-fixture", "labradoodle.threadId": "group-thread" } },
         },
       },
     ] as never);

@@ -14,7 +14,7 @@ test("launches with a narrow preload bridge and an isolated renderer", async () 
     cwd: path.resolve(import.meta.dirname, ".."),
     env: {
       ...process.env,
-      RAKAZO_WEB_URL: `data:text/html;charset=utf-8,${encodeURIComponent(fixture)}`,
+      LABRADOODLE_WEB_URL: `data:text/html;charset=utf-8,${encodeURIComponent(fixture)}`,
     },
   });
 
@@ -24,8 +24,8 @@ test("launches with a narrow preload bridge and an isolated renderer", async () 
     await expect(page).toHaveTitle("Labradoodle desktop smoke");
 
     const renderer = await page.evaluate(async () => {
-      const desktop = (window as typeof window & { rakazoDesktop?: LabradoodleDesktop })
-        .rakazoDesktop;
+      const desktop = (window as typeof window & { labradoodleDesktop?: LabradoodleDesktop })
+        .labradoodleDesktop;
 
       return {
         computerKeys: desktop?.computer ? Object.keys(desktop.computer).sort() : [],

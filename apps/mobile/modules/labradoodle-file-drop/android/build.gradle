@@ -3,11 +3,11 @@ plugins {
   id 'expo-module-gradle-plugin'
 }
 
-group = 'com.rakazo.filedrop'
+group = 'com.labradoodle.filedrop'
 version = '0.1.0'
 
 android {
-  namespace 'com.rakazo.filedrop'
+  namespace 'com.labradoodle.filedrop'
   defaultConfig {
     versionName '0.1.0'
   }

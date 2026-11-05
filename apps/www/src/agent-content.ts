@@ -81,11 +81,11 @@ ${getHomeCopy("en")
 
 ${home.cta.copy}
 
-- [Agent setup prompt](https://github.com/elie222/rakazo/blob/main/SETUP_PROMPT.md)
+- [Agent setup prompt](https://github.com/khoi/labibi/blob/main/SETUP_PROMPT.md)
 - [Self-hosting guide](https://labradoodle.com/self-hosted-ai-agent/)
-- [Full self-hosting reference](https://github.com/elie222/rakazo/blob/main/docs/self-host.md)
+- [Full self-hosting reference](https://github.com/khoi/labibi/blob/main/docs/self-host.md)
 - [OpenClaw comparison](https://labradoodle.com/openclaw-alternative/)
-- [Source code](https://github.com/elie222/rakazo)
+- [Source code](https://github.com/khoi/labibi)
 
 ## Site index
 
@@ -118,9 +118,9 @@ The project started from a simple premise: useful agents should be understandabl
 
 Labradoodle targets the web, macOS, Windows, Linux, iOS, and Android. The source is available under the Apache-2.0 license and accepts public issues and contributions on GitHub. Inbox Zero Inc. maintains the project and offers support at hello@labradoodle.com.
 
-- [Source code](https://github.com/elie222/rakazo)
+- [Source code](https://github.com/khoi/labibi)
 - [Self-hosting guide](https://labradoodle.com/self-hosted-ai-agent/)
-- [Full self-hosting reference](https://github.com/elie222/rakazo/blob/main/docs/self-host.md)
+- [Full self-hosting reference](https://github.com/khoi/labibi/blob/main/docs/self-host.md)
 - [Support](https://labradoodle.com/support/)
 `;
 
@@ -140,7 +140,7 @@ export const SUPPORT_MARKDOWN = `# Labradoodle support
 
 For help with the Labradoodle mobile app or a hosted Labradoodle account, email [hello@labradoodle.com](mailto:hello@labradoodle.com). Include the email address on the account, what you expected to happen, and any error message you saw. Never send passwords, API keys, access tokens, or other secrets.
 
-For self-hosted Labradoodle, start with the [self-hosting guide](https://labradoodle.com/self-hosted-ai-agent/). The [full reference](https://github.com/elie222/rakazo/blob/main/docs/self-host.md) is on GitHub. Open reproducible bugs and feature requests in the [public GitHub repository](https://github.com/elie222/rakazo/issues). Report vulnerabilities only to [security@labradoodle.com](mailto:security@labradoodle.com).
+For self-hosted Labradoodle, start with the [self-hosting guide](https://labradoodle.com/self-hosted-ai-agent/). The [full reference](https://github.com/khoi/labibi/blob/main/docs/self-host.md) is on GitHub. Open reproducible bugs and feature requests in the [public GitHub repository](https://github.com/khoi/labibi/issues). Report vulnerabilities only to [security@labradoodle.com](mailto:security@labradoodle.com).
 
 Hosted users can permanently delete their account and associated personal Space data from the Account screen in the Labradoodle app, or on the web at [app.labradoodle.com](https://app.labradoodle.com) under Settings → Account. Without access to the app, email [hello@labradoodle.com](mailto:hello@labradoodle.com) from the account's email address to ask us to delete it. Sign-in security records are kept for up to 90 days.
 `;
@@ -193,10 +193,10 @@ Labradoodle Cloud at https://app.labradoodle.com is in beta. Self-hosting is als
 
 ## How an agent should use Labradoodle
 
-1. Read the [setup prompt](https://github.com/elie222/rakazo/blob/main/SETUP_PROMPT.md) before changing the user's machine.
-2. Use the [self-hosting guide](https://labradoodle.com/self-hosted-ai-agent/) for setup. The [GitHub guide](https://github.com/elie222/rakazo/blob/main/docs/self-host.md) is the full reference for backups, upgrades, and production layout.
+1. Read the [setup prompt](https://github.com/khoi/labibi/blob/main/SETUP_PROMPT.md) before changing the user's machine.
+2. Use the [self-hosting guide](https://labradoodle.com/self-hosted-ai-agent/) for setup. The [GitHub guide](https://github.com/khoi/labibi/blob/main/docs/self-host.md) is the full reference for backups, upgrades, and production layout.
 3. Confirm deployment choices and any host-level commands with the user, and keep secrets in local environment configuration rather than tracked files.
-4. Use the [public issue tracker](https://github.com/elie222/rakazo/issues) for reproducible bugs. Send vulnerabilities only to [security@labradoodle.com](mailto:security@labradoodle.com).
+4. Use the [public issue tracker](https://github.com/khoi/labibi/issues) for reproducible bugs. Send vulnerabilities only to [security@labradoodle.com](mailto:security@labradoodle.com).
 
 ## Canonical resources
 
@@ -209,10 +209,10 @@ Labradoodle Cloud at https://app.labradoodle.com is in beta. Self-hosting is als
 - [Download](https://labradoodle.com/download/): desktop, mobile, and web apps.
 - [About](https://labradoodle.com/about/)
 - [Brand](https://labradoodle.com/brand/)
-- [Source](https://github.com/elie222/rakazo)
+- [Source](https://github.com/khoi/labibi)
 - [Self-hosting guide](https://labradoodle.com/self-hosted-ai-agent/): requirements, Docker install, source setup, and desktop and mobile connections.
 - [Self-hosting Markdown](https://labradoodle.com/self-hosted-ai-agent.md): the setup guide with language-tagged code examples.
-- [Full self-hosting reference](https://github.com/elie222/rakazo/blob/main/docs/self-host.md)
+- [Full self-hosting reference](https://github.com/khoi/labibi/blob/main/docs/self-host.md)
 - [OpenClaw comparison](https://labradoodle.com/openclaw-alternative/)
 - [Docs](https://labradoodle.com/docs/): getting started, using Labradoodle, and self-hosting. Each page has a Markdown version.
 - [Integrations](https://labradoodle.com/integrations/): every app a bot can connect to. [Markdown list](https://labradoodle.com/integrations.md); each app page has a Markdown version with its actions.
@@ -221,7 +221,7 @@ Labradoodle Cloud at https://app.labradoodle.com is in beta. Self-hosting is als
 - [Voice providers for AI agents](https://labradoodle.com/voice-providers/): ElevenLabs, OpenAI, Cartesia, Fish Audio, self-hosted speech servers and macOS voices compared, with a page for each. Each page has a Markdown version.
 - [Submit a plugin](https://labradoodle.com/plugins/submit/): list a plugin in the Labradoodle marketplace. [Markdown with the API](https://labradoodle.com/plugins/submit.md).
 - [Blog](https://labradoodle.com/blog/)
-- [Releases](https://github.com/elie222/rakazo/releases)
+- [Releases](https://github.com/khoi/labibi/releases)
 - [Support](https://labradoodle.com/support/)
 - [Privacy](https://labradoodle.com/privacy/)
 - [Terms](https://labradoodle.com/terms/)
@@ -273,7 +273,7 @@ The plugin must be a public GitHub repository with a plugin manifest (\`plugin.j
 \`\`\`sh
 curl -X POST ${PLUGIN_SUBMISSIONS_URL} \\
   -H 'content-type: application/json' \\
-  -d '{"email":"you@example.com","name":"Acme","logo":"https://example.com/logo.svg","source":"https://github.com/acme/rakazo-plugin","description":"Search Acme tickets.","testing":"Install it and ask a bot to find ticket 42.","tested":true}'
+  -d '{"email":"you@example.com","name":"Acme","logo":"https://example.com/logo.svg","source":"https://github.com/acme/labradoodle-plugin","description":"Search Acme tickets.","testing":"Install it and ask a bot to find ticket 42.","tested":true}'
 \`\`\`
 
 A new submission returns \`201\` with \`{"id","status":"pending"}\`. Resubmitting the same source URL with the same email while it waits updates it and returns \`200\`. Invalid input returns \`400\` with an \`issues\` list naming each field.

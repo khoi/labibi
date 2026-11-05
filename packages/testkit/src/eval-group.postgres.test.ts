@@ -96,7 +96,7 @@ describe.skipIf(!databaseAvailable)("group eval tool budget", () => {
       },
       grade: () => [],
     };
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-group-budget-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "labradoodle-group-budget-"));
     // The per-run product cap would end Mika's turn at the trial budget, hiding the
     // window the trial itself must guard; keep the run cap above it for this fixture.
     const previousRunCap = process.env.MAX_TOOL_CALLS_PER_TURN;

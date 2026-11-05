@@ -1,11 +1,11 @@
-appId: com.rakazo.app
+appId: com.labradoodle.app
 name: New account
 ---
 # A hosted sign-up without a plan: the survey, then the paywall before the inbox.
 - runFlow:
     file: ../subflows/sign-in.yaml
     env:
-      RAKAZO_ACTIVE_EMAIL: ${RAKAZO_SCREENSHOT_FREE_EMAIL}
+      LABRADOODLE_ACTIVE_EMAIL: ${LABRADOODLE_SCREENSHOT_FREE_EMAIL}
 - extendedWaitUntil:
     visible: ".*How did you hear about us.*"
     timeout: 15000

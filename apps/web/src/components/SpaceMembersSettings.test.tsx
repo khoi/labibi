@@ -132,16 +132,16 @@ it("copies a new invite link and keeps it on screen", async () => {
   Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
   await renderWith({ spaceName: "Home", members: [owner], canManage: true });
   rpc.spaces.invites.create.mockResolvedValue({
-    url: "https://rakazo.example/invite/token-1",
+    url: "https://labradoodle.example/invite/token-1",
     expiresAt: new Date().toISOString(),
   });
 
   await act(async () => buttonNamed("Invite")?.click());
   expect(rpc.spaces.invites.create).toHaveBeenCalledWith({ spaceId: space.id });
-  expect(writeText).toHaveBeenCalledWith("https://rakazo.example/invite/token-1");
+  expect(writeText).toHaveBeenCalledWith("https://labradoodle.example/invite/token-1");
   expect(toast).toHaveBeenCalledWith("Invite link copied");
   const input = host.querySelector<HTMLInputElement>('input[aria-label="Invite link"]');
-  expect(input?.value).toBe("https://rakazo.example/invite/token-1");
+  expect(input?.value).toBe("https://labradoodle.example/invite/token-1");
   expect(input?.readOnly).toBe(true);
 });
 

@@ -64,7 +64,7 @@ async function main() {
   };
 
   // This CLI owns a disposable database; it never touches an inherited one.
-  const dataDir = mkdtempSync(path.join(tmpdir(), "rakazo-flows-"));
+  const dataDir = mkdtempSync(path.join(tmpdir(), "labradoodle-flows-"));
   const database = await startPostgres();
   let stop: (() => Promise<void>) | undefined;
   let closeSupervisor: (() => Promise<void>) | undefined;
@@ -75,7 +75,7 @@ async function main() {
       SANDBOX_PROVIDER: sandbox.provider,
       ...(sandbox.provider === "docker"
         ? {
-            RAKAZO_COMPUTER_IMAGE: process.env.RAKAZO_COMPUTER_IMAGE || "rakazo/computer:local",
+            LABRADOODLE_COMPUTER_IMAGE: process.env.LABRADOODLE_COMPUTER_IMAGE || "labradoodle/computer:local",
             SANDBOX_CONTROL_VIA_LOOPBACK: "true",
             SANDBOX_SCREEN_NETWORK: "published",
             SANDBOX_SCREEN_HOST: "127.0.0.1",
@@ -106,7 +106,7 @@ async function main() {
     });
     // Parallel runs share one generated client: generate it once per schema, under a lock, since
     // generating it from several runs at once collides on its folder.
-    await withLock(path.join(tmpdir(), "rakazo-flows-prisma-generate.lock"), () => {
+    await withLock(path.join(tmpdir(), "labradoodle-flows-prisma-generate.lock"), () => {
       // The schema and the installed generator together decide the generated client.
       const schema = createHash("sha256")
         .update(readFileSync(path.resolve("packages/db/prisma/schema.prisma")))

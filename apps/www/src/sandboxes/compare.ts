@@ -1,7 +1,7 @@
 import type { ArticleTable } from "../provider-article/types";
 import {
   BOAT,
-  BOAT_RAKAZO,
+  BOAT_LABRADOODLE,
   E2B_PRO_FEE,
   PRICES_NOTE,
   RATES,
@@ -38,7 +38,7 @@ export const HOSTED_SANDBOXES_TABLE: ArticleTable = {
       cells: [
         "Yes. Labradoodle Cloud runs on it",
         "Full VM per machine",
-        `${usd(boatMonthly(BOAT.small.hour, WORKDAY_HOURS))}, the monthly minimum. Labradoodle's smallest Boat size is ${BOAT_RAKAZO.vcpus} vCPU / ${BOAT_RAKAZO.gb} GB, which is also ${usd(boatMonthly(BOAT_RAKAZO.hour, WORKDAY_HOURS))}`,
+        `${usd(boatMonthly(BOAT.small.hour, WORKDAY_HOURS))}, the monthly minimum. Labradoodle's smallest Boat size is ${BOAT_LABRADOODLE.vcpus} vCPU / ${BOAT_LABRADOODLE.gb} GB, which is also ${usd(boatMonthly(BOAT_LABRADOODLE.hour, WORKDAY_HOURS))}`,
         "No fixed cap. Labradoodle renews a 2-hour lease while in use",
         "Disk",
         "No",

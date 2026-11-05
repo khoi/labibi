@@ -160,12 +160,12 @@ export function sanitizeSerenityBrainLabel(label: string): string {
 // adding a path segment.
 export function serenityBotEntity(botId: string, brainLabel = ""): string {
   const label = sanitizeSerenityBrainLabel(brainLabel);
-  return label ? `rakazo-bot/${label}--${botId}` : `rakazo-bot/${botId}`;
+  return label ? `labradoodle-bot/${label}--${botId}` : `labradoodle-bot/${botId}`;
 }
 
 export function serenitySpaceEntity(spaceId: string, brainLabel = ""): string {
   const label = sanitizeSerenityBrainLabel(brainLabel);
-  return label ? `rakazo-space/${label}--${spaceId}` : `rakazo-space/${spaceId}`;
+  return label ? `labradoodle-space/${label}--${spaceId}` : `labradoodle-space/${spaceId}`;
 }
 
 function recallEntities(
@@ -196,7 +196,7 @@ function rememberOperationKey(runScope: string, entity: string, fact: string): s
     .update(`${runScope}\n${entity}\n${fact.trim()}`)
     .digest("hex")
     .slice(0, 48);
-  return `rakazo:${digest}`;
+  return `labradoodle:${digest}`;
 }
 
 const wordSegmenter = new Intl.Segmenter("en", { granularity: "word" });
@@ -322,7 +322,7 @@ export class SerenityMemoryProvider implements SemanticMemoryProvider {
       context.spaceId,
       this.connection.brainLabel,
     );
-    const provenance = `rakazo space:${context.spaceId} bot:${request.botId}`;
+    const provenance = `labradoodle space:${context.spaceId} bot:${request.botId}`;
     const result = await rememberSerenity(request.content, provenance, this.connection, {
       entity,
       operationKey: rememberOperationKey(

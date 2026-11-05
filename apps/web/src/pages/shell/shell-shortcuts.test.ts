@@ -230,7 +230,7 @@ describe("cycleBotId", () => {
 describe("useShellShortcuts", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
-    delete window.rakazoDesktop;
+    delete window.labradoodleDesktop;
   });
 
   async function mount(run: (shortcut: ShellShortcut) => boolean, onTyping = () => {}) {
@@ -275,7 +275,7 @@ describe("useShellShortcuts", () => {
   it("runs known desktop menu commands and ignores the rest", async () => {
     let send: ((command: string) => void) | undefined;
     const stop = vi.fn();
-    window.rakazoDesktop = {
+    window.labradoodleDesktop = {
       platform: "linux",
       menu: {
         onCommand: (listener: (command: string) => void) => {

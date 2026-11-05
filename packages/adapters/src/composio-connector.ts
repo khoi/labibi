@@ -524,7 +524,7 @@ export class ComposioConnector implements ComposioProvider {
   }
 
   private async loadDirectory(): Promise<ToolkitDirectoryEntry[]> {
-    const session = await this.sessionFor("__rakazo_catalog__");
+    const session = await this.sessionFor("__labradoodle_catalog__");
     const toolkits = await collectPages((cursor) => session.toolkits({ limit: 50, cursor }));
     return toolkits.map((toolkit) => ({
       slug: toolkit.slug,

@@ -17,7 +17,7 @@ const xcode = createRequire(require.resolve("@expo/config-plugins", { paths: [di
 const sharing = (file) => require(`expo-sharing/plugin/build/ios/${file}`);
 
 function withTemplateProject(run) {
-  const directory = mkdtempSync(join(tmpdir(), "rakazo-share-extension-"));
+  const directory = mkdtempSync(join(tmpdir(), "labradoodle-share-extension-"));
   try {
     const file = join(directory, "project.pbxproj");
     writeFileSync(

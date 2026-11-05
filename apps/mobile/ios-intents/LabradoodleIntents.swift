@@ -119,7 +119,7 @@ private func target(
 ) async throws -> (botId: String, spaceId: String?)? {
   if let bot { return (bot.botId, bot.spaceId) }
   guard
-    let data = secureStoreItem("rakazo.last_bot_id")?.data(using: .utf8),
+    let data = secureStoreItem("labradoodle.last_bot_id")?.data(using: .utf8),
     let last = try? JSONDecoder().decode(SavedLastBot.self, from: data),
     !last.botId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
     !last.userId.isEmpty, last.apiBase == session.apiBase
@@ -133,7 +133,7 @@ private func target(
 
 @MainActor
 private func openChat(botId: String, spaceId: String?) async {
-  var link = URLComponents(string: "rakazo://thread")
+  var link = URLComponents(string: "labradoodle://thread")
   link?.queryItems = [URLQueryItem(name: "botId", value: botId)]
   if let spaceId { link?.queryItems?.append(URLQueryItem(name: "spaceId", value: spaceId)) }
   if let url = link?.url { await UIApplication.shared.open(url) }
@@ -330,14 +330,14 @@ private struct LabradoodleSession {
 
   // The keys lib/session.ts, lib/server-config.ts and lib/api.ts keep in expo-secure-store.
   static func load() throws -> LabradoodleSession {
-    guard let token = secureStoreItem("rakazo.session_token"), !token.isEmpty else {
+    guard let token = secureStoreItem("labradoodle.session_token"), !token.isEmpty else {
       throw MessageBotError.signedOut
     }
     let fallback = Bundle.main.object(forInfoDictionaryKey: "LabradoodleDefaultApiBase") as? String
-    guard let apiBase = secureStoreItem("rakazo.api_base") ?? fallback else {
+    guard let apiBase = secureStoreItem("labradoodle.api_base") ?? fallback else {
       throw MessageBotError.signedOut
     }
-    let space = secureStoreItem("rakazo.space_id")
+    let space = secureStoreItem("labradoodle.space_id")
     return LabradoodleSession(
       apiBase: apiBase.hasSuffix("/") ? String(apiBase.dropLast()) : apiBase,
       token: token,
@@ -347,7 +347,7 @@ private struct LabradoodleSession {
 
   /// The headers lib/server-headers.ts saved for this server, such as an access proxy's.
   private static func serverHeaders(for apiBase: String) -> [String: String] {
-    guard let stored = secureStoreItem("rakazo.server_headers")?.data(using: .utf8),
+    guard let stored = secureStoreItem("labradoodle.server_headers")?.data(using: .utf8),
       let saved = try? JSONDecoder().decode(SavedHeaders.self, from: stored),
       saved.apiBase == apiBase
     else { return [:] }
@@ -361,7 +361,7 @@ private struct LabradoodleSession {
     }
     var request = URLRequest(url: url, timeoutInterval: 5)
     for (name, value) in headers { request.setValue(value, forHTTPHeaderField: name) }
-    request.setValue("rakazo://", forHTTPHeaderField: "origin")
+    request.setValue("labradoodle://", forHTTPHeaderField: "origin")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "authorization")
     let (data, response) = try await Self.transport.data(for: request)
     try checkResponse(response)
@@ -449,9 +449,9 @@ private struct LabradoodleSession {
     request.httpMethod = "POST"
     for (name, value) in headers { request.setValue(value, forHTTPHeaderField: name) }
     request.setValue("application/json", forHTTPHeaderField: "content-type")
-    request.setValue("rakazo://", forHTTPHeaderField: "origin")
+    request.setValue("labradoodle://", forHTTPHeaderField: "origin")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "authorization")
-    if let spaceId { request.setValue(spaceId, forHTTPHeaderField: "x-rakazo-space-id") }
+    if let spaceId { request.setValue(spaceId, forHTTPHeaderField: "x-labradoodle-space-id") }
     request.httpBody = try JSONSerialization.data(withJSONObject: ["json": input])
     return request
   }

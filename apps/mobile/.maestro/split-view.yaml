@@ -1,4 +1,4 @@
-appId: com.rakazo.app
+appId: com.labradoodle.app
 name: Labradoodle split view on a wide window
 tags:
   - screenshots
@@ -22,9 +22,9 @@ tags:
 - tapOn: "Sign in"
 - runFlow: helpers/server.yaml
 - tapOn: "Email"
-- inputText: ${RAKAZO_SCREENSHOT_EMAIL}
+- inputText: ${LABRADOODLE_SCREENSHOT_EMAIL}
 - tapOn: "Password"
-- inputText: ${RAKAZO_SCREENSHOT_PASSWORD}
+- inputText: ${LABRADOODLE_SCREENSHOT_PASSWORD}
 - hideKeyboard
 - tapOn: "Sign in"
 - tapOn:

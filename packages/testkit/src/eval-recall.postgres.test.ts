@@ -60,7 +60,7 @@ describe.skipIf(!databaseAvailable)("recall eval through the product", () => {
       const judge = vi.fn(async () => ({ pass: true, reason: "Offline fixture verdict" }));
       const scenario = RECALL_EVAL_CASES.find((c) => c.id === id)!;
       const model = await startModelEmulator({ apiKey: fixtureKey, steps: findLease(read) });
-      const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-recall-eval-"));
+      const dataDir = await mkdtemp(path.join(tmpdir(), "labradoodle-recall-eval-"));
       let evidence: Evidence | undefined;
       try {
         const { createApp } = await import("@labradoodle/api/app");

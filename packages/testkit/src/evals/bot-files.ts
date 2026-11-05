@@ -81,7 +81,7 @@ function openedPeerSite(evidence: Evidence): boolean {
   return evidence.toolCalls.some((call) => {
     if (call.step !== evidence.finalStep) return false;
     const path = String(call.args.path ?? "")
-      .replace(/^(~|\/home\/rakazo)?\/+/, "")
+      .replace(/^(~|\/home\/labradoodle)?\/+/, "")
       .replace(/\/+$/, "");
     if (call.name === "list_files") return path === site;
     return call.name === "read_file" && files.has(path);

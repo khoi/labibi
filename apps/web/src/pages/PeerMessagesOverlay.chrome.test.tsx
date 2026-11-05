@@ -34,7 +34,7 @@ beforeEach(() => {
 afterEach(async () => {
   await act(async () => root.unmount());
   host.remove();
-  delete window.rakazoDesktop;
+  delete window.labradoodleDesktop;
   vi.unstubAllGlobals();
 });
 
@@ -60,7 +60,7 @@ async function render() {
 }
 
 it("clears the macOS window controls in the desktop app", async () => {
-  window.rakazoDesktop = { platform: "darwin" } as LabradoodleDesktop;
+  window.labradoodleDesktop = { platform: "darwin" } as LabradoodleDesktop;
   const view = await render();
   const header = view.firstElementChild!;
   expect(header.classList).toContain("app-drag");

@@ -92,10 +92,10 @@ import {
 import { clearUnsentSends } from "./thread-feedback";
 import { authResponseErrorText, errorText, sessionSaveErrorText } from "./user-error";
 
-const SPACE_KEY = "rakazo.space_id";
-const SPACE_ROLLBACK_KEY = "rakazo.space_rollback";
+const SPACE_KEY = "labradoodle.space_id";
+const SPACE_ROLLBACK_KEY = "labradoodle.space_rollback";
 /** The Space last used in each organization on this device, by organization id. */
-const ORGANIZATION_SPACES_KEY = "rakazo.org_spaces";
+const ORGANIZATION_SPACES_KEY = "labradoodle.org_spaces";
 const RPC_TIMEOUT_MS = 8_000;
 export const MAX_MOBILE_AUTH_RESPONSE_BYTES = 256 * 1024;
 export const MAX_MOBILE_RPC_RESPONSE_BYTES = 16 * 1024 * 1024;
@@ -593,7 +593,7 @@ export async function authHeaders(
   return {
     ...clientBuild.headers(),
     ...(token ? { authorization: `Bearer ${token}` } : {}),
-    ...(spaceId ? { "x-rakazo-space-id": spaceId } : {}),
+    ...(spaceId ? { "x-labradoodle-space-id": spaceId } : {}),
   };
 }
 
@@ -605,7 +605,7 @@ export type ApiRequestContext = {
 
 /** Keeps consent prompts separate across servers and the selected Space. */
 export function aiConsentCoalesceKey(requestContext: ApiRequestContext): string {
-  return [requestContext.apiBase, requestContext.headers["x-rakazo-space-id"] ?? ""].join("\u0000");
+  return [requestContext.apiBase, requestContext.headers["x-labradoodle-space-id"] ?? ""].join("\u0000");
 }
 
 /** Pins a request to the current server and session, and to a Space (the selected one by default). */
@@ -631,7 +631,7 @@ async function postAuth(path: string, input: Record<string, string>) {
       // Emails sent before an account has a language follow the one this app shows.
       headers: {
         "content-type": "application/json",
-        origin: "rakazo://",
+        origin: "labradoodle://",
         "accept-language": getActiveUiLocale(),
       },
       body: JSON.stringify(input),
@@ -698,7 +698,7 @@ export type PasswordResetCapabilities = AuthCapabilities;
 export async function passwordResetCapabilities(): Promise<PasswordResetCapabilities> {
   const { response, body } = await fetchMobileJson<unknown>(
     `${currentApiBase()}/api/auth/capabilities`,
-    { headers: { origin: "rakazo://" } },
+    { headers: { origin: "labradoodle://" } },
   );
   if (!response.ok) throw new Error(t("Could not load sign-in options"));
   return authCapabilitiesSchema.or(legacyAuthCapabilitiesSchema).parse(body);
@@ -711,7 +711,7 @@ export async function requestPasswordReset(email: string, redirectTo: string): P
       method: "POST",
       headers: {
         "content-type": "application/json",
-        origin: "rakazo://",
+        origin: "labradoodle://",
         "accept-language": getActiveUiLocale(),
       },
       body: JSON.stringify({ email, redirectTo }),
@@ -735,7 +735,7 @@ export async function updateAccountName(name: string): Promise<void> {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        origin: "rakazo://",
+        origin: "labradoodle://",
         ...(await authHeaders()),
       },
       body: JSON.stringify({ name: nextName }),
@@ -806,7 +806,7 @@ async function replaceSessionAfterPasswordChange(
       method: "POST",
       headers: {
         "content-type": "application/json",
-        origin: "rakazo://",
+        origin: "labradoodle://",
         ...headers,
       },
       body: JSON.stringify({ currentPassword, newPassword, revokeOtherSessions: true }),
@@ -892,7 +892,7 @@ export async function signOut() {
         `${currentApiBase()}/api/auth/sign-out`,
         {
           method: "POST",
-          headers: { "content-type": "application/json", origin: "rakazo://", ...headers },
+          headers: { "content-type": "application/json", origin: "labradoodle://", ...headers },
           body: "{}",
           signal: controller.signal,
         },
@@ -919,7 +919,7 @@ export async function deleteAccount(password?: string, token?: string) {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        origin: "rakazo://",
+        origin: "labradoodle://",
         ...(await authHeaders()),
       },
       body: JSON.stringify({ password, token }),
@@ -1025,7 +1025,7 @@ async function request(
   // a 401 arriving after the user switched Spaces — including A → B → A —
   // belongs to a stale request and must not touch the current selection.
   const requestHeaders = consentContext?.headers ?? (await authHeaders());
-  const requestSpaceId = requestHeaders["x-rakazo-space-id"];
+  const requestSpaceId = requestHeaders["x-labradoodle-space-id"];
   try {
     if (
       consentContext?.sessionGeneration !== undefined &&
@@ -1041,7 +1041,7 @@ async function request(
           method: "POST",
           headers: {
             "content-type": "application/json",
-            origin: "rakazo://",
+            origin: "labradoodle://",
             ...requestHeaders,
             ...correlation,
           },
@@ -1502,7 +1502,7 @@ async function subscribeRpcEvents(
       headers: {
         "content-type": "application/json",
         accept: "text/event-stream",
-        origin: "rakazo://",
+        origin: "labradoodle://",
         ...context.headers,
       },
       body: JSON.stringify({ json: input }),
@@ -1965,7 +1965,7 @@ export { loadSessionToken };
 export async function fetchAccountSecurity(): Promise<AccountSecurity> {
   const { response, body } = await fetchMobileJson<unknown>(
     `${currentApiBase()}/api/auth/account-security`,
-    { headers: { origin: "rakazo://", ...(await authHeaders()) } },
+    { headers: { origin: "labradoodle://", ...(await authHeaders()) } },
     null,
   );
   // Older servers support password accounts and the original change/delete endpoints.
@@ -1985,7 +1985,7 @@ async function postSignedInAuth(path: string, payload: Record<string, string> = 
       method: "POST",
       headers: {
         "content-type": "application/json",
-        origin: "rakazo://",
+        origin: "labradoodle://",
         ...(await authHeaders()),
       },
       body: JSON.stringify(payload),

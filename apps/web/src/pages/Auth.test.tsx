@@ -88,7 +88,7 @@ afterEach(async () => {
   await act(async () => root.unmount());
   host.remove();
   vi.restoreAllMocks();
-  delete window.rakazoDesktop;
+  delete window.labradoodleDesktop;
 });
 async function render(mode: "in" | "up" | "forgot" = "in", entry = "/") {
   await act(async () =>
@@ -175,7 +175,7 @@ it("hides SSO in password recovery", async () => {
 
 it("selects a non-redirecting SSO request on desktop", async () => {
   vi.spyOn(window, "open").mockReturnValue({ close: vi.fn() } as unknown as Window);
-  window.rakazoDesktop = {} as NonNullable<Window["rakazoDesktop"]>;
+  window.labradoodleDesktop = {} as NonNullable<Window["labradoodleDesktop"]>;
   vi.mocked(fetchAuthCapabilities).mockResolvedValue(capabilities);
   vi.mocked(authClient.signIn.social).mockResolvedValue({
     data: null,
@@ -194,7 +194,7 @@ it("selects a non-redirecting SSO request on desktop", async () => {
 
 it("lets the desktop app change its server from sign in", async () => {
   const change = vi.fn(async () => undefined);
-  window.rakazoDesktop = { server: { change } } as unknown as NonNullable<Window["rakazoDesktop"]>;
+  window.labradoodleDesktop = { server: { change } } as unknown as NonNullable<Window["labradoodleDesktop"]>;
   vi.mocked(fetchAuthCapabilities).mockResolvedValue(capabilities);
   await render();
   await act(async () =>

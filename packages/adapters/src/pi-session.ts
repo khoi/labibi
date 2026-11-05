@@ -199,12 +199,12 @@ export class PiJsonlSessionRecorder implements PiSessionRecorder {
     }
     const handle = new BestEffortPiSession(file, input.runId);
 
-    await handle.appendCustomEntry("rakazo_context", {
-      rakazoUserId: input.userId,
-      rakazoBotId: input.botId,
-      rakazoRunId: input.runId,
-      rakazoThreadId: input.threadId,
-      ...(input.traceId ? { rakazoTraceId: input.traceId } : {}),
+    await handle.appendCustomEntry("labradoodle_context", {
+      labradoodleUserId: input.userId,
+      labradoodleBotId: input.botId,
+      labradoodleRunId: input.runId,
+      labradoodleThreadId: input.threadId,
+      ...(input.traceId ? { labradoodleTraceId: input.traceId } : {}),
       model: input.model,
       provider: input.provider,
       thinkingLevel: input.thinkingLevel,

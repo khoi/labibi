@@ -88,7 +88,7 @@ jobs:
         # The page-browser tests run the computer image's helper, which drives Chromium through it.
         run: |
           infra/sandboxes/computer/install-agent-browser.sh "$RUNNER_TEMP/agent-browser"
-          echo "RAKAZO_AGENT_BROWSER=$RUNNER_TEMP/agent-browser/agent-browser" >> "$GITHUB_ENV"
+          echo "LABRADOODLE_AGENT_BROWSER=$RUNNER_TEMP/agent-browser/agent-browser" >> "$GITHUB_ENV"
       - name: Run Playwright tests
         if: steps.areas.outputs.e2e != 'false'
         id: playwright_tests

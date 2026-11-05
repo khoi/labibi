@@ -57,7 +57,7 @@ describePostgres("account export (PostgreSQL)", () => {
         data: [exporter, other, importer].map((id) => ({
           id,
           name: id,
-          email: `${id}@rakazo.test`,
+          email: `${id}@labradoodle.test`,
           emailVerified: false,
         })),
       });
@@ -419,12 +419,12 @@ describePostgres("account export (PostgreSQL)", () => {
       );
     const archive = await download(exporter);
 
-    const root = await mkdtemp(path.join(tmpdir(), "rakazo-account-roundtrip-"));
+    const root = await mkdtemp(path.join(tmpdir(), "labradoodle-account-roundtrip-"));
     const noop = new Proxy({}, { get: () => async () => undefined });
     const actor: Actor = {
       userId: importer,
       spaceId: importerSpace,
-      email: `${importer}@rakazo.test`,
+      email: `${importer}@labradoodle.test`,
       isDeploymentOwner: false,
     };
     try {

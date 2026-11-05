@@ -1,11 +1,11 @@
-appId: com.rakazo.app
+appId: com.labradoodle.app
 name: Skills
 ---
 - runFlow:
     file: ../subflows/sign-in.yaml
     env:
-      RAKAZO_ACTIVE_EMAIL: ${RAKAZO_SCREENSHOT_EMAIL}
-- openLink: "rakazo:///skills"
+      LABRADOODLE_ACTIVE_EMAIL: ${LABRADOODLE_SCREENSHOT_EMAIL}
+- openLink: "labradoodle:///skills"
 - extendedWaitUntil:
     visible: ".*Review Kit.*"
     timeout: 20000
@@ -27,7 +27,7 @@ name: Skills
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 03-new-skill
-- openLink: "rakazo:///skills"
+- openLink: "labradoodle:///skills"
 - tapOn: ".*Review Kit.*"
 - extendedWaitUntil:
     visible: ".*Install.*|.*Add.*"

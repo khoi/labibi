@@ -92,7 +92,7 @@ describe.skipIf(!enabled)("persisted source-verified history followups", () => {
           },
         ],
       });
-      const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-history-followup-"));
+      const dataDir = await mkdtemp(path.join(tmpdir(), "labradoodle-history-followup-"));
       try {
         const { createApp } = await import("@labradoodle/api/app");
         const result = await runTrial(

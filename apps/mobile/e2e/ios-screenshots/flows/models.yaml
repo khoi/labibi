@@ -1,11 +1,11 @@
-appId: com.rakazo.app
+appId: com.labradoodle.app
 name: Models
 ---
 - runFlow:
     file: ../subflows/sign-in.yaml
     env:
-      RAKAZO_ACTIVE_EMAIL: ${RAKAZO_SCREENSHOT_EMAIL}
-- openLink: "rakazo:///models"
+      LABRADOODLE_ACTIVE_EMAIL: ${LABRADOODLE_SCREENSHOT_EMAIL}
+- openLink: "labradoodle:///models"
 - extendedWaitUntil:
     visible: ".*Claude Fable 5.1.*"
     timeout: 15000
@@ -16,7 +16,7 @@ name: Models
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 02-model-picker
-- openLink: "rakazo:///models"
+- openLink: "labradoodle:///models"
 - extendedWaitUntil:
     visible: "Add provider"
     timeout: 15000

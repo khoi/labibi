@@ -1,4 +1,4 @@
-appId: com.rakazo.app
+appId: com.labradoodle.app
 ---
 - runFlow: launch-app.yaml
 - runFlow:
@@ -10,9 +10,9 @@ appId: com.rakazo.app
     visible: "Sign in to Labradoodle"
     timeout: 15000
 - tapOn: "Email"
-- inputText: ${RAKAZO_ACTIVE_EMAIL}
+- inputText: ${LABRADOODLE_ACTIVE_EMAIL}
 - tapOn: "Password"
-- inputText: ${RAKAZO_SCREENSHOT_PASSWORD}
+- inputText: ${LABRADOODLE_SCREENSHOT_PASSWORD}
 - hideKeyboard
 - tapOn: "Sign in"
 - tapOn:

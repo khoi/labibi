@@ -55,14 +55,14 @@ beforeEach(() => {
 afterEach(async () => {
   await act(async () => root.unmount());
   host.remove();
-  delete window.rakazoDesktop;
+  delete window.labradoodleDesktop;
 });
 
 const laptop = { deviceId: "d1", name: "Laptop", connected: true };
 const desk = { deviceId: "d2", name: "Desk PC", connected: false };
 
 function desktopWith(device: NonNullable<LabradoodleDesktop["device"]>) {
-  window.rakazoDesktop = { platform: "darwin", device } as LabradoodleDesktop;
+  window.labradoodleDesktop = { platform: "darwin", device } as LabradoodleDesktop;
 }
 
 it("stays hidden without any computer", async () => {
@@ -158,7 +158,7 @@ it("turns this computer on and off for the app-managed local server", async () =
     }),
     onConfigure: () => () => undefined,
   };
-  window.rakazoDesktop = {
+  window.labradoodleDesktop = {
     platform: "darwin",
     computer,
     device: { state: async () => null, setAllowed: vi.fn() },
@@ -182,7 +182,7 @@ it("stays hidden on a server that does not run bots on this computer", async () 
     canChooseHostComputer: false,
     computerHost: null,
   } as Awaited<ReturnType<typeof rpc.me>>);
-  window.rakazoDesktop = {
+  window.labradoodleDesktop = {
     platform: "darwin",
     computer: { managesHostChoice: true },
     device: { state: async () => null },
@@ -206,7 +206,7 @@ it("keeps the local switch when a later profile read fails", async () => {
     }),
     onConfigure: () => () => undefined,
   };
-  window.rakazoDesktop = {
+  window.labradoodleDesktop = {
     platform: "darwin",
     computer,
     device: { state: async () => null, setAllowed: vi.fn() },

@@ -14,7 +14,7 @@ describe("server request headers", () => {
   });
 
   it("refuses headers Labradoodle or the transport own, without echoing values", () => {
-    for (const name of ["Authorization", "Cookie", "Origin", "X-RAKAZO-Space-Id", "Host"]) {
+    for (const name of ["Authorization", "Cookie", "Origin", "X-LABRADOODLE-Space-Id", "Host"]) {
       expect(() => serverHeadersFromRows([{ name, value: "secret" }])).toThrow(
         /^Invalid custom headers$/,
       );
@@ -25,7 +25,7 @@ describe("server request headers", () => {
   });
 
   it("rejects injection, duplicate names, reserved prefixes and oversized inputs", () => {
-    for (const name of ["a:b", "a b", "pRoXy-Test", "sEc-Test", "oRiGiN", "x-RAKAZO-test"]) {
+    for (const name of ["a:b", "a b", "pRoXy-Test", "sEc-Test", "oRiGiN", "x-LABRADOODLE-test"]) {
       expect(parseServerHeaders({ [name]: "secret" })).toBeNull();
     }
     for (const value of ["a\r", "a\n", "a\0", "a\t", "a\x7f", "a".repeat(1025)]) {
@@ -39,7 +39,7 @@ describe("server request headers", () => {
 
   it("drops a damaged saved value", () => {
     expect(parseServerHeaders({ "x-a": "1" })).toEqual({ "x-a": "1" });
-    expect(parseServerHeaders({ origin: "rakazo://" })).toBeNull();
+    expect(parseServerHeaders({ origin: "labradoodle://" })).toBeNull();
     expect(parseServerHeaders("x-a: 1")).toBeNull();
     expect(parseServerHeaders({ "x-a": "line\nbreak" })).toBeNull();
   });

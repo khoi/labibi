@@ -70,7 +70,7 @@ describe("attempt correlation", () => {
     let emit: (callback: LabradoodleDesktopOAuthCallback) => void = () => undefined;
     const unsubscribe = vi.fn();
     vi.stubGlobal("window", {
-      rakazoDesktop: {
+      labradoodleDesktop: {
         ...desktop("linux"),
         oauth: {
           onCallback: (listener: (callback: LabradoodleDesktopOAuthCallback) => void) => {

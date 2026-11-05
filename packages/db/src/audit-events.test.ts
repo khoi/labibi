@@ -32,7 +32,7 @@ let store: ReturnType<typeof fakeStore>;
 
 beforeEach(() => {
   sink = createTestSink();
-  installLogger(createLogger({ service: "rakazo-api", sinks: [sink], level: "debug" }));
+  installLogger(createLogger({ service: "labradoodle-api", sinks: [sink], level: "debug" }));
   store = fakeStore();
   installAuditEventStore(store as never);
 });

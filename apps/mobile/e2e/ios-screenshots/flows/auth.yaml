@@ -1,4 +1,4 @@
-appId: com.rakazo.app
+appId: com.labradoodle.app
 name: Auth
 ---
 - runFlow: ../subflows/launch-app.yaml
@@ -21,7 +21,7 @@ name: Auth
     timeout: 3000
 - takeScreenshot: 02-sign-in
 - tapOn: "Email"
-- inputText: ${RAKAZO_SCREENSHOT_EMAIL}
+- inputText: ${LABRADOODLE_SCREENSHOT_EMAIL}
 - tapOn: "Password"
 - inputText: "wrong-password"
 - hideKeyboard

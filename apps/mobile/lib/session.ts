@@ -10,8 +10,8 @@ import { forgetReferrals } from "./referral";
 import { rememberSignedIn } from "./returning-user";
 import { clearFailedSends } from "./thread-feedback";
 
-const SESSION_KEY = "rakazo.session_token";
-const INTEGRATIONS_SCOPE_KEY = "rakazo.integrations-scope";
+const SESSION_KEY = "labradoodle.session_token";
+const INTEGRATIONS_SCOPE_KEY = "labradoodle.integrations-scope";
 
 export type VerifiedIntegrationsScope = {
   apiBase: string;

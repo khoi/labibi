@@ -7,7 +7,7 @@ import { t } from "./i18n.js";
 /** Managed desktop origin; development keeps its usual web/API ports. */
 export const DEFAULT_LOCAL_WEB_URL = "http://127.0.0.1:45173";
 /** Hosted Labradoodle; setup saves it as an `existing` server so it opens like any other. */
-export const RAKAZO_CLOUD_URL = "https://app.labradoodle.com";
+export const LABRADOODLE_CLOUD_URL = "https://app.labradoodle.com";
 export const PROBE_RESPONSE_LIMIT_BYTES = 64 * 1024;
 
 export const SETUP_FILE_NAME = "setup.json";
@@ -124,7 +124,7 @@ export function serializeSetup(setup: DesktopSetup): string {
 
 /**
  * Decides between the first-run setup window and the app window. An explicit
- * `RAKAZO_WEB_URL` still wins over saved configuration so test and performance
+ * `LABRADOODLE_WEB_URL` still wins over saved configuration so test and performance
  * harnesses can point the shell anywhere without touching a user's real setup.
  */
 export function resolveStartupTarget(input: {
@@ -182,7 +182,7 @@ export function sessionPartitionForServerUrl(targetUrl: string): string | null {
     const url = new URL(targetUrl);
     if (url.protocol !== "http:" && url.protocol !== "https:") return null;
     const digest = createHash("sha256").update(url.origin).digest("hex").slice(0, 24);
-    return `persist:rakazo-${digest}`;
+    return `persist:labradoodle-${digest}`;
   } catch {
     return null;
   }

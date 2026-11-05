@@ -1,0 +1,9 @@
+# Optional drop-in: /etc/systemd/system/labradoodle-backup.service.d/alerts.conf
+[Unit]
+OnFailure=labradoodle-backup-alert.service
+
+[Service]
+ExecStartPost=-/usr/local/sbin/labradoodle-host-alert backup-failure ""
+ReadWritePaths=/var/lib/labradoodle/alerts
+StateDirectory=labradoodle/alerts
+StateDirectoryMode=0700

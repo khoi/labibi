@@ -6,16 +6,16 @@ ALTER TABLE "bots" ADD COLUMN "avatarSetPinned" BOOLEAN NOT NULL DEFAULT false;
 -- Each account starts on the set most of its bots already wear (Original on a tie), so no bot
 -- changes look. Bots that differ from it are pinned, so changing the default later leaves them.
 UPDATE "user" AS u
-SET "botAvatarSet" = 'rakazo'
+SET "botAvatarSet" = 'labradoodle'
 FROM (
   SELECT "userId",
-         COUNT(*) FILTER (WHERE "avatarSet" = 'rakazo') AS rakazo,
-         COUNT(*) FILTER (WHERE "avatarSet" <> 'rakazo') AS other
+         COUNT(*) FILTER (WHERE "avatarSet" = 'labradoodle') AS labradoodle,
+         COUNT(*) FILTER (WHERE "avatarSet" <> 'labradoodle') AS other
   FROM "bots"
   WHERE "archivedAt" IS NULL
   GROUP BY "userId"
 ) AS counts
-WHERE counts."userId" = u."id" AND counts.rakazo > counts.other;
+WHERE counts."userId" = u."id" AND counts.labradoodle > counts.other;
 
 UPDATE "bots" AS b
 SET "avatarSetPinned" = true

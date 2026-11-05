@@ -54,11 +54,11 @@ async function read() {
   });
 }
 
-async function report(rakazoScreen: string) {
+async function report(labradoodleScreen: string) {
   const frame = container.querySelector("iframe");
   await act(async () => {
     window.dispatchEvent(
-      new MessageEvent("message", { data: { rakazoScreen }, source: frame?.contentWindow }),
+      new MessageEvent("message", { data: { labradoodleScreen }, source: frame?.contentWindow }),
     );
   });
 }

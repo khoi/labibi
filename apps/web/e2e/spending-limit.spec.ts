@@ -4,7 +4,7 @@ import { captureScreenshot, completeOnboarding, openUserSettings, signup } from 
 test("shows the spending limit once a card is saved, and sets a monthly limit", async ({
   page,
 }, testInfo) => {
-  await signup(page, `spending-limit-${Date.now()}@rakazo.test`, "password12", "Spender");
+  await signup(page, `spending-limit-${Date.now()}@labradoodle.test`, "password12", "Spender");
   await completeOnboarding(page);
   const settings = await openUserSettings(page);
   await settings.getByTestId("settings-nav-confirmations").click();

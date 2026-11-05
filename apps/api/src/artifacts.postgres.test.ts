@@ -18,7 +18,7 @@ describePostgres("artifact upload nonce (PostgreSQL)", () => {
   const actor: Actor = {
     userId,
     spaceId,
-    email: `${userId}@rakazo.test`,
+    email: `${userId}@labradoodle.test`,
     isDeploymentOwner: false,
   };
   const stored = new Set<string>();
@@ -59,7 +59,7 @@ describePostgres("artifact upload nonce (PostgreSQL)", () => {
       await db.pool.end();
     };
     await system.user.create({
-      data: { id: userId, name: userId, email: `${userId}@rakazo.test`, emailVerified: false },
+      data: { id: userId, name: userId, email: `${userId}@labradoodle.test`, emailVerified: false },
     });
     await system.organization.create({
       data: { id: organizationId, name: "Nonce Org", slug: organizationId, createdAt: new Date() },

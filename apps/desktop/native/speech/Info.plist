@@ -4,7 +4,7 @@
 <plist version="1.0">
   <dict>
     <key>CFBundleIdentifier</key>
-    <string>dev.rakazo.desktop.speech</string>
+    <string>dev.labradoodle.desktop.speech</string>
     <key>CFBundleName</key>
     <string>Labradoodle</string>
     <key>NSSpeechRecognitionUsageDescription</key>

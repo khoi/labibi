@@ -27,14 +27,14 @@ describe("MCP app domains", () => {
           "https://[::1]",
           "https://intranet",
           "https://cdn.example.com/path",
-          "https://app.rakazo.example",
-          "https://*.rakazo.example",
+          "https://app.labradoodle.example",
+          "https://*.labradoodle.example",
           "javascript:alert(1)",
           "'unsafe-eval'",
           42,
         ],
         "resource",
-        ["app.rakazo.example"],
+        ["app.labradoodle.example"],
       ),
     ).toEqual([
       "https://api.weather.example",
@@ -94,7 +94,7 @@ describe("MCP app content policy", () => {
 describe("MCP app shell", () => {
   it("embeds the app for a one-document WebView without letting it close the script", () => {
     const shell = mcpAppShellDocument({ head: "<meta>", body: "</script><b> </b>" });
-    expect(shell).toContain('window.__rakazoApp={"head":"\\u003cmeta>"');
+    expect(shell).toContain('window.__labradoodleApp={"head":"\\u003cmeta>"');
     expect(shell).not.toContain("</script><b>");
     expect(shell).toContain("\\u2028");
     // Minified code is full of `$&` and `$'`, which a string replacement would expand.
@@ -102,7 +102,7 @@ describe("MCP app shell", () => {
     expect(mcpAppShellDocument({ head: "", body: code })).toContain(
       JSON.stringify(code).replace(/</g, "\\u003c"),
     );
-    expect(MCP_APP_SHELL_HTML).toContain("<!--rakazo-app-boot-->");
+    expect(MCP_APP_SHELL_HTML).toContain("<!--labradoodle-app-boot-->");
     expect(MCP_APP_SHELL_HTML).toContain('sandbox="allow-scripts allow-forms"');
     expect(MCP_APP_SHELL_HTML).not.toContain("allow-same-origin");
   });

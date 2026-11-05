@@ -15,16 +15,16 @@ export const OPENCLAW_FEATURES_URL = "https://docs.openclaw.ai/concepts/features
 export const OPENCLAW_SANDBOX_URL = "https://docs.openclaw.ai/gateway/sandboxing";
 export const OPENCLAW_GITHUB_URL = "https://github.com/openclaw/openclaw";
 
-export const PUBLISHED_IMAGES_INSTALL = `mkdir -p rakazo && cd rakazo &&
-curl -fsSLO https://raw.githubusercontent.com/elie222/rakazo/main/infra/compose/install-images.sh &&
+export const PUBLISHED_IMAGES_INSTALL = `mkdir -p labradoodle && cd labradoodle &&
+curl -fsSLO https://raw.githubusercontent.com/khoi/labibi/main/infra/compose/install-images.sh &&
 bash install-images.sh`;
 
 export const PUBLISHED_IMAGES_SERVER = `bash install-images.sh --prepare-only
 # Edit .env, then:
 bash install-images.sh`;
 
-export const SOURCE_CHECKOUT = `git clone https://github.com/elie222/rakazo.git
-cd rakazo
+export const SOURCE_CHECKOUT = `git clone https://github.com/khoi/labibi.git
+cd labradoodle
 cp .env.example .env`;
 
 export const SOURCE_DEV = `docker compose --env-file .env \\
@@ -51,7 +51,7 @@ export type FaqItem = {
 
 export type ComparisonRow = {
   aspect: string;
-  rakazo: string;
+  labradoodle: string;
   openclaw: string;
 };
 
@@ -154,79 +154,79 @@ export const OPENCLAW_FAQS: readonly FaqItem[] = [
 export const COMPARISON_ROWS: readonly ComparisonRow[] = [
   {
     aspect: "Setup",
-    rakazo:
+    labradoodle:
       "Docker installer or the desktop app's local stack, then an account and a model. After that Labradoodle is just chat: a new bot interviews you, and you manage it from the chat.",
     openclaw:
       "CLI install, then Quick start or Custom setup. The Gateway can stay in that terminal for a first chat. `openclaw gateway install` is the background service (LaunchAgent, systemd user unit, or Windows Scheduled Task). Then `openclaw gateway status` and `openclaw dashboard`. A phone channel is a separate step.",
   },
   {
     aspect: "Day-to-day management",
-    rakazo:
+    labradoodle:
       "You manage the bot from the same chat on the web, desktop, and mobile apps. Routines are readable Markdown and can run on a schedule. A bot can pause for approval at a boundary you set.",
     openclaw:
       "Later changes go through `openclaw configure` and `~/.openclaw/openclaw.json`. `openclaw doctor` and `openclaw triage` diagnose the install. The Gateway stays running in a terminal or as the installed background service.",
   },
   {
     aspect: "What it is",
-    rakazo:
+    labradoodle:
       "An open source platform for persistent AI teammates. Bots keep conversations, memory, routines, and history, and can use a browser, shell, and desktop.",
     openclaw:
       "A self-hosted gateway that connects chat apps to an AI assistant on your machine. The project describes one Gateway for the channels you already use.",
   },
   {
     aspect: "License",
-    rakazo: "Apache-2.0. Maintained in the open by Inbox Zero Inc.",
+    labradoodle: "Apache-2.0. Maintained in the open by Inbox Zero Inc.",
     openclaw: "MIT. Stewarded by the OpenClaw Foundation, an independent 501(c)(3).",
   },
   {
     aspect: "Where it runs",
-    rakazo:
+    labradoodle:
       "You self-host with published Docker images or from source. Web, desktop, and mobile apps are clients of that API. Hosted Labradoodle Cloud is in beta.",
     openclaw:
       "You run the Gateway on your own computer or a server. The docs say there is no hosted service in the middle. Interfaces include a browser Control UI, companion apps, and iOS and Android nodes.",
   },
   {
     aspect: "How you talk to it",
-    rakazo:
+    labradoodle:
       "The Labradoodle web app, Electron desktop app, and Expo mobile app. Optional connectors can attach Slack, WhatsApp, Telegram, iMessage via Sendblue, and Feishu/Lark.",
     openclaw:
       "Chat apps are the primary surface. Documented channels include Discord, Google Chat, iMessage, Matrix, Microsoft Teams, Signal, Slack, Telegram, WhatsApp, Zalo, and others via plugins, plus WebChat.",
   },
   {
     aspect: "Models",
-    rakazo:
+    labradoodle:
       "Bring your own keys for OpenAI, Anthropic, Google, OpenRouter, or Vercel AI Gateway. OpenAI-compatible endpoints and a local model server (Ollama, LM Studio, llama.cpp, or MLX) are supported. Each bot can use a different model.",
     openclaw:
       "Many providers, including Anthropic, OpenAI, and Google, plus OAuth for some subscriptions such as OpenAI Codex. Self-hosted endpoints include vLLM, SGLang, Ollama, llama.cpp, LM Studio, and other OpenAI-compatible or Anthropic-compatible servers, with failover.",
   },
   {
     aspect: "Computers and tools",
-    rakazo:
+    labradoodle:
       "Browser, terminal, files, and a graphical desktop. The default computer is local Docker. Optional remote computers are E2B, Daytona, CreateOS, and Boat. An explicit desktop provider can run on the host; it is not the default.",
     openclaw:
       "Tools include browser automation and exec. Sandboxing is off by default. When enabled, documented backends include Docker, Podman, SSH, OpenShell, and Crabbox. The Gateway process stays on the host.",
   },
   {
     aspect: "Routines and memory",
-    rakazo:
+    labradoodle:
       "Routines are saved as readable Markdown. Memory, schedules, an audit log, and approval boundaries are part of the product.",
     openclaw:
       "Sessions, memory, skills, cron, hooks, and plugins. Direct chats can share a main session. Group chats are isolated by default.",
   },
   {
     aspect: "Integrations",
-    rakazo:
+    labradoodle:
       "Optional Composio or Pipedream catalogs, plus MCP servers, Treg, and OpenAPI tools you add.",
     openclaw: "Channel plugins, skills, a plugin SDK, and web search through several providers.",
   },
   {
     aspect: "More than one agent",
-    rakazo: "Bots can delegate to peer bots or short-lived subagents.",
+    labradoodle: "Bots can delegate to peer bots or short-lived subagents.",
     openclaw: "Multi-agent routing with isolated sessions per agent, workspace, or sender.",
   },
   {
     aspect: "Software cost",
-    rakazo: "No seat fee for the open source software. You pay the models and infrastructure you use.",
+    labradoodle: "No seat fee for the open source software. You pay the models and infrastructure you use.",
     openclaw: "The docs say there is no paid tier. You pay the models and the machine you run.",
   },
 ];
@@ -253,7 +253,7 @@ function faqMarkdown(items: readonly FaqItem[]): string {
 function comparisonMarkdown(): string {
   const header = "| | Labradoodle | OpenClaw |\n| --- | --- | --- |";
   const rows = COMPARISON_ROWS.map(
-    (row) => `| ${row.aspect} | ${row.rakazo} | ${row.openclaw} |`,
+    (row) => `| ${row.aspect} | ${row.labradoodle} | ${row.openclaw} |`,
   );
   return [header, ...rows].join("\n");
 }
@@ -288,7 +288,7 @@ These work on your own deployment and are not yet on Labradoodle Cloud. Each tur
 - **Image and video generation.** \`MEDIA_GENERATION_PROVIDER=fal\`, \`MEDIA_GENERATION_API_KEY\`, and an image or video model (\`MEDIA_GENERATION_IMAGE_MODEL\`, \`MEDIA_GENERATION_VIDEO_MODEL\`).
 - **Purchases with Stripe Link.** \`PAYMENT_WALLET_PROVIDER=link\`. Each purchase waits for your approval in Link.
 - **Cursor cloud agents.** \`CLOUD_AGENT_PROVIDER=cursor\`, \`CURSOR_API_KEY\`, and \`CLOUD_AGENT_SPACE_ID\`.
-- **Local models and local MCP servers.** \`RAKAZO_LOCAL_MODELS\`, and \`MCP_STDIO_ENABLED\` with \`MCP_STDIO_ALLOWED_COMMANDS\`.
+- **Local models and local MCP servers.** \`LABRADOODLE_LOCAL_MODELS\`, and \`MCP_STDIO_ENABLED\` with \`MCP_STDIO_ALLOWED_COMMANDS\`.
 
 The [full guide](${DOCS_URL}) lists every setting for each one.
 
@@ -318,7 +318,7 @@ Use the same installer on a VPS when bots should stay running. Images Compose bi
 ${PUBLISHED_IMAGES_SERVER}
 \`\`\`
 
-Before the second command, set \`RAKAZO_HOST\` to the hostname and set \`BETTER_AUTH_URL\`, \`WEB_ORIGIN\`, and \`API_URL\` to that same \`https://\` origin. For a remote computer instead of local Docker, set \`SANDBOX_PROVIDER\` to \`e2b\`, \`daytona\`, \`createos\`, or \`boat\` and add that provider's API key.
+Before the second command, set \`LABRADOODLE_HOST\` to the hostname and set \`BETTER_AUTH_URL\`, \`WEB_ORIGIN\`, and \`API_URL\` to that same \`https://\` origin. For a remote computer instead of local Docker, set \`SANDBOX_PROVIDER\` to \`e2b\`, \`daytona\`, \`createos\`, or \`boat\` and add that provider's API key.
 
 \`\`\`Caddyfile
 ${CADDY_SNIPPET}

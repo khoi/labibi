@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
 
 async function openBotInSpace(page: Page, spaceId: string, botId: string, name: string) {
-  await page.evaluate((id) => localStorage.setItem("rakazo:space-id", id), spaceId);
+  await page.evaluate((id) => localStorage.setItem("labradoodle:space-id", id), spaceId);
   await page.goto(`/app/${botId}`);
   await expect(page.getByPlaceholder(`Message ${name}`)).toBeVisible();
 }
@@ -25,7 +25,7 @@ test("an owner invites someone by link and both see the space's members", async 
   await owner.grantPermissions(["clipboard-read", "clipboard-write"]);
   const stamp = Date.now();
 
-  await signup(ownerPage, `share-owner-${stamp}@rakazo.test`, "password12", "Ada Owner");
+  await signup(ownerPage, `share-owner-${stamp}@labradoodle.test`, "password12", "Ada Owner");
   await completeOnboarding(ownerPage);
   const home = await rpc<{ id: string }>(ownerPage, "spaces/create", { name: "Home" });
   await ownerPage.reload();
@@ -52,7 +52,7 @@ test("an owner invites someone by link and both see the space's members", async 
   await inviteePage.goto(invitePath);
   await expect(inviteePage).toHaveURL(/\/sign-in\?next=%2Finvite%2F/);
 
-  await signup(inviteePage, `share-invitee-${stamp}@rakazo.test`, "password12", "Bob Invitee");
+  await signup(inviteePage, `share-invitee-${stamp}@labradoodle.test`, "password12", "Bob Invitee");
   await completeOnboarding(inviteePage);
   await inviteePage.goto(invitePath);
   await expect(inviteePage.getByRole("heading", { name: "Join Home" })).toBeVisible();
@@ -75,7 +75,7 @@ test("an owner invites someone by link and both see the space's members", async 
   // Both people talk to one bot in the shared space; each sees who wrote what.
   const bot = await ownerPage.request
     .post("/rpc/bots/create", {
-      headers: { "x-rakazo-space-id": home.id },
+      headers: { "x-labradoodle-space-id": home.id },
       data: {
         json: {
           name: "Family",
@@ -98,7 +98,7 @@ test("an owner invites someone by link and both see the space's members", async 
   await captureScreenshot(ownerPage, testInfo, "shared-thread-owner");
 
   // A group in the shared space: each bot's reply is named and in its own color.
-  const inHome = { "x-rakazo-space-id": home.id };
+  const inHome = { "x-labradoodle-space-id": home.id };
   const post = async <T>(path: string, json: unknown) =>
     ownerPage.request
       .post(`/rpc/${path}`, { headers: inHome, data: { json } })
@@ -115,7 +115,7 @@ test("an owner invites someone by link and both see the space's members", async 
     name: "Household",
     botIds: [bot.id, planner.id],
   });
-  await inviteePage.evaluate((id) => localStorage.setItem("rakazo:space-id", id), home.id);
+  await inviteePage.evaluate((id) => localStorage.setItem("labradoodle:space-id", id), home.id);
   await inviteePage.goto(`/app/g/${group.id}`);
   await send(inviteePage, "@everyone what should we cook tonight?");
   await expect(inviteePage.getByTestId("message-bot-bubble")).toHaveCount(2, { timeout: 30_000 });
@@ -124,7 +124,7 @@ test("an owner invites someone by link and both see the space's members", async 
 
   // The link was single use.
   await invitee.clearCookies();
-  await signup(inviteePage, `share-late-${stamp}@rakazo.test`, "password12", "Late Invitee");
+  await signup(inviteePage, `share-late-${stamp}@labradoodle.test`, "password12", "Late Invitee");
   await completeOnboarding(inviteePage);
   await inviteePage.goto(invitePath);
   await expect(

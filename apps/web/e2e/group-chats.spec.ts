@@ -15,7 +15,7 @@ async function createBot(page: Page, name: string) {
 
 test("create group from + and see two bots in one transcript", async ({ page }, testInfo) => {
   const stamp = Date.now();
-  await signup(page, `group-${stamp}@rakazo.test`, "password12", "Group E2E");
+  await signup(page, `group-${stamp}@labradoodle.test`, "password12", "Group E2E");
   await completeOnboarding(page);
   await page.goto("/app");
   await page.waitForURL(/\/app\/[^/]+$/);
@@ -93,7 +93,7 @@ test("create group from + and see two bots in one transcript", async ({ page }, 
     .locator("aside")
     .first()
     .getByRole("button", { name: /^Draft team/ })
-    .locator(".rakazo-group-avatar");
+    .locator(".labradoodle-group-avatar");
   await expect(groupAvatar).toBeVisible();
   await expect(groupAvatar.locator('[data-slot="dood"]')).toHaveCount(2);
   await expect(groupAvatar.locator('[data-slot="dood"][data-state="working"]')).toHaveCount(1);

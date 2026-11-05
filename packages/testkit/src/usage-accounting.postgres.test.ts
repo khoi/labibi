@@ -82,7 +82,7 @@ describe.skipIf(!enabled)("persisted Pi usage accounting", () => {
         },
       ],
     });
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-usage-fixture-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "labradoodle-usage-fixture-"));
     let stop: (() => Promise<void>) | undefined;
     try {
       const { createApp } = await import("@labradoodle/api/app");
@@ -106,7 +106,7 @@ describe.skipIf(!enabled)("persisted Pi usage accounting", () => {
         method: "POST",
         headers: { "content-type": "application/json", origin },
         body: JSON.stringify({
-          email: `usage-${randomUUID()}@rakazo.test`,
+          email: `usage-${randomUUID()}@labradoodle.test`,
           password: "password12",
           name: "Usage fixture",
         }),

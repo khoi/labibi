@@ -86,12 +86,12 @@ describe("last bot ownership", () => {
     ["other account", JSON.stringify({ ...record, userId: "account-b" })],
     ["other server", JSON.stringify({ ...record, apiBase: "https://other.example.test" })],
   ])("ignores a stored %s", async (_name, stored) => {
-    saved.set("rakazo.last_bot_id", stored);
+    saved.set("labradoodle.last_bot_id", stored);
     expect(await lastBot.loadLastBotId()).toBe("");
   });
 
   it("reads a matching owner from disk on a cold start", async () => {
-    saved.set("rakazo.last_bot_id", JSON.stringify(record));
+    saved.set("labradoodle.last_bot_id", JSON.stringify(record));
     await restart();
     expect(await lastBot.loadLastBotId()).toBe("researcher");
   });
@@ -142,14 +142,14 @@ describe("last bot ownership", () => {
     async (change) => {
       await lastBot.saveLastBotId("researcher", "space-a");
       vi.mocked(SecureStore.deleteItemAsync).mockImplementation(async (key) => {
-        if (key === "rakazo.last_bot_id") await new Promise<void>(() => {});
+        if (key === "labradoodle.last_bot_id") await new Promise<void>(() => {});
         else saved.delete(key);
       });
       if (change === "account") account.userId = "account-b";
       else account.apiBase = "https://other.example.test";
       await session.saveSessionToken("session-b");
-      expect(saved.get("rakazo.session_token")).toBe("session-b");
-      expect(saved.has("rakazo.last_bot_id")).toBe(true);
+      expect(saved.get("labradoodle.session_token")).toBe("session-b");
+      expect(saved.has("labradoodle.last_bot_id")).toBe(true);
       vi.useFakeTimers();
       const loaded = vi.fn();
       void lastBot.loadLastBotId().then(loaded);

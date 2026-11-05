@@ -595,13 +595,13 @@ describe("OIDC callbacks", () => {
       name: "Local",
     });
     rows("user")[0]!.emailVerified = true;
-    const callback = await start(undefined, true, "rakazo://account");
+    const callback = await start(undefined, true, "labradoodle://account");
     const authorize = `${issuer}/authorize?state=${new URL(`${origin}${callback}`).searchParams.get("state")}`;
     cookies = "";
     await request(
       `/expo-authorization-proxy?${new URLSearchParams({ authorizationURL: authorize })}`,
     );
-    expect(new URL((await request(callback)).headers.get("location")!).protocol).toBe("rakazo:");
+    expect(new URL((await request(callback)).headers.get("location")!).protocol).toBe("labradoodle:");
     expect(rows("account").filter((account) => account.providerId === "oidc")).toHaveLength(1);
   });
   it("drops an unverified account's SSO links when its mailbox owner resets the password", async () => {
@@ -636,7 +636,7 @@ describe("OIDC callbacks", () => {
   });
   it("hands the native browser callback to Expo with a valid bearer session", async () => {
     setup();
-    const callback = await start(undefined, false, "rakazo://sign-in");
+    const callback = await start(undefined, false, "labradoodle://sign-in");
     const authorize = `${issuer}/authorize?state=${new URL(`${origin}${callback}`).searchParams.get("state")}`;
     const proxy = await request(
       `/expo-authorization-proxy?${new URLSearchParams({ authorizationURL: authorize })}`,
@@ -644,7 +644,7 @@ describe("OIDC callbacks", () => {
     expect(proxy.headers.get("location")).toBe(authorize);
     const returned = await request(callback);
     const destination = new URL(returned.headers.get("location")!);
-    expect(destination.protocol).toBe("rakazo:");
+    expect(destination.protocol).toBe("labradoodle:");
     const signed = destination.searchParams
       .get("cookie")!
       .match(/(?:__Secure-)?better-auth\.session_token=([^;]+)/)![1]!;
@@ -1185,7 +1185,7 @@ describe("SSO-only account deletion", () => {
       "/sign-in/social",
       {
         provider: "oidc",
-        callbackURL: "rakazo://sign-in",
+        callbackURL: "labradoodle://sign-in",
         additionalData: { reauthenticate: true },
       },
       token,
@@ -1212,7 +1212,7 @@ describe("SSO-only account deletion", () => {
       `/callback/oidc?state=${url.searchParams.get("state")}&code=native-reauth`,
     );
     const destination = new URL(returned.headers.get("location")!);
-    expect(destination.protocol).toBe("rakazo:");
+    expect(destination.protocol).toBe("labradoodle:");
     const signed = destination.searchParams
       .get("cookie")!
       .match(/(?:__Secure-)?better-auth\.session_token=([^;]+)/)![1]!;
