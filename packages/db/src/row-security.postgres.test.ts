@@ -47,10 +47,7 @@ function rowsFor(t: Tenant, tag: string): Array<[string, Record<string, unknown>
         ciphertext: "c",
       },
     ],
-    [
-      "taughtSkill",
-      { spaceId: t.spaceId, botId: t.botId, userId: t.userId, goal: "g", status: "s" },
-    ],
+    ["taughtSkill", { spaceId: t.spaceId, userId: t.userId, goal: "g", status: "s" }],
     [
       "agentSkill",
       { spaceId: t.spaceId, userId: t.userId, name: `n-${tag}`, description: "d", content: "c" },
@@ -105,11 +102,29 @@ describePostgres("row-level security (PostgreSQL)", () => {
         data: { id: t.userId, name: t.name, email: `${t.userId}@rakazo.test`, emailVerified: true },
       });
       await o.space.create({ data: { id: t.spaceId, organizationId, name: t.name } });
-      await o.bot.create({
-        data: { id: t.botId, spaceId: t.spaceId, userId: t.userId, name: t.name, color: "#000" },
+      await o.member.create({
+        data: {
+          id: `${t.userId}-member`,
+          organizationId,
+          userId: t.userId,
+          role: "owner",
+          createdAt: new Date(),
+        },
       });
-      await o.thread.create({
-        data: { id: t.threadId, spaceId: t.spaceId, userId: t.userId, botId: t.botId },
+      await o.spaceMember.create({
+        data: {
+          id: `${t.userId}-space-member`,
+          spaceId: t.spaceId,
+          userId: t.userId,
+          organizationId,
+          role: "owner",
+          createdAt: new Date(),
+        },
+      });
+      await o.bot.create({ data: { id: t.botId, spaceId: t.spaceId } });
+      await o.thread.create({ data: { id: t.threadId, spaceId: t.spaceId, userId: t.userId } });
+      await o.threadMember.create({
+        data: { threadId: t.threadId, spaceId: t.spaceId, userId: t.userId },
       });
       await o.message.create({
         data: { threadId: t.threadId, seq: 1, role: "user", blocks: [{ text: t.name }] },
@@ -129,7 +144,6 @@ describePostgres("row-level security (PostgreSQL)", () => {
           id: t.documentId,
           spaceId: t.spaceId,
           userId: t.userId,
-          scope: "space",
           path: "notes.md",
           content: t.name,
         },
@@ -140,6 +154,7 @@ describePostgres("row-level security (PostgreSQL)", () => {
       await o.artifact.create({
         data: {
           spaceId: t.spaceId,
+          threadId: t.threadId,
           userId: t.userId,
           name: "a.txt",
           mimeType: "text/plain",
@@ -171,25 +186,6 @@ describePostgres("row-level security (PostgreSQL)", () => {
           spaceId: t.spaceId,
           kind: "test",
           ciphertext: "c",
-        },
-      });
-      await o.member.create({
-        data: {
-          id: `${t.userId}-member`,
-          organizationId,
-          userId: t.userId,
-          role: "owner",
-          createdAt: new Date(),
-        },
-      });
-      await o.spaceMember.create({
-        data: {
-          id: `${t.userId}-space-member`,
-          spaceId: t.spaceId,
-          userId: t.userId,
-          organizationId,
-          role: "owner",
-          createdAt: new Date(),
         },
       });
       for (const [table, data] of rowsFor(t, "fixture")) {
@@ -337,6 +333,7 @@ describePostgres("row-level security (PostgreSQL)", () => {
           data: {
             spaceId: t.spaceId,
             botId: t.botId,
+            threadId: t.threadId,
             userId: t.userId,
             name: "r",
             prompt: "p",
@@ -443,7 +440,7 @@ describePostgres("row-level security (PostgreSQL)", () => {
     ).rejects.toThrow(/row-level security/);
     expect(
       await runAsTenant(b, () =>
-        db.bot.updateMany({ where: { id: a.botId }, data: { name: "x" } }),
+        db.bot.updateMany({ where: { id: a.botId }, data: { voiceId: "x" } }),
       ),
     ).toEqual({ count: 0 });
     // The unscoped reads above are deliberate.
@@ -577,6 +574,16 @@ describePostgres("row-level security (PostgreSQL)", () => {
     expect(
       await runAsTenant(b, () => db.thread.findUnique({ where: { id: a.threadId } })),
     ).toBeNull();
+    // A chat is its people's: someone outside it sees none of it, even in its Space.
+    expect(
+      await runAsTenant({ spaceId: a.spaceId, userId: b.userId }, () =>
+        Promise.all([
+          db.thread.count({ where: { id: a.threadId } }),
+          db.message.count({ where: { threadId: a.threadId } }),
+          db.artifact.count({ where: { threadId: a.threadId } }),
+        ]),
+      ),
+    ).toEqual([0, 0, 0]);
     expect(
       await runAsTenant(b, () =>
         db.memoryDocument.updateMany({ where: { id: a.documentId }, data: { content: "x" } }),

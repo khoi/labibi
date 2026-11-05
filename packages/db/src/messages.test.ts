@@ -9,6 +9,7 @@ import {
 function transaction() {
   return {
     thread: { update: vi.fn().mockResolvedValue({ nextMessageSeq: 1 }) },
+    threadMember: { updateMany: vi.fn() },
     run: { findUnique: vi.fn().mockResolvedValue({ status: "running" }) },
     message: { create: vi.fn().mockResolvedValue({ id: "message-1" }) },
   };
@@ -23,9 +24,7 @@ describe("createThreadMessageInTransaction", () => {
       blocks: [{ kind: "steps", steps: [{ label: "Checked status", count: 1 }] }],
       markUnread: false,
     });
-    expect(silent.thread.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ unread: undefined }) }),
-    );
+    expect(silent.threadMember.updateMany).not.toHaveBeenCalled();
 
     const visible = transaction();
     await createThreadMessageInTransaction(visible as unknown as Prisma.TransactionClient, {
@@ -33,8 +32,8 @@ describe("createThreadMessageInTransaction", () => {
       role: "bot",
       blocks: [{ kind: "text", text: "Daily report ready" }],
     });
-    expect(visible.thread.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ unread: true }) }),
+    expect(visible.threadMember.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { unread: true } }),
     );
   });
 

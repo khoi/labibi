@@ -62,7 +62,7 @@ const TABLES: TableSpec[] = [
     json: false,
     updatedAt: true,
     scan: (cursor, limit) => Prisma.sql`
-      SELECT id, content AS value, "spaceId", "userId" AS owner FROM memory_documents
+      SELECT id, content AS value, "spaceId", COALESCE("threadId", "userId") AS owner FROM memory_documents
       WHERE id > ${cursor} ORDER BY id LIMIT ${limit}`,
     writePlaintext: (id, value) =>
       Prisma.sql`UPDATE memory_documents SET content = ${value as string} WHERE id = ${id}`,

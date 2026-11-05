@@ -21,136 +21,7 @@ function fakePrisma(count = 0, existing = false) {
   } as unknown as PrismaClient;
 }
 
-/**
- * Root PrismaClient mock whose $transaction + $queryRaw simulate a per-user
- * pg_advisory_xact_lock: concurrent quota transactions for the same user queue,
- * and creating a new computer increments the in-use count (as createBot /
- * setBotComputer do by linking a live bot in the same transaction).
- *
- * references track which bot sits on which computer so the count filter can
- * model the intermediate re-link: a bot's old computer stops counting once
- * the same transaction re-links it to a different one.
- */
-function fakeSerializingPrisma(initialInUse = 0) {
-  const rows = new Map<string, { id: string }>();
-  const ids = new Map<string, string>(); // computer row id -> scopeKey
-  const refs = new Map<string, Set<string>>(); // scopeKey -> bot ids
-  let locked = false;
-  const waiters: Array<() => void> = [];
-  const state = { inUse: initialInUse };
-
-  function recomputeInUse() {
-    let used = 0;
-    for (const bots of refs.values()) if (bots.size > 0) used += 1;
-    state.inUse = used;
-  }
-
-  function botIdFromScopeKey(scopeKey: string): string | null {
-    return scopeKey.startsWith("bot:") ? scopeKey.slice(4) : null;
-  }
-
-  async function acquireLock() {
-    if (!locked) {
-      locked = true;
-      return;
-    }
-    await new Promise<void>((resolve) => {
-      waiters.push(resolve);
-    });
-    locked = true;
-  }
-
-  function releaseLock() {
-    const next = waiters.shift();
-    if (next) {
-      next();
-      return;
-    }
-    locked = false;
-  }
-
-  function linkBot(botId: string, computerId: string) {
-    const scopeKey = ids.get(computerId);
-    for (const bots of refs.values()) bots.delete(botId);
-    if (scopeKey) refs.get(scopeKey)!.add(botId);
-    recomputeInUse();
-  }
-
-  const prisma = {
-    $transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) => {
-      let held = false;
-      const tx = {
-        $queryRaw: vi.fn(async () => {
-          if (!held) {
-            await acquireLock();
-            held = true;
-          }
-          return [{ lock: "1" }];
-        }),
-        computer: {
-          findUnique: vi.fn(async (args: { where: { scopeKey: string } }) => {
-            const row = rows.get(args.where.scopeKey);
-            return row ? { id: row.id } : null;
-          }),
-          count: vi.fn(async (args: { where: { bots?: { some?: { id?: { not?: string } } } } }) => {
-            const excludeBot = args.where.bots?.some?.id?.not;
-            let used = 0;
-            for (const bots of refs.values()) {
-              if (excludeBot) {
-                if ([...bots].some((bot) => bot !== excludeBot)) used += 1;
-              } else if (bots.size > 0) {
-                used += 1;
-              }
-            }
-            return used;
-          }),
-          upsert: vi.fn(async (args: { where: { scopeKey: string } }) => {
-            const existing = rows.get(args.where.scopeKey);
-            if (existing) return existing;
-            const row = { id: `comp-${rows.size + 1}` };
-            rows.set(args.where.scopeKey, row);
-            ids.set(row.id, args.where.scopeKey);
-            refs.set(args.where.scopeKey, new Set());
-            // Same-transaction bot link makes the new row count as in-use:
-            // createBot links the bot right after the row is ensured, so the
-            // dedicated path's botId is already known to the quota check.
-            const botId = botIdFromScopeKey(args.where.scopeKey);
-            if (botId) refs.get(args.where.scopeKey)!.add(botId);
-            recomputeInUse();
-            return row;
-          }),
-        },
-        bot: {
-          update: vi.fn(async (args: { where: { id: string }; data: { computerId: string } }) => {
-            linkBot(args.where.id, args.data.computerId);
-            return { id: args.where.id };
-          }),
-        },
-      };
-      try {
-        return await callback(tx);
-      } finally {
-        if (held) releaseLock();
-      }
-    }),
-    bot: {
-      update: vi.fn(async (args: { where: { id: string }; data: { computerId: string } }) => {
-        linkBot(args.where.id, args.data.computerId);
-        return { id: args.where.id };
-      }),
-    },
-  } as unknown as PrismaClient;
-
-  return { prisma, state, refs };
-}
-
-const baseInput = {
-  mode: "dedicated" as const,
-  spaceId: "space-1",
-  userId: "user-1",
-  botId: "bot-4",
-  kind: "docker",
-};
+const baseInput = { spaceId: "space-1", userId: "user-1", kind: "docker" };
 
 const savedEnv = process.env.SANDBOX_MAX_COMPUTERS_PER_USER;
 afterEach(() => {
@@ -175,7 +46,7 @@ describe("clearEndedExecutionRunBinding", () => {
     await clearEndedExecutionRunBinding(prisma, "computer-1");
     expect(prisma.computer.updateMany).toHaveBeenCalledWith({
       where: { id: "computer-1", executionRunId: "run-1" },
-      data: { executionRunId: null, executionBotId: null, executionLeaseExpiresAt: null },
+      data: { executionRunId: null, executionLeaseExpiresAt: null },
     });
   });
 
@@ -205,13 +76,12 @@ describe("clearEndedExecutionRunBinding", () => {
   });
 });
 
-describe("team computer keys", () => {
-  const team = { mode: "team" as const, spaceId: "space-1" };
+describe("computer keys", () => {
+  const team = { spaceId: "space-1" };
 
   it("keys a team computer by space and user", () => {
     expect(computerScopeKey({ ...team, userId: "user-1" })).toBe("team:space-1:user-1");
     expect(computerScopeKey({ ...team, userId: "user-2" })).toBe("team:space-1:user-2");
-    expect(computerScopeKey({ ...baseInput })).toBe("bot:bot-4");
   });
 
   it("gives each user a distinct home that survives the 40-character container name", () => {
@@ -221,19 +91,6 @@ describe("team computer keys", () => {
     expect(first).toBe(computerHomeKey({ ...team, userId: "user-1" }));
     expect(first.slice(0, 40)).not.toBe(second.slice(0, 40));
     expect(computerHomeKey({ ...team, spaceId: "space-2", userId: "user-1" })).not.toBe(first);
-    expect(computerHomeKey(baseInput)).toBe("bot-4");
-  });
-
-  it("shares one team computer per user, not across members of a space", async () => {
-    const { prisma } = fakeSerializingPrisma(0);
-    const ensureTeam = (userId: string) =>
-      ensureComputerRecord(prisma, { ...team, userId, kind: "docker" });
-    process.env.SANDBOX_MAX_COMPUTERS_PER_USER = "5";
-    const firstBot = await ensureTeam("user-1");
-    const secondBot = await ensureTeam("user-1");
-    const otherMember = await ensureTeam("user-2");
-    expect(secondBot.id).toBe(firstBot.id);
-    expect(otherMember.id).not.toBe(firstBot.id);
   });
 });
 
@@ -256,27 +113,16 @@ describe("ensureComputerRecord", () => {
   it("enforces the cap for a new computer when the user is at the limit", async () => {
     process.env.SANDBOX_MAX_COMPUTERS_PER_USER = "2";
     const prisma = fakePrisma(2, false);
-    await expect(ensureComputerRecord(prisma, { ...baseInput, botId: "bot-new" })).rejects.toThrow(
-      ComputerLimitError,
-    );
+    await expect(ensureComputerRecord(prisma, baseInput)).rejects.toThrow(ComputerLimitError);
     expect(prisma.computer.upsert).not.toHaveBeenCalled();
     // The quota lock, then the system bypass on and off around the cross-Space count.
     expect(prisma.$queryRaw).toHaveBeenCalledTimes(4);
   });
 
-  it("does not count archived-bot computers against the cap", async () => {
-    process.env.SANDBOX_MAX_COMPUTERS_PER_USER = "1";
-    const prisma = fakePrisma(0, false);
-    await ensureComputerRecord(prisma, baseInput);
-    expect(prisma.computer.upsert).toHaveBeenCalledOnce();
-  });
-
-  it("allows a team computer reuse even when the user is at the cap", async () => {
+  it("reuses the person's computer even when they are at the cap", async () => {
     process.env.SANDBOX_MAX_COMPUTERS_PER_USER = "1";
     const prisma = fakePrisma(1, true);
-    await expect(
-      ensureComputerRecord(prisma, { ...baseInput, mode: "team" }),
-    ).resolves.toBeDefined();
+    await expect(ensureComputerRecord(prisma, baseInput)).resolves.toBeDefined();
   });
 
   it("does not enforce anything when the cap is unset", async () => {
@@ -284,81 +130,5 @@ describe("ensureComputerRecord", () => {
     await ensureComputerRecord(prisma, baseInput);
     expect(prisma.computer.upsert).toHaveBeenCalledOnce();
     expect(prisma.$queryRaw).not.toHaveBeenCalled();
-  });
-
-  it("serializes parallel creates so concurrent callers cannot exceed the cap", async () => {
-    process.env.SANDBOX_MAX_COMPUTERS_PER_USER = "1";
-    const { prisma, state } = fakeSerializingPrisma(0);
-
-    const results = await Promise.allSettled([
-      ensureComputerRecord(prisma, {
-        ...baseInput,
-        spaceId: "space-a",
-        botId: "bot-a",
-      }),
-      ensureComputerRecord(prisma, {
-        ...baseInput,
-        spaceId: "space-b",
-        botId: "bot-b",
-      }),
-    ]);
-
-    const fulfilled = results.filter((result) => result.status === "fulfilled");
-    const rejected = results.filter((result) => result.status === "rejected");
-    expect(fulfilled).toHaveLength(1);
-    expect(rejected).toHaveLength(1);
-    expect(rejected[0]?.status === "rejected" && rejected[0].reason).toBeInstanceOf(
-      ComputerLimitError,
-    );
-    expect(state.inUse).toBe(1);
-    expect(prisma.$transaction).toHaveBeenCalledTimes(2);
-  });
-
-  it("allows the initial dedicated create at cap 1: the bot's team reference is being re-linked", async () => {
-    process.env.SANDBOX_MAX_COMPUTERS_PER_USER = "1";
-    const { prisma, state, refs } = fakeSerializingPrisma(0);
-    // createBot flow, first bot in a space, dedicated mode:
-    // 1. team computer ensured: no bots reference it yet.
-    const team = await ensureComputerRecord(prisma, {
-      mode: "team",
-      spaceId: "space-1",
-      userId: "user-1",
-      kind: "docker",
-    });
-    // The mock's bot.create analog: link the bot to the team computer.
-    await prisma.bot.update({ where: { id: "bot-1" }, data: { computerId: team.id } });
-    expect(state.inUse).toBe(1);
-    // 2. dedicated computer ensured: the bot is still on the team row, so the
-    //    count must exclude this bot's own intermediate reference.
-    const dedicated = await ensureComputerRecord(prisma, {
-      ...baseInput,
-      mode: "dedicated",
-      botId: "bot-1",
-    });
-    // 3. the bot re-links to the dedicated computer (createBot does this).
-    await prisma.bot.update({ where: { id: "bot-1" }, data: { computerId: dedicated.id } });
-    expect(state.inUse).toBe(1);
-    expect(refs.get(`bot:bot-1`)).toBeDefined();
-  });
-
-  it("allows team-to-dedicated replacement at cap 1 when the final set is one computer", async () => {
-    process.env.SANDBOX_MAX_COMPUTERS_PER_USER = "1";
-    const { prisma, state, refs } = fakeSerializingPrisma(0);
-    // Existing bot on a team computer (setBotComputer switching to dedicated).
-    const team = await ensureComputerRecord(prisma, {
-      mode: "team",
-      spaceId: "space-1",
-      userId: "user-1",
-      kind: "docker",
-    });
-    await prisma.bot.update({ where: { id: "bot-1" }, data: { computerId: team.id } });
-    const dedicated = await ensureComputerRecord(prisma, {
-      ...baseInput,
-      mode: "dedicated",
-      botId: "bot-1",
-    });
-    await prisma.bot.update({ where: { id: "bot-1" }, data: { computerId: dedicated.id } });
-    expect(state.inUse).toBe(1);
-    expect(refs.get("team:space-1:user-1")?.size).toBe(0);
   });
 });

@@ -33,7 +33,7 @@ describePostgres("content encryption (PostgreSQL)", () => {
   const spaceId = `enc-space-${suffix}`;
   const botId = `enc-bot-${suffix}`;
   const threadId = `enc-thread-${suffix}`;
-  const scope = { spaceId, userId, threadId, botId };
+  const scope = { spaceId, userId, threadId };
   const clients: Array<ReturnType<typeof createDb>> = [];
   let prisma: PrismaClient;
   let raw: ReturnType<typeof createDb>["pool"];
@@ -97,8 +97,28 @@ describePostgres("content encryption (PostgreSQL)", () => {
         },
       });
       await prisma.space.create({ data: { id: spaceId, organizationId, name: "General" } });
-      await prisma.bot.create({ data: { id: botId, spaceId, userId, name: "Ada", color: "ink" } });
-      await prisma.thread.create({ data: { id: threadId, spaceId, userId, botId } });
+      await prisma.bot.create({ data: { id: botId, spaceId } });
+      await prisma.member.create({
+        data: {
+          id: `${userId}-member`,
+          organizationId,
+          userId,
+          role: "owner",
+          createdAt: new Date(),
+        },
+      });
+      await prisma.spaceMember.create({
+        data: {
+          id: `${userId}-space-member`,
+          spaceId,
+          organizationId,
+          userId,
+          role: "owner",
+          createdAt: new Date(),
+        },
+      });
+      await prisma.thread.create({ data: { id: threadId, spaceId, userId } });
+      await prisma.threadMember.create({ data: { threadId, spaceId, userId } });
     }),
   );
 
@@ -178,11 +198,7 @@ describePostgres("content encryption (PostgreSQL)", () => {
         role: "user",
         blocks: [{ kind: "text", text: "victim text" }],
       });
-      const otherBot = `enc-bot-moved-${suffix}`;
-      await prisma.bot.create({
-        data: { id: otherBot, spaceId, userId, name: "Moe", color: "ink" },
-      });
-      const other = await prisma.thread.create({ data: { spaceId, userId, botId: otherBot } });
+      const other = await prisma.thread.create({ data: { spaceId, userId } });
       await raw.query(`UPDATE messages SET "threadId" = $1, seq = 99999 WHERE id = $2`, [
         other.id,
         message.id,
@@ -282,7 +298,7 @@ describePostgres("content encryption (PostgreSQL)", () => {
         data: {
           spaceId,
           userId,
-          scope: "user",
+          threadId,
           path: `notes-${suffix}.md`,
           content: "Allergic to kiwi",
         },
@@ -352,12 +368,8 @@ describePostgres("content encryption (PostgreSQL)", () => {
 
   it("creates a thread and its first message in one transaction", () =>
     runAsSystem("test fixture", async () => {
-      const otherBot = `enc-bot-2-${suffix}`;
-      await prisma.bot.create({
-        data: { id: otherBot, spaceId, userId, name: "Lin", color: "ink" },
-      });
       const message = await prisma.$transaction(async (tx) => {
-        const thread = await tx.thread.create({ data: { spaceId, userId, botId: otherBot } });
+        const thread = await tx.thread.create({ data: { spaceId, userId } });
         return createThreadMessageInTransaction(tx, {
           threadId: thread.id,
           role: "user",
@@ -439,7 +451,7 @@ describePostgres("content encryption (PostgreSQL)", () => {
       const doomed = `enc-doomed-${suffix}`;
       await prisma.space.create({ data: { id: doomed, organizationId, name: "Doomed" } });
       await prisma.memoryDocument.create({
-        data: { spaceId: doomed, userId, scope: "user", path: "MEMORY.md", content: "gone soon" },
+        data: { spaceId: doomed, userId, path: "MEMORY.md", content: "gone soon" },
       });
       const count = async () =>
         (
@@ -458,7 +470,7 @@ describePostgres("content encryption (PostgreSQL)", () => {
     const switchSpaceId = `enc-switch-space-${suffix}`;
     const switchBotId = `enc-switch-bot-${suffix}`;
     const switchThreadId = `enc-switch-thread-${suffix}`;
-    const scope = { spaceId: switchSpaceId, userId, threadId: switchThreadId, botId: switchBotId };
+    const scope = { spaceId: switchSpaceId, userId, threadId: switchThreadId };
     let on: ReturnType<typeof createDb>;
     let off: ReturnType<typeof createDb>;
 
@@ -467,11 +479,9 @@ describePostgres("content encryption (PostgreSQL)", () => {
         on = client([masterB, masterA], { encryptContent: true });
         off = client([masterB, masterA], { encryptContent: false });
         await prisma.space.create({ data: { id: switchSpaceId, organizationId, name: "Switch" } });
-        await prisma.bot.create({
-          data: { id: switchBotId, spaceId: switchSpaceId, userId, name: "Bo", color: "ink" },
-        });
+        await prisma.bot.create({ data: { id: switchBotId, spaceId: switchSpaceId } });
         await prisma.thread.create({
-          data: { id: switchThreadId, spaceId: switchSpaceId, userId, botId: switchBotId },
+          data: { id: switchThreadId, spaceId: switchSpaceId, userId },
         });
       }),
     );
@@ -512,8 +522,6 @@ describePostgres("content encryption (PostgreSQL)", () => {
           data: {
             spaceId: switchSpaceId,
             userId,
-            botId: switchBotId,
-            scope: "bot",
             path: "notes.md",
             content: "Likes kelp",
           },
@@ -594,7 +602,7 @@ describePostgres("content encryption (PostgreSQL)", () => {
         ).toBe("They talked about kelp");
       }));
 
-    it("exports decrypted content by thread, bot and space", () =>
+    it("exports decrypted content by thread and space", () =>
       system(async () => {
         await say(off.prisma, "narwhal four, plaintext beside ciphertext");
         const collect = async (filter: Parameters<typeof exportContent>[1]) => {
@@ -607,7 +615,6 @@ describePostgres("content encryption (PostgreSQL)", () => {
           type: "thread",
           id: switchThreadId,
           spaceId: switchSpaceId,
-          botId: switchBotId,
           historyCompactionSummary: "They talked about kelp",
         });
         expect(byThread.filter((record) => record.type === "message").map((r) => r.text)).toEqual([
@@ -632,7 +639,7 @@ describePostgres("content encryption (PostgreSQL)", () => {
         expect(bySpace.at(-2)).toMatchObject({
           path: "notes.md",
           content: "Likes kelp",
-          botId: switchBotId,
+          threadId: null,
         });
         expect(bySpace.at(-1)).toMatchObject({
           revision: 1,
@@ -640,44 +647,6 @@ describePostgres("content encryption (PostgreSQL)", () => {
           spaceId: switchSpaceId,
         });
         expect(JSON.stringify(bySpace)).not.toContain("rkz1:");
-        expect(await collect({ botId: switchBotId })).toEqual(bySpace);
-        expect(await collect({ botId: `missing-${suffix}` })).toEqual([]);
-
-        // In another bot's thread, a bot export keeps only that bot's messages and
-        // leaves out the thread's summary, which covers the whole conversation.
-        const otherBot = `enc-switch-other-${suffix}`;
-        await prisma.bot.create({
-          data: { id: otherBot, spaceId: switchSpaceId, userId, name: "Cy", color: "ink" },
-        });
-        const otherThread = await off.prisma.thread.create({
-          data: {
-            spaceId: switchSpaceId,
-            userId,
-            botId: otherBot,
-            historyCompactionSummary: "Private chatter",
-          },
-        });
-        await createThreadMessage(off.prisma, {
-          threadId: otherThread.id,
-          role: "user",
-          blocks: [{ kind: "text", text: "only for Cy" }],
-        });
-        await createThreadMessage(off.prisma, {
-          threadId: otherThread.id,
-          role: "bot",
-          botId: switchBotId,
-          blocks: [{ kind: "text", text: "Bo dropped in" }],
-        });
-        const visiting = (await collect({ botId: switchBotId })).filter(
-          (record) =>
-            record.id === otherThread.id ||
-            (record.type === "message" && record.threadId === otherThread.id),
-        );
-        expect(visiting).toMatchObject([
-          { type: "thread", historyCompactionSummary: null },
-          { type: "message", text: "Bo dropped in" },
-        ]);
-        expect(visiting).toHaveLength(2);
       }));
   });
 });

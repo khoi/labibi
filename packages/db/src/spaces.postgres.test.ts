@@ -45,9 +45,11 @@ describePostgres("claimed Space deletion (PostgreSQL)", () => {
         createdByUserId: userId,
       },
     });
+    const thread = await system.thread.create({ data: { spaceId, userId } });
     await system.artifact.create({
       data: {
         spaceId,
+        threadId: thread.id,
         userId,
         name: "plan.txt",
         mimeType: "text/plain",

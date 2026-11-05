@@ -1,90 +1,43 @@
-import { displayName } from "@labradoodle/core";
-import { getLogger } from "@labradoodle/logging";
 import { writeBotInstructions } from "./bot-instructions.js";
 import type { Bot, Prisma, PrismaClient } from "./client.js";
-import { appendEventInTransaction, THREAD_LOCK_TRANSACTION_OPTIONS } from "./events.js";
-
-type AppendEvent = typeof appendEventInTransaction;
+import { requireSpaceOwner } from "./space-members.js";
 
 /**
- * When profile labels or instructions change, write `bot.updated` in the same
- * transaction so clients can refresh after every successful write.
- * Realtime notify stays best-effort after commit.
+ * The one way Doodle's settings change, from settings and from its own tool alike: only the
+ * workspace's owner may, checked in the same transaction as the write.
  */
-export async function commitBotUpdate(
-  options: {
-    prisma: PrismaClient;
-    notify: (threadId: string, seq: number) => Promise<void>;
-    spaceId: string;
-    threadId: string;
-    botId: string;
-    data: Omit<Prisma.BotUncheckedUpdateInput, "instructions"> & { instructions?: string };
-    emitBotUpdated: boolean;
-    expectedInstructions?: string;
-    /** Write only while these settings hold; otherwise Prisma throws P2025. */
-    expectedSettings?: Partial<
-      Pick<Bot, "modelProvider" | "modelId" | "thinkingLevel" | "autoSpeak" | "voiceId">
-    >;
-    instructionRestore?: { versionId: string; undo?: boolean };
-    reason?: string;
-  },
-  appendEvent: AppendEvent = appendEventInTransaction,
-): Promise<{ id: string; name: string }> {
-  if (typeof options.data.name === "string") {
-    options = {
-      ...options,
-      data: { ...options.data, name: displayName(options.data.name, "") },
-    };
-  }
-  if (
-    !options.emitBotUpdated &&
-    options.data.instructions === undefined &&
-    !options.instructionRestore
-  ) {
-    return options.prisma.bot.update({
-      where: { id: options.botId, ...options.expectedSettings },
-      data: options.data,
-      select: { id: true, name: true },
-    });
-  }
-
+export async function commitBotUpdate(options: {
+  prisma: PrismaClient;
+  /** The person making the change; for Doodle's tool, the person who started the run. */
+  actor: { spaceId: string; userId: string };
+  data: Omit<
+    Prisma.BotUncheckedUpdateInput,
+    "id" | "spaceId" | "instructions" | "instructionHistory"
+  > & {
+    instructions?: string;
+  };
+  expectedInstructions?: string;
+  /** Write only while these settings hold; otherwise Prisma throws P2025. */
+  expectedSettings?: Partial<Pick<Bot, "modelProvider" | "modelId" | "thinkingLevel" | "voiceId">>;
+  instructionRestore?: { versionId: string; undo?: boolean };
+  reason?: string;
+}): Promise<Bot> {
   const { instructions, ...data } = options.data;
-  const committed = await options.prisma.$transaction(async (tx) => {
-    // Event appends also lock the thread; all writers take it before the bot row.
-    await tx.$queryRaw`SELECT id FROM threads WHERE id = ${options.threadId} FOR UPDATE`;
+  return options.prisma.$transaction(async (tx) => {
+    await requireSpaceOwner(tx, options.actor);
+    const { id: botId } = await tx.bot.findUniqueOrThrow({
+      where: { spaceId: options.actor.spaceId },
+      select: { id: true },
+    });
     if (typeof instructions === "string" || options.instructionRestore) {
       await writeBotInstructions(tx, {
-        botId: options.botId,
+        botId,
         instructions,
         reason: options.instructionRestore ? "Restore" : (options.reason ?? "Manual edit"),
         expectedInstructions: options.expectedInstructions,
         ...options.instructionRestore,
       });
     }
-    const updated = await tx.bot.update({
-      where: { id: options.botId, ...options.expectedSettings },
-      data,
-      select: { id: true, name: true },
-    });
-    const event = await appendEvent(tx, {
-      spaceId: options.spaceId,
-      threadId: options.threadId,
-      botId: options.botId,
-      type: "bot.updated",
-      payload: {
-        botId: updated.id,
-        name: updated.name,
-      },
-    });
-    return { updated, seq: event.seq };
-  }, THREAD_LOCK_TRANSACTION_OPTIONS);
-
-  await options.notify(options.threadId, committed.seq).catch((error) => {
-    getLogger().error("bot.updated realtime notification", error);
+    return tx.bot.update({ where: { id: botId, ...options.expectedSettings }, data });
   });
-  return committed.updated;
-}
-
-export function botProfileLabelsChanged(input: { name?: unknown }): boolean {
-  return input.name !== undefined;
 }

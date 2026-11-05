@@ -1,85 +1,39 @@
 import { createHash, randomUUID } from "node:crypto";
-import type { ComputerMode } from "@labradoodle/contracts";
 import { isTerminal } from "@labradoodle/core";
 import type { PrismaClient } from "./client.js";
 import { Prisma } from "./client.js";
 import { runAsSystem, runAsSystemInTransaction } from "./row-security.js";
 import { withTransactionRetry } from "./transaction-retry.js";
 
-export type { ComputerMode } from "@labradoodle/contracts";
-
-export function parseComputerMode(scope: string): ComputerMode {
-  if (scope === "team" || scope === "dedicated") return scope;
-  throw new Error(`Unknown computer scope: ${scope}`);
-}
-
-export type ComputerKeyInput = {
-  mode: ComputerMode;
-  spaceId: string;
-  /**
-   * Who the computer is kept for. A team computer belongs to the Space's owner, so in a Space
-   * shared with others every member's bots use one Team Computer (see `teamComputerUserId`).
-   */
-  userId: string;
-  botId?: string;
-};
+/** Every person has one computer in each workspace they belong to; Doodle uses the asker's. */
+export type ComputerKeyInput = { spaceId: string; userId: string };
 
 export function computerScopeKey(input: ComputerKeyInput) {
-  if (input.mode === "team") return `team:${input.spaceId}:${input.userId}`;
-  if (!input.botId) throw new Error("Dedicated computers require a bot id");
-  return `bot:${input.botId}`;
+  return `team:${input.spaceId}:${input.userId}`;
 }
 
 /**
- * Sandbox providers receive the home key as the computer's bot id, and the Docker supervisor
- * keeps only its first 40 characters in container names, so a team key is a fixed-length
- * digest that stays distinct per space and user. Migration 20261021000000 computes the same
- * value in SQL. Team computers created before the per-user split keep `team-<spaceId>`.
+ * Sandbox providers receive the home key as the computer's id, and the Docker supervisor keeps
+ * only its first 40 characters in container names, so the key is a fixed-length digest that
+ * stays distinct per workspace and person. Migration 20261021000000 computes the same value in
+ * SQL.
  */
 export function computerHomeKey(input: ComputerKeyInput) {
-  if (input.mode === "team") {
-    const digest = createHash("sha256")
-      .update(`${input.spaceId}:${input.userId}`)
-      .digest("hex")
-      .slice(0, 32);
-    return `team-${digest}`;
-  }
-  if (!input.botId) throw new Error("Dedicated computers require a bot id");
-  return input.botId;
-}
-
-/** The home of a space's one Team Computer from before each person got their own. */
-export function legacyTeamHomeKey(spaceId: string) {
-  return `team-${spaceId}`;
+  const digest = createHash("sha256")
+    .update(`${input.spaceId}:${input.userId}`)
+    .digest("hex")
+    .slice(0, 32);
+  return `team-${digest}`;
 }
 
 type ComputerDb = Pick<PrismaClient, "computer">;
-
-/**
- * The person a Space's Team Computer is kept for: its owner. Members of a shared Space use the
- * owner's, so the Space has one computer and one browser whoever made the bot.
- */
-export async function teamComputerUserId(
-  db: Pick<PrismaClient, "spaceMember">,
-  input: { spaceId: string; userId: string },
-): Promise<string> {
-  const owner = await db.spaceMember.findFirst({
-    where: { spaceId: input.spaceId, role: { contains: "owner" } },
-    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-    select: { userId: true },
-  });
-  return owner?.userId ?? input.userId;
-}
 type ComputerTx = Pick<Prisma.TransactionClient, "computer" | "$queryRaw">;
 type ComputerClient = ComputerDb & Partial<Pick<PrismaClient, "$transaction" | "$queryRaw">>;
 type ExecutionLeaseDb = Pick<PrismaClient, "computerExecutionLease">;
 
 /**
- * Per-user ceiling on Computer records that still back a live bot, or 0 when unset.
- *
- * Each Computer row becomes a sandbox container once provisioned, so an unbounded
- * record count means an unbounded container fleet for one user. A team computer is
- * one row per space and user, shared by that user's bots there, and counts once, not per bot.
+ * Per-user ceiling on Computer records, or 0 when unset. Each row becomes a sandbox container
+ * once provisioned, and a person has one in each workspace they use one in.
  */
 export function resolveMaxComputersPerUser(
   value = process.env.SANDBOX_MAX_COMPUTERS_PER_USER,
@@ -101,29 +55,11 @@ export class ComputerLimitError extends Error {
   }
 }
 
-/**
- * Computers a user still backs with a live (non-archived) bot.
- *
- * excludeBotId drops one bot's current reference: a bot being re-linked to a
- * new computer in the same transaction leaves its old row behind, so that
- * intermediate reference must not count against the final live set.
- */
-async function countInUseComputersForUser(
+async function countComputersForUser(
   prisma: ComputerDb & Partial<Pick<PrismaClient, "$queryRaw">>,
   userId: string,
-  excludeBotId?: string,
 ): Promise<number> {
-  const count = () =>
-    prisma.computer.count({
-      where: {
-        userId,
-        bots: {
-          some: excludeBotId
-            ? { archivedAt: null, id: { not: excludeBotId } }
-            : { archivedAt: null },
-        },
-      },
-    });
+  const count = () => prisma.computer.count({ where: { userId } });
   // The quota is per person, so it counts the computers of all their Spaces.
   const reason = "computer quota across the user's Spaces";
   return prisma.$queryRaw
@@ -177,19 +113,15 @@ export async function clearEndedExecutionRunBinding(
   if (run && !isTerminal(run.status)) return;
   await prisma.computer.updateMany({
     where: { id: computerId, executionRunId: runId },
-    data: { executionRunId: null, executionBotId: null, executionLeaseExpiresAt: null },
+    data: { executionRunId: null, executionLeaseExpiresAt: null },
   });
 }
 
+type ComputerRecordInput = ComputerKeyInput & { kind: string };
+
 async function upsertComputerRecord(
   prisma: ComputerDb,
-  input: {
-    mode: ComputerMode;
-    spaceId: string;
-    userId: string;
-    botId?: string;
-    kind: string;
-  },
+  input: ComputerRecordInput,
   scopeKey: string,
 ) {
   return prisma.computer.upsert({
@@ -197,7 +129,6 @@ async function upsertComputerRecord(
     create: {
       spaceId: input.spaceId,
       userId: input.userId,
-      scope: input.mode,
       scopeKey,
       homeKey: await availableHomeKey(prisma, input, scopeKey),
       kind: input.kind,
@@ -207,9 +138,8 @@ async function upsertComputerRecord(
 }
 
 /**
- * The usual home key, unless another computer already holds it: a team computer handed to a
- * space's owner when this person left keeps its home, and with it the files. Coming back,
- * the person gets a new home of the same length.
+ * The usual home key, unless another computer still holds it, as one kept from before this
+ * person left the workspace can. Coming back, they get a new home of the same length.
  */
 async function availableHomeKey(
   prisma: ComputerDb,
@@ -217,7 +147,6 @@ async function availableHomeKey(
   scopeKey: string,
 ): Promise<string> {
   const homeKey = computerHomeKey(input);
-  if (input.mode !== "team") return homeKey;
   const holder = await prisma.computer.findUnique({
     where: { homeKey },
     select: { scopeKey: true },
@@ -232,33 +161,18 @@ async function availableHomeKey(
 
 async function ensureComputerRecordWithQuota(
   tx: ComputerTx,
-  input: {
-    mode: ComputerMode;
-    spaceId: string;
-    userId: string;
-    botId?: string;
-    kind: string;
-  },
+  input: ComputerRecordInput,
   limit: number,
   scopeKey: string,
 ) {
   await lockUserForComputerQuota(tx, input.userId);
-  // Only a new row consumes quota: the upsert below reuses the user's team
-  // computer on every bot they create in that space, and reusing it with the count
-  // already at the cap would wrongly refuse a second bot on a shared computer.
+  // Only a new row consumes quota.
   const existing = await tx.computer.findUnique({
     where: { scopeKey },
     select: { id: true },
   });
-  if (!existing) {
-    // This bot's current reference leaves the live set when this link commits
-    // (createBot links the team computer first, then re-links the bot to the new
-    // dedicated one; setBotComputer switches the same way), so exclude it or a
-    // transaction ending with exactly one active computer is refused at cap 1.
-    const inUse = await countInUseComputersForUser(tx, input.userId, input.botId);
-    // The new row itself will be referenced by this bot after the link, so
-    // the post-transaction set is one more than the remaining live set.
-    if (inUse + 1 > limit) throw new ComputerLimitError(limit);
+  if (!existing && (await countComputersForUser(tx, input.userId)) + 1 > limit) {
+    throw new ComputerLimitError(limit);
   }
   return upsertComputerRecord(tx, input, scopeKey);
 }
@@ -267,16 +181,7 @@ function isTransactionClient(prisma: ComputerClient): prisma is ComputerTx {
   return typeof prisma.$queryRaw === "function" && typeof prisma.$transaction !== "function";
 }
 
-export async function ensureComputerRecord(
-  prisma: ComputerClient,
-  input: {
-    mode: ComputerMode;
-    spaceId: string;
-    userId: string;
-    botId?: string;
-    kind: string;
-  },
-) {
+export async function ensureComputerRecord(prisma: ComputerClient, input: ComputerRecordInput) {
   const limit = resolveMaxComputersPerUser();
   const scopeKey = computerScopeKey(input);
   if (limit <= 0) return upsertComputerRecord(prisma, input, scopeKey);
@@ -292,4 +197,71 @@ export async function ensureComputerRecord(
     );
   }
   throw new Error("Computer quota enforcement requires a Prisma transaction");
+}
+
+export type RunTeardownTarget = {
+  id: string;
+  homeKey: string;
+  kind: string;
+  providerRef: string | null;
+  runId: string;
+  fence: number;
+};
+
+/**
+ * The computers these runs hold, for the caller to stop their work on once it commits.
+ * `expiresAfter` keeps leases newer than that instant. Resume passes the cleanup epoch.
+ */
+export async function snapshotRunTeardownTargets(
+  tx: Prisma.TransactionClient,
+  runIds: string[],
+  expiresAfter?: Date,
+  ignoreStaleLegacy = false,
+): Promise<{ leasedRunIds: string[]; targets: RunTeardownTarget[] }> {
+  if (runIds.length === 0) return { leasedRunIds: [], targets: [] };
+  const leases = await tx.computerExecutionLease.findMany({
+    where: {
+      runId: { in: runIds },
+      ...(expiresAfter ? { expiresAt: { gt: expiresAfter } } : {}),
+    },
+    select: { computerId: true, runId: true, fence: true },
+  });
+  const leasedRunIds = [...new Set(leases.map((lease) => lease.runId))];
+  // Reclaim rewrites the lease runId. Resume must not follow a leftover executionRunId.
+  const legacyRunIds = ignoreStaleLegacy ? leasedRunIds : runIds;
+  if (legacyRunIds.length === 0) return { leasedRunIds, targets: [] };
+
+  const leaseComputerIds = [...new Set(leases.map((lease) => lease.computerId))];
+  const computers = await tx.computer.findMany({
+    where: leaseComputerIds.length
+      ? { OR: [{ id: { in: leaseComputerIds } }, { executionRunId: { in: legacyRunIds } }] }
+      : { executionRunId: { in: legacyRunIds } },
+    select: { id: true, homeKey: true, kind: true, providerRef: true, executionRunId: true },
+  });
+  const computerById = new Map(computers.map((computer) => [computer.id, computer]));
+  const targets: RunTeardownTarget[] = [];
+  const seen = new Set<string>();
+  const addTarget = (computerId: string, runId: string, fence: number) => {
+    const computer = computerById.get(computerId);
+    if (!computer || seen.has(`${computerId}:${runId}`)) return;
+    seen.add(`${computerId}:${runId}`);
+    const { id, homeKey, kind, providerRef } = computer;
+    targets.push({ id, homeKey, kind, providerRef, runId, fence });
+  };
+  for (const lease of leases) addTarget(lease.computerId, lease.runId, lease.fence);
+  for (const computer of computers) {
+    if (!computer.executionRunId || !legacyRunIds.includes(computer.executionRunId)) continue;
+    addTarget(computer.id, computer.executionRunId, 0);
+  }
+  return { leasedRunIds, targets };
+}
+
+/** After teardown: expire the cancelled runs' leases and legacy bindings. */
+export async function releaseCancelledRunLeases(prisma: PrismaClient, runIds: string[]) {
+  if (runIds.length === 0) return;
+  await expireComputerExecutionLeases(prisma, { runId: { in: runIds } });
+  await prisma.computer.updateMany({
+    where: { executionRunId: { in: runIds } },
+    data: { executionRunId: null, executionLeaseExpiresAt: null },
+  });
 }

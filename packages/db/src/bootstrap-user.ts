@@ -1,6 +1,8 @@
 import { randomBytes } from "node:crypto";
 import { signupPolicyFromEnv } from "@labradoodle/core";
+import { ensureFirstChat } from "./chats.js";
 import type { PrismaClient } from "./client.js";
+import { ensureSpaceDoodle } from "./doodle.js";
 
 export interface SignupPolicyEnv {
   signupsEnabled: string | undefined;
@@ -9,7 +11,13 @@ export interface SignupPolicyEnv {
 
 type OrganizationClient = Pick<
   PrismaClient,
-  "organization" | "member" | "space" | "spaceMember" | "memoryDocument" | "notificationPreference"
+  | "organization"
+  | "member"
+  | "space"
+  | "spaceMember"
+  | "memoryDocument"
+  | "notificationPreference"
+  | "bot"
 >;
 
 function newId(): string {
@@ -21,7 +29,7 @@ function isUniqueViolation(error: unknown): boolean {
 }
 
 /**
- * An organization owned by `userId`, with a default Space of the same id and name. Each step
+ * An organization owned by `userId`, with a default Space of the same id and name and its Doodle. Each step
  * joins an existing row instead of failing, so a concurrent call with the same slug converges.
  * Returns the organization's id, which is also its default Space's.
  */
@@ -62,6 +70,7 @@ export async function createOrganizationWithDefaultSpace(
     .catch((error: unknown) => {
       if (!isUniqueViolation(error)) throw error;
     });
+  await ensureSpaceDoodle(prisma, orgId);
   await prisma.spaceMember
     .create({
       data: {
@@ -77,7 +86,7 @@ export async function createOrganizationWithDefaultSpace(
       if (!isUniqueViolation(error)) throw error;
     });
   const hasMemory = await prisma.memoryDocument.findFirst({
-    where: { spaceId: orgId, userId, scope: "user", path: "MEMORY.md" },
+    where: { spaceId: orgId, userId, threadId: null, path: "MEMORY.md" },
   });
   if (!hasMemory) {
     await prisma.memoryDocument
@@ -85,9 +94,8 @@ export async function createOrganizationWithDefaultSpace(
         data: {
           spaceId: orgId,
           userId,
-          scope: "user",
           path: "MEMORY.md",
-          content: "# Space memory\n\nPreferences and context kept within this space live here.\n",
+          content: "# My memory\n\n",
         },
       })
       .catch((error: unknown) => {
@@ -102,7 +110,10 @@ export async function createOrganizationWithDefaultSpace(
   return orgId;
 }
 
-/** Provision a personal workspace. Signup never grants deployment administration. */
+/**
+ * Provision a personal workspace and a first chat in it with Doodle. Signup never grants
+ * deployment administration.
+ */
 export async function bootstrapUserSpace(
   prisma: PrismaClient,
   user: { id: string },
@@ -127,5 +138,6 @@ export async function bootstrapUserSpace(
     },
     update: {},
   });
+  await ensureFirstChat(prisma, { spaceId, userId: user.id });
   return { spaceId };
 }

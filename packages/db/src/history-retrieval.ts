@@ -15,11 +15,12 @@ import { historyAttachmentBlocks, historyMessageText, historySearchText } from "
 
 export { historyMessageText };
 
-/** Only the executor supplies scope; tool arguments cannot widen it. Threads are the space's. */
+/** Only the executor supplies scope; tool arguments cannot widen it. */
 export interface HistoryScope {
   spaceId: string;
   threadId: string;
-  botId: string;
+  /** The person the run is for; other chats are only ever theirs. */
+  userId: string;
   /** Executor-only grant: direct human app runs, never external or background runs. */
   allowMyChats?: boolean;
   /** Run start: my_chats excludes later messages so offset pages stay stable. */
@@ -36,9 +37,7 @@ interface HistoryRow {
   createdAt: Date;
   blocks: Prisma.JsonValue;
   threadId: string;
-  groupId?: string | null;
-  botId?: string | null;
-  chatName?: string;
+  chatName?: string | null;
   indexed?: boolean;
 }
 /** Bounds the scan when blind-index collisions keep producing false candidates. */
@@ -118,42 +117,26 @@ function bounded<T extends { messages: ReturnType<typeof reference>[] }>(respons
  */
 const searchableText = Prisma.sql`jsonb_path_query_array(m.blocks,
   '$[*] ? (@.kind == "text" || @.kind == "channel_message" || @.kind == "bot_message_received" || @.kind == "bot_message_sent" || @.kind == "handoff").text')::text || jsonb_path_query_array(m.blocks, '$[*] ? (@.kind == "subagent").task')::text || jsonb_path_query_array(m.blocks, '$[*] ? (@.kind == "subagent").result')::text || translate(jsonb_path_query_array(m.blocks, '$[*] ? (@.kind == "file" || @.kind == "image").name')::text, '._-', '   ')`;
-const columns = Prisma.sql`m.id, m.seq, m.role, m."runId", m."replyToMessageId", m."createdAt", m.blocks, m."threadId", t."groupId" AS "groupId"`;
+const columns = Prisma.sql`m.id, m.seq, m.role, m."runId", m."replyToMessageId", m."createdAt", m.blocks, m."threadId"`;
 
 function visible(scope: HistoryScope, myChats = false, targetThreadId?: string): Prisma.Sql {
-  // Match loadRunHistoryMessages: only an unassigned row for this bot means waiting.
-  // Cross-chat direct threads use their owning bot; groups retain the reading bot.
-  const historyBot = myChats
-    ? Prisma.sql`COALESCE(t."botId", ${scope.botId})`
-    : Prisma.sql`${scope.botId}`;
+  // Match loadRunHistoryMessages: only an unassigned row means waiting.
   const notWaiting = Prisma.sql`NOT EXISTS (
     SELECT 1 FROM steering_messages pending
-    WHERE pending."messageId" = m.id AND pending."botId" = ${historyBot}
-      AND pending."runId" IS NULL
+    WHERE pending."messageId" = m.id AND pending."runId" IS NULL
   )`;
   if (myChats)
     return Prisma.sql`
     t."spaceId" = ${scope.spaceId}
     AND ${notWaiting}
     ${targetThreadId ? Prisma.sql`AND t.id = ${targetThreadId}` : Prisma.empty}
-    AND ((t."groupId" IS NULL AND EXISTS (
-      SELECT 1 FROM bots b WHERE b.id = t."botId" AND b."spaceId" = ${scope.spaceId}
-        AND b."archivedAt" IS NULL
-    )) OR (t."botId" IS NULL AND EXISTS (
-      SELECT 1 FROM chat_groups g WHERE g.id = t."groupId" AND g."spaceId" = ${scope.spaceId}
-        AND g."archivedAt" IS NULL
-    )))`;
+    AND EXISTS (
+      SELECT 1 FROM thread_members member
+      WHERE member."threadId" = t.id AND member."userId" = ${scope.userId}
+    )`;
   return Prisma.sql`
     t.id = ${scope.threadId} AND t."spaceId" = ${scope.spaceId}
     AND ${notWaiting}
-    AND (t."botId" = ${scope.botId} OR (t."botId" IS NULL AND EXISTS (
-      SELECT 1 FROM chat_groups g JOIN chat_group_members member ON member."groupId" = g.id
-      WHERE g.id = t."groupId" AND g."spaceId" = ${scope.spaceId}
-        AND g."archivedAt" IS NULL AND member."botId" = ${scope.botId}
-    )))
-    AND EXISTS (SELECT 1 FROM bots b WHERE b.id = ${scope.botId}
-      AND b."spaceId" = ${scope.spaceId}
-      AND b."archivedAt" IS NULL)
   `;
 }
 /** Raw reads bypass the client extension, so decrypt here. */
@@ -348,15 +331,6 @@ export async function searchHistory(
   const filters = Prisma.sql`
     ${visible(scope, myChats)}
     AND (${Prisma.join(matches, " OR ")})
-    ${
-      input.botId
-        ? Prisma.sql`AND (t."botId" = ${input.botId} OR EXISTS (
-      SELECT 1 FROM chat_group_members member JOIN bots b ON b.id = member."botId"
-      WHERE member."groupId" = t."groupId" AND b.id = ${input.botId}
-        AND b."spaceId" = ${scope.spaceId} AND b."archivedAt" IS NULL
-    ))`
-        : Prisma.empty
-    }
     ${kindFilter}
     ${before ? Prisma.sql`AND m."createdAt" < ${before}` : Prisma.empty}
     ${after ? Prisma.sql`AND m."createdAt" >= ${after}` : Prisma.empty}
@@ -381,9 +355,8 @@ export async function searchHistory(
       prisma,
       byOffset
         ? Prisma.sql`
-    SELECT ${columns}, ${indexed} AS indexed, COALESCE(b.name, g.name) AS "chatName"
+    SELECT ${columns}, ${indexed} AS indexed, t.name AS "chatName"
     FROM messages m JOIN threads t ON t.id = m."threadId"
-    LEFT JOIN bots b ON b.id = t."botId" LEFT JOIN chat_groups g ON g.id = t."groupId"
     WHERE ${filters}
     ORDER BY m."createdAt" DESC, m.id DESC LIMIT ${limit + 1} OFFSET ${scanned}`
         : Prisma.sql`
@@ -447,7 +420,6 @@ export async function searchHistory(
             ...(byOffset ? { offset: nextOffset } : { beforeSeq: nextBeforeSeq! }),
             ...(byOffset && input.beforeSeq !== undefined ? { beforeSeq: input.beforeSeq } : {}),
             ...(input.scope ? { scope: input.scope } : {}),
-            ...(input.botId ? { botId: input.botId } : {}),
             ...(input.kinds ? { kinds: input.kinds } : {}),
             limit,
             ...(input.after !== undefined ? { after: input.after } : {}),
@@ -483,7 +455,7 @@ export async function readHistory(
   const anchors = await messageRows(
     prisma,
     Prisma.sql`
-    SELECT ${columns}, t."botId" FROM messages m JOIN threads t ON t.id = m."threadId"
+    SELECT ${columns} FROM messages m JOIN threads t ON t.id = m."threadId"
     WHERE ${authorized} AND m.id = ${input.messageId} LIMIT 1
   `,
   );
@@ -500,7 +472,7 @@ export async function readHistory(
       olderMessageId: null,
       newerMessageId: null,
     };
-  scope = { ...scope, threadId: targetThreadId, botId: anchor.botId ?? scope.botId };
+  scope = { ...scope, threadId: targetThreadId };
   const bound =
     direction === "older"
       ? Prisma.sql`m.seq < ${anchor.seq}`
@@ -527,7 +499,6 @@ export async function readHistory(
     where: {
       spaceId: scope.spaceId,
       threadId: scope.threadId,
-      ...(anchor.groupId ? {} : { botId: scope.botId }),
       ...(input.linkedRunId
         ? { id: input.linkedRunId }
         : input.runAfterId
@@ -570,9 +541,7 @@ export async function readHistory(
       ? prisma.artifact.findMany({
           where: {
             spaceId: scope.spaceId,
-            ...(anchor.groupId
-              ? { groupId: anchor.groupId }
-              : { botId: scope.botId, groupId: null }),
+            threadId: scope.threadId,
             runId: { in: runs.map((run) => run.id) },
             ...(input.artifactAfterId ? { id: { gt: input.artifactAfterId } } : {}),
             ...LISTED_ARTIFACT,

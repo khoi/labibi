@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import { bootstrapUserSpace, createOrganizationWithDefaultSpace } from "./bootstrap-user.js";
 import type { PrismaClient } from "./client.js";
 
+vi.mock("./chats.js", () => ({ ensureFirstChat: vi.fn() }));
+
 function makePrisma(settings: { id: string; ownerUserId: string | null } | null) {
   const create = () => vi.fn(async (_input: { data: Record<string, unknown> }) => ({}));
   const prisma = {
@@ -26,6 +28,7 @@ function makePrisma(settings: { id: string; ownerUserId: string | null } | null)
     },
     memoryDocument: { findFirst: vi.fn(async () => null), create: create() },
     notificationPreference: { create: create() },
+    bot: { upsert: vi.fn(async () => ({ id: "doodle-1" })) },
   };
   return prisma;
 }
@@ -104,7 +107,6 @@ describe("bootstrapUserSpace", () => {
     const memoryData = prisma.memoryDocument.create.mock.calls[0]![0].data;
     expect(memoryData.spaceId).toBe(spaceId);
     expect(memoryData.userId).toBe("user-1");
-    expect(memoryData.scope).toBe("user");
     expect(memoryData.path).toBe("MEMORY.md");
 
     const prefData = prisma.notificationPreference.create.mock.calls[0]![0].data;
@@ -138,6 +140,7 @@ describe("bootstrapUserSpace concurrency", () => {
         create: vi.fn(async () => ({})),
       },
       notificationPreference: { create: vi.fn(uniqueViolation) },
+      bot: { upsert: vi.fn(async () => ({ id: "doodle-1" })) },
     };
     const result = await bootstrapUserSpace(
       prisma as unknown as PrismaClient,

@@ -261,6 +261,7 @@ describePostgres("steering after a run ends without completing (PostgreSQL)", ()
       },
       update: {},
     });
+    await system.threadMember.create({ data: { threadId, spaceId, userId: partnerId } });
   }
 
   const sendAs = (sender: string, text: string) =>

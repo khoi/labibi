@@ -1,10 +1,13 @@
 import { randomUUID } from "node:crypto";
+import type { Workspace } from "@labradoodle/contracts";
 import { displayName } from "@labradoodle/core";
 import { GUEST_ROLE, isOwnerRole, ownedOrganizationId } from "./billing.js";
 import type { PrismaClient } from "./client.js";
 import { Prisma } from "./client.js";
+import { ensureSpaceDoodle } from "./doodle.js";
 import type { PageShareSecret } from "./page-shares.js";
 import { deletePageShareSecrets } from "./page-shares.js";
+import { runAsSystem } from "./row-security.js";
 import { IsolationError } from "./scope.js";
 import { releasePendingSpacePayments } from "./spending.js";
 import { withTransactionRetry } from "./transaction-retry.js";
@@ -72,7 +75,7 @@ export const SPACE_DELETION_CLAIM_TIMEOUT_MS = 5 * 60_000;
 
 type SpaceClient = Pick<
   PrismaClient,
-  "space" | "spaceMember" | "memoryDocument" | "notificationPreference" | "bot" | "chatGroup"
+  "space" | "spaceMember" | "memoryDocument" | "notificationPreference" | "bot"
 >;
 
 interface CreateSpaceInput {
@@ -104,6 +107,7 @@ async function createSpace(prisma: SpaceClient, input: CreateSpaceInput): Promis
       createdAt: input.createdAt,
     },
   });
+  await ensureSpaceDoodle(prisma, input.spaceId);
 }
 
 async function createSpaceDefaults(
@@ -114,7 +118,6 @@ async function createSpaceDefaults(
     data: {
       spaceId: input.spaceId,
       userId: input.userId,
-      scope: "user",
       path: "MEMORY.md",
       content: input.memoryContent,
     },
@@ -189,7 +192,7 @@ export async function createSpaceForMember(
         await createSpaceDefaults(tx, {
           spaceId,
           userId: input.userId,
-          memoryContent: "# Space memory\n\n",
+          memoryContent: "# My memory\n\n",
         });
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
@@ -384,27 +387,7 @@ export async function claimSpaceDeletionForMember(
   );
 }
 
-/** Every bot of a claimed Space, archived and other members' included, for per-bot teardown. */
-export async function listClaimedSpaceBots(
-  prisma: Pick<PrismaClient, "bot">,
-  input: ClaimedSpaceDeleteInput,
-) {
-  return prisma.bot.findMany({
-    where: { spaceId: input.spaceId, space: { deletionClaimId: input.claimId } },
-    select: {
-      id: true,
-      userId: true,
-      spaceId: true,
-      name: true,
-      archivedAt: true,
-      computerId: true,
-      webhookSecretId: true,
-    },
-    orderBy: { createdAt: "asc" },
-  });
-}
-
-/** Sandboxes still provisioned in a claimed Space once its bots are gone (team computers). */
+/** Sandboxes still provisioned in a claimed Space, for teardown before it is deleted. */
 export async function listClaimedSpaceComputers(
   prisma: Pick<PrismaClient, "computer">,
   input: ClaimedSpaceDeleteInput,
@@ -470,7 +453,7 @@ export async function restoreSpaceDeletionClaims(
 
 /**
  * Delete a claimed, non-default Space and everything left in it. Callers must first
- * destroy every bot and leftover sandbox, clearing its providerRef, so a failed external
+ * destroy every sandbox, clearing its providerRef, so a failed external
  * destroy never loses the only persisted handle; remaining rows go by cascade. Returns the
  * stored artifacts and computer homes to remove after commit, and the space the client
  * should switch to when the active space was deleted.
@@ -494,8 +477,7 @@ export async function deleteClaimedSpaceForMember(
         });
         if (!claim) throw new SpaceDeletionInProgressError();
         const memberships = await assertSpaceDeletable(tx, input);
-        const [remainingBots, provisioned, artifacts, computers] = await Promise.all([
-          tx.bot.count({ where: { spaceId: input.spaceId } }),
+        const [provisioned, artifacts, computers] = await Promise.all([
           tx.computer.count({ where: { spaceId: input.spaceId, providerRef: { not: null } } }),
           tx.artifact.findMany({
             where: { spaceId: input.spaceId },
@@ -505,7 +487,7 @@ export async function deleteClaimedSpaceForMember(
         ]);
         // Content creation is blocked while claimed, so this only trips when teardown
         // was cut short; a retry finishes it.
-        if (remainingBots > 0 || provisioned > 0) throw new SpaceDeletionInProgressError();
+        if (provisioned > 0) throw new SpaceDeletionInProgressError();
         const pageShareSecrets = await deletePageShareSecrets(tx, { spaceId: input.spaceId });
         await rehomeSpaceItems(tx, input.spaceId);
         await releasePendingSpacePayments(tx, input.spaceId);
@@ -536,7 +518,7 @@ export async function deleteClaimedSpaceForMember(
 }
 
 /**
- * A person's skills, MCP servers and plugins work in every Space of theirs but are homed in the
+ * A person's skills, recorded demos, MCP servers and plugins work in every Space of theirs but are homed in the
  * one they were added in. Before they leave that Space, or it goes, each moves to their fallback
  * Space, a plugin with its servers and skills as one. An item whose name is taken there stays,
  * and goes with this Space.
@@ -549,6 +531,7 @@ export async function rehomeMemberItems(
   const home = await fallbackSpaceForMember(tx, userId, spaceId);
   if (!home) return;
   const own = { spaceId, userId };
+  await tx.taughtSkill.updateMany({ where: own, data: { spaceId: home } });
   const [servers, skills, installs] = await Promise.all([
     tx.mcpServer.findMany({ where: { ...own, installId: null }, select: { id: true, slug: true } }),
     tx.agentSkill.findMany({
@@ -725,7 +708,7 @@ export async function claimSpaceForDeletion(
 }
 
 /**
- * Delete a space claimed by `claimSpaceForDeletion`, once its bots and sandboxes are gone. Rows
+ * Delete a space claimed by `claimSpaceForDeletion`, once its sandboxes are gone. Rows
  * left in it go by cascade, and its keys with it. Returns the stored artifacts to remove after
  * commit, but none when another claim has since taken the space over. With `soleMemberId`, a
  * space someone joined after the claim is released instead and null is returned. With
@@ -741,9 +724,8 @@ export async function deleteClaimedSpace(
     prisma.$transaction(
       async (tx) => {
         await lockSpaceDeletion(tx, spaceId);
-        const [others, remainingBots, remainingComputers, artifacts] = await Promise.all([
+        const [others, remainingComputers, artifacts] = await Promise.all([
           soleMemberId ? tx.spaceMember.count({ where: otherNonGuests(spaceId, soleMemberId) }) : 0,
-          tx.bot.count({ where: { spaceId } }),
           tx.computer.count({ where: { spaceId } }),
           tx.artifact.findMany({ where: { spaceId }, select: { storageKey: true } }),
         ]);
@@ -755,7 +737,7 @@ export async function deleteClaimedSpace(
           return null;
         }
         // Teardown was cut short; deleting again finishes it.
-        if (remainingBots > 0 || remainingComputers > 0) throw new SpaceDeletionInProgressError();
+        if (remainingComputers > 0) throw new SpaceDeletionInProgressError();
         await rehomeSpaceItems(tx, spaceId);
         // The page links' tokens go with the Space; the caller removes them from the store.
         const pageShareSecrets = await tx.secret.findMany({
@@ -800,4 +782,44 @@ export async function renameSpaceForMember(
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
     ),
   );
+}
+
+/** The workspaces a person belongs to, for the switcher; muted chats never mark one unread. */
+export async function listWorkspacesForMember(
+  prisma: PrismaClient,
+  userId: string,
+): Promise<Workspace[]> {
+  const memberships = await prisma.spaceMember.findMany({
+    where: { userId, space: { deletingAt: null } },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    select: {
+      role: true,
+      space: {
+        select: {
+          id: true,
+          name: true,
+          isDefault: true,
+          _count: { select: { memberships: true } },
+        },
+      },
+    },
+  });
+  const spaceIds = memberships.map((membership) => membership.space.id);
+  // Read state is a chat row; this reads only the person's own, across their workspaces.
+  const unread = await runAsSystem("find the member's workspaces with unread chats", () =>
+    prisma.threadMember.findMany({
+      where: { userId, unread: true, muted: false, spaceId: { in: spaceIds } },
+      distinct: ["spaceId"],
+      select: { spaceId: true },
+    }),
+  );
+  const unreadSpaces = new Set(unread.map((row) => row.spaceId));
+  return memberships.map(({ role, space }) => ({
+    id: space.id,
+    name: space.name,
+    isDefault: space.isDefault,
+    isOwner: isOwnerRole(role),
+    shared: space._count.memberships > 1,
+    unread: unreadSpaces.has(space.id),
+  }));
 }

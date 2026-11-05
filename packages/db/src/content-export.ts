@@ -3,9 +3,8 @@ import { historyMessageText } from "./history-text.js";
 
 export interface ContentExportFilter {
   spaceId?: string;
+  /** One chat, with its memory. */
   threadId?: string;
-  /** The bot's own thread, its messages in other threads, and its memory. */
-  botId?: string;
 }
 
 export type ContentExportRecord =
@@ -14,8 +13,8 @@ export type ContentExportRecord =
       id: string;
       spaceId: string;
       userId: string;
-      botId: string | null;
-      groupId: string | null;
+      name: string | null;
+      doodle: boolean;
       createdAt: string;
       historyCompactionSummary: string | null;
     }
@@ -37,8 +36,8 @@ export type ContentExportRecord =
       id: string;
       spaceId: string;
       userId: string;
-      botId: string | null;
-      scope: string;
+      /** Null for a person's own memory. */
+      threadId: string | null;
       path: string;
       revision: number;
       updatedAt: string;
@@ -68,11 +67,10 @@ export async function* exportContent(
   filter: ContentExportFilter = {},
   options: { signal?: AbortSignal } = {},
 ): AsyncGenerator<ContentExportRecord> {
-  const { spaceId, threadId, botId } = filter;
+  const { spaceId, threadId } = filter;
   const threadWhere: Prisma.ThreadWhereInput = {
     ...(spaceId ? { spaceId } : {}),
     ...(threadId ? { id: threadId } : {}),
-    ...(botId ? { OR: [{ botId }, { messages: { some: { botId } } }] } : {}),
   };
   for (let cursor = ""; ; ) {
     options.signal?.throwIfAborted();
@@ -84,27 +82,18 @@ export async function* exportContent(
         id: true,
         spaceId: true,
         userId: true,
-        botId: true,
-        groupId: true,
+        name: true,
+        doodle: true,
         createdAt: true,
         historyCompactionSummary: true,
       },
     });
     for (const thread of threads) {
-      // In another bot's or a group's thread, only the bot's own messages, and not
-      // the thread's summary, which covers everyone's.
-      const foreign = Boolean(botId) && thread.botId !== botId;
-      yield {
-        type: "thread",
-        ...thread,
-        createdAt: thread.createdAt.toISOString(),
-        historyCompactionSummary: foreign ? null : thread.historyCompactionSummary,
-      };
-      const own = foreign ? { botId } : {};
+      yield { type: "thread", ...thread, createdAt: thread.createdAt.toISOString() };
       for (let seq = -1; ; ) {
         options.signal?.throwIfAborted();
         const messages = await prisma.message.findMany({
-          where: { threadId: thread.id, seq: { gt: seq }, ...own },
+          where: { threadId: thread.id, seq: { gt: seq } },
           orderBy: { seq: "asc" },
           take: PAGE,
           select: {
@@ -132,20 +121,21 @@ export async function* exportContent(
     if (threadId || threads.length < PAGE) break;
     cursor = threads.at(-1)!.id;
   }
-  // Memory belongs to a space, user or bot, not to a thread.
-  if (threadId) return;
   for (let cursor = ""; ; ) {
     options.signal?.throwIfAborted();
     const documents = await prisma.memoryDocument.findMany({
-      where: { id: { gt: cursor }, ...(spaceId ? { spaceId } : {}), ...(botId ? { botId } : {}) },
+      where: {
+        id: { gt: cursor },
+        ...(spaceId ? { spaceId } : {}),
+        ...(threadId ? { threadId } : {}),
+      },
       orderBy: { id: "asc" },
       take: PAGE,
       select: {
         id: true,
         spaceId: true,
         userId: true,
-        botId: true,
-        scope: true,
+        threadId: true,
         path: true,
         revision: true,
         updatedAt: true,

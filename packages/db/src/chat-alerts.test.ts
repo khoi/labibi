@@ -24,7 +24,6 @@ const alert: ChatAlert = {
   title: "Scout needs an answer",
   body: "Which repo?",
   spaceId: "space-1",
-  botId: "bot-1",
   threadId: "thread-1",
 };
 

@@ -49,6 +49,7 @@ function tx(options?: {
       create: vi.fn(async () => ({ id: "task-next" })),
     },
     thread: { update: vi.fn(async () => ({ nextMessageSeq: 2, nextEventSeq: 9 })) },
+    threadMember: { updateMany: vi.fn() },
     message: {
       findFirst: vi.fn(async () => null),
       findMany: vi.fn(async () =>

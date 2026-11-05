@@ -37,6 +37,8 @@ model User {
   /// The app language last chosen, such as "es" or "pt-BR". Null until an app reports it;
   /// emails then follow the language of the browser that asked for them.
   locale                          String?
+  /// Reads Doodle's replies aloud as they arrive, in every workspace.
+  readAloud                       Boolean                         @default(false)
   marketingEmailOptOutAt          DateTime?
   /// When an organization this person owns first subscribed; uses up every trial kind.
   billingTrialUsedAt              DateTime?
@@ -531,8 +533,7 @@ model Space {
   deletionClaimId         String?
   memberships             SpaceMember[]
   invites                 SpaceInvite[]
-  bots                    Bot[]
-  botDeletions            BotDeletion[]
+  bot                     Bot?
   threads                 Thread[]
   events                  Event[]
   tasks                   Task[]
@@ -543,7 +544,6 @@ model Space {
   connections             Connection[]
   capabilities            CapabilityInstall[]
   memoryDocuments         MemoryDocument[]
-  agentHomes              AgentHome[]
   browserProfiles         BrowserProfile[]
   artifacts               Artifact[]
   pages                   Page[]
@@ -558,7 +558,6 @@ model Space {
   feedbackReports         FeedbackReport[]
   memoryConfig            SpaceMemoryConfig?
   secrets                 Secret[]
-  chatGroups              ChatGroup[]
 
   @@unique([id, organizationId])
   @@index([organizationId, createdAt])
@@ -592,6 +591,7 @@ model SpaceMember {
   role           String          @default("member")
   createdAt      DateTime
   aiDataConsents AiDataConsent[]
+  threadMembers  ThreadMember[]
 
   @@unique([spaceId, userId])
   @@index([organizationId, userId])
@@ -783,122 +783,79 @@ model UserVoiceCredential {
   @@map("user_voice_credentials")
 }
 
+/// A workspace's Doodle. Only what the workspace owner may change lives here.
 model Bot {
-  screenGeneration     Int               @default(0)
   id                   String            @id @default(cuid())
-  spaceId              String
+  spaceId              String            @unique
   space                Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  userId               String
-  name                 String
   instructions         String            @default("")
   instructionHistory   Json              @default("[]")
-  color                String
-  notifyOnFinish       Boolean           @default(true)
-  archivedAt           DateTime?
-  memoryScope          String?
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
-  thread               Thread?
-  computerId           String?
-  computer             Computer?         @relation(fields: [computerId], references: [id], onDelete: SetNull)
-  computerSwitching    Boolean           @default(false)
   voiceId              String?
-  autoSpeak            Boolean           @default(false)
   modelProvider        String?
   modelId              String?
   thinkingLevel        String?
   disabledBuiltinTools String[]          @default([])
-  webhookSecretId      String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
   routines             Routine[]
-  taughtSkills         TaughtSkill[]
-  memoryDocuments      MemoryDocument[]
-  agentHome            AgentHome?
-  browserProfile       BrowserProfile?
-  artifacts            Artifact[]
-  pages                Page[]
   tasks                Task[]
   runs                 Run[]
   steeringMessages     SteeringMessage[]
-  groupMembers         ChatGroupMember[]
 
-  @@index([spaceId, userId, archivedAt, updatedAt])
-  @@index([computerId])
   @@map("bots")
 }
 
-model BotDeletion {
-  id                String   @id
-  spaceId           String
-  space             Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  name              String
-  deletedByUserId   String
-  memoriesPreserved Boolean
-  deletedAt         DateTime @default(now())
-
-  @@index([spaceId, deletedAt])
-  @@map("bot_deletions")
-}
-
-model ChatGroup {
-  id         String            @id @default(cuid())
-  spaceId    String
-  space      Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  userId     String
-  name       String
-  archivedAt DateTime?
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
-  members    ChatGroupMember[]
-  thread     Thread?
-  artifacts  Artifact[]
-  pages      Page[]
-
-  @@index([spaceId, userId, archivedAt, updatedAt])
-  @@map("chat_groups")
-}
-
-model ChatGroupMember {
-  id        String    @id @default(cuid())
-  groupId   String
-  group     ChatGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  botId     String
-  bot       Bot       @relation(fields: [botId], references: [id], onDelete: NoAction)
-  createdAt DateTime  @default(now())
-
-  @@unique([groupId, botId])
-  @@index([botId])
-  @@map("chat_group_members")
-}
-
+/// A chat. Its people are ThreadMember rows; `doodle` says whether the workspace's Doodle is in it.
 model Thread {
-  id                             String     @id @default(cuid())
+  id                             String           @id @default(cuid())
   spaceId                        String
-  space                          Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  botId                          String?    @unique
-  bot                            Bot?       @relation(fields: [botId], references: [id], onDelete: Cascade)
-  groupId                        String?    @unique
-  group                          ChatGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  space                          Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  /// Who started the chat. Content encryption binds the chat's rows to it, so it never changes.
   userId                         String
-  createdAt                      DateTime   @default(now())
-  nextEventSeq                   Int        @default(0)
-  nextMessageSeq                 Int        @default(0)
+  name                           String?
+  doodle                         Boolean          @default(false)
+  lastMessageAt                  DateTime         @default(now())
+  createdAt                      DateTime         @default(now())
+  nextEventSeq                   Int              @default(0)
+  nextMessageSeq                 Int              @default(0)
   historyCompactedUpToSeq        Int?
-  historyCompactionSummary       String?    @db.Text
-  historyCompactionGeneration    Int        @default(0)
+  historyCompactionSummary       String?          @db.Text
+  historyCompactionGeneration    Int              @default(0)
   /// After a summary came back over the size limit, compaction waits until nextMessageSeq reaches this.
   historyCompactionRetryAfterSeq Int?
-  unread                         Boolean    @default(false)
-  /// Highest message seq the user has read; the "New" divider goes after it. -1 = none read.
-  lastReadSeq                    Int        @default(-1)
+  members                        ThreadMember[]
   messages                       Message[]
   events                         Event[]
   tasks                          Task[]
   runs                           Run[]
   routines                       Routine[]
+  memoryDocuments                MemoryDocument[]
+  artifacts                      Artifact[]
+  pages                          Page[]
 
+  @@unique([id, spaceId])
   @@index([spaceId])
   @@index([spaceId, userId])
   @@map("threads")
+}
+
+/// A person in a chat and what they have read there. Leaving the workspace removes them.
+model ThreadMember {
+  id          String      @id @default(cuid())
+  threadId    String
+  spaceId     String
+  thread      Thread      @relation(fields: [threadId, spaceId], references: [id, spaceId], onDelete: Cascade)
+  userId      String
+  spaceMember SpaceMember @relation(fields: [spaceId, userId], references: [spaceId, userId], onDelete: Cascade)
+  /// Highest message seq this person has read; the "New" divider goes after it. -1 = none read.
+  lastReadSeq Int         @default(-1)
+  unread      Boolean     @default(false)
+  muted       Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+
+  @@unique([threadId, userId])
+  @@index([spaceId, userId])
+  @@map("thread_members")
 }
 
 model Message {
@@ -938,7 +895,7 @@ model Event {
   space     Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   threadId  String
   thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  botId     String
+  botId     String?
   seq       Int
   type      String
   payload   Json
@@ -971,51 +928,49 @@ model Task {
 }
 
 model Run {
-  id                 String            @id @default(cuid())
-  spaceId            String
-  space              Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  botId              String
-  bot                Bot               @relation(fields: [botId], references: [id], onDelete: Cascade)
-  threadId           String
-  thread             Thread            @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  taskId             String
-  task               Task              @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  userId             String
-  status             String
-  trigger            String
-  modelProvider      String?
-  modelId            String?
-  thinkingLevel      String?
+  id               String            @id @default(cuid())
+  spaceId          String
+  space            Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  botId            String
+  bot              Bot               @relation(fields: [botId], references: [id], onDelete: Cascade)
+  threadId         String
+  thread           Thread            @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  taskId           String
+  task             Task              @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId           String
+  status           String
+  trigger          String
+  modelProvider    String?
+  modelId          String?
+  thinkingLevel    String?
   // True when these columns are the model the run must keep. A later attempt
   // may record the model it used in the same columns without setting this.
-  modelPinned        Boolean           @default(false)
-  // A group message that named nobody reached this member; it may end without a reply.
-  groupReplyOptional Boolean           @default(false)
-  error              String?
-  leaseOwner         String?
-  leaseFence         Int               @default(0)
-  leaseExpiresAt     DateTime?
-  checkpoint         String?
-  clientNonce        String?
-  sourceMessageId    String?
-  sourceMessage      Message?          @relation("RunSourceMessage", fields: [sourceMessageId], references: [id], onDelete: SetNull)
-  routineId          String?
-  routine            Routine?          @relation(fields: [routineId], references: [id], onDelete: SetNull)
+  modelPinned      Boolean           @default(false)
+  error            String?
+  leaseOwner       String?
+  leaseFence       Int               @default(0)
+  leaseExpiresAt   DateTime?
+  checkpoint       String?
+  clientNonce      String?
+  sourceMessageId  String?
+  sourceMessage    Message?          @relation("RunSourceMessage", fields: [sourceMessageId], references: [id], onDelete: SetNull)
+  routineId        String?
+  routine          Routine?          @relation(fields: [routineId], references: [id], onDelete: SetNull)
   // The failed routine run this run retries. Unique, so a run is retried at most once.
-  retryOfRunId       String?           @unique
+  retryOfRunId     String?           @unique
   // Durable retry schedule; null means runnable immediately when queued.
-  wakeAt             DateTime?
+  wakeAt           DateTime?
   // Server-side first visible output, preserved across attempts and resumes.
-  firstResponseAt    DateTime?
-  startedAt          DateTime?
+  firstResponseAt  DateTime?
+  startedAt        DateTime?
   // The occurrence a recurring timer run was due at, recorded at its first start only when it started late.
-  lateSince          DateTime?
-  completedAt        DateTime?
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
-  attempts           Attempt[]
-  effects            ExternalEffect[]
-  steeringMessages   SteeringMessage[]
+  lateSince        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  attempts         Attempt[]
+  effects          ExternalEffect[]
+  steeringMessages SteeringMessage[]
 
   @@unique([spaceId, clientNonce])
   @@index([status, wakeAt])
@@ -1234,8 +1189,8 @@ model Routine {
   botId           String
   bot             Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
   userId          String
-  threadId        String?
-  thread          Thread?   @relation(fields: [threadId], references: [id], onDelete: SetNull)
+  threadId        String
+  thread          Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
   name            String
   prompt          String
   crons           String[]
@@ -1243,6 +1198,8 @@ model Routine {
   active          Boolean   @default(false)
   notify          Boolean   @default(true)
   webhookEnabled  Boolean   @default(false)
+  /// The secret this routine's webhook URL is checked against; null until one is made.
+  webhookSecretId String?
   githubEnabled   Boolean   @default(false)
   modelProvider   String?
   modelId         String?
@@ -1260,16 +1217,15 @@ model Routine {
   runs            Run[]
 
   @@index([active, nextRunAt])
-  @@index([spaceId, botId])
+  @@index([threadId])
   @@map("routines")
 }
 
+/// A demo one person recorded; theirs in every workspace.
 model TaughtSkill {
   id        String    @id @default(cuid())
   spaceId   String
   space     Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  botId     String
-  bot       Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
   userId    String
   name      String    @default("")
   goal      String
@@ -1282,10 +1238,9 @@ model TaughtSkill {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  @@index([spaceId, botId])
-  @@index([spaceId, botId, status])
-  // Partial unique index taught_skills_botId_recording_key is created in SQL:
-  // one recording session per bot.
+  @@index([userId, status])
+  // Partial unique index taught_skills_userId_recording_key is created in SQL:
+  // one recording session per person.
   @@map("taught_skills")
 }
 
@@ -1354,14 +1309,15 @@ model CapabilityInstall {
   @@map("capability_installs")
 }
 
+/// A chat's memory when `threadId` is set, which every member of the chat shares; otherwise the
+/// personal memory of `userId` in this workspace.
 model MemoryDocument {
   id        String           @id @default(cuid())
   spaceId   String
   space     Space            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   userId    String
-  botId     String?
-  bot       Bot?             @relation(fields: [botId], references: [id], onDelete: Cascade)
-  scope     String
+  threadId  String?
+  thread    Thread?          @relation(fields: [threadId], references: [id], onDelete: Cascade)
   path      String
   content   String
   revision  Int              @default(1)
@@ -1369,8 +1325,10 @@ model MemoryDocument {
   updatedAt DateTime         @updatedAt
   revisions MemoryRevision[]
 
-  @@unique([spaceId, scope, botId, path])
+  @@unique([threadId, path])
   @@index([spaceId, userId])
+  // Partial unique index memory_documents_personal_path_key (one path per person and workspace)
+  // is created in SQL.
   @@map("memory_documents")
 }
 
@@ -1388,31 +1346,16 @@ model MemoryRevision {
   @@map("memory_revisions")
 }
 
-model AgentHome {
-  id        String   @id @default(cuid())
-  spaceId   String
-  space     Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  botId     String   @unique
-  bot       Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
-  userId    String
-  revision  String   @default("empty")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("agent_homes")
-}
-
 model BrowserProfile {
   id        String   @id @default(cuid())
   spaceId   String
   space     Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  botId     String   @unique
-  bot       Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
   userId    String
   secretId  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([spaceId, userId])
   @@map("browser_profiles")
 }
 
@@ -1421,7 +1364,6 @@ model ComputerUpdate {
   id         String   @id @default(cuid())
   computerId String
   computer   Computer @relation(fields: [computerId], references: [id], onDelete: Cascade)
-  botId      String
   status     String   @default("queued")
   stage      String   @default("preparing")
   createdAt  DateTime @default(now())
@@ -1438,7 +1380,6 @@ model Computer {
   spaceId                 String
   space                   Space                    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   userId                  String
-  scope                   String                   @default("team")
   scopeKey                String                   @unique
   homeKey                 String                   @unique
   homeRevision            String                   @default("empty")
@@ -1461,13 +1402,11 @@ model Computer {
   controlHolder           String                   @default("none")
   controlLeaseId          String?
   controlLeaseExpiresAt   DateTime?
-  controlBotId            String?
   controlRunId            String?
-  /// The person holding user control. A Space's members share its computers, never a lease.
+  /// The person holding user control, who is always the computer's owner.
   controlUserId           String?
   controlFence            Int                      @default(0)
   executionRunId          String?
-  executionBotId          String?
   executionLeaseExpiresAt DateTime?
   executionFence          Int                      @default(0)
   screenUrl               String?
@@ -1480,13 +1419,12 @@ model Computer {
   diskDismissedPercent    Int?
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
-  bots                    Bot[]
   executionLeases         ComputerExecutionLease[]
   maintenanceId           String?
   updates                 ComputerUpdate[]
   homeDeletionNotice      HomeDeletionNotice?
 
-  @@index([spaceId, scope])
+  @@unique([spaceId, userId])
   @@map("computers")
 }
 
@@ -1539,28 +1477,23 @@ model ComputerExecutionLease {
   id         String   @id @default(cuid())
   computerId String
   computer   Computer @relation(fields: [computerId], references: [id], onDelete: Cascade)
-  botId      String
   runId      String
   fence      Int      @default(0)
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  @@unique([computerId, botId])
+  @@unique([computerId])
   @@index([runId])
-  @@index([computerId, expiresAt])
-  @@index([botId, expiresAt])
   @@map("computer_execution_leases")
 }
 
 model Artifact {
-  id          String     @id @default(cuid())
+  id          String   @id @default(cuid())
   spaceId     String
-  space       Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  botId       String?
-  bot         Bot?       @relation(fields: [botId], references: [id], onDelete: SetNull)
-  groupId     String?
-  group       ChatGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  space       Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  threadId    String
+  thread      Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
   userId      String
   runId       String?
   name        String
@@ -1569,7 +1502,7 @@ model Artifact {
   size        Int
   hash        String
   storageKey  String
-  createdAt   DateTime   @default(now())
+  createdAt   DateTime @default(now())
 
   // Null on the first version; that row's id is the family's stable id.
   rootArtifactId String?
@@ -1580,24 +1513,22 @@ model Artifact {
   clientNonce    String?
 
   @@unique([spaceId, userId, clientNonce])
-  @@index([spaceId, botId])
-  @@index([groupId])
+  @@index([threadId])
   @@index([rootArtifactId])
   // artifacts_family_version_key is raw SQL: Prisma cannot express COALESCE indexes.
   @@map("artifacts")
 }
 
-/// A page a bot built: a report, dashboard or tracker the user opens from chat and can share.
+/// A page Doodle built in a chat: a report, dashboard or tracker its members open, and the person
+/// who asked for it can share.
 model Page {
   id             String        @id @default(cuid())
   spaceId        String
   space          Space         @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   userId         String
   user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  botId          String?
-  bot            Bot?          @relation(fields: [botId], references: [id], onDelete: SetNull)
-  groupId        String?
-  group          ChatGroup?    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  threadId       String
+  thread         Thread        @relation(fields: [threadId], references: [id], onDelete: Cascade)
   title          String
   visibility     String        @default("private")
   /// sha256 of the link token; the public read looks pages up by it.
@@ -1613,8 +1544,7 @@ model Page {
   versions       PageVersion[]
 
   @@index([spaceId, userId, updatedAt])
-  @@index([botId])
-  @@index([groupId])
+  @@index([threadId])
   @@map("pages")
 }
 
@@ -1636,10 +1566,9 @@ model PageVersion {
 model UsageRecord {
   id                 String   @id @default(cuid())
   spaceId            String
-  /// Which bot spent this. Deliberately not a relation: usage is spend that really happened,
-  /// and deleting a bot (which also deletes its runs) must not delete the row or blank its
-  /// attribution, as Cascade or SetNull would. The id may dangle; read it with a LEFT JOIN.
-  /// `BotDeletion.id` is the bot id, so a deleted bot's name stays reachable for display.
+  /// Which Doodle spent this. Deliberately not a relation: usage is spend that really happened,
+  /// and deleting a workspace must not delete the row or blank its attribution, as Cascade or
+  /// SetNull would. The id may dangle; read it with a LEFT JOIN.
   botId              String?
   userId             String
   runId              String?
@@ -1687,17 +1616,16 @@ model NotificationPreference {
 }
 
 model SpaceMemoryConfig {
-  id                 String   @id @default(cuid())
-  spaceId            String   @unique
-  space              Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  userId             String
-  provider           String
-  settings           Json
-  secretId           String   @unique
-  secret             Secret   @relation(fields: [secretId], references: [id], onDelete: Cascade)
-  defaultMemoryScope String   @default("isolated")
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id        String   @id @default(cuid())
+  spaceId   String   @unique
+  space     Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  userId    String
+  provider  String
+  settings  Json
+  secretId  String   @unique
+  secret    Secret   @relation(fields: [secretId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("space_memory_configs")
 }

@@ -6,7 +6,6 @@ import {
   TAKEOVER_COMPUTER_SKIPPED_STATE,
 } from "@labradoodle/core";
 import { describe, expect, it, vi } from "vitest";
-import { commitBotUpdate } from "./bot-update.js";
 import type { PrismaClient } from "./client.js";
 import type { AnswerRunInput } from "./events.js";
 import {
@@ -107,6 +106,7 @@ describe("finalizeRun", () => {
         },
         attempt: { updateMany: vi.fn(async () => ({ count: 1 })) },
         task: { updateMany: vi.fn(async () => ({ count: 1 })) },
+        threadMember: { updateMany: vi.fn() },
         thread: { update: vi.fn(async () => ({ nextEventSeq: 1 })) },
         event: { create: createEvent, deleteMany: vi.fn(async () => ({ count: 0 })) },
         secret: { deleteMany: vi.fn(async () => ({ count: 0 })) },
@@ -173,6 +173,7 @@ describe("finalizeRun", () => {
       },
       attempt: { updateMany: vi.fn(async () => ({ count: 1 })) },
       task: { updateMany: vi.fn(async () => ({ count: 1 })) },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn(async () => ({ nextEventSeq: 1, nextMessageSeq: 5 })) },
       secret: { deleteMany: vi.fn(async () => ({ count: 0 })) },
       event: {
@@ -248,6 +249,7 @@ describe("finalizeRun", () => {
       },
       attempt: { updateMany: vi.fn(async () => ({ count: 1 })) },
       task: { updateMany: vi.fn(async () => ({ count: 1 })) },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn(async () => ({ nextEventSeq: 1 })) },
       secret: { deleteMany: vi.fn(async () => ({ count: 0 })) },
       event: {
@@ -296,6 +298,7 @@ describe("finalizeRun", () => {
         updateMany: vi.fn(async () => ({ count: 1 })),
         create: vi.fn(async () => ({ id: "task-reply" })),
       },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn(async () => ({ nextEventSeq: 1 })) },
       event: {
         create: vi.fn(async () => ({ threadId: "thread-1", seq: 0 })),
@@ -364,6 +367,7 @@ describe("thread lock transaction budget", () => {
 
   it("clears a thread with the explicit budget", async () => {
     const tx = {
+      threadMember: { updateMany: vi.fn() },
       thread: {
         update: vi
           .fn()
@@ -385,7 +389,6 @@ describe("thread lock transaction budget", () => {
     await clearThread({ $transaction } as unknown as PrismaClient, {
       spaceId: "workspace-1",
       threadId: "thread-1",
-      botId: "bot-1",
     });
 
     expect($transaction).toHaveBeenCalledWith(expect.any(Function), budget);
@@ -492,6 +495,7 @@ describe("thread lock transaction budget", () => {
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
       },
       bot: { findFirst: vi.fn().mockResolvedValue({ thread: { id: "thread-1" } }) },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 2 }) },
       event: { create: vi.fn().mockResolvedValue(event(1)) },
     };
@@ -531,19 +535,6 @@ describe("thread lock transaction budget", () => {
   });
 
   it.each([
-    [
-      "commits a bot update",
-      (prisma: PrismaClient) =>
-        commitBotUpdate({
-          prisma,
-          notify: vi.fn(),
-          spaceId: "space-1",
-          threadId: "thread-1",
-          botId: "bot-1",
-          data: { name: "Ada" },
-          emitBotUpdated: true,
-        }),
-    ],
     ["ends a takeover wait", (prisma: PrismaClient) => endTakeoverWaits(prisma, ["run-1"])],
   ])("%s with the explicit budget", async (_name, act) => {
     const unreachable = new Error("transaction body not under test");
@@ -572,6 +563,7 @@ describe("thread lock transaction budget", () => {
       },
       attempt: { updateMany: vi.fn(async () => ({ count: 1 })) },
       task: { updateMany: vi.fn(async () => ({ count: 1 })) },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn(async () => ({ nextEventSeq: 1 })) },
       event: { create: createEvent, deleteMany: vi.fn(async () => ({ count: 0 })) },
       secret: { deleteMany: vi.fn(async () => ({ count: 0 })) },
@@ -662,9 +654,11 @@ describe("finalizeComputerControlRelease", () => {
         }),
       },
       run: {
-        findUnique: vi.fn().mockResolvedValue({ status: "waiting_takeover" }),
+        findUnique: vi.fn().mockResolvedValue({ threadId: "thread-1", status: "waiting_takeover" }),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
       },
+      threadMember: { updateMany: vi.fn() },
+      message: { findMany: vi.fn().mockResolvedValue([]) },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 8 }) },
       event: {
         create: vi.fn().mockResolvedValue({
@@ -699,7 +693,6 @@ describe("finalizeComputerControlRelease", () => {
       where: {
         id: "computer-1",
         spaceId: "workspace-1",
-        controlBotId: "bot-1",
         controlLeaseId: "lease-1",
         controlRunId: "run-1",
       },
@@ -708,7 +701,6 @@ describe("finalizeComputerControlRelease", () => {
         controlLeaseId: null,
         controlUserId: null,
         controlLeaseExpiresAt: null,
-        controlBotId: null,
         controlRunId: null,
       },
     });
@@ -747,9 +739,11 @@ describe("finalizeComputerControlRelease", () => {
         }),
       },
       run: {
-        findUnique: vi.fn().mockResolvedValue({ status: "running" }),
+        findUnique: vi.fn().mockResolvedValue({ threadId: "thread-1", status: "running" }),
         updateMany: vi.fn().mockResolvedValueOnce({ count: 0 }).mockResolvedValueOnce({ count: 1 }),
       },
+      threadMember: { updateMany: vi.fn() },
+      message: { findMany: vi.fn().mockResolvedValue([]) },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 8 }) },
       event: {
         create: vi.fn().mockResolvedValue({
@@ -821,6 +815,7 @@ describe("finalizeComputerControlRelease", () => {
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
       },
       message: { findMany: vi.fn().mockResolvedValue([]) },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 8 }) },
       event: {
         create: vi.fn().mockResolvedValue({
@@ -927,6 +922,7 @@ describe("finalizeComputerControlRelease", () => {
         ]),
         update: vi.fn().mockResolvedValue({ id: "message-1" }),
       },
+      threadMember: { updateMany: vi.fn() },
       thread: {
         update: vi
           .fn()
@@ -1027,6 +1023,7 @@ describe("finalizeComputerControlRelease", () => {
         updateMany: vi.fn().mockResolvedValue({ count: 0 }),
       },
       message: { findMany: vi.fn(), update: vi.fn() },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 4 }) },
       event: {
         create: vi.fn(
@@ -1078,6 +1075,7 @@ describe("settleReleasedTakeoverCards", () => {
           return { id: "message-1" };
         }),
       },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 4 }) },
       run: { findUnique: vi.fn().mockResolvedValue({ status: "queued", startedAt: null }) },
       event: {
@@ -1182,6 +1180,7 @@ describe("pauseRunForInput", () => {
           updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         },
         attempt: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+        threadMember: { updateMany: vi.fn() },
         thread: {
           update: vi
             .fn()
@@ -1296,6 +1295,7 @@ describe("pauseRunForInput", () => {
       computerExecutionLease: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
       steeringMessage: { findMany: vi.fn().mockResolvedValue([]) },
       attempt: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+      threadMember: { updateMany: vi.fn() },
       thread: {
         update: vi
           .fn()
@@ -1381,13 +1381,13 @@ describe("pauseRunForTakeover", () => {
       computer: {
         findFirst: vi.fn().mockResolvedValue({
           controlHolder: "none",
-          controlBotId: null,
           controlLeaseId: null,
           controlUserId: null,
           controlLeaseExpiresAt: null,
         }),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
       },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 8 }) },
       event: {
         create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({
@@ -1441,7 +1441,6 @@ describe("pauseRunForTakeover", () => {
         controlLeaseId: null,
         controlUserId: null,
         controlLeaseExpiresAt: null,
-        controlBotId: null,
         controlRunId: "run-1",
       },
     });
@@ -1472,12 +1471,12 @@ describe("pauseRunForTakeover", () => {
       computer: {
         findFirst: vi.fn().mockResolvedValue({
           controlHolder: "user",
-          controlBotId: "bot-1",
           controlLeaseId: "lease-1",
           controlLeaseExpiresAt: expiresAt,
         }),
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
       },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 8 }) },
       event: {
         create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({
@@ -1513,64 +1512,6 @@ describe("pauseRunForTakeover", () => {
       expect.objectContaining({
         data: expect.objectContaining({
           payload: expect.objectContaining({ retainedControl: true, takeoverRequested: true }),
-        }),
-      }),
-    );
-  });
-
-  it("preserves another bot's active user lease without binding this run to it", async () => {
-    const expiresAt = new Date(Date.now() + 60_000);
-    const tx = {
-      $queryRaw: vi.fn().mockResolvedValue([{ id: "computer-1" }]),
-      run: {
-        updateMany: vi.fn().mockResolvedValue({ count: 1 }),
-        findUnique: vi.fn().mockResolvedValue({ status: "waiting_takeover" }),
-      },
-      attempt: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
-      computer: {
-        findFirst: vi.fn().mockResolvedValue({
-          controlHolder: "user",
-          controlBotId: "other-bot",
-          controlLeaseId: "lease-other",
-          controlLeaseExpiresAt: expiresAt,
-        }),
-        updateMany: vi.fn().mockResolvedValue({ count: 1 }),
-      },
-      thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 8 }) },
-      event: {
-        create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({
-          ...event(data.seq),
-          type: data.type,
-        })),
-        deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
-      },
-    };
-    const prisma = {
-      $transaction: vi.fn(async (callback: (client: typeof tx) => unknown) => callback(tx)),
-    } as unknown as PrismaClient;
-
-    await expect(
-      pauseRunForTakeover(prisma, {
-        spaceId: "workspace-1",
-        threadId: "thread-1",
-        botId: "bot-1",
-        runId: "run-1",
-        attemptId: "attempt-1",
-        leaseOwner: "worker-1",
-        leaseFence: 3,
-        reason: "Sign in",
-        computerId: "computer-1",
-      }),
-    ).resolves.toBe(true);
-
-    expect(tx.computer.updateMany).toHaveBeenCalledWith({
-      where: { id: "computer-1", spaceId: "workspace-1" },
-      data: { state: "running" },
-    });
-    expect(tx.event.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          payload: expect.objectContaining({ retainedControl: false, takeoverRequested: true }),
         }),
       }),
     );
@@ -1611,6 +1552,7 @@ describe("answerRunInput", () => {
         }),
       },
       task: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 10 }) },
       event: {
         create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({
@@ -1711,6 +1653,7 @@ describe("answerRunInput", () => {
           }),
         },
         task: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+        threadMember: { updateMany: vi.fn() },
         thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 10 }) },
         event: {
           create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({
@@ -1794,6 +1737,7 @@ describe("answerRunInput", () => {
         }),
       },
       task: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 11 }) },
       event: {
         create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({
@@ -1881,6 +1825,7 @@ describe("answerRunInput", () => {
         }),
       },
       task: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 12 }) },
       event: {
         create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({
@@ -1968,6 +1913,7 @@ describe("answerRunInput", () => {
         }),
       },
       task: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 13 }) },
       event: {
         create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({
@@ -2056,6 +2002,7 @@ describe("answerWaitingRunWithTextInTransaction", () => {
           findUnique: vi.fn().mockResolvedValue({ status: "queued" }),
         },
         task: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+        threadMember: { updateMany: vi.fn() },
         thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 4 }) },
         event: {
           create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({
@@ -2173,6 +2120,7 @@ describe("answerRunInput", () => {
           .mockResolvedValue({ id: "effect-1", kind: "connector_write", status: "intended" }),
         update: vi.fn().mockResolvedValue({ id: "effect-1" }),
       },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 10 }) },
       event: {
         create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({
@@ -2341,6 +2289,7 @@ describe("answerRunInput", () => {
           deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
           upsert: vi.fn().mockResolvedValue({ id: "rule-1" }),
         },
+        threadMember: { updateMany: vi.fn() },
         thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 10 }) },
         event: {
           create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({
@@ -2441,6 +2390,7 @@ describe("answerRunInput", () => {
         deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
         upsert: vi.fn().mockResolvedValue({ id: "rule-1" }),
       },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 10 }) },
       event: {
         create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({
@@ -2821,6 +2771,7 @@ describe("answerRunInput", () => {
       },
       task: { updateMany: vi.fn() },
       externalEffect: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 10 }) },
       event: {
         create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({
@@ -2928,6 +2879,7 @@ describe("answerRunInput", () => {
       },
       task: { updateMany: vi.fn() },
       externalEffect: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 10 }) },
       event: {
         create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({
@@ -3056,6 +3008,7 @@ describe("answerRunInput", () => {
         },
         task: { updateMany: vi.fn() },
         externalEffect: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+        threadMember: { updateMany: vi.fn() },
         thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 10 }) },
         event: {
           create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({
@@ -3161,6 +3114,7 @@ describe("answerRunInput", () => {
             .mockResolvedValue(options.effect === undefined ? { id: "effect-1" } : options.effect),
           updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         },
+        threadMember: { updateMany: vi.fn() },
         thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 10 }) },
         event: {
           create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({
@@ -3340,6 +3294,7 @@ describe("answerRunInput", () => {
         },
         task: { updateMany: vi.fn() },
         externalEffect: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+        threadMember: { updateMany: vi.fn() },
         thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 10 }) },
         event: {
           create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({
@@ -3503,6 +3458,7 @@ describe("queue admission beside pending cards", () => {
     "admits a %s wake beside waiting_input",
     async (trigger) => {
       const tx = {
+        threadMember: { updateMany: vi.fn() },
         thread: { update: vi.fn().mockResolvedValue({ nextMessageSeq: 3, nextEventSeq: 4 }) },
         message: {
           create: vi.fn().mockResolvedValue({ id: "message-new", seq: 2 }),
@@ -3586,6 +3542,7 @@ describe("sendUserMessage", () => {
     const fanout = new TestFanout();
     const publish = vi.spyOn(fanout, "publish");
     const tx = {
+      threadMember: { updateMany: vi.fn() },
       thread: {
         update: vi
           .fn()
@@ -3720,6 +3677,7 @@ describe("sendUserMessage", () => {
 
   it("pins an agreed inbound model onto the run it creates", async () => {
     const tx = {
+      threadMember: { updateMany: vi.fn() },
       thread: {
         update: vi
           .fn()
@@ -3779,6 +3737,7 @@ describe("sendUserMessage", () => {
 
   it("persists steering instead of starting a parallel run when the bot is busy", async () => {
     const tx = {
+      threadMember: { updateMany: vi.fn() },
       thread: {
         update: vi
           .fn()
@@ -3836,6 +3795,7 @@ describe("sendUserMessage", () => {
 
   it("keeps an agreed inbound model on steering while a routine run is busy", async () => {
     const tx = {
+      threadMember: { updateMany: vi.fn() },
       thread: {
         update: vi
           .fn()
@@ -3900,6 +3860,7 @@ describe("sendUserMessage", () => {
     "keeps the message pending when the busy run is a %s turn",
     async (trigger) => {
       const tx = {
+        threadMember: { updateMany: vi.fn() },
         thread: {
           update: vi
             .fn()
@@ -3957,6 +3918,7 @@ describe("sendUserMessage", () => {
 
   it("keeps another member's message pending instead of steering the busy run", async () => {
     const tx = {
+      threadMember: { updateMany: vi.fn() },
       thread: {
         update: vi
           .fn()
@@ -4008,6 +3970,7 @@ describe("sendUserMessage", () => {
 
   it("steers the conversational run when a parallel webhook turn is also active", async () => {
     const tx = {
+      threadMember: { updateMany: vi.fn() },
       thread: {
         update: vi
           .fn()
@@ -4073,6 +4036,7 @@ describe("claimSteering", () => {
         findFirst: vi.fn().mockResolvedValue({ id: "run-1", spaceId: "space-1", userId: "user-1" }),
         findUnique: vi.fn().mockResolvedValue({ status: "running", startedAt: null }),
       },
+      threadMember: { updateMany: vi.fn() },
       thread: {
         findUniqueOrThrow: vi.fn().mockResolvedValue({ nextMessageSeq: 7 }),
         update: vi.fn().mockResolvedValue({ nextEventSeq: 1 }),
@@ -4112,6 +4076,7 @@ describe("claimSteering", () => {
         findFirst: vi.fn().mockResolvedValue({ id: "run-1", spaceId: "space-1", userId: "user-1" }),
         findUnique: vi.fn().mockResolvedValue({ status: "running", startedAt: null }),
       },
+      threadMember: { updateMany: vi.fn() },
       thread: {
         findUniqueOrThrow: vi.fn().mockResolvedValue({ nextMessageSeq: 7 }),
         update: vi.fn().mockResolvedValue({ nextEventSeq: 1 }),
@@ -4298,6 +4263,7 @@ describe("clearThread", () => {
   it("reports a committed clear even when the legacy binding sweep fails", async () => {
     const tx = {
       externalEffect: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      threadMember: { updateMany: vi.fn() },
       thread: {
         update: vi
           .fn()
@@ -4332,11 +4298,7 @@ describe("clearThread", () => {
     } as unknown as PrismaClient;
 
     await expect(
-      clearThread(
-        prisma,
-        { spaceId: "workspace-1", threadId: "thread-1", botId: "bot-1" },
-        new TestFanout(),
-      ),
+      clearThread(prisma, { spaceId: "workspace-1", threadId: "thread-1" }, new TestFanout()),
     ).resolves.toMatchObject({ event: { type: "thread.cleared" }, cancelledRunIds: ["run-1"] });
     expect(prisma.computer.updateMany).toHaveBeenCalled();
   });
@@ -4346,6 +4308,7 @@ describe("clearThread", () => {
     const publish = vi.spyOn(fanout, "publish");
     const tx = {
       externalEffect: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      threadMember: { updateMany: vi.fn() },
       thread: {
         update: vi
           .fn()
@@ -4383,7 +4346,7 @@ describe("clearThread", () => {
     } as unknown as PrismaClient;
 
     await expect(
-      clearThread(prisma, { spaceId: "workspace-1", threadId: "thread-1", botId: "bot-1" }, fanout),
+      clearThread(prisma, { spaceId: "workspace-1", threadId: "thread-1" }, fanout),
     ).resolves.toMatchObject({
       event: { type: "thread.cleared" },
       cancelledRunIds: ["run-1"],
@@ -4399,7 +4362,6 @@ describe("clearThread", () => {
       where: { executionRunId: { in: ["run-1"] } },
       data: {
         executionRunId: null,
-        executionBotId: null,
         executionLeaseExpiresAt: null,
       },
     });
@@ -4431,89 +4393,13 @@ describe("clearThread", () => {
       tx.run.updateManyAndReturn.mock.invocationCallOrder[0]!,
     );
   });
-
-  it("scopes group clear lease cleanup to cancelled run ids", async () => {
-    const fanout = new TestFanout();
-    const tx = {
-      externalEffect: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-      thread: {
-        update: vi
-          .fn()
-          .mockResolvedValueOnce({ nextMessageSeq: 3, historyCompactionGeneration: 0 })
-          .mockResolvedValue({ nextEventSeq: 1 }),
-      },
-      run: {
-        findMany: vi.fn().mockResolvedValue([
-          { id: "group-run-1", taskId: "task-1" },
-          { id: "group-run-2", taskId: "task-2" },
-        ]),
-        updateManyAndReturn: vi.fn(async ({ where }: { where: { id: { in: string[] } } }) =>
-          where.id.in.map((id) => ({ id })),
-        ),
-      },
-      attempt: { updateMany: vi.fn() },
-      task: { updateMany: vi.fn() },
-      secret: { deleteMany: vi.fn() },
-      computerExecutionLease: { updateMany: vi.fn() },
-      computer: { updateMany: vi.fn() },
-      message: { deleteMany: vi.fn(), findMany: vi.fn(async () => []) },
-      event: {
-        deleteMany: vi.fn(),
-        create: vi.fn().mockResolvedValue({
-          ...event(0),
-          type: "thread.cleared",
-        }),
-      },
-      chatGroup: { update: vi.fn() },
-    };
-    const prisma = {
-      computer: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
-      $transaction: vi.fn(async (callback: (client: typeof tx) => unknown) => callback(tx)),
-    } as unknown as PrismaClient;
-
-    await expect(
-      clearThread(
-        prisma,
-        {
-          spaceId: "workspace-1",
-          threadId: "thread-group",
-          botId: "bot-1",
-          groupId: "group-1",
-        },
-        fanout,
-      ),
-    ).resolves.toMatchObject({ cancelledRunIds: ["group-run-1", "group-run-2"] });
-
-    expect(tx.run.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          threadId: "thread-group",
-          spaceId: "workspace-1",
-        }),
-      }),
-    );
-    expect(tx.computerExecutionLease.updateMany).toHaveBeenCalledWith({
-      where: { runId: { in: ["group-run-1", "group-run-2"] } },
-      data: { expiresAt: new Date(0) },
-    });
-    expect(prisma.computer.updateMany).toHaveBeenCalledWith({
-      where: { executionRunId: { in: ["group-run-1", "group-run-2"] } },
-      data: {
-        executionRunId: null,
-        executionBotId: null,
-        executionLeaseExpiresAt: null,
-      },
-    });
-    expect(tx.computerExecutionLease.updateMany).not.toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ botId: expect.anything() }) }),
-    );
-  });
 });
 
 describe("appendEvent", () => {
   it("exports only committed run metadata and a coarse error kind, never error text", async () => {
     const created = { ...event(4), type: "run.failed", runId: "run-1" };
     const tx = {
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 5 }) },
       run: { findUnique: vi.fn().mockResolvedValue({ status: "failed" }) },
       event: { create: vi.fn().mockResolvedValue(created) },
@@ -4585,6 +4471,7 @@ describe("appendEvent", () => {
     const fanout = new TestFanout();
     const publish = vi.spyOn(fanout, "publish");
     const tx = {
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 8 }) },
       run: { findUnique: vi.fn().mockResolvedValue({ status: "cancelled" }) },
       event: { create: vi.fn() },
@@ -4617,6 +4504,7 @@ describe("appendEvent", () => {
     const deadlock = Object.assign(new Error("write conflict or a deadlock"), { code: "P2034" });
     const created = { ...event(4), type: "thread.progress", runId: "run-1" };
     const tx = {
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 5 }) },
       run: { findUnique: vi.fn().mockResolvedValue({ status: "running" }) },
       // The sequence already advanced when the insert deadlocks; Postgres rolls both back.
@@ -4649,6 +4537,7 @@ describe("appendEvent", () => {
       code: "P2025",
     });
     const tx = {
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockRejectedValue(missing) },
       run: { findUnique: vi.fn() },
       event: { create: vi.fn() },
@@ -4676,6 +4565,7 @@ describe("appendEvent", () => {
 
   it("does not retry a run that can no longer write history", async () => {
     const tx = {
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 5 }) },
       run: { findUnique: vi.fn().mockResolvedValue({ status: "cancelled" }) },
       event: { create: vi.fn() },
@@ -4704,6 +4594,7 @@ describe("appendEvent", () => {
       runId: "run-2",
     };
     const tx = {
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 9 }) },
       run: { findUnique: vi.fn().mockResolvedValue({ status: "running" }) },
       event: { create: vi.fn().mockResolvedValue(created) },
@@ -4739,6 +4630,7 @@ describe("appendEvent", () => {
       payload: { delta: "hello \uFFFD", streaming: true },
     };
     const tx = {
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 4 }) },
       run: {
         findUnique: vi.fn().mockResolvedValue({ status: "running" }),
@@ -4783,6 +4675,7 @@ describe("appendEvent", () => {
     const publish = vi.spyOn(fanout, "publish");
     const created = { ...event(7), type: "run.cancelled", runId: "run-1" };
     const tx = {
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 8 }) },
       run: { findUnique: vi.fn().mockResolvedValue({ status: "cancelled" }) },
       event: { create: vi.fn().mockResolvedValue(created) },
@@ -4813,6 +4706,7 @@ describe("appendEvent", () => {
 
   it("rejects run.cancelled while the run is not cancelled", async () => {
     const tx = {
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 8 }) },
       run: { findUnique: vi.fn().mockResolvedValue({ status: "running" }) },
       event: { create: vi.fn() },
@@ -4836,6 +4730,7 @@ describe("appendEvent", () => {
 
   it("rejects run.cancelled without a run", async () => {
     const tx = {
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 8 }) },
       run: { findUnique: vi.fn() },
       event: { create: vi.fn() },
@@ -4902,6 +4797,7 @@ describe("held instruction answers", () => {
         update: vi.fn(),
       },
       task: { updateMany: vi.fn() },
+      threadMember: { updateMany: vi.fn() },
       thread: { update: vi.fn(async () => ({ nextEventSeq: 10 })) },
       event: {
         create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({

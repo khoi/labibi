@@ -75,7 +75,8 @@ const POLL_ONLY_CATCH_UP_MS = 400;
 export interface AppendEventInput {
   spaceId: string;
   threadId: string;
-  botId: string;
+  /** Doodle's id when it wrote this; absent for what people did. */
+  botId?: string;
   type: ProductEvent["type"];
   payload: Record<string, unknown>;
   runId?: string;
@@ -121,9 +122,6 @@ export interface ThreadEvents {
 export interface ClearThreadInput {
   spaceId: string;
   threadId: string;
-  /** Event author and the bot-scoped target for one-to-one chats. */
-  botId: string;
-  groupId?: string;
 }
 
 export interface ClearThreadResult {
@@ -373,19 +371,18 @@ export async function clearThread(
 ): Promise<ClearThreadResult> {
   const committed = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const thread = await tx.thread.update({
-      where: {
-        id: input.threadId,
-        spaceId: input.spaceId,
-        ...(input.groupId ? { groupId: input.groupId } : { botId: input.botId }),
-      },
-      data: { unread: false },
+      where: { id: input.threadId, spaceId: input.spaceId },
+      data: { lastMessageAt: new Date() },
       select: { nextMessageSeq: true, historyCompactionGeneration: true },
+    });
+    await tx.threadMember.updateMany({
+      where: { threadId: input.threadId },
+      data: { unread: false },
     });
     const activeRuns = await tx.run.findMany({
       where: {
         spaceId: input.spaceId,
         threadId: input.threadId,
-        ...(input.groupId ? {} : { botId: input.botId }),
         status: { in: ["queued", "leased", "running", "waiting_input", "waiting_takeover"] },
       },
       select: { id: true, taskId: true, userId: true, spaceId: true },
@@ -417,14 +414,6 @@ export async function clearThread(
         },
       });
     }
-    if (input.groupId) {
-      await tx.chatGroup.update({ where: { id: input.groupId }, data: { updatedAt: now } });
-    } else {
-      await tx.bot.update({
-        where: { id: input.botId, spaceId: input.spaceId },
-        data: { updatedAt: now },
-      });
-    }
     const event = await appendEventInTransaction(tx, {
       ...input,
       type: "thread.cleared",
@@ -448,11 +437,7 @@ export async function clearThread(
     await withTransactionRetry(() =>
       prisma.computer.updateMany({
         where: { executionRunId: { in: committed.cancelledRunIds } },
-        data: {
-          executionRunId: null,
-          executionBotId: null,
-          executionLeaseExpiresAt: null,
-        },
+        data: { executionRunId: null, executionLeaseExpiresAt: null },
       }),
     ).catch((error: unknown) => {
       getLogger().error("legacy computer binding sweep after thread clear", error);
@@ -1343,12 +1328,7 @@ export async function pauseRunForTakeover(
     const now = new Date();
     const computer = await tx.computer.findFirst({
       where: { id: input.computerId, spaceId: input.spaceId },
-      select: {
-        controlHolder: true,
-        controlBotId: true,
-        controlLeaseId: true,
-        controlLeaseExpiresAt: true,
-      },
+      select: { controlHolder: true, controlLeaseId: true, controlLeaseExpiresAt: true },
     });
     const activeUserLease = Boolean(
       computer?.controlHolder === "user" &&
@@ -1356,30 +1336,22 @@ export async function pauseRunForTakeover(
         computer.controlLeaseExpiresAt &&
         computer.controlLeaseExpiresAt.getTime() > now.getTime(),
     );
-    // Keep an active same-bot user lease so Skip / I'm done appear immediately.
-    // Preserve another bot's active lease — computer/takeover owns revocation. Do not attach
-    // this run to that lease: release validates controlBotId and could clear the binding without
-    // resuming the waiting run. The requesting bot's takeover flow binds it after revocation.
-    // Otherwise clear stale control, but bind controlRunId so takeoverRequested is true.
-    const retainControl = Boolean(activeUserLease && computer?.controlBotId === input.botId);
-    const preserveForeignLease = Boolean(
-      activeUserLease && computer?.controlBotId && computer.controlBotId !== input.botId,
-    );
+    // The computer is the asker's own, so a live lease is theirs: keep it so Skip / I'm done
+    // appear immediately. Otherwise clear stale control, but bind controlRunId so
+    // takeoverRequested is true.
+    const retainControl = activeUserLease;
     const marked = await tx.computer.updateMany({
       where: { id: input.computerId, spaceId: input.spaceId },
       data: retainControl
         ? { state: "running", controlRunId: input.runId }
-        : preserveForeignLease
-          ? { state: "running" }
-          : {
-              state: "running",
-              controlHolder: "none",
-              controlLeaseId: null,
-              controlUserId: null,
-              controlLeaseExpiresAt: null,
-              controlBotId: null,
-              controlRunId: input.runId,
-            },
+        : {
+            state: "running",
+            controlHolder: "none",
+            controlLeaseId: null,
+            controlUserId: null,
+            controlLeaseExpiresAt: null,
+            controlRunId: input.runId,
+          },
     });
     if (marked.count !== 1) throw new Error("Computer was not available to mark for takeover");
 
@@ -1443,7 +1415,6 @@ export async function finalizeComputerControlRelease(
         ? {
             id: input.computerId,
             spaceId: input.spaceId,
-            controlBotId: input.botId,
             controlLeaseId: input.leaseId,
             controlRunId,
           }
@@ -1451,7 +1422,6 @@ export async function finalizeComputerControlRelease(
             id: input.computerId,
             spaceId: input.spaceId,
             controlHolder: "none",
-            controlBotId: null,
             controlLeaseId: null,
             controlRunId,
           },
@@ -1460,7 +1430,6 @@ export async function finalizeComputerControlRelease(
         controlLeaseId: null,
         controlUserId: null,
         controlLeaseExpiresAt: null,
-        controlBotId: null,
         controlRunId: null,
       },
     });
@@ -1498,14 +1467,10 @@ export async function finalizeComputerControlRelease(
         : { count: 0 };
     const runId = resumed.count === 1 || stamped.count === 1 ? controlRunId : null;
 
-    const bot = await tx.bot.findFirst({
-      where: { id: input.botId, spaceId: input.spaceId },
-      select: { thread: { select: { id: true } } },
-    });
-    if (!bot?.thread) return { threadId: null, seq: null, runId };
+    if (!runThreadId) return { threadId: null, seq: null, runId };
 
-    // Group cards live on the run's thread. Stopped runs cannot write history.
-    if (controlRunId && runThreadId && waiting?.status !== "cancelled") {
+    // Stopped runs cannot write history.
+    if (controlRunId && waiting?.status !== "cancelled") {
       await settleReleasedTakeoverCardsInTransaction(tx, {
         spaceId: input.spaceId,
         threadId: runThreadId,
@@ -1517,7 +1482,7 @@ export async function finalizeComputerControlRelease(
 
     const event = await appendEventInTransaction(tx, {
       spaceId: input.spaceId,
-      threadId: runThreadId ?? bot.thread.id,
+      threadId: runThreadId,
       botId: input.botId,
       runId: runId ?? undefined,
       type: "computer.takeover.released",
@@ -1606,7 +1571,7 @@ export async function appendEvent(
   realtime?: RealtimeFanout,
   analytics?: ProductAnalytics,
 ): Promise<ProductEvent> {
-  // Concurrent writers in one thread (group members, bot messages) can deadlock on the thread row.
+  // Concurrent writers in one thread (its people, Doodle) can deadlock on the thread row.
   const event = await withTransactionRetry(() =>
     prisma.$transaction((tx: Prisma.TransactionClient) => appendEventInTransaction(tx, input)),
   );
@@ -1981,7 +1946,7 @@ export async function appendEventInTransaction(
       select: { nextEventSeq: true },
     })
     .catch((error: unknown) => {
-      // Deleting the bot or space cascades the thread and its runs away under
+      // Deleting the chat or space cascades the thread and its runs away under
       // in-flight work; that run has no history left to write to.
       if (input.runId && isRecordNotFound(error)) throw new RunHistoryWriteError();
       throw error;
@@ -2112,7 +2077,7 @@ function mapProductEvent(event: {
   id: string;
   spaceId: string;
   threadId: string;
-  botId: string;
+  botId: string | null;
   seq: number;
   type: string;
   payload: unknown;
@@ -2123,7 +2088,7 @@ function mapProductEvent(event: {
     id: event.id,
     spaceId: event.spaceId,
     threadId: event.threadId,
-    botId: event.botId,
+    botId: event.botId ?? undefined,
     seq: event.seq,
     type: event.type as ProductEvent["type"],
     runId: event.runId ?? undefined,

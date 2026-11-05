@@ -23,12 +23,7 @@ const hotQueries = [
     sql: `SELECT max("leaseFence") FROM runs WHERE "botId" = $1`,
   },
   {
-    name: "live execution leases for woken bots",
-    index: "computer_execution_leases_botId_expiresAt_idx",
-    sql: `SELECT "computerId" FROM computer_execution_leases WHERE "botId" = ANY(ARRAY[$1]) AND "expiresAt" > now()`,
-  },
-  {
-    name: "a bot thread's latest run",
+    name: "a chat's latest run",
     index: "runs_threadId_createdAt_id_idx",
     sql: `SELECT id FROM runs WHERE "threadId" = $1 AND trigger NOT IN ('bot_message', 'tickets')
       ORDER BY "createdAt" DESC, id DESC LIMIT 1`,

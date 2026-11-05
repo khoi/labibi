@@ -15,8 +15,8 @@ export interface AccountExportSpace {
    * what it wrote, so a file saved meanwhile cannot appear without its record.
    */
   artifacts(): AsyncGenerator<{ id: string; storageKey: string }>;
-  /** Bots in `records()` that have a computer, whose workspace files go in the archive. */
-  homes(): Promise<Array<{ botId: string; homeKey: string; computerScope: string }>>;
+  /** The person's computer in this space, whose files go in the archive. */
+  home(): Promise<{ homeKey: string } | null>;
 }
 
 export interface AccountExportSource {
@@ -69,7 +69,7 @@ export async function readAccountExport(
     user,
     spaces: memberships.map(({ space }) => {
       const tenant = { spaceId: space.id, userId };
-      const written: Written = { artifacts: [], botIds: [] };
+      const written: Written = { artifacts: [] };
       return {
         id: space.id,
         name: space.name,
@@ -78,31 +78,19 @@ export async function readAccountExport(
         artifacts: async function* () {
           yield* written.artifacts;
         },
-        homes: () =>
-          runAsTenant(tenant, async () => {
-            const bots = await prisma.bot.findMany({
-              where: { ...tenant, id: { in: written.botIds }, computerId: { not: null } },
-              orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-              select: { id: true, computer: { select: { homeKey: true, scope: true } } },
-            });
-            return bots.flatMap((bot) =>
-              bot.computer
-                ? [
-                    {
-                      botId: bot.id,
-                      homeKey: bot.computer.homeKey,
-                      computerScope: bot.computer.scope,
-                    },
-                  ]
-                : [],
-            );
-          }),
+        home: () =>
+          runAsTenant(tenant, () =>
+            prisma.computer.findUnique({
+              where: { spaceId_userId: tenant },
+              select: { homeKey: true },
+            }),
+          ),
       };
     }),
   };
 }
 
-type Written = { artifacts: Array<{ id: string; storageKey: string }>; botIds: string[] };
+type Written = { artifacts: Array<{ id: string; storageKey: string }> };
 
 type Json = Extract<AccountExportRecord, { type: "message" }>["blocks"];
 // Prisma's and zod's JSON types describe the same values but don't line up in TypeScript.
@@ -115,52 +103,64 @@ async function* spaceRecords(
   tenant: Tenant,
   written: Written,
 ): AsyncGenerator<AccountExportRecord> {
-  const bots = await prisma.bot.findMany({
-    where: tenant,
-    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-  });
-  const botIds = new Set(bots.map((bot) => bot.id));
-  written.botIds.push(...botIds);
-  const ownBot = (id: string | null) => (id && botIds.has(id) ? id : null);
-  for (const bot of bots)
-    yield {
-      type: "bot",
-      id: bot.id,
-      name: bot.name,
-      instructions: bot.instructions,
-      color: bot.color,
-      notifyOnFinish: bot.notifyOnFinish,
-      archivedAt: isoOrNull(bot.archivedAt),
-      memoryScope: bot.memoryScope,
-      voiceId: bot.voiceId,
-      autoSpeak: bot.autoSpeak,
-      modelProvider: bot.modelProvider,
-      modelId: bot.modelId,
-      thinkingLevel: bot.thinkingLevel,
-      disabledBuiltinTools: bot.disabledBuiltinTools,
-      createdAt: iso(bot.createdAt),
-    };
-
-  const groups = await prisma.chatGroup.findMany({
-    where: tenant,
-    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-    include: { members: { orderBy: [{ createdAt: "asc" }, { id: "asc" }] } },
-  });
-  const groupIds = new Set(groups.map((group) => group.id));
-  const ownGroup = (id: string | null) => (id && groupIds.has(id) ? id : null);
-  for (const group of groups)
-    yield {
-      type: "chat_group",
-      id: group.id,
-      name: group.name,
-      archivedAt: isoOrNull(group.archivedAt),
-      botIds: group.members.flatMap((member) => (botIds.has(member.botId) ? [member.botId] : [])),
-      createdAt: iso(group.createdAt),
-    };
+  const threadIds = new Set<string>();
+  const ownThread = (id: string | null) => (id && threadIds.has(id) ? id : null);
+  for (let cursor = ""; ; ) {
+    const threads = await prisma.thread.findMany({
+      where: {
+        spaceId: tenant.spaceId,
+        id: { gt: cursor },
+        members: { some: { userId: tenant.userId } },
+      },
+      orderBy: { id: "asc" },
+      take: PAGE,
+      select: {
+        id: true,
+        name: true,
+        doodle: true,
+        historyCompactedUpToSeq: true,
+        historyCompactionSummary: true,
+        createdAt: true,
+      },
+    });
+    for (const thread of threads) {
+      threadIds.add(thread.id);
+      yield { type: "thread", ...thread, createdAt: iso(thread.createdAt) };
+      for (let seq = -1; ; ) {
+        const messages = await prisma.message.findMany({
+          where: { threadId: thread.id, seq: { gt: seq } },
+          orderBy: { seq: "asc" },
+          take: PAGE,
+          select: {
+            id: true,
+            seq: true,
+            role: true,
+            blocks: true,
+            replyToMessageId: true,
+            replyQuote: true,
+            createdAt: true,
+          },
+        });
+        for (const message of messages)
+          yield {
+            type: "message",
+            ...message,
+            blocks: json(message.blocks),
+            threadId: thread.id,
+            createdAt: iso(message.createdAt),
+          };
+        if (messages.length < PAGE) break;
+        seq = messages.at(-1)!.seq;
+      }
+    }
+    if (threads.length < PAGE) break;
+    cursor = threads.at(-1)!.id;
+  }
+  const inChats = { spaceId: tenant.spaceId, threadId: { in: [...threadIds] } };
 
   for (let cursor = ""; ; ) {
     const pages = await prisma.page.findMany({
-      where: { ...tenant, id: { gt: cursor } },
+      where: { ...inChats, id: { gt: cursor } },
       orderBy: { id: "asc" },
       take: PAGE,
     });
@@ -168,8 +168,7 @@ async function* spaceRecords(
       yield {
         type: "page",
         id: page.id,
-        botId: ownBot(page.botId),
-        groupId: ownGroup(page.groupId),
+        threadId: page.threadId,
         title: page.title,
         pinnedAt: isoOrNull(page.pinnedAt),
         currentVersion: page.currentVersion,
@@ -194,66 +193,9 @@ async function* spaceRecords(
     cursor = pages.at(-1)!.id;
   }
 
-  const threadIds = new Set<string>();
-  const ownThread = (id: string | null) => (id && threadIds.has(id) ? id : null);
-  for (let cursor = ""; ; ) {
-    const threads = await prisma.thread.findMany({
-      where: {
-        ...tenant,
-        id: { gt: cursor },
-        OR: [{ botId: { in: [...botIds] } }, { groupId: { in: [...groupIds] } }],
-      },
-      orderBy: { id: "asc" },
-      take: PAGE,
-      select: {
-        id: true,
-        botId: true,
-        groupId: true,
-        historyCompactedUpToSeq: true,
-        historyCompactionSummary: true,
-        createdAt: true,
-      },
-    });
-    for (const thread of threads) {
-      threadIds.add(thread.id);
-      yield { type: "thread", ...thread, createdAt: iso(thread.createdAt) };
-      for (let seq = -1; ; ) {
-        const messages = await prisma.message.findMany({
-          where: { threadId: thread.id, seq: { gt: seq } },
-          orderBy: { seq: "asc" },
-          take: PAGE,
-          select: {
-            id: true,
-            seq: true,
-            role: true,
-            blocks: true,
-            botId: true,
-            replyToMessageId: true,
-            replyQuote: true,
-            createdAt: true,
-          },
-        });
-        for (const message of messages)
-          yield {
-            type: "message",
-            ...message,
-            blocks: json(message.blocks),
-            threadId: thread.id,
-            botId: ownBot(message.botId),
-            createdAt: iso(message.createdAt),
-          };
-        if (messages.length < PAGE) break;
-        seq = messages.at(-1)!.seq;
-      }
-    }
-    if (threads.length < PAGE) break;
-    cursor = threads.at(-1)!.id;
-  }
-
   const artifactRecord = (row: {
     id: string;
-    botId: string | null;
-    groupId: string | null;
+    threadId: string;
     name: string;
     description: string | null;
     mimeType: string;
@@ -268,8 +210,7 @@ async function* spaceRecords(
     return {
       type: "artifact",
       id: row.id,
-      botId: ownBot(row.botId),
-      groupId: ownGroup(row.groupId),
+      threadId: row.threadId,
       name: row.name,
       description: row.description,
       mimeType: row.mimeType,
@@ -282,7 +223,7 @@ async function* spaceRecords(
   };
   for (let cursor = ""; ; ) {
     const roots = await prisma.artifact.findMany({
-      where: { ...tenant, id: { gt: cursor }, rootArtifactId: null },
+      where: { ...inChats, id: { gt: cursor }, rootArtifactId: null },
       orderBy: { id: "asc" },
       take: PAGE,
     });
@@ -290,7 +231,7 @@ async function* spaceRecords(
       yield artifactRecord(root);
       for (let version = 0; ; ) {
         const versions = await prisma.artifact.findMany({
-          where: { ...tenant, rootArtifactId: root.id, version: { gt: version } },
+          where: { ...inChats, rootArtifactId: root.id, version: { gt: version } },
           orderBy: { version: "asc" },
           take: PAGE,
         });
@@ -306,9 +247,9 @@ async function* spaceRecords(
   for (let cursor = ""; ; ) {
     const documents = await prisma.memoryDocument.findMany({
       where: {
-        ...tenant,
+        spaceId: tenant.spaceId,
         id: { gt: cursor },
-        OR: [{ botId: null }, { botId: { in: [...botIds] } }],
+        OR: [{ threadId: null, userId: tenant.userId }, { threadId: inChats.threadId }],
       },
       orderBy: { id: "asc" },
       take: PAGE,
@@ -317,8 +258,7 @@ async function* spaceRecords(
       yield {
         type: "memory_document",
         id: document.id,
-        botId: document.botId,
-        scope: document.scope,
+        threadId: document.threadId,
         path: document.path,
         content: document.content,
         revision: document.revision,
@@ -349,16 +289,16 @@ async function* spaceRecords(
     cursor = documents.at(-1)!.id;
   }
 
+  // Only their own: a routine runs as the person who made it.
   const routines = await prisma.routine.findMany({
-    where: { ...tenant, botId: { in: [...botIds] } },
+    where: { ...inChats, userId: tenant.userId },
     orderBy: [{ createdAt: "asc" }, { id: "asc" }],
   });
   for (const routine of routines)
     yield {
       type: "routine",
       id: routine.id,
-      botId: routine.botId,
-      threadId: ownThread(routine.threadId),
+      threadId: routine.threadId,
       name: routine.name,
       prompt: routine.prompt,
       crons: routine.crons,

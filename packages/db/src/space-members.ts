@@ -1,12 +1,13 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { GUEST_ROLE, isOwnerRole } from "./billing.js";
 import { cancelRunsInTransaction } from "./cancel-runs.js";
+import { deleteChatsInTransaction } from "./chats.js";
 import type { PrismaClient } from "./client.js";
 import { Prisma } from "./client.js";
-import { computerScopeKey } from "./computers.js";
+import type { RunTeardownTarget } from "./computers.js";
+import { snapshotRunTeardownTargets } from "./computers.js";
 import { appendEventInTransaction, createPendingSteeringRun } from "./events.js";
-import type { RunTeardownTarget } from "./groups.js";
-import { snapshotRunTeardownTargets } from "./groups.js";
+import type { PageShareSecret } from "./page-shares.js";
 import { runAsSystem } from "./row-security.js";
 import {
   lockSpaceDeletion,
@@ -70,7 +71,7 @@ type SpaceRef = { spaceId: string; userId: string };
 
 /**
  * What a departure stopped. The caller cancels the runs' jobs, tears down their
- * screens, then expires their leases, as after archiving a group.
+ * screens, then expires their leases, as after deleting a chat.
  */
 export type SpaceDeparture = {
   organizationId: string;
@@ -78,13 +79,18 @@ export type SpaceDeparture = {
   /** Runs queued for other members' follow-ups that waited behind a cancelled run. */
   continuationRunIds: string[];
   computers: RunTeardownTarget[];
+  /** Their own computer there, for the caller to destroy and then delete. */
+  ownComputers: Array<{ id: string; homeKey: string; kind: string; providerRef: string | null }>;
   /** Screens they held, their leases already ended, for the usual expiry to release. */
   heldControls: Array<{ computerId: string; leaseId: string }>;
   /** Newest run.cancelled seq per thread, for realtime fanout. */
   events: Array<{ threadId: string; seq: number }>;
+  /** Stored files and page links of the chats they were the last person in, which went. */
+  artifactStorageKeys: string[];
+  pageShareSecrets: PageShareSecret[];
 };
 
-/** Whether other people belong to the Space, so they share its chats, computers and browser. */
+/** Whether other people belong to the Space. */
 export async function spaceIsShared(
   db: Pick<PrismaClient, "spaceMember">,
   spaceId: string,
@@ -321,7 +327,7 @@ export async function acceptSpaceInvite(
   );
 }
 
-/** Owner only. The removed person's bots, chats and routines stay with the space. */
+/** Owner only. The removed person leaves every chat there; their messages stay. */
 export async function removeSpaceMember(
   prisma: PrismaClient,
   input: SpaceRef & { memberUserId: string },
@@ -408,20 +414,19 @@ async function handOwnership(prisma: PrismaClient, input: SpaceRef): Promise<boo
 }
 
 /**
- * Take one person out of a Space. What they made there for everyone (bots,
- * chats, routines, sections) passes to the Space's owner, so nothing keeps
- * running with the credentials of someone who left. What was theirs alone
- * (credentials, connections, MCP servers, approval rules, preferences) is
- * deleted. Their organization membership goes too once no Space there is left.
- * Their unfinished runs there are cancelled: those run with their accounts.
+ * Take one person out of a Space. They leave every chat there and their messages stay; a chat
+ * they were the last person in goes. What ran with their accounts stops: their runs are
+ * cancelled, their waiting follow-ups dropped, and their routines pause. What was theirs alone
+ * there (computer, browser, personal memory, credentials, connections, preferences) is deleted.
+ * Their organization membership goes too once no Space there is left.
  */
 async function departSpace(
   prisma: PrismaClient,
   input: SpaceRef & { removedBy?: string; leaving?: boolean },
 ): Promise<SpaceDeparture> {
   const { spaceId, userId, removedBy, leaving } = input;
-  // Bots, routines and credentials are tenant rows; this moves them between people.
-  return runAsSystem("move a departing member's Space content to its owner", () =>
+  // Chats, routines and credentials are tenant rows of several people.
+  return runAsSystem("take a departing member out of a Space", () =>
     withTransactionRetry(() =>
       prisma.$transaction(
         async (tx) => {
@@ -444,9 +449,20 @@ async function departSpace(
           }
           // Someone made owner since they asked to leave stays: the Space is theirs now.
           if (leaving && isOwnerRole(departing.role)) throw new SpaceOwnerCannotLeaveError();
-          const ownerId = owners.find((member) => isOwnerRole(member.role))?.userId;
-          if (!ownerId) throw new CannotRemoveSpaceOwnerError();
+          if (!owners.some((member) => isOwnerRole(member.role))) {
+            throw new CannotRemoveSpaceOwnerError();
+          }
 
+          const own = { spaceId, userId };
+          const solo = await tx.thread.findMany({
+            where: { spaceId, members: { some: { userId }, every: { userId } } },
+            select: { id: true },
+          });
+          const left = await deleteChatsInTransaction(
+            tx,
+            spaceId,
+            solo.map((thread) => thread.id),
+          );
           const runs = await tx.run.findMany({
             where: { spaceId, userId, status: { in: activeRunStatuses } },
             select: {
@@ -492,13 +508,17 @@ async function departSpace(
             if (id) continuationRunIds.push(id);
           }
 
-          const reassign = { where: { spaceId, userId }, data: { userId: ownerId } };
-          await tx.bot.updateMany(reassign);
-          await tx.thread.updateMany(reassign);
-          await tx.chatGroup.updateMany(reassign);
-          // Their computers go with the bots, so the computer limit counts them for the owner.
-          await tx.computer.updateMany(reassign);
-          // A screen they hold is no one's to release now: end the lease so others can take it.
+          await tx.routine.updateMany({ where: own, data: { active: false, nextRunAt: null } });
+          await tx.memoryDocument.deleteMany({ where: { ...own, threadId: null } });
+          const browser = await tx.browserProfile.findMany({
+            where: own,
+            select: { secretId: true },
+          });
+          await tx.browserProfile.deleteMany({ where: own });
+          await tx.secret.deleteMany({
+            where: { id: { in: browser.flatMap((profile) => profile.secretId ?? []) } },
+          });
+          // A screen they hold is no one's to release now: end the lease.
           const held = await tx.computer.findMany({
             where: { spaceId, controlHolder: "user", controlUserId: userId },
             select: { id: true, controlLeaseId: true },
@@ -509,42 +529,11 @@ async function departSpace(
               data: { controlLeaseExpiresAt: new Date() },
             });
           }
-          // A team computer is found by its person. A departing owner's is the Space's one Team
-          // Computer, so it is found by the next owner's key from now on; any other is retired
-          // so someone who rejoins starts fresh. The home key, and with it the files, stays.
-          // Dedicated computers are found by their bot, so their key stays as it is.
-          const teamComputer = await tx.computer.findUnique({
-            where: { scopeKey: computerScopeKey({ mode: "team", spaceId, userId }) },
-            select: { id: true },
-          });
-          if (teamComputer) {
-            const ownerKey = computerScopeKey({ mode: "team", spaceId, userId: ownerId });
-            const keepsSpaceComputer =
-              isOwnerRole(departing.role) &&
-              !(await tx.computer.findUnique({
-                where: { scopeKey: ownerKey },
-                select: { id: true },
-              }));
-            await tx.computer.update({
-              where: { id: teamComputer.id },
-              data: { scopeKey: keepsSpaceComputer ? ownerKey : `transferred:${teamComputer.id}` },
-            });
-          }
-          // Paused: the owner's accounts must not start running someone else's prompt unasked.
-          await tx.routine.updateMany({
-            where: { spaceId, userId },
-            // A watch restarts from the owner's accounts, not the departed person's results.
-            // Backoff earned on their accounts does not hold the owner back either.
-            data: {
-              userId: ownerId,
-              active: false,
-              nextRunAt: null,
-              watchState: Prisma.DbNull,
-              accountFailures: 0,
-            },
+          const ownComputers = await tx.computer.findMany({
+            where: own,
+            select: { id: true, homeKey: true, kind: true, providerRef: true },
           });
 
-          const own = { spaceId, userId };
           // Their tools stay theirs in their other Spaces; with nowhere to go, they go.
           await rehomeMemberItems(tx, { spaceId, userId });
           await tx.capabilityInstall.deleteMany({ where: own });
@@ -568,9 +557,12 @@ async function departSpace(
           });
           return {
             organizationId: departing.organizationId,
-            cancelledRunIds,
+            cancelledRunIds: [...cancelledRunIds, ...left.cancelledRunIds],
             continuationRunIds,
-            computers: targets,
+            computers: [...targets, ...left.computers],
+            ownComputers,
+            artifactStorageKeys: left.artifactStorageKeys,
+            pageShareSecrets: left.pageShareSecrets,
             heldControls: held.flatMap((computer) =>
               computer.controlLeaseId
                 ? [{ computerId: computer.id, leaseId: computer.controlLeaseId }]

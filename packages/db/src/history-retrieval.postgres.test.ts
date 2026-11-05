@@ -1,5 +1,4 @@
 import { HistorySearchInputSchema } from "@labradoodle/contracts";
-import { escapeJsonSearchWildcards } from "@labradoodle/core";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -17,16 +16,13 @@ postgres("history retrieval (PostgreSQL)", () => {
     spaceId: "synthetic-space",
     userId: "synthetic-user",
     threadId: "synthetic-thread",
-    botId: "synthetic-bot",
   };
   beforeAll(async () => {
     pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 1 });
     prisma = new PrismaClient({ adapter: new PrismaPg(pool, { schema: "pg_temp" }) });
     await pool.query(`
-      CREATE TEMP TABLE bots (id text PRIMARY KEY, "spaceId" text, "userId" text, "archivedAt" timestamptz);
-      CREATE TEMP TABLE threads (id text PRIMARY KEY, "spaceId" text, "userId" text, "botId" text, "groupId" text);
-      CREATE TEMP TABLE chat_groups (id text PRIMARY KEY, "spaceId" text, "userId" text, "archivedAt" timestamptz);
-      CREATE TEMP TABLE chat_group_members ("groupId" text, "botId" text);
+      CREATE TEMP TABLE threads (id text PRIMARY KEY, "spaceId" text, "userId" text, name text);
+      CREATE TEMP TABLE thread_members ("threadId" text, "userId" text);
       CREATE TEMP TABLE messages (id text PRIMARY KEY, "threadId" text, seq integer, role text, "runId" text,
         "replyToMessageId" text, "createdAt" timestamptz, blocks jsonb);
       CREATE TEMP TABLE steering_messages ("messageId" text, "botId" text, "runId" text,
@@ -34,9 +30,10 @@ postgres("history retrieval (PostgreSQL)", () => {
       CREATE TEMP TABLE runs (id text PRIMARY KEY, "spaceId" text, "userId" text, "threadId" text, "botId" text,
         "sourceMessageId" text, status text, "createdAt" timestamptz, "completedAt" timestamptz);
       CREATE TEMP TABLE artifacts (id text PRIMARY KEY, "spaceId" text, "userId" text, "botId" text, "groupId" text,
-        "runId" text, name text, "mimeType" text, size integer, "createdAt" timestamptz);
-      INSERT INTO bots VALUES ('synthetic-bot','synthetic-space','synthetic-user',NULL);
-      INSERT INTO threads VALUES ('synthetic-thread','synthetic-space','synthetic-user','synthetic-bot');
+        "runId" text, name text, "mimeType" text, size integer, "createdAt" timestamptz,
+        "threadId" text DEFAULT 'synthetic-thread');
+      INSERT INTO threads VALUES ('synthetic-thread','synthetic-space','synthetic-user');
+      INSERT INTO thread_members VALUES ('synthetic-thread','synthetic-user');
       INSERT INTO messages SELECT 'm-' || n, 'synthetic-thread', n, 'user', NULL, NULL,
         '2026-01-01'::timestamptz + n * interval '1 minute',
         jsonb_build_array(jsonb_build_object('kind','text','text', CASE WHEN n = 100 THEN 'exports use batching' ELSE 'filler exchange ' || n END))
@@ -45,100 +42,12 @@ postgres("history retrieval (PostgreSQL)", () => {
         '$[*] ? (@.kind == "text" || @.kind == "channel_message" || @.kind == "bot_message_received" || @.kind == "bot_message_sent" || @.kind == "handoff").text')::text || jsonb_path_query_array(blocks, '$[*] ? (@.kind == "subagent").task')::text || jsonb_path_query_array(blocks, '$[*] ? (@.kind == "subagent").result')::text || translate(jsonb_path_query_array(blocks, '$[*] ? (@.kind == "file" || @.kind == "image").name')::text, '._-', '   ')));
       CREATE INDEX synthetic_history_seq ON messages ("threadId",seq);
       ANALYZE messages;
-      ALTER TABLE bots ADD COLUMN name text DEFAULT 'History bot';
-      ALTER TABLE chat_groups ADD COLUMN name text DEFAULT 'History group';
     `);
   });
   afterAll(async () => {
     await prisma?.$disconnect();
     await pool?.end();
   });
-  it("hides waiting messages per bot in searches, anchors and neighbors until assigned", async () => {
-    await pool.query(`
-      INSERT INTO bots (id, "spaceId", "userId") VALUES ('waiting-peer','synthetic-space','synthetic-user');
-      INSERT INTO chat_groups (id, "spaceId", "userId") VALUES ('waiting-group','synthetic-space','synthetic-user');
-      INSERT INTO chat_group_members VALUES ('waiting-group','synthetic-bot'), ('waiting-group','waiting-peer');
-      INSERT INTO threads VALUES
-        ('waiting-direct','synthetic-space','synthetic-user','waiting-peer',NULL),
-        ('waiting-group-thread','synthetic-space','synthetic-user',NULL,'waiting-group');
-      INSERT INTO messages SELECT 'waiting-' || n, 'waiting-group-thread', n, 'user', NULL, NULL,
-        '2026-01-01'::timestamptz, '[{"kind":"text","text":"waitingprobe"}]'::jsonb
-        FROM generate_series(1,3) n;
-      INSERT INTO messages VALUES ('waiting-direct-message','waiting-direct',1,'user',NULL,NULL,
-        '2026-01-01','[{"kind":"text","text":"waitingprobe"}]');
-      INSERT INTO steering_messages VALUES
-        ('waiting-2','synthetic-bot',NULL),
-        ('waiting-3','waiting-peer',NULL),
-        ('waiting-direct-message','waiting-peer',NULL);
-    `);
-    const group = { ...scope, threadId: "waiting-group-thread", allowMyChats: true };
-    const ids = (result: Awaited<ReturnType<typeof searchHistory>>) =>
-      result.messages.map((message) => message.messageId).sort();
-    expect(ids(await searchHistory(prisma, group, { query: "waitingprobe" }))).toEqual([
-      "waiting-1",
-      "waiting-3",
-    ]);
-    expect(
-      ids(
-        await searchHistory(prisma, { ...group, botId: "waiting-peer" }, { query: "waitingprobe" }),
-      ),
-    ).toEqual(["waiting-1", "waiting-2"]);
-    expect(
-      (await readHistory(prisma, group, { messageId: "waiting-2", textOffset: 0 })).messages,
-    ).toEqual([]);
-    expect(
-      (
-        await readHistory(prisma, group, { messageId: "waiting-1", direction: "newer" })
-      ).messages.map((m) => m.messageId),
-    ).toEqual(["waiting-3"]);
-    const granted = { ...scope, allowMyChats: true };
-    expect(
-      ids(await searchHistory(prisma, granted, { scope: "my_chats", query: "waitingprobe" })),
-    ).toEqual(["waiting-1", "waiting-3"]);
-    expect(
-      (
-        await readHistory(prisma, granted, {
-          threadId: "waiting-direct",
-          messageId: "waiting-direct-message",
-        })
-      ).messages,
-    ).toEqual([]);
-    expect(
-      (await readHistory(prisma, granted, { threadId: group.threadId, messageId: "waiting-2" }))
-        .messages,
-    ).toEqual([]);
-    await pool.query(`UPDATE steering_messages SET "runId" = 'assigned-run'
-      WHERE "botId" IN ('synthetic-bot','waiting-peer') AND "messageId" IN ('waiting-2','waiting-direct-message')`);
-    expect(
-      ids(await searchHistory(prisma, granted, { scope: "my_chats", query: "waitingprobe" })),
-    ).toEqual(["waiting-1", "waiting-2", "waiting-3", "waiting-direct-message"]);
-    expect(
-      (await readHistory(prisma, group, { messageId: "waiting-2", textOffset: 0 })).messages.map(
-        (m) => m.messageId,
-      ),
-    ).toEqual(["waiting-2"]);
-    await pool.query(`DELETE FROM steering_messages WHERE "messageId" LIKE 'waiting-%'`);
-  });
-  it.each([
-    { text: String.raw`back\slash`, query: String.raw`back\slash`, matches: true },
-    { text: 'say "hi"', query: 'say "hi"', matches: true },
-    { text: "50%_off", query: "50%_off", matches: true },
-    { text: "line\nbreak", query: "line\nbreak", matches: true },
-    { text: "café/東京", query: "café/東京", matches: true },
-    { text: "500 off", query: "50%", matches: false },
-    { text: "plain text", query: "_", matches: false },
-  ])(
-    "matches literal JSONB message text: $query in $text ($matches)",
-    async ({ text, query, matches }) => {
-      // Bypass encrypted message writes and blind indexes to exercise PostgreSQL's JSONB rendering.
-      const blocks = JSON.stringify([{ kind: "text", text }]);
-      const result = await pool.query<{ matches: boolean }>(
-        "SELECT $1::jsonb::text ILIKE $2 AS matches",
-        [blocks, `%${escapeJsonSearchWildcards(query)}%`],
-      );
-      expect(result.rows).toEqual([{ matches }]);
-    },
-  );
   it("finds a distant fact in 10,000 messages using the full text index", async () => {
     const querySpy = vi.spyOn(prisma, "$queryRaw");
     const results = await searchHistory(prisma, scope, { query: "exports batching" });
@@ -427,45 +336,6 @@ postgres("history retrieval (PostgreSQL)", () => {
     await pool.query("DELETE FROM messages WHERE id = 'background-result'");
     expect((await readHistory(prisma, scope, { messageId: "background-result" })).runs).toEqual([]);
   });
-  it("reads native group history only for owned member bots and scopes group artifacts", async () => {
-    await pool.query(`INSERT INTO bots VALUES ('synthetic-outsider','synthetic-space','synthetic-user',NULL);
-      INSERT INTO chat_groups VALUES ('synthetic-group','synthetic-space','synthetic-user',NULL);
-      INSERT INTO chat_group_members VALUES ('synthetic-group','synthetic-bot');
-      INSERT INTO threads VALUES ('synthetic-group-thread','synthetic-space','synthetic-user',NULL,'synthetic-group');
-      INSERT INTO messages VALUES
-        ('group-source','synthetic-group-thread',0,'user',NULL,NULL,now(),'[{"kind":"text","text":"group exports"}]'),
-        ('group-outcome','synthetic-group-thread',1,'bot','group-run',NULL,now(),'[{"kind":"text","text":"group exports done"}]');
-      INSERT INTO runs VALUES ('group-run','synthetic-space','synthetic-user','synthetic-group-thread','synthetic-bot','group-source','completed',now(),now());
-      INSERT INTO artifacts VALUES ('group-artifact','synthetic-space','synthetic-user','synthetic-bot','synthetic-group','group-run','group-report.txt','text/plain',10,now());`);
-    const groupScope = { ...scope, threadId: "synthetic-group-thread" };
-    expect(
-      (await searchHistory(prisma, groupScope, { query: "group exports" })).messages,
-    ).toHaveLength(2);
-    expect(
-      (await readHistory(prisma, groupScope, { messageId: "group-source" })).runs[0]!.artifacts[0]!
-        .id,
-    ).toBe("group-artifact");
-    expect(
-      (
-        await readHistory(
-          prisma,
-          { ...groupScope, botId: "synthetic-outsider" },
-          { messageId: "group-source" },
-        )
-      ).messages,
-    ).toEqual([]);
-    expect(
-      (
-        await readHistory(
-          prisma,
-          { ...groupScope, spaceId: "outsider-space" },
-          { messageId: "group-source" },
-        )
-      ).messages,
-    ).toEqual([]);
-    await pool.query("DELETE FROM messages WHERE id IN ('group-source','group-outcome')");
-    expect((await readHistory(prisma, groupScope, { messageId: "group-source" })).runs).toEqual([]);
-  });
   it("keeps complete JSON and pages all 50 linked runs, 100 artifacts and long original text", async () => {
     const original = `Original evidence\n${"長い\n".repeat(4000)}`;
     await pool.query(
@@ -589,175 +459,5 @@ postgres("history retrieval (PostgreSQL)", () => {
     expect((await searchHistory(prisma, scope, { query: "navigation canary" })).messages).toEqual(
       [],
     );
-  });
-  it("authorizes every active chat in the space, including groups, and nothing outside it", async () => {
-    await pool.query(`
-      INSERT INTO bots (id, "spaceId", "userId", "archivedAt", name) VALUES
-        ('cross-peer','synthetic-space','synthetic-user',NULL,'Researcher'),
-        ('cross-team','synthetic-space','team-member',NULL,'Team member'),
-        ('cross-space','other-space','synthetic-user',NULL,'Other space'),
-        ('cross-archived','synthetic-space','synthetic-user',now(),'Archived');
-      INSERT INTO chat_groups (id, "spaceId", "userId", "archivedAt") VALUES
-        ('cross-group','synthetic-space','synthetic-user',NULL),
-        ('cross-archived-group','synthetic-space','synthetic-user',now()),
-        ('cross-team-group','synthetic-space','team-member',NULL);
-      INSERT INTO threads VALUES
-        ('cross-peer-thread','synthetic-space','synthetic-user','cross-peer',NULL),
-        ('cross-team-thread','synthetic-space','team-member','cross-team',NULL),
-        ('cross-space-thread','other-space','synthetic-user','cross-space',NULL),
-        ('cross-archived-thread','synthetic-space','synthetic-user','cross-archived',NULL),
-        ('cross-group-thread','synthetic-space','synthetic-user',NULL,'cross-group'),
-        ('cross-archived-group-thread','synthetic-space','synthetic-user',NULL,'cross-archived-group'),
-        ('cross-team-group-thread','synthetic-space','team-member',NULL,'cross-team-group');
-      INSERT INTO chat_group_members VALUES ('cross-group','cross-peer');
-      INSERT INTO messages SELECT 'cross-' || id, id, 90000, 'user', NULL, NULL, '2026-02-01'::timestamptz,
-        '[{"kind":"text","text":"quasar launch violet apricot"}]'::jsonb
-        FROM threads WHERE id LIKE 'cross-%';
-      INSERT INTO messages VALUES
-        ('cross-structured','cross-peer-thread',90001,'bot',NULL,NULL,'2026-02-02',
-          '[{"kind":"bot_message_received","text":"quasar handoff violet"}]'),
-        ('cross-reply','cross-peer-thread',90002,'bot',NULL,NULL,'2026-02-03',
-          '[{"kind":"text","text":"quasar answer violet"}]');
-    `);
-    await pool.query(`
-      INSERT INTO runs VALUES ('cross-peer-run','synthetic-space','synthetic-user','cross-peer-thread','cross-peer',
-        'cross-cross-peer-thread','completed',now(),now());
-      UPDATE messages SET "runId" = 'cross-peer-run' WHERE id = 'cross-reply';
-      INSERT INTO artifacts VALUES ('cross-artifact','synthetic-space','synthetic-user','cross-peer',NULL,
-        'cross-peer-run','launch.txt','text/plain',10,now());
-    `);
-    const grant = {
-      ...scope,
-      allowMyChats: true,
-      searchBeforeSeq: 1,
-      searchAt: new Date("2026-03-01"),
-    };
-    const input = HistorySearchInputSchema.parse({
-      scope: "my_chats",
-      queries: [" quasar ", "VIOLET", "QUASAR"],
-    });
-    const querySpy = vi.spyOn(prisma, "$queryRaw");
-    const result = await searchHistory(prisma, grant, input);
-    const rankedQuery = querySpy.mock.calls[0]![0] as Prisma.Sql;
-    querySpy.mockRestore();
-    const explained = await pool.query(
-      `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) ${rankedQuery.text}`,
-      rankedQuery.values,
-    );
-    expect(JSON.stringify(explained.rows)).toContain("synthetic_history_fts");
-    expect(result.queries).toEqual(["quasar", "VIOLET"]);
-    const single = await searchHistory(prisma, grant, { scope: "my_chats", query: "quasar" });
-    expect(single.queries).toEqual(["quasar"]);
-    for (const hit of single.messages) expect(hit.matchedQueryIndexes).toEqual([0]);
-    // A page holds at most five hits; the sixth is on the next one.
-    expect(result.messages).toHaveLength(5);
-    const rest = await searchHistory(prisma, grant, result.nextSearch!);
-    expect(rest.nextSearch).toBeNull();
-    const all = [...result.messages, ...rest.messages];
-    expect(new Set(all.map((hit) => hit.messageId)).size).toBe(6);
-    expect(new Set(all.map((hit) => hit.threadId))).toEqual(
-      new Set([
-        "cross-peer-thread",
-        "cross-group-thread",
-        "cross-team-thread",
-        "cross-team-group-thread",
-      ]),
-    );
-    for (const hit of all) expect(hit.matchedQueryIndexes).toEqual([0, 1]);
-    expect(result.chats?.find((chat) => chat.threadId === "cross-peer-thread")?.name).toBe(
-      "Researcher",
-    );
-    expect(Buffer.byteLength(JSON.stringify(result))).toBeLessThanOrEqual(10000);
-    // A bot filter narrows group membership too; it never grants a thread outside the space.
-    expect(
-      (await searchHistory(prisma, grant, { ...input, botId: "cross-space" })).messages,
-    ).toEqual([]);
-    expect(
-      (await searchHistory(prisma, grant, { ...input, botId: "cross-peer" })).messages,
-    ).toHaveLength(4);
-    expect(
-      (
-        await searchHistory(prisma, grant, { ...input, after: "2026-02-02", before: "2026-02-03" })
-      ).messages.map((hit) => hit.messageId),
-    ).toEqual(["cross-structured"]);
-    for (const [kind, ids] of [
-      ["bot_messages", ["cross-structured"]],
-      ["bot_replies", ["cross-reply"]],
-      [
-        "user_messages",
-        [
-          "cross-cross-peer-thread",
-          "cross-cross-group-thread",
-          "cross-cross-team-thread",
-          "cross-cross-team-group-thread",
-        ],
-      ],
-    ] as const) {
-      expect(
-        new Set(
-          (await searchHistory(prisma, grant, { ...input, kinds: [kind] })).messages.map(
-            (hit) => hit.messageId,
-          ),
-        ),
-      ).toEqual(new Set(ids));
-    }
-    const first = await searchHistory(prisma, grant, { ...input, limit: 2 });
-    const next = await searchHistory(prisma, grant, first.nextSearch!);
-    const last = await searchHistory(prisma, grant, next.nextSearch!);
-    expect(
-      new Set([...first.messages, ...next.messages, ...last.messages].map((hit) => hit.messageId))
-        .size,
-    ).toBe(6);
-    expect(last.nextSearch).toBeNull();
-    expect((await searchHistory(prisma, grant, { query: "quasar" })).messages).toEqual([]);
-    const own = await readHistory(prisma, grant, {
-      threadId: "cross-peer-thread",
-      messageId: "cross-structured",
-      limit: 1,
-    });
-    expect(own.messages[0]?.text).toContain("quasar handoff");
-    expect(
-      (
-        await readHistory(prisma, grant, {
-          threadId: "cross-group-thread",
-          messageId: "cross-cross-group-thread",
-          limit: 1,
-        })
-      ).messages,
-    ).toHaveLength(1);
-    const linked = await readHistory(prisma, grant, {
-      threadId: "cross-peer-thread",
-      messageId: "cross-cross-peer-thread",
-      limit: 1,
-    });
-    expect(linked.runs[0]?.id).toBe("cross-peer-run");
-    expect(linked.runs[0]?.outcomes[0]?.messageId).toBe("cross-reply");
-    expect(linked.runs[0]?.artifacts[0]?.id).toBe("cross-artifact");
-    const missing = await readHistory(prisma, grant, { threadId: "missing", messageId: "missing" });
-    for (const threadId of [
-      "cross-space-thread",
-      "cross-archived-thread",
-      "cross-archived-group-thread",
-    ]) {
-      expect(
-        await readHistory(prisma, grant, { threadId, messageId: `cross-${threadId}` }),
-      ).toEqual(missing);
-    }
-    for (const denied of [{ ...grant, allowMyChats: false }, scope]) {
-      await expect(searchHistory(prisma, denied, input)).rejects.toThrow("direct human app runs");
-      expect(
-        await readHistory(prisma, denied, {
-          threadId: "cross-peer-thread",
-          messageId: "cross-structured",
-        }),
-      ).toEqual(missing);
-    }
-    await pool.query(`UPDATE bots SET "archivedAt" = now() WHERE id = 'cross-peer'`);
-    expect(
-      await readHistory(prisma, grant, {
-        threadId: "cross-peer-thread",
-        messageId: "cross-structured",
-      }),
-    ).toEqual(missing);
   });
 });

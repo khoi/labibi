@@ -172,22 +172,30 @@ export interface SpaceKeyStore {
 
 /**
  * The space a row belongs to and the parent it is bound to (its thread, document
- * or user). Both go into the ciphertext AAD, so a row moved to another thread,
- * document or user fails to decrypt.
+ * or user; a chat's memory to its chat, personal memory to its person). Both go into
+ * the ciphertext AAD, so a row moved to another thread, document or user fails to decrypt.
  */
 export interface RowContext {
   spaceId: string;
   owner: string;
 }
 
-/** Column holding each table's owner. Application code never changes these. */
-export const ROW_OWNER: Record<SpaceSource, string> = {
-  threads: "userId",
-  messages: "threadId",
-  events: "threadId",
-  memory_documents: "userId",
-  memory_revisions: "documentId",
+/**
+ * Columns holding each table's owner, the first one set winning; each is its relation's name
+ * plus `Id`. Application code never changes these.
+ */
+export const ROW_OWNER: Record<SpaceSource, readonly string[]> = {
+  threads: ["userId"],
+  messages: ["threadId"],
+  events: ["threadId"],
+  memory_documents: ["threadId", "userId"],
+  memory_revisions: ["documentId"],
 };
+
+export function rowOwner(source: SpaceSource, row: Record<string, unknown>): unknown {
+  for (const column of ROW_OWNER[source]) if (row[column] != null) return row[column];
+  return undefined;
+}
 
 export interface Queryable {
   query<T>(text: string, values?: unknown[]): Promise<{ rows: T[] }>;
@@ -197,7 +205,7 @@ const COLUMNS = `id, "spaceId", version, "masterKeyId", "wrappedKey"`;
 const ROW_CONTEXT: Record<SpaceSource, string> = {
   threads: `SELECT "spaceId", "userId" AS owner FROM threads WHERE id = $1`,
   events: `SELECT "spaceId", "threadId" AS owner FROM events WHERE id = $1`,
-  memory_documents: `SELECT "spaceId", "userId" AS owner FROM memory_documents WHERE id = $1`,
+  memory_documents: `SELECT "spaceId", COALESCE("threadId", "userId") AS owner FROM memory_documents WHERE id = $1`,
   messages: `SELECT t."spaceId", m."threadId" AS owner FROM messages m JOIN threads t ON t.id = m."threadId" WHERE m.id = $1`,
   memory_revisions: `SELECT d."spaceId", r."documentId" AS owner FROM memory_revisions r JOIN memory_documents d ON d.id = r."documentId" WHERE r.id = $1`,
 };

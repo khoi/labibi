@@ -11,7 +11,7 @@ import {
   searchTokens,
 } from "./content-crypto.js";
 import type { ContentKeyRing, RowContext, SpaceSource } from "./content-keys.js";
-import { ROW_OWNER } from "./content-keys.js";
+import { ROW_OWNER, rowOwner } from "./content-keys.js";
 import type { PrismaClient } from "./generated/prisma/client.js";
 import { Prisma } from "./generated/prisma/client.js";
 import { historySearchText } from "./history-text.js";
@@ -42,8 +42,6 @@ interface ModelSpec {
   fields: Record<string, FieldSpec>;
   /** Where the owning space comes from: a column on the row, or a parent row. */
   space: { column: "spaceId" } | { parent: SpaceSource };
-  /** Relation field for the owner column (ROW_OWNER), for `connect` writes. */
-  ownerRelation: string;
   searchTokens?: boolean;
 }
 
@@ -53,33 +51,28 @@ export const ENCRYPTED_MODELS: Record<string, ModelSpec> = {
     table: "messages",
     fields: { blocks: { plainKeys: MESSAGE_BLOCK_PLAIN_KEYS } },
     space: { parent: "threads" },
-    ownerRelation: "thread",
     searchTokens: true,
   },
   Event: {
     table: "events",
     fields: { payload: { plainKeys: EVENT_PAYLOAD_PLAIN_KEYS } },
     space: { column: "spaceId" },
-    ownerRelation: "thread",
   },
   MemoryDocument: {
     table: "memory_documents",
     fields: { content: {} },
     space: { column: "spaceId" },
-    ownerRelation: "user",
   },
   MemoryRevision: {
     table: "memory_revisions",
     fields: { content: {} },
     space: { parent: "memory_documents" },
-    ownerRelation: "document",
   },
   /** The compacted summary of older history is derived message content. */
   Thread: {
     table: "threads",
     fields: { historyCompactionSummary: {} },
     space: { column: "spaceId" },
-    ownerRelation: "user",
   },
 };
 
@@ -117,11 +110,9 @@ function stringsIn(value: unknown, out: string[] = []): string[] {
   return out;
 }
 
-const ownerOf = (spec: ModelSpec) => ROW_OWNER[spec.table];
-
 /** Columns a row needs beside its encrypted fields to be decrypted and verified. */
 function contextColumns(spec: ModelSpec): string[] {
-  return ["id", ownerOf(spec), ...("column" in spec.space ? [spec.space.column] : [])];
+  return ["id", ...ROW_OWNER[spec.table], ...("column" in spec.space ? [spec.space.column] : [])];
 }
 
 /**
@@ -263,7 +254,7 @@ export function withContentEncryption(prisma: PrismaClient, ring: ContentKeyRing
     const spec = ENCRYPTED_MODELS[node.model];
     if (spec) out.pending.push({ row: value, spec });
     const source = PARENT_SOURCES[node.model];
-    const owner = source ? value[ROW_OWNER[source]] : undefined;
+    const owner = source ? rowOwner(source, value) : undefined;
     if (
       source &&
       typeof value.id === "string" &&
@@ -309,7 +300,7 @@ export function withContentEncryption(prisma: PrismaClient, ring: ContentKeyRing
     );
     for (const { row, spec } of encrypted) {
       const rowKeyIds = keyIdsOf({ row, spec });
-      const owner = row[ownerOf(spec)];
+      const owner = rowOwner(spec.table, row);
       if (typeof row.id !== "string" || typeof owner !== "string")
         throw new ContentDecryptionError("Encrypted rows need their id and owner");
       const rowId = row.id;
@@ -404,9 +395,12 @@ export function withContentEncryption(prisma: PrismaClient, ring: ContentKeyRing
   }
 
   async function createContext(spec: ModelSpec, data: RecordValue): Promise<RowContext> {
-    const owner = connected(data, ownerOf(spec), spec.ownerRelation);
+    const columns = ROW_OWNER[spec.table];
+    const owner = columns
+      .map((column) => connected(data, column, column.slice(0, -"Id".length)))
+      .find((value) => value != null);
     if (typeof owner !== "string")
-      throw new Error(`Encrypted ${spec.table} writes must name their ${ownerOf(spec)}`);
+      throw new Error(`Encrypted ${spec.table} writes must name their ${columns.join(" or ")}`);
     if ("parent" in spec.space)
       return { spaceId: await ring.spaceOf(spec.space.parent, owner), owner };
     const spaceId = connected(data, spec.space.column, "space");

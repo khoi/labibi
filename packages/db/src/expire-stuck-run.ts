@@ -140,11 +140,7 @@ export async function expireStuckRun(
   });
   await tx.computer.updateMany({
     where: { executionRunId: input.runId },
-    data: {
-      executionRunId: null,
-      executionBotId: null,
-      executionLeaseExpiresAt: null,
-    },
+    data: { executionRunId: null, executionLeaseExpiresAt: null },
   });
   await discardAnsweredSteering(tx, { threadId: run.threadId, runId: input.runId });
   await tx.steeringMessage.updateMany({
@@ -160,7 +156,7 @@ export async function expireStuckRun(
 }
 
 /**
- * End takeover waits that hold up other work for their bot. Each ends through the stuck-work
+ * End takeover waits that hold up other work on their computer. Each ends through the stuck-work
  * cancel, so the thread gets the same status line, and a wait the user is on the screen for
  * stays. Returns how many ended.
  */
@@ -196,23 +192,20 @@ export async function endTakeoverWaits(
 }
 
 /**
- * Whether the user has taken this bot's screen. Any control lease still on the row counts, even
- * an expired one or one mid-release: releasing it resumes the waiting run, which a cancel here
- * would prevent. Locks the computer row, so a concurrent takeover grant either lands first and
+ * Whether the person the run is for has taken their computer's screen. Any control lease still
+ * on the row counts, even an expired one or one mid-release: releasing it resumes the waiting
+ * run, which a cancel here would prevent. Locks the computer row, so a concurrent takeover grant either lands first and
  * is seen here, or waits for this cancel.
  */
 async function userHasTakeoverScreen(
   tx: Prisma.TransactionClient,
   runId: string,
 ): Promise<boolean> {
-  const [computer] = await tx.$queryRaw<
-    Array<{ botId: string; controlBotId: string | null; controlLeaseId: string | null }>
-  >`
-    SELECT r."botId", c."controlBotId", c."controlLeaseId"
+  const [computer] = await tx.$queryRaw<Array<{ controlLeaseId: string | null }>>`
+    SELECT c."controlLeaseId"
     FROM runs r
-    JOIN bots b ON b.id = r."botId"
-    JOIN computers c ON c.id = b."computerId"
+    JOIN computers c ON c."spaceId" = r."spaceId" AND c."userId" = r."userId"
     WHERE r.id = ${runId}
     FOR UPDATE OF c`;
-  return Boolean(computer?.controlLeaseId && computer.controlBotId === computer.botId);
+  return Boolean(computer?.controlLeaseId);
 }

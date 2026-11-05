@@ -54,6 +54,7 @@ export interface CreateThreadMessageInput {
   replyQuote?: string;
   runId?: string;
   clientNonce?: string;
+  /** Marks the chat unread for everyone in it but the author. Default: anything but a system line. */
   markUnread?: boolean;
   /** Terminal echo after the run is already cancelled. Every other write stays rejected. */
   allowCancelledRun?: boolean;
@@ -75,20 +76,36 @@ export async function createThreadMessageInTransaction(
 ) {
   const thread = await tx.thread.update({
     where: { id: input.threadId },
-    data: {
-      nextMessageSeq: { increment: 1 },
-      unread: (input.markUnread ?? input.role === "bot") ? true : undefined,
-    },
+    data: { nextMessageSeq: { increment: 1 }, lastMessageAt: new Date() },
     select: { nextMessageSeq: true },
   });
   await assertRunCanWriteHistory(tx, input.runId, {
     allowCancelled: input.allowCancelledRun,
     lease: input.lease,
   });
+  const seq = thread.nextMessageSeq - 1;
+  const author = input.authorUserId;
+  if (input.markUnread ?? input.role !== "system") {
+    await tx.threadMember.updateMany({
+      where: {
+        threadId: input.threadId,
+        unread: false,
+        ...(author ? { userId: { not: author } } : {}),
+      },
+      data: { unread: true },
+    });
+  }
+  // Writing in a chat reads it up to here.
+  if (author) {
+    await tx.threadMember.updateMany({
+      where: { threadId: input.threadId, userId: author },
+      data: { unread: false, lastReadSeq: seq },
+    });
+  }
   return tx.message.create({
     data: {
       threadId: input.threadId,
-      seq: thread.nextMessageSeq - 1,
+      seq,
       role: input.role,
       blocks: input.blocks as Prisma.InputJsonValue,
       botId: input.botId,

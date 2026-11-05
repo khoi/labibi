@@ -199,16 +199,15 @@ describePostgres("thread row before run rows for clear and control release (Post
   it("release blocks on the thread row without holding the control run", async () => {
     const runId = await createWaitingTakeoverRun();
     stamp += 1;
+    await system.computer.deleteMany({ where: { spaceId, userId } });
     const computer = await system.computer.create({
       data: {
         spaceId,
         userId,
-        scope: "dedicated",
         scopeKey: `thread-run-lock-${address}-${stamp}`,
         homeKey: `thread-run-lock-home-${address}-${stamp}`,
         kind: "fake",
         controlHolder: "user",
-        controlBotId: botId,
         controlLeaseId: "lease-1",
         controlLeaseExpiresAt: new Date(Date.now() + 60_000),
         controlRunId: runId,
@@ -252,7 +251,6 @@ describePostgres("thread row before run rows for clear and control release (Post
       expect(await system.computer.findUnique({ where: { id: computer.id } })).toMatchObject({
         controlHolder: "none",
         controlLeaseId: null,
-        controlBotId: null,
         controlRunId: null,
       });
       expect(await system.run.findUnique({ where: { id: runId } })).toMatchObject({
@@ -275,9 +273,7 @@ describePostgres("thread row before run rows for clear and control release (Post
     try {
       const xactId = await holder.lockTaken;
       probe = await connectProbe();
-      work = runAsTenant({ spaceId, userId }, () =>
-        clearThread(prisma, { spaceId, threadId, botId }),
-      );
+      work = runAsTenant({ spaceId, userId }, () => clearThread(prisma, { spaceId, threadId }));
       work.catch(() => undefined);
 
       await untilBlocked(probe, xactId);
@@ -307,17 +303,16 @@ describePostgres("thread row before run rows for clear and control release (Post
   it("clear commits without a legacy-bound computer and cleans the binding after", async () => {
     const runId = await createWaitingTakeoverRun();
     stamp += 1;
+    await system.computer.deleteMany({ where: { spaceId, userId } });
     const computer = await system.computer.create({
       data: {
         spaceId,
         userId,
-        scope: "dedicated",
         scopeKey: `thread-run-lock-${address}-${stamp}`,
         homeKey: `thread-run-lock-home-${address}-${stamp}`,
         kind: "fake",
         // A pre-lease release left this run bound as the computer's execution.
         executionRunId: runId,
-        executionBotId: botId,
       },
     });
 
@@ -327,9 +322,7 @@ describePostgres("thread row before run rows for clear and control release (Post
     try {
       await holder.lockTaken;
       probe = await connectProbe();
-      work = runAsTenant({ spaceId, userId }, () =>
-        clearThread(prisma, { spaceId, threadId, botId }),
-      );
+      work = runAsTenant({ spaceId, userId }, () => clearThread(prisma, { spaceId, threadId }));
       work.catch(() => undefined);
 
       // The cancellation commits while the computer row is held elsewhere: the clear
@@ -346,7 +339,6 @@ describePostgres("thread row before run rows for clear and control release (Post
       expect(cleared).toMatchObject({ cancelledRunIds: [runId] });
       expect(await system.computer.findUnique({ where: { id: computer.id } })).toMatchObject({
         executionRunId: null,
-        executionBotId: null,
         executionLeaseExpiresAt: null,
       });
     } finally {
