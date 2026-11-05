@@ -782,6 +782,21 @@ export const PL_MESSAGES: Record<string, string> = {
   "Always allow this tool": "Zawsze zezwalaj na to narzędzie",
   "Always allow {site}": "Zawsze zezwalaj na {site}",
   "Replaces the login saved for {site}": "Zastępuje dane logowania zapisane dla {site}",
+  "Cancel open invites": "Anuluj otwarte zaproszenia",
+  "Could not cancel invites": "Nie udało się anulować zaproszeń",
+  "Everyone in this bot's space can read the chats it gets from {app}.":
+    "Wszyscy w przestrzeni tego bota mogą czytać czaty, które otrzymuje z {app}.",
+  Invite: "Zaproś",
+  "Leave space": "Opuść przestrzeń",
+  "Leave {name}?": "Opuścić {name}?",
+  "Could not load members": "Nie udało się wczytać członków",
+  "Could not create invite link": "Nie udało się utworzyć linku z zaproszeniem",
+  "Could not remove member": "Nie udało się usunąć członka",
+  "Could not leave space": "Nie udało się opuścić przestrzeni",
+  "Sites you sign in to stay signed in for everyone in this space":
+    "Strony, na których się zalogujesz, pozostaną zalogowane dla wszystkich w tej przestrzeni",
+  "The bot's browser stays signed in for everyone in this space":
+    "Przeglądarka bota pozostaje zalogowana dla wszystkich w tej przestrzeni",
   "Could not submit answer": "Nie udało się przesłać odpowiedzi",
   Deny: "Odmów",
   "Please try again.": "Spróbuj ponownie.",
@@ -998,6 +1013,7 @@ export const PL_MESSAGES: Record<string, string> = {
   "Email verification required": "Wymagana weryfikacja adresu e-mail",
   "Link SSO": "Połącz SSO",
   "Registration is closed": "Rejestracja jest zamknięta",
+  "This account is deactivated": "To konto jest dezaktywowane",
   Retry: "Ponów",
   "Send deletion code": "Wyślij kod usunięcia",
   "Sign in to your existing account to link SSO":
@@ -1373,6 +1389,21 @@ export const PL_MESSAGES: Record<string, string> = {
   "Discard changes?": "Odrzucić zmiany?",
   Discard: "Odrzuć",
   "Could not delete note": "Nie udało się usunąć notatki",
+  "Spending limit": "Limit wydatków",
+  Amount: "Kwota",
+  Currency: "Waluta",
+  Daily: "Codziennie",
+  Weekly: "Co tydzień",
+  "No reset": "Bez resetu",
+  "Enter an amount": "Wpisz kwotę",
+  "{amount} a day": "{amount} dziennie",
+  "{amount} a week": "{amount} tygodniowo",
+  "{amount} a month": "{amount} miesięcznie",
+  "{amount} in total": "{amount} łącznie",
+  "{amount} spent today": "Wydano dziś: {amount}",
+  "{amount} spent this week": "Wydano w tym tygodniu: {amount}",
+  "{amount} spent this month": "Wydano w tym miesiącu: {amount}",
+  "{amount} spent": "Wydano: {amount}",
 };
 
 export const PEER_MESSAGE_FORMS: Partial<Record<Intl.LDMLPluralRule, string>> = {

@@ -81,6 +81,8 @@ export async function messageBot(
     message: string;
     intent?: BotMessageIntent;
     deliveryKey?: string;
+    /** Attachments filed under the recipient's chat, shown there and copied to its computer. */
+    files?: Array<Extract<MessageBlock, { kind: "image" | "file" }>>;
   },
   options?: { allowTerminalSource?: boolean; forceUnread?: boolean },
 ) {
@@ -98,7 +100,7 @@ export async function messageBot(
   const hop = nextBotMessageHop(sourceContext?.hop);
 
   const candidates = await deps.prisma.bot.findMany({
-    where: { spaceId: run.spaceId, userId: run.userId, archivedAt: null },
+    where: { spaceId: run.spaceId, archivedAt: null },
     select: { id: true, name: true, thread: { select: { id: true } } },
   });
   const target = resolveBotAddress(candidates, {
@@ -147,6 +149,7 @@ export async function messageBot(
     text: message,
     intent,
   };
+  const files = input.files ?? [];
 
   let committed:
     | {
@@ -201,7 +204,6 @@ export async function messageBot(
           where: {
             id: target.id,
             spaceId: run.spaceId,
-            userId: run.userId,
             archivedAt: null,
           },
           select: { id: true },
@@ -233,7 +235,7 @@ export async function messageBot(
         const inbound = await createThreadMessageInTransaction(tx, {
           threadId: targetThreadId,
           role: "user",
-          blocks: [inboundBlock],
+          blocks: [inboundBlock, ...files],
           replyToMessageId:
             sourceContext?.fromBotId === target.id && intent !== "fyi"
               ? sourceContext.returnToMessageId
@@ -271,7 +273,7 @@ export async function messageBot(
           botId: target.id,
           type: "thread.message.created",
           runId: nextRun.id,
-          payload: { messageId: inbound.id, role: "user", blocks: [inboundBlock] },
+          payload: { messageId: inbound.id, role: "user", blocks: [inboundBlock, ...files] },
         });
         const outboundEvent = await appendEventInTransaction(tx, {
           spaceId: run.spaceId,
@@ -370,10 +372,10 @@ export async function returnBotMessageOutcome(
     await markBotOutcomeReturned(deps.prisma, run.id);
     return true;
   }
-  // messageBot reaches only active bots of this space and user, so an archived or deleted
+  // messageBot reaches only active bots of this space, so an archived or deleted
   // requester can never take the outcome. Handled: nothing is left to deliver.
   const requester = await deps.prisma.bot.findFirst({
-    where: { id: source.fromBotId, spaceId: run.spaceId, userId: run.userId, archivedAt: null },
+    where: { id: source.fromBotId, spaceId: run.spaceId, archivedAt: null },
     select: { id: true },
   });
   if (!requester) {

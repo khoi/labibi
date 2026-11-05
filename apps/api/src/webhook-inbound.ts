@@ -5,6 +5,7 @@ import { inboundRoutineModelPin } from "@labradoodle/adapters";
 import type { MessageBlock } from "@labradoodle/contracts";
 import { escapePromptData, inboundRoutineBlock, messageBlockForArtifact } from "@labradoodle/core";
 import type { PrismaClient } from "@labradoodle/db";
+import { accountDeactivated } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 
 export const WEBHOOK_MAX_BODY_BYTES = 64 * 1024;
@@ -200,7 +201,8 @@ export async function loadWebhookTarget(
     },
   });
 
-  if (!bot?.thread || !bot.webhookSecretId) {
+  // A deactivated owner's bot takes no deliveries; callers see the usual unauthorized reply.
+  if (!bot?.thread || !bot.webhookSecretId || (await accountDeactivated(deps.prisma, bot.userId))) {
     cache.delete(botId);
     return null;
   }

@@ -754,6 +754,14 @@ export const ES_MESSAGES: Record<string, string> = {
   "Always allow this tool": "Permitir siempre esta herramienta",
   "Always allow {site}": "Permitir siempre {site}",
   "Replaces the login saved for {site}": "Reemplaza el inicio de sesión guardado para {site}",
+  "Cancel open invites": "Cancelar invitaciones abiertas",
+  "Could not cancel invites": "No se pudieron cancelar las invitaciones",
+  "Everyone in this bot's space can read the chats it gets from {app}.":
+    "Todos en el espacio de este bot pueden leer los chats que recibe de {app}.",
+  "Sites you sign in to stay signed in for everyone in this space":
+    "Los sitios en los que inicies sesión siguen con la sesión iniciada para todos en este espacio",
+  "The bot's browser stays signed in for everyone in this space":
+    "El navegador del bot sigue con la sesión iniciada para todos en este espacio",
   "Could not submit answer": "No se pudo enviar la respuesta",
   Deny: "Denegar",
   "Please try again.": "Inténtalo de nuevo.",
@@ -955,6 +963,7 @@ export const ES_MESSAGES: Record<string, string> = {
   "Email verification required": "Se requiere verificar el correo",
   "Link SSO": "Vincular SSO",
   "Registration is closed": "El registro está cerrado",
+  "This account is deactivated": "Esta cuenta está desactivada",
   Retry: "Reintentar",
   "Send deletion code": "Enviar código de eliminación",
   "Sign in to your existing account to link SSO":
@@ -1319,6 +1328,14 @@ export const ES_MESSAGES: Record<string, string> = {
     "{count} bots ahora usan el modelo predeterminado del espacio.",
   "Could not switch {failedNames}. Try again.":
     "No se pudo cambiar {failedNames}. Vuelve a intentarlo.",
+  Members: "Miembros",
+  Invite: "Invitar",
+  "Leave space": "Salir del espacio",
+  "Leave {name}?": "¿Salir de {name}?",
+  "Could not load members": "No se pudieron cargar los miembros",
+  "Could not create invite link": "No se pudo crear el enlace de invitación",
+  "Could not remove member": "No se pudo quitar al miembro",
+  "Could not leave space": "No se pudo salir del espacio",
   "Create organization": "Crear organización",
   Organization: "Organización",
   "Delete organization": "Eliminar organización",
@@ -1332,6 +1349,21 @@ export const ES_MESSAGES: Record<string, string> = {
   "Discard changes?": "¿Descartar los cambios?",
   Discard: "Descartar",
   "Could not delete note": "No se pudo eliminar la nota",
+  "Spending limit": "Límite de gasto",
+  Amount: "Importe",
+  Currency: "Moneda",
+  Daily: "Diario",
+  Weekly: "Semanal",
+  "No reset": "Sin reinicio",
+  "Enter an amount": "Introduce un importe",
+  "{amount} a day": "{amount} al día",
+  "{amount} a week": "{amount} a la semana",
+  "{amount} a month": "{amount} al mes",
+  "{amount} in total": "{amount} en total",
+  "{amount} spent today": "{amount} gastados hoy",
+  "{amount} spent this week": "{amount} gastados esta semana",
+  "{amount} spent this month": "{amount} gastados este mes",
+  "{amount} spent": "{amount} gastados",
 };
 
 export const PEER_MESSAGE_FORMS: Partial<Record<Intl.LDMLPluralRule, string>> = {

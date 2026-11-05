@@ -3,7 +3,7 @@ import { resolveBotWorkspacePath } from "@labradoodle/adapters";
 import type { ExportManifest } from "@labradoodle/contracts";
 import { attachmentMaxBytes, resolveBotAvatarSet } from "@labradoodle/contracts";
 import { AttachmentValidationError } from "@labradoodle/core";
-import { IsolationError, parseComputerMode } from "@labradoodle/db";
+import { IsolationError, LISTED_ARTIFACT, parseComputerMode } from "@labradoodle/db";
 import { ORPCError } from "@orpc/server";
 import {
   ArtifactListCursorError,
@@ -34,7 +34,7 @@ export function contentRoutes(ctx: RouterContext) {
             botId: input.botId,
             groupId: null,
             spaceId: context.actor.spaceId,
-            userId: context.actor.userId,
+            ...LISTED_ARTIFACT,
           },
         });
         return rows.map((row) => ({

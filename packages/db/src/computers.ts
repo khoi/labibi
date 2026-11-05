@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import type { ComputerMode } from "@labradoodle/contracts";
 import { isTerminal } from "@labradoodle/core";
 import type { PrismaClient } from "./client.js";
@@ -16,7 +16,10 @@ export function parseComputerMode(scope: string): ComputerMode {
 export type ComputerKeyInput = {
   mode: ComputerMode;
   spaceId: string;
-  /** The bot owner's user id. A team computer is shared only by one user's bots in a space. */
+  /**
+   * Who the computer is kept for. A team computer belongs to the Space's owner, so in a Space
+   * shared with others every member's bots use one Team Computer (see `teamComputerUserId`).
+   */
   userId: string;
   botId?: string;
 };
@@ -51,6 +54,22 @@ export function legacyTeamHomeKey(spaceId: string) {
 }
 
 type ComputerDb = Pick<PrismaClient, "computer">;
+
+/**
+ * The person a Space's Team Computer is kept for: its owner. Members of a shared Space use the
+ * owner's, so the Space has one computer and one browser whoever made the bot.
+ */
+export async function teamComputerUserId(
+  db: Pick<PrismaClient, "spaceMember">,
+  input: { spaceId: string; userId: string },
+): Promise<string> {
+  const owner = await db.spaceMember.findFirst({
+    where: { spaceId: input.spaceId, role: { contains: "owner" } },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    select: { userId: true },
+  });
+  return owner?.userId ?? input.userId;
+}
 type ComputerTx = Pick<Prisma.TransactionClient, "computer" | "$queryRaw">;
 type ComputerClient = ComputerDb & Partial<Pick<PrismaClient, "$transaction" | "$queryRaw">>;
 type RestoreTx = ComputerTx & Pick<Prisma.TransactionClient, "bot">;
@@ -222,7 +241,7 @@ export async function clearEndedExecutionRunBinding(
   });
 }
 
-function upsertComputerRecord(
+async function upsertComputerRecord(
   prisma: ComputerDb,
   input: {
     mode: ComputerMode;
@@ -240,11 +259,35 @@ function upsertComputerRecord(
       userId: input.userId,
       scope: input.mode,
       scopeKey,
-      homeKey: computerHomeKey(input),
+      homeKey: await availableHomeKey(prisma, input, scopeKey),
       kind: input.kind,
     },
     update: {},
   });
+}
+
+/**
+ * The usual home key, unless another computer already holds it: a team computer handed to a
+ * space's owner when this person left keeps its home, and with it the files. Coming back,
+ * the person gets a new home of the same length.
+ */
+async function availableHomeKey(
+  prisma: ComputerDb,
+  input: ComputerKeyInput,
+  scopeKey: string,
+): Promise<string> {
+  const homeKey = computerHomeKey(input);
+  if (input.mode !== "team") return homeKey;
+  const holder = await prisma.computer.findUnique({
+    where: { homeKey },
+    select: { scopeKey: true },
+  });
+  if (!holder || holder.scopeKey === scopeKey) return homeKey;
+  const digest = createHash("sha256")
+    .update(`${input.spaceId}:${input.userId}:${randomUUID()}`)
+    .digest("hex")
+    .slice(0, 32);
+  return `team-${digest}`;
 }
 
 async function ensureComputerRecordWithQuota(

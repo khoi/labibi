@@ -38,18 +38,23 @@ import {
 } from "@labradoodle/core";
 import type { ThreadEvents } from "@labradoodle/db";
 import {
+  accountDeactivated,
+  appendEventInTransaction,
   availableInSpace,
+  cancelDeactivatedAccountRuns,
+  cancelRunsInTransaction,
+  createPendingSteeringRun,
   effectiveMemoryScope,
   isPartialReplyClientNonce,
   isTooManyDatabaseConnections,
   loadRunHistoryMessages,
   loadRunTurnCheckpoint,
+  memberHasModelAccess,
   parseComputerMode,
   RunHistoryWriteError,
   readRunTimingFields,
   recordUsage,
   settleReleasedTakeoverCards,
-  spaceHasModelAccess,
   teamChatRunFromOwner,
 } from "@labradoodle/db";
 import { enrichLogContext, getLogger } from "@labradoodle/logging";
@@ -111,9 +116,10 @@ import {
 } from "./history-compaction.js";
 import {
   historySpeaker,
+  loadSpacePeople,
   loadThreadSpeakers,
   neutralizeSpeakerLabels,
-  USER_SPEAKER,
+  personSpeaker,
 } from "./history-speakers.js";
 import { createMediaGenerationProvider } from "./media-generation-factory.js";
 import { loadAgentMemoryContext } from "./memory-context.js";
@@ -215,6 +221,7 @@ import {
 } from "./run-turn-images.js";
 import { loadAgentScratchpadContext } from "./scratchpad-context.js";
 import { inferScript } from "./scripted-runtime.js";
+import { loadSharedSpaceNote } from "./shared-space-note.js";
 import { builtinAgentSkillRecords, listAgentSkillRecords } from "./skill-tools.js";
 import {
   filterStrategicInitiativeTools,
@@ -326,6 +333,12 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
         endRunConnectorState(runId);
         return;
       }
+      // Every way work reaches a bot ends here, so a deactivated account's run stops before it starts.
+      if (await accountDeactivated(deps.prisma, run.userId)) {
+        // Nothing cancelled: the owner is back (or the run already ended), so carry on.
+        if (await cancelDeactivatedAccountRuns(deps.prisma, deps.events, run.userId, runId)) return;
+      }
+      if (await cancelRunOfFormerMember(deps, run)) return;
       let { resumeCheckpoint, heldForTakeover, takeoverResume } = takeoverContinuePlan(run);
 
       const fence = nextFence(run.leaseFence);
@@ -619,7 +632,12 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
             where: { id: run.botId },
             include: { computer: true },
           }),
-          deps.prisma.thread.findUniqueOrThrow({ where: { id: run.threadId } }),
+          deps.prisma.thread.findUniqueOrThrow({
+            where: { id: run.threadId },
+            include: {
+              space: { select: { _count: { select: { memberships: true } } } },
+            },
+          }),
           loadRunHistoryMessages(deps.prisma, run, LEGACY_HISTORY_WINDOW_SIZE, channelId),
           run.trigger === "bot_message"
             ? loadBotMessageContext(deps.prisma, run.sourceMessageId)
@@ -755,13 +773,20 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
         const discoveredPromise = deps.connector
           ? deps.connector.discoverTools(context)
           : Promise.resolve([]);
-        // Group threads only: who wrote each message, so the model can tell the bots and the
-        // user apart. Direct chats stay plain user/assistant turns.
+        // Group threads and spaces several people share: who wrote each message, so the model can
+        // tell the bots and the people apart. A personal space's direct chat stays plain turns.
+        const people = await loadSpacePeople(
+          deps.prisma,
+          thread.space?._count.memberships ?? 0,
+          run.userId,
+          messages,
+        );
         const speakers = await loadThreadSpeakers(
           deps.prisma,
           thread,
           { spaceId: run.spaceId, bot },
           messages,
+          people,
         );
         const threadContext = threadContextForRun(
           run.trigger,
@@ -963,7 +988,10 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
             message,
           );
           if (failed && accountFailure && run.trigger === "routine" && run.routineId) {
-            await backOffRoutineAfterAccountError(deps, run.routineId);
+            await backOffRoutineAfterAccountError(deps, {
+              routineId: run.routineId,
+              userId: run.userId,
+            });
           }
         };
         if (pinnedComputerFailure) {
@@ -984,7 +1012,7 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
         }
         const modelAccessDenied = async () =>
           (await modelCreditBillingEnabled(deps)) &&
-          !(await spaceHasModelAccess(deps.prisma, run.spaceId));
+          !(await memberHasModelAccess(deps.prisma, run));
         const scripted = deps.runtime.describe().capabilities.scripted;
         let backupChoices: Promise<ModelRoleChoice[]> | undefined;
         const loadBackups = () =>
@@ -1058,6 +1086,7 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
                     callObserver: pinnedComputerModels.main.callObserver,
                     oauth: pinnedComputerModels.main.oauth?.credential,
                     persistOAuth: pinnedComputerModels.main.oauth?.persist,
+                    refreshOAuth: pinnedComputerModels.main.oauth?.refresh,
                     retireOAuth: pinnedComputerModels.main.oauth?.retire,
                     redact: [],
                   }
@@ -1240,10 +1269,12 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
         );
 
         const groupContext = thread.groupId
-          ? await loadGroupContext(deps.prisma, thread.groupId, {
-              id: bot.id,
-              name: bot.name,
-            })
+          ? await loadGroupContext(
+              deps.prisma,
+              thread.groupId,
+              { id: bot.id, name: bot.name },
+              Boolean(people),
+            )
           : undefined;
         const hasMessagingIdentity = deps.messaging
           ? await deps.messaging.hasIdentity(bot.id)
@@ -1621,8 +1652,12 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
           [task.prompt, attachedFilesPrompt, missingImagesInstruction].filter(Boolean).join("\n\n"),
           runAgentSkills,
         );
-        const invokedSkill = runSavedSkills.find((skill) =>
-          promptInvokesSkill(taskPrompt, skill.name || skill.goal),
+        const invokedSkill = runSavedSkills.find(
+          (skill) =>
+            // Taught skills are the space's. Only a person's own message may pull in one someone
+            // else taught; any other run follows only those its own person taught.
+            (ownerStartedRun || skill.userId === run.userId) &&
+            promptInvokesSkill(taskPrompt, skill.name || skill.goal),
         );
         const basePrompt = invokedSkill
           ? `${formatSkillRunPrompt(
@@ -1682,6 +1717,9 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
             // Lateness is optional context; a lookup failure must not prevent a run.
           }
         }
+        const sharedSpaceNote = people
+          ? await loadSharedSpaceNote(deps.prisma, run.spaceId, run.userId)
+          : undefined;
         const prompt = [
           replyContext,
           run.trigger === "reaction" && replyContext ? undefined : basePrompt,
@@ -1692,6 +1730,7 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
           // Per-turn, not in the system prompt: the timestamp changes every call and would break the cacheable prefix.
           formatCurrentTimeInstruction(deps.now?.() ?? new Date(), userTimeZone),
           lateRoutineNote,
+          sharedSpaceNote,
         ]
           .filter(Boolean)
           .join("\n\n");
@@ -1731,7 +1770,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
             : deps.prisma.bot.findMany({
                 where: {
                   spaceId: run.spaceId,
-                  userId: run.userId,
                   archivedAt: null,
                   id: { not: bot.id },
                   thread: { isNot: null },
@@ -1838,7 +1876,7 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
               ...(speakers &&
               (run.trigger === "user" ||
                 (run.trigger === "follow_up" && sourceMessage?.role === "user"))
-                ? { promptSpeaker: USER_SPEAKER }
+                ? { promptSpeaker: personSpeaker(people, run.userId) }
                 : {}),
               // Keep an explicit executor override, but let the runtime select
               // cache-aware context for connections declaring a cache window.
@@ -2161,6 +2199,57 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
       }
     },
   };
+}
+
+/**
+ * A run acts with its sender's accounts, so it must not start or resume once they have left
+ * the Space. Leaving cancels their runs; this closes the gap for anything that slipped past.
+ */
+async function cancelRunOfFormerMember(
+  deps: ExecutorDeps,
+  run: {
+    id: string;
+    spaceId: string;
+    userId: string;
+    threadId: string;
+    botId: string;
+  },
+): Promise<boolean> {
+  const member = await deps.prisma.spaceMember.findUnique({
+    where: { spaceId_userId: { spaceId: run.spaceId, userId: run.userId } },
+    select: { id: true },
+  });
+  if (member) return false;
+  const cancelled = await deps.prisma.$transaction(async (tx) => {
+    const current = await tx.run.findUnique({
+      where: { id: run.id },
+      select: {
+        id: true,
+        taskId: true,
+        userId: true,
+        spaceId: true,
+        status: true,
+      },
+    });
+    if (!current || isTerminal(current.status as RunStatus)) return null;
+    const [stopped] = await cancelRunsInTransaction(tx, [current], new Date());
+    if (!stopped) return null;
+    const event = await appendEventInTransaction(tx, {
+      spaceId: run.spaceId,
+      threadId: run.threadId,
+      botId: run.botId,
+      runId: run.id,
+      type: "run.cancelled",
+      payload: {},
+    });
+    // Remaining members' messages waited behind this run; give them their own.
+    const continuationId = await createPendingSteeringRun(tx, run);
+    return { seq: event.seq, continuationId };
+  });
+  if (!cancelled) return true;
+  await deps.events.notify(run.threadId, cancelled.seq).catch(() => undefined);
+  if (cancelled.continuationId) await deps.jobs.enqueue(runContinueJob(cancelled.continuationId));
+  return true;
 }
 
 /** Whether a run this attempt could not finalize is over for this worker: it

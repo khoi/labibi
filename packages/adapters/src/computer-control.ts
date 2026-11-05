@@ -13,6 +13,19 @@ export function takeoverLeaseMs(): number {
   return Number.isFinite(raw) && raw >= 1_000 ? raw : DEFAULT_TAKEOVER_LEASE_MS;
 }
 
+/**
+ * Whether this person may act on a computer's user control. Members of a Space share its
+ * computers, never a lease: the holder is who took control, or for a lease from before holders
+ * were recorded, the person the computer is kept for.
+ */
+export function holdsUserControl(
+  computer: { controlUserId?: string | null; userId?: string | null },
+  userId: string,
+): boolean {
+  const holder = computer.controlUserId || computer.userId;
+  return !holder || holder === userId;
+}
+
 export function hasActiveComputerControl(
   computer:
     | {
@@ -130,6 +143,7 @@ export async function clearInactiveUserComputerControl(
     data: {
       controlHolder: "none",
       controlLeaseId: null,
+      controlUserId: null,
       controlLeaseExpiresAt: null,
       controlBotId: null,
       controlRunId: null,
@@ -233,6 +247,7 @@ export async function expireComputerControl(
       data: {
         controlHolder: "none",
         controlLeaseId: null,
+        controlUserId: null,
         controlLeaseExpiresAt: null,
         controlBotId: null,
         controlRunId: null,

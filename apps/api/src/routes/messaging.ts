@@ -6,6 +6,7 @@ import {
   formatMessagingLinkCode,
   issueMessagingLinkCode,
   runAsSystem,
+  spaceIsShared,
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { ORPCError } from "@orpc/server";
@@ -96,9 +97,11 @@ export function messagingRoutes(ctx: RouterContext) {
             spaceId: bot.spaceId,
             botId: bot.id,
           });
+          const shared = await spaceIsShared(deps.prisma, bot.spaceId);
           return {
             code: formatMessagingLinkCode(issued.code),
             expiresAt: issued.expiresAt.toISOString(),
+            ...(shared ? { shared } : {}),
           };
         }),
       },

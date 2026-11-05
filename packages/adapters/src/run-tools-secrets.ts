@@ -1,7 +1,7 @@
 import { runContinueJob } from "@labradoodle/adapter-kit";
 import { BotSecretName, botSecretSubmissionSchema } from "@labradoodle/contracts";
 import { createStreamingRedactor, displayName } from "@labradoodle/core";
-import { runCodeKind, runLoginKind, runSecretKind } from "@labradoodle/db";
+import { runCodeKind, runLoginKind, runSecretKind, spaceIsShared } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import {
   completeExternalEffect,
@@ -363,6 +363,9 @@ export const secretTools: ToolHandlers = {
           ...(codeOrigin ? { oneTimeCode: { origin: codeOrigin } } : {}),
           ...(replaces ? { replaces } : {}),
           ...(loginFields?.labels ? { loginFields: loginFields.labels } : {}),
+          ...(loginFields && (await spaceIsShared(deps.prisma, run.spaceId))
+            ? { sharedBrowser: true as const }
+            : {}),
           purpose: codeOrigin
             ? "otp"
             : normalizeSecretAskPurpose(args.purpose ? String(args.purpose) : undefined),

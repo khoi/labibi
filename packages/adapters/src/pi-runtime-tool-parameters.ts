@@ -1,7 +1,7 @@
-import { Type } from "@earendil-works/pi-ai";
 import type { ConnectorTool } from "@labradoodle/adapter-kit";
 import { BOT_INSTRUCTIONS_MAX_LENGTH, ThinkingLevelSchema } from "@labradoodle/contracts";
 import { getLogger } from "@labradoodle/logging";
+import { Type } from "typebox";
 import {
   normalizeOpenAiToolParameters,
   openAiToolParametersNeedNormalization,

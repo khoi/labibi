@@ -18,6 +18,7 @@ import {
   ensureComputerWorkspaceLayout,
   expireComputerControl,
   hasActiveComputerControl,
+  holdsUserControl,
   isComputerScreenUnavailable,
   isSandboxGoneError,
   provisionComputer,
@@ -53,6 +54,7 @@ import {
   IsolationError,
   parseComputerMode,
   recordComputerRunEnd,
+  spaceIsShared,
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { ORPCError } from "@orpc/server";
@@ -137,6 +139,7 @@ export function computerRoutes(ctx: RouterContext) {
       stop: authed.computer.stop.handler(async ({ context, input }) => {
         const bot = await repos.getBot(context.actor, input.botId);
         if (!bot.computer) throw new IsolationError();
+        assertNotAnotherPersonsControl(bot.computer, context.actor);
         // A repeated Stop must not turn an unsafe guest back into an auto-startable one.
         if (bot.computer.state === "quarantined") {
           if (bot.computer.providerRef)
@@ -223,6 +226,7 @@ export function computerRoutes(ctx: RouterContext) {
               state: "stopped",
               controlHolder: "none",
               controlLeaseId: null,
+              controlUserId: null,
               controlLeaseExpiresAt: null,
               controlBotId: null,
               controlRunId: null,
@@ -252,6 +256,7 @@ export function computerRoutes(ctx: RouterContext) {
       recover: authed.computer.recover.handler(async ({ context, input }) => {
         const bot = await repos.getBot(context.actor, input.botId);
         if (!bot.computer) throw new IsolationError();
+        assertNotAnotherPersonsControl(bot.computer, context.actor);
         if (!computerSupportsUpdate(bot.computer.kind))
           throw new ORPCError("BAD_REQUEST", {
             message: "Computer recovery is not available on this device",
@@ -270,6 +275,7 @@ export function computerRoutes(ctx: RouterContext) {
       update: authed.computer.update.handler(async ({ context, input }) => {
         const bot = await repos.getBot(context.actor, input.botId);
         if (!bot.computer) throw new IsolationError();
+        assertNotAnotherPersonsControl(bot.computer, context.actor);
         if (!computerSupportsUpdate(bot.computer.kind))
           throw new ORPCError("BAD_REQUEST", {
             message: "Computer update is not available on this device",
@@ -288,14 +294,14 @@ export function computerRoutes(ctx: RouterContext) {
             status: { in: ["queued", "running", "interrupted", "failed"] },
             computer: {
               spaceId: context.actor.spaceId,
-              bots: { some: { userId: context.actor.userId, archivedAt: null } },
+              bots: { some: { archivedAt: null } },
             },
           },
           include: {
             computer: {
               include: {
                 bots: {
-                  where: { userId: context.actor.userId, archivedAt: null },
+                  where: { archivedAt: null },
                   select: { id: true, name: true },
                 },
               },
@@ -315,7 +321,7 @@ export function computerRoutes(ctx: RouterContext) {
             status: "failed",
             computer: {
               spaceId: context.actor.spaceId,
-              bots: { some: { userId: context.actor.userId, archivedAt: null } },
+              bots: { some: { archivedAt: null } },
             },
           },
           data: { status: "dismissed" },
@@ -338,6 +344,7 @@ export function computerRoutes(ctx: RouterContext) {
         if (!bot.computer?.providerRef || bot.computer.state !== "running") {
           throw new ORPCError("BAD_REQUEST", { message: "computer must be running" });
         }
+        assertNotAnotherPersonsControl(bot.computer, context.actor);
         if (hasActiveComputerControl(bot.computer) && bot.computer.controlBotId === bot.id) {
           await bindWaitingTakeoverToControl(deps, {
             spaceId: context.actor.spaceId,
@@ -380,13 +387,17 @@ export function computerRoutes(ctx: RouterContext) {
         const executionRun = executionLease
           ? await deps.prisma.run.findUnique({
               where: { id: executionLease.runId },
-              select: { botId: true, status: true },
+              select: { botId: true, status: true, userId: true },
             })
           : null;
         const waitingForTakeover =
           executionRun?.botId === bot.id &&
           (executionRun.status === "waiting_takeover" ||
             bot.computer.controlRunId === executionLease?.runId);
+        // A run that asked a person to take over waits for that person, not whoever opens the screen.
+        if (waitingForTakeover && executionRun?.userId !== context.actor.userId) {
+          throw new ORPCError("CONFLICT", { message: "The bot is waiting for someone else" });
+        }
         if (
           executionBlocksUserTakeover({
             hasLease: Boolean(executionLease),
@@ -416,6 +427,7 @@ export function computerRoutes(ctx: RouterContext) {
             controlLeaseExpiresAt: expiresAt,
             controlBotId: bot.id,
             controlRunId: waitingForTakeover ? executionLease?.runId : null,
+            controlUserId: context.actor.userId,
             state: "running",
           },
         });
@@ -426,6 +438,7 @@ export function computerRoutes(ctx: RouterContext) {
           if (!hasActiveComputerControl(current) || current.controlBotId !== bot.id) {
             throw new ORPCError("CONFLICT", { message: "Computer control changed; try again" });
           }
+          assertNotAnotherPersonsControl(current, context.actor);
           await bindWaitingTakeoverToControl(deps, {
             spaceId: context.actor.spaceId,
             threadId: bot.thread?.id,
@@ -452,6 +465,7 @@ export function computerRoutes(ctx: RouterContext) {
             data: {
               controlHolder: "none",
               controlLeaseId: null,
+              controlUserId: null,
               controlLeaseExpiresAt: null,
               controlBotId: null,
               controlRunId: null,
@@ -488,13 +502,15 @@ export function computerRoutes(ctx: RouterContext) {
         return { leaseId, expiresAt: expiresAt.toISOString() };
       }),
       release: authed.computer.release.handler(async ({ context, input }) => {
+        const bot = await repos.getBot(context.actor, input.botId);
+        if (bot.computer) assertNotAnotherPersonsControl(bot.computer, context.actor);
         await releaseComputerControl(deps, context.actor, input.botId, input.reason);
         return { ok: true as const };
       }),
       input: authed.computer.input.handler(async ({ context, input }) => {
         const bot = await repos.getBot(context.actor, input.botId);
         const computer = bot.computer;
-        if (!computer || !hasActiveComputerControl(computer) || computer.controlBotId !== bot.id) {
+        if (!computer || !holdsComputerControl(computer, bot.id, context.actor)) {
           await expireStaleComputerControl(deps, computer);
           throw new ORPCError("FORBIDDEN");
         }
@@ -658,7 +674,7 @@ export function computerRoutes(ctx: RouterContext) {
         if (computer.state !== "running" || !computer.providerRef) {
           throw new ORPCError("CONFLICT", { message: "Start the computer first." });
         }
-        if (!hasActiveComputerControl(computer) || computer.controlBotId !== bot.id) {
+        if (!holdsComputerControl(computer, bot.id, context.actor)) {
           throw new ORPCError("FORBIDDEN", { message: "Take control first." });
         }
         const maxBytes = attachmentMaxBytes(deps.env);
@@ -722,11 +738,7 @@ export function computerRoutes(ctx: RouterContext) {
           return { url: null };
         }
         // Same rule as the interactive screen: only the user holding this bot's control lease.
-        if (
-          !hasActiveComputerControl(computer) ||
-          computer.controlBotId !== bot.id ||
-          !computer.controlLeaseId
-        ) {
+        if (!holdsComputerControl(computer, bot.id, context.actor) || !computer.controlLeaseId) {
           throw new ORPCError("FORBIDDEN", { message: "Take control first." });
         }
         const session = await deps.sandbox
@@ -776,16 +788,15 @@ export function computerRoutes(ctx: RouterContext) {
           return { url: null };
         }
         const computer = bot.computer;
+        // Everyone in the Space can watch; only the person holding control can drive it.
+        const holder = holdsComputerControl(computer, bot.id, context.actor);
         const session = await deps.sandbox
           .connectScreen(
             toComputerRef(computer),
             {
               view: "stream",
-              interactive: hasActiveComputerControl(computer) && computer.controlBotId === bot.id,
-              controlToken:
-                computer.controlBotId === bot.id
-                  ? (computer.controlLeaseId ?? undefined)
-                  : undefined,
+              interactive: holder,
+              controlToken: holder ? (computer.controlLeaseId ?? undefined) : undefined,
             },
             await computerScreenContext(deps.prisma, context.actor, computer.id, bot.id, "screen"),
           )
@@ -797,10 +808,7 @@ export function computerRoutes(ctx: RouterContext) {
           });
         if (!session?.url) return { url: null };
         scheduleComputerSleep(deps.jobs, bot.computer.id);
-        const viewUrl = withViewOnly(
-          session.url,
-          !(hasActiveComputerControl(bot.computer) && bot.computer.controlBotId === bot.id),
-        );
+        const viewUrl = withViewOnly(session.url, !holder);
         return {
           url: addScreenProxyCapability(
             viewUrl,
@@ -895,7 +903,48 @@ async function computerStatus(
     botId,
     botName: bot.name,
   });
-  return toComputerStatus(botId, bot.computer, busyBotName);
+  return toComputerStatus(
+    botId,
+    bot.computer,
+    busyBotName,
+    await spaceIsShared(deps.prisma, actor.spaceId),
+    actor.userId,
+  );
+}
+
+/** Whether this person holds this bot's user control, so they may drive its screen. */
+function holdsComputerControl(
+  computer: Parameters<typeof hasActiveComputerControl>[0] & {
+    controlBotId: string | null;
+    controlUserId: string | null;
+    userId?: string;
+  },
+  botId: string,
+  actor: Actor,
+): boolean {
+  return (
+    hasActiveComputerControl(computer) &&
+    computer.controlBotId === botId &&
+    holdsUserControl(computer, actor.userId)
+  );
+}
+
+/** Members share a Space's computers, but only the person holding control can keep or end it. */
+function assertNotAnotherPersonsControl(
+  computer: Parameters<typeof hasActiveComputerControl>[0] & {
+    controlHolder: string;
+    controlUserId: string | null;
+    userId?: string;
+  },
+  actor: Actor,
+): void {
+  if (
+    computer.controlHolder === "user" &&
+    hasActiveComputerControl(computer) &&
+    !holdsUserControl(computer, actor.userId)
+  ) {
+    throw new ORPCError("CONFLICT", { message: "Someone else is using this computer" });
+  }
 }
 
 /** Hand the user's screen control for this bot back, continuing any run waiting on it. */
@@ -938,6 +987,8 @@ export async function releaseComputerControl(
   const controlBotId = bot.computer.controlBotId;
   const controlLeaseId = bot.computer.controlLeaseId;
   if (bot.computer.controlHolder !== "user" || !controlBotId || controlBotId !== bot.id) return;
+  // Read with the lease released below, so control someone took meanwhile is never ended.
+  if (!holdsUserControl(bot.computer, actor.userId)) return;
   if (expectedRunId !== undefined && bot.computer.controlRunId !== expectedRunId) return;
   if (!hasActiveComputerControl(bot.computer) || !controlLeaseId) {
     // Stale controlHolder=user. Prefer expiry (revokes provider control). If a lease id
@@ -989,6 +1040,8 @@ async function runComputerReplace(
   const repos = createRepos(deps.prisma);
   const bot = await repos.getBot(context.actor, botId);
   if (!bot.computer) throw new IsolationError();
+  // Stopping, resetting or updating would end someone else's control of the screen.
+  assertNotAnotherPersonsControl(bot.computer, context.actor);
   if (mode === "update" && !computerSupportsUpdate(bot.computer.kind)) {
     throw new ORPCError("BAD_REQUEST", {
       message: "Computer update is not available on this device",

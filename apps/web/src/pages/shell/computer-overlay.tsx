@@ -88,12 +88,7 @@ export function ComputerOverlay({
           className="app-no-drag flex items-center justify-between gap-4 border-b border-sidebar-border px-[18px] py-3.5"
         >
           <div className="flex min-w-0 flex-1 items-center gap-3">
-            <BotAvatar
-              color={bot.color}
-              identity={bot.id}
-              size={28}
-              status={bot.status}
-            />
+            <BotAvatar color={bot.color} identity={bot.id} size={28} status={bot.status} />
             {recordingSkill ? (
               <TeachRecordingChrome
                 recording={recordingSkill}
@@ -117,6 +112,14 @@ export function ComputerOverlay({
                   <Trans>You have control</Trans>
                 </span>
               )
+            ) : null}
+            {!recordingSkill && hasControl && computer?.shared ? (
+              <span
+                data-testid="computer-shared-browser"
+                className="min-w-0 truncate text-[13px] text-muted-foreground"
+              >
+                <Trans>Sites you sign in to stay signed in for everyone in this space</Trans>
+              </span>
             ) : null}
           </div>
           <div className="flex items-center gap-3">
