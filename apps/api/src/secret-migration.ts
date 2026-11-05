@@ -1,7 +1,7 @@
 import type { SecretMigrationRepository, SecretMigrationRow } from "@labradoodle/adapters";
 import type { PrismaClient } from "@labradoodle/db";
 
-const tables = ["secret", "botSecret", "vaultCredential", "integrationProviderConfig"] as const;
+const tables = ["secret", "vaultCredential", "integrationProviderConfig"] as const;
 
 export function createSecretMigrationRepository(prisma: PrismaClient): SecretMigrationRepository {
   return {
@@ -43,7 +43,6 @@ export function createSecretMigrationRepository(prisma: PrismaClient): SecretMig
     async referenced(ref) {
       return Boolean(
         (await prisma.secret.count({ where: { ciphertext: ref } })) ||
-          (await prisma.botSecret.count({ where: { ciphertext: ref } })) ||
           (await prisma.vaultCredential.count({ where: { ciphertext: ref } })) ||
           (await prisma.integrationProviderConfig.count({ where: { ciphertext: ref } })),
       );

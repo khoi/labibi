@@ -225,7 +225,7 @@ import { toolResultFingerprint } from "./tool-loop.js";
 import { restoreTurnCheckpoint } from "./turn-checkpoint.js";
 import { createWebProvider } from "./web-provider-factory.js";
 
-/** Same reach as the MCP connector: usable servers assigned to the bot or shared with every bot. */
+/** Same reach as the MCP connector: the person's enabled servers. */
 async function verbatimMcpServersForRun(
   prisma: ExecutorDeps["prisma"],
   scope: { botId: string; spaceId: string; userId: string },
@@ -236,7 +236,6 @@ async function verbatimMcpServersForRun(
       verbatimResults: true,
       enabled: true,
       ...availableInSpace(scope),
-      AND: [{ OR: [{ allBots: true }, { assignments: { some: { botId: scope.botId } } }] }],
     },
     select: { id: true, slug: true },
   });

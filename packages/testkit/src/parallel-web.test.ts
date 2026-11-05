@@ -86,7 +86,6 @@ function executorFixture(
       findUnique: async () => ({ defaultModelProvider: "scripted", defaultModelId: "scripted" }),
     },
     taughtSkill: { findMany: async () => [] },
-    agentSecret: { findMany: async () => [] },
     secret: { findMany: async () => [] },
     vaultCredential: { findMany: async () => [] },
     agentSkill: { findMany: async () => [] },

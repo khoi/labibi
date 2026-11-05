@@ -42,7 +42,6 @@ import {
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { ORPCError } from "@orpc/server";
-import { deleteAgentSecret, listAgentSecrets, putAgentSecret } from "../agent-secrets.js";
 import { changedBotSettings } from "../bot-setting-analytics.js";
 import { requireIdentityConfirmation } from "../identity-confirmation.js";
 import type { RouterDeps } from "../router.js";
@@ -487,17 +486,6 @@ export function botsRoutes(ctx: RouterContext) {
         return { ok: true as const };
       }),
     },
-    agentSecrets: {
-      list: authed.agentSecrets.list.handler(async ({ context }) =>
-        listAgentSecrets({ prisma: deps.prisma, secrets: deps.secrets }, context.actor),
-      ),
-      put: authed.agentSecrets.put.handler(async ({ context, input }) =>
-        putAgentSecret({ prisma: deps.prisma, secrets: deps.secrets }, context.actor, input),
-      ),
-      remove: authed.agentSecrets.remove.handler(async ({ context, input }) =>
-        deleteAgentSecret({ prisma: deps.prisma, secrets: deps.secrets }, context.actor, input.id),
-      ),
-    },
     vault: {
       list: authed.vault.list.handler(async ({ context, input }) => {
         const rows = await listVaultItems(
@@ -536,22 +524,6 @@ export function botsRoutes(ctx: RouterContext) {
       }),
       remove: authed.vault.remove.handler(async ({ context, input }) => {
         await forgetBotSecret(deps.prisma, vaultScope(context.actor, input.scope), input.name);
-        return { ok: true as const };
-      }),
-    },
-    botSecrets: {
-      list: authed.botSecrets.list.handler(async ({ context, input }) => {
-        await repos.getBot(context.actor, input.botId);
-        const rows = await listVaultItems(deps.prisma, deps.secrets, vaultScope(context.actor));
-        return rows.map(botSecretMetadataDto);
-      }),
-      put: authed.botSecrets.put.handler(async ({ context, input }) => {
-        await repos.getBot(context.actor, input.botId);
-        return saveVaultCredential(deps, vaultScope(context.actor), input);
-      }),
-      remove: authed.botSecrets.remove.handler(async ({ context, input }) => {
-        await repos.getBot(context.actor, input.botId);
-        await forgetBotSecret(deps.prisma, vaultScope(context.actor), input.name);
         return { ok: true as const };
       }),
     },

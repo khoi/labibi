@@ -367,7 +367,7 @@ export function McpApprovalCard({
           return;
         }
       }
-      await rpc.mcp.assignments.approve({ botId, serverId, threadId });
+      await rpc.mcp.approvals.approve({ botId, serverId, threadId });
       setLocalStatus("connected");
     } catch (err) {
       setError(errorDetails(err, t`Could not approve this server`));
@@ -383,7 +383,7 @@ export function McpApprovalCard({
     setError(null);
     try {
       if (botId) {
-        await rpc.mcp.assignments.dismiss({ botId, serverId, threadId });
+        await rpc.mcp.approvals.dismiss({ botId, serverId, threadId });
       }
       setLocalStatus("dismissed");
     } catch (err) {

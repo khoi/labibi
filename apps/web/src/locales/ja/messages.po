@@ -679,7 +679,6 @@ msgstr ""
 msgid "All {credit} goes to model usage."
 msgstr "{credit} はすべてモデルの利用に充てられます。"
 
-#: src/components/integrations/agent-access.tsx
 #: src/pages/Artifacts.tsx
 msgid "All bots"
 msgstr "すべてのボット"
@@ -1015,7 +1014,6 @@ msgid "Booting live desktop…"
 msgstr "ライブデスクトップを起動中…"
 
 #: src/lib/identity-display.ts
-#: src/pages/IntegrationSetup.tsx
 #: src/pages/Shell.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
@@ -1878,10 +1876,6 @@ msgstr "{0}をダウンロードできませんでした。もう一度お試し
 msgid "Could not download {name}. Try again."
 msgstr "{name}をダウンロードできませんでした。もう一度お試しください。"
 
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "Could not enable tools"
-msgstr ""
-
 #: src/pages/AdminAccessPage.tsx
 msgid "Could not grant access"
 msgstr ""
@@ -2193,10 +2187,6 @@ msgstr ""
 #: src/components/ModelCredits.tsx
 msgid "Could not update billing"
 msgstr "請求情報を更新できませんでした"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not update bot access"
-msgstr ""
 
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Could not update computer"
@@ -3189,10 +3179,6 @@ msgstr ""
 msgid "Import data"
 msgstr "データをインポート"
 
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "In this bot"
-msgstr ""
-
 #: src/pages/BillingSettingsPanel.tsx
 msgid "Inactive"
 msgstr "無効"
@@ -3949,10 +3935,6 @@ msgstr "認証なし"
 #: src/pages/PluginsOverlay.tsx
 msgid "No authentication"
 msgstr "認証なし"
-
-#: src/components/integrations/agent-access.tsx
-msgid "No bots"
-msgstr ""
 
 #: src/pages/GroupPanel.tsx
 #: src/pages/shell/bot-picker.tsx
@@ -6169,10 +6151,6 @@ msgstr "デフォルトを使用"
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Use defaults for {label}"
 msgstr "{label}でデフォルトを使用"
-
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "Use in this bot"
-msgstr ""
 
 #: src/components/ModelCredits.tsx
 msgid "Use Labradoodle credits"

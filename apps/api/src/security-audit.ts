@@ -33,18 +33,6 @@ export const AUDITED_PROCEDURES: Record<string, AuditedProcedure> = {
     fields: ["connectionId"],
   },
   "integrationSetup.save": { type: "credential.changed", kind: "integration_provider" },
-  "agentSecrets.put": { type: "credential.changed", kind: "agent_secret" },
-  "agentSecrets.remove": { type: "credential.deleted", kind: "agent_secret", fields: ["id"] },
-  "botSecrets.put": {
-    type: "credential.changed",
-    kind: "bot_secret",
-    fields: ["botId", "destination.name"],
-  },
-  "botSecrets.remove": {
-    type: "credential.deleted",
-    kind: "bot_secret",
-    fields: ["botId", "name"],
-  },
   "vault.put": {
     type: "credential.changed",
     kind: "vault_credential",
@@ -77,12 +65,12 @@ export const AUDITED_PROCEDURES: Record<string, AuditedProcedure> = {
     kind: "computer_provider",
     fields: ["provider"],
   },
-  "mcp.assignments.approve": {
+  "mcp.approvals.approve": {
     type: "approval.decided",
     kind: "mcp",
     fields: ["botId", "serverId"],
   },
-  "mcp.assignments.dismiss": {
+  "mcp.approvals.dismiss": {
     type: "approval.decided",
     kind: "mcp",
     fields: ["botId", "serverId"],
@@ -157,8 +145,8 @@ export function procedureSecurityEvent(
       .sort()
       .join(",");
   }
-  if (procedure === "mcp.assignments.approve") metadata.decision = "allow";
-  if (procedure === "mcp.assignments.dismiss") metadata.decision = "deny";
+  if (procedure === "mcp.approvals.approve") metadata.decision = "allow";
+  if (procedure === "mcp.approvals.dismiss") metadata.decision = "deny";
   return { type: audited.type, userId: actor.userId, spaceId: actor.spaceId, metadata };
 }
 

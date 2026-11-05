@@ -50,7 +50,7 @@ caller’s wait.
 
 Secret replacement, row deletion, and parent deletion explicitly clean up unused
 remote refs after the database commit. Rollbacks clean up unique new writes.
-Agent secret transaction retries write a fresh remote key per attempt. Failed
+Credential transaction retries write a fresh remote key per attempt. Failed
 remote writes attempt deletion with an independent two-second cleanup deadline.
 Cleanup is best effort and failures produce redacted warnings. Retry failed
 cleanup before revoking machine-identity access; there is no age-based pruning.

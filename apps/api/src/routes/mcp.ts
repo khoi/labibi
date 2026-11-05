@@ -34,11 +34,7 @@ import {
   serverSecretSpace,
 } from "../availability.js";
 import { searchIntegrationCatalog } from "../integration-catalog.js";
-import {
-  queueMcpConnectedRun,
-  resolveMcpApprovalCards,
-  revertConnectedMcpApprovals,
-} from "../mcp-approval.js";
+import { queueMcpConnectedRun, resolveMcpApprovalCards } from "../mcp-approval.js";
 import { buildMcpUpdateMaterial, legacyMcpArgs } from "../mcp-material.js";
 import {
   assertMcpOAuthTemplates,
@@ -47,7 +43,6 @@ import {
   assertMcpStdioCommand,
   MCP_OAUTH_PENDING_MESSAGE,
   mayUsePrivateEndpoint,
-  mcpAssignmentDto,
   mcpServerDto,
 } from "../mcp-servers.js";
 import { chooseFocus, dismissFocus, markAppConnected, promptFocus } from "../onboarding.js";
@@ -626,68 +621,6 @@ export function mcpRoutes(ctx: RouterContext) {
           if (!fresh) throw new IsolationError();
           return mcpServerDto(fresh, oauth);
         }),
-        agents: authed.mcp.servers.agents.handler(async ({ context, input }) => {
-          const owner = { spaceId: context.actor.spaceId, userId: context.actor.userId };
-          const { server, assignments, seqs } = await deps.prisma.$transaction(async (tx) => {
-            const existing = await tx.mcpServer.findFirst({
-              where: { id: input.id, ...availableInSpace(context.actor) },
-              select: { id: true },
-            });
-            if (!existing) throw new IsolationError();
-            const server = await tx.mcpServer.update({
-              where: { id: existing.id },
-              data: { allBots: input.allBots },
-              include: { availableIn: AVAILABILITY_SELECT },
-            });
-            let seqs: Array<{ threadId: string; seq: number }> = [];
-            // Under allBots the assignments stay as they were, so choosing agents again restores them.
-            if (!input.allBots) {
-              const botIds = [...new Set(input.botIds)];
-              const bots = await tx.bot.findMany({
-                where: { ...owner, id: { in: botIds } },
-                select: { id: true },
-              });
-              if (bots.length !== botIds.length) throw new IsolationError();
-              const previous = await tx.botMcpServer.findMany({
-                where: { ...owner, serverId: server.id },
-                select: { botId: true },
-              });
-              const removed = previous
-                .map((row) => row.botId)
-                .filter((botId) => !botIds.includes(botId));
-              await tx.botMcpServer.deleteMany({
-                where: { ...owner, serverId: server.id, botId: { in: removed } },
-              });
-              await tx.botMcpServer.createMany({
-                data: botIds.map((botId) => ({ ...owner, botId, serverId: server.id })),
-                skipDuplicates: true,
-              });
-              seqs = (
-                await Promise.all(
-                  removed.map((botId) =>
-                    revertConnectedMcpApprovals(
-                      onboardingDeps,
-                      context.actor,
-                      { botId, serverId: server.id, status: "pending" },
-                      tx,
-                    ),
-                  ),
-                )
-              ).flat();
-            }
-            const assignments = await tx.botMcpServer.findMany({
-              where: { ...owner, serverId: server.id },
-              orderBy: { createdAt: "asc" },
-            });
-            return { server, assignments, seqs };
-          });
-          for (const event of seqs) await deps.events.notify(event.threadId, event.seq);
-          const oauth = await mcpOAuth.summaryFor(server, context.actor);
-          return {
-            server: mcpServerDto(server, oauth),
-            assignments: assignments.map(mcpAssignmentDto),
-          };
-        }),
         remove: authed.mcp.servers.remove.handler(async ({ context, input }) => {
           const server = await deps.prisma.mcpServer.findFirst({
             where: {
@@ -706,41 +639,8 @@ export function mcpRoutes(ctx: RouterContext) {
           return { ok: true as const };
         }),
       },
-      // Any bot in the space can use the member's own servers; servers and assignments stay personal.
-      assignments: {
-        all: authed.mcp.assignments.all.handler(async ({ context }) => {
-          const rows = await deps.prisma.botMcpServer.findMany({
-            where: {
-              spaceId: context.actor.spaceId,
-              userId: context.actor.userId,
-              bot: { archivedAt: null },
-              server: availableInSpace(context.actor),
-            },
-            orderBy: { createdAt: "asc" },
-          });
-          return rows.map(mcpAssignmentDto);
-        }),
-        list: authed.mcp.assignments.list.handler(async ({ context, input }) => {
-          const bot = await deps.prisma.bot.findFirst({
-            where: {
-              id: input.botId,
-              spaceId: context.actor.spaceId,
-            },
-            select: { id: true },
-          });
-          if (!bot) throw new IsolationError();
-          const rows = await deps.prisma.botMcpServer.findMany({
-            where: {
-              botId: bot.id,
-              spaceId: context.actor.spaceId,
-              userId: context.actor.userId,
-              server: availableInSpace(context.actor),
-            },
-            orderBy: { createdAt: "asc" },
-          });
-          return rows.map(mcpAssignmentDto);
-        }),
-        approve: authed.mcp.assignments.approve.handler(async ({ context, input }) => {
+      approvals: {
+        approve: authed.mcp.approvals.approve.handler(async ({ context, input }) => {
           const row = await resolveMcpApprovalCards(
             onboardingDeps,
             context.actor,
@@ -751,37 +651,19 @@ export function mcpRoutes(ctx: RouterContext) {
               threadId: input.threadId,
             },
             async (tx, decision) => {
-              if (!decision.assign) throw new IsolationError();
+              if (!decision.connect) throw new IsolationError();
               const [bot, server] = await Promise.all([
                 tx.bot.findFirst({
-                  where: {
-                    id: input.botId,
-                    spaceId: context.actor.spaceId,
-                  },
+                  where: { id: input.botId, spaceId: context.actor.spaceId },
                   select: { id: true },
                 }),
                 tx.mcpServer.findFirst({
-                  where: {
-                    id: input.serverId,
-                    ...availableInSpace(context.actor),
-                    enabled: true,
-                  },
+                  where: { id: input.serverId, ...availableInSpace(context.actor) },
                   select: { id: true },
                 }),
               ]);
               if (!bot || !server) throw new IsolationError();
-              const assignment = await tx.botMcpServer.upsert({
-                where: { botId_serverId: { botId: bot.id, serverId: server.id } },
-                create: {
-                  spaceId: context.actor.spaceId,
-                  userId: context.actor.userId,
-                  botId: bot.id,
-                  serverId: server.id,
-                  allowAllTools: true,
-                  allowedTools: [],
-                },
-                update: {},
-              });
+              await tx.mcpServer.update({ where: { id: server.id }, data: { enabled: true } });
               const runId =
                 input.threadId && decision.resolved
                   ? await queueMcpConnectedRun(tx, context.actor, {
@@ -790,7 +672,7 @@ export function mcpRoutes(ctx: RouterContext) {
                       threadId: input.threadId,
                     })
                   : null;
-              return { assignment, runId };
+              return { runId };
             },
           );
           if (!row) throw new IsolationError();
@@ -800,12 +682,11 @@ export function mcpRoutes(ctx: RouterContext) {
               getLogger().error("mcp connected enqueue", error);
             });
           }
-          return mcpAssignmentDto(row.assignment);
+          return { ok: true as const };
         }),
-        dismiss: authed.mcp.assignments.dismiss.handler(async ({ context, input }) => {
-          // Not now resolves the card only. Assignments are never touched
-          // here: a stale card must not delete a live connection, and server
-          // removal belongs to the MCP settings surface.
+        dismiss: authed.mcp.approvals.dismiss.handler(async ({ context, input }) => {
+          // Not now resolves the card only: a stale card must not turn off a server the
+          // person uses, and removing one belongs to the MCP settings surface.
           await resolveMcpApprovalCards(onboardingDeps, context.actor, {
             botId: input.botId,
             serverId: input.serverId,
@@ -813,79 +694,6 @@ export function mcpRoutes(ctx: RouterContext) {
             threadId: input.threadId,
           });
           return { ok: true as const };
-        }),
-        replace: authed.mcp.assignments.replace.handler(async ({ context, input }) => {
-          const { rows, seqs } = await deps.prisma.$transaction(async (tx) => {
-            const bot = await tx.bot.findFirst({
-              where: {
-                id: input.botId,
-                spaceId: context.actor.spaceId,
-              },
-              select: { id: true },
-            });
-            if (!bot) throw new IsolationError();
-            const servers = await tx.mcpServer.findMany({
-              where: {
-                id: { in: input.assignments.map((assignment) => assignment.serverId) },
-                ...availableInSpace(context.actor),
-              },
-              select: { id: true },
-            });
-            if (servers.length !== input.assignments.length) throw new IsolationError();
-            const previous = await tx.botMcpServer.findMany({
-              where: {
-                botId: bot.id,
-                spaceId: context.actor.spaceId,
-                userId: context.actor.userId,
-              },
-              select: { serverId: true },
-            });
-            const nextIds = new Set(input.assignments.map((assignment) => assignment.serverId));
-            const removed = previous
-              .map((row) => row.serverId)
-              .filter((serverId) => !nextIds.has(serverId));
-            await tx.botMcpServer.deleteMany({
-              where: {
-                botId: bot.id,
-                spaceId: context.actor.spaceId,
-                userId: context.actor.userId,
-              },
-            });
-            if (input.assignments.length)
-              await tx.botMcpServer.createMany({
-                data: input.assignments.map((assignment) => ({
-                  spaceId: context.actor.spaceId,
-                  userId: context.actor.userId,
-                  botId: bot.id,
-                  serverId: assignment.serverId,
-                  allowAllTools: assignment.allowAllTools,
-                  allowedTools: assignment.allowedTools as Prisma.InputJsonValue,
-                })),
-              });
-            const seqs = (
-              await Promise.all(
-                removed.map((serverId) =>
-                  revertConnectedMcpApprovals(
-                    onboardingDeps,
-                    context.actor,
-                    { botId: bot.id, serverId, status: "pending" },
-                    tx,
-                  ),
-                ),
-              )
-            ).flat();
-            const rows = await tx.botMcpServer.findMany({
-              where: {
-                botId: bot.id,
-                spaceId: context.actor.spaceId,
-                userId: context.actor.userId,
-              },
-              orderBy: { createdAt: "asc" },
-            });
-            return { rows, seqs };
-          });
-          for (const event of seqs) await deps.events.notify(event.threadId, event.seq);
-          return rows.map(mcpAssignmentDto);
         }),
       },
       oauth: {

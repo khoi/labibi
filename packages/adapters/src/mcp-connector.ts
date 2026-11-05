@@ -280,50 +280,6 @@ function unavailableTool(server: McpServer, reason: string): ConnectorTool {
   };
 }
 
-/** Runtime MCP connector. Authorization is re-checked against the bot assignment on every call. */
-/**
- * Stale allowlist entries are filtered out below with no error. Discovery already has the
- * live tool list, so compare once and warn when string allowlist names are missing from the
- * server. Non-string JSON values are ignored for both the missing list and the ratio.
- */
-export function allowlistDrift(
-  allowedTools: unknown,
-  offered: Array<{ name: string }>,
-): { missing: string[]; offered: number; stringAllowedCount: number } {
-  const names = new Set(offered.map((tool) => tool.name));
-  const allowed = Array.isArray(allowedTools) ? allowedTools : [];
-  const stringAllowed = allowed.filter((name): name is string => typeof name === "string");
-  return {
-    missing: stringAllowed.filter((name) => !names.has(name)),
-    offered: names.size,
-    stringAllowedCount: stringAllowed.length,
-  };
-}
-
-/** A server every agent may use acts as an assignment that allows all its tools. */
-function sharedAssignment<Server extends { id: string }>(server: Server) {
-  return { serverId: server.id, allowAllTools: true, allowedTools: [] as unknown, server };
-}
-
-function reportAllowlistDrift(
-  assignment: { allowAllTools: boolean; allowedTools: unknown; server: { slug: string } },
-  offered: Array<{ name: string }>,
-  context: { spaceId: string; botId?: string },
-): void {
-  if (assignment.allowAllTools) return;
-  const drift = allowlistDrift(assignment.allowedTools, offered);
-  if (drift.missing.length === 0) return;
-  getLogger().warn(
-    `mcp allowlist drift on ${assignment.server.slug}: ${drift.missing.length}/${drift.stringAllowedCount} allowed tools are not offered (server offers ${drift.offered})`,
-    {
-      spaceId: context.spaceId,
-      botId: context.botId,
-      // Cap the list: the point is to name the drift, not to print an allowlist.
-      missing: drift.missing.slice(0, 10),
-    },
-  );
-}
-
 /** Redact complete credential documents and values a process may quote separately. */
 function credentialContentSecrets(content: string): string[] {
   const values = content.length >= 8 ? [content] : [];
@@ -441,27 +397,12 @@ export class McpConnector implements ConnectorProvider {
 
   private async authorizedTools(context: AdapterContext): Promise<ConnectorTool[]> {
     if (!context.botId) return [];
-    const usable = { enabled: true, ...availableInSpace(context) };
-    const [assigned, shared] = await Promise.all([
-      this.prisma.botMcpServer.findMany({
-        where: {
-          botId: context.botId,
-          spaceId: context.spaceId,
-          userId: context.userId,
-          // A server no longer available in this space stays assigned but unused until it is again.
-          server: usable,
-        },
-        include: { server: true },
-      }),
-      this.prisma.mcpServer.findMany({
-        where: { ...usable, allBots: true, assignments: { none: { botId: context.botId } } },
-      }),
-    ]);
-    const assignments = [...assigned, ...shared.map(sharedAssignment)];
+    const servers = await this.prisma.mcpServer.findMany({
+      where: { enabled: true, ...availableInSpace(context) },
+    });
     const groups = await Promise.all(
-      assignments.map(async (assignment): Promise<ConnectorTool[]> => {
+      servers.map(async (server): Promise<ConnectorTool[]> => {
         const startedAt = Date.now();
-        const server = assignment.server;
         const key = this.sessionKey(server, context);
         const live = this.sessions.get(key)?.revision === server.revision;
         // A package still installing finishes in the background; this run goes on without it.
@@ -499,33 +440,26 @@ export class McpConnector implements ConnectorProvider {
           );
           this.discoveryBackoff.delete(key);
           this.unavailable.delete(key);
-          void this.recordHealth(assignment.server.id, {
+          void this.recordHealth(server.id, {
             status: "ok",
             message: null,
             toolCount: listed.tools.length,
           });
-          reportAllowlistDrift(assignment, listed.tools, context);
-          return listed.tools
-            .filter(
-              (tool) =>
-                assignment.allowAllTools ||
-                (assignment.allowedTools as unknown[]).includes(tool.name),
-            )
-            .map((tool) => ({
-              name: `mcp__${assignment.server.slug}__${tool.name}`,
-              description: tool.description ?? tool.name,
-              inputSchema: tool.inputSchema as Record<string, unknown>,
-              readOnly: tool.annotations?.readOnlyHint,
-              batch: composioToolBatch(tool.name),
-              route: {
-                connectorId: "mcp",
-                resourceId: assignment.serverId,
-                resourceRevision: assignment.server.revision,
-                toolName: tool.name,
-                catalogGroup: assignment.server.slug,
-                appResourceUri: mcpToolAppResourceUri(tool),
-              },
-            }));
+          return listed.tools.map((tool) => ({
+            name: `mcp__${server.slug}__${tool.name}`,
+            description: tool.description ?? tool.name,
+            inputSchema: tool.inputSchema as Record<string, unknown>,
+            readOnly: tool.annotations?.readOnlyHint,
+            batch: composioToolBatch(tool.name),
+            route: {
+              connectorId: "mcp",
+              resourceId: server.id,
+              resourceRevision: server.revision,
+              toolName: tool.name,
+              catalogGroup: server.slug,
+              appResourceUri: mcpToolAppResourceUri(tool),
+            },
+          }));
         } catch (error) {
           if (error instanceof McpDiscoveryTimeoutError) listing.abort(error);
           // Capture material before eviction so the audited reason stays redacted, the
@@ -542,7 +476,7 @@ export class McpConnector implements ConnectorProvider {
           // A cancelled run says nothing about the server.
           const expected = context.signal.aborted ? "unreachable" : expectedFailure(error);
           if (expected)
-            getLogger().warn(`mcp discovery failed for server ${assignment.server.slug}`, {
+            getLogger().warn(`mcp discovery failed for server ${server.slug}`, {
               reason,
             });
           else
@@ -550,7 +484,7 @@ export class McpConnector implements ConnectorProvider {
               "mcp.discovery.failed",
               sanitizedError(error, (text) => sanitizeConnectorError(new Error(text), secrets)),
               {
-                "connector.id": assignment.server.id,
+                "connector.id": server.id,
               },
             );
           // Cleanup must not turn one server's failure into losing every server's tools.
@@ -559,7 +493,7 @@ export class McpConnector implements ConnectorProvider {
           // A cancelled run says nothing about the server, and an install that outlived the
           // deadline is still on its way.
           if (!context.signal.aborted && !this.installing.has(key)) {
-            void this.recordHealth(assignment.server.id, { status: "error", message: reason });
+            void this.recordHealth(server.id, { status: "error", message: reason });
             const delayMs = Math.min(
               (backoff?.revision === server.revision ? backoff.delayMs * 2 : 0) ||
                 DISCOVERY_BACKOFF_MS,
@@ -575,14 +509,8 @@ export class McpConnector implements ConnectorProvider {
               reason,
             });
           }
-          await this.recordDiscoveryFailure(
-            assignment.server.slug,
-            error,
-            context,
-            startedAt,
-            secrets,
-          );
-          return [unavailableTool(assignment.server, reason)];
+          await this.recordDiscoveryFailure(server.slug, error, context, startedAt, secrets);
+          return [unavailableTool(server, reason)];
         }
       }),
     );
@@ -652,37 +580,20 @@ export class McpConnector implements ConnectorProvider {
       yield { type: "error", message: "MCP tools require a bot context" };
       return;
     }
-    const usable = { enabled: true, ...availableInSpace(context) };
-    const assignment =
-      (await this.prisma.botMcpServer.findFirst({
-        where: {
-          botId: context.botId,
-          serverId: call.route.resourceId,
-          spaceId: context.spaceId,
-          userId: context.userId,
-          server: usable,
-        },
-        include: { server: true },
-      })) ??
-      (await this.prisma.mcpServer
-        .findFirst({ where: { ...usable, id: call.route.resourceId, allBots: true } })
-        .then((server) => (server ? sharedAssignment(server) : null)));
-    if (assignment && call.route.toolName === UNAVAILABLE_TOOL) {
+    const server = await this.prisma.mcpServer.findFirst({
+      where: { id: call.route.resourceId, enabled: true, ...availableInSpace(context) },
+    });
+    if (server && call.route.toolName === UNAVAILABLE_TOOL) {
       const reason =
-        this.unavailable.get(this.sessionKey(assignment.server, context)) ??
-        "it could not be started";
+        this.unavailable.get(this.sessionKey(server, context)) ?? "it could not be started";
       yield {
         type: "error",
-        message: `MCP server "${assignment.server.name}" is unavailable: ${reason}`,
+        message: `MCP server "${server.name}" is unavailable: ${reason}`,
       };
       return;
     }
-    if (
-      !assignment ||
-      (!assignment.allowAllTools &&
-        !(assignment.allowedTools as unknown[]).includes(call.route.toolName))
-    ) {
-      yield { type: "error", message: "MCP tool is not assigned to this bot" };
+    if (!server) {
+      yield { type: "error", message: "MCP tool is not available to this person" };
       return;
     }
     // Capture material before callTool so a concurrent eviction/replace cannot
@@ -690,10 +601,10 @@ export class McpConnector implements ConnectorProvider {
     // oauthMaterialSecrets(material) so in-place token refresh stays covered.
     let material: OAuthMaterial | undefined;
     let launchSecrets: string[] = [];
-    const sessionKey = this.sessionKey(assignment.server, context);
+    const sessionKey = this.sessionKey(server, context);
     try {
       const toolName = call.route.toolName;
-      const result = await this.withSession(assignment.server, context, (session) => {
+      const result = await this.withSession(server, context, (session) => {
         material = this.sessions.get(sessionKey)?.material;
         launchSecrets = this.sessions.get(sessionKey)?.launchSecrets ?? [];
         return session.callTool(toolName, call.args, { signal: context.signal });
@@ -701,11 +612,11 @@ export class McpConnector implements ConnectorProvider {
       const secrets = [...(material ? oauthMaterialSecrets(material) : []), ...launchSecrets];
       yield { type: "result", data: redactConnectorPayload(result, secrets) };
       const app = await readMcpApp(
-        assignment.server.name,
+        server.name,
         call.withApp ? call.route.appResourceUri : undefined,
         result,
         (uri) =>
-          this.withSession(assignment.server, context, (session) =>
+          this.withSession(server, context, (session) =>
             session.readResource(uri, { signal: context.signal }),
           ),
         secrets,

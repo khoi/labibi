@@ -118,11 +118,11 @@ describe("answering an MCP approval card", () => {
   it("makes the web card's call for each button", () => {
     const card = { serverId: "server", threadId: "thread", needsOAuth: false };
     expect(mcpCardRequest(card, "approve", "bot")).toEqual({
-      procedure: "mcp/assignments/approve",
+      procedure: "mcp/approvals/approve",
       body: { botId: "bot", serverId: "server", threadId: "thread" },
     });
     expect(mcpCardRequest(card, "dismiss", "bot")).toEqual({
-      procedure: "mcp/assignments/dismiss",
+      procedure: "mcp/approvals/dismiss",
       body: { botId: "bot", serverId: "server", threadId: "thread" },
     });
   });
@@ -130,7 +130,7 @@ describe("answering an MCP approval card", () => {
   it("has no call for Authorize on an OAuth card, but can still dismiss it", () => {
     const card = { serverId: "server", threadId: "thread", needsOAuth: true };
     expect(mcpCardRequest(card, "approve", "bot")).toBeUndefined();
-    expect(mcpCardRequest(card, "dismiss", "bot")?.procedure).toBe("mcp/assignments/dismiss");
+    expect(mcpCardRequest(card, "dismiss", "bot")?.procedure).toBe("mcp/approvals/dismiss");
   });
 });
 

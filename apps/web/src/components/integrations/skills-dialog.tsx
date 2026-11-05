@@ -30,7 +30,6 @@ import {
 
 const NO_ENTRIES: PluginMarketplaceEntry[] = [];
 const NO_SERVERS: never[] = [];
-const NOT_ASSIGNED = new Set<string>();
 
 function skillCount(install: CapabilityInstall) {
   const parsed = PluginPreviewSchema.safeParse(install.config);
@@ -95,7 +94,6 @@ export function SkillsDialog({ onClose }: { onClose: () => void }) {
           selection={selection}
           installs={pluginInstalls}
           servers={NO_SERVERS}
-          assigned={NOT_ASSIGNED}
           skillsOnly
           onBack={() => setSelection(null)}
           onChanged={refresh}

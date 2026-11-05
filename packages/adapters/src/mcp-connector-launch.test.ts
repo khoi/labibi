@@ -12,9 +12,6 @@ import * as installer from "./mcp-package-installer.js";
 import { mcpPackageDir } from "./mcp-package-installer.js";
 import { McpSession } from "./mcp-transport.js";
 
-// No server is shared with every agent, so only assignments reach a bot.
-const NO_SHARED_SERVERS = { findMany: async () => [], findFirst: async () => null };
-
 /** A dependency-free stdio MCP server: one `hello` tool that echoes its launch arguments. */
 const SERVER_SOURCE = `#!/usr/bin/env node
 if (process.env.SILENT) {
@@ -116,26 +113,13 @@ describe("MCP connector managed stdio launch", () => {
     } = {},
   ) {
     const server = options.server ?? SERVER;
-    const assignment = (botId: string) => ({
-      botId,
-      serverId: server.id,
-      spaceId: "w1",
-      userId: "u1",
-      allowAllTools: true,
-      allowedTools: [],
-      server,
-    });
     const prisma = {
-      botMcpServer: {
-        findMany: vi.fn(async ({ where }: { where: { botId: string } }) => [
-          assignment(where.botId),
-        ]),
-        findFirst: vi.fn(async ({ where }: { where: { botId: string } }) =>
-          assignment(where.botId),
-        ),
+      mcpServer: {
+        findMany: vi.fn(async () => [server]),
+        findFirst: vi.fn(async () => server),
+        updateMany,
       },
       secret: { findFirst: vi.fn(async () => ({ id: "secret-1", ciphertext: "cipher" })) },
-      mcpServer: { ...NO_SHARED_SERVERS, updateMany },
     };
     const secrets = { load: vi.fn(async () => JSON.stringify({ env, args })) };
     return new McpConnector(prisma as never, secrets as never, {

@@ -14,13 +14,8 @@ const mocks = vi.hoisted(() => ({
   create: vi.fn(),
   test: vi.fn(),
   update: vi.fn(),
-  agents: vi.fn(),
 }));
-const access = vi.hoisted(() => ({ all: vi.fn(), bots: vi.fn() }));
-const api = vi.hoisted(() => ({
-  mcp: { servers: mocks, assignments: { all: access.all } },
-  bots: { list: access.bots },
-}));
+const api = vi.hoisted(() => ({ mcp: { servers: mocks } }));
 // One space, so no "Available in" choice appears.
 vi.mock("../components/integrations/space-availability", () => ({
   AvailabilityControl: () => null,
@@ -168,9 +163,6 @@ vi.mock("@labradoodle/ui-web", async () => {
 let client: QueryClient;
 beforeEach(() => {
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  access.all.mockReset().mockResolvedValue([]);
-  mocks.agents.mockReset();
-  access.bots.mockReset().mockResolvedValue([]);
 });
 
 function overlay(editServerId?: string, stdioEnabled = true) {
@@ -554,67 +546,6 @@ it("keeps a test result when an older list read lands after it", async () => {
   }
 });
 
-it.each([
-  ["still loading", () => new Promise(() => undefined)],
-  ["failed", () => Promise.reject(new Error("offline"))],
-])("keeps agent access unchangeable while assignments are %s", async (state, read) => {
-  mocks.list.mockReset().mockResolvedValue([server("docs")]);
-  access.bots.mockResolvedValue([{ id: "bot_1", name: "Ada" }]);
-  access.all.mockImplementation(read);
-  const host = document.createElement("div");
-  const root = createRoot(host);
-  try {
-    await act(async () => root.render(overlay()));
-    const trigger = () =>
-      Array.from(host.querySelectorAll("button")).find((item) => item.textContent === "No bots");
-    await vi.waitFor(() => expect(trigger()?.disabled).toBe(true));
-    for (const item of host.querySelectorAll("button[aria-checked]"))
-      await act(async () => (item as HTMLButtonElement).click());
-    expect(mocks.agents).not.toHaveBeenCalled();
-    if (state === "failed") {
-      await vi.waitFor(() => expect(host.textContent).toContain("Could not load MCP servers"));
-    }
-  } finally {
-    await act(async () => root.unmount());
-  }
-});
-
-it("narrows a server shared with every agent to the ones left selected", async () => {
-  const shared = { ...server("docs"), allBots: true };
-  mocks.list.mockReset().mockResolvedValue([shared]);
-  mocks.agents.mockResolvedValue({ server: { ...shared, allBots: false }, assignments: [] });
-  access.bots.mockResolvedValue([
-    { id: "bot_1", name: "Ada", color: "#F97316" },
-    { id: "bot_2", name: "Grace", color: "#6366F1" },
-  ]);
-  access.all.mockResolvedValue([
-    { botId: "bot_1", serverId: "other", allowAllTools: true, allowedTools: [] },
-  ]);
-  const host = document.createElement("div");
-  const root = createRoot(host);
-  try {
-    await act(async () => root.render(overlay()));
-    const option = (name: string) =>
-      Array.from(host.querySelectorAll<HTMLButtonElement>("button[aria-checked]")).find(
-        (item) => item.textContent === name,
-      );
-    const trigger = () =>
-      Array.from(host.querySelectorAll("button")).find(
-        (item) => !item.hasAttribute("aria-checked") && item.textContent === "All bots",
-      );
-    await vi.waitFor(() => expect(trigger()?.disabled).toBe(false));
-    expect(option("Grace")?.getAttribute("aria-checked")).toBe("true");
-    mocks.list.mockResolvedValue([{ ...shared, allBots: false }]);
-    await act(async () => option("Ada")!.click());
-    expect(mocks.agents).toHaveBeenCalledWith({ id: "docs", allBots: false, botIds: ["bot_2"] });
-    await vi.waitFor(() => expect(option("All bots")?.getAttribute("aria-checked")).toBe("false"));
-    await act(async () => option("All bots")!.click());
-    expect(mocks.agents).toHaveBeenLastCalledWith({ id: "docs", allBots: true, botIds: [] });
-  } finally {
-    await act(async () => root.unmount());
-  }
-});
-
 it("says when reopening could not refresh, while still showing the cached servers", async () => {
   mocks.list.mockReset().mockResolvedValue([server("cached")]);
   const host = document.createElement("div");
@@ -632,61 +563,6 @@ it("says when reopening could not refresh, while still showing the cached server
     expect(host.textContent).toContain("cached");
   } finally {
     await act(async () => second.unmount());
-  }
-});
-
-it("keeps the first server's form open until saving it has finished", async () => {
-  const created = {
-    ...server("docs"),
-    transport: "streamable_http",
-    endpoint: "https://mcp.example.test/mcp",
-    hasArgs: false,
-    envKeys: [],
-    fileKeys: [],
-    headerKeys: [],
-  } as McpServer;
-  mocks.list.mockReset().mockResolvedValueOnce([]).mockResolvedValue([created]);
-  mocks.create.mockReset().mockResolvedValue(created);
-  mocks.test.mockReset().mockResolvedValue(created);
-  let releaseBots = () => {};
-  access.bots
-    .mockResolvedValueOnce([])
-    .mockImplementationOnce(() => new Promise((resolve) => (releaseBots = () => resolve([]))));
-  const host = document.createElement("div");
-  const root = createRoot(host);
-  const type = (selector: string, value: string) => {
-    const input = host.querySelector<HTMLInputElement>(selector)!;
-    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, value);
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-  };
-  const addServer = () =>
-    Array.from(host.querySelectorAll("button")).find((item) => item.textContent === "Add server");
-  try {
-    await act(async () => root.render(overlay()));
-    await vi.waitFor(() => expect(host.querySelector("#mcp-name")).not.toBeNull());
-    await act(async () => {
-      type("#mcp-name", "docs");
-      type("#mcp-endpoint", "https://mcp.example.test/mcp");
-    });
-    await act(async () => addServer()?.click());
-    const listed = () =>
-      client
-        .getQueryCache()
-        .getAll()
-        .some((query) => (query.state.data as McpServer[] | undefined)?.[0]?.id === "docs");
-    await vi.waitFor(() => expect(listed()).toBe(true));
-    await act(() => new Promise((resolve) => setTimeout(resolve, 10)));
-    // The list arrives before the rest of the refresh; the form must not give way to it yet,
-    // or an "Add server" click there is undone when the save finishes.
-    expect(host.querySelector("#mcp-name")).not.toBeNull();
-
-    await act(async () => releaseBots());
-    await vi.waitFor(() => expect(host.querySelector("#mcp-name")).toBeNull());
-    await act(async () => addServer()?.click());
-    await act(async () => {});
-    expect(host.querySelector<HTMLInputElement>("#mcp-name")?.value).toBe("");
-  } finally {
-    await act(async () => root.unmount());
   }
 });
 

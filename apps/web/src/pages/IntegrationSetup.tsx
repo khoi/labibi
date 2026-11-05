@@ -1,5 +1,5 @@
 import type { Bot } from "@labradoodle/contracts";
-import { NativeSelect, NativeSelectOption, Spinner } from "@labradoodle/ui-web";
+import { Spinner } from "@labradoodle/ui-web";
 import { useLingui } from "@lingui/react/macro";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +10,6 @@ export function IntegrationSetupPage() {
   const navigate = useNavigate();
   const { t } = useLingui();
   const [bots, setBots] = useState<Bot[]>([]);
-  const [botId, setBotId] = useState("");
   const [ready, setReady] = useState(false);
   const [error, setError] = useState(false);
   useEffect(() => {
@@ -26,7 +25,6 @@ export function IntegrationSetupPage() {
           return;
         }
         setBots(rows);
-        setBotId(rows[0]?.id ?? "");
         setReady(true);
       })
       .catch(() => {
@@ -39,25 +37,8 @@ export function IntegrationSetupPage() {
   return (
     <div className="min-h-full bg-background px-6 py-12">
       <div className="mx-auto max-w-[560px]">
-        {bots.length > 1 ? (
-          <NativeSelect
-            aria-label={t`Bot`}
-            value={botId}
-            onChange={(event) => setBotId(event.target.value)}
-            className="mb-6 w-full"
-          >
-            {bots.map((bot) => (
-              <NativeSelectOption key={bot.id} value={bot.id}>
-                {bot.name}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
-        ) : null}
         {ready ? (
-          <IntegrationSetup
-            botId={botId || undefined}
-            onDone={() => navigate(bots.length ? "/app" : "/onboarding")}
-          />
+          <IntegrationSetup onDone={() => navigate(bots.length ? "/app" : "/onboarding")} />
         ) : (
           <p>
             {error ? (

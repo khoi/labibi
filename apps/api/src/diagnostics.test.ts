@@ -25,8 +25,6 @@ function server(overrides: Partial<DiagnosticsServer> = {}): DiagnosticsServer {
     userId: "user_private_1",
     transport: "stdio",
     enabled: true,
-    allSpaces: false,
-    availableIn: [],
     healthStatus: "error",
     healthMessage:
       "Acme Payroll failed: spawn /usr/local/bin/acme-mcp ENOENT while calling https://admin:hunter2@mcp.internal.example/sse for owner@example.com with sk-live-0123456789abcdef from 10.1.2.3 and /home/alice/.config/acme/token.json",
@@ -68,15 +66,7 @@ function input(overrides: Partial<DiagnosticsInput> = {}): DiagnosticsInput {
         archived: false,
       },
     ],
-    assignments: [
-      {
-        botId: "bot_private_1",
-        spaceId: "space_private_1",
-        userId: "user_private_1",
-        server: server(),
-      },
-    ],
-    unassignedServers: [],
+    mcpServers: [server()],
     runs: [
       {
         id: "run_private_1",
@@ -103,31 +93,12 @@ describe("diagnostics report", () => {
     expect(report).toContain("- MCP_STDIO_ENABLED: on");
     expect(report).toContain("- MCP_STDIO_ALLOWED_COMMANDS: 2");
     expect(report).toContain("- Pending: 20261002000000_second");
-    expect(report).toContain(`#### Bot ${opaque("bot_private_1")}`);
     expect(report).toContain(`| ${opaque("server_private_1")} | stdio | on | error | 7 |`);
     expect(report).toContain(
-      "| ok | … failed: spawn … ENOENT while calling … for … with … from … and … |",
+      "| … failed: spawn … ENOENT while calling … for … with … from … and … |",
     );
     expect(report).toContain(
       `| ${opaque("run_private_1")} | ${opaque("bot_private_1")} | succeeded | message |`,
-    );
-  });
-
-  it("flags assignments the MCP connector would silently skip", () => {
-    const report = renderDiagnostics(
-      input({
-        assignments: [
-          {
-            botId: "bot_private_1",
-            spaceId: "space_other",
-            userId: "user_other",
-            server: server({ userId: "user_third" }),
-          },
-        ],
-      }),
-    );
-    expect(report).toContain(
-      "space differs from bot; user differs from bot; user differs from server; server not available in space",
     );
   });
 

@@ -102,8 +102,7 @@ each other and from Labradoodle's built-in skills.
    **Preview**. For a folder, use `https://github.com/example/plugins/tree/main/mcp-server`.
 3. Check the preview's servers, skills, and skipped parts. Choose **Connect** to install the
    connector and **Add skills** in the Skills section if you included skills.
-4. Sign in if needed. With a bot selected, choose **Use in this bot** for the server, then
-   ask the bot to call a real tool. Verify a useful result and any companion skill.
+4. Sign in if needed, then ask the bot to call a real tool. Verify a useful result and any companion skill.
 
 Fix skipped parts before submitting. A valid config does not prove that tool calls or
 sign-in work. Installed content is pinned to a commit; if files change during preview,

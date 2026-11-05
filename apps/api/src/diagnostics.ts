@@ -15,19 +15,10 @@ export type DiagnosticsServer = {
   userId: string;
   transport: string;
   enabled: boolean;
-  allSpaces: boolean;
-  availableIn: string[];
   healthStatus: string;
   healthMessage: string | null;
   healthToolCount: number | null;
   healthCheckedAt: Date | null;
-};
-
-export type DiagnosticsAssignment = {
-  botId: string;
-  spaceId: string;
-  userId: string;
-  server: DiagnosticsServer;
 };
 
 export type DiagnosticsRun = {
@@ -65,8 +56,7 @@ export type DiagnosticsInput = {
         failedMigrations?: number;
       };
   bots: DiagnosticsBot[];
-  assignments: DiagnosticsAssignment[];
-  unassignedServers: DiagnosticsServer[];
+  mcpServers: DiagnosticsServer[];
   runs: DiagnosticsRun[];
 };
 
@@ -98,31 +88,14 @@ export function renderDiagnostics(input: DiagnosticsInput): string {
 
   const archived = input.bots.filter((bot) => bot.archived).length;
   lines.push("", `### Bots`, "", `- Bots: ${input.bots.length} (${archived} archived)`);
-  const bots = new Map(input.bots.map((bot) => [bot.id, bot]));
-  const byBot = new Map<string, DiagnosticsAssignment[]>();
-  for (const assignment of input.assignments)
-    byBot.set(assignment.botId, [...(byBot.get(assignment.botId) ?? []), assignment]);
-  for (const [botId, assignments] of byBot) {
-    const bot = bots.get(botId);
+  if (input.mcpServers.length) {
     lines.push(
       "",
-      `#### Bot ${opaque(botId)}${bot?.archived ? " (archived)" : ""}`,
+      "### MCP servers",
       "",
-      "| Server | Transport | Enabled | Health | Tools | Checked | Assignment | Message |",
-      "| --- | --- | --- | --- | --- | --- | --- | --- |",
-      ...assignments.map((assignment) =>
-        serverRow(assignment.server, bot ? assignmentProblems(assignment, bot) : ["bot missing"]),
-      ),
-    );
-  }
-  if (input.unassignedServers.length) {
-    lines.push(
-      "",
-      "#### MCP servers on no bot",
-      "",
-      "| Server | Transport | Enabled | Health | Tools | Checked | Assignment | Message |",
-      "| --- | --- | --- | --- | --- | --- | --- | --- |",
-      ...input.unassignedServers.map((server) => serverRow(server, [])),
+      "| Server | Transport | Enabled | Health | Tools | Checked | Message |",
+      "| --- | --- | --- | --- | --- | --- | --- |",
+      ...input.mcpServers.map(serverRow),
     );
   }
 
@@ -161,23 +134,7 @@ function databaseLines(database: DiagnosticsInput["database"]): string[] {
   return lines;
 }
 
-/** Why `McpConnector.authorizedTools` would drop this assignment for the bot's runs. */
-function assignmentProblems(assignment: DiagnosticsAssignment, bot: DiagnosticsBot): string[] {
-  const { server } = assignment;
-  const problems: string[] = [];
-  if (assignment.spaceId !== bot.spaceId) problems.push("space differs from bot");
-  if (assignment.userId !== bot.userId) problems.push("user differs from bot");
-  if (server.userId !== assignment.userId) problems.push("user differs from server");
-  if (
-    server.spaceId !== assignment.spaceId &&
-    !server.allSpaces &&
-    !server.availableIn.includes(assignment.spaceId)
-  )
-    problems.push("server not available in space");
-  return problems;
-}
-
-function serverRow(server: DiagnosticsServer, problems: string[]): string {
+function serverRow(server: DiagnosticsServer): string {
   return `| ${[
     opaque(server.id),
     word(server.transport),
@@ -185,7 +142,6 @@ function serverRow(server: DiagnosticsServer, problems: string[]): string {
     word(server.healthStatus),
     server.healthToolCount ?? "-",
     server.healthCheckedAt?.toISOString() ?? "-",
-    problems.length ? problems.join("; ") : "ok",
     server.healthMessage ? safeMessage(server.healthMessage) : "-",
   ].join(" | ")} |`;
 }

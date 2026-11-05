@@ -18,3 +18,11 @@ UPDATE "routines" SET "active" = false
   WHERE "messageProvider" IS NOT NULL AND "crons" = '{}' AND NOT "webhookEnabled"
     AND NOT "githubEnabled" AND "watch" IS NULL;
 ALTER TABLE "routines" DROP COLUMN "messageProvider";
+DELETE FROM "secrets" WHERE "id" IN (SELECT "secretId" FROM "agent_secrets");
+DROP TABLE "agent_secrets";
+DROP TABLE "bot_secrets";
+UPDATE "mcp_servers" SET "enabled" = false
+  WHERE NOT "allBots"
+    AND NOT EXISTS (SELECT 1 FROM "bot_mcp_servers" a WHERE a."serverId" = "mcp_servers"."id");
+DROP TABLE "bot_mcp_servers";
+ALTER TABLE "mcp_servers" DROP COLUMN "allBots";

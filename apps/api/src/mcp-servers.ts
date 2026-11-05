@@ -40,7 +40,6 @@ export function mcpServerDto(
     installId?: string | null;
     allSpaces?: boolean;
     availableIn?: Array<{ spaceId: string }>;
-    allBots?: boolean;
     enabled: boolean;
     verbatimResults?: boolean;
     revision: number;
@@ -80,7 +79,6 @@ export function mcpServerDto(
     revision: row.revision,
     health: mcpServerHealthDto(row),
     availability: spaceAvailability({ ...row, allSpaces: row.allSpaces ?? false }),
-    allBots: row.allBots ?? false,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -169,28 +167,6 @@ export function assertMcpOAuthTemplates(
       });
     }
   }
-}
-
-export function mcpAssignmentDto(row: {
-  id: string;
-  botId: string;
-  serverId: string;
-  allowAllTools: boolean;
-  allowedTools: unknown;
-  createdAt: Date;
-  updatedAt: Date;
-}) {
-  return {
-    id: row.id,
-    botId: row.botId,
-    serverId: row.serverId,
-    allowAllTools: row.allowAllTools,
-    allowedTools: Array.isArray(row.allowedTools)
-      ? row.allowedTools.filter((item): item is string => typeof item === "string")
-      : [],
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-  };
 }
 
 export function mcpCredentialRecords(
@@ -333,7 +309,6 @@ export function createMcpServers(
         spaceId: actor.spaceId,
         userId: actor.userId,
         allSpaces: options.everywhere ?? false,
-        allBots: options.everywhere ?? false,
         slug: input.slug,
         name: input.name,
         description: input.description,

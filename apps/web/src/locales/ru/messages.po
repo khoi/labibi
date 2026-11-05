@@ -679,7 +679,6 @@ msgstr ""
 msgid "All {credit} goes to model usage."
 msgstr "Все {credit} идут на использование моделей."
 
-#: src/components/integrations/agent-access.tsx
 #: src/pages/Artifacts.tsx
 msgid "All bots"
 msgstr ""
@@ -1015,7 +1014,6 @@ msgid "Booting live desktop…"
 msgstr "Загрузка рабочего стола…"
 
 #: src/lib/identity-display.ts
-#: src/pages/IntegrationSetup.tsx
 #: src/pages/Shell.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
@@ -1878,10 +1876,6 @@ msgstr "Не удалось загрузить {0}. Попробуйте еще 
 msgid "Could not download {name}. Try again."
 msgstr "Не удалось загрузить {name}. Попробуйте еще раз."
 
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "Could not enable tools"
-msgstr ""
-
 #: src/pages/AdminAccessPage.tsx
 msgid "Could not grant access"
 msgstr ""
@@ -2192,10 +2186,6 @@ msgstr ""
 
 #: src/components/ModelCredits.tsx
 msgid "Could not update billing"
-msgstr ""
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not update bot access"
 msgstr ""
 
 #: src/components/ComputerMaintenanceActions.tsx
@@ -3189,10 +3179,6 @@ msgstr ""
 msgid "Import data"
 msgstr "Импорт данных"
 
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "In this bot"
-msgstr ""
-
 #: src/pages/BillingSettingsPanel.tsx
 msgid "Inactive"
 msgstr ""
@@ -3949,10 +3935,6 @@ msgstr "Нет авторизации"
 #: src/pages/PluginsOverlay.tsx
 msgid "No authentication"
 msgstr "Нет аутентификации"
-
-#: src/components/integrations/agent-access.tsx
-msgid "No bots"
-msgstr ""
 
 #: src/pages/GroupPanel.tsx
 #: src/pages/shell/bot-picker.tsx
@@ -6169,10 +6151,6 @@ msgstr "Использовать ваши настройки"
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Use defaults for {label}"
 msgstr "Использовать ваши настройки: {label}"
-
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "Use in this bot"
-msgstr ""
 
 #: src/components/ModelCredits.tsx
 msgid "Use Labradoodle credits"

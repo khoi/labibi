@@ -679,7 +679,6 @@ msgstr "Tümü"
 msgid "All {credit} goes to model usage."
 msgstr "{credit} tutarın tamamı model kullanımına gider."
 
-#: src/components/integrations/agent-access.tsx
 #: src/pages/Artifacts.tsx
 msgid "All bots"
 msgstr "Tüm botlar"
@@ -1015,7 +1014,6 @@ msgid "Booting live desktop…"
 msgstr "Canlı masaüstü başlatılıyor…"
 
 #: src/lib/identity-display.ts
-#: src/pages/IntegrationSetup.tsx
 #: src/pages/Shell.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
@@ -1878,10 +1876,6 @@ msgstr "{0} indirilemedi. Tekrar dene."
 msgid "Could not download {name}. Try again."
 msgstr "{name} indirilemedi. Tekrar dene."
 
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "Could not enable tools"
-msgstr "Araçlar etkinleştirilemedi"
-
 #: src/pages/AdminAccessPage.tsx
 msgid "Could not grant access"
 msgstr "Erişim verilemedi"
@@ -2193,10 +2187,6 @@ msgstr "Bu kayıt yazıya dökülemedi."
 #: src/components/ModelCredits.tsx
 msgid "Could not update billing"
 msgstr "Faturalandırma güncellenemedi"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not update bot access"
-msgstr "Bot erişimi güncellenemedi"
 
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Could not update computer"
@@ -3189,10 +3179,6 @@ msgstr "İçe aktar"
 msgid "Import data"
 msgstr "Verileri içe aktar"
 
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "In this bot"
-msgstr "Bu botta"
-
 #: src/pages/BillingSettingsPanel.tsx
 msgid "Inactive"
 msgstr "Etkin değil"
@@ -3949,10 +3935,6 @@ msgstr "Kimlik doğrulamasız"
 #: src/pages/PluginsOverlay.tsx
 msgid "No authentication"
 msgstr "Kimlik doğrulaması yok"
-
-#: src/components/integrations/agent-access.tsx
-msgid "No bots"
-msgstr "Bot yok"
 
 #: src/pages/GroupPanel.tsx
 #: src/pages/shell/bot-picker.tsx
@@ -6169,10 +6151,6 @@ msgstr "Varsayılanlarını kullan"
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Use defaults for {label}"
 msgstr "{label}: varsayılanlarını kullan"
-
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "Use in this bot"
-msgstr "Bu botta kullan"
 
 #: src/components/ModelCredits.tsx
 msgid "Use Labradoodle credits"

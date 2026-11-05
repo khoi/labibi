@@ -317,7 +317,6 @@ describe("MCP OAuth", () => {
         count: async ({ where }: { where: { ciphertext: string } }) =>
           rows.filter((row) => row.ciphertext === where.ciphertext).length,
       },
-      botSecret: { count: async () => 0 },
       integrationProviderConfig: { count: async () => 0 },
     };
     const prisma = {

@@ -75,9 +75,7 @@ model User {
   autoReviewPreference        UserActionAutoReviewPreference?
   createdSpaces               Space[]                      @relation("SpaceCreator")
   spaceInvites                SpaceInvite[]                @relation("SpaceInviteCreator")
-  botSecrets BotSecret[]
   vaultCredentials VaultCredential[]
-  agentSecrets               AgentSecret[]
   pushToken                   PushToken?
   trustedLinkSites            TrustedLinkSite[]
   feedbackReports             FeedbackReport[]
@@ -591,15 +589,12 @@ model Space {
   modelOAuthSessions          ModelOAuthSession[]
   purchases                   Purchase[]
   feedbackReports             FeedbackReport[]
-  botMcpServers              BotMcpServer[]
   actionApprovalRules         ActionApprovalRule[]
   actionAutoReviewPreferences ActionAutoReviewPreference[]
   memoryConfig                SpaceMemoryConfig?
   secrets                     Secret[]
   chatGroups                  ChatGroup[]
-  botSecrets                  BotSecret[]
   vaultCredentials            VaultCredential[]
-  agentSecrets                AgentSecret[]
   agentSkillSpaces            AgentSkillSpace[]
   mcpServerSpaces             McpServerSpace[]
   capabilityInstallSpaces     CapabilityInstallSpace[]
@@ -908,9 +903,7 @@ model Bot {
   tasks             Task[]
   runs              Run[]
   steeringMessages  SteeringMessage[]
-  mcpServers        BotMcpServer[]
   groupMembers      ChatGroupMember[]
-  botSecrets BotSecret[]
 
 
   @@index([spaceId, userId, archivedAt, updatedAt])
@@ -1811,7 +1804,6 @@ model Secret {
   createdAt         DateTime           @default(now())
   mcpServers        McpServer[]
   spaceMemoryConfig SpaceMemoryConfig?
-  agentSecret       AgentSecret?
   pageShare         Page?
 
   @@index([userId, spaceId])
@@ -1851,13 +1843,10 @@ model McpServer {
   healthCheckedAt DateTime?
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
-  assignments   BotMcpServer[]
   oauthSessions McpOAuthSession[]
   /// Available in every space of its owner, including later ones; otherwise in spaceId and availableIn.
   allSpaces     Boolean           @default(false)
   availableIn   McpServerSpace[]
-  /// Every agent of its owner can use it; otherwise only agents with an assignment.
-  allBots       Boolean           @default(false)
 
   @@unique([spaceId, userId, slug])
   @@index([spaceId, userId])
@@ -1900,46 +1889,6 @@ model ModelOAuthSession {
   @@map("model_oauth_sessions")
 }
 
-model BotMcpServer {
-  id            String    @id @default(cuid())
-  spaceId       String
-  space         Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  botId         String
-  bot           Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
-  serverId      String
-  server        McpServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  userId        String
-  allowAllTools Boolean   @default(true)
-  allowedTools  Json      @default("[]")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@unique([botId, serverId])
-  @@index([spaceId, userId, botId])
-  @@map("bot_mcp_servers")
-}
-
-model BotSecret {
-  id         String   @id
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  spaceId    String
-  space      Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  botId      String
-  bot        Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
-  name       String
-  origin     String
-  auth       Json
-  ciphertext String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@unique([userId, spaceId, botId, name])
-  @@index([botId])
-  @@index([spaceId])
-  @@map("bot_secrets")
-}
-
 /// A member's vault items: logins, cards, contacts, API credentials and command variables. A null
 /// spaceId is the account vault every Space uses; a Space with a "credentials" override uses its
 /// own rows instead, which no other Space can read. `name` is the handle bots use, `auth` says what
@@ -1964,23 +1913,6 @@ model VaultCredential {
   @@index([spaceId])
   // Unique index vault_credentials_userId_spaceId_name_key (NULLS NOT DISTINCT) is created in SQL.
   @@map("vault_credentials")
-}
-
-model AgentSecret {
-  id              String   @id @default(cuid())
-  spaceId         String
-  space           Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  createdByUserId String
-  createdByUser   User     @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
-  name            String
-  secretId        String   @unique
-  secret          Secret   @relation(fields: [secretId], references: [id], onDelete: Cascade)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@unique([spaceId, name])
-  @@index([spaceId, updatedAt])
-  @@map("agent_secrets")
 }
 
 // Deployment-owned integration credentials; never exposed through read DTOs.

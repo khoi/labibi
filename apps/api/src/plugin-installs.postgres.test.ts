@@ -148,7 +148,6 @@ describe
         const service = createAgentSkillsService(prisma);
         expect((await service.get(actor, { skillId: skill.id })).readOnly).toBe(true);
         await expect(service.remove(actor, skill.id)).rejects.toThrow();
-        expect(await prisma.botMcpServer.count({ where: { serverId: server.id } })).toBe(0);
         const secret = await prisma.secret.findUniqueOrThrow({ where: { id: server.secretId! } });
         expect(secret.ciphertext).not.toContain("fake-package-tenant");
         expect(JSON.parse(await secrets.load(secret.ciphertext, secret.id)).headers).toEqual({
@@ -160,7 +159,7 @@ describe
           expect.objectContaining({ id: server.id, oauthStatus: "none", hasSecret: true }),
         );
 
-        // OAuth state and per-bot assignments must not survive uninstall either.
+        // OAuth state must not survive uninstall either.
         await prisma.mcpOAuthSession.create({
           data: {
             id: randomUUID(),
@@ -172,24 +171,12 @@ describe
             oauthCiphertext: "encrypted-pending-state",
           },
         });
-        const bot = await prisma.bot.create({
-          data: { spaceId: actor.spaceId, userId: actor.userId, name: "Test", color: "blue" },
-        });
-        await prisma.botMcpServer.create({
-          data: {
-            spaceId: actor.spaceId,
-            userId: actor.userId,
-            botId: bot.id,
-            serverId: server.id,
-          },
-        });
         expect(await client().capabilities.remove({ id: install.id })).toEqual({ ok: true });
         expect(await prisma.capabilityInstall.findUnique({ where: { id: install.id } })).toBeNull();
         expect(await prisma.agentSkill.count({ where: { installId: install.id } })).toBe(0);
         expect(await prisma.mcpServer.count({ where: { installId: install.id } })).toBe(0);
         expect(await prisma.secret.findUnique({ where: { id: secret.id } })).toBeNull();
         expect(await prisma.mcpOAuthSession.count({ where: { serverId: server.id } })).toBe(0);
-        expect(await prisma.botMcpServer.count({ where: { serverId: server.id } })).toBe(0);
       }),
     );
 

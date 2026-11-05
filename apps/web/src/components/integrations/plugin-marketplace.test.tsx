@@ -9,7 +9,6 @@ const api = vi.hoisted(() => ({
   preview: vi.fn(),
   install: vi.fn(),
   parts: vi.fn(),
-  approve: vi.fn(),
   connect: vi.fn(),
   skills: vi.fn(),
   skill: vi.fn(),
@@ -25,7 +24,6 @@ vi.mock("./space-availability", () => ({
 vi.mock("../../lib/rpc", () => ({
   rpc: {
     capabilities: { pluginPreview: api.preview, install: api.install, pluginParts: api.parts },
-    mcp: { assignments: { approve: api.approve } },
     agentSkills: { list: api.skills, get: api.skill },
   },
 }));
@@ -133,8 +131,6 @@ async function render(
         }}
         installs={props.install ? [props.install] : []}
         servers={props.servers ?? []}
-        assigned={new Set()}
-        activeBotId="bot-1"
         onBack={onBack}
         onChanged={onChanged}
       />,
@@ -175,7 +171,6 @@ describe("plugin detail", () => {
       pluginParts: ["connector"],
     });
     expect(onChanged).toHaveBeenCalled();
-    expect(api.approve).not.toHaveBeenCalled();
   });
 
   it("shows a rejected install without claiming it was added", async () => {
@@ -188,7 +183,7 @@ describe("plugin detail", () => {
     expect(onChanged).not.toHaveBeenCalled();
   });
 
-  it("signs in and enables an installed plugin's connector for the bot", async () => {
+  it("signs in to an installed plugin's connector", async () => {
     api.connect.mockResolvedValue("cancelled");
     await render({ install, servers: [server] });
     expect(api.preview).not.toHaveBeenCalled();
@@ -196,8 +191,6 @@ describe("plugin detail", () => {
     await click("Sign in");
     expect(api.connect).toHaveBeenCalledWith(server.id);
     expect(container.querySelector("[role=alert]")?.textContent).toContain("Sign-in cancelled");
-    await click("Use in this bot");
-    expect(api.approve).toHaveBeenCalledWith({ botId: "bot-1", serverId: server.id });
   });
 
   it("offers the shared troubleshooting guide for a documented sign-in error", async () => {
@@ -265,7 +258,6 @@ describe("plugin detail", () => {
           selection={{ source, installedSource: source, name: "Notes" }}
           installs={[]}
           servers={[]}
-          assigned={new Set()}
           managed={{
             name: "Notes",
             logo: null,

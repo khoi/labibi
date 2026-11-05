@@ -27,7 +27,6 @@ async function deleteUnreferenced(
     try {
       if (
         (await prisma.secret.count({ where: { ciphertext: row.ciphertext } })) ||
-        (await prisma.botSecret.count({ where: { ciphertext: row.ciphertext } })) ||
         (await prisma.vaultCredential.count({ where: { ciphertext: row.ciphertext } })) ||
         (await prisma.integrationProviderConfig.count({
           where: { ciphertext: row.ciphertext },
@@ -70,11 +69,10 @@ type Mutation = {
 };
 const secretTables = {
   Secret: "secrets",
-  BotSecret: "bot_secrets",
   VaultCredential: "vault_credentials",
   IntegrationProviderConfig: "integration_provider_configs",
 };
-const parentTables = { User: "user", Space: "spaces", Bot: "bots", Organization: "organization" };
+const parentTables = { User: "user", Space: "spaces", Organization: "organization" };
 
 /** Cleanup is coordinated with the DB transaction, including parent cascades.
  * Credential mutations use interactive transactions; unrelated batch operations
@@ -150,9 +148,7 @@ export function withSecretPersistence(prisma: PrismaClient, store: SecretStore):
     }
     const parents = await lockedRows(state, model, input.where);
     let filter: Record<string, unknown> = {
-      [model === "User" ? "userId" : model === "Space" ? "spaceId" : "botId"]: {
-        in: parents.map((row) => row.id),
-      },
+      [model === "User" ? "userId" : "spaceId"]: { in: parents.map((row) => row.id) },
     };
     if (model === "Organization") {
       const spaces = await lockedRows(state, "Space", {
@@ -160,11 +156,8 @@ export function withSecretPersistence(prisma: PrismaClient, store: SecretStore):
       });
       filter = { spaceId: { in: spaces.map((row) => row.id) } };
     }
-    if (model !== "Bot") {
-      state.old.push(...(await lockedRows(state, "Secret", filter)));
-      state.old.push(...(await lockedRows(state, "VaultCredential", filter)));
-    }
-    state.old.push(...(await lockedRows(state, "BotSecret", filter)));
+    state.old.push(...(await lockedRows(state, "Secret", filter)));
+    state.old.push(...(await lockedRows(state, "VaultCredential", filter)));
   }
   const extended = prisma.$extends({
     query: {

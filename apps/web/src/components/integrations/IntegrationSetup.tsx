@@ -10,7 +10,7 @@ import { errorDetails } from "../../lib/user-error";
 import { ErrorNotice } from "../ErrorNotice";
 
 /** Personal MCP connections never configure deployment-wide provider credentials. */
-export function IntegrationSetup({ onDone, botId }: { onDone?: () => void; botId?: string }) {
+export function IntegrationSetup({ onDone }: { onDone?: () => void }) {
   const { t } = useLingui();
   const [endpoint, setEndpoint] = useState("");
   const [query, setQuery] = useState("");
@@ -56,7 +56,6 @@ export function IntegrationSetup({ onDone, botId }: { onDone?: () => void; botId
         }));
       const result = await connectMcpOauth(server.id);
       if (result === "cancelled") return;
-      if (botId) await rpc.mcp.assignments.approve({ botId, serverId: server.id });
       setConnected((current) => [...current, url]);
     });
   }

@@ -679,7 +679,6 @@ msgstr "Todas"
 msgid "All {credit} goes to model usage."
 msgstr "Los {credit} completos se destinan al uso de modelos."
 
-#: src/components/integrations/agent-access.tsx
 #: src/pages/Artifacts.tsx
 msgid "All bots"
 msgstr "Todos los bots"
@@ -1015,7 +1014,6 @@ msgid "Booting live desktop…"
 msgstr "Iniciando escritorio en vivo…"
 
 #: src/lib/identity-display.ts
-#: src/pages/IntegrationSetup.tsx
 #: src/pages/Shell.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
@@ -1878,10 +1876,6 @@ msgstr "No se pudo descargar {0}. Inténtalo de nuevo."
 msgid "Could not download {name}. Try again."
 msgstr "No se pudo descargar {name}. Inténtalo de nuevo."
 
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "Could not enable tools"
-msgstr "No se pudieron activar las herramientas"
-
 #: src/pages/AdminAccessPage.tsx
 msgid "Could not grant access"
 msgstr ""
@@ -2193,10 +2187,6 @@ msgstr "No se pudo transcribir esa grabación."
 #: src/components/ModelCredits.tsx
 msgid "Could not update billing"
 msgstr "No se pudo actualizar la facturación"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not update bot access"
-msgstr ""
 
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Could not update computer"
@@ -3189,10 +3179,6 @@ msgstr ""
 msgid "Import data"
 msgstr "Importar datos"
 
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "In this bot"
-msgstr "En este bot"
-
 #: src/pages/BillingSettingsPanel.tsx
 msgid "Inactive"
 msgstr "Inactivo"
@@ -3949,10 +3935,6 @@ msgstr "Sin autenticación"
 #: src/pages/PluginsOverlay.tsx
 msgid "No authentication"
 msgstr "Sin autenticación"
-
-#: src/components/integrations/agent-access.tsx
-msgid "No bots"
-msgstr ""
 
 #: src/pages/GroupPanel.tsx
 #: src/pages/shell/bot-picker.tsx
@@ -6169,10 +6151,6 @@ msgstr "Usar predeterminados"
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Use defaults for {label}"
 msgstr "Usar predeterminados en {label}"
-
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "Use in this bot"
-msgstr "Usar en este bot"
 
 #: src/components/ModelCredits.tsx
 msgid "Use Labradoodle credits"

@@ -16,8 +16,6 @@ const serverFields = {
   userId: true,
   transport: true,
   enabled: true,
-  allSpaces: true,
-  availableIn: { select: { spaceId: true } },
   healthStatus: true,
   healthMessage: true,
   healthToolCount: true,
@@ -64,8 +62,7 @@ async function collect(env: AppEnv, prisma: PrismaClient): Promise<DiagnosticsIn
     },
     nodeVersion: process.version,
     bots: [],
-    assignments: [],
-    unassignedServers: [],
+    mcpServers: [],
     runs: [],
   };
   try {
@@ -73,13 +70,9 @@ async function collect(env: AppEnv, prisma: PrismaClient): Promise<DiagnosticsIn
   } catch {
     return { ...base, database: { reachable: false } };
   }
-  const [bots, assignments, unassigned, runs, migrations] = await Promise.all([
+  const [bots, mcpServers, runs, migrations] = await Promise.all([
     prisma.bot.findMany({ select: { id: true, spaceId: true, userId: true, archivedAt: true } }),
-    prisma.botMcpServer.findMany({
-      select: { botId: true, spaceId: true, userId: true, server: { select: serverFields } },
-      orderBy: { createdAt: "asc" },
-    }),
-    prisma.mcpServer.findMany({ where: { assignments: { none: {} } }, select: serverFields }),
+    prisma.mcpServer.findMany({ select: serverFields, orderBy: { createdAt: "asc" } }),
     prisma.run.findMany({
       select: { id: true, botId: true, status: true, trigger: true, createdAt: true },
       orderBy: { createdAt: "desc" },
@@ -87,10 +80,6 @@ async function collect(env: AppEnv, prisma: PrismaClient): Promise<DiagnosticsIn
     }),
     appliedMigrations(prisma),
   ]);
-  const flatten = <T extends { availableIn: { spaceId: string }[] }>(server: T) => ({
-    ...server,
-    availableIn: server.availableIn.map((space) => space.spaceId),
-  });
   return {
     ...base,
     database: {
@@ -105,8 +94,7 @@ async function collect(env: AppEnv, prisma: PrismaClient): Promise<DiagnosticsIn
       ...migrations,
     },
     bots: bots.map(({ archivedAt, ...bot }) => ({ ...bot, archived: archivedAt !== null })),
-    assignments: assignments.map((row) => ({ ...row, server: flatten(row.server) })),
-    unassignedServers: unassigned.map(flatten),
+    mcpServers,
     runs,
   };
 }

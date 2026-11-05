@@ -88,7 +88,6 @@ export function fakeDatabase() {
     },
     secret: { count: vi.fn(async () => 0), findFirst: vi.fn(async () => null) },
     // The previous release's table, still counted before a stored value is deleted.
-    botSecret: { count: vi.fn(async () => 0) },
     integrationProviderConfig: { count: vi.fn(async () => 0) },
     // The member's settings lock always finds the membership row.
     $queryRaw: vi.fn(async () => [{ locked: 1 }]),

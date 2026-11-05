@@ -1,4 +1,4 @@
-import { BotSecretPutInput } from "@labradoodle/contracts";
+import { VaultPutInput } from "@labradoodle/contracts";
 import type * as Db from "@labradoodle/db";
 import { recordSecurityEvent } from "@labradoodle/db";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -30,19 +30,19 @@ describe("procedureSecurityEvent", () => {
 
   it("keeps secret names but never secret values", () => {
     const event = procedureSecurityEvent(
-      ["botSecrets", "put"],
+      ["vault", "put"],
       // The real RPC shape, so a renamed field fails here instead of silently dropping the name.
-      BotSecretPutInput.parse({
-        botId: "bot-1",
+      VaultPutInput.parse({
+        scope: "account",
         destination: { name: "github-deploy", auth: { type: "command" } },
         value: "ghp_secretvalue",
       }),
       actor,
     );
     expect(event?.metadata).toEqual({
-      procedure: "botSecrets.put",
-      kind: "bot_secret",
-      botId: "bot-1",
+      procedure: "vault.put",
+      kind: "vault_credential",
+      scope: "account",
       name: "github-deploy",
     });
     expect(JSON.stringify(event)).not.toContain("ghp_secretvalue");
@@ -65,7 +65,7 @@ describe("procedureSecurityEvent", () => {
   it("records an MCP approval as a decision", () => {
     expect(
       procedureSecurityEvent(
-        ["mcp", "assignments", "dismiss"],
+        ["mcp", "approvals", "dismiss"],
         { botId: "bot-1", serverId: "server-1" },
         actor,
       ),

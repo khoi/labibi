@@ -679,7 +679,6 @@ msgstr "Wszystkie"
 msgid "All {credit} goes to model usage."
 msgstr "Cała kwota {credit} pokrywa użycie modeli."
 
-#: src/components/integrations/agent-access.tsx
 #: src/pages/Artifacts.tsx
 msgid "All bots"
 msgstr "Wszystkie boty"
@@ -1015,7 +1014,6 @@ msgid "Booting live desktop…"
 msgstr "Uruchamianie pulpitu na żywo…"
 
 #: src/lib/identity-display.ts
-#: src/pages/IntegrationSetup.tsx
 #: src/pages/Shell.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
@@ -1878,10 +1876,6 @@ msgstr "Nie udało się pobrać {0}. Spróbuj ponownie."
 msgid "Could not download {name}. Try again."
 msgstr "Nie udało się pobrać {name}. Spróbuj ponownie."
 
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "Could not enable tools"
-msgstr "Nie udało się włączyć narzędzi"
-
 #: src/pages/AdminAccessPage.tsx
 msgid "Could not grant access"
 msgstr "Nie udało się przyznać dostępu"
@@ -2193,10 +2187,6 @@ msgstr "Nie udało się rozpoznać mowy z tego nagrania."
 #: src/components/ModelCredits.tsx
 msgid "Could not update billing"
 msgstr "Nie udało się zaktualizować rozliczeń"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not update bot access"
-msgstr "Nie udało się zaktualizować dostępu botów"
 
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Could not update computer"
@@ -3189,10 +3179,6 @@ msgstr "Importuj"
 msgid "Import data"
 msgstr "Importuj dane"
 
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "In this bot"
-msgstr "W tym bocie"
-
 #: src/pages/BillingSettingsPanel.tsx
 msgid "Inactive"
 msgstr "Nieaktywne"
@@ -3949,10 +3935,6 @@ msgstr "Bez uwierzytelniania"
 #: src/pages/PluginsOverlay.tsx
 msgid "No authentication"
 msgstr "Bez uwierzytelniania"
-
-#: src/components/integrations/agent-access.tsx
-msgid "No bots"
-msgstr "Brak botów"
 
 #: src/pages/GroupPanel.tsx
 #: src/pages/shell/bot-picker.tsx
@@ -6169,10 +6151,6 @@ msgstr "Użyj domyślnych"
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Use defaults for {label}"
 msgstr "Użyj domyślnych dla {label}"
-
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "Use in this bot"
-msgstr "Użyj w tym bocie"
 
 #: src/components/ModelCredits.tsx
 msgid "Use Labradoodle credits"

@@ -20,7 +20,6 @@ export type ParsedMcpServerArgs = {
   endpoint: string;
   headers: Record<string, string>;
   secret?: string;
-  assignToSelf: boolean;
 };
 
 /** Returns undefined for anything that would fail server-side validation,
@@ -49,7 +48,6 @@ export function parseMcpServerToolArgs(
     headers,
     secret:
       typeof args.secret === "string" && args.secret ? args.secret.slice(0, 16384) : undefined,
-    assignToSelf: args.assign_to_self !== false,
   };
 }
 
@@ -123,7 +121,7 @@ export function needsOAuthProbe(parsed: {
   return !parsed.secret && Object.keys(env).length === 0 && Object.keys(headers).length === 0;
 }
 
-/** add_mcp_server: registers the server and, when asked, posts its approval card. */
+/** add_mcp_server: registers the server switched off and posts the card that turns it on. */
 export async function addMcpServerFromTool(
   deps: ExecutorDeps,
   run: { id: string; spaceId: string; userId: string; threadId: string; botId: string },
@@ -199,10 +197,9 @@ export async function addMcpServerFromTool(
           endpoint: parsed.endpoint,
           headers: Object.fromEntries(Object.keys(parsed.headers).map((key) => [key, true])),
           secretId: storedCredential?.id,
-          enabled: true,
+          enabled: false,
         },
       });
-      if (!parsed.assignToSelf) return { server };
       const blocks: MessageBlock[] = [
         {
           kind: "mcp_approval",
@@ -251,8 +248,6 @@ export async function addMcpServerFromTool(
   return {
     ok: true,
     server_id: serverRow.id,
-    next_step: parsed.assignToSelf
-      ? `An approval card is in the chat. End your turn with one short sentence asking the user to ${oauthLikely ? "authorize" : "approve"} it there; the card already shows the server's details. You will be told when they connect it.`
-      : "The server was registered without assigning it to this bot.",
+    next_step: `An approval card is in the chat. End your turn with one short sentence asking the user to ${oauthLikely ? "authorize" : "approve"} it there; the card already shows the server's details. You will be told when they connect it.`,
   };
 }

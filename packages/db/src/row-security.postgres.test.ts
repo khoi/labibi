@@ -48,19 +48,6 @@ function rowsFor(t: Tenant, tag: string): Array<[string, Record<string, unknown>
       },
     ],
     [
-      "botSecret",
-      {
-        id: `rls-bot-secret-${tag}-${t.botId}`,
-        userId: t.userId,
-        spaceId: t.spaceId,
-        botId: t.botId,
-        name: `n-${tag}`,
-        origin: "https://example.test",
-        auth: {},
-        ciphertext: "c",
-      },
-    ],
-    [
       "vaultCredential",
       {
         id: `rls-vault-space-${tag}-${t.spaceId}`,
@@ -82,15 +69,6 @@ function rowsFor(t: Tenant, tag: string): Array<[string, Record<string, unknown>
         origin: "https://example.test",
         auth: {},
         ciphertext: "c",
-      },
-    ],
-    [
-      "agentSecret",
-      {
-        spaceId: t.spaceId,
-        createdByUserId: t.userId,
-        name: `KEY_${tag.toUpperCase()}`,
-        secretId: tag === "fixture" ? t.secretId : `${t.secretId}-${tag}`,
       },
     ],
     [
@@ -258,9 +236,7 @@ describePostgres("row-level security (PostgreSQL)", () => {
   const owners = () =>
     Promise.all(
       [
-        "botSecret",
         "vaultCredential",
-        "agentSecret",
         "taughtSkill",
         "agentSkill",
         "userVoiceCredential",
@@ -417,12 +393,6 @@ describePostgres("row-level security (PostgreSQL)", () => {
         }),
       );
       keep(
-        "botMcpServer",
-        await o.botMcpServer.create({
-          data: { spaceId: t.spaceId, userId: t.userId, botId: t.botId, serverId: server.id },
-        }),
-      );
-      keep(
         "mcpOAuthSession",
         await o.mcpOAuthSession.create({
           data: {
@@ -557,7 +527,7 @@ describePostgres("row-level security (PostgreSQL)", () => {
     >`
       SELECT policyname, qual, with_check FROM pg_policies WHERE schemaname = 'public'
         AND (policyname LIKE '%\\_system' OR qual LIKE '%rls\\_%' OR with_check LIKE '%rls\\_%')`;
-    expect(policies.length).toBeGreaterThan(50);
+    expect(policies.length).toBeGreaterThan(40);
     expect(
       policies.filter(
         (p) => p.qual !== "( SELECT app_rls_bypass() AS app_rls_bypass)" || p.with_check !== null,
@@ -657,9 +627,7 @@ describePostgres("row-level security (PostgreSQL)", () => {
 
   it("applies the same rules to secrets, skills, voice credentials and trusted link sites", async () => {
     const none = {
-      botSecret: [],
       vaultCredential: [],
-      agentSecret: [],
       taughtSkill: [],
       agentSkill: [],
       userVoiceCredential: [],
@@ -667,10 +635,8 @@ describePostgres("row-level security (PostgreSQL)", () => {
     };
     expect(await owners()).toEqual(none);
     expect(await runAsTenant(a, owners)).toEqual({
-      botSecret: [a.spaceId],
       // The member's account vault and their Space's own vault.
       vaultCredential: [a.userId, a.userId],
-      agentSecret: [a.spaceId],
       taughtSkill: [a.spaceId],
       agentSkill: [a.spaceId],
       userVoiceCredential: [a.userId],

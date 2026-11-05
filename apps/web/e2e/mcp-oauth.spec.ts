@@ -51,9 +51,6 @@ test("connects an MCP server through the OAuth popup callback", async ({ page },
       body: JSON.stringify({ json: [{ ...server, hasSecret, oauthStatus }] }),
     });
   });
-  await page.context().route("**/rpc/mcp/assignments/all", async (route) => {
-    await route.fulfill({ contentType: "application/json", body: JSON.stringify({ json: [] }) });
-  });
   await page.context().route("**/rpc/mcp/oauth/begin", async (route) => {
     expect(route.request().postDataJSON()).toEqual({
       json: {
@@ -237,9 +234,6 @@ test("asks for a client ID when the MCP server cannot register one", async ({ pa
       contentType: "application/json",
       body: JSON.stringify({ json: [{ ...server, health }] }),
     });
-  });
-  await page.context().route("**/rpc/mcp/assignments/all", async (route) => {
-    await route.fulfill({ contentType: "application/json", body: JSON.stringify({ json: [] }) });
   });
   await page.context().route("**/rpc/mcp/oauth/begin", async (route) => {
     health = {

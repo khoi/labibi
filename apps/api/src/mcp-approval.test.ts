@@ -4,7 +4,6 @@ import {
   dismissMcpServerApprovals,
   queueMcpConnectedRun,
   resolveMcpApprovalCards,
-  revertConnectedMcpApprovals,
 } from "./mcp-approval.js";
 
 vi.mock("@labradoodle/db", async (original) => ({
@@ -155,7 +154,7 @@ describe("resolveMcpApprovalCards", () => {
     expect(tx.message.update).not.toHaveBeenCalled();
   });
 
-  it("writes the assignment in the same transaction when a card connects", async () => {
+  it("turns the server on in the same transaction when a card connects", async () => {
     const blocks = [{ kind: "mcp_approval", name: "A", serverId: "srv-a", status: "pending" }];
     const { deps, actor, tx } = fixture(blocks);
     const effect = vi.fn(async () => "saved");
@@ -167,14 +166,14 @@ describe("resolveMcpApprovalCards", () => {
         effect,
       ),
     ).resolves.toBe("saved");
-    expect(effect).toHaveBeenCalledWith(tx, { assign: true, resolved: true });
+    expect(effect).toHaveBeenCalledWith(tx, { connect: true, resolved: true });
     expect(tx.message.update).toHaveBeenCalledWith({
       where: { id: "card-message" },
       data: { blocks: [{ ...blocks[0], status: "connected" }] },
     });
   });
 
-  it("does not assign when a dismissed card already won", async () => {
+  it("does not connect when a dismissed card already won", async () => {
     const blocks = [{ kind: "mcp_approval", name: "A", serverId: "srv-a", status: "dismissed" }];
     const { deps, actor, tx } = fixture(blocks);
     const effect = vi.fn(async () => "saved");
@@ -184,11 +183,11 @@ describe("resolveMcpApprovalCards", () => {
       { botId: "bot", serverId: "srv-a", status: "connected", threadId: "group-thread" },
       effect,
     );
-    expect(effect).toHaveBeenCalledWith(tx, { assign: false, resolved: false });
+    expect(effect).toHaveBeenCalledWith(tx, { connect: false, resolved: false });
     expect(tx.message.update).not.toHaveBeenCalled();
   });
 
-  it("still assigns from settings after a card was dismissed", async () => {
+  it("still connects from settings after a card was dismissed", async () => {
     const blocks = [{ kind: "mcp_approval", name: "A", serverId: "srv-a", status: "dismissed" }];
     const { deps, actor, tx } = fixture(blocks);
     const effect = vi.fn(async () => "saved");
@@ -200,37 +199,10 @@ describe("resolveMcpApprovalCards", () => {
         effect,
       ),
     ).resolves.toBe("saved");
-    expect(effect).toHaveBeenCalledWith(tx, { assign: true, resolved: true });
+    expect(effect).toHaveBeenCalledWith(tx, { connect: true, resolved: true });
     expect(tx.message.update).toHaveBeenCalledWith({
       where: { id: "card-message" },
       data: { blocks: [{ ...blocks[0], status: "connected" }] },
-    });
-  });
-
-  it("returns a connected card to pending when the assignment is removed", async () => {
-    const blocks = [
-      { kind: "mcp_approval", name: "A", serverId: "srv-a", status: "connected" },
-      { kind: "mcp_approval", name: "B", serverId: "srv-b", status: "connected" },
-      { kind: "mcp_approval", name: "C", serverId: "srv-a", status: "dismissed" },
-    ];
-    const { deps, actor, tx } = fixture(blocks);
-    await revertConnectedMcpApprovals(deps, actor, {
-      botId: "bot",
-      serverId: "srv-a",
-      status: "pending",
-    });
-    expect(deps.prisma.thread.findMany).toHaveBeenCalledWith({
-      where: {
-        spaceId: "space",
-        OR: [{ botId: "bot" }, { groupId: { not: null }, messages: { some: { botId: "bot" } } }],
-      },
-      select: { id: true, botId: true },
-    });
-    expect(tx.message.update).toHaveBeenCalledWith({
-      where: { id: "card-message" },
-      data: {
-        blocks: [{ ...blocks[0], status: "pending" }, blocks[1], blocks[2]],
-      },
     });
   });
 
@@ -295,18 +267,6 @@ describe("resolveMcpApprovalCards", () => {
         ],
       },
     });
-  });
-
-  it("does not reset another bot's card in a shared group", async () => {
-    const blocks = [{ kind: "mcp_approval", name: "A", serverId: "srv-a", status: "connected" }];
-    const { deps, actor, tx } = fixture(blocks);
-    tx.message.findMany.mockResolvedValue([{ id: "card-message", botId: "other-bot", blocks }]);
-    await revertConnectedMcpApprovals(deps, actor, {
-      botId: "bot",
-      serverId: "srv-a",
-      status: "pending",
-    });
-    expect(tx.message.update).not.toHaveBeenCalled();
   });
 
   it("does not repaint another bot's direct chat when the bot has left", async () => {

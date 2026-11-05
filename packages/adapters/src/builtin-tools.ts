@@ -707,11 +707,6 @@ export const builtinAgentTools: ConnectorTool[] = [
           type: "string",
           description: "Static access token, equivalent to an Authorization: Bearer header.",
         },
-        assign_to_self: {
-          type: "boolean",
-          description:
-            "Assign the server to you so its tools are usable in this conversation (default true).",
-        },
       },
       required: ["name", "transport", "endpoint"],
     },

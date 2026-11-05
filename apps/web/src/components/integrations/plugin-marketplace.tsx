@@ -155,8 +155,6 @@ export function PluginDetail({
   selection,
   installs,
   servers: allServers,
-  assigned,
-  activeBotId,
   managed: managedApp,
   skillsOnly = false,
   onBack,
@@ -165,8 +163,6 @@ export function PluginDetail({
   selection: PluginSelection;
   installs: CapabilityInstall[];
   servers: McpServer[];
-  assigned: Set<string>;
-  activeBotId?: string;
   managed?: ManagedAppLink;
   /** Opened from Skills: only the plugin's skills are added here; its connector belongs to Integrations. */
   skillsOnly?: boolean;
@@ -278,17 +274,6 @@ export function PluginDetail({
         await onChanged();
       },
       t`Could not sign in`,
-    );
-
-  const enable = (server: McpServer) =>
-    activeBotId &&
-    run(
-      server.id,
-      async () => {
-        await rpc.mcp.assignments.approve({ botId: activeBotId, serverId: server.id });
-        await onChanged();
-      },
-      t`Could not enable tools`,
     );
 
   // A plugin connector already installed stays manageable here until it is removed.
@@ -526,22 +511,6 @@ export function PluginDetail({
                       )}
                     </Button>
                   )}
-                  {activeBotId ? (
-                    assigned.has(server.id) ? (
-                      <span className="text-[13px] text-muted-foreground">
-                        <Trans>In this bot</Trans>
-                      </span>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        disabled={busy}
-                        onClick={() => void enable(server)}
-                      >
-                        <Trans>Use in this bot</Trans>
-                      </Button>
-                    )
-                  ) : null}
                 </li>
               ))
             ) : (

@@ -679,7 +679,6 @@ msgstr "All"
 msgid "All {credit} goes to model usage."
 msgstr "All {credit} goes to model usage."
 
-#: src/components/integrations/agent-access.tsx
 #: src/pages/Artifacts.tsx
 msgid "All bots"
 msgstr "All bots"
@@ -1015,7 +1014,6 @@ msgid "Booting live desktop…"
 msgstr "Booting live desktop…"
 
 #: src/lib/identity-display.ts
-#: src/pages/IntegrationSetup.tsx
 #: src/pages/Shell.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
@@ -1878,10 +1876,6 @@ msgstr "Could not download {0}. Try again."
 msgid "Could not download {name}. Try again."
 msgstr "Could not download {name}. Try again."
 
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "Could not enable tools"
-msgstr "Could not enable tools"
-
 #: src/pages/AdminAccessPage.tsx
 msgid "Could not grant access"
 msgstr "Could not grant access"
@@ -2193,10 +2187,6 @@ msgstr "Could not transcribe that recording."
 #: src/components/ModelCredits.tsx
 msgid "Could not update billing"
 msgstr "Could not update billing"
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not update bot access"
-msgstr "Could not update bot access"
 
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Could not update computer"
@@ -3189,10 +3179,6 @@ msgstr "Import"
 msgid "Import data"
 msgstr "Import data"
 
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "In this bot"
-msgstr "In this bot"
-
 #: src/pages/BillingSettingsPanel.tsx
 msgid "Inactive"
 msgstr "Inactive"
@@ -3949,10 +3935,6 @@ msgstr "No auth"
 #: src/pages/PluginsOverlay.tsx
 msgid "No authentication"
 msgstr "No authentication"
-
-#: src/components/integrations/agent-access.tsx
-msgid "No bots"
-msgstr "No bots"
 
 #: src/pages/GroupPanel.tsx
 #: src/pages/shell/bot-picker.tsx
@@ -6169,10 +6151,6 @@ msgstr "Use defaults"
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Use defaults for {label}"
 msgstr "Use defaults for {label}"
-
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "Use in this bot"
-msgstr "Use in this bot"
 
 #: src/components/ModelCredits.tsx
 msgid "Use Labradoodle credits"

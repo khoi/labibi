@@ -60,9 +60,9 @@ export function McpApprovalCard({
     setPendingAction(action);
     try {
       if (action === "approve") {
-        await rpc("mcp/assignments/approve", { botId, serverId: block.serverId, threadId });
+        await rpc("mcp/approvals/approve", { botId, serverId: block.serverId, threadId });
       } else {
-        await rpc("mcp/assignments/dismiss", { botId, serverId: block.serverId, threadId });
+        await rpc("mcp/approvals/dismiss", { botId, serverId: block.serverId, threadId });
       }
       setLocalStatus(action === "approve" ? "connected" : "dismissed");
     } catch (reason) {

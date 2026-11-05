@@ -679,7 +679,6 @@ msgstr ""
 msgid "All {credit} goes to model usage."
 msgstr "כל {credit} הולכים לשימוש במודלים."
 
-#: src/components/integrations/agent-access.tsx
 #: src/pages/Artifacts.tsx
 msgid "All bots"
 msgstr "כל הבוטים"
@@ -1015,7 +1014,6 @@ msgid "Booting live desktop…"
 msgstr "מפעיל שולחן עבודה חי…"
 
 #: src/lib/identity-display.ts
-#: src/pages/IntegrationSetup.tsx
 #: src/pages/Shell.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
@@ -1878,10 +1876,6 @@ msgstr "לא ניתן להוריד את {0}. אפשר לנסות שוב."
 msgid "Could not download {name}. Try again."
 msgstr "לא ניתן להוריד את {name}. אפשר לנסות שוב."
 
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "Could not enable tools"
-msgstr ""
-
 #: src/pages/AdminAccessPage.tsx
 msgid "Could not grant access"
 msgstr ""
@@ -2192,10 +2186,6 @@ msgstr ""
 
 #: src/components/ModelCredits.tsx
 msgid "Could not update billing"
-msgstr ""
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not update bot access"
 msgstr ""
 
 #: src/components/ComputerMaintenanceActions.tsx
@@ -3189,10 +3179,6 @@ msgstr ""
 msgid "Import data"
 msgstr "ייבוא נתונים"
 
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "In this bot"
-msgstr ""
-
 #: src/pages/BillingSettingsPanel.tsx
 msgid "Inactive"
 msgstr "לא פעיל"
@@ -3949,10 +3935,6 @@ msgstr "ללא אימות"
 #: src/pages/PluginsOverlay.tsx
 msgid "No authentication"
 msgstr "ללא אימות"
-
-#: src/components/integrations/agent-access.tsx
-msgid "No bots"
-msgstr ""
 
 #: src/pages/GroupPanel.tsx
 #: src/pages/shell/bot-picker.tsx
@@ -6169,10 +6151,6 @@ msgstr "שימוש בברירות המחדל"
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Use defaults for {label}"
 msgstr "שימוש בברירות המחדל עבור {label}"
-
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "Use in this bot"
-msgstr ""
 
 #: src/components/ModelCredits.tsx
 msgid "Use Labradoodle credits"

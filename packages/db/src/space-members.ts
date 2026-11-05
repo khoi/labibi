@@ -545,12 +545,8 @@ async function departSpace(
           });
 
           const own = { spaceId, userId };
-          await tx.botSecret.deleteMany({ where: own });
           // Their vault for this Space only; the account vault every Space uses stays theirs.
           await tx.vaultCredential.deleteMany({ where: own });
-          await tx.botMcpServer.deleteMany({
-            where: { spaceId, OR: [{ userId }, { server: { userId } }] },
-          });
           // What they made available in other Spaces of theirs keeps working there; the rest
           // of their tools here, plugins with all their parts, goes.
           await rehomeSharedItems(tx, { spaceId, userId });

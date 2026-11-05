@@ -15,7 +15,6 @@ import {
 import { AuditEventListInputSchema, AuditEventPageSchema } from "./audit-events.js";
 import {
   BotSecretMetadata,
-  BotSecretPutInput,
   LOGIN_FIELD_LIMIT,
   LoginFieldInput,
   StoredBotSecretName,
@@ -29,8 +28,6 @@ import {
   AccountItemSchema,
   ActionApprovalRuleSchema,
   ActionAutoReviewSettingsSchema,
-  AgentSecretInputSchema,
-  AgentSecretSchema,
   AgentSkillCatalogEntrySchema,
   AgentSkillSchema,
   AppBootstrapSchema,
@@ -43,7 +40,6 @@ import {
   AvatarStyleSchema,
   BillingClientSchema,
   BillingStatusSchema,
-  BotMcpServerSchema,
   BotSchema,
   ByokIntervalSchema,
   ByokTierSchema,
@@ -943,34 +939,15 @@ export const appContract = {
       remove: oc.input(z.object({ id: Id })).output(z.object({ ok: z.literal(true) })),
       /** Launch the server once (installing a stdio package if needed), list its tools, close it. */
       test: oc.input(z.object({ id: Id })).output(McpServerSchema),
-      /** Which agents can use the server: all of them, or only `botIds`. */
-      agents: oc
-        .input(z.object({ id: Id, allBots: z.boolean(), botIds: z.array(Id).max(500).default([]) }))
-        .output(z.object({ server: McpServerSchema, assignments: z.array(BotMcpServerSchema) })),
     },
-    assignments: {
-      list: oc.input(botId).output(z.array(BotMcpServerSchema)),
-      all: oc.output(z.array(BotMcpServerSchema)),
+    /** An approval card for a server the bot added: connecting turns the server on. */
+    approvals: {
       approve: oc
         .input(z.object({ botId: Id, serverId: Id, threadId: Id.optional() }))
-        .output(BotMcpServerSchema),
+        .output(z.object({ ok: z.literal(true) })),
       dismiss: oc
         .input(z.object({ botId: Id, serverId: Id, threadId: Id.optional() }))
         .output(z.object({ ok: z.literal(true) })),
-      replace: oc
-        .input(
-          z.object({
-            botId: Id,
-            assignments: z.array(
-              z.object({
-                serverId: Id,
-                allowAllTools: z.boolean().default(true),
-                allowedTools: z.array(z.string().min(1).max(200)).max(500).default([]),
-              }),
-            ),
-          }),
-        )
-        .output(z.array(BotMcpServerSchema)),
     },
     oauth: {
       begin: oc.input(z.object({ serverId: Id, redirectUri: z.string().url().optional() })).output(
@@ -1306,11 +1283,6 @@ export const appContract = {
       )
       .output(z.object({ ready: z.boolean(), utterances: z.array(z.string()) })),
   },
-  agentSecrets: {
-    list: oc.output(z.array(AgentSecretSchema)),
-    put: oc.input(AgentSecretInputSchema).output(AgentSecretSchema),
-    remove: oc.input(z.object({ id: Id })).output(z.object({ ok: z.literal(true) })),
-  },
   vault: {
     list: oc.input(settingsScopeInput.optional()).output(z.array(BotSecretMetadata)),
     put: oc.input(VaultPutInput).output(BotSecretMetadata),
@@ -1318,14 +1290,6 @@ export const appContract = {
     reveal: oc.input(VaultRevealInput).output(VaultRevealed),
     remove: oc
       .input(settingsScopeInput.extend({ name: StoredBotSecretName }))
-      .output(z.object({ ok: z.literal(true) })),
-  },
-  /** The vault this Space uses, for apps that predate it. The bot only checks access. */
-  botSecrets: {
-    list: oc.input(z.object({ botId: Id })).output(z.array(BotSecretMetadata)),
-    put: oc.input(BotSecretPutInput).output(BotSecretMetadata),
-    remove: oc
-      .input(z.object({ botId: Id, name: StoredBotSecretName }))
       .output(z.object({ ok: z.literal(true) })),
   },
 };

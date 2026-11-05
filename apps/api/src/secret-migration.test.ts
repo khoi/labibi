@@ -11,7 +11,6 @@ function fixture() {
         ["run-secret:run", "run-login:run:site", "run-code:run", "run-code-spent:run"][i] ??
         "model",
     })),
-    botSecret: [{ id: "bot-row", ciphertext: "fake-bot-ref" }],
     vaultCredential: [{ id: "vault-row", ciphertext: "fake-vault-ref" }],
     integrationProviderConfig: [{ id: "composio", ciphertext: "fake-config-ref" }],
   };
@@ -58,7 +57,7 @@ describe("migration persistence", () => {
     const f = fixture();
     const rows = [];
     for await (const row of f.repository.rows()) rows.push(row);
-    expect(rows).toHaveLength(104);
+    expect(rows).toHaveLength(103);
     expect(rows[0]).toMatchObject({ ephemeral: true, id: "row-000", label: "secret" });
     // A run's login and codes are short-lived too, and stay in local encryption.
     expect(rows.slice(0, 4).map((row) => row.ephemeral)).toEqual([true, true, true, true]);
@@ -68,7 +67,6 @@ describe("migration persistence", () => {
       recordId: "integration-provider:composio",
       ref: "fake-config-ref",
     });
-    expect(rows.find((row) => row.id === "bot-row")?.recordId).toBe("bot-row");
     expect(rows.find((row) => row.id === "vault-row")?.recordId).toBe("vault-row");
   });
   it("compares the original ref so a concurrent update or delete wins", async () => {
@@ -78,7 +76,7 @@ describe("migration persistence", () => {
     expect(await f.repository.replace(row, "fake-stale")).toBe(false);
     f.tables.secret.splice(0, 1);
     expect(await f.repository.replace(row, "fake-deleted")).toBe(false);
-    expect(await f.repository.referenced("fake-bot-ref")).toBe(true);
+    expect(await f.repository.referenced("fake-vault-ref")).toBe(true);
     expect(await f.repository.referenced("fake-config-ref")).toBe(true);
     expect(await f.repository.referenced("fake-missing")).toBe(false);
   });

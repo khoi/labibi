@@ -23,8 +23,8 @@ export type McpApprovalResolution = {
 };
 
 export type McpApprovalDecision = {
-  /** Whether this decision may create the bot's assignment. */
-  assign: boolean;
+  /** Whether this decision may turn the server on. */
+  connect: boolean;
   /** Whether it closed an open card, rather than repeating a decision. */
   resolved: boolean;
 };
@@ -154,9 +154,9 @@ async function rewriteCards(
 
 /** Flip every open mcp_approval card for this server. The read, the writes,
     and `effect` share one serializable transaction. A card decision (one that
-    passes threadId) sees `assign: false` when a dismissal already won, so that
-    race does not create an assignment. Settings approval omits threadId and
-    still assigns. */
+    passes threadId) sees `connect: false` when a dismissal already won, so that
+    race does not turn the server on. Settings approval omits threadId and
+    still connects. */
 export async function resolveMcpApprovalCards<T>(
   deps: McpApprovalDeps,
   actor: Actor,
@@ -177,9 +177,9 @@ export async function resolveMcpApprovalCards<T>(
           painted.flipped === 0 &&
           !painted.connected &&
           painted.dismissed;
-        const assign = !dismissalWon;
+        const connect = !dismissalWon;
         const resolved = painted.flipped > 0;
-        const value = effect ? await effect(tx, { assign, resolved }) : undefined;
+        const value = effect ? await effect(tx, { connect, resolved }) : undefined;
         return { seqs: painted.seqs, value };
       },
       { isolationLevel: "Serializable" },
@@ -187,30 +187,6 @@ export async function resolveMcpApprovalCards<T>(
   );
   for (const event of committed.seqs) await deps.events.notify(event.threadId, event.seq);
   return committed.value;
-}
-
-/** A removed assignment must not leave its card saying the server is connected.
-    Pass `tx` to commit the repaint with the assignment change; otherwise this
-    notifies after its own transaction. */
-export async function revertConnectedMcpApprovals(
-  deps: McpApprovalDeps,
-  actor: Actor,
-  input: { botId: string; serverId: string; status: "pending" | "dismissed" },
-  tx?: Prisma.TransactionClient,
-): Promise<ThreadSeq[]> {
-  const selectable = (block: ApprovalBlock) =>
-    input.status === "dismissed" ? block.status !== "dismissed" : block.status === "connected";
-  const paint = (client: Prisma.TransactionClient, threads: ApprovalThread[]) =>
-    rewriteCards(client, actor, threads, input, selectable).then((painted) => painted.seqs);
-  if (tx) return paint(tx, await threadsForBot(tx, actor, input.botId));
-  const threads = await threadsForBot(deps.prisma, actor, input.botId);
-  const seqs = await withTransactionRetry(() =>
-    deps.prisma.$transaction((client) => paint(client, threads), {
-      isolationLevel: "Serializable",
-    }),
-  );
-  for (const event of seqs) await deps.events.notify(event.threadId, event.seq);
-  return seqs;
 }
 
 async function closeServerCards(
@@ -258,7 +234,7 @@ async function closeServerCards(
 }
 
 /** Deleting a server closes every approval card for it, including cards that
-    were never assigned. */
+    were never connected. */
 export async function dismissMcpServerApprovals(
   deps: McpApprovalDeps,
   actor: Actor,

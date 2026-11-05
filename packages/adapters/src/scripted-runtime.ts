@@ -406,7 +406,6 @@ export function inferScript(
               name: "Fixture MCP",
               transport: "stdio",
               command: "echo",
-              assignToSelf: true,
             },
           },
         ],

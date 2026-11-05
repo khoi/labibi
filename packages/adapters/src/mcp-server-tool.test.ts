@@ -27,7 +27,6 @@ describe("parseMcpServerToolArgs", () => {
       name: "Brex",
       transport: "streamable_http",
       endpoint: "https://api.brex.example/mcp",
-      assignToSelf: true,
     });
     expect(parsed?.slug).toBe("brex");
   });

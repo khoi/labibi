@@ -38,9 +38,6 @@ it.skipIf(!testDatabase)(
           healthToolCount: 7,
         },
       });
-      await prisma.botMcpServer.create({
-        data: { spaceId, botId: bot.id, serverId: server.id, userId: user.id },
-      });
 
       const { stdout } = await run(
         "pnpm",
@@ -56,7 +53,6 @@ it.skipIf(!testDatabase)(
       );
       expect(stdout).toContain("- Connection: ok");
       expect(stdout).toContain("- MCP_STDIO_ALLOWED_COMMANDS: 1");
-      expect(stdout).toContain(`#### Bot ${opaque(bot.id)}`);
       expect(stdout).toContain(`| ${opaque(server.id)} | stdio | on | ok | 7 |`);
       for (const value of [
         "Private",

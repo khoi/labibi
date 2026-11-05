@@ -369,23 +369,8 @@ describePostgres("shared spaces: invites and membership (PostgreSQL)", () => {
         secretId: secret.id,
       },
     });
-    await system.botSecret.create({
-      data: {
-        id: randomUUID(),
-        userId: invitee.id,
-        spaceId: home,
-        botId: bot.id,
-        name: "API_KEY",
-        origin: "https://api.example.test",
-        auth: {},
-        ciphertext: "fake",
-      },
-    });
-    const server = await system.mcpServer.create({
+    await system.mcpServer.create({
       data: { spaceId: home, userId: invitee.id, slug: "notes", name: "Notes", transport: "http" },
-    });
-    await system.botMcpServer.create({
-      data: { spaceId: home, botId: bot.id, serverId: server.id, userId: invitee.id },
     });
     await system.actionApprovalRule.create({
       data: {
@@ -456,9 +441,7 @@ describePostgres("shared spaces: invites and membership (PostgreSQL)", () => {
     expect(returning.homeKey).not.toBe(computer.homeKey);
     await expect(system.connection.count({ where: leftover })).resolves.toBe(0);
     await expect(system.secret.count({ where: leftover })).resolves.toBe(0);
-    await expect(system.botSecret.count({ where: leftover })).resolves.toBe(0);
     await expect(system.mcpServer.count({ where: leftover })).resolves.toBe(0);
-    await expect(system.botMcpServer.count({ where: leftover })).resolves.toBe(0);
     await expect(system.notificationPreference.count({ where: leftover })).resolves.toBe(0);
     await expect(
       system.actionApprovalRule.count({ where: { spaceId: home, createdByUserId: invitee.id } }),

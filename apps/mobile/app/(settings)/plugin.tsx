@@ -72,7 +72,6 @@ function PluginScreen() {
   const foreground = useAppForeground();
   const [installs, setInstalls] = useState<CapabilityInstall[]>([]);
   const [allServers, setAllServers] = useState<McpServer[]>([]);
-  const [assigned, setAssigned] = useState(new Set<string>());
   const [botId, setBotId] = useState("");
   const [loaded, setLoaded] = useState(false);
   const [preview, setPreview] = useState<PluginPreview | null>(null);
@@ -96,9 +95,6 @@ function PluginScreen() {
         ? Promise.all([rpc("connections/catalog"), rpc("connections/list")])
         : Promise.resolve(null),
     ]);
-    const assignments = lastBot
-      ? await rpc("mcp/assignments/list", { botId: lastBot }).catch(() => [])
-      : [];
     if (!live.current) return;
     if (managedState) {
       const [catalog, connectionRows] = managedState;
@@ -113,7 +109,6 @@ function PluginScreen() {
     setInstalls(installRows);
     setAllServers(serverRows);
     setBotId(lastBot);
-    setAssigned(new Set(assignments.map((row) => row.serverId)));
     setLoaded(true);
   }, [managed, params.managedConnectorId, params.managedSlug]);
 
@@ -255,16 +250,6 @@ function PluginScreen() {
         await load();
       },
       t("Could not sign in"),
-    );
-
-  const enable = (server: McpServer) =>
-    run(
-      server.id,
-      async () => {
-        await rpc("mcp/assignments/approve", { botId, serverId: server.id });
-        await load();
-      },
-      t("Could not enable tools"),
     );
 
   const busy = Boolean(pending);
@@ -484,19 +469,6 @@ function PluginScreen() {
                           prominence="secondary"
                         />
                       )}
-                      {botId ? (
-                        assigned.has(server.id) ? (
-                          <Text style={styles.secondary}>{t("In this bot")}</Text>
-                        ) : (
-                          <NativeActionButton
-                            disabled={busy}
-                            fill={false}
-                            label={t("Use in this bot")}
-                            onPress={() => void enable(server)}
-                            prominence="secondary"
-                          />
-                        )
-                      ) : null}
                     </View>
                   </View>
                 ))

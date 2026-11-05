@@ -1,18 +1,12 @@
-import type {
-  AgentSkillCatalogEntry,
-  BotMcpServer,
-  CapabilityInstall,
-  McpServer,
-} from "@labradoodle/contracts";
+import type { AgentSkillCatalogEntry, CapabilityInstall, McpServer } from "@labradoodle/contracts";
 import { expect, test } from "@playwright/test";
-import { activeBotId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
+import { captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
 
 test("Integrations installs a plugin, completes real broker OAuth against a fake provider, and removes its children", async ({
   page,
 }, testInfo) => {
   await signup(page, `marketplace-${Date.now()}@rakazo.test`, "password12", "Marketplace Test");
   await completeOnboarding(page);
-  const botId = activeBotId(page);
   let cancel = true;
   await page.context().route("https://marketplace-auth.example.test/authorize**", async (route) => {
     const authorize = new URL(route.request().url());
@@ -65,7 +59,6 @@ test("Integrations installs a plugin, completes real broker OAuth against a fake
   const servers = await rpc<McpServer[]>(page, "mcp/servers/list", undefined);
   const server = servers.find((row) => row.installId === install.id)!;
   expect(server.oauthStatus).toBe("none");
-  expect(await rpc(page, "mcp/assignments/list", { botId })).toEqual([]);
 
   // Closing the provider must not claim Connected or lose the install.
   const cancelledPopup = page.waitForEvent("popup", { timeout: 30_000 });
@@ -87,11 +80,6 @@ test("Integrations installs a plugin, completes real broker OAuth against a fake
   )!;
   expect(connected).toMatchObject({ oauthStatus: "connected", hasSecret: true });
   expect(JSON.stringify(connected)).not.toContain("fake-marketplace-access");
-  await dialog.getByRole("button", { name: "Use in this bot", exact: true }).click();
-  await expect(dialog.getByText("In this bot", { exact: true })).toBeVisible();
-  expect(await rpc<BotMcpServer[]>(page, "mcp/assignments/list", { botId })).toContainEqual(
-    expect.objectContaining({ serverId: server.id }),
-  );
   await captureScreenshot(page, testInfo, "integrations-plugin-connected");
 
   await dialog.getByRole("button", { name: "Close integrations", exact: true }).click();
@@ -112,7 +100,6 @@ test("Integrations installs a plugin, completes real broker OAuth against a fake
   await dialog.getByRole("button", { name: "Confirm removal", exact: true }).click();
   await expect(dialog.getByRole("button", { name: "Connect", exact: true })).toBeVisible();
   expect(await rpc(page, "mcp/servers/list", undefined)).toEqual([]);
-  expect(await rpc(page, "mcp/assignments/list", { botId })).toEqual([]);
   expect(await skillNames()).toContain("planning-notes");
   await dialog.getByRole("button", { name: "Remove skills", exact: true }).click();
   await expect(dialog.getByRole("button", { name: "Add skills", exact: true })).toBeVisible();

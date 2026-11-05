@@ -669,7 +669,7 @@ export function mcpCardRequest(
 ) {
   if (actionId === "approve" && card.needsOAuth) return undefined;
   return {
-    procedure: `mcp/assignments/${actionId}`,
+    procedure: `mcp/approvals/${actionId}`,
     body: { botId, serverId: card.serverId, threadId: card.threadId },
   };
 }

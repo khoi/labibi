@@ -1,4 +1,4 @@
-import type { BotMcpServer, McpServer, McpTransport } from "@labradoodle/contracts";
+import type { McpServer, McpTransport } from "@labradoodle/contracts";
 import { MCP_OAUTH_CLIENT_REQUIRED } from "@labradoodle/contracts";
 import { deriveMcpSlug, isRetryableError } from "@labradoodle/core";
 import { fetchFresh, writeSaved } from "@labradoodle/core/query";
@@ -40,10 +40,8 @@ import { t } from "@lingui/core/macro";
 import { Plural, Trans, useLingui } from "@lingui/react/macro";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, Ellipsis, Plus, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ErrorNotice } from "../components/ErrorNotice";
-import type { AgentAccess } from "../components/integrations/agent-access";
-import { AgentAccessControl } from "../components/integrations/agent-access";
 import {
   AvailabilityControl,
   reachesOtherSpaces,
@@ -85,10 +83,6 @@ function needsOAuthClient(server: McpServer): boolean {
   return server.health.code === MCP_OAUTH_CLIENT_REQUIRED && !server.oauthClientId;
 }
 
-function sameAccess(a: AgentAccess, b: AgentAccess): boolean {
-  return a.allBots === b.allBots && [...a.botIds].sort().join() === [...b.botIds].sort().join();
-}
-
 function oauthActionLabel(server: McpServer, pending: boolean): string {
   if (pending) return t`Connecting…`;
   return server.oauthStatus === "none" ? t`Connect OAuth` : t`Reconnect OAuth`;
@@ -109,7 +103,6 @@ export function McpServersOverlay({
   const [editing, setEditing] = useState<McpServer | null>(null);
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState<McpServer | null>(null);
-  const [formAccess, setFormAccess] = useState<AgentAccess>({ allBots: true, botIds: [] });
   const [transport, setTransport] = useState<McpTransport>("streamable_http");
   const [name, setName] = useState("");
   const [endpoint, setEndpoint] = useState("");
@@ -148,34 +141,14 @@ export function McpServersOverlay({
       return testingIds.size > 0 || installing ? INSTALL_POLL_MS : false;
     },
   });
-  const botsOptions = queries.bots.list.queryOptions();
-  const botsQuery = useQuery(botsOptions);
-  const assignmentsOptions = queries.mcp.assignments.all.queryOptions();
-  const assignmentsQuery = useQuery(assignmentsOptions);
   const servers = serversQuery.data ?? [];
   const spaceCount = useOwnSpaces().length;
-  const bots = useMemo(
-    () => (botsQuery.data ?? []).filter((bot) => !bot.archivedAt),
-    [botsQuery.data],
-  );
-  const botAssignments = useMemo(() => {
-    const assignments = assignmentsQuery.data ?? [];
-    return Object.fromEntries(
-      bots.map((bot) => [bot.id, assignments.filter((assignment) => assignment.botId === bot.id)]),
-    ) as Record<string, BotMcpServer[]>;
-  }, [bots, assignmentsQuery.data]);
-  // replace() overwrites a bot's whole list, so changes wait for a read of every assignment.
-  const assignmentsReady = assignmentsQuery.isSuccess && !assignmentsQuery.isFetching;
-  const loadFailed = serversQuery.isError || botsQuery.isError || assignmentsQuery.isError;
+  const loadFailed = serversQuery.isError;
   const shownError = error ?? (loadFailed ? errorDetails(t`Could not load MCP servers`) : null);
 
   /** Reads everything again with requests sent after a change. */
   async function refresh() {
-    await Promise.all([
-      fetchFresh(queryClient, serversOptions),
-      fetchFresh(queryClient, botsOptions),
-      fetchFresh(queryClient, assignmentsOptions),
-    ]);
+    await fetchFresh(queryClient, serversOptions);
   }
 
   const openedEditServer = useRef(false);
@@ -216,7 +189,6 @@ export function McpServersOverlay({
   function resetForm() {
     setEditing(null);
     setAdding(false);
-    setFormAccess({ allBots: true, botIds: [] });
     if (!stdioEnabled) setTransport("streamable_http");
     setName("");
     setEndpoint("");
@@ -240,7 +212,6 @@ export function McpServersOverlay({
     resetForm();
     setError(null);
     setEditing(server);
-    setFormAccess(accessOf(server));
     setName(server.name);
     setTransport(server.transport);
     setEndpoint(server.endpoint ?? "");
@@ -340,17 +311,14 @@ export function McpServersOverlay({
             ...config,
             slug: editing.slug,
             description: editing.description,
-            enabled: editing.enabled,
+            enabled: true,
           },
         });
-        if (!sameAccess(formAccess, accessOf(editing)))
-          await rpc.mcp.servers.agents({ id: editing.id, ...formAccess });
         await refresh();
         resetForm();
         return;
       }
       const created = await rpc.mcp.servers.create(config);
-      if (!formAccess.allBots) await rpc.mcp.servers.agents({ id: created.id, ...formAccess });
       await refresh();
       resetForm();
       // A remote server is checked in the background; wait for that check so a server
@@ -398,36 +366,6 @@ export function McpServersOverlay({
       }
       setError(errorDetails(err, t`Could not start OAuth`));
     }
-  }
-
-  async function setServerAgents(server: McpServer, access: AgentAccess) {
-    if (!assignmentsReady) return;
-    setError(null);
-    try {
-      const updated = await rpc.mcp.servers.agents({ id: server.id, ...access });
-      await Promise.all([
-        writeSaved(queryClient, serversOptions.queryKey, (current) =>
-          (current ?? []).map((item) => (item.id === server.id ? updated.server : item)),
-        ),
-        writeSaved(queryClient, assignmentsOptions.queryKey, (all) => [
-          ...(all ?? []).filter((entry) => entry.serverId !== server.id),
-          ...updated.assignments,
-        ]),
-      ]);
-    } catch (err) {
-      setError(errorDetails(err, t`Could not update bot access`));
-    }
-  }
-
-  function accessOf(server: McpServer): AgentAccess {
-    return {
-      allBots: server.allBots ?? false,
-      botIds: bots
-        .filter((bot) =>
-          (botAssignments[bot.id] ?? []).some((entry) => entry.serverId === server.id),
-        )
-        .map((bot) => bot.id),
-    };
   }
 
   async function deleteServer(server: McpServer) {
@@ -797,12 +735,6 @@ export function McpServersOverlay({
             </div>
           </Disclosure>
         </FieldGroup>
-        <AgentAccessControl
-          bots={bots}
-          access={formAccess}
-          disabled={!assignmentsReady}
-          onChange={setFormAccess}
-        />
         <Button
           type="button"
           className="w-full"
@@ -865,12 +797,6 @@ export function McpServersOverlay({
               onChanged={() => serversQuery.refetch()}
             />
           )}
-          <AgentAccessControl
-            bots={bots}
-            access={accessOf(server)}
-            disabled={!assignmentsReady}
-            onChange={(access) => void setServerAgents(server, access)}
-          />
           {signInFirst ? (
             <Button
               type="button"

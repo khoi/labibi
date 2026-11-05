@@ -18,7 +18,7 @@ vi.mock("../../lib/rpc", () => ({
   rpc: {
     connections: { begin: calls.begin, complete: calls.complete },
     onboarding: { appConnected: calls.mark },
-    mcp: { oauth: { begin: calls.oauthBegin }, assignments: { approve: calls.approve } },
+    mcp: { oauth: { begin: calls.oauthBegin }, approvals: { approve: calls.approve } },
   },
 }));
 vi.mock("@lingui/react/macro", () => ({

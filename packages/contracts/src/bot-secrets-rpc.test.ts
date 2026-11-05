@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { BotSecretDestination, BotSecretMetadata, BotSecretPutInput } from "./bot-secrets.js";
-import { appContract } from "./rpc.js";
 
 const lanPut = {
   botId: "bot-1",
@@ -36,20 +35,6 @@ describe("botSecrets rpc contract", () => {
     });
     expect(parsed.auth).toBeNull();
     expect(parsed.name).toBe("Legacy Name With Spaces");
-  });
-
-  it("accepts a non-regex stored name for remove but keeps put input strict", () => {
-    const removeInput = appContract.botSecrets.remove["~orpc"].inputSchema;
-    if (!removeInput) throw new Error("remove input schema missing");
-    expect(removeInput.safeParse({ botId: "bot-1", name: "Legacy Name" }).success).toBe(true);
-    expect(removeInput.safeParse({ botId: "bot-1", name: "" }).success).toBe(false);
-    expect(removeInput.safeParse({ botId: "bot-1", name: "x".repeat(257) }).success).toBe(false);
-    expect(
-      BotSecretPutInput.safeParse({
-        ...lanPut,
-        destination: { ...lanPut.destination, name: "Legacy Name" },
-      }).success,
-    ).toBe(false);
   });
 
   it("has no value field and strips any value or ciphertext from output", () => {

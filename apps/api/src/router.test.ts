@@ -1448,7 +1448,6 @@ describe("MCP prepared credential updates", () => {
         count: async ({ where }: { where: { ciphertext: string } }) =>
           [...rows.values()].filter((row) => row.ciphertext === where.ciphertext).length,
       },
-      botSecret: { count: async () => 0 },
       vaultCredential: { count: async () => 0 },
       integrationProviderConfig: { count: async () => 0 },
       $executeRaw: async () => 1,

@@ -43,13 +43,11 @@ type Hook = (input: {
 function database() {
   const tables = new Map<string, Row[]>([
     ["secret", []],
-    ["botSecret", []],
     ["vaultCredential", []],
     ["integrationProviderConfig", []],
     ["user", [{ id: "user" }]],
     ["space", [{ id: "space", organizationId: "organization" }]],
     ["organization", [{ id: "organization" }]],
-    ["bot", []],
     ["mcpServer", []],
     ["mcpServerSpace", []],
   ]);
@@ -95,13 +93,13 @@ function database() {
         const removed = rows.filter((row) => matches(row, args.where));
         for (const row of removed) rows.splice(rows.indexOf(row), 1);
         if (table === "user")
-          for (const target of ["secret", "botSecret"]) {
+          for (const target of ["secret", "vaultCredential"]) {
             const children = tables.get(target)!;
             for (let i = children.length - 1; i >= 0; i--)
               if (removed.some((parent) => children[i]?.userId === parent.id))
                 children.splice(i, 1);
           }
-        if (["organization", "space", "bot"].includes(table)) {
+        if (["organization", "space"].includes(table)) {
           const spaces = tables.get("space")!;
           const removedSpaces =
             table === "organization"
@@ -111,15 +109,10 @@ function database() {
               : removed;
           if (table === "organization")
             for (const space of removedSpaces) spaces.splice(spaces.indexOf(space), 1);
-          for (const target of table === "bot" ? ["botSecret"] : ["secret", "botSecret"]) {
+          for (const target of ["secret", "vaultCredential"]) {
             const children = tables.get(target)!;
             for (let i = children.length - 1; i >= 0; i--)
-              if (
-                removedSpaces.some(
-                  (parent) =>
-                    (table === "bot" ? children[i]?.botId : children[i]?.spaceId) === parent.id,
-                )
-              )
+              if (removedSpaces.some((parent) => children[i]?.spaceId === parent.id))
                 children.splice(i, 1);
           }
         }
@@ -136,12 +129,10 @@ function database() {
     const table = query.sql.match(/FROM "([^"]+)"/)?.[1];
     const names: Record<string, string> = {
       secrets: "secret",
-      bot_secrets: "botSecret",
       vault_credentials: "vaultCredential",
       integration_provider_configs: "integrationProviderConfig",
       user: "user",
       spaces: "space",
-      bots: "bot",
       organization: "organization",
     };
     return (
@@ -280,11 +271,13 @@ describe("secret persistence cleanup", () => {
     await store.start();
     const db = database();
     const prisma = withSecretPersistence(db.prisma, store);
-    const bot = await store.put("bot", context, { recordId: "bot-row" });
+    const vault = await store.put("vault", context, { recordId: "vault-row" });
     const config = await store.put("config", context, {
       recordId: "integration-provider:composio",
     });
-    db.tables.get("botSecret")!.push({ id: "bot-row", ciphertext: bot.ref, userId: "user" });
+    db.tables
+      .get("vaultCredential")!
+      .push({ id: "vault-row", ciphertext: vault.ref, userId: "user" });
     try {
       await prisma.user.deleteMany({ where: { id: "user" } });
       expect(fake.values.size).toBe(1);
@@ -365,19 +358,19 @@ describe("MCP OAuth prepared persistence", () => {
         spaceId: "space",
         userId: "user",
       });
-      const assignment = () => ({
-        serverId: "server",
-        allowAllTools: true,
-        server: {
-          ...db.tables.get("mcpServer")![0],
-          slug: "demo",
-          transport: "streamable_http",
-          revision: 1,
-          args: [],
-        },
+      const server = () => ({
+        ...db.tables.get("mcpServer")![0],
+        slug: "demo",
+        transport: "streamable_http",
+        revision: 1,
+        args: [],
       });
       Object.assign(prisma, {
-        botMcpServer: { findMany: async () => [assignment()], findFirst: async () => assignment() },
+        mcpServer: {
+          ...prisma.mcpServer,
+          findMany: async () => [server()],
+          findFirst: async () => server(),
+        },
       });
       const broker = new McpOAuthBroker(prisma, store);
       const held = new Map<McpSession, OAuthClientProvider>();

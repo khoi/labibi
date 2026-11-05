@@ -679,7 +679,6 @@ msgstr ""
 msgid "All {credit} goes to model usage."
 msgstr "पूरे {credit} मॉडल उपयोग में जाते हैं।"
 
-#: src/components/integrations/agent-access.tsx
 #: src/pages/Artifacts.tsx
 msgid "All bots"
 msgstr ""
@@ -1015,7 +1014,6 @@ msgid "Booting live desktop…"
 msgstr "लाइव डेस्कटॉप शुरू हो रहा है…"
 
 #: src/lib/identity-display.ts
-#: src/pages/IntegrationSetup.tsx
 #: src/pages/Shell.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/SpaceSearch.tsx
@@ -1878,10 +1876,6 @@ msgstr "{0} डाउनलोड नहीं हो सका। पुनः 
 msgid "Could not download {name}. Try again."
 msgstr "{name} डाउनलोड नहीं हो सका। पुनः प्रयास करें।"
 
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "Could not enable tools"
-msgstr ""
-
 #: src/pages/AdminAccessPage.tsx
 msgid "Could not grant access"
 msgstr ""
@@ -2192,10 +2186,6 @@ msgstr ""
 
 #: src/components/ModelCredits.tsx
 msgid "Could not update billing"
-msgstr ""
-
-#: src/pages/McpServersOverlay.tsx
-msgid "Could not update bot access"
 msgstr ""
 
 #: src/components/ComputerMaintenanceActions.tsx
@@ -3189,10 +3179,6 @@ msgstr ""
 msgid "Import data"
 msgstr "डेटा आयात करें"
 
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "In this bot"
-msgstr ""
-
 #: src/pages/BillingSettingsPanel.tsx
 msgid "Inactive"
 msgstr ""
@@ -3949,10 +3935,6 @@ msgstr "कोई प्रमाणीकरण नहीं"
 #: src/pages/PluginsOverlay.tsx
 msgid "No authentication"
 msgstr "कोई प्रमाणीकरण नहीं"
-
-#: src/components/integrations/agent-access.tsx
-msgid "No bots"
-msgstr ""
 
 #: src/pages/GroupPanel.tsx
 #: src/pages/shell/bot-picker.tsx
@@ -6169,10 +6151,6 @@ msgstr "अपने डिफ़ॉल्ट इस्तेमाल करे
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Use defaults for {label}"
 msgstr "{label} के लिए अपने डिफ़ॉल्ट इस्तेमाल करें"
-
-#: src/components/integrations/plugin-marketplace.tsx
-msgid "Use in this bot"
-msgstr ""
 
 #: src/components/ModelCredits.tsx
 msgid "Use Labradoodle credits"

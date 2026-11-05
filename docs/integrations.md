@@ -33,8 +33,8 @@ The **+** in **Integrations** adds tools that aren't in the catalog:
 Choose an authentication method (**No auth**, **Bearer token** or **API key header**) and then
 **Verify and add**. Credentials are encrypted and never sent to the model.
 
-**Manage MCP servers** lists every server you've added, with **Test connection**, OAuth sign-in, and
-which bots can use each one.
+**Manage MCP servers** lists every server you've added, with **Test connection** and OAuth sign-in.
+Your MCP servers work in every chat where a bot answers you.
 
 During one bot run, every call to an MCP server added under **Integrations** (Treg, Executor or
 your own MCP URL) reuses one session, so servers that keep state in the session (a paused step
@@ -55,13 +55,10 @@ Apps run sandboxed. An app sees only that tool call and its result, reaches only
 server declares, and can't call tools or see your account. A link in an app asks before it opens,
 and a message an app suggests goes into the message box for you to send.
 
-## Choose which bots use what
+## Servers a bot adds
 
-Bots pick the apps they need. To add an MCP server to the bot you're chatting with, open it in
-**Integrations** and choose **Use in this bot**.
-
-When a bot wants a server it hasn't used before, it asks first in the chat. Choose **Approve**, or
-**Authorize** if the server needs you to sign in.
+When a bot adds an MCP server for you, it stays off until you approve it in the chat. Choose
+**Approve**, or **Authorize** if the server needs you to sign in.
 
 ## Available in
 

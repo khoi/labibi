@@ -214,15 +214,6 @@ export function PluginsOverlay({
   const pluginCatalog = useQuery(
     queries.marketplace.catalog.queryOptions({ input: { query: "" }, staleTime: 60_000 }),
   );
-  const assignmentsQuery = useQuery(
-    queries.mcp.assignments.list.queryOptions({
-      input: activeBotId ? { botId: activeBotId } : skipToken,
-    }),
-  );
-  const assigned = useMemo(
-    () => new Set((assignmentsQuery.data ?? []).map((row) => row.serverId)),
-    [assignmentsQuery.data],
-  );
   const catalogFeedEnabled = integrations.data?.catalogFeedEnabled ?? false;
   // A failed refresh is shown even over what was cached, so stale apps never pass as current.
   const loadError = integrations.error
@@ -259,7 +250,6 @@ export function PluginsOverlay({
   /** Reads integrations again with requests sent after a change. */
   async function refresh() {
     void fetchFresh(queryClient, mcpOptions).catch(() => undefined);
-    void queryClient.invalidateQueries({ queryKey: queries.mcp.assignments.key() });
     await fetchFresh(queryClient, {
       queryKey: integrationsOptions.queryKey,
       queryFn: loadIntegrations,
@@ -1327,7 +1317,6 @@ export function PluginsOverlay({
       <div className="space-y-6">
         {renderViewTitle(<Trans>Browse MCP servers</Trans>, () => setView("browse"))}
         <IntegrationSetup
-          botId={activeBotId}
           onDone={() => {
             setView("manage");
             void refresh().catch((err: unknown) =>
@@ -1660,8 +1649,6 @@ export function PluginsOverlay({
                   selection={plugin}
                   installs={pluginInstalls}
                   servers={mcpServers}
-                  assigned={assigned}
-                  activeBotId={activeBotId}
                   managed={managedLink(plugin)}
                   onBack={() => setPlugin(null)}
                   onChanged={refresh}

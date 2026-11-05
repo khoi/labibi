@@ -268,8 +268,8 @@ describePostgres("shared space content (PostgreSQL)", () => {
     // Personal things stay with their person.
     expect((await call(partner, "connections/list")).json).toEqual([]);
     expect((await call(owner, "connections/list")).json).toHaveLength(1);
-    expect((await call(partner, "botSecrets/list", { botId: chef.id })).json).toEqual([]);
-    expect((await call(owner, "botSecrets/list", { botId: chef.id })).json).toHaveLength(1);
+    expect((await call(partner, "vault/list")).json).toEqual([]);
+    expect((await call(owner, "vault/list")).json).toHaveLength(1);
 
     // Another space's bots stay out of reach.
     expect((await call(partner, "bots/get", { botId: privateBot.id })).status).not.toBe(200);

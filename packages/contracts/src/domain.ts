@@ -80,20 +80,6 @@ export type AvatarStyle = z.infer<typeof AvatarStyleSchema>;
 
 export { AGENT_SECRET_NAME_PATTERN };
 
-export const AgentSecretSchema = z.object({
-  id: Id,
-  name: z.string().regex(AGENT_SECRET_NAME_PATTERN),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-});
-export type AgentSecret = z.infer<typeof AgentSecretSchema>;
-
-export const AgentSecretInputSchema = z.object({
-  name: z.string().trim().regex(AGENT_SECRET_NAME_PATTERN),
-  value: z.string().min(1).max(16_384),
-});
-export type AgentSecretInput = z.infer<typeof AgentSecretInputSchema>;
-
 export const InstructionVersionSchema = z.object({
   id: Id,
   instructions: z.string(),
@@ -1038,23 +1024,10 @@ export const McpServerSchema = z.object({
   verbatimResults: z.boolean().default(false),
   revision: z.number().int().positive(),
   availability: SpaceAvailabilitySchema.optional(),
-  /** Every agent can use it; when false, only the agents assigned to it. */
-  allBots: z.boolean().optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
 export type McpServer = z.infer<typeof McpServerSchema>;
-
-export const BotMcpServerSchema = z.object({
-  id: Id,
-  botId: Id,
-  serverId: Id,
-  allowAllTools: z.boolean(),
-  allowedTools: z.array(z.string().min(1).max(200)),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-});
-export type BotMcpServer = z.infer<typeof BotMcpServerSchema>;
 
 export const ArtifactSchema = z.object({
   id: Id,
