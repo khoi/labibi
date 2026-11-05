@@ -470,15 +470,6 @@ function attachNovncProxy(server: ViteDevServer | PreviewServer, secret: string,
   });
 }
 
-export function sourcePlugins() {
-  return [
-    react(),
-    babel({ plugins: ["@lingui/babel-plugin-lingui-macro"] }),
-    lingui(),
-    tailwindcss(),
-  ];
-}
-
 export default defineConfig(({ command, mode }) => {
   // Names this build in every API request; the dev server has none, so the handshake stays off.
   const buildId = command === "build" ? buildIdAt(new Date()) : "";
@@ -546,7 +537,10 @@ export default defineConfig(({ command, mode }) => {
           this.emitFile({ type: "asset", fileName: "build-id", source: `${buildId}\n` });
         },
       },
-      ...sourcePlugins(),
+      react(),
+      babel({ plugins: ["@lingui/babel-plugin-lingui-macro"] }),
+      lingui(),
+      tailwindcss(),
       rakazoPwa(buildId),
       {
         // Dev keeps React Refresh unrestricted in app pages; screen documents always use CSP.

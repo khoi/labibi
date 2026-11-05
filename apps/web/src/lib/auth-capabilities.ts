@@ -26,10 +26,6 @@ export function fetchAuthCapabilities(): Promise<AuthCapabilities> {
   return capabilitiesRequest;
 }
 
-export function forgetAuthCapabilities(): void {
-  capabilitiesRequest = undefined;
-}
-
 /** Public deployment capabilities, bounded in time and size so a stalled API cannot hang the UI. */
 async function loadAuthCapabilities(): Promise<AuthCapabilities> {
   const controller = new AbortController();
