@@ -1,6 +1,6 @@
 # Mobile app
 
-Chat with your bots, answer their questions, watch their computers and take calls from your phone.
+Chat with your bots, answer their questions, and watch their computers from your phone.
 
 ## Install
 

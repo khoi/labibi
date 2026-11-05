@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { recognitionLocaleTag, speechLocaleTag, supportedSpeechTag } from "./speech-locale.js";
+import { recognitionLocaleTag, speechLocaleTag } from "./speech-locale.js";
 
 describe("speechLocaleTag", () => {
   it("maps an app locale to a tag the recognizer accepts", () => {
@@ -64,27 +64,5 @@ describe("recognitionLocaleTag", () => {
     expect(recognitionLocaleTag("en", "es-419")).toBe("es-MX");
     expect(recognitionLocaleTag("en", "ru-RU")).toBe("ru-RU");
     expect(recognitionLocaleTag("en", "es-CL")).toBe("es-CL");
-  });
-});
-
-describe("supportedSpeechTag", () => {
-  const apple = ["en-AE", "en-GB", "en-US", "es-419", "es-CL", "es-ES", "es-MX", "de-DE"];
-
-  it("keeps a tag the recognizer lists", () => {
-    expect(supportedSpeechTag("es-CL", apple)).toBe("es-CL");
-    expect(supportedSpeechTag("en_GB", apple)).toBe("en-GB");
-  });
-
-  it("falls back to the app's region for the language, then to any region of it", () => {
-    expect(supportedSpeechTag("es-AR", apple)).toBe("es-MX");
-    expect(supportedSpeechTag("en-DE", apple)).toBe("en-US");
-    expect(supportedSpeechTag("de-CH", apple)).toBe("de-DE");
-    expect(supportedSpeechTag("es-PE", ["es-419", "es-ES"])).toBe("es-419");
-    expect(supportedSpeechTag("pl-DE", ["en-US", "pl-PL"])).toBe("pl-PL");
-  });
-
-  it("keeps the tag when the recognizer lists nothing or nothing of its language", () => {
-    expect(supportedSpeechTag("es-AR", [])).toBe("es-AR");
-    expect(supportedSpeechTag("it-IT", apple)).toBe("it-IT");
   });
 });

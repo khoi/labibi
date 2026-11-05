@@ -191,7 +191,6 @@ export function SettingsOverlays({
                 await Promise.race([rpc.voice.status(), voiceStatusRefreshTimeout()]),
               );
             } catch {
-              // Prefer reopening Voice settings over starting a call with stale readiness.
               void queryClient.resetQueries({ queryKey: voiceStatusKey });
             }
           }}

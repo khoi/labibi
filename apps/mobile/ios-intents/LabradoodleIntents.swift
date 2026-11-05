@@ -115,10 +115,9 @@ private struct SavedLastBot: Decodable {
 /// wrong; returns nil only when no bot was saved or the saved one is not this account's, which
 /// ask for a chat first.
 private func target(
-  _ bot: BotEntity?, with snapshot: LabradoodleSession? = nil
+  _ bot: BotEntity?, with session: LabradoodleSession
 ) async throws -> (botId: String, spaceId: String?)? {
   if let bot { return (bot.botId, bot.spaceId) }
-  let session = try snapshot ?? LabradoodleSession.load()
   guard
     let data = secureStoreItem("rakazo.last_bot_id")?.data(using: .utf8),
     let last = try? JSONDecoder().decode(SavedLastBot.self, from: data),
@@ -152,16 +151,9 @@ private struct Delivery {
 private func send(_ message: String, file: IntentFile?, to bot: BotEntity?) async throws -> Delivery {
   let session = try LabradoodleSession.load()
   guard let target = try await target(bot, with: session) else { throw MessageBotError.noBot }
-  return try await send(message, file: file, to: target, with: session, timeout: 60)
-}
-
-private func send(
-  _ message: String, file: IntentFile?, to target: (botId: String, spaceId: String?),
-  with session: LabradoodleSession, timeout: TimeInterval
-) async throws -> Delivery {
   let botId = target.botId
   let spaceId = target.spaceId ?? session.selectedSpaceId
-  try await session.requireConsent(["botId": botId], spaceId: spaceId, timeout: timeout)
+  try await session.requireConsent(["botId": botId], spaceId: spaceId)
   var input: [String: Any] = [
     "botId": botId,
     "text": message.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -180,8 +172,7 @@ private func send(
     input["artifactIds"] = [artifact.id]
     input["imageHandling"] = "confirm"
   }
-  let sent: Sent = try await session.rpc(
-    "threads/send", input, spaceId: spaceId, timeout: timeout)
+  let sent: Sent = try await session.rpc("threads/send", input, spaceId: spaceId)
   return Delivery(session: session, botId: botId, spaceId: spaceId, runId: sent.runId)
 }
 
