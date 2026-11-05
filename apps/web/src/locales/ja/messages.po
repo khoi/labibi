@@ -427,10 +427,6 @@ msgstr "{summary} 予備のモデルでもエラーが発生しました。"
 msgid "{title}, {label}"
 msgstr "{title}、{label}"
 
-#: src/pages/shell/agent-import.tsx
-msgid "{title}, saved as {savedAs}"
-msgstr "{title}（{savedAs} として保存）"
-
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "{toolCount, plural, one {# tool} other {# tools}}"
@@ -709,10 +705,6 @@ msgstr "詳細設定"
 msgid "Advanced..."
 msgstr "詳細設定..."
 
-#: src/components/AccountDataSettings.tsx
-msgid "Agent from another app"
-msgstr ""
-
 #: src/components/VaultSettings.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "All"
@@ -724,7 +716,6 @@ msgstr "{credit} はすべてモデルの利用に充てられます。"
 
 #: src/components/integrations/agent-access.tsx
 #: src/pages/Artifacts.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "All bots"
 msgstr "すべてのボット"
 
@@ -772,10 +763,6 @@ msgstr ""
 msgid "Allowed once"
 msgstr "今回のみ許可しました"
 
-#: src/pages/shell/agent-import.tsx
-msgid "Already connected"
-msgstr "接続済み"
-
 #: src/pages/Auth.tsx
 msgid "Already have an account?"
 msgstr "すでにアカウントをお持ちですか？"
@@ -812,14 +799,6 @@ msgstr "このプロバイダーにはサブスクリプションのログイン
 msgid "An existing Honcho peer to read from. Labradoodle never writes to it."
 msgstr "読み取り元となる既存のHonchoピアです。Labradoodleが書き込むことはありません。"
 
-#: src/lib/agent-import-errors.ts
-msgid "An imported API key could not be checked. Try again."
-msgstr "インポートしたAPIキーを確認できませんでした。もう一度お試しください。"
-
-#: src/lib/agent-import-errors.ts
-msgid "An imported API key could not be used. Untick it and try again."
-msgstr "インポートしたAPIキーを使用できませんでした。チェックを外してもう一度お試しください。"
-
 #: src/pages/RoutineEditor.tsx
 msgid "An integration tool"
 msgstr "連携ツール"
@@ -827,10 +806,6 @@ msgstr "連携ツール"
 #: src/lib/activity-list-filters.ts
 msgid "Another agent"
 msgstr "別のエージェント"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Another assistant"
-msgstr "他のアシスタント"
 
 #: src/components/AskCard.tsx
 msgid "Answer"
@@ -872,17 +847,9 @@ msgstr "リンクを知っている全員"
 msgid "API key"
 msgstr "APIキー"
 
-#: src/pages/shell/import-status.ts
-msgid "API key for {provider}"
-msgstr "{provider}のAPIキー"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "API key header"
 msgstr "APIキーのヘッダー"
-
-#: src/pages/shell/agent-import.tsx
-msgid "API keys"
-msgstr "APIキー"
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "API token"
@@ -1059,7 +1026,6 @@ msgstr "Avatar Studio"
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/SettingsOverlay.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "Back"
 msgstr "戻る"
 
@@ -1184,7 +1150,6 @@ msgid "Browse MCP servers"
 msgstr "MCPサーバーを探す"
 
 #: src/pages/KnowledgeSection.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "Built-in"
 msgstr "組み込み"
 
@@ -1231,10 +1196,6 @@ msgstr "画像を読み取れません"
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
 msgstr "キャンセル"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Cancel new bot"
-msgstr "新しいボットをキャンセル"
 
 #: src/pages/GroupPanel.tsx
 msgid "Cancel new group"
@@ -1363,10 +1324,6 @@ msgstr "APIキーまたはログイン情報を確認してから、もう一度
 msgid "Check the server URL and network, then test again."
 msgstr "サーバーのURLとネットワークを確認してから、もう一度テストしてください。"
 
-#: src/pages/shell/import-setup-card.tsx
-msgid "Check this yourself"
-msgstr "ご自身で確認してください"
-
 #: src/components/pages/PageView.tsx
 #: src/components/pages/PageViewHost.tsx
 msgid "Check your connection and try again."
@@ -1407,18 +1364,9 @@ msgstr "新しいパスワードを設定"
 msgid "Choose a provider"
 msgstr "プロバイダーを選択"
 
-#: src/pages/shell/agent-import.tsx
-msgid "Choose backup"
-msgstr "バックアップを選択"
-
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 msgid "Choose file"
 msgstr "ファイルを選択"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Choose folder"
-msgstr "フォルダを選択"
 
 #: src/components/ModelCredits.tsx
 #: src/components/SubscriptionGate.tsx
@@ -1733,10 +1681,6 @@ msgstr "自分のキーを接続"
 msgid "Connect OAuth"
 msgstr "OAuthを接続"
 
-#: src/lib/agent-import-errors.ts
-msgid "Connect this model's provider first."
-msgstr "先にこのモデルのプロバイダーを接続してください。"
-
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
 msgid "Connect your own API key in Models or choose Labradoodle credits in Billing."
@@ -1793,11 +1737,6 @@ msgstr ""
 msgid "Contacts"
 msgstr ""
 
-#: src/pages/shell/agent-import.tsx
-#: src/pages/shell/import-status.ts
-msgid "Contains code to run"
-msgstr "実行するコードを含みます"
-
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "Context limit"
@@ -1810,7 +1749,6 @@ msgstr "コンテキスト上限"
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "Continue"
 msgstr "続行"
@@ -1839,7 +1777,6 @@ msgstr ""
 #: src/components/vault/VaultItemDetail.tsx
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "Copied"
 msgstr "コピーしました"
 
@@ -1867,10 +1804,6 @@ msgstr ""
 #: src/components/pages/SharePopover.tsx
 msgid "Copy link"
 msgstr "リンクをコピー"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Copy prompt"
-msgstr "プロンプトをコピー"
 
 #: src/components/markdown-copy.tsx
 msgid "Copy rows"
@@ -1985,7 +1918,6 @@ msgstr "コンピューターの画面に接続できませんでした"
 msgid "Could not continue"
 msgstr "続行できませんでした"
 
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 msgid "Could not create bot"
 msgstr "ボットを作成できませんでした"
@@ -2217,10 +2149,6 @@ msgstr "モデルサーバーに接続できませんでした。"
 #: src/pages/Auth.tsx
 msgid "Could not reach the server"
 msgstr "サーバーに接続できませんでした"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Could not read these files"
-msgstr "これらのファイルを読み込めませんでした"
 
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Could not reject plugin"
@@ -2483,7 +2411,6 @@ msgid "Country"
 msgstr ""
 
 #: src/components/CreateOrganizationDialog.tsx
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/shell/sidebar-header.tsx
@@ -2526,7 +2453,6 @@ msgid "Created"
 msgstr "作成済み"
 
 #: src/pages/GroupPanel.tsx
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "Creating…"
 msgstr "作成中…"
@@ -2542,10 +2468,6 @@ msgstr "認証情報を保存しました"
 #: src/pages/PluginsOverlay.tsx
 msgid "Credentials are encrypted and never sent to the model."
 msgstr "認証情報は暗号化され、モデルに送信されることはありません。"
-
-#: src/pages/shell/import-status.ts
-msgid "Credentials: {names}"
-msgstr "認証情報: {names}"
 
 #: src/components/ModelCredits.tsx
 msgid "Credit amount"
@@ -2644,14 +2566,6 @@ msgstr "デフォルト"
 #: src/pages/shell/bot-panel.tsx
 msgid "Default ({0})"
 msgstr "デフォルト（{0}）"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Default from Hermes"
-msgstr "Hermesの初期設定"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Default from OpenClaw"
-msgstr "OpenClawの初期設定"
 
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Default scope"
@@ -2753,10 +2667,6 @@ msgstr "拒否"
 #: src/components/ComputerProviderSettings.tsx
 msgid "Deployment default ({0})"
 msgstr ""
-
-#: src/pages/shell/agent-import.tsx
-msgid "Description"
-msgstr "説明"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Design"
@@ -2886,7 +2796,6 @@ msgstr "アカウントをお持ちでないですか？"
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/ActivityList.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
-#: src/pages/shell/import-setup-card.tsx
 #: src/pages/shell/message-view.tsx
 msgid "Done"
 msgstr "完了"
@@ -3023,10 +2932,6 @@ msgstr ""
 #: src/pages/McpServersOverlay.tsx
 msgid "Environment variables"
 msgstr "環境変数"
-
-#: src/pages/shell/import-status.ts
-msgid "Environment variables: {names}"
-msgstr "環境変数: {names}"
 
 #: src/lib/roster-status.ts
 #: src/pages/shell/sidebar-roster.tsx
@@ -3247,10 +3152,6 @@ msgstr "モデルを検索"
 #: src/pages/Onboarding.tsx
 msgid "Finding…"
 msgstr "検索中…"
-
-#: src/pages/shell/import-setup-card.tsx
-msgid "Finish setting up"
-msgstr "セットアップを完了"
 
 #: src/lib/model-connection-preflight.ts
 msgid "Finish subscription sign-in, then test again."
@@ -3515,11 +3416,6 @@ msgid "Import"
 msgstr ""
 
 #: src/components/AccountDataSettings.tsx
-#: src/pages/shell/agent-import.tsx
-msgid "Import an agent"
-msgstr "エージェントをインポート"
-
-#: src/components/AccountDataSettings.tsx
 msgid "Import data"
 msgstr "データをインポート"
 
@@ -3534,10 +3430,6 @@ msgstr "無効"
 #: src/pages/shell/message-cards.tsx
 msgid "Inbox & email"
 msgstr "受信トレイとメール"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Include API keys"
-msgstr "APIキーを含める"
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Inherit default"
@@ -3573,18 +3465,8 @@ msgstr "指示の履歴"
 
 #: src/components/AskCard.tsx
 #: src/components/InstructionSettings.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "Instructions"
 msgstr "指示"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Instructions {position}"
-msgstr "指示 {position}"
-
-#: src/lib/agent-import-errors.ts
-#: src/pages/shell/agent-import.tsx
-msgid "Instructions are too long. Untick some files."
-msgstr "指示が長すぎます。いくつかのファイルのチェックを外してください。"
 
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Instructions for this room"
@@ -3866,10 +3748,6 @@ msgstr ""
 msgid "Logins"
 msgstr ""
 
-#: src/pages/shell/agent-import.tsx
-msgid "Looks like it contains a key"
-msgstr "キーが含まれているようです"
-
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "Low"
@@ -3971,7 +3849,6 @@ msgid "MCP server"
 msgstr ""
 
 #: src/pages/McpServersOverlay.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "MCP servers"
 msgstr "MCPサーバー"
 
@@ -4001,17 +3878,8 @@ msgstr "メンバー（{0}）"
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/settings-nav.ts
-#: src/pages/shell/agent-import.tsx
 msgid "Memory"
 msgstr "メモリ"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Memory {position}"
-msgstr "メモリ {position}"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Memory for {title}"
-msgstr "{title}のメモリ"
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Memory scope"
@@ -4024,14 +3892,6 @@ msgstr "メンション"
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Mentions only"
 msgstr "メンションのみ"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Mentions OpenClaw features"
-msgstr "OpenClawの機能に言及しています"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Mentions: {mentions}"
-msgstr "言及: {mentions}"
 
 #: src/pages/shell/chat-shared.ts
 #: src/pages/shell/composer.tsx
@@ -4115,7 +3975,6 @@ msgstr "モード"
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Model"
 msgstr "モデル"
@@ -4223,7 +4082,6 @@ msgstr ""
 #: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
@@ -4235,10 +4093,6 @@ msgstr "名前"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Name on card"
 msgstr ""
-
-#: src/pages/shell/agent-import.tsx
-msgid "Name this bot"
-msgstr "このボットに名前を付ける"
 
 #: src/pages/GroupPanel.tsx
 msgid "Name this group"
@@ -4278,10 +4132,6 @@ msgstr "引き継ぎが必要"
 #: src/pages/shell/message-view.tsx
 msgid "Needs you"
 msgstr "対応が必要"
-
-#: src/pages/shell/import-status.ts
-msgid "Needs: {names}"
-msgstr "必要: {names}"
 
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Never ask"
@@ -4444,10 +4294,6 @@ msgstr "利用できるモデルカタログがありません。"
 msgid "No models listed."
 msgstr "モデルが一覧にありません。"
 
-#: src/pages/shell/agent-import.tsx
-msgid "No OpenClaw, Hermes or agent document found."
-msgstr "OpenClaw、Hermes、またはエージェントのドキュメントが見つかりません。"
-
 #: src/components/pages/PagesList.tsx
 msgid "No pages match “{query}”."
 msgstr "「{query}」に一致するページはありません。"
@@ -4500,10 +4346,6 @@ msgstr "トリガーなし"
 msgid "None"
 msgstr ""
 
-#: src/pages/shell/agent-import.tsx
-msgid "Not a valid skill"
-msgstr "有効なスキルではありません"
-
 #. placeholder {0}: notAdded.join(", ")
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "Not added: {0}"
@@ -4513,14 +4355,6 @@ msgstr ""
 msgid "Not checked yet"
 msgstr "未確認"
 
-#: src/pages/shell/agent-import.tsx
-msgid "Not imported"
-msgstr "インポートされていません"
-
-#: src/pages/shell/import-status.ts
-msgid "Not in Labradoodle's catalog"
-msgstr "Labradoodleのカタログにありません"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Not in the plugin catalog"
 msgstr "プラグインカタログにありません"
@@ -4528,15 +4362,6 @@ msgstr "プラグインカタログにありません"
 #: src/pages/shell/message-cards.tsx
 msgid "Not now"
 msgstr "今はしない"
-
-#: src/pages/shell/agent-import.tsx
-#: src/pages/shell/import-status.ts
-msgid "Not supported in Labradoodle"
-msgstr "Labradoodleでは未対応です"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Not used by Labradoodle"
-msgstr "Labradoodleでは使用しません"
 
 #: src/components/McpServerHealthLine.tsx
 msgid "Not working"
@@ -4625,7 +4450,6 @@ msgstr "自分のみ"
 #: src/components/pages/PagesList.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/shell/computer-panel.tsx
-#: src/pages/shell/import-setup-card.tsx
 #: src/pages/shell/message-view.tsx
 msgid "Open"
 msgstr "開く"
@@ -4634,10 +4458,6 @@ msgstr "開く"
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Open {0}"
 msgstr "{0}を開く"
-
-#: src/pages/shell/import-setup-card.tsx
-msgid "Open {name}"
-msgstr "{name}を開く"
 
 #: src/components/pages/PageCard.tsx
 msgid "Open {title}"
@@ -4687,10 +4507,6 @@ msgstr "OpenAI API"
 #: src/pages/Onboarding.tsx
 msgid "OpenAI-compatible server URL"
 msgstr "OpenAI互換サーバーのURL"
-
-#: src/pages/shell/agent-import.tsx
-msgid "OpenClaw or Hermes"
-msgstr "OpenClawまたはHermes"
 
 #: src/components/pages/DownloadPdfButton.tsx
 msgid "Opens your browser's print dialog. Choose Save as PDF as the destination."
@@ -4848,10 +4664,6 @@ msgstr "新しいキーを貼り付け"
 msgid "Paste the OpenAI-compatible address from your server. Labradoodle adds /v1 if needed."
 msgstr "サーバーのOpenAI互換アドレスを貼り付けてください。必要に応じてLabradoodleが/v1を追加します。"
 
-#: src/pages/shell/agent-import.tsx
-msgid "Paste the reply"
-msgstr "返信を貼り付け"
-
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Paste your API key"
 msgstr "APIキーを貼り付け"
@@ -4861,7 +4673,6 @@ msgid "Paste your API key, then test again."
 msgstr "APIキーを貼り付けてから、もう一度テストしてください。"
 
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/import-status.ts
 msgid "Paused"
 msgstr "一時停止中"
 
@@ -4874,10 +4685,6 @@ msgstr ""
 #: src/pages/shell/bot-panel.tsx
 msgid "Permissions"
 msgstr "権限"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Persona"
-msgstr "ペルソナ"
 
 #: src/components/SignupSurvey.tsx
 msgid "Personal"
@@ -4998,10 +4805,6 @@ msgstr "専用のボットとグループを持つ非公開のワークスペー
 msgid "Productivity"
 msgstr ""
 
-#: src/pages/shell/import-status.ts
-msgid "Program: {name}"
-msgstr "プログラム: {name}"
-
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Protected input"
 msgstr "保護された入力"
@@ -5043,10 +4846,6 @@ msgstr "リアクション"
 #: src/pages/shell/bot-panel.tsx
 msgid "Read replies aloud"
 msgstr "返信を読み上げる"
-
-#: src/pages/shell/import-status.ts
-msgid "Ready"
-msgstr "準備完了"
 
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Reason"
@@ -5487,7 +5286,6 @@ msgstr "キーをローテーション"
 msgid "Routine"
 msgstr "ルーティン"
 
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Routines"
 msgstr "ルーティン"
@@ -5823,10 +5621,6 @@ msgstr "設定: 一般"
 msgid "Settings: Usage"
 msgstr "設定: 使用量"
 
-#: src/pages/shell/import-setup-card.tsx
-msgid "Setup complete"
-msgstr "セットアップ完了"
-
 #: src/components/ComputersUnavailableHint.tsx
 #: src/pages/model-settings/compatible-model-fields.tsx
 msgid "Setup help"
@@ -5967,21 +5761,12 @@ msgstr ""
 msgid "Skill {0}"
 msgstr "スキル{0}"
 
-#: src/pages/shell/agent-import.tsx
-msgid "Skill {position}"
-msgstr "スキル {position}"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/SidebarFooter.tsx
 #: src/pages/Shell.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "Skills"
 msgstr "スキル"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Skills join the library all your bots share."
-msgstr "スキルはすべてのボットで共有するライブラリに追加されます。"
 
 #: src/pages/shell/computer-release-actions.tsx
 msgid "Skip"
@@ -6017,22 +5802,10 @@ msgstr "上にスライドしてロック"
 msgid "Some plugins could not be loaded."
 msgstr ""
 
-#: src/pages/shell/agent-import.tsx
-msgid "Some settings are not imported"
-msgstr "一部の設定はインポートされません"
-
 #: src/App.tsx
 #: src/lib/user-error.ts
 msgid "Something went wrong. Try again."
 msgstr "問題が発生しました。もう一度お試しください。"
-
-#: src/lib/agent-import-errors.ts
-msgid "Something with the same name was just added. Try again."
-msgstr "同じ名前のものが追加されたところです。もう一度お試しください。"
-
-#: src/lib/agent-import-errors.ts
-msgid "Something you chose cannot work here. Untick it and try again."
-msgstr "選択した項目の一部はここでは使えません。チェックを外してもう一度お試しください。"
 
 #: src/components/markdown-copy.tsx
 msgid "Sort by {column}"
@@ -6385,14 +6158,6 @@ msgstr "未使用分の差額は次回の請求書に充当されます。"
 msgid "Their own model is cleared. You can pick one again in each bot."
 msgstr "個別のモデル設定は解除されました。各ボットで再度選択できます。"
 
-#: src/pages/shell/agent-import.tsx
-msgid "These files are too large to import."
-msgstr "これらのファイルは大きすぎてインポートできません。"
-
-#: src/lib/agent-import-errors.ts
-msgid "These files or choices no longer match. Choose the files again."
-msgstr "ファイルまたは選択内容が一致しなくなりました。もう一度ファイルを選択してください。"
-
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/VaultSettings.tsx
 msgid "These saved settings can't be read. Remove it and add it again."
@@ -6420,14 +6185,6 @@ msgstr "このアカウントは無効化されています"
 #: src/lib/user-error.ts
 msgid "This app needs its own sign-in setup to connect."
 msgstr "このアプリを接続するには、専用のサインイン設定が必要です。"
-
-#: src/pages/shell/agent-import.tsx
-msgid "This backup could not be read."
-msgstr "このバックアップを読み込めませんでした。"
-
-#: src/pages/shell/agent-import.tsx
-msgid "This bot"
-msgstr "このボット"
 
 #: src/pages/shell/computer-view.tsx
 msgid "This bot runs on this computer, not a Linux desktop. Shell and files use your home folder."
@@ -6470,10 +6227,6 @@ msgstr "このアーティファクトの全{0}バージョンを削除します
 #: src/components/ArtifactFileCard.tsx
 msgid "This file is not valid UTF-8 text."
 msgstr "このファイルは有効なUTF-8テキストではありません。"
-
-#: src/lib/agent-import-errors.ts
-msgid "This import was already used. Choose the files again."
-msgstr "このインポートはすでに使用されています。もう一度ファイルを選択してください。"
 
 #: src/pages/Invite.tsx
 msgid "This invite link is no longer valid."
@@ -6576,10 +6329,6 @@ msgstr "時刻"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Timezone"
 msgstr "タイムゾーン"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Timing may differ"
-msgstr "実行タイミングが異なる場合があります"
 
 #: src/pages/ActivityList.tsx
 msgid "To"
@@ -6872,14 +6621,6 @@ msgstr "ユーザーピア"
 msgid "Username"
 msgstr "ユーザー名"
 
-#: src/pages/shell/import-status.ts
-msgid "Uses files that are not imported"
-msgstr "インポートされないファイルを使用しています"
-
-#: src/pages/shell/import-status.ts
-msgid "Uses paths on your computer"
-msgstr "お使いのコンピューター上のパスを使用しています"
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Uses this server's own {hostCredentialSource} credentials to access {selectedProviderName}."
 msgstr "このサーバー自身の{hostCredentialSource}認証情報を使用して{selectedProviderName}にアクセスします。"
@@ -7079,10 +6820,6 @@ msgstr "仕事"
 #: src/pages/ActivityList.tsx
 msgid "Working"
 msgstr "作業中"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Working instructions"
-msgstr "作業の指示"
 
 #: src/components/ToolActivityDisclosure.tsx
 #: src/lib/roster-status.ts

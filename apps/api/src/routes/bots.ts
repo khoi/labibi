@@ -47,8 +47,6 @@ import {
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { ORPCError } from "@orpc/server";
-import type { AgentImportServices } from "../agent-import.js";
-import { agentImportSetupState, createImportedBot, previewAgentImport } from "../agent-import.js";
 import { deleteAgentSecret, listAgentSecrets, putAgentSecret } from "../agent-secrets.js";
 import { changedBotSettings } from "../bot-setting-analytics.js";
 import { requireIdentityConfirmation } from "../identity-confirmation.js";
@@ -299,8 +297,7 @@ export async function enqueueBotIntroRun(deps: RouterDeps, actor: Actor, bot: Bo
 }
 
 export function botsRoutes(ctx: RouterContext) {
-  const { deps, repos, botModelValidation, removeBot, agentImportServices, groupRepos, authed } =
-    ctx;
+  const { deps, repos, botModelValidation, removeBot, groupRepos, authed } = ctx;
   return {
     bots: {
       list: authed.bots.list.handler(async ({ context }) => repos.listBots(context.actor)),
@@ -326,22 +323,6 @@ export function botsRoutes(ctx: RouterContext) {
         });
         return bot;
       }),
-      importPreview: authed.bots.importPreview.handler(async ({ context, input }) =>
-        previewAgentImport(agentImportServices as AgentImportServices, context.actor, input),
-      ),
-      importCreate: authed.bots.importCreate.handler(async ({ context, input }) => {
-        let bot: Bot;
-        try {
-          bot = await createImportedBot(agentImportServices, context.actor, input, context.signal);
-        } catch (error) {
-          throw mapSpaceLifecycleError(error);
-        }
-        // An imported bot starts inert: no intro run, paused routines, unapproved servers.
-        return bot;
-      }),
-      importSetupState: authed.bots.importSetupState.handler(async ({ context, input }) =>
-        agentImportSetupState(agentImportServices as AgentImportServices, context.actor, input),
-      ),
       duplicate: authed.bots.duplicate.handler(async ({ context, input }) => {
         const source = await repos.getBot(context.actor, input.botId);
         const duplicate = await repos

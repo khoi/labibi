@@ -427,10 +427,6 @@ msgstr "{summary} Yedek modelleriniz de başarısız oldu."
 msgid "{title}, {label}"
 msgstr "{title}, {label}"
 
-#: src/pages/shell/agent-import.tsx
-msgid "{title}, saved as {savedAs}"
-msgstr "{title}, {savedAs} olarak kaydedilir"
-
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "{toolCount, plural, one {# tool} other {# tools}}"
@@ -709,10 +705,6 @@ msgstr "Gelişmiş"
 msgid "Advanced..."
 msgstr "Gelişmiş..."
 
-#: src/components/AccountDataSettings.tsx
-msgid "Agent from another app"
-msgstr "Başka bir uygulamadan agent"
-
 #: src/components/VaultSettings.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "All"
@@ -724,7 +716,6 @@ msgstr "{credit} tutarın tamamı model kullanımına gider."
 
 #: src/components/integrations/agent-access.tsx
 #: src/pages/Artifacts.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "All bots"
 msgstr "Tüm botlar"
 
@@ -772,10 +763,6 @@ msgstr "Bu alanda izinli"
 msgid "Allowed once"
 msgstr "Bir kez izin verildi"
 
-#: src/pages/shell/agent-import.tsx
-msgid "Already connected"
-msgstr "Zaten bağlı"
-
 #: src/pages/Auth.tsx
 msgid "Already have an account?"
 msgstr "Zaten hesabın var mı?"
@@ -812,14 +799,6 @@ msgstr "Bu sağlayıcı için abonelik girişi değil, bir API anahtarı saklan�
 msgid "An existing Honcho peer to read from. Labradoodle never writes to it."
 msgstr "Verilerin okunacağı mevcut bir Honcho eşi. Labradoodle bu eşe asla veri yazmaz."
 
-#: src/lib/agent-import-errors.ts
-msgid "An imported API key could not be checked. Try again."
-msgstr "İçe aktarılan bir API anahtarı kontrol edilemedi. Yeniden dene."
-
-#: src/lib/agent-import-errors.ts
-msgid "An imported API key could not be used. Untick it and try again."
-msgstr "İçe aktarılan bir API anahtarı kullanılamadı. İşaretini kaldırıp yeniden dene."
-
 #: src/pages/RoutineEditor.tsx
 msgid "An integration tool"
 msgstr "Bir entegrasyon aracı"
@@ -827,10 +806,6 @@ msgstr "Bir entegrasyon aracı"
 #: src/lib/activity-list-filters.ts
 msgid "Another agent"
 msgstr "Başka bir Agent"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Another assistant"
-msgstr "Başka bir asistan"
 
 #: src/components/AskCard.tsx
 msgid "Answer"
@@ -872,17 +847,9 @@ msgstr "Bağlantıya sahip herkes"
 msgid "API key"
 msgstr "API anahtarı"
 
-#: src/pages/shell/import-status.ts
-msgid "API key for {provider}"
-msgstr "{provider} için API anahtarı"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "API key header"
 msgstr "API anahtarı üstbilgisi"
-
-#: src/pages/shell/agent-import.tsx
-msgid "API keys"
-msgstr "API anahtarları"
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "API token"
@@ -1059,7 +1026,6 @@ msgstr "Avatar Stüdyosu"
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/SettingsOverlay.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "Back"
 msgstr "Geri"
 
@@ -1184,7 +1150,6 @@ msgid "Browse MCP servers"
 msgstr "MCP sunucularına göz at"
 
 #: src/pages/KnowledgeSection.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "Built-in"
 msgstr "Yerleşik"
 
@@ -1231,10 +1196,6 @@ msgstr "Görselleri okuyamaz"
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
 msgstr "İptal"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Cancel new bot"
-msgstr "Yeni botu iptal et"
 
 #: src/pages/GroupPanel.tsx
 msgid "Cancel new group"
@@ -1363,10 +1324,6 @@ msgstr "API anahtarını veya oturumu kontrol et, sonra yeniden test et."
 msgid "Check the server URL and network, then test again."
 msgstr "Sunucu URL'sini ve ağı kontrol et, sonra yeniden test et."
 
-#: src/pages/shell/import-setup-card.tsx
-msgid "Check this yourself"
-msgstr "Bunu kendin kontrol et"
-
 #: src/components/pages/PageView.tsx
 #: src/components/pages/PageViewHost.tsx
 msgid "Check your connection and try again."
@@ -1407,18 +1364,9 @@ msgstr "Yeni bir parola seçin"
 msgid "Choose a provider"
 msgstr "Sağlayıcı seç"
 
-#: src/pages/shell/agent-import.tsx
-msgid "Choose backup"
-msgstr "Yedek seç"
-
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 msgid "Choose file"
 msgstr "Dosya seç"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Choose folder"
-msgstr "Klasör seç"
 
 #: src/components/ModelCredits.tsx
 #: src/components/SubscriptionGate.tsx
@@ -1733,10 +1681,6 @@ msgstr "Kendiminkini bağla"
 msgid "Connect OAuth"
 msgstr "OAuth ile bağlan"
 
-#: src/lib/agent-import-errors.ts
-msgid "Connect this model's provider first."
-msgstr "Önce bu modelin sağlayıcısını bağla."
-
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
 msgid "Connect your own API key in Models or choose Labradoodle credits in Billing."
@@ -1793,11 +1737,6 @@ msgstr "Kişi"
 msgid "Contacts"
 msgstr "Kişiler"
 
-#: src/pages/shell/agent-import.tsx
-#: src/pages/shell/import-status.ts
-msgid "Contains code to run"
-msgstr "Çalıştırılacak kod içeriyor"
-
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "Context limit"
@@ -1810,7 +1749,6 @@ msgstr "Bağlam sınırı"
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "Continue"
 msgstr "Devam"
@@ -1839,7 +1777,6 @@ msgstr "Sohbetler"
 #: src/components/vault/VaultItemDetail.tsx
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "Copied"
 msgstr "Kopyalandı"
 
@@ -1867,10 +1804,6 @@ msgstr ""
 #: src/components/pages/SharePopover.tsx
 msgid "Copy link"
 msgstr "Bağlantıyı kopyala"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Copy prompt"
-msgstr "İstemi kopyala"
 
 #: src/components/markdown-copy.tsx
 msgid "Copy rows"
@@ -1985,7 +1918,6 @@ msgstr "Bilgisayar ekranına bağlanılamadı"
 msgid "Could not continue"
 msgstr "Devam edilemedi"
 
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 msgid "Could not create bot"
 msgstr "Bot oluşturulamadı"
@@ -2217,10 +2149,6 @@ msgstr "Model sunucusuna ulaşılamadı."
 #: src/pages/Auth.tsx
 msgid "Could not reach the server"
 msgstr "Sunucuya ulaşılamadı"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Could not read these files"
-msgstr "Bu dosyalar okunamadı"
 
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Could not reject plugin"
@@ -2483,7 +2411,6 @@ msgid "Country"
 msgstr "Ülke"
 
 #: src/components/CreateOrganizationDialog.tsx
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/shell/sidebar-header.tsx
@@ -2526,7 +2453,6 @@ msgid "Created"
 msgstr "Oluşturuldu"
 
 #: src/pages/GroupPanel.tsx
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "Creating…"
 msgstr "Oluşturuluyor…"
@@ -2542,10 +2468,6 @@ msgstr "Kimlik bilgisi kaydedildi"
 #: src/pages/PluginsOverlay.tsx
 msgid "Credentials are encrypted and never sent to the model."
 msgstr "Kimlik bilgileri şifrelenir ve modele asla gönderilmez."
-
-#: src/pages/shell/import-status.ts
-msgid "Credentials: {names}"
-msgstr "Kimlik bilgileri: {names}"
 
 #: src/components/ModelCredits.tsx
 msgid "Credit amount"
@@ -2644,14 +2566,6 @@ msgstr "Varsayılan"
 #: src/pages/shell/bot-panel.tsx
 msgid "Default ({0})"
 msgstr "Varsayılan ({0})"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Default from Hermes"
-msgstr "Hermes varsayılanı"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Default from OpenClaw"
-msgstr "OpenClaw varsayılanı"
 
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Default scope"
@@ -2753,10 +2667,6 @@ msgstr "Reddet"
 #: src/components/ComputerProviderSettings.tsx
 msgid "Deployment default ({0})"
 msgstr "Dağıtım varsayılanı ({0})"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Description"
-msgstr "Açıklama"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Design"
@@ -2886,7 +2796,6 @@ msgstr "Hesabın yok mu?"
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/ActivityList.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
-#: src/pages/shell/import-setup-card.tsx
 #: src/pages/shell/message-view.tsx
 msgid "Done"
 msgstr "Bitti"
@@ -3023,10 +2932,6 @@ msgstr "Ortam kimliği"
 #: src/pages/McpServersOverlay.tsx
 msgid "Environment variables"
 msgstr "Ortam değişkenleri"
-
-#: src/pages/shell/import-status.ts
-msgid "Environment variables: {names}"
-msgstr "Ortam değişkenleri: {names}"
 
 #: src/lib/roster-status.ts
 #: src/pages/shell/sidebar-roster.tsx
@@ -3247,10 +3152,6 @@ msgstr "Model bul"
 #: src/pages/Onboarding.tsx
 msgid "Finding…"
 msgstr "Aranıyor…"
-
-#: src/pages/shell/import-setup-card.tsx
-msgid "Finish setting up"
-msgstr "Kurulumu tamamla"
 
 #: src/lib/model-connection-preflight.ts
 msgid "Finish subscription sign-in, then test again."
@@ -3515,11 +3416,6 @@ msgid "Import"
 msgstr "İçe aktar"
 
 #: src/components/AccountDataSettings.tsx
-#: src/pages/shell/agent-import.tsx
-msgid "Import an agent"
-msgstr "Bir agent içe aktar"
-
-#: src/components/AccountDataSettings.tsx
 msgid "Import data"
 msgstr "Verileri içe aktar"
 
@@ -3534,10 +3430,6 @@ msgstr "Etkin değil"
 #: src/pages/shell/message-cards.tsx
 msgid "Inbox & email"
 msgstr "Gelen kutusu ve e-posta"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Include API keys"
-msgstr "API anahtarlarını dahil et"
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Inherit default"
@@ -3573,18 +3465,8 @@ msgstr "Talimat geçmişi"
 
 #: src/components/AskCard.tsx
 #: src/components/InstructionSettings.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "Instructions"
 msgstr "Talimatlar"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Instructions {position}"
-msgstr "Talimatlar {position}"
-
-#: src/lib/agent-import-errors.ts
-#: src/pages/shell/agent-import.tsx
-msgid "Instructions are too long. Untick some files."
-msgstr "Talimatlar çok uzun. Bazı dosyaların işaretini kaldırın."
 
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Instructions for this room"
@@ -3866,10 +3748,6 @@ msgstr "Giriş"
 msgid "Logins"
 msgstr "Girişler"
 
-#: src/pages/shell/agent-import.tsx
-msgid "Looks like it contains a key"
-msgstr "Bir anahtar içeriyor gibi görünüyor"
-
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "Low"
@@ -3971,7 +3849,6 @@ msgid "MCP server"
 msgstr "MCP sunucusu"
 
 #: src/pages/McpServersOverlay.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "MCP servers"
 msgstr "MCP sunucuları"
 
@@ -4001,17 +3878,8 @@ msgstr "Üyeler ({0})"
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/settings-nav.ts
-#: src/pages/shell/agent-import.tsx
 msgid "Memory"
 msgstr "Hafıza"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Memory {position}"
-msgstr "Hafıza {position}"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Memory for {title}"
-msgstr "{title} için hafıza"
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Memory scope"
@@ -4024,14 +3892,6 @@ msgstr "Bahsetmeler"
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Mentions only"
 msgstr "Yalnızca bahsetmeler"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Mentions OpenClaw features"
-msgstr "OpenClaw özelliklerinden bahsediyor"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Mentions: {mentions}"
-msgstr "Bahsedilenler: {mentions}"
 
 #: src/pages/shell/chat-shared.ts
 #: src/pages/shell/composer.tsx
@@ -4115,7 +3975,6 @@ msgstr "Mod"
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Model"
 msgstr "Model"
@@ -4223,7 +4082,6 @@ msgstr "Bilgisayarlarım"
 #: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
@@ -4235,10 +4093,6 @@ msgstr "Ad"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Name on card"
 msgstr "Kart üzerindeki isim"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Name this bot"
-msgstr "Bota bir ad ver"
 
 #: src/pages/GroupPanel.tsx
 msgid "Name this group"
@@ -4278,10 +4132,6 @@ msgstr "Devralma bekliyor"
 #: src/pages/shell/message-view.tsx
 msgid "Needs you"
 msgstr "Seni bekliyor"
-
-#: src/pages/shell/import-status.ts
-msgid "Needs: {names}"
-msgstr "Gerekenler: {names}"
 
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Never ask"
@@ -4444,10 +4294,6 @@ msgstr "Kullanılabilir model kataloğu yok."
 msgid "No models listed."
 msgstr "Listelenen model yok."
 
-#: src/pages/shell/agent-import.tsx
-msgid "No OpenClaw, Hermes or agent document found."
-msgstr "OpenClaw, Hermes veya agent belgesi bulunamadı."
-
 #: src/components/pages/PagesList.tsx
 msgid "No pages match “{query}”."
 msgstr "“{query}” ile eşleşen sayfa yok."
@@ -4500,10 +4346,6 @@ msgstr "Tetikleyici yok"
 msgid "None"
 msgstr "Yok"
 
-#: src/pages/shell/agent-import.tsx
-msgid "Not a valid skill"
-msgstr "Geçerli bir beceri değil"
-
 #. placeholder {0}: notAdded.join(", ")
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "Not added: {0}"
@@ -4513,14 +4355,6 @@ msgstr "Eklenmedi: {0}"
 msgid "Not checked yet"
 msgstr "Henüz kontrol edilmedi"
 
-#: src/pages/shell/agent-import.tsx
-msgid "Not imported"
-msgstr "İçe aktarılmadı"
-
-#: src/pages/shell/import-status.ts
-msgid "Not in Labradoodle's catalog"
-msgstr "Labradoodle kataloğunda yok"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Not in the plugin catalog"
 msgstr "Eklenti kataloğunda yok"
@@ -4528,15 +4362,6 @@ msgstr "Eklenti kataloğunda yok"
 #: src/pages/shell/message-cards.tsx
 msgid "Not now"
 msgstr "Şimdi değil"
-
-#: src/pages/shell/agent-import.tsx
-#: src/pages/shell/import-status.ts
-msgid "Not supported in Labradoodle"
-msgstr "Labradoodle'da desteklenmiyor"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Not used by Labradoodle"
-msgstr "Labradoodle tarafından kullanılmıyor"
 
 #: src/components/McpServerHealthLine.tsx
 msgid "Not working"
@@ -4625,7 +4450,6 @@ msgstr "Yalnızca siz"
 #: src/components/pages/PagesList.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/shell/computer-panel.tsx
-#: src/pages/shell/import-setup-card.tsx
 #: src/pages/shell/message-view.tsx
 msgid "Open"
 msgstr "Aç"
@@ -4634,10 +4458,6 @@ msgstr "Aç"
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Open {0}"
 msgstr "{0} aç"
-
-#: src/pages/shell/import-setup-card.tsx
-msgid "Open {name}"
-msgstr "{name} öğesini aç"
 
 #: src/components/pages/PageCard.tsx
 msgid "Open {title}"
@@ -4687,10 +4507,6 @@ msgstr "OpenAI API"
 #: src/pages/Onboarding.tsx
 msgid "OpenAI-compatible server URL"
 msgstr "OpenAI uyumlu sunucu URL'si"
-
-#: src/pages/shell/agent-import.tsx
-msgid "OpenClaw or Hermes"
-msgstr "OpenClaw veya Hermes"
 
 #: src/components/pages/DownloadPdfButton.tsx
 msgid "Opens your browser's print dialog. Choose Save as PDF as the destination."
@@ -4848,10 +4664,6 @@ msgstr "Yeni bir anahtar yapıştır"
 msgid "Paste the OpenAI-compatible address from your server. Labradoodle adds /v1 if needed."
 msgstr "Sunucundaki OpenAI uyumlu adresi yapıştır. Gerekirse Labradoodle /v1 ekler."
 
-#: src/pages/shell/agent-import.tsx
-msgid "Paste the reply"
-msgstr "Yanıtı yapıştırın"
-
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Paste your API key"
 msgstr "API anahtarını yapıştır"
@@ -4861,7 +4673,6 @@ msgid "Paste your API key, then test again."
 msgstr "API anahtarını yapıştır, sonra yeniden test et."
 
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/import-status.ts
 msgid "Paused"
 msgstr "Duraklatıldı"
 
@@ -4874,10 +4685,6 @@ msgstr "Beklemede"
 #: src/pages/shell/bot-panel.tsx
 msgid "Permissions"
 msgstr "İzinler"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Persona"
-msgstr "Kişilik"
 
 #: src/components/SignupSurvey.tsx
 msgid "Personal"
@@ -4998,10 +4805,6 @@ msgstr "Kendi botları ve grupları olan özel çalışma alanı."
 msgid "Productivity"
 msgstr "Verimlilik"
 
-#: src/pages/shell/import-status.ts
-msgid "Program: {name}"
-msgstr "Program: {name}"
-
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Protected input"
 msgstr "Korumalı giriş"
@@ -5043,10 +4846,6 @@ msgstr "Tepkiler"
 #: src/pages/shell/bot-panel.tsx
 msgid "Read replies aloud"
 msgstr "Yanıtları sesli oku"
-
-#: src/pages/shell/import-status.ts
-msgid "Ready"
-msgstr "Hazır"
 
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Reason"
@@ -5487,7 +5286,6 @@ msgstr "Anahtarı yenile"
 msgid "Routine"
 msgstr "Rutin"
 
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Routines"
 msgstr "Rutinler"
@@ -5823,10 +5621,6 @@ msgstr "Ayarlar: Genel"
 msgid "Settings: Usage"
 msgstr "Ayarlar: Kullanım"
 
-#: src/pages/shell/import-setup-card.tsx
-msgid "Setup complete"
-msgstr "Kurulum tamamlandı"
-
 #: src/components/ComputersUnavailableHint.tsx
 #: src/pages/model-settings/compatible-model-fields.tsx
 msgid "Setup help"
@@ -5967,21 +5761,12 @@ msgstr ""
 msgid "Skill {0}"
 msgstr "Beceri: {0}"
 
-#: src/pages/shell/agent-import.tsx
-msgid "Skill {position}"
-msgstr "Beceri {position}"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/SidebarFooter.tsx
 #: src/pages/Shell.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "Skills"
 msgstr "Beceriler"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Skills join the library all your bots share."
-msgstr "Beceriler tüm botlarınızın paylaştığı kitaplığa eklenir."
 
 #: src/pages/shell/computer-release-actions.tsx
 msgid "Skip"
@@ -6017,22 +5802,10 @@ msgstr "Kilitlemek için yukarı kaydır"
 msgid "Some plugins could not be loaded."
 msgstr "Bazı eklentiler yüklenemedi."
 
-#: src/pages/shell/agent-import.tsx
-msgid "Some settings are not imported"
-msgstr "Bazı ayarlar içe aktarılmaz"
-
 #: src/App.tsx
 #: src/lib/user-error.ts
 msgid "Something went wrong. Try again."
 msgstr "Bir şeyler ters gitti. Tekrar deneyin."
-
-#: src/lib/agent-import-errors.ts
-msgid "Something with the same name was just added. Try again."
-msgstr "Aynı adda bir şey az önce eklendi. Yeniden dene."
-
-#: src/lib/agent-import-errors.ts
-msgid "Something you chose cannot work here. Untick it and try again."
-msgstr "Seçtiğin bir şey burada çalışamaz. İşaretini kaldırıp yeniden dene."
 
 #: src/components/markdown-copy.tsx
 msgid "Sort by {column}"
@@ -6385,14 +6158,6 @@ msgstr "Kullanılmayan fark bir sonraki faturanıza alacak olarak yansıtılır.
 msgid "Their own model is cleared. You can pick one again in each bot."
 msgstr "Kendi modelleri temizlendi. Her botta yeniden model seçebilirsin."
 
-#: src/pages/shell/agent-import.tsx
-msgid "These files are too large to import."
-msgstr "Bu dosyalar içe aktarmak için çok büyük."
-
-#: src/lib/agent-import-errors.ts
-msgid "These files or choices no longer match. Choose the files again."
-msgstr "Bu dosyalar veya seçimler artık eşleşmiyor. Dosyaları yeniden seç."
-
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/VaultSettings.tsx
 msgid "These saved settings can't be read. Remove it and add it again."
@@ -6420,14 +6185,6 @@ msgstr "Bu hesap devre dışı bırakıldı"
 #: src/lib/user-error.ts
 msgid "This app needs its own sign-in setup to connect."
 msgstr "Bu uygulamanın bağlanması için kendi oturum açma kurulumu gerekiyor."
-
-#: src/pages/shell/agent-import.tsx
-msgid "This backup could not be read."
-msgstr "Bu yedek okunamadı."
-
-#: src/pages/shell/agent-import.tsx
-msgid "This bot"
-msgstr "Bu bot"
 
 #: src/pages/shell/computer-view.tsx
 msgid "This bot runs on this computer, not a Linux desktop. Shell and files use your home folder."
@@ -6470,10 +6227,6 @@ msgstr "Bu, çıktının {0} sürümünün tamamını siler. Bu işlem geri alı
 #: src/components/ArtifactFileCard.tsx
 msgid "This file is not valid UTF-8 text."
 msgstr "Bu dosya geçerli UTF-8 metni değil."
-
-#: src/lib/agent-import-errors.ts
-msgid "This import was already used. Choose the files again."
-msgstr "Bu içe aktarma zaten kullanıldı. Dosyaları yeniden seç."
 
 #: src/pages/Invite.tsx
 msgid "This invite link is no longer valid."
@@ -6576,10 +6329,6 @@ msgstr "Günün saati"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Timezone"
 msgstr "Saat dilimi"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Timing may differ"
-msgstr "Zamanlama farklı olabilir"
 
 #: src/pages/ActivityList.tsx
 msgid "To"
@@ -6872,14 +6621,6 @@ msgstr "Kullanıcı eşi"
 msgid "Username"
 msgstr "Kullanıcı adı"
 
-#: src/pages/shell/import-status.ts
-msgid "Uses files that are not imported"
-msgstr "İçe aktarılmayan dosyaları kullanır"
-
-#: src/pages/shell/import-status.ts
-msgid "Uses paths on your computer"
-msgstr "Bilgisayarınızdaki yolları kullanır"
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Uses this server's own {hostCredentialSource} credentials to access {selectedProviderName}."
 msgstr "{selectedProviderName} erişimi için bu sunucunun kendi {hostCredentialSource} kimlik bilgilerini kullanır."
@@ -7079,10 +6820,6 @@ msgstr "İş"
 #: src/pages/ActivityList.tsx
 msgid "Working"
 msgstr "Çalışıyor"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Working instructions"
-msgstr "Çalışma talimatları"
 
 #: src/components/ToolActivityDisclosure.tsx
 #: src/lib/roster-status.ts

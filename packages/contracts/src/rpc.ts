@@ -5,12 +5,6 @@ import type {
 } from "@orpc/contract";
 import { eventIterator, oc } from "@orpc/contract";
 import * as z from "zod";
-import {
-  AgentImportCreateInput,
-  AgentImportPlanSchema,
-  AgentImportPreviewInput,
-} from "./agent-import.js";
-import { AgentImportSetupStateInput, AgentImportSetupStateSchema } from "./agent-import-setup.js";
 import { AiConsentQuerySchema, AiConsentStatusSchema } from "./ai-consent.js";
 import { AnalyticsScreenInput } from "./analytics.js";
 import {
@@ -558,9 +552,6 @@ export const appContract = {
     listArchived: oc.output(z.array(BotSchema)),
     get: oc.input(botId).output(BotSchema),
     create: oc.input(CreateBotInput).output(BotSchema),
-    importPreview: oc.input(AgentImportPreviewInput).output(AgentImportPlanSchema),
-    importCreate: oc.input(AgentImportCreateInput).output(BotSchema),
-    importSetupState: oc.input(AgentImportSetupStateInput).output(AgentImportSetupStateSchema),
     duplicate: oc.input(botId).output(BotSchema),
     reorder: oc.input(ReorderBotsInput).output(z.object({ ok: z.literal(true) })),
     update: oc.input(UpdateBotInput).output(BotSchema),

@@ -427,10 +427,6 @@ msgstr "{summary} Vos modèles de secours ont également échoué."
 msgid "{title}, {label}"
 msgstr "{title}, {label}"
 
-#: src/pages/shell/agent-import.tsx
-msgid "{title}, saved as {savedAs}"
-msgstr "{title}, enregistré sous {savedAs}"
-
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "{toolCount, plural, one {# tool} other {# tools}}"
@@ -709,10 +705,6 @@ msgstr "Avancé"
 msgid "Advanced..."
 msgstr "Avancé..."
 
-#: src/components/AccountDataSettings.tsx
-msgid "Agent from another app"
-msgstr ""
-
 #: src/components/VaultSettings.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "All"
@@ -724,7 +716,6 @@ msgstr "La totalité des {credit} sert à l’utilisation des modèles."
 
 #: src/components/integrations/agent-access.tsx
 #: src/pages/Artifacts.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "All bots"
 msgstr "Tous les bots"
 
@@ -772,10 +763,6 @@ msgstr ""
 msgid "Allowed once"
 msgstr "Autorisé une fois"
 
-#: src/pages/shell/agent-import.tsx
-msgid "Already connected"
-msgstr "Déjà connecté"
-
 #: src/pages/Auth.tsx
 msgid "Already have an account?"
 msgstr "Vous avez déjà un compte ?"
@@ -812,14 +799,6 @@ msgstr "Une clé API est enregistrée pour ce fournisseur, et non une connexion 
 msgid "An existing Honcho peer to read from. Labradoodle never writes to it."
 msgstr "Un pair Honcho existant à consulter. Labradoodle n’y écrit jamais."
 
-#: src/lib/agent-import-errors.ts
-msgid "An imported API key could not be checked. Try again."
-msgstr "Une clé API importée n’a pas pu être vérifiée. Réessayez."
-
-#: src/lib/agent-import-errors.ts
-msgid "An imported API key could not be used. Untick it and try again."
-msgstr "Une clé API importée n’a pas pu être utilisée. Décochez-la et réessayez."
-
 #: src/pages/RoutineEditor.tsx
 msgid "An integration tool"
 msgstr "Un outil d’intégration"
@@ -827,10 +806,6 @@ msgstr "Un outil d’intégration"
 #: src/lib/activity-list-filters.ts
 msgid "Another agent"
 msgstr "Un autre agent"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Another assistant"
-msgstr "Autre assistant"
 
 #: src/components/AskCard.tsx
 msgid "Answer"
@@ -872,17 +847,9 @@ msgstr "Toute personne disposant du lien"
 msgid "API key"
 msgstr "Clé API"
 
-#: src/pages/shell/import-status.ts
-msgid "API key for {provider}"
-msgstr "Clé API pour {provider}"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "API key header"
 msgstr "En-tête de clé API"
-
-#: src/pages/shell/agent-import.tsx
-msgid "API keys"
-msgstr "Clés API"
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "API token"
@@ -1059,7 +1026,6 @@ msgstr "Studio d'avatars"
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/SettingsOverlay.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "Back"
 msgstr "Retour"
 
@@ -1184,7 +1150,6 @@ msgid "Browse MCP servers"
 msgstr "Parcourir les serveurs MCP"
 
 #: src/pages/KnowledgeSection.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "Built-in"
 msgstr "Intégré"
 
@@ -1231,10 +1196,6 @@ msgstr "Ne peut pas lire les images"
 #: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
 msgstr "Annuler"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Cancel new bot"
-msgstr "Annuler le nouveau bot"
 
 #: src/pages/GroupPanel.tsx
 msgid "Cancel new group"
@@ -1363,10 +1324,6 @@ msgstr "Vérifiez la clé API ou la connexion, puis testez à nouveau."
 msgid "Check the server URL and network, then test again."
 msgstr "Vérifiez l'URL du serveur et le réseau, puis testez à nouveau."
 
-#: src/pages/shell/import-setup-card.tsx
-msgid "Check this yourself"
-msgstr "À vérifier vous-même"
-
 #: src/components/pages/PageView.tsx
 #: src/components/pages/PageViewHost.tsx
 msgid "Check your connection and try again."
@@ -1407,18 +1364,9 @@ msgstr "Choisissez un nouveau mot de passe"
 msgid "Choose a provider"
 msgstr ""
 
-#: src/pages/shell/agent-import.tsx
-msgid "Choose backup"
-msgstr "Choisir une sauvegarde"
-
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
 msgid "Choose file"
 msgstr "Choisir un fichier"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Choose folder"
-msgstr "Choisir un dossier"
 
 #: src/components/ModelCredits.tsx
 #: src/components/SubscriptionGate.tsx
@@ -1733,10 +1681,6 @@ msgstr ""
 msgid "Connect OAuth"
 msgstr "Connecter OAuth"
 
-#: src/lib/agent-import-errors.ts
-msgid "Connect this model's provider first."
-msgstr "Connectez d’abord le fournisseur de ce modèle."
-
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
 msgid "Connect your own API key in Models or choose Labradoodle credits in Billing."
@@ -1793,11 +1737,6 @@ msgstr ""
 msgid "Contacts"
 msgstr ""
 
-#: src/pages/shell/agent-import.tsx
-#: src/pages/shell/import-status.ts
-msgid "Contains code to run"
-msgstr "Contient du code à exécuter"
-
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "Context limit"
@@ -1810,7 +1749,6 @@ msgstr "Limite de contexte"
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "Continue"
 msgstr "Continuer"
@@ -1839,7 +1777,6 @@ msgstr ""
 #: src/components/vault/VaultItemDetail.tsx
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/Onboarding.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "Copied"
 msgstr "Copié"
 
@@ -1867,10 +1804,6 @@ msgstr ""
 #: src/components/pages/SharePopover.tsx
 msgid "Copy link"
 msgstr "Copier le lien"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Copy prompt"
-msgstr "Copier le prompt"
 
 #: src/components/markdown-copy.tsx
 msgid "Copy rows"
@@ -1985,7 +1918,6 @@ msgstr "Impossible de se connecter à l'écran de l'ordinateur"
 msgid "Could not continue"
 msgstr "Impossible de continuer"
 
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 msgid "Could not create bot"
 msgstr "Impossible de créer le bot"
@@ -2217,10 +2149,6 @@ msgstr "Impossible de joindre le serveur du modèle."
 #: src/pages/Auth.tsx
 msgid "Could not reach the server"
 msgstr "Impossible d'atteindre le serveur"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Could not read these files"
-msgstr "Impossible de lire ces fichiers"
 
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Could not reject plugin"
@@ -2483,7 +2411,6 @@ msgid "Country"
 msgstr ""
 
 #: src/components/CreateOrganizationDialog.tsx
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
 #: src/pages/shell/sidebar-header.tsx
@@ -2526,7 +2453,6 @@ msgid "Created"
 msgstr "Créé"
 
 #: src/pages/GroupPanel.tsx
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "Creating…"
 msgstr "Création en cours…"
@@ -2542,10 +2468,6 @@ msgstr "Identifiant enregistré"
 #: src/pages/PluginsOverlay.tsx
 msgid "Credentials are encrypted and never sent to the model."
 msgstr "Les identifiants sont chiffrés et jamais envoyés au modèle."
-
-#: src/pages/shell/import-status.ts
-msgid "Credentials: {names}"
-msgstr "Identifiants : {names}"
 
 #: src/components/ModelCredits.tsx
 msgid "Credit amount"
@@ -2644,14 +2566,6 @@ msgstr "Par défaut"
 #: src/pages/shell/bot-panel.tsx
 msgid "Default ({0})"
 msgstr "Par défaut ({0})"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Default from Hermes"
-msgstr "Par défaut de Hermes"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Default from OpenClaw"
-msgstr "Par défaut d’OpenClaw"
 
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Default scope"
@@ -2753,10 +2667,6 @@ msgstr "Refuser"
 #: src/components/ComputerProviderSettings.tsx
 msgid "Deployment default ({0})"
 msgstr ""
-
-#: src/pages/shell/agent-import.tsx
-msgid "Description"
-msgstr "Description"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Design"
@@ -2886,7 +2796,6 @@ msgstr "Vous n'avez pas de compte ?"
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/ActivityList.tsx
 #: src/pages/shell/avatar-studio-popover.tsx
-#: src/pages/shell/import-setup-card.tsx
 #: src/pages/shell/message-view.tsx
 msgid "Done"
 msgstr "Terminé"
@@ -3023,10 +2932,6 @@ msgstr ""
 #: src/pages/McpServersOverlay.tsx
 msgid "Environment variables"
 msgstr "Variables d'environnement"
-
-#: src/pages/shell/import-status.ts
-msgid "Environment variables: {names}"
-msgstr "Variables d’environnement : {names}"
 
 #: src/lib/roster-status.ts
 #: src/pages/shell/sidebar-roster.tsx
@@ -3247,10 +3152,6 @@ msgstr "Rechercher des modèles"
 #: src/pages/Onboarding.tsx
 msgid "Finding…"
 msgstr "Recherche en cours…"
-
-#: src/pages/shell/import-setup-card.tsx
-msgid "Finish setting up"
-msgstr "Terminer la configuration"
 
 #: src/lib/model-connection-preflight.ts
 msgid "Finish subscription sign-in, then test again."
@@ -3515,11 +3416,6 @@ msgid "Import"
 msgstr ""
 
 #: src/components/AccountDataSettings.tsx
-#: src/pages/shell/agent-import.tsx
-msgid "Import an agent"
-msgstr "Importer un agent"
-
-#: src/components/AccountDataSettings.tsx
 msgid "Import data"
 msgstr "Importer des données"
 
@@ -3534,10 +3430,6 @@ msgstr ""
 #: src/pages/shell/message-cards.tsx
 msgid "Inbox & email"
 msgstr "Boîte de réception et e-mail"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Include API keys"
-msgstr "Inclure les clés API"
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Inherit default"
@@ -3573,18 +3465,8 @@ msgstr "Historique des instructions"
 
 #: src/components/AskCard.tsx
 #: src/components/InstructionSettings.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "Instructions"
 msgstr "Instructions"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Instructions {position}"
-msgstr "Instructions {position}"
-
-#: src/lib/agent-import-errors.ts
-#: src/pages/shell/agent-import.tsx
-msgid "Instructions are too long. Untick some files."
-msgstr "Les instructions sont trop longues. Décochez quelques fichiers."
 
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Instructions for this room"
@@ -3866,10 +3748,6 @@ msgstr ""
 msgid "Logins"
 msgstr ""
 
-#: src/pages/shell/agent-import.tsx
-msgid "Looks like it contains a key"
-msgstr "Semble contenir une clé"
-
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 msgid "Low"
@@ -3971,7 +3849,6 @@ msgid "MCP server"
 msgstr ""
 
 #: src/pages/McpServersOverlay.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "MCP servers"
 msgstr "Serveurs MCP"
 
@@ -4001,17 +3878,8 @@ msgstr ""
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/settings-nav.ts
-#: src/pages/shell/agent-import.tsx
 msgid "Memory"
 msgstr "Mémoire"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Memory {position}"
-msgstr "Mémoire {position}"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Memory for {title}"
-msgstr "Mémoire pour {title}"
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Memory scope"
@@ -4024,14 +3892,6 @@ msgstr "Mentions"
 #: src/pages/ExternalConversationSettings.tsx
 msgid "Mentions only"
 msgstr "Mentions uniquement"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Mentions OpenClaw features"
-msgstr "Mentionne des fonctions d’OpenClaw"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Mentions: {mentions}"
-msgstr "Mentionne : {mentions}"
 
 #: src/pages/shell/chat-shared.ts
 #: src/pages/shell/composer.tsx
@@ -4115,7 +3975,6 @@ msgstr "Mode"
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Model"
 msgstr "Modèle"
@@ -4223,7 +4082,6 @@ msgstr ""
 #: src/pages/OrganizationSettingsPanel.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/create-bot-dialog.tsx
 #: src/pages/shell/dialogs.tsx
@@ -4235,10 +4093,6 @@ msgstr "Nom"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Name on card"
 msgstr ""
-
-#: src/pages/shell/agent-import.tsx
-msgid "Name this bot"
-msgstr "Nommez ce bot"
 
 #: src/pages/GroupPanel.tsx
 msgid "Name this group"
@@ -4278,10 +4132,6 @@ msgstr "Nécessite une intervention"
 #: src/pages/shell/message-view.tsx
 msgid "Needs you"
 msgstr "A besoin de vous"
-
-#: src/pages/shell/import-status.ts
-msgid "Needs: {names}"
-msgstr "Nécessite : {names}"
 
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Never ask"
@@ -4444,10 +4294,6 @@ msgstr "Aucun catalogue de modèles disponible."
 msgid "No models listed."
 msgstr "Aucun modèle listé."
 
-#: src/pages/shell/agent-import.tsx
-msgid "No OpenClaw, Hermes or agent document found."
-msgstr "Aucun fichier OpenClaw, Hermes ou document d'agent trouvé."
-
 #: src/components/pages/PagesList.tsx
 msgid "No pages match “{query}”."
 msgstr "Aucune page ne correspond à « {query} »."
@@ -4500,10 +4346,6 @@ msgstr "Aucun déclencheur"
 msgid "None"
 msgstr ""
 
-#: src/pages/shell/agent-import.tsx
-msgid "Not a valid skill"
-msgstr "Compétence non valide"
-
 #. placeholder {0}: notAdded.join(", ")
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "Not added: {0}"
@@ -4513,14 +4355,6 @@ msgstr ""
 msgid "Not checked yet"
 msgstr "Pas encore vérifié"
 
-#: src/pages/shell/agent-import.tsx
-msgid "Not imported"
-msgstr "Non importé"
-
-#: src/pages/shell/import-status.ts
-msgid "Not in Labradoodle's catalog"
-msgstr "Absent du catalogue de Labradoodle"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Not in the plugin catalog"
 msgstr "Pas dans le catalogue de plugins"
@@ -4528,15 +4362,6 @@ msgstr "Pas dans le catalogue de plugins"
 #: src/pages/shell/message-cards.tsx
 msgid "Not now"
 msgstr "Pas maintenant"
-
-#: src/pages/shell/agent-import.tsx
-#: src/pages/shell/import-status.ts
-msgid "Not supported in Labradoodle"
-msgstr "Non pris en charge par Labradoodle"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Not used by Labradoodle"
-msgstr "Non utilisé par Labradoodle"
 
 #: src/components/McpServerHealthLine.tsx
 msgid "Not working"
@@ -4625,7 +4450,6 @@ msgstr "Vous uniquement"
 #: src/components/pages/PagesList.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/shell/computer-panel.tsx
-#: src/pages/shell/import-setup-card.tsx
 #: src/pages/shell/message-view.tsx
 msgid "Open"
 msgstr "Ouvrir"
@@ -4634,10 +4458,6 @@ msgstr "Ouvrir"
 #: src/pages/shell/sidebar-roster.tsx
 msgid "Open {0}"
 msgstr "Ouvrir {0}"
-
-#: src/pages/shell/import-setup-card.tsx
-msgid "Open {name}"
-msgstr "Ouvrir {name}"
 
 #: src/components/pages/PageCard.tsx
 msgid "Open {title}"
@@ -4687,10 +4507,6 @@ msgstr ""
 #: src/pages/Onboarding.tsx
 msgid "OpenAI-compatible server URL"
 msgstr "URL de serveur compatible OpenAI"
-
-#: src/pages/shell/agent-import.tsx
-msgid "OpenClaw or Hermes"
-msgstr "OpenClaw ou Hermes"
 
 #: src/components/pages/DownloadPdfButton.tsx
 msgid "Opens your browser's print dialog. Choose Save as PDF as the destination."
@@ -4848,10 +4664,6 @@ msgstr "Collez une clé de remplacement"
 msgid "Paste the OpenAI-compatible address from your server. Labradoodle adds /v1 if needed."
 msgstr "Collez l'adresse compatible OpenAI de votre serveur. Labradoodle ajoute /v1 si nécessaire."
 
-#: src/pages/shell/agent-import.tsx
-msgid "Paste the reply"
-msgstr "Collez la réponse"
-
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Paste your API key"
 msgstr "Collez votre clé API"
@@ -4861,7 +4673,6 @@ msgid "Paste your API key, then test again."
 msgstr "Collez votre clé API, puis testez à nouveau."
 
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/import-status.ts
 msgid "Paused"
 msgstr "En pause"
 
@@ -4874,10 +4685,6 @@ msgstr ""
 #: src/pages/shell/bot-panel.tsx
 msgid "Permissions"
 msgstr "Autorisations"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Persona"
-msgstr "Personnalité"
 
 #: src/components/SignupSurvey.tsx
 msgid "Personal"
@@ -4998,10 +4805,6 @@ msgstr "Espace de travail privé avec ses propres bots et groupes."
 msgid "Productivity"
 msgstr ""
 
-#: src/pages/shell/import-status.ts
-msgid "Program: {name}"
-msgstr "Programme : {name}"
-
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Protected input"
 msgstr ""
@@ -5043,10 +4846,6 @@ msgstr "Réactions"
 #: src/pages/shell/bot-panel.tsx
 msgid "Read replies aloud"
 msgstr "Lire les réponses à voix haute"
-
-#: src/pages/shell/import-status.ts
-msgid "Ready"
-msgstr "Prêt"
 
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Reason"
@@ -5487,7 +5286,6 @@ msgstr "Tourner la clé"
 msgid "Routine"
 msgstr "Routine"
 
-#: src/pages/shell/agent-import.tsx
 #: src/pages/shell/bot-panel.tsx
 msgid "Routines"
 msgstr "Routines"
@@ -5823,10 +5621,6 @@ msgstr "Paramètres : Général"
 msgid "Settings: Usage"
 msgstr "Paramètres : Utilisation"
 
-#: src/pages/shell/import-setup-card.tsx
-msgid "Setup complete"
-msgstr "Configuration terminée"
-
 #: src/components/ComputersUnavailableHint.tsx
 #: src/pages/model-settings/compatible-model-fields.tsx
 msgid "Setup help"
@@ -5967,21 +5761,12 @@ msgstr ""
 msgid "Skill {0}"
 msgstr "Compétence {0}"
 
-#: src/pages/shell/agent-import.tsx
-msgid "Skill {position}"
-msgstr "Compétence {position}"
-
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/SidebarFooter.tsx
 #: src/pages/Shell.tsx
-#: src/pages/shell/agent-import.tsx
 msgid "Skills"
 msgstr "Compétences"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Skills join the library all your bots share."
-msgstr "Les compétences rejoignent la bibliothèque partagée par tous vos bots."
 
 #: src/pages/shell/computer-release-actions.tsx
 msgid "Skip"
@@ -6017,22 +5802,10 @@ msgstr "Glisser vers le haut pour verrouiller"
 msgid "Some plugins could not be loaded."
 msgstr ""
 
-#: src/pages/shell/agent-import.tsx
-msgid "Some settings are not imported"
-msgstr "Certains réglages ne sont pas importés"
-
 #: src/App.tsx
 #: src/lib/user-error.ts
 msgid "Something went wrong. Try again."
 msgstr "Un problème est survenu. Réessayez."
-
-#: src/lib/agent-import-errors.ts
-msgid "Something with the same name was just added. Try again."
-msgstr "Un élément du même nom vient d’être ajouté. Réessayez."
-
-#: src/lib/agent-import-errors.ts
-msgid "Something you chose cannot work here. Untick it and try again."
-msgstr "Un élément choisi ne peut pas fonctionner ici. Décochez-le et réessayez."
 
 #: src/components/markdown-copy.tsx
 msgid "Sort by {column}"
@@ -6385,14 +6158,6 @@ msgstr "La différence non utilisée est créditée sur votre prochaine facture.
 msgid "Their own model is cleared. You can pick one again in each bot."
 msgstr ""
 
-#: src/pages/shell/agent-import.tsx
-msgid "These files are too large to import."
-msgstr "Ces fichiers sont trop volumineux pour être importés."
-
-#: src/lib/agent-import-errors.ts
-msgid "These files or choices no longer match. Choose the files again."
-msgstr "Ces fichiers ou ces choix ne correspondent plus. Choisissez à nouveau les fichiers."
-
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/VaultSettings.tsx
 msgid "These saved settings can't be read. Remove it and add it again."
@@ -6420,14 +6185,6 @@ msgstr "Ce compte est désactivé"
 #: src/lib/user-error.ts
 msgid "This app needs its own sign-in setup to connect."
 msgstr "Cette app a besoin de sa propre configuration de connexion pour se connecter."
-
-#: src/pages/shell/agent-import.tsx
-msgid "This backup could not be read."
-msgstr "Impossible de lire cette sauvegarde."
-
-#: src/pages/shell/agent-import.tsx
-msgid "This bot"
-msgstr "Ce bot"
 
 #: src/pages/shell/computer-view.tsx
 msgid "This bot runs on this computer, not a Linux desktop. Shell and files use your home folder."
@@ -6470,10 +6227,6 @@ msgstr "Cela supprime toutes les {0} versions de cet artefact. Cette action est 
 #: src/components/ArtifactFileCard.tsx
 msgid "This file is not valid UTF-8 text."
 msgstr "Ce fichier n'est pas un texte UTF-8 valide."
-
-#: src/lib/agent-import-errors.ts
-msgid "This import was already used. Choose the files again."
-msgstr "Cet import a déjà été utilisé. Choisissez à nouveau les fichiers."
 
 #: src/pages/Invite.tsx
 msgid "This invite link is no longer valid."
@@ -6576,10 +6329,6 @@ msgstr "Heure de la journée"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Timezone"
 msgstr ""
-
-#: src/pages/shell/agent-import.tsx
-msgid "Timing may differ"
-msgstr "L’horaire peut varier"
 
 #: src/pages/ActivityList.tsx
 msgid "To"
@@ -6872,14 +6621,6 @@ msgstr ""
 msgid "Username"
 msgstr ""
 
-#: src/pages/shell/import-status.ts
-msgid "Uses files that are not imported"
-msgstr "Utilise des fichiers non importés"
-
-#: src/pages/shell/import-status.ts
-msgid "Uses paths on your computer"
-msgstr "Utilise des chemins de votre ordinateur"
-
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Uses this server's own {hostCredentialSource} credentials to access {selectedProviderName}."
 msgstr "Utilise les identifiants {hostCredentialSource} propres à ce serveur pour accéder à {selectedProviderName}."
@@ -7079,10 +6820,6 @@ msgstr ""
 #: src/pages/ActivityList.tsx
 msgid "Working"
 msgstr "En cours"
-
-#: src/pages/shell/agent-import.tsx
-msgid "Working instructions"
-msgstr "Instructions de travail"
 
 #: src/components/ToolActivityDisclosure.tsx
 #: src/lib/roster-status.ts

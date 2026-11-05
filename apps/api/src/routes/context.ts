@@ -38,7 +38,6 @@ import {
 } from "@labradoodle/contracts";
 import { createGroupRepos, createRepos, recordSecurityEvent, runAsTenant } from "@labradoodle/db";
 import { implement, ORPCError } from "@orpc/server";
-import { createAgentImportServices } from "../agent-import-services.js";
 import { createAgentSkillsService } from "../agent-skills.js";
 import { createBotRemoval } from "../bot-removal.js";
 import { createMcpServers } from "../mcp-servers.js";
@@ -98,10 +97,7 @@ export function createRouterContext(deps: RouterDeps) {
   } = createMcpServers(deps, onboardingDeps, mcpOAuth);
   const announceRoutine = createRoutineAnnouncer(deps);
   const codexCatalog = deps.codexCatalog ?? new CodexCatalogCache();
-  const { verifyModelConnection, connectModelCredential } = createModelConnector(
-    deps,
-    codexCatalog,
-  );
+  const { connectModelCredential } = createModelConnector(deps, codexCatalog);
   const favicons = deps.favicons ?? createFaviconResolver();
   const refreshExpiredCredential =
     deps.refreshExpiredModelCredential ??
@@ -119,16 +115,6 @@ export function createRouterContext(deps: RouterDeps) {
     },
   });
   const removeBot = createBotRemoval(deps, repos);
-  const agentImportServices = createAgentImportServices({
-    deps,
-    repos,
-    codexCatalog,
-    verifyModelConnection,
-    botModelValidation,
-    prepareMcpServer,
-    insertMcpServer,
-    announceRoutine,
-  });
   // The scripted fixture only exists to drive the scripted runtime; a real runtime
   // cannot execute it, so it stays out of the user-facing catalog otherwise.
   const chatCatalog = async (actor: Actor) => {
@@ -389,7 +375,6 @@ export function createRouterContext(deps: RouterDeps) {
     refreshExpiredCredential,
     botModelValidation,
     removeBot,
-    agentImportServices,
     chatCatalog,
     withDeploymentDefault,
     modelRoleCatalog,

@@ -18,7 +18,6 @@ import { CreateGroupForm, GroupSettings } from "../GroupPanel";
 import { ResizableSidePanel } from "../ResizableSidePanel";
 import { RoutineEditor } from "../RoutineEditor";
 import type { SettingsSection } from "../shell-overlay";
-import { AgentImportForm } from "./agent-import";
 import type { BotPanelTab } from "./bot-panel";
 import { BotSettings } from "./bot-panel";
 import { firstThreadRoute } from "./use-shell-navigation";
@@ -45,7 +44,6 @@ export function ShellSidePanel({
   routinesPanel,
   routineEditorProps,
   openBot,
-  openCreatedBot,
   modelFocusRequest,
   openSettings,
   memoryProviderConfigured,
@@ -73,7 +71,6 @@ export function ShellSidePanel({
   routinesPanel: ReactNode;
   routineEditorProps: ComponentProps<typeof RoutineEditor> | null;
   openBot: (botId: string) => void;
-  openCreatedBot: (bot: Bot) => void;
   modelFocusRequest: number;
   openSettings: (section: SettingsSection) => void;
   memoryProviderConfigured: boolean;
@@ -83,7 +80,7 @@ export function ShellSidePanel({
   discardChatAttachments: (threadKey: string) => void;
 }) {
   const { t } = useLingui();
-  const open = Boolean(panel && (active || activeGroup || panel === "import-agent"));
+  const open = Boolean(panel && (active || activeGroup));
   const botTab =
     panel === "computer" || panel === "routines" || panel === "pages" || panel === "settings"
       ? panel
@@ -103,10 +100,7 @@ export function ShellSidePanel({
     <ResizableSidePanel open={open} panel={panel ?? "closed"}>
       {open ? (
         <div className="rk-scroll h-full w-full overflow-y-auto px-5 py-[17px]">
-          {panel !== "routine" &&
-          panel !== "create-group" &&
-          panel !== "group-settings" &&
-          panel !== "import-agent" ? (
+          {panel !== "routine" && panel !== "create-group" && panel !== "group-settings" ? (
             <div className="mb-4 flex items-center justify-between">
               {!active && panel !== "settings" ? (
                 <span className="text-[13.5px] text-muted-foreground">
@@ -175,15 +169,6 @@ export function ShellSidePanel({
               onClose={() => setPanel(null)}
               onOpenBot={openBot}
               covered={computerOpen}
-            />
-          ) : null}
-          {panel === "import-agent" ? (
-            <AgentImportForm
-              onClose={() => setPanel(null)}
-              onCreated={(bot) => {
-                openCreatedBot(bot);
-                void refreshBots().catch(() => undefined);
-              }}
             />
           ) : null}
           {botTab && active ? (

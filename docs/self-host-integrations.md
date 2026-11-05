@@ -64,7 +64,7 @@ read credentials from the environment), so Labradoodle runs the flow for them. T
 the API and worker have `MCP_STDIO_ENABLED=true` and the command is listed in
 `MCP_STDIO_ALLOWED_COMMANDS`. A stdio server runs inside the API and worker with their access,
 so only admins (verified accounts listed in `RAKAZO_ADMIN_EMAILS`) can add or edit one, in
-**Settings** or through an agent import; with no admins listed, nobody can. Bots never add stdio servers. Everyone can still add remote servers, and a
+**Settings**; with no admins listed, nobody can. Bots never add stdio servers. Everyone can still add remote servers, and a
 stdio server an admin added keeps working for everyone it is available to. When adding the
 server, enter the OAuth client, its
 **Authorization server** (the issuer, for example `https://accounts.google.com`) and the

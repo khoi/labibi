@@ -414,5 +414,5 @@ export function createModelConnector(deps: RouterDeps, codexCatalog: CodexLiveCa
       codexCatalog,
     );
   };
-  return { verifyModelConnection, connectModelCredential };
+  return { connectModelCredential };
 }

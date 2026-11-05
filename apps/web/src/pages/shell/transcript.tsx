@@ -45,7 +45,6 @@ import { messageHasVisibleBlocks } from "../../lib/tool-activity-view";
 import { TRANSCRIPT_CONTENT_PADDING } from "../../lib/transcript-layout";
 import { transcriptIsNearEnd, transcriptMovedDown } from "../../lib/transcript-scroll";
 import { TimeSeparator, UnreadDivider } from "./chat-context";
-import type { ImportSetupTarget } from "./import-setup-card";
 import { MessageView } from "./message-view";
 import { QuoteSelectionButton } from "./quote-selection-button";
 
@@ -92,7 +91,6 @@ export const Transcript = memo(function Transcript({
   speakingMessageId,
   onSpeak,
   onOpenComputer,
-  onOpenImportSetup,
   rpc,
 }: {
   scrollRef: RefObject<HTMLDivElement | null>;
@@ -141,7 +139,6 @@ export const Transcript = memo(function Transcript({
   speakingMessageId: string | null;
   onSpeak: (message: ThreadMessage) => void;
   onOpenComputer: (botId?: string) => void;
-  onOpenImportSetup?: (target: ImportSetupTarget) => void;
   rpc: ReturnType<typeof createSpaceRpc>;
 }) {
   const { t } = useLingui();
@@ -596,7 +593,6 @@ export const Transcript = memo(function Transcript({
                       speaking={speakingMessageId === message.id}
                       onSpeak={onSpeak}
                       onOpenComputer={onOpenComputer}
-                      onOpenImportSetup={onOpenImportSetup}
                       rpc={rpc}
                       showToolActivity={showToolActivity}
                       onReply={onReply}

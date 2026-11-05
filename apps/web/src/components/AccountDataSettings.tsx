@@ -8,13 +8,7 @@ import { SuccessPop } from "./ai/primitives";
 import { useIdentityConfirmation } from "./ConfirmIdentityDialog";
 import { SettingsRow } from "./SettingsRows";
 
-export function AccountDataSettings({
-  onImported,
-  onImportAgent,
-}: {
-  onImported?: () => Promise<void>;
-  onImportAgent?: () => void;
-}) {
+export function AccountDataSettings({ onImported }: { onImported?: () => Promise<void> }) {
   const { t } = useLingui();
   const { withIdentityConfirmation, identityDialog } = useIdentityConfirmation();
   const fileInput = useRef<HTMLInputElement>(null);
@@ -122,23 +116,6 @@ export function AccountDataSettings({
           </p>
         ) : null}
       </SettingsRow>
-      {onImportAgent ? (
-        <SettingsRow
-          label={<Trans>Agent from another app</Trans>}
-          control={
-            <Button
-              variant="secondary"
-              size="sm"
-              aria-label={t`Import an agent`}
-              data-testid="agent-import-open"
-              disabled={pending !== null}
-              onClick={onImportAgent}
-            >
-              <Trans>Import</Trans>
-            </Button>
-          }
-        />
-      ) : null}
       {identityDialog}
     </>
   );

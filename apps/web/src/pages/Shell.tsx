@@ -83,7 +83,6 @@ import { Composer } from "./shell/composer";
 import { ComputerOverlay } from "./shell/computer-overlay";
 import { ComputerPanel } from "./shell/computer-panel";
 import type { CreateBotDialogInput } from "./shell/create-bot-dialog";
-import type { ImportSetupTarget } from "./shell/import-setup-card";
 import { KeyboardShortcutsDialog } from "./shell/keyboard-shortcuts-dialog";
 import { ShellDialogs, useShellDialogs } from "./shell/shell-dialogs";
 import { AppOverlays, SettingsOverlays } from "./shell/shell-overlays";
@@ -729,13 +728,6 @@ function SpaceShell() {
   });
 
   const openBot = useCallback((id: string) => navigate(`/app/${id}`), [navigate]);
-  // An import's setup checklist re-checks on each thread refresh, so refresh once setup closes.
-  const importSetupOpen = useRef(false);
-  useEffect(() => {
-    if (!importSetupOpen.current || overlay || searchParams.has("routine")) return;
-    importSetupOpen.current = false;
-    void refreshActiveThread();
-  }, [overlay, searchParams, refreshActiveThread]);
   const setOverlayRef = useRef(setOverlay);
   useLayoutEffect(() => {
     setOverlayRef.current = setOverlay;
@@ -766,23 +758,6 @@ function SpaceShell() {
       setPeerConversation(peer);
     },
     [setPeerConversation],
-  );
-  const openImportSetup = useCallback(
-    (target: ImportSetupTarget) => {
-      importSetupOpen.current = true;
-      if (target.kind === "models")
-        setOverlayRef.current({ kind: "settings", section: "models", spaceId: null });
-      else if (target.kind === "mcp")
-        setOverlayRef.current({ kind: "mcp", serverId: target.serverId });
-      else {
-        setSearchParams((current) => {
-          const next = new URLSearchParams(current);
-          next.set("routine", target.routineId);
-          return next;
-        });
-      }
-    },
-    [setSearchParams],
   );
   const stopTeaching = useCallback(async () => {
     const id = activeBotId.current;
@@ -1147,7 +1122,6 @@ function SpaceShell() {
               speakingMessageId={speakingMessageId}
               onSpeak={speakMessage}
               onOpenComputer={computerControls.onOpenComputer}
-              onOpenImportSetup={openImportSetup}
               rpc={rpc}
             />
           )}
@@ -1301,7 +1275,6 @@ function SpaceShell() {
         }
         routineEditorProps={routineEditorProps}
         openBot={openBot}
-        openCreatedBot={openCreatedBot}
         modelFocusRequest={modelFocusRequest}
         openSettings={openSettings}
         memoryProviderConfigured={memoryProviderConfig != null}
@@ -1358,7 +1331,6 @@ function SpaceShell() {
           removeSpace={removeSpace}
           leftSpace={leftSpace}
           refreshSpaces={() => refreshBots()}
-          openAgentImport={() => setPanel("import-agent")}
           alive={alive}
           user={session.data?.user}
           refetchSession={() => session.refetch({ query: { disableCookieCache: true } })}

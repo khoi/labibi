@@ -7,10 +7,6 @@ const RAKAZO_DOCS: ReadonlyArray<readonly [topics: string, url: string]> = [
     "https://labradoodle.com/docs/bots-and-chats.md",
   ],
   [
-    "Importing an OpenClaw, Hermes or ChatGPT agent",
-    "https://labradoodle.com/docs/import-an-agent.md",
-  ],
-  [
     "Connecting apps and integrations (Gmail, GitHub, MCP tools)",
     "https://labradoodle.com/docs/integrations.md",
   ],

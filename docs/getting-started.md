@@ -25,7 +25,3 @@ computer and reports back in the same chat. See [Routines](./routines.md).
 ## Decide what it can do alone
 
 Choose whether bots ask before acting in [Approvals](./approvals.md).
-
-## Bring an agent you already have
-
-Coming from OpenClaw, Hermes or another assistant? [Import it](./import-an-agent.md) as a new bot.

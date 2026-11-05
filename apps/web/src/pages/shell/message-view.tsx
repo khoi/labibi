@@ -40,8 +40,6 @@ import {
 } from "../../lib/tool-activity-view";
 import { ReplyLine } from "./chat-context";
 import { FALLBACK_BOT_COLOR, previewMessageText } from "./chat-shared";
-import type { ImportSetupTarget } from "./import-setup-card";
-import { ImportSetupCard } from "./import-setup-card";
 import {
   AppConnectCard,
   ArtifactImage,
@@ -76,7 +74,6 @@ export const MessageView = memo(function MessageView({
   speaking,
   onSpeak,
   onOpenComputer,
-  onOpenImportSetup,
   rpc,
   showToolActivity,
   onReply,
@@ -122,7 +119,6 @@ export const MessageView = memo(function MessageView({
   onSpeak: (message: ThreadMessage) => void;
   onOpenComputer: (botId?: string) => void;
   /** Opens where an imported item's setup is finished. */
-  onOpenImportSetup?: (target: ImportSetupTarget) => void;
   rpc: ReturnType<typeof createSpaceRpc>;
   showToolActivity: boolean;
   onReply: (message: ThreadMessage) => void;
@@ -490,17 +486,6 @@ export const MessageView = memo(function MessageView({
             return (
               <div key={i} className="flex justify-start">
                 <McpAppCard block={block} target={artifactTarget} />
-              </div>
-            );
-          }
-          if (block.kind === "import_setup") {
-            return (
-              <div key={i} className="flex justify-start">
-                <ImportSetupCard
-                  botId={"botId" in artifactTarget ? artifactTarget.botId : message.botId}
-                  block={block}
-                  onOpen={onOpenImportSetup}
-                />
               </div>
             );
           }

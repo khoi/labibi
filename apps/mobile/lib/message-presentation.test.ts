@@ -181,18 +181,6 @@ describe("mobile message presentation", () => {
       { kind: "content", blocks: [{ kind: "text", text: "Hi." }] },
     ]);
   });
-
-  it("leaves out an agent import's setup checklist, which only the web app draws", () => {
-    const checklist: MessageBlock = {
-      kind: "import_setup",
-      items: [{ kind: "routine", routineId: "routine-1", name: "morning" }],
-    };
-    expect(hasVisibleMessagePresentation([checklist])).toBe(false);
-    expect(messagePresentationSegments([checklist])).toEqual([]);
-    expect(messagePresentationSegments([{ kind: "text", text: "Imported." }, checklist])).toEqual([
-      { kind: "content", blocks: [{ kind: "text", text: "Imported." }] },
-    ]);
-  });
 });
 
 describe("quotableMessageSegments", () => {

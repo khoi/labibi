@@ -39,8 +39,6 @@ In **Settings → General**:
 
 - **Export data** downloads a zip of your account: every space's chats, files and bot workspaces.
 - **Import data** loads an export, for example to move between labradoodle.com and your own server.
-- **Import an agent** brings in an OpenClaw, Hermes or ChatGPT assistant. See
-  [Import an agent](./import-an-agent.md).
 - **Delete account** emails you a code, then permanently deletes your account and data.
 
 ## Billing on labradoodle.com

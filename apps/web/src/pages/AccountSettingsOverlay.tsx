@@ -84,7 +84,6 @@ export type SettingsGeneralProps = {
   onTimezoneChange?: (timezone: string) => Promise<void>;
   /** The icon set new and unpinned bots wear; absent from servers that predate it. */
   onAccountImported?: () => Promise<void>;
-  onImportAgent?: () => void;
 };
 
 export function GeneralSettingsPanels({
@@ -94,7 +93,6 @@ export function GeneralSettingsPanels({
   timezone = null,
   onTimezoneChange,
   onAccountImported,
-  onImportAgent,
 }: SettingsGeneralProps) {
   const { t } = useLingui();
   const account = accountDisplay({ name, email }, t`You`);
@@ -466,7 +464,7 @@ export function GeneralSettingsPanels({
       ) : null}
 
       <SettingsGroup title={<Trans>Data</Trans>} data-testid="account-data">
-        <AccountDataSettings onImported={onAccountImported} onImportAgent={onImportAgent} />
+        <AccountDataSettings onImported={onAccountImported} />
         <AccountAccess onSecurity={setAccountSecurity} />
       </SettingsGroup>
     </div>

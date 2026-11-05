@@ -5,8 +5,8 @@ import { describe, expect, it } from "vitest";
 import { DEFERRED_MIGRATION_MARKER } from "./deferred-migrations.js";
 
 const migrationsDir = fileURLToPath(new URL("../prisma/migrations", import.meta.url));
-// Migrations up to this one predate the check; later ones must follow it.
-const LAST_UNCHECKED = "20261115120000_billing_byok_price";
+// Migrations up to this one predate the check or are the declared prototype-phase break.
+const LAST_UNCHECKED = "20261201120000_remove_bot_era_features";
 
 // The previous release still reads what these remove while both run during a deploy, so they
 // wait for the next deploy behind the deferred marker.
