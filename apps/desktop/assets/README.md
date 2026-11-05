@@ -7,5 +7,5 @@ Mac packaging requires Xcode 26 or newer. Electron builder compiles `Labradoodle
 into `Assets.car` for Tahoe and generates `icon.icns` for older macOS versions.
 `icon-macos.png` is the matching development export with Dock margins.
 
-`icon.png` and `icon.ico` are matching orange exports for Linux and Windows.
+`icon.png` and `icon.ico` are the matching exports for Linux and Windows.
 Refresh them with `pnpm --filter @labradoodle/ui-tokens export:brand`.

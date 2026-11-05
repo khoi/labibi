@@ -65,7 +65,7 @@ export const elevenlabs: VoiceProvider = {
   ],
   scene: {
     bot: "Chief of Staff",
-    color: "#3EC5A8",
+    color: "#4FAA52",
     where: "Voice from ElevenLabs",
     ask: "call me at 5 to go over the day",
     reply: "will do. talk at 5.",

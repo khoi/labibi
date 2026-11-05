@@ -38,7 +38,7 @@ export const wuying: Sandbox = {
   ],
   scene: {
     bot: "Expense Manager",
-    color: "#F2622A",
+    color: "#FE6F02",
     where: "Computer on Wuying",
     ask: "reconcile october's card export against the receipts folder",
     reply: "on it. opening the export in excel on the windows desktop. anything that doesn't line up, i ask.",

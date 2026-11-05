@@ -239,7 +239,7 @@ export const INTEGRATION_PLATFORMS_HUB = {
   ],
   scene: {
     bot: "Chief of Staff",
-    color: "#3EC5A8",
+    color: "#4FAA52",
     where: "Tools from your apps",
     ask: "prep me for tomorrow's offsite call",
     reply: "pulled it together from your calendar, the crm and the venue thread. nothing sent.",

@@ -56,7 +56,7 @@ export const openai: VoiceProvider = {
   ],
   scene: {
     bot: "Inbox Manager",
-    color: "#6A6BF5",
+    color: "#1E98F5",
     where: "Voice from OpenAI",
     ask: "anything urgent in my inbox? draft replies, don't send",
     reply: "three need you today. drafts are ready, nothing sent. reading the first one now.",

@@ -35,7 +35,7 @@ export const docker: Sandbox = {
   ],
   scene: {
     bot: "Talent Scout",
-    color: "#3B82F6",
+    color: "#1E98F5",
     where: "Computer in Docker",
     ask: "find infra engineers who maintain kubernetes operators on github, shortlist ten",
     reply: "on it. reading their repos and recent commits, notes go in your shortlist file.",

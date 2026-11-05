@@ -40,7 +40,7 @@ export const boat: Sandbox = {
   ],
   scene: {
     bot: "Sales Outbound",
-    color: "#F5A03C",
+    color: "#FFBC0A",
     where: "Computer on Boat",
     ask: "work the seed-stage fintech list overnight, nothing sent without me",
     reply: "on it. signed in to hubspot and linkedin in my own browser. drafts will wait for you at 6am.",

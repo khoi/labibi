@@ -48,7 +48,7 @@ export const pipedream: IntegrationPlatform = {
   ],
   scene: {
     bot: "Account Manager",
-    color: "#9B5CF6",
+    color: "#FAB5E3",
     where: "Tools from Pipedream",
     ask: "anything at risk before the renewals this month?",
     reply: "two accounts look shaky. I drafted notes for both, nothing posted yet.",

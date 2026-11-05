@@ -41,7 +41,7 @@ export const daytona: Sandbox = {
   ],
   scene: {
     bot: "Talent Scout",
-    color: "#3B82F6",
+    color: "#1E98F5",
     where: "Computer on Daytona",
     ask: "read the infra applicants and shortlist anyone who has run their own cluster",
     reply: "on it. reading every profile and repo. intros held for you.",

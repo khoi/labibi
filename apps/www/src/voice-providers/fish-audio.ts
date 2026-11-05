@@ -47,7 +47,7 @@ export const fishAudio: VoiceProvider = {
   ],
   scene: {
     bot: "Chief of Staff",
-    color: "#3EC5A8",
+    color: "#4FAA52",
     where: "Voice from Fish Audio",
     ask: "call me at 5 to go over the day",
     reply: "will do. i'll ring you at 5.",

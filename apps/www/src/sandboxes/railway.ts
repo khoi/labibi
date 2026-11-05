@@ -35,7 +35,7 @@ export const railway: Sandbox = {
   ],
   scene: {
     bot: "Bug Triage",
-    color: "#D9508A",
+    color: "#ED6095",
     where: "Computer on Railway",
     ask: "triage what came in over the weekend",
     reply: "on it. reproducing each report on my computer before i touch the issues.",

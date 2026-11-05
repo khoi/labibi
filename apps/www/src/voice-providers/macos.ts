@@ -20,7 +20,7 @@ export const macos: VoiceProvider = {
   ],
   scene: {
     bot: "Chief of Staff",
-    color: "#3EC5A8",
+    color: "#4FAA52",
     where: "Voice from the server's Mac",
     ask: "call me at 5 to go over the day",
     reply: "will do. i'll ring you at 5.",

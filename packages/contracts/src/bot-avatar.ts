@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { BOT_COLORS } from "./ids.js";
 
 /** Per-bot set. Missing values belong to the original renderer. */
 export const BotAvatarSetSchema = z.enum(["organic", "rakazo"]);
@@ -34,7 +35,7 @@ export function parseBotAvatarValue(raw: string): ParsedBotAvatar {
   }
   if (raw.includes("::shape_")) {
     const parts = raw.split("::shape_");
-    const color = parts[0] || "#F97316";
+    const color = parts[0] || BOT_COLORS[0];
     const rawShape = parts[1] ?? "0";
     const parsedShape = /^\d+$/.test(rawShape) ? Number(rawShape) : 0;
     const shapeIndex = Number.isSafeInteger(parsedShape) ? parsedShape % BOT_AVATAR_SHAPE_COUNT : 0;

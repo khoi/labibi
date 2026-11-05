@@ -62,7 +62,7 @@ export const cartesia: VoiceProvider = {
   ],
   scene: {
     bot: "Sales Outbound",
-    color: "#F5A03C",
+    color: "#FFBC0A",
     where: "Voice from Cartesia",
     ask: "call me when the overnight list is ready",
     reply: "will do. i'll ring you once the drafts are queued.",

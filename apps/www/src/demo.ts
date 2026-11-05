@@ -56,7 +56,7 @@ export const DEMO_BOTS: DemoBot[] = [
   {
     id: "chief",
     name: "Chief of Staff",
-    color: "#3EC5A8",
+    color: "#4FAA52",
     time: "Yesterday",
     preview: "venue booked, contract sent for signature",
     routines: [{ name: "Monday briefing", when: "Mondays 7am" }],
@@ -91,7 +91,7 @@ export const DEMO_BOTS: DemoBot[] = [
   {
     id: "sales",
     name: "Sales Outbound",
-    color: "#F5A03C",
+    color: "#FFBC0A",
     time: "3:10 AM",
     preview: "done. 40 accounts researched, 18 drafts queued",
     routines: [
@@ -134,7 +134,7 @@ export const DEMO_BOTS: DemoBot[] = [
   {
     id: "inbox",
     name: "Inbox Manager",
-    color: "#6A6BF5",
+    color: "#1E98F5",
     time: "12:11 AM",
     preview: "sent. inbox at zero, 5 drafts parked",
     routines: [
@@ -176,7 +176,7 @@ export const DEMO_BOTS: DemoBot[] = [
   {
     id: "account",
     name: "Account Manager",
-    color: "#9B5CF6",
+    color: "#FAB5E3",
     time: "Yesterday",
     preview: "invite's out to sam, helix note added",
     routines: [{ name: "Renewal watch", when: "Daily 9am" }],
@@ -207,7 +207,7 @@ export const DEMO_BOTS: DemoBot[] = [
   {
     id: "talent",
     name: "Talent Scout",
-    color: "#3B82F6",
+    color: "#1E98F5",
     time: "Yesterday",
     preview: "3 intros drafted in your voice, held",
     routines: [{ name: "Pipeline refresh", when: "Tue + Thu" }],
@@ -240,7 +240,7 @@ export const DEMO_BOTS: DemoBot[] = [
   {
     id: "expense",
     name: "Expense Manager",
-    color: "#F2622A",
+    color: "#FE6F02",
     time: "Yesterday",
     preview: "report filed. 9 receipts, nothing outstanding",
     routines: [{ name: "Month-end close", when: "Last Friday" }],
@@ -281,7 +281,7 @@ export const DEMO_BOTS: DemoBot[] = [
   {
     id: "bugs",
     name: "Bug Triage",
-    color: "#D9508A",
+    color: "#ED6095",
     time: "Monday",
     preview: "reproduced 4 of 6, steps in the issues",
     routines: [{ name: "Triage sweep", when: "Every 2h" }],

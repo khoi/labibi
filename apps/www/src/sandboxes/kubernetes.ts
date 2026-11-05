@@ -36,7 +36,7 @@ export const kubernetes: Sandbox = {
   ],
   scene: {
     bot: "Bug Triage",
-    color: "#D9508A",
+    color: "#ED6095",
     where: "Computer on Kubernetes",
     ask: "triage last night's sentry reports and try to repro the worst one",
     reply: "on it. six new since midnight. reproducing the auth loop first.",

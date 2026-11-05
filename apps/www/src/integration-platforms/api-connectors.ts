@@ -30,7 +30,7 @@ export const apiConnectors: IntegrationPlatform = {
   ],
   scene: {
     bot: "Account Manager",
-    color: "#9B5CF6",
+    color: "#FAB5E3",
     where: "Tools from an OpenAPI connector",
     ask: "who renews this month and hasn't logged in for two weeks?",
     reply: "four accounts. pulled from the billing api, list below.",

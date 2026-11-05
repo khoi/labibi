@@ -45,7 +45,7 @@ export const selfHosted: VoiceProvider = {
   ],
   scene: {
     bot: "Inbox Manager",
-    color: "#6A6BF5",
+    color: "#1E98F5",
     where: "Voice from your own server",
     ask: "read me what came in overnight",
     reply: "three things need you. reading them now.",

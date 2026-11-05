@@ -254,7 +254,7 @@ export const SANDBOXES_HUB = {
   ],
   scene: {
     bot: "Inbox Manager",
-    color: "#6A6BF5",
+    color: "#1E98F5",
     where: "Computer on any sandbox",
     ask: "inbox got away from me over the weekend, sweep it?",
     reply: "on it. 41 unread since friday. archiving the noise, drafting the rest.",

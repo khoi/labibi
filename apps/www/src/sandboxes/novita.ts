@@ -42,7 +42,7 @@ export const novita: Sandbox = {
   ],
   scene: {
     bot: "Talent Scout",
-    color: "#3B82F6",
+    color: "#1E98F5",
     where: "Computer on Novita",
     ask: "pick the infra applicants back up where you stopped yesterday",
     reply: "same tab is still open on applicant 34. carrying on from there.",

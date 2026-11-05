@@ -44,7 +44,7 @@ export const e2b: Sandbox = {
   ],
   scene: {
     bot: "Bug Triage",
-    color: "#D9508A",
+    color: "#ED6095",
     where: "Computer on E2B",
     ask: "checkout is throwing 500s since the deploy, find out why?",
     reply: "on it. reproducing in the browser and reading the logs in my terminal.",

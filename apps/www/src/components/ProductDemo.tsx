@@ -9,7 +9,7 @@ import { defaultTrigger, describeTrigger, displayRoutineWhen, parseWhen, resolve
 
 export type DemoTranslator = (source: string, values?: Record<string, string | number>) => string;
 
-const BOT_COLORS = ["#3EC5A8", "#F5A03C", "#6A6BF5", "#9B5CF6", "#3B82F6", "#F2622A", "#D9508A"];
+const BOT_COLORS = ["#FFBC0A", "#1E98F5", "#ED6095", "#FE6F02", "#4FAA52", "#FAB5E3", "#9D9C9B"];
 const FREQS = [
   "Every hour",
   "Every day",
@@ -708,7 +708,7 @@ export function ProductDemo({ bots: initialBots, strings }: { bots: DemoBot[]; s
   }
 
   function startNewBot() {
-    const color = BOT_COLORS[bots.length % BOT_COLORS.length] ?? "#3EC5A8";
+    const color = BOT_COLORS[bots.length % BOT_COLORS.length] ?? "#4FAA52";
     const bot: LiveBot = {
       id: `bot-${Date.now()}`,
       name: text("New bot"),

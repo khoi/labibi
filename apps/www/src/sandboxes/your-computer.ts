@@ -32,7 +32,7 @@ export const yourComputer: Sandbox = {
   ],
   scene: {
     bot: "Chief of Staff",
-    color: "#3EC5A8",
+    color: "#4FAA52",
     where: "Your Mac",
     ask: "the offsite agenda is open in textedit, can you tidy it up?",
     reply: "sure. i'll ask before i use textedit on your mac.",

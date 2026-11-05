@@ -49,7 +49,7 @@ export const composio: IntegrationPlatform = {
   ],
   scene: {
     bot: "Inbox Manager",
-    color: "#6A6BF5",
+    color: "#1E98F5",
     where: "Tools from Composio",
     ask: "sweep my inbox and put the follow-ups on my calendar. send nothing",
     reply: "on it. reading gmail now. calendar invites will wait for your ok.",

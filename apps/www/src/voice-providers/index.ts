@@ -183,7 +183,7 @@ export const VOICE_PROVIDERS_HUB = {
   ],
   scene: {
     bot: "Chief of Staff",
-    color: "#3EC5A8",
+    color: "#4FAA52",
     where: "On a call",
     ask: "call me at 5 to go over the day",
     reply: "calling now. two things need you, the rest is handled.",

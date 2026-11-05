@@ -30,7 +30,7 @@ export const mcp: IntegrationPlatform = {
   ],
   scene: {
     bot: "Bug Triage",
-    color: "#D9508A",
+    color: "#ED6095",
     where: "Tools from MCP servers",
     ask: "turn last night's worst sentry errors into linear issues",
     reply: "three drafted. approve the card and i'll file them.",

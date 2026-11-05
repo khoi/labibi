@@ -1,36 +1,21 @@
 # App icon source
 
-`Labradoodle.icon` is the shared editable source for macOS and iOS. Open it in Apple's
-Icon Composer with Xcode 26 or newer. The orange foreground keeps its original
-lighting, sits 90 points below center, and uses the system dark background.
+`doodle.svg` is the one source for every icon: Doodle's yellow coil, the dood every bot
+starts as. `pnpm --filter @labradoodle/ui-tokens export:brand` draws all platform
+exports from it:
 
-macOS packaging compiles the source into a Tahoe asset catalog and generates the
-legacy ICNS fallback. Expo copies the same source into the iOS project.
-
-The platform exports are:
-
-- `apps/desktop/assets/icon-macos.png`: Icon Composer's default appearance,
-  1024-pixel macOS pre-Tahoe export, including Dock margins for development launches.
-- `apps/mobile/assets/icon.png`: opaque 1024-pixel square for the generic/legacy icon,
-  with no rounded mask or Dock margins.
-- `apps/mobile/assets/adaptive-icon.png`: transparent 1024-pixel Android foreground;
-  the bot is 820 pixels wide, centered horizontally and offset 179 pixels from the top.
-  Its face stays inside the launcher's safe area and the body extends below the mask.
-- `apps/mobile/assets/icon-background.png`: opaque Android background using the
-  shared dark background token.
-- `apps/mobile/assets/monochrome-icon.png`: matching Android alpha silhouette with
-  transparent eyes for themed launchers.
-
-Refresh platform exports after changing the source. Android supplies its own mask;
-never bake Mac corners, a rim, or an outer shadow into adaptive layers.
-
-Run `pnpm --filter @labradoodle/ui-tokens export:brand` to refresh the web and marketing
-favicons, install icons, marketing mark, Windows/Linux icons, mobile splash, and
-mobile web favicon. These use the same orange foreground with the shared dark
-background, a rounded mask for small browser marks, and transparent splash padding.
-The notification export uses the Android monochrome silhouette so its eyes remain
-transparent. Apple Icon Composer and Android launcher exports remain separate
-because their system masks and safe areas differ.
+- `Labradoodle.icon`: the Icon Composer bundle for macOS and iOS. Its layer is the coil
+  alone on a white fill. macOS packaging compiles it into a Tahoe asset catalog and
+  generates the legacy ICNS fallback; Expo copies it into the iOS project.
+- `apps/desktop/assets/icon-macos.png`: the pre-Tahoe export with Dock margins.
+- `apps/desktop/assets/icon.png` and `icon.ico`: Linux and Windows.
+- `apps/mobile/assets/icon.png`: opaque 1024-pixel square for the generic icon.
+- `apps/mobile/assets/adaptive-icon.png`, `icon-background.png` and
+  `monochrome-icon.png`: the Android layers, with the coil inside the launcher's safe
+  circle on white. The notification icon is the monochrome silhouette.
+- `apps/mobile/assets/splash-icon.png`: the coil alone, so it sits on either splash colour.
+- Web and marketing favicons, install icons, the iOS widget mark, the marketing mark,
+  and the press-kit icon and logo lockup.
 
 After exporting, run `pnpm exec tsx apps/www/scripts/render-og.mjs` to refresh the
 marketing page social cards; set `CHROME_PATH` to a headless Chrome executable when
@@ -41,4 +26,4 @@ it is not available at the script's default location.
 Bots are drawn as doods: one of eight hand-drawn strokes in one of seven inks, with
 eyes, defined in `packages/core/src/dood.ts`. On the web, `dood.riv` animates them;
 mobile and still images draw the same strokes as SVG. `apps/www/scripts/render-doods.ts`
-renders the site's job-bot doods and the press-kit mascot. The app icon is unchanged.
+renders the site's job-bot doods and the press-kit mascot.
