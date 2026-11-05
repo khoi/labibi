@@ -106,7 +106,6 @@
         "NSCameraUsageDescription": "Labradoodle uses the camera so you can attach photos to a bot message.",
         "NSPhotoLibraryUsageDescription": "Labradoodle uses your photo library so you can attach images to a bot message.",
         "NSLocalNetworkUsageDescription": "Labradoodle connects to a self-hosted Labradoodle server on your local network.",
-        "NSSpeechRecognitionUsageDescription": "Labradoodle turns what you say into messages for your bots.",
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true
         },
@@ -139,10 +138,6 @@
           "experimental": {
             "ios": {
               "appExtensions": [
-                {
-                  "targetName": "LabradoodleWidgets",
-                  "bundleIdentifier": "com.rakazo.app.widgets"
-                },
                 {
                   "targetName": "expo-sharing-extension",
                   "bundleIdentifier": "com.rakazo.app.expo-sharing-extension",

@@ -185,17 +185,6 @@ private func send(
   return Delivery(session: session, botId: botId, spaceId: spaceId, runId: sent.runId)
 }
 
-/// A voice message goes to the bot whose chat was opened last; its reply arrives as a notification.
-/// The bot and session are read now, while unlocked. Its island waits on the send, so a lost
-/// connection gives up sooner than a typed message would.
-func lastBotSender() async throws -> (String) async throws -> Void {
-  let session = try LabradoodleSession.load()
-  guard let target = try await target(nil, with: session) else { throw MessageBotError.noBot }
-  return { message in
-    _ = try await send(message, file: nil, to: target, with: session, timeout: 15)
-  }
-}
-
 /// The bot's text for the run, once it finishes or stops to wait for the user; nil if it is still
 /// working after about half a minute, which is as long as Siri waits comfortably.
 private func reply(to sent: Delivery) async throws -> String? {
@@ -247,11 +236,6 @@ struct LabradoodleShortcuts: AppShortcutsProvider {
       phrases: ["Open a bot in \(.applicationName)"],
       shortTitle: "Open Bot",
       systemImageName: "arrow.up.forward.app")
-    AppShortcut(
-      intent: RecordVoiceMessageIntent(),
-      phrases: ["Record a message in \(.applicationName)"],
-      shortTitle: "Record Message",
-      systemImageName: "mic")
   }
 }
 
