@@ -11,7 +11,9 @@
 // Setting WEB_PORT or API_PORT, in the shell or `.env`, turns off port selection. A relative
 // DATA_DIR resolves in the main checkout, so checkouts sharing the database share its files.
 // Branch databases, and their copied files, are dropped once the branch is deleted or merged.
-import { execFileSync } from "node:child_process";
+// `pnpm dev:tunnel` also opens a public quick tunnel (needs `cloudflared`) and serves the app at
+// its URL, so someone else can try it; sign in through that URL too while it runs.
+import { execFileSync, spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
   constants,
@@ -356,6 +358,30 @@ async function pruneBranchDatabases(shared, sharedDataDir, onMain, keep) {
   }
 }
 
+function openTunnel(port) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(
+      "cloudflared",
+      ["tunnel", "--no-autoupdate", "--url", `http://127.0.0.1:${port}`],
+      { stdio: ["ignore", "ignore", "pipe"] },
+    );
+    let output = "";
+    child.once("error", () => reject(new Error("Install cloudflared to use dev:tunnel.")));
+    child.once("exit", (code) => {
+      reject(new Error(`cloudflared exited with ${code} before opening a tunnel:\n${output}`));
+      log("The tunnel closed");
+    });
+    child.stderr.on("data", (chunk) => {
+      if (output === null) return;
+      output += chunk;
+      const url = output.match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/)?.[0];
+      if (!url) return;
+      output = null;
+      resolve({ child, url });
+    });
+  });
+}
+
 function generateClientIfStale(env) {
   const client = path.join(dbPackage, "src/generated/prisma/client.ts");
   const schema = path.join(dbPackage, "prisma/schema.prisma");
@@ -408,7 +434,16 @@ try {
   await migrationLock.end();
 }
 
-if (ports) log(`Open http://127.0.0.1:${ports.web}`);
+let tunnel = null;
+if (process.argv.includes("--tunnel")) {
+  tunnel = await openTunnel(Number(env.WEB_PORT ?? setting("WEB_PORT") ?? DEFAULT_PORTS.web));
+  env.WEB_ORIGIN = tunnel.url;
+  env.BETTER_AUTH_URL = tunnel.url;
+  env.RAKAZO_ALLOWED_HOSTS = [setting("RAKAZO_ALLOWED_HOSTS"), new URL(tunnel.url).hostname]
+    .filter(Boolean)
+    .join(",");
+  log(`Open ${tunnel.url}`);
+} else if (ports) log(`Open http://127.0.0.1:${ports.web}`);
 const turbo = spawnPnpm(
   [
     "exec",
@@ -422,6 +457,7 @@ const turbo = spawnPnpm(
 );
 for (const signal of ["SIGINT", "SIGTERM"]) process.on(signal, () => turbo.kill(signal));
 turbo.on("exit", (code, signal) => {
+  tunnel?.child.kill();
   if (signal) process.kill(process.pid, signal);
   else process.exit(code ?? 0);
 });
