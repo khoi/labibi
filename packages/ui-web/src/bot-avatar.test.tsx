@@ -25,7 +25,10 @@ describe("BotAvatar", () => {
   it("keeps one stable body per bot and varies it across bots", () => {
     const shapes = new Set(
       Array.from({ length: 24 }, (_, i) =>
-        attribute(renderToString(<BotAvatar color="#FFBC0A" identity={`bot-${i}`} />), "data-shape"),
+        attribute(
+          renderToString(<BotAvatar color="#FFBC0A" identity={`bot-${i}`} />),
+          "data-shape",
+        ),
       ),
     );
     expect(shapes.size).toBeGreaterThan(3);
@@ -41,7 +44,9 @@ describe("BotAvatar", () => {
 
   it("acts out a bot's activity", () => {
     const pose = (activity: "reading" | "writing" | "thinking" | "idle") => {
-      const html = renderToString(<BotAvatar color="#FFBC0A" identity="maya" activity={activity} />);
+      const html = renderToString(
+        <BotAvatar color="#FFBC0A" identity="maya" activity={activity} />,
+      );
       return [attribute(html, "data-state"), attribute(html, "data-form")];
     };
     expect(pose("idle")).toEqual(["idle", "self"]);
@@ -69,7 +74,11 @@ describe("BotAvatar", () => {
 
   it("parses shape indexes from encoded color values", () => {
     const parsed = parseBotAvatar(`${DEFAULT_BOT_AVATAR_COLOR}::shape_3`);
-    expect(parsed).toMatchObject({ color: DEFAULT_BOT_AVATAR_COLOR, shapeIndex: 3, isImage: false });
+    expect(parsed).toMatchObject({
+      color: DEFAULT_BOT_AVATAR_COLOR,
+      shapeIndex: 3,
+      isImage: false,
+    });
     expect(parseBotAvatar(`${DEFAULT_BOT_AVATAR_COLOR}::shape_-1`).shapeIndex).toBe(0);
     expect(parseBotAvatar(`${DEFAULT_BOT_AVATAR_COLOR}::shape_3junk`).shapeIndex).toBe(0);
   });
