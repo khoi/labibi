@@ -178,17 +178,17 @@ export const VOICE_PROVIDERS_HUB = {
     "ElevenLabs, OpenAI, Cartesia, Fish Audio, Deepgram, Google, Azure, Kokoro and macOS voices compared on price per hour, transcription, cloning and privacy, with what a talking AI agent costs a month. From the team behind Labradoodle.",
   h1: "Best voice APIs for AI agents in 2026: text to speech and transcription compared",
   intro: [
-    "Typing isn't always the fastest way to work with an AI agent. Sometimes you want to say what you need on the way out the door, hear the answer while you cook, or have the agent call you when something can't wait. That takes two things: a voice that sounds right, and transcription that hears you correctly.",
-    "[Labradoodle](/) is an open source app for AI teammates that do real work. You talk to each bot in chat, and you can also hold the mic to speak, have replies read aloud, or call a bot. A bot can call you too. The voice provider you connect does the speaking and, for most providers, the listening. This page compares every option Labradoodle supports, from hosted voices to a server you run yourself, against the other voice APIs people consider, with prices as of November 2026.",
+    "Typing isn't always the fastest way to work with an AI agent. Sometimes you want to say what you need on the way out the door, or hear the answer while you cook. That takes two things: a voice that sounds right, and transcription that hears you correctly.",
+    "[Labradoodle](/) is an open source app for AI teammates that do real work. You talk to each bot in chat, and you can also hold the mic to speak or have replies read aloud. The voice provider you connect does the speaking and, for most providers, the listening. This page compares every option Labradoodle supports, from hosted voices to a server you run yourself, against the other voice APIs people consider, with prices as of November 2026.",
   ],
   scene: {
     bot: "Chief of Staff",
     color: "#4FAA52",
-    where: "On a call",
-    ask: "call me at 5 to go over the day",
-    reply: "calling now. two things need you, the rest is handled.",
+    where: "Read aloud",
+    ask: "read me today's summary",
+    reply: "two things need you. the rest is handled.",
     results: [
-      { k: "Call", v: "6 min, transcript saved in the chat" },
+      { k: "Read aloud", v: "1 min, in the bot's own voice" },
       { k: "Decided", v: "harbor house booked, contract out" },
       { k: "Waiting", v: "your ok on the travel budget" },
     ],
@@ -209,8 +209,8 @@ export const VOICE_PROVIDERS_HUB = {
       text: "[OpenAI](/voice-providers/openai/) is quick to set up, with built-in voices and solid transcription. OpenAI is shutting down the speech model Labradoodle uses on January 6, 2027, and the transcription model on February 26, 2027, so treat it as a convenient start.",
     },
     {
-      heading: "You mostly call your bots",
-      text: "[Cartesia](/voice-providers/cartesia/) voices start fast and sound natural on calls. It only speaks, so your browser, the desktop app or your phone does the listening, which also means no transcription bill.",
+      heading: "You mostly listen to your bots",
+      text: "[Cartesia](/voice-providers/cartesia/) voices start fast and sound natural when replies are read aloud. It only speaks, so your browser, the desktop app or your phone does the listening, which also means no transcription bill.",
     },
     {
       heading: "You want audio to stay on your own hardware",
@@ -225,7 +225,7 @@ export const VOICE_PROVIDERS_HUB = {
     {
       question: "What is the best text to speech API for AI agents?",
       answer:
-        "For the most natural voices, [ElevenLabs](/voice-providers/elevenlabs/). For the lowest latency on calls, [Cartesia](/voice-providers/cartesia/). For price, [Fish Audio](/voice-providers/fish-audio/) or a [self-hosted](/voice-providers/self-hosted/) Kokoro server. All four work in Labradoodle.",
+        "For the most natural voices, [ElevenLabs](/voice-providers/elevenlabs/). For the lowest latency, [Cartesia](/voice-providers/cartesia/). For price, [Fish Audio](/voice-providers/fish-audio/) or a [self-hosted](/voice-providers/self-hosted/) Kokoro server. All four work in Labradoodle.",
     },
     {
       question: "Which text to speech API is free?",
@@ -255,7 +255,7 @@ export const VOICE_PROVIDERS_HUB = {
     {
       question: "Can I talk to my AI agent by voice?",
       answer:
-        "Yes. Connect a provider in **Settings → Voice**, then hold the mic to speak, have replies read aloud, or call a bot. On a [self-hosted Labradoodle](/self-hosted-ai-agent/), the admin turns on calls and hold-to-talk with `PHONE_CALLS_ENABLED=true`.",
+        "Yes. Connect a provider in **Settings → Voice**, then hold the mic to speak or have replies read aloud.",
     },
     {
       question: "Which voice providers can transcribe?",
@@ -277,11 +277,6 @@ export const VOICE_PROVIDERS_HUB = {
       answer:
         "Yes. In a bot's settings, turn on **Read replies aloud** and pick a **Voice** next to it to override your default for that bot.",
     },
-    {
-      question: "Can my bot call me?",
-      answer:
-        "Yes, in a one-to-one chat once you've connected a voice provider and calls are on. Ask \"call me at 5 to go over the day\", or a bot may call when you've missed the same reminder several times.",
-    },
   ],
 };
 
@@ -290,7 +285,7 @@ export const VOICE_PROVIDERS_ARTICLE_HUB: ArticleHub = {
   compareLabel: "Compare all voice providers",
   href: VOICE_PROVIDERS_PATH,
   moreHeading: "More voice providers for AI agents",
-  guide: { label: "Voice and calls guide", href: VOICE_DOCS_PATH },
+  guide: { label: "Voice guide", href: VOICE_DOCS_PATH },
 };
 
 export function voiceProviderLink(provider: VoiceProvider): ArticleLink {
@@ -339,7 +334,7 @@ export function voiceProvidersHubMarkdown(): string {
     "## How to choose",
     "",
     ...hub.choose.flatMap((item) => [`### ${item.heading}`, "", absolute(item.text), ""]),
-    `[Voice and calls guide](${SITE_URL}${VOICE_DOCS_PATH})`,
+    `[Voice guide](${SITE_URL}${VOICE_DOCS_PATH})`,
     "",
     "## FAQ",
     "",

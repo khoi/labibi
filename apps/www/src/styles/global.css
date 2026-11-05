@@ -510,6 +510,21 @@ html[data-platform="web"] [data-show]:not([data-show~="web"]) {
   margin-top: 44px;
 }
 
+@media (min-width: 961px) {
+  .capability-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .capability-grid > * {
+    grid-column: span 2;
+  }
+
+  .capability-grid > :nth-child(3n + 1):nth-last-child(2),
+  .capability-grid > :nth-child(3n + 1):nth-last-child(2) + * {
+    grid-column: span 3;
+  }
+}
+
 .card-grid-4 {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
