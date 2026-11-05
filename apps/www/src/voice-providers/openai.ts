@@ -51,7 +51,7 @@ export const openai: VoiceProvider = {
   h1: "OpenAI text to speech for AI agents: pricing, shutdown dates and setup",
   intro: [
     "[OpenAI](https://openai.com) is best known for ChatGPT and its language models, and its API also turns text into speech and speech into text. If you already pay for OpenAI, the same kind of API key can give your agents a voice.",
-    "[Labradoodle](/) is an open source app for AI teammates that do real work. You talk to each bot in chat, and you can also talk to it by voice: hold the mic to speak, have replies read aloud, or call a bot in real time. Connect OpenAI and it does the speaking and the transcription. Labradoodle runs the bot, decides what it says, and keeps the transcript in the chat.",
+    "[Labradoodle](/) is an open source app for AI teammates that do real work. You talk to each bot in chat, and you can also talk to it by voice: hold the mic to speak or have replies read aloud. Connect OpenAI and it does the speaking and the transcription. Labradoodle runs the bot, decides what it says, and keeps the transcript in the chat.",
     "This page covers what OpenAI's audio models cost as of November 2026, the shutdown of `gpt-4o-mini-tts` and the transcription models in early 2027, and how OpenAI compares with the alternatives.",
   ],
   scene: {
@@ -164,13 +164,11 @@ export const openai: VoiceProvider = {
     {
       heading: "What you can do with OpenAI in Labradoodle",
       paragraphs: [
-        "OpenAI both speaks and transcribes, so it covers every voice feature in Labradoodle. The [voice and calls guide](/docs/voice-and-calls/) shows where each control lives.",
+        "OpenAI both speaks and transcribes, so it covers every voice feature in Labradoodle. The [voice guide](/docs/voice-and-calls/) shows where each control lives.",
       ],
       bullets: [
         "Talk instead of typing. Hold the mic in the composer, speak, and let go to send. When Labradoodle transcribes on the server, as it does in a phone browser or the desktop app, it uses `gpt-4o-mini-transcribe`.",
         "Hear replies. Choose **Speak this reply** on any message, or turn on **Read replies aloud** in a bot's settings. Replies are spoken with `gpt-4o-mini-tts`.",
-        "Call a bot. Choose **Call** at the top of a chat to talk in real time. You can cut in while the bot is speaking, and the transcript stays in the chat.",
-        "Get called. Ask \"call me when the drafts are ready\" and the bot rings you. A bot may also call if you've missed the same reminder several times.",
         "Give each bot its own voice. Pick from OpenAI's 13 voices per bot, so different bots are easy to tell apart.",
         "Send voice notes from chat apps. A voice note sent to a bot through Telegram, for example, is transcribed before the bot reads it. See [messaging apps](/docs/messaging-apps/).",
       ],
@@ -179,7 +177,7 @@ export const openai: VoiceProvider = {
       heading: "When to choose OpenAI",
       paragraphs: [
         "Choose OpenAI when you already have an OpenAI account and want voice working in a few minutes, with clear voices and solid transcription from one key at a low price. Because its speech and transcription models are scheduled to shut down, treat it as a convenient start rather than a long-term pick, until Labradoodle moves to OpenAI's newer models.",
-        "[ElevenLabs](/voice-providers/elevenlabs/) also speaks and transcribes, with more natural voices and support for your own cloned ones. [Cartesia](/voice-providers/cartesia/) is built for fast, interruptible calls but only speaks. [Fish Audio](/voice-providers/fish-audio/) offers cloning and expressive speech at a similar price to OpenAI. If you like OpenAI's API shape but want audio on your own hardware, a [self-hosted](/voice-providers/self-hosted/) server such as Kokoro or Whisper speaks the same protocol. [Server (Mac)](/voice-providers/macos/) needs no key when your server runs on a Mac. The [comparison](/voice-providers/) puts them side by side.",
+        "[ElevenLabs](/voice-providers/elevenlabs/) also speaks and transcribes, with more natural voices and support for your own cloned ones. [Cartesia](/voice-providers/cartesia/) is built for fast speech but only speaks. [Fish Audio](/voice-providers/fish-audio/) offers cloning and expressive speech at a similar price to OpenAI. If you like OpenAI's API shape but want audio on your own hardware, a [self-hosted](/voice-providers/self-hosted/) server such as Kokoro or Whisper speaks the same protocol. [Server (Mac)](/voice-providers/macos/) needs no key when your server runs on a Mac. The [comparison](/voice-providers/) puts them side by side.",
       ],
     },
     {
@@ -191,7 +189,6 @@ export const openai: VoiceProvider = {
         "Each sentence is generated as a finished clip and played in order, rather than streamed, so there is a short pause before the bot starts talking.",
         "OpenAI keeps speech requests for up to 30 days for abuse monitoring and doesn't train on API data by default. Transcription requests aren't retained. Zero data retention needs OpenAI's approval.",
         "OpenAI's usage policies ask you to tell listeners the voice is AI-generated. Keep that in mind if a bot's voice reaches people outside your team.",
-        "Calls and hold-to-talk are a server setting. On a self-hosted server they stay off until the admin turns them on.",
       ],
     },
     {
@@ -204,7 +201,6 @@ export const openai: VoiceProvider = {
         "In Labradoodle, open **Settings → Voice**, choose **OpenAI** as the **Provider**, paste the **API key** and choose **Connect**.",
         "Pick a **Voice**, such as Marin or Cedar, and use **Hear a sample** to check it.",
         "Optionally, open a bot's settings, expand **Advanced**, turn on **Read replies aloud** and give it its own **Voice**.",
-        "If you run your own server and want calls and hold-to-talk, set `PHONE_CALLS_ENABLED=true` on the API and worker.",
       ],
     },
   ],
@@ -235,7 +231,7 @@ export const openai: VoiceProvider = {
     {
       question: "Can I use OpenAI text to speech for an AI agent?",
       answer:
-        "Yes. In Labradoodle, connect OpenAI in **Settings → Voice** and your bots can read replies aloud, take calls and transcribe what you say. Note the shutdown dates above.",
+        "Yes. In Labradoodle, connect OpenAI in **Settings → Voice** and your bots can read replies aloud and transcribe what you say. Note the shutdown dates above.",
     },
     {
       question: "Which OpenAI voices can a Labradoodle bot use?",
