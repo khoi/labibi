@@ -19,7 +19,7 @@ describe("TimeZoneSchema", () => {
 });
 
 describe("routine timezone writes", () => {
-  const create = { botId: "bot-1", name: "Daily", prompt: "Check", crons: ["0 9 * * *"] };
+  const create = { threadId: "thread-1", name: "Daily", prompt: "Check", crons: ["0 9 * * *"] };
   const update = appContract.routines.update["~orpc"].inputSchema!;
 
   it.each(["Mars/Olympus_Mons", "", "+01:00", "x".repeat(65)])(

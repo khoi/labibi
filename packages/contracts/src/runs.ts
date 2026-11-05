@@ -62,8 +62,6 @@ export function providerQuotaResetAt(text: string, now = Date.now()): number | u
 
 export const RoutineRunSchema = z.object({
   id: Id,
-  botId: Id,
-  groupId: Id.nullable(),
   status: RunStatus,
   error: z.string().nullable(),
   createdAt: IsoDate,
@@ -88,11 +86,9 @@ export type RoutineHistory = z.infer<typeof RoutineHistorySchema>;
 
 export const RunActivityRowSchema = z.object({
   runId: Id,
-  botId: Id,
-  botName: z.string(),
-  groupId: Id.nullable(),
-  groupName: z.string().nullable(),
   threadId: Id,
+  /** The chat's title for the viewer. */
+  title: z.string(),
   status: RunStatus,
   trigger: RunTriggerSchema,
   notificationsEnabled: z.boolean(),

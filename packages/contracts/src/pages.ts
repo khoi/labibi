@@ -35,8 +35,7 @@ export const PageTitleSchema = z
 export const PageSummarySchema = z.strictObject({
   id: Id,
   title: z.string().max(PAGE_TITLE_MAX_LENGTH),
-  botId: Id.nullable(),
-  groupId: Id.nullable(),
+  threadId: Id,
   visibility: PageVisibilitySchema,
   currentVersion: z.number().int().positive(),
   pinned: z.boolean(),

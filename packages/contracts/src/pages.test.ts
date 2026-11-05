@@ -30,8 +30,7 @@ it("bounds the titles pages send out by the cap a saved title has", () => {
     PageSummarySchema.safeParse({
       id: "page-1",
       title,
-      botId: null,
-      groupId: null,
+      threadId: "thread-1",
       visibility: "private",
       currentVersion: 1,
       pinned: false,
@@ -60,8 +59,10 @@ describe("PageSourceSchema", () => {
 it("lets a newer client's reply from a page reach an older server, which drops what it does not know", () => {
   const send = appContract.threads.send["~orpc"].inputSchema!;
   // An older server's thread send is this object without fromPage: an unknown key is dropped, not refused.
-  expect(send.parse({ botId: "bot-1", text: "hi", fromPage: true, notYetKnown: true })).toEqual({
-    botId: "bot-1",
+  expect(
+    send.parse({ threadId: "thread-1", text: "hi", fromPage: true, notYetKnown: true }),
+  ).toEqual({
+    threadId: "thread-1",
     text: "hi",
     fromPage: true,
   });

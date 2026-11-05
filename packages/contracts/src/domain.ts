@@ -1,6 +1,5 @@
 import * as z from "zod";
 import { AGENT_SECRET_NAME_PATTERN } from "./agent-secret-name.js";
-import { BotAvatarValueSchema } from "./bot-avatar.js";
 import { DisabledBuiltinToolsSchema } from "./builtin-tools.js";
 import {
   cloudflareGatewayRoutingId,
@@ -23,15 +22,9 @@ import { NavLinkSchema } from "./nav-links.js";
 import { RoutineWatchSchema, RoutineWatchStateSchema } from "./routine-watch.js";
 import { RunTriggerSchema } from "./runs.js";
 
-export const ComputerModeSchema = z.enum(["team", "dedicated"]);
-export type ComputerMode = z.infer<typeof ComputerModeSchema>;
-
 /** How big a machine a cloud computer runs on. Providers without sizes ignore it. */
 export const ComputerSizeSchema = z.enum(["standard", "large", "xlarge"]);
 export type ComputerSize = z.infer<typeof ComputerSizeSchema>;
-
-export const MemoryScopeSchema = z.enum(["isolated", "shared"]);
-export type MemoryScopeValue = z.infer<typeof MemoryScopeSchema>;
 
 /**
  * Deprecated account-level setting kept for older app versions; the legacy settings endpoint
@@ -86,56 +79,32 @@ export const InstructionVersionSchema = z.object({
   createdAt: z.string(),
 });
 
-export const BotSchema = z.object({
+/** A workspace's Doodle. Everyone in the workspace reads it; only its owner may change it. */
+export const DoodleSchema = z.object({
   id: Id,
   spaceId: Id,
-  name: z.string(),
-  /** Always empty; installed mobile apps still read it. */
-  title: z.string(),
   instructions: z.string(),
-  instructionHistory: z.array(InstructionVersionSchema).optional(),
-  color: z.string(),
-  notifyOnFinish: z.boolean(),
-  archivedAt: z.string().nullable(),
-  unread: z.boolean(),
-  memoryScope: MemoryScopeSchema.nullable(),
-  threadId: Id,
-  preview: z.string(),
-  status: z.string(),
-  threadStatus: z.string().optional(),
-  runErrorId: Id.nullable().default(null),
-  computerMode: ComputerModeSchema,
-  updatedAt: z.string(),
-  createdAt: z.string(),
+  instructionHistory: z.array(InstructionVersionSchema),
   voiceId: z.string().nullable(),
-  autoSpeak: z.boolean(),
   modelProvider: z.string().nullable(),
   modelId: z.string().nullable(),
   thinkingLevel: ThinkingLevelSchema.nullable(),
-  disabledBuiltinTools: z.array(z.string()).default([]),
-  webhookConfigured: z.boolean(),
+  disabledBuiltinTools: z.array(z.string()),
+  /** True only for the workspace's owner. */
+  canCustomize: z.boolean(),
+  updatedAt: z.string(),
 });
-export type Bot = z.infer<typeof BotSchema>;
+export type Doodle = z.infer<typeof DoodleSchema>;
 
-/** A run alert the server also pushes to phones, already filtered by the chat's mute settings. */
+/** An alert the server also pushes to phones, already filtered by the chat's mute setting. */
 export const ChatAlertSchema = z.object({
-  kind: z.enum(["completion", "failure", "help", "takeover"]),
+  kind: z.enum(["message", "completion", "failure", "help", "takeover"]),
   title: z.string(),
   body: z.string(),
   spaceId: Id,
-  botId: Id,
   threadId: Id,
-  groupId: Id.optional(),
 });
 export type ChatAlert = z.infer<typeof ChatAlertSchema>;
-
-export const GroupMemberSchema = z.object({
-  botId: Id,
-  name: z.string(),
-  color: z.string(),
-  status: z.string().optional(),
-});
-export type GroupMember = z.infer<typeof GroupMemberSchema>;
 
 /** Selected-text excerpt carried by a reply; capped so a quote stays a quote. */
 export const REPLY_QUOTE_MAX_LENGTH = 2_000;
@@ -147,103 +116,52 @@ export function truncateReplyQuote(value: string): string {
   return last >= 0xd800 && last <= 0xdbff ? truncated.slice(0, -1) : truncated;
 }
 
-export const GROUP_MEMBER_MIN = 2;
-export const GROUP_MEMBER_MAX = 10;
-export const GROUP_NAME_MAX_LENGTH = 80;
+export const CHAT_NAME_MAX_LENGTH = 80;
+export const ChatNameSchema = z.string().trim().min(1).max(CHAT_NAME_MAX_LENGTH);
 
-/** Preserve pick order and the group name limit without splitting a surrogate pair. */
-export function defaultGroupName(names: readonly string[]): string {
-  const value = names.join(", ").trim().slice(0, GROUP_NAME_MAX_LENGTH);
-  const last = value.charCodeAt(value.length - 1);
-  return (last >= 0xd800 && last <= 0xdbff ? value.slice(0, -1) : value).trim();
-}
+/** A person in a chat. Doodle is not one: `Chat.doodle` says whether it is in. */
+export const ChatMemberSchema = z.object({
+  userId: Id,
+  name: z.string(),
+  image: z.string().nullable(),
+});
+export type ChatMember = z.infer<typeof ChatMemberSchema>;
 
-export const GroupSchema = z.object({
+/** A chat as one of its people sees it. */
+export const ChatSchema = z.object({
+  /** The chat's thread id. */
   id: Id,
   spaceId: Id,
-  name: z.string(),
-  archivedAt: z.string().nullable(),
-  members: z.array(GroupMemberSchema),
-  threadId: Id,
+  name: z.string().nullable(),
+  /** The name, else the fallback for this viewer (`chatTitle`); empty for a new chat with only them. */
+  title: z.string(),
+  doodle: z.boolean(),
+  members: z.array(ChatMemberSchema),
   preview: z.string(),
+  /** Doodle's activity here: its newest active run's status, or idle. */
+  status: z.string(),
   unread: z.boolean(),
-  updatedAt: z.string(),
+  muted: z.boolean(),
+  /** Highest message seq this viewer has read; -1 when none. */
+  lastReadSeq: z.number().int().min(-1),
+  lastMessageAt: z.string(),
   createdAt: z.string(),
 });
-export type Group = z.infer<typeof GroupSchema>;
+export type Chat = z.infer<typeof ChatSchema>;
 
-const GroupBotIds = z
-  .array(Id)
-  .min(GROUP_MEMBER_MIN)
-  .max(GROUP_MEMBER_MAX)
-  .refine((ids) => new Set(ids).size === ids.length, { error: "botIds must be distinct" });
-
-export const CreateGroupInput = z.object({
-  name: z.string().trim().min(1).max(GROUP_NAME_MAX_LENGTH),
-  botIds: GroupBotIds,
-});
-export type CreateGroupInput = z.infer<typeof CreateGroupInput>;
-
-export const UpdateGroupInput = z.object({
-  groupId: Id,
-  name: z.string().trim().min(1).max(GROUP_NAME_MAX_LENGTH).optional(),
-  botIds: GroupBotIds.optional(),
-  /** Reject a membership replacement when another client changed the active roster. */
-  expectedBotIds: z.array(Id).max(GROUP_MEMBER_MAX).optional(),
-});
-export type UpdateGroupInput = z.infer<typeof UpdateGroupInput>;
-
-export const GroupDetailSchema = GroupSchema.extend({
-  messages: z.array(ThreadMessageSchema).optional(),
-});
-export type GroupDetail = z.infer<typeof GroupDetailSchema>;
-
-/**
- * A space is a real privacy boundary, not just sidebar organization.
- * Bots are included so clients can keep every space visible without granting
- * those bots access to the currently active space.
- */
-export const SpaceBotSchema = BotSchema.pick({
-  id: true,
-  spaceId: true,
-  name: true,
-  title: true,
-  color: true,
-  notifyOnFinish: true,
-  unread: true,
-  preview: true,
-  status: true,
-  threadStatus: true,
-  runErrorId: true,
-  updatedAt: true,
-});
-export type SpaceBot = z.infer<typeof SpaceBotSchema>;
-
-export const SpaceGroupSchema = GroupSchema.pick({
-  id: true,
-  spaceId: true,
-  name: true,
-  members: true,
-  preview: true,
-  unread: true,
-  updatedAt: true,
-});
-export type SpaceGroup = z.infer<typeof SpaceGroupSchema>;
-
-export const SpaceSchema = z.object({
+/** A workspace in the switcher. */
+export const WorkspaceSchema = z.object({
   id: Id,
   name: z.string(),
   isDefault: z.boolean(),
-  /** True when the space has any bot or group, including archived. */
-  hasContent: z.boolean(),
-  /** True only when the current member owns the space and may rename it. */
-  canRename: z.boolean().optional(),
-  /** True when more than one person belongs to the space. */
-  shared: z.boolean().optional(),
-  bots: z.array(SpaceBotSchema),
-  groups: z.array(SpaceGroupSchema),
+  /** The viewer owns it: may rename it, invite and remove people, and set up its Doodle. */
+  isOwner: z.boolean(),
+  /** More than one person belongs to it. */
+  shared: z.boolean(),
+  /** One of the viewer's chats here has something unread. */
+  unread: z.boolean(),
 });
-export type Space = z.infer<typeof SpaceSchema>;
+export type Workspace = z.infer<typeof WorkspaceSchema>;
 
 export const SpaceRoleSchema = z.enum(["owner", "member"]);
 export type SpaceRole = z.infer<typeof SpaceRoleSchema>;
@@ -282,49 +200,13 @@ export const SpaceInvitePreviewSchema = z.object({
 });
 export type SpaceInvitePreview = z.infer<typeof SpaceInvitePreviewSchema>;
 
-export const SpaceNavigationSchema = z.object({
-  current: z.object({
-    id: Id,
-    name: z.string(),
-    bots: z.array(BotSchema),
-    groups: z.array(GroupSchema),
-  }),
-  spaces: z.array(SpaceSchema),
-});
-export type SpaceNavigation = z.infer<typeof SpaceNavigationSchema>;
-
-export const BOT_NAME_MAX_LENGTH = 80;
 export const BOT_INSTRUCTIONS_MAX_LENGTH = 20000;
 
-export const CreateBotInput = z.object({
-  /** Optional reserved identity so a creation preview uses the final bot seed. */
-  id: z
-    .string()
-    .regex(/^c[a-z0-9]{24}$/)
-    .optional(),
-  name: z.string().trim().min(1).max(BOT_NAME_MAX_LENGTH),
-  instructions: z.string().max(BOT_INSTRUCTIONS_MAX_LENGTH).default(""),
-  notifyOnFinish: z.boolean().default(true),
-  color: BotAvatarValueSchema.optional(),
-  /** Organic body family (0-9); the server picks a matching id unless one is reserved. */
-  avatarFamily: z.number().int().min(0).max(9).optional(),
-  computerMode: ComputerModeSchema.default("team"),
-  /** Idempotency key within a space (unique with spaceId). */
-});
-export type CreateBotInput = z.infer<typeof CreateBotInput>;
-
-export const UpdateBotInput = z
+export const UpdateDoodleInput = z
   .object({
-    botId: Id,
-    name: z.string().trim().min(1).max(BOT_NAME_MAX_LENGTH).optional(),
     instructions: z.string().trim().max(BOT_INSTRUCTIONS_MAX_LENGTH).optional(),
     expectedInstructions: z.string().max(BOT_INSTRUCTIONS_MAX_LENGTH).optional(),
-    /** Ignored; installed mobile apps may still send it. */
-    selfUpdateInstructions: z.boolean().optional(),
-    notifyOnFinish: z.boolean().optional(),
-    memoryScope: MemoryScopeSchema.nullable().optional(),
     voiceId: z.string().max(120).nullable().optional(),
-    autoSpeak: z.boolean().optional(),
     modelProvider: z.string().trim().min(1).max(80).nullable().optional(),
     modelId: z.string().trim().min(1).max(200).nullable().optional(),
     thinkingLevel: ThinkingLevelSchema.nullable().optional(),
@@ -336,19 +218,9 @@ export const UpdateBotInput = z
     const providerProvided = value.modelProvider !== undefined;
     const modelProvided = value.modelId !== undefined;
     if (!providerProvided && !modelProvided) return;
-    // Reject partial shapes like `{ modelId: null }` (provider omitted) so a
-    // clear cannot succeed without updating both persisted fields.
-    if (providerProvided !== modelProvided) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Model provider and model id must both be set or both cleared",
-        path: ["modelId"],
-      });
-      return;
-    }
     const bothNull = value.modelProvider === null && value.modelId === null;
     const bothSet = Boolean(value.modelProvider) && Boolean(value.modelId);
-    if (!bothNull && !bothSet) {
+    if (providerProvided !== modelProvided || (!bothNull && !bothSet)) {
       ctx.addIssue({
         code: "custom",
         message: "Model provider and model id must both be set or both cleared",
@@ -356,7 +228,7 @@ export const UpdateBotInput = z
       });
     }
   });
-export type UpdateBotInput = z.infer<typeof UpdateBotInput>;
+export type UpdateDoodleInput = z.infer<typeof UpdateDoodleInput>;
 
 /**
  * A routine's model is optional, but provider and id only mean something together,
@@ -389,11 +261,9 @@ export function routineModelIssues(
   }
 }
 
-export const ROUTINE_MENTION_BATCH_MAX = 100;
-
 export const RoutineSchema = z.object({
   id: Id,
-  botId: Id,
+  threadId: Id,
   name: z.string(),
   prompt: z.string(),
   crons: z.array(z.string()),
@@ -401,8 +271,10 @@ export const RoutineSchema = z.object({
   active: z.boolean(),
   notify: z.boolean(),
   webhookEnabled: z.boolean(),
+  /** The routine has its own webhook secret. */
+  webhookConfigured: z.boolean(),
   githubEnabled: z.boolean(),
-  /** Null runs this routine on its bot's model. */
+  /** Null runs this routine on Doodle's model. */
   modelProvider: z.string().nullable(),
   modelId: z.string().nullable(),
   thinkingLevel: ThinkingLevelSchema.nullable(),
@@ -421,7 +293,7 @@ export type Routine = z.infer<typeof RoutineSchema>;
 
 export const CreateRoutineInput = z
   .object({
-    botId: Id,
+    threadId: Id,
     name: z.string().min(1).max(80),
     prompt: z.string().min(1),
     crons: z.array(z.string().min(1)).default([]),
@@ -498,7 +370,6 @@ export type TeachRecording = z.infer<typeof TeachRecordingSchema>;
 
 export const TaughtSkillSchema = z.object({
   id: Id,
-  botId: Id,
   name: z.string(),
   goal: z.string(),
   status: TaughtSkillStatusSchema,
@@ -577,10 +448,10 @@ export const UpdateAgentSkillInput = z
     }
   });
 
+/** A chat's memory, shared by its people, or with no `threadId` the viewer's personal memory. */
 export const MemoryDocumentSchema = z.object({
   id: Id,
-  scope: MemoryScope,
-  botId: Id.nullable(),
+  threadId: Id.nullable(),
   path: z.string(),
   content: z.string(),
   revision: z.number().int(),
@@ -588,7 +459,7 @@ export const MemoryDocumentSchema = z.object({
 });
 export type MemoryDocument = z.infer<typeof MemoryDocumentSchema>;
 
-/** Which of a bot's memory documents reach the prompt, and what did not fit. */
+/** Which memory documents reach Doodle's prompt in a chat, and what did not fit. */
 export const MemoryPromptDocumentUseSchema = z.object({
   scope: MemoryScope,
   path: z.string(),
@@ -607,9 +478,9 @@ export const MemoryPromptBudgetSchema = z.object({
 });
 export type MemoryPromptBudget = z.infer<typeof MemoryPromptBudgetSchema>;
 
-/** Every bot and Space keeps its MEMORY.md index; other memory documents can be deleted. */
+/** Every chat and person keeps a MEMORY.md index; other memory documents can be deleted. */
 export const MEMORY_INDEX_PATH = "MEMORY.md";
-/** What a bot may write to its memory. People can still write more by hand. */
+/** What Doodle may write to a memory. People can still write more by hand. */
 export const BOT_MEMORY_MAX_BYTES = 4 * 1024;
 export function isDeletableMemoryDocument(path: string): boolean {
   return path !== MEMORY_INDEX_PATH;
@@ -1002,8 +873,7 @@ export type McpServer = z.infer<typeof McpServerSchema>;
 
 export const ArtifactSchema = z.object({
   id: Id,
-  botId: Id.nullable(),
-  groupId: Id.nullable(),
+  threadId: Id,
   runId: Id.nullable(),
   name: z.string(),
   description: z.string().nullable(),
@@ -1081,35 +951,25 @@ export const ComputerUpdateSchema = z.object({
   canReleaseReservation: z.boolean().optional(),
   action: z.enum(["update", "recover"]),
   id: Id,
-  botId: Id,
-  name: z.string(),
-  mode: ComputerModeSchema,
   status: z.enum(["queued", "running", "interrupted", "completed", "failed"]),
   stage: z.enum(COMPUTER_UPDATE_STAGES),
 });
 export type ComputerUpdate = z.infer<typeof ComputerUpdateSchema>;
 
+/** The viewer's own computer in the workspace; nobody else watches or takes it over. */
 export const ComputerStatusSchema = z.object({
-  botId: Id,
-  mode: ComputerModeSchema,
   kind: SandboxKind,
   state: z.enum(["stopped", "booting", "running", "suspended", "error"]),
   controlHolder: z.enum(["bot", "user", "none"]),
-  controlBotId: Id.nullable(),
   takeoverRequested: z.boolean(),
   screenAvailable: z.boolean(),
   screenWidth: z.number().int().positive(),
   screenHeight: z.number().int().positive(),
   homeRevision: z.string().nullable(),
-  busyBotName: z.string().nullable(),
   canUpdate: z.boolean(),
   terminalAvailable: z.boolean(),
   /** Set only while the user should see that the disk is nearly full. */
   diskFullPercent: z.number().int().min(0).max(100).optional(),
-  /** True when other people share the Space, and with it this computer and its browser sign-ins. */
-  shared: z.boolean().optional(),
-  /** True when another person in the Space has control, so this viewer only watches. */
-  controlledByOther: z.boolean().optional(),
 });
 export type ComputerStatus = z.infer<typeof ComputerStatusSchema>;
 
@@ -1147,10 +1007,7 @@ export const ThreadSnapshotSchema = z.object({
   cursor: z.number().int().min(-1),
   messages: z.array(ThreadMessageSchema),
   olderCursor: z.number().int().nonnegative().nullable(),
-  botId: Id.optional(),
-  groupId: Id.optional(),
-  groupName: z.string().optional(),
-  members: z.array(GroupMemberSchema).optional(),
+  chat: ChatSchema,
   run: RunSchema.nullable(),
   activeRuns: z.array(RunSchema).optional(),
   computer: ComputerStatusSchema.optional(),
@@ -1433,7 +1290,6 @@ export type ModelOAuthBegin = z.infer<typeof ModelOAuthBeginSchema>;
 export const SpaceMemoryConfigSchema = z.object({
   provider: z.string(),
   settings: z.record(z.string(), z.string()),
-  defaultMemoryScope: MemoryScopeSchema,
   updatedAt: z.string(),
 });
 export type SpaceMemoryConfig = z.infer<typeof SpaceMemoryConfigSchema>;
@@ -1692,6 +1548,8 @@ export const MeSchema = z.object({
    * Absent from servers that predate it.
    */
   locale: z.string().nullable().optional(),
+  /** Doodle's replies are read aloud as they arrive. */
+  readAloud: z.boolean(),
   billingEnabled: z.boolean(),
   /** True until a user of a billing deployment answers or skips the signup survey. Absent from older servers. */
   needsSignupSurvey: z.boolean().optional(),
@@ -1937,27 +1795,11 @@ export function byokTierChangeOffered(status: BillingStatus): boolean {
 
 export const AppBootstrapSchema = z.object({
   me: MeSchema,
-  bots: z.array(BotSchema),
-  groups: z.array(GroupSchema),
+  workspaces: z.array(WorkspaceSchema),
+  doodle: DoodleSchema,
+  chats: z.array(ChatSchema),
   thread: ThreadSnapshotSchema.nullable(),
-  routines: z.array(RoutineSchema),
-  spaces: z.array(SpaceSchema),
-  /** Set when the requested bot is the caller's but lives in another of their Spaces. */
-  botSpaceId: Id.optional(),
+  /** Set when the requested chat is the caller's but lives in another of their workspaces. */
+  threadSpaceId: Id.optional(),
 });
 export type AppBootstrap = z.infer<typeof AppBootstrapSchema>;
-
-export const ExportManifestSchema = z.object({
-  version: z.literal(1),
-  exportedAt: z.string(),
-  bot: BotSchema.pick({ name: true, instructions: true }).extend({
-    color: z.string().optional(),
-  }),
-  memory: z.array(z.object({ path: z.string(), content: z.string() })),
-  routines: z.array(RoutineSchema.pick({ name: true, prompt: true, crons: true, timezone: true })),
-  files: z.array(
-    z.object({ path: z.string(), content: z.string(), encoding: z.literal("base64").optional() }),
-  ),
-  history: z.array(ThreadMessageSchema),
-});
-export type ExportManifest = z.infer<typeof ExportManifestSchema>;

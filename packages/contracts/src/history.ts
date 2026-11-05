@@ -29,7 +29,6 @@ export const HistoryQueriesSchema = z
 export const HistorySearchInputSchema = z
   .object({
     scope: z.enum(["this_chat", "my_chats"]).optional(),
-    botId: Id.optional(),
     kinds: z
       .array(z.enum(["bot_messages", "user_messages", "bot_replies"]))
       .min(1)

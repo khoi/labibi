@@ -49,7 +49,7 @@ export const ThinkingLevelSchema = z.enum([
 ]);
 export type ThinkingLevel = z.infer<typeof ThinkingLevelSchema>;
 
-export const MemoryScope = z.enum(["bot", "user"]);
+export const MemoryScope = z.enum(["chat", "person"]);
 export type MemoryScope = z.infer<typeof MemoryScope>;
 
 export const SandboxKind = z.enum([

@@ -22,14 +22,14 @@ describe("attachment contracts", () => {
     for (const count of [4, 5, 100]) {
       expect(
         schema.safeParse({
-          botId: "bot-1",
+          threadId: "thread-1",
           artifactIds: Array.from({ length: count }, (_, i) => `artifact-${i}`),
         }).success,
       ).toBe(true);
     }
     expect(
       schema.safeParse({
-        botId: "bot-1",
+        threadId: "thread-1",
         artifactIds: Array.from({ length: 101 }, (_, i) => `artifact-${i}`),
       }).success,
     ).toBe(false);

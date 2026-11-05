@@ -38,13 +38,14 @@ import {
   AvatarStyleSchema,
   BillingClientSchema,
   BillingStatusSchema,
-  BotSchema,
   ByokIntervalSchema,
   ByokTierSchema,
   CapabilityInstallSchema,
   ChatAlertSchema,
+  ChatMemberSchema,
+  ChatNameSchema,
+  ChatSchema,
   CONNECTION_LABEL_MAX_LENGTH,
-  ComputerModeSchema,
   ComputerProviderSettingsSchema,
   ComputerProviderUpdateSchema,
   ComputerReleaseReasonSchema,
@@ -53,19 +54,14 @@ import {
   ConnectionCatalogItemSchema,
   ConnectionSchema,
   CreateAgentSkillInput,
-  CreateBotInput,
-  CreateGroupInput,
   CreateRoutineInput,
   DeploymentSettingsSchema,
-  ExportManifestSchema,
-  GroupDetailSchema,
-  GroupSchema,
+  DoodleSchema,
   IntegrationCatalogResultSchema,
   McpServerConfigInput,
   McpServerSchema,
   MemoryDocumentSchema,
   MemoryPromptBudgetSchema,
-  MemoryScopeSchema,
   MeSchema,
   ModelApiProtocolSchema,
   ModelBackupChoiceSchema,
@@ -85,7 +81,6 @@ import {
   PluginSubmissionSchema,
   PluginSubmissionStatusSchema,
   REPLY_QUOTE_MAX_LENGTH,
-  ROUTINE_MENTION_BATCH_MAX,
   RoutineSchema,
   ServerUpdateCheckSchema,
   ServerUpdateRequestSchema,
@@ -97,21 +92,20 @@ import {
   SpaceInvitePreviewSchema,
   SpaceMembersSchema,
   SpaceMemoryConfigSchema,
-  SpaceNavigationSchema,
   TaughtSkillSchema,
   TeachRecordingEventSchema,
   ThreadMessagePageSchema,
   ThreadSnapshotSchema,
   TimeZoneSchema,
   UpdateAgentSkillInput,
-  UpdateBotInput,
-  UpdateGroupInput,
+  UpdateDoodleInput,
   UsageRecordSchema,
   UsageSummarySchema,
   VoiceCatalogEntrySchema,
   VoiceCredentialSchema,
   VoiceInfoSchema,
   VoiceStatusSchema,
+  WorkspaceSchema,
 } from "./domain.js";
 import { ComputerCommandSchema, ProductEventSchema } from "./events.js";
 import { Id, IsoDate, ThinkingLevelSchema } from "./ids.js";
@@ -144,42 +138,22 @@ import {
 import { SearchQueryOutputSchema } from "./search.js";
 import { SecurityEventListInputSchema, SecurityEventSchema } from "./security-events.js";
 
-const botId = z.object({ botId: Id });
-const groupId = z.object({ groupId: Id });
+const threadTarget = z.object({ threadId: Id });
 
-const threadTarget = z
-  .object({
-    botId: Id.optional(),
-    groupId: Id.optional(),
-  })
-  .superRefine((input, ctx) => {
-    const hasBot = Boolean(input.botId);
-    const hasGroup = Boolean(input.groupId);
-    if (hasBot === hasGroup) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Provide exactly one of botId or groupId",
-        path: ["botId"],
-      });
-    }
-  });
-
-const structuredMentionTarget = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("bot"), id: Id }),
-  z.object({ kind: z.literal("group"), id: Id }),
+export const ChatMentionTargetSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("doodle") }),
+  z.object({ kind: z.literal("person"), id: Id }),
   z.object({ kind: z.literal("routine"), id: Id }),
   z.object({ kind: z.literal("connector"), id: Id }),
 ]);
+export type ChatMentionTarget = z.infer<typeof ChatMentionTargetSchema>;
 
 const threadSendFields = threadTarget.safeExtend({
   imageHandling: z.enum(["confirm", "file"]).optional(),
   text: z.string().optional(),
   artifactIds: z.array(Id).max(ATTACHMENT_COUNT_CEILING).optional(),
-  /** Bare bot ids (legacy) or typed mention chips from the composer. */
-  mentions: z
-    .array(z.union([Id, structuredMentionTarget]))
-    .max(64)
-    .optional(),
+  /** Mention chips from the composer. */
+  mentions: z.array(ChatMentionTargetSchema).max(64).optional(),
   replyToMessageId: Id.optional(),
   replyQuote: z.string().trim().min(1).max(REPLY_QUOTE_MAX_LENGTH).optional(),
   /** Sent from the open page: a reply to its card that quotes nothing. */
@@ -206,11 +180,11 @@ const threadSendInput = threadSendFields.superRefine((input, ctx) => {
   }
 });
 
+/** `runId` is absent when Doodle does not answer this message. */
 const threadSendOutput = z.object({
-  taskId: Id,
-  runId: Id,
   seq: z.number().int(),
-  runIds: z.array(Id).optional(),
+  taskId: Id.optional(),
+  runId: Id.optional(),
 });
 
 /** Without text or attachments, only the routines run and no message is saved. */
@@ -309,12 +283,14 @@ export const appContract = {
             timezone: TimeZoneSchema.nullable().optional(),
             /** The language the app runs in, so emails can be written in it. */
             locale: AppLocaleSchema.optional(),
+            readAloud: z.boolean().optional(),
           })
           .refine(
             (input) =>
               input.avatarStyle !== undefined ||
               input.timezone !== undefined ||
-              input.locale !== undefined,
+              input.locale !== undefined ||
+              input.readAloud !== undefined,
             { message: "Nothing to update" },
           ),
       )
@@ -323,13 +299,13 @@ export const appContract = {
     adoptTimezone: oc.input(z.object({ timezone: TimeZoneSchema })).output(MeSchema),
   },
   spaces: {
-    list: oc.output(SpaceNavigationSchema),
+    list: oc.output(z.array(WorkspaceSchema)),
     rename: oc
       .input(z.object({ spaceId: Id, name: spaceName }))
       .output(z.object({ id: Id, name: z.string() })),
     members: {
       list: oc.input(z.object({ spaceId: Id })).output(SpaceMembersSchema),
-      /** Owner only. The removed person's bots, chats and routines stay with the space. */
+      /** Owner only. The person leaves every chat there; their messages stay. */
       remove: oc
         .input(z.object({ spaceId: Id, userId: Id }))
         .output(z.object({ ok: z.literal(true) })),
@@ -351,7 +327,7 @@ export const appContract = {
       cancel: oc.input(z.object({ spaceId: Id })).output(z.object({ ok: z.literal(true) })),
     },
   },
-  bootstrap: oc.input(z.object({ botId: Id.optional() })).output(AppBootstrapSchema),
+  bootstrap: oc.input(z.object({ threadId: Id.optional() })).output(AppBootstrapSchema),
   deployment: {
     get: oc.output(DeploymentSettingsSchema),
     update: oc
@@ -484,43 +460,52 @@ export const appContract = {
       .input(z.object({ provider: z.string().trim().min(1), credentialId: Id.optional() }))
       .output(z.object({ ok: z.literal(true) })),
   },
-  bots: {
-    list: oc.output(z.array(BotSchema)),
-    get: oc.input(botId).output(BotSchema),
-    create: oc.input(CreateBotInput).output(BotSchema),
-    update: oc.input(UpdateBotInput).output(BotSchema),
+  /** The workspace's Doodle. Only its owner may change it. */
+  doodle: {
+    get: oc.output(DoodleSchema),
+    update: oc.input(UpdateDoodleInput).output(DoodleSchema),
     restoreInstructions: oc
       .input(
         z.object({
-          botId: Id,
           versionId: Id,
           expectedInstructions: z.string(),
           undo: z.boolean().optional(),
         }),
       )
-      .output(BotSchema),
-    setComputer: oc.input(z.object({ botId: Id, mode: ComputerModeSchema })).output(BotSchema),
-    archive: oc.input(botId).output(z.object({ ok: z.literal(true) })),
-    remove: oc
-      .input(z.object({ botId: Id, deleteMemories: z.boolean().default(false) }))
-      .output(z.object({ ok: z.literal(true) })),
-    rotateWebhookSecret: oc.input(botId).output(
-      z.object({
-        secret: z.string(),
-        path: z.string(),
-        webhookConfigured: z.literal(true),
-      }),
-    ),
+      .output(DoodleSchema),
   },
-  groups: {
-    create: oc.input(CreateGroupInput).output(GroupSchema),
-    list: oc.output(z.array(GroupSchema)),
-    get: oc.input(groupId).output(GroupDetailSchema),
-    update: oc.input(UpdateGroupInput).output(GroupSchema),
-    archive: oc.input(groupId).output(z.object({ ok: z.literal(true) })),
-    remove: oc.input(groupId).output(z.object({ ok: z.literal(true) })),
-  },
+  /** Chats: only the people in one see it. */
   threads: {
+    /** The caller's chats in this workspace, most recent activity first. */
+    list: oc.output(z.array(ChatSchema)),
+    /** A chat with the caller and these people of the workspace, and Doodle when asked. */
+    create: oc
+      .input(
+        z.object({
+          name: ChatNameSchema.optional(),
+          userIds: z.array(Id).max(200),
+          doodle: z.boolean(),
+        }),
+      )
+      .output(ChatSchema),
+    members: oc.input(threadTarget).output(z.array(ChatMemberSchema)),
+    /** Only people of the workspace; everyone in the chat may add them. */
+    addMembers: oc
+      .input(threadTarget.safeExtend({ userIds: z.array(Id).min(1).max(200) }))
+      .output(ChatSchema),
+    /** Anyone in the chat. Turning Doodle off stops its work here and pauses the chat's routines. */
+    setDoodle: oc.input(threadTarget.safeExtend({ doodle: z.boolean() })).output(ChatSchema),
+    /** Null clears the name. */
+    rename: oc
+      .input(threadTarget.safeExtend({ name: ChatNameSchema.nullable() }))
+      .output(ChatSchema),
+    /** The last person to leave deletes the chat. */
+    leave: oc.input(threadTarget).output(z.object({ ok: z.literal(true) })),
+    /** Only a chat with no other people in it. */
+    delete: oc.input(threadTarget).output(z.object({ ok: z.literal(true) })),
+    setMuted: oc
+      .input(threadTarget.safeExtend({ muted: z.boolean() }))
+      .output(z.object({ ok: z.literal(true) })),
     head: oc.input(threadTarget).output(
       z.object({
         threadId: Id,
@@ -561,7 +546,7 @@ export const appContract = {
           clientNonce: z.string().min(1).max(200),
         }),
       )
-      .output(z.object({ ok: z.literal(true), runIds: z.array(Id).optional() })),
+      .output(z.object({ ok: z.literal(true), runId: Id.optional() })),
     stop: oc.input(threadTarget).output(z.object({ ok: z.literal(true) })),
     clear: oc.input(threadTarget).output(z.object({ ok: z.literal(true) })),
     answer: oc
@@ -604,72 +589,58 @@ export const appContract = {
       .output(z.object({ ok: z.literal(true), unreadAfterSeq: z.number().int().nullable() })),
     /** With `messageId`, the chat reads as unread from that message: the next open puts New above it. */
     markUnread: oc
-      .input(threadTarget.and(z.object({ messageId: Id.optional() })))
+      .input(threadTarget.safeExtend({ messageId: Id.optional() }))
       .output(z.object({ ok: z.literal(true) })),
   },
+  /** The caller's own computer in this workspace. */
   computer: {
-    status: oc.input(botId).output(ComputerStatusSchema),
-    boot: oc.input(botId).output(ComputerStatusSchema),
-    stop: oc.input(botId).output(ComputerStatusSchema),
-    recover: oc.input(botId).output(ComputerUpdateSchema),
-    reset: oc.input(botId).output(ComputerStatusSchema),
-    update: oc.input(botId).output(ComputerUpdateSchema),
+    status: oc.output(ComputerStatusSchema),
+    boot: oc.output(ComputerStatusSchema),
+    stop: oc.output(ComputerStatusSchema),
+    recover: oc.output(ComputerUpdateSchema),
+    reset: oc.output(ComputerStatusSchema),
+    update: oc.output(ComputerUpdateSchema),
     updates: oc.output(z.array(ComputerUpdateSchema)),
     releaseInterrupted: oc
       .input(z.object({ id: Id, workersStopped: z.literal(true) }))
       .output(z.object({ ok: z.literal(true) })),
     dismissUpdate: oc.input(z.object({ id: Id })).output(z.object({ ok: z.literal(true) })),
-    dismissDiskWarning: oc.input(botId).output(z.object({ ok: z.literal(true) })),
-    takeover: oc.input(botId).output(z.object({ leaseId: Id, expiresAt: z.string() })),
+    dismissDiskWarning: oc.output(z.object({ ok: z.literal(true) })),
+    takeover: oc.output(z.object({ leaseId: Id, expiresAt: z.string() })),
     release: oc
-      .input(
-        z.object({
-          botId: Id,
-          reason: ComputerReleaseReasonSchema.optional(),
-        }),
-      )
+      .input(z.object({ reason: ComputerReleaseReasonSchema.optional() }))
       .output(z.object({ ok: z.literal(true) })),
     input: oc
       .input(
         z.object({
-          botId: Id,
           kind: z.enum(["key", "pointer", "clipboard", "scroll"]),
           payload: z.record(z.string(), z.unknown()),
         }),
       )
       .output(z.object({ ok: z.literal(true) })),
     files: oc
-      .input(z.object({ botId: Id, path: z.string().default("/") }))
+      .input(z.object({ path: z.string().default("/") }))
       .output(
         z.array(z.object({ path: z.string(), kind: z.enum(["file", "dir"]), size: z.number() })),
       ),
     readFile: oc
-      .input(z.object({ botId: Id, path: z.string() }))
+      .input(z.object({ path: z.string() }))
       .output(z.object({ path: z.string(), content: z.string() })),
     downloadFile: oc
-      .input(z.object({ botId: Id, path: z.string().min(1) }))
+      .input(z.object({ path: z.string().min(1) }))
       .output(z.object({ path: z.string(), contentBase64: z.string() })),
     uploadFile: oc
-      .input(
-        z.object({
-          botId: Id,
-          path: z.string().min(1),
-          contentBase64: z.string(),
-        }),
-      )
+      .input(z.object({ path: z.string().min(1), contentBase64: z.string() }))
       .output(z.object({ ok: z.literal(true) })),
-    terminalUrl: oc.input(botId).output(z.object({ url: z.string().nullable() })),
-    commands: oc
-      .input(botId)
-      .output(z.array(ComputerCommandSchema.extend({ createdAt: z.string() }))),
-    screenUrl: oc.input(botId).output(z.object({ url: z.string().nullable() })),
-    heartbeat: oc.input(botId).output(z.object({ ok: z.literal(true) })),
+    terminalUrl: oc.output(z.object({ url: z.string().nullable() })),
+    commands: oc.output(z.array(ComputerCommandSchema.extend({ createdAt: z.string() }))),
+    screenUrl: oc.output(z.object({ url: z.string().nullable() })),
+    heartbeat: oc.output(z.object({ ok: z.literal(true) })),
   },
   memory: {
-    list: oc
-      .input(z.object({ botId: Id.optional(), scope: z.enum(["bot", "user"]).optional() }))
-      .output(z.array(MemoryDocumentSchema)),
-    budget: oc.input(z.object({ botId: Id })).output(MemoryPromptBudgetSchema),
+    /** A chat's memory with `threadId`, else the caller's personal memory in this workspace. */
+    list: oc.input(z.object({ threadId: Id.optional() })).output(z.array(MemoryDocumentSchema)),
+    budget: oc.input(threadTarget).output(MemoryPromptBudgetSchema),
     update: oc
       .input(
         z.object({
@@ -680,7 +651,7 @@ export const appContract = {
       )
       .output(MemoryDocumentSchema),
     remove: oc.input(z.object({ documentId: Id })).output(z.object({ ok: z.literal(true) })),
-    exportMarkdown: oc.input(z.object({ botId: Id.optional() })).output(z.string()),
+    exportMarkdown: oc.input(z.object({ threadId: Id.optional() })).output(z.string()),
     providerConfig: oc.output(SpaceMemoryConfigSchema.nullable()),
     connectProvider: oc
       .input(
@@ -688,20 +659,13 @@ export const appContract = {
           provider: z.string().min(1),
           settings: z.record(z.string(), z.string()),
           credentials: z.record(z.string(), z.string()),
-          defaultMemoryScope: MemoryScopeSchema.default("isolated"),
         }),
       )
-      .output(SpaceMemoryConfigSchema),
-    setDefaultScope: oc
-      .input(z.object({ defaultMemoryScope: MemoryScopeSchema }))
       .output(SpaceMemoryConfigSchema),
     disconnectProvider: oc.output(z.object({ ok: z.literal(true) })),
   },
   routines: {
-    listForMentions: oc
-      .input(z.object({ botIds: z.array(Id).min(1).max(ROUTINE_MENTION_BATCH_MAX) }))
-      .output(z.array(z.object({ botId: Id, routines: z.array(RoutineSchema) }))),
-    list: oc.input(botId).output(z.array(RoutineSchema)),
+    list: oc.input(threadTarget).output(z.array(RoutineSchema)),
     history: oc
       .input(
         z.object({
@@ -725,7 +689,7 @@ export const appContract = {
             notify: z.boolean().optional(),
             webhookEnabled: z.boolean().optional(),
             githubEnabled: z.boolean().optional(),
-            /** Null clears the routine's own model and runs it on the bot's. */
+            /** Null clears the routine's own model and runs it on Doodle's. */
             modelProvider: z.string().trim().min(1).max(80).nullable().optional(),
             modelId: z.string().trim().min(1).max(200).nullable().optional(),
             thinkingLevel: ThinkingLevelSchema.nullable().optional(),
@@ -752,6 +716,10 @@ export const appContract = {
       )
       .output(RoutineSchema),
     remove: oc.input(z.object({ routineId: Id })).output(z.object({ ok: z.literal(true) })),
+    /** A new secret for the routine's webhook; the old one stops working. */
+    rotateWebhookSecret: oc
+      .input(z.object({ routineId: Id }))
+      .output(z.object({ secret: z.string(), path: z.string() })),
     testRun: oc
       .input(
         z.object({
@@ -762,11 +730,9 @@ export const appContract = {
       .output(z.object({ runId: Id })),
   },
   skills: {
-    list: oc.input(botId).output(z.array(TaughtSkillSchema)),
+    list: oc.output(z.array(TaughtSkillSchema)),
     get: oc.input(z.object({ skillId: Id })).output(TaughtSkillSchema),
-    start: oc
-      .input(z.object({ botId: Id, goal: z.string().min(1).max(4000) }))
-      .output(TaughtSkillSchema),
+    start: oc.input(z.object({ goal: z.string().min(1).max(4000) })).output(TaughtSkillSchema),
     appendEvent: oc
       .input(z.object({ skillId: Id, event: TeachRecordingEventSchema }))
       .output(TaughtSkillSchema),
@@ -882,13 +848,13 @@ export const appContract = {
       /** Launch the server once (installing a stdio package if needed), list its tools, close it. */
       test: oc.input(z.object({ id: Id })).output(McpServerSchema),
     },
-    /** An approval card for a server the bot added: connecting turns the server on. */
+    /** An approval card for a server Doodle added: connecting turns the server on. */
     approvals: {
       approve: oc
-        .input(z.object({ botId: Id, serverId: Id, threadId: Id.optional() }))
+        .input(threadTarget.safeExtend({ serverId: Id }))
         .output(z.object({ ok: z.literal(true) })),
       dismiss: oc
-        .input(z.object({ botId: Id, serverId: Id, threadId: Id.optional() }))
+        .input(threadTarget.safeExtend({ serverId: Id }))
         .output(z.object({ ok: z.literal(true) })),
     },
     oauth: {
@@ -914,19 +880,18 @@ export const appContract = {
     /** Record the optional signup survey; an empty submission marks it skipped. */
     signupSurvey: oc.input(SignupSurveySchema).output(z.object({ ok: z.literal(true) })),
     /** Post the focus choice card when the thread is still idle. */
-    promptFocus: oc.input(z.object({ botId: Id })).output(z.object({ ok: z.literal(true) })),
-    /** Answer the focus choice; posts the app cards. Does not rename the bot. */
+    promptFocus: oc.input(threadTarget).output(z.object({ ok: z.literal(true) })),
+    /** Answer the focus choice; posts the app cards. */
     choose: oc
-      .input(z.object({ botId: Id, optionId: z.string() }))
+      .input(threadTarget.safeExtend({ optionId: z.string() }))
       .output(z.object({ ok: z.literal(true) })),
     /** Dismiss the unanswered focus card without choosing an option. */
-    dismissFocus: oc.input(z.object({ botId: Id })).output(z.object({ ok: z.literal(true) })),
+    dismissFocus: oc.input(threadTarget).output(z.object({ ok: z.literal(true) })),
     /** Flip an app_connect card to connected after authorization completes. */
     appConnected: oc
       .input(
         z.object({
-          botId: Id,
-          threadId: Id.optional(),
+          threadId: Id,
           /** The card's own message, so it is found however far back it is. */
           messageId: Id.optional(),
           provider: z.string(),
@@ -1014,11 +979,12 @@ export const appContract = {
       .output(ActionAutoReviewSettingsSchema),
   },
   artifacts: {
-    list: oc.input(botId).output(z.array(ArtifactSchema)),
+    list: oc.input(threadTarget).output(z.array(ArtifactSchema)),
+    /** Files of every chat the caller is in, or of one. */
     listSpace: oc
       .input(
         z.object({
-          botId: Id.optional(),
+          threadId: Id.optional(),
           cursor: z.string().optional(),
           limit: z.number().int().min(1).max(60).optional(),
         }),
@@ -1032,30 +998,27 @@ export const appContract = {
     listVersions: oc.input(z.object({ familyId: Id })).output(z.array(ArtifactVersionSchema)),
     create: oc
       .input(
-        threadTarget.and(
-          z.object({
-            name: z.string().min(1).max(ARTIFACT_NAME_MAX_LENGTH),
-            description: z.string().max(ARTIFACT_DESCRIPTION_MAX_LENGTH).optional(),
-            mimeType: z.string().min(1),
-            contentBase64: z.string().min(1),
-            /** Unique per upload; a retry with the same nonce returns the artifact it created. */
-            clientNonce: z.string().min(1).max(200).optional(),
-          }),
-        ),
+        threadTarget.safeExtend({
+          name: z.string().min(1).max(ARTIFACT_NAME_MAX_LENGTH),
+          description: z.string().max(ARTIFACT_DESCRIPTION_MAX_LENGTH).optional(),
+          mimeType: z.string().min(1),
+          contentBase64: z.string().min(1),
+          /** Unique per upload; a retry with the same nonce returns the artifact it created. */
+          clientNonce: z.string().min(1).max(200).optional(),
+        }),
       )
       .output(ArtifactSchema),
-    get: oc.input(threadTarget.and(z.object({ artifactId: Id }))).output(ArtifactWithContentSchema),
+    get: oc.input(threadTarget.safeExtend({ artifactId: Id })).output(ArtifactWithContentSchema),
     getById: oc.input(z.object({ artifactId: Id })).output(ArtifactWithContentSchema),
     remove: oc.input(z.object({ artifactId: Id })).output(z.object({ ok: z.literal(true) })),
   },
-  /** Pages bots built for the caller in this Space. */
+  /** Pages Doodle built in the caller's chats in this workspace. */
   pages: {
     /** Pinned first, then most recently updated. */
     list: oc
       .input(
         z.strictObject({
-          botId: Id.optional(),
-          groupId: Id.optional(),
+          threadId: Id.optional(),
           cursor: z.string().max(500).optional(),
           limit: z.number().int().min(1).max(PAGE_LIST_MAX_LIMIT).optional(),
           /** Titles containing this text, for the command palette. */
@@ -1095,7 +1058,6 @@ export const appContract = {
     summary: oc.output(UsageSummarySchema),
   },
   export: {
-    bot: oc.input(botId).output(ExportManifestSchema),
     /**
      * A one-time token for `GET /api/account/export?token=`, which streams the account zip. Needs
      * a recent identity confirmation on this session (IDENTITY_CONFIRMATION_REQUIRED).
@@ -1103,7 +1065,7 @@ export const appContract = {
     accountToken: oc.output(z.object({ token: z.string() })),
   },
   notifications: {
-    /** Run alerts for the signed-in user's chats in this space, live while connected. */
+    /** Alerts for the signed-in user's chats in this workspace, live while connected. */
     subscribe: oc.output(
       eventIterator(
         z.object({
@@ -1207,7 +1169,6 @@ export const appContract = {
         z.object({
           text: z.string().max(20000),
           voiceId: z.string().max(120).optional(),
-          botId: Id.optional(),
         }),
       )
       .output(z.object({ ready: z.boolean(), utterances: z.array(z.string()) })),
@@ -1239,7 +1200,7 @@ type AtPath<Tree, Path extends string> = Path extends `${infer Head}/${infer Res
     ? Tree[Path]
     : never;
 
-/** A procedure's URL path under `/rpc/`, such as `bots/list`. */
+/** A procedure's URL path under `/rpc/`, such as `threads/list`. */
 export type RpcPath = ProcedurePaths<AppContract>;
 type RpcInputs = { [Path in RpcPath]: AtPath<InferContractRouterInputs<AppContract>, Path> };
 type RpcOutputs = { [Path in RpcPath]: AtPath<InferContractRouterOutputs<AppContract>, Path> };

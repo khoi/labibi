@@ -45,10 +45,6 @@ export const ProductEventType = z.enum([
   "effect.reconciled",
   "usage.recorded",
   "bot.updated",
-  "bot.archived",
-  "bot.deleted",
-  "group.created",
-  "group.updated",
   /** Liveness only: never persisted, never applied to a snapshot, always seq 0. */
   "heartbeat",
 ]);
@@ -91,12 +87,11 @@ const ChartBlock = z
 export const SecretAskPurpose = z.enum(["otp", "password", "api_key"]);
 export type SecretAskPurpose = z.infer<typeof SecretAskPurpose>;
 
-/** The settings a bot can change on itself from chat. */
+/** The settings Doodle can change on itself from chat, for its workspace's owner. */
 export const BotSettingsValuesSchema = z.object({
   modelProvider: z.string().trim().min(1).max(80).nullable().optional(),
   modelId: z.string().trim().min(1).max(200).nullable().optional(),
   thinkingLevel: ThinkingLevelSchema.nullable().optional(),
-  autoSpeak: z.boolean().optional(),
   voiceId: z.string().max(120).nullable().optional(),
 });
 export type BotSettingsValues = z.infer<typeof BotSettingsValuesSchema>;
@@ -371,7 +366,7 @@ export const ProductEventSchema = z
     id: Id,
     spaceId: Id,
     threadId: Id,
-    botId: Id,
+    botId: Id.optional(),
     seq: z.number().int().nonnegative(),
     type: ProductEventType,
     runId: Id.optional(),

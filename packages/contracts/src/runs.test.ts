@@ -31,11 +31,8 @@ describe("run triggers", () => {
       expect(
         RunActivityRowSchema.parse({
           runId: "run-1",
-          botId: "bot-1",
-          botName: "Helper",
-          groupId: null,
-          groupName: null,
           threadId: "thread-1",
+          title: "Helper",
           status: "running",
           trigger,
           notificationsEnabled: false,

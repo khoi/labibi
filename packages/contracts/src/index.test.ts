@@ -2,8 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   CLOUDFLARE_AI_GATEWAY_CONFIG_MESSAGE,
   CLOUDFLARE_AI_GATEWAY_PROVIDER_ID,
-  CreateBotInput,
-  CreateGroupInput,
   CreateRoutineInput,
   canReactToThreadMessage,
   McpServerConfigInput,
@@ -15,8 +13,7 @@ import {
   parseModelMaxTokens,
   RunActivityRowSchema,
   RunSchema,
-  UpdateBotInput,
-  UpdateGroupInput,
+  UpdateDoodleInput,
   usableModelId,
 } from "./index.js";
 
@@ -265,27 +262,12 @@ describe("contracts", () => {
     ).toBe(false);
   });
 
-  it("parses bot create input", () => {
-    const parsed = CreateBotInput.parse({ name: "Chief" });
-    expect(parsed.notifyOnFinish).toBe(true);
-    expect(parsed.avatarFamily).toBeUndefined();
-  });
-
-  it("accepts an organic avatar family from 0 to 9 when creating a bot", () => {
-    expect(CreateBotInput.parse({ name: "Chief", avatarFamily: 0 }).avatarFamily).toBe(0);
-    expect(CreateBotInput.parse({ name: "Chief", avatarFamily: 9 }).avatarFamily).toBe(9);
-    for (const avatarFamily of [-1, 10, 2.5, "3"]) {
-      expect(CreateBotInput.safeParse({ name: "Chief", avatarFamily }).success).toBe(false);
-    }
-  });
-
   it("rejects unknown built-in tool names and keeps a known denylist", () => {
     expect(
-      UpdateBotInput.parse({ botId: "bot-1", disabledBuiltinTools: ["web_search", "web_search"] })
+      UpdateDoodleInput.parse({ disabledBuiltinTools: ["web_search", "web_search"] })
         .disabledBuiltinTools,
     ).toEqual(["web_search"]);
-    const unknown = UpdateBotInput.safeParse({
-      botId: "bot-1",
+    const unknown = UpdateDoodleInput.safeParse({
       disabledBuiltinTools: ["not_a_tool"],
     });
     expect(unknown.success).toBe(false);
@@ -294,51 +276,16 @@ describe("contracts", () => {
     }
   });
 
-  it("drops a title that installed apps still send", () => {
-    expect(CreateBotInput.parse({ name: "Chief", title: "Lead" })).not.toHaveProperty("title");
-    expect(UpdateBotInput.parse({ botId: "bot-1", title: "Lead" })).toEqual({ botId: "bot-1" });
-  });
-
-  it("normalizes bot names and rejects whitespace-only values at the contract boundary", () => {
-    expect(CreateBotInput.parse({ name: "  Chief  " }).name).toBe("Chief");
-    expect(UpdateBotInput.parse({ botId: "bot-1", name: "  Atlas  " }).name).toBe("Atlas");
-    expect(CreateBotInput.safeParse({ name: "   " }).success).toBe(false);
-    expect(UpdateBotInput.safeParse({ botId: "bot-1", name: "   " }).success).toBe(false);
-  });
-
-  it("rejects partial model override clears on bot update", () => {
-    expect(UpdateBotInput.safeParse({ botId: "bot-1", modelId: null }).success).toBe(false);
-    expect(UpdateBotInput.safeParse({ botId: "bot-1", modelProvider: null }).success).toBe(false);
+  it("rejects partial model override clears on Doodle update", () => {
+    expect(UpdateDoodleInput.safeParse({ modelId: null }).success).toBe(false);
+    expect(UpdateDoodleInput.safeParse({ modelProvider: null }).success).toBe(false);
+    expect(UpdateDoodleInput.safeParse({ modelProvider: null, modelId: null }).success).toBe(true);
     expect(
-      UpdateBotInput.safeParse({ botId: "bot-1", modelProvider: null, modelId: null }).success,
-    ).toBe(true);
-    expect(
-      UpdateBotInput.safeParse({
-        botId: "bot-1",
+      UpdateDoodleInput.safeParse({
         modelProvider: "xai",
         modelId: "grok-4.6",
       }).success,
     ).toBe(true);
-  });
-
-  it("normalizes group names and rejects duplicate members", () => {
-    expect(CreateGroupInput.parse({ name: "  Draft team  ", botIds: ["bot-1", "bot-2"] })).toEqual({
-      name: "Draft team",
-      botIds: ["bot-1", "bot-2"],
-    });
-    expect(CreateGroupInput.safeParse({ name: "   ", botIds: ["bot-1", "bot-2"] }).success).toBe(
-      false,
-    );
-    expect(
-      UpdateGroupInput.safeParse({ groupId: "group-1", botIds: ["bot-1", "bot-1"] }).success,
-    ).toBe(false);
-  });
-
-  it.each([1, 2, 10, 11])("enforces group member bounds for %i bots", (count) => {
-    const botIds = Array.from({ length: count }, (_, index) => `bot-${index}`);
-    const accepted = count >= 2 && count <= 10;
-    expect(CreateGroupInput.safeParse({ name: "Draft team", botIds }).success).toBe(accepted);
-    expect(UpdateGroupInput.safeParse({ groupId: "group-1", botIds }).success).toBe(accepted);
   });
 
   it("keeps model OAuth start results mode-specific", () => {
@@ -366,7 +313,7 @@ describe("contracts", () => {
   it("accepts a GitHub-only routine trigger", () => {
     expect(
       CreateRoutineInput.parse({
-        botId: "bot-1",
+        threadId: "thread-1",
         name: "Review pushes",
         prompt: "Inspect the repository event",
         githubEnabled: true,
@@ -378,14 +325,14 @@ describe("contracts", () => {
     });
     expect(
       CreateRoutineInput.safeParse({
-        botId: "bot-1",
+        threadId: "thread-1",
         name: "Never runs",
         prompt: "This has no trigger",
       }).success,
     ).toBe(false);
   });
 
-  it("accepts bot-to-bot runs in thread snapshots and activity rows", () => {
+  it("accepts routine runs in thread snapshots and activity rows", () => {
     const run = {
       id: "run-1",
       botId: "bot-1",
@@ -406,11 +353,8 @@ describe("contracts", () => {
     expect(
       RunActivityRowSchema.safeParse({
         runId: run.id,
-        botId: run.botId,
-        botName: "Researcher",
-        groupId: null,
-        groupName: null,
         threadId: run.threadId,
+        title: "Research",
         status: run.status,
         trigger: run.trigger,
         notificationsEnabled: true,

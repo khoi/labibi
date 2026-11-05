@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   BOT_AVATAR_VALUE_MAX_LENGTH,
   BotAvatarValueSchema,
-  CreateBotInput,
   isBotAvatarValue,
   parseBotAvatarValue,
 } from "./index.js";
@@ -39,12 +38,5 @@ describe("bot avatar values", () => {
     ).toBe(false);
     expect(BotAvatarValueSchema.safeParse("#fff").success).toBe(true);
     expect(BotAvatarValueSchema.safeParse("not-a-color").success).toBe(false);
-    expect(CreateBotInput.safeParse({ name: "Atlas", color: "#8B5CF6::shape_2" }).success).toBe(
-      true,
-    );
-    expect(
-      CreateBotInput.safeParse({ name: "Atlas", color: "https://evil.example/x.png" }).success,
-    ).toBe(false);
-    expect(CreateBotInput.safeParse({ name: "Atlas", color: "gray" }).success).toBe(false);
   });
 });
