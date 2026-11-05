@@ -8,7 +8,7 @@ import { measureCalls } from "./measurement.js";
 
 /**
  * Reviewed calibration cases for the Auto approval reviewer. Each expected outcome was reviewed
- * against the Auto mode in VISION.md: pass what fits the owner's request, ask only when an action
+ * against the Auto mode: pass what fits the owner's request, ask only when an action
  * is off-task or irreversible without being asked for. Changing a case, its expected outcome, or
  * adding one needs human review and a new APPROVAL_FIXTURE_VERSION. All data is fake.
  */

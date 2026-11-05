@@ -19,7 +19,7 @@ export function lockOwner(tx: Prisma.TransactionClient, userId: string, scope: s
   return tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`${scope}:${userId}`}, 0))`;
 }
 
-/** What a user adds themselves follows them into every space; see VISION.md. */
+/** What a user adds themselves follows them into every space. */
 export function userAddedAvailability(actor: Pick<Actor, "spaceId">): SpaceAvailability {
   return { allSpaces: true, spaceIds: [actor.spaceId] };
 }

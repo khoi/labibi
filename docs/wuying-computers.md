@@ -1,7 +1,5 @@
 # Wuying cloud computers
 
-[English](./wuying-computers.md) | [简体中文](./wuying-computers.zh-CN.md)
-
 Bots can use an existing [Wuying (无影)](https://www.aliyun.com/product/ecs/gws) Windows cloud
 computer as their computer. They run PowerShell commands, read and write files, see the screen
 and use the mouse and keyboard there, and you can watch or take over the screen inside Labradoodle.

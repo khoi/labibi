@@ -94,6 +94,6 @@ capability config, fixtures, logs, or snapshots; use the encrypted secret store 
 
 | Address | Use for |
 | --- | --- |
-| [security@labradoodle.com](mailto:security@labradoodle.com) | Vulnerabilities only — see [SECURITY.md](SECURITY.md) |
+| [security@labradoodle.com](mailto:security@labradoodle.com) | Vulnerabilities only |
 | [support@labradoodle.com](mailto:support@labradoodle.com) | User and support questions |
 | [elie@labradoodle.com](mailto:elie@labradoodle.com) | Maintainer |
