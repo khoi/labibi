@@ -53,12 +53,6 @@ msgstr ""
 msgid "{0, plural, one {# skill} other {# skills}}"
 msgstr ""
 
-#. placeholder {0}: availability.spaceIds.length
-#. placeholder {0}: chosen.length
-#: src/components/integrations/space-availability.tsx
-msgid "{0, plural, one {# space} other {# spaces}}"
-msgstr ""
-
 #. placeholder {0}: server.health.toolCount
 #: src/pages/McpServersOverlay.tsx
 msgid "{0, plural, one {# tool} other {# tools}}"
@@ -420,10 +414,6 @@ msgstr "@{0}"
 msgid "/ month"
 msgstr "/ 月"
 
-#: src/components/integrations/space-availability.tsx
-msgid "1 space"
-msgstr ""
-
 #: src/pages/shell/message-cards.tsx
 msgid "A bit of everything"
 msgstr "什麼都做一點"
@@ -680,10 +670,6 @@ msgstr "全部 {credit} 都用於模型用量。"
 msgid "All bots"
 msgstr "所有機器人"
 
-#: src/components/integrations/space-availability.tsx
-msgid "All spaces"
-msgstr ""
-
 #: src/pages/ActivityList.tsx
 msgid "All statuses"
 msgstr "所有狀態"
@@ -829,7 +815,6 @@ msgid "Approval model"
 msgstr "核准模型"
 
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Approvals"
 msgstr "核准"
 
@@ -934,10 +919,6 @@ msgstr "儲存例行任務後可用"
 #: src/components/ModelCredits.tsx
 msgid "Available credits"
 msgstr "可用額度"
-
-#: src/components/integrations/space-availability.tsx
-msgid "Available in"
-msgstr ""
 
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Available to shell commands as {commandVariable}"
@@ -1112,7 +1093,6 @@ msgstr "無法讀取影像"
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
 msgstr "取消"
 
@@ -1722,10 +1702,6 @@ msgstr ""
 msgid "Could not change password"
 msgstr "無法修改密碼"
 
-#: src/components/integrations/space-availability.tsx
-msgid "Could not change where this is available"
-msgstr ""
-
 #: src/components/pages/PageViewHost.tsx
 msgid "Could not change who can view this page. Try again."
 msgstr "無法變更誰可以檢視此頁面。請再試一次。"
@@ -2311,14 +2287,6 @@ msgstr "目前密碼"
 msgid "Custom header"
 msgstr "自訂標頭"
 
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Customize"
-msgstr "自訂"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Customize {label}"
-msgstr "自訂{label}"
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "每天"
@@ -2372,7 +2340,6 @@ msgstr "預設範圍"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete"
 msgstr "刪除"
 
@@ -2408,10 +2375,6 @@ msgstr "刪除群組"
 #: src/pages/shell/dialogs.tsx
 msgid "Delete memories too"
 msgstr "同時刪除記憶"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Delete this Space's credentials?"
-msgstr "要刪除此空間的憑證嗎？"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -3679,7 +3642,6 @@ msgstr "模型選項"
 
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Models"
 msgstr "模型"
 
@@ -4667,13 +4629,6 @@ msgstr "移除 {site}"
 msgid "Remove change trigger"
 msgstr "移除變化觸發器"
 
-#: src/components/integrations/plugin-marketplace.tsx
-#: src/pages/KnowledgeSection.tsx
-#: src/pages/McpServersOverlay.tsx
-#: src/pages/PluginsOverlay.tsx
-msgid "Remove from every space?"
-msgstr ""
-
 #: src/pages/RoutineEditor.tsx
 msgid "Remove Git event"
 msgstr "移除 Git 事件"
@@ -4830,7 +4785,6 @@ msgstr "正在還原工作空間"
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Retry"
 msgstr "重試"
 
@@ -5735,7 +5689,6 @@ msgstr ""
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "This can't be undone."
 msgstr "此操作無法復原。"
 
@@ -6087,14 +6040,6 @@ msgstr "使用找到的模型"
 msgid "Use Connect to verify the key."
 msgstr "請使用「連線」驗證金鑰。"
 
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Use defaults"
-msgstr "使用預設值"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Use defaults for {label}"
-msgstr "{label}使用預設值"
-
 #: src/components/ModelCredits.tsx
 msgid "Use Labradoodle credits"
 msgstr "使用 Labradoodle 額度"
@@ -6158,7 +6103,6 @@ msgid "Variables"
 msgstr ""
 
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Vault"
 msgstr "保管庫"
 
@@ -6184,7 +6128,6 @@ msgstr ""
 
 #: src/pages/settings-nav.ts
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Voice"
 msgstr "語音"
@@ -6390,10 +6333,6 @@ msgstr "電腦的磁碟快滿了。請刪除不再需要的建置輸出和快取
 #: src/components/AccountDataSettings.tsx
 msgid "Your data"
 msgstr ""
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Your defaults"
-msgstr "你的預設值"
 
 #: src/pages/Auth.tsx
 msgid "Your email address"

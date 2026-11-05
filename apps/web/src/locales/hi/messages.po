@@ -52,12 +52,6 @@ msgstr ""
 msgid "{0, plural, one {# skill} other {# skills}}"
 msgstr ""
 
-#. placeholder {0}: availability.spaceIds.length
-#. placeholder {0}: chosen.length
-#: src/components/integrations/space-availability.tsx
-msgid "{0, plural, one {# space} other {# spaces}}"
-msgstr ""
-
 #. placeholder {0}: server.health.toolCount
 #: src/pages/McpServersOverlay.tsx
 msgid "{0, plural, one {# tool} other {# tools}}"
@@ -419,10 +413,6 @@ msgstr "@{0}"
 msgid "/ month"
 msgstr "/ महीना"
 
-#: src/components/integrations/space-availability.tsx
-msgid "1 space"
-msgstr ""
-
 #: src/pages/shell/message-cards.tsx
 msgid "A bit of everything"
 msgstr ""
@@ -679,10 +669,6 @@ msgstr "पूरे {credit} मॉडल उपयोग में जात�
 msgid "All bots"
 msgstr ""
 
-#: src/components/integrations/space-availability.tsx
-msgid "All spaces"
-msgstr ""
-
 #: src/pages/ActivityList.tsx
 msgid "All statuses"
 msgstr ""
@@ -828,7 +814,6 @@ msgid "Approval model"
 msgstr "अनुमोदन मॉडल"
 
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Approvals"
 msgstr "स्वीकृतियाँ"
 
@@ -932,10 +917,6 @@ msgstr ""
 
 #: src/components/ModelCredits.tsx
 msgid "Available credits"
-msgstr ""
-
-#: src/components/integrations/space-availability.tsx
-msgid "Available in"
 msgstr ""
 
 #: src/components/vault/VaultItemEditor.tsx
@@ -1111,7 +1092,6 @@ msgstr "तस्वीरें नहीं पढ़ सकता"
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
 msgstr "रद्द करें"
 
@@ -1721,10 +1701,6 @@ msgstr ""
 msgid "Could not change password"
 msgstr "पासवर्ड बदला नहीं जा सका"
 
-#: src/components/integrations/space-availability.tsx
-msgid "Could not change where this is available"
-msgstr ""
-
 #: src/components/pages/PageViewHost.tsx
 msgid "Could not change who can view this page. Try again."
 msgstr "यह नहीं बदला जा सका कि इस पेज को कौन देख सकता है। फिर कोशिश करें।"
@@ -2310,14 +2286,6 @@ msgstr "वर्तमान पासवर्ड"
 msgid "Custom header"
 msgstr ""
 
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Customize"
-msgstr "अनुकूलित करें"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Customize {label}"
-msgstr "{label} अनुकूलित करें"
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "रोज़"
@@ -2371,7 +2339,6 @@ msgstr "डिफ़ॉल्ट स्कोप"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete"
 msgstr "डिलीट करें"
 
@@ -2407,10 +2374,6 @@ msgstr "समूह डिलीट करें"
 #: src/pages/shell/dialogs.tsx
 msgid "Delete memories too"
 msgstr "मेमोरी भी डिलीट करें"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Delete this Space's credentials?"
-msgstr "इस कार्यस्थान के क्रेडेंशियल डिलीट करें?"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -3678,7 +3641,6 @@ msgstr "मॉडल विकल्प"
 
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Models"
 msgstr "मॉडल्स"
 
@@ -4666,13 +4628,6 @@ msgstr "{site} हटाएं"
 msgid "Remove change trigger"
 msgstr "बदलाव ट्रिगर हटाएँ"
 
-#: src/components/integrations/plugin-marketplace.tsx
-#: src/pages/KnowledgeSection.tsx
-#: src/pages/McpServersOverlay.tsx
-#: src/pages/PluginsOverlay.tsx
-msgid "Remove from every space?"
-msgstr ""
-
 #: src/pages/RoutineEditor.tsx
 msgid "Remove Git event"
 msgstr ""
@@ -4829,7 +4784,6 @@ msgstr ""
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Retry"
 msgstr "फिर कोशिश करें"
 
@@ -5734,7 +5688,6 @@ msgstr ""
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "This can't be undone."
 msgstr "इसे पूर्ववत नहीं किया जा सकता।"
 
@@ -6086,14 +6039,6 @@ msgstr "मिला हुआ मॉडल उपयोग करें"
 msgid "Use Connect to verify the key."
 msgstr "कुंजी जाँचने के लिए कनेक्ट करें का उपयोग करें।"
 
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Use defaults"
-msgstr "अपने डिफ़ॉल्ट इस्तेमाल करें"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Use defaults for {label}"
-msgstr "{label} के लिए अपने डिफ़ॉल्ट इस्तेमाल करें"
-
 #: src/components/ModelCredits.tsx
 msgid "Use Labradoodle credits"
 msgstr ""
@@ -6157,7 +6102,6 @@ msgid "Variables"
 msgstr ""
 
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Vault"
 msgstr "वॉल्ट"
 
@@ -6183,7 +6127,6 @@ msgstr ""
 
 #: src/pages/settings-nav.ts
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Voice"
 msgstr "आवाज़"
@@ -6389,10 +6332,6 @@ msgstr "आपके कंप्यूटर की डिस्क लगभ�
 #: src/components/AccountDataSettings.tsx
 msgid "Your data"
 msgstr ""
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Your defaults"
-msgstr "आपके डिफ़ॉल्ट"
 
 #: src/pages/Auth.tsx
 msgid "Your email address"

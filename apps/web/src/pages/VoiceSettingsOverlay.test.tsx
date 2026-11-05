@@ -102,9 +102,7 @@ it("selects an available provider when the saved self-hosted provider is hidden"
   const root = createRoot(container);
   try {
     await act(async () => {
-      root.render(
-        withQueries(<VoiceSettingsOverlay embedded scope="account" onClose={() => undefined} />),
-      );
+      root.render(withQueries(<VoiceSettingsOverlay embedded onClose={() => undefined} />));
     });
     expect(container.textContent).toContain("ElevenLabs");
     expect(container.textContent).not.toContain("Server URL");
@@ -159,9 +157,7 @@ it("saves a Fish speech model on the existing provider pane", async () => {
   };
   try {
     await act(async () => {
-      root.render(
-        withQueries(<VoiceSettingsOverlay embedded scope="account" onClose={() => undefined} />),
-      );
+      root.render(withQueries(<VoiceSettingsOverlay embedded onClose={() => undefined} />));
     });
     await act(async () => {
       await Promise.resolve();
@@ -198,7 +194,6 @@ it("saves a Fish speech model on the existing provider pane", async () => {
     });
 
     expect(voice.setSpeechModel).toHaveBeenCalledWith({
-      scope: "account",
       provider: "fish-audio",
       speechModel: "s1",
     });
@@ -256,9 +251,7 @@ it("connects a self-hosted speech server by URL without a key", async () => {
     [...container.querySelectorAll("button")].find((entry) => entry.textContent === "Connect");
   try {
     await act(async () => {
-      root.render(
-        withQueries(<VoiceSettingsOverlay embedded scope="account" onClose={() => undefined} />),
-      );
+      root.render(withQueries(<VoiceSettingsOverlay embedded onClose={() => undefined} />));
     });
     await act(async () => {
       await Promise.resolve();
@@ -277,7 +270,6 @@ it("connects a self-hosted speech server by URL without a key", async () => {
     });
 
     expect(voice.connect).toHaveBeenCalledWith({
-      scope: "account",
       provider: "openai-compatible",
       apiKey: "",
       voiceId: undefined,
@@ -326,9 +318,7 @@ it.each([
     const root = createRoot(container);
     try {
       await act(async () => {
-        root.render(
-          withQueries(<VoiceSettingsOverlay embedded scope="account" onClose={() => undefined} />),
-        );
+        root.render(withQueries(<VoiceSettingsOverlay embedded onClose={() => undefined} />));
       });
       expect(labelledInput(container, "Server URL").value).toBe(saved.endpoint);
       expect(labelledInput(container, "Speech model").value).toBe(saved.ttsModel);
@@ -401,9 +391,7 @@ it("keeps self-hosted edits typed while a reconnect is in flight", async () => {
   };
   try {
     await act(async () => {
-      root.render(
-        withQueries(<VoiceSettingsOverlay embedded scope="account" onClose={() => undefined} />),
-      );
+      root.render(withQueries(<VoiceSettingsOverlay embedded onClose={() => undefined} />));
     });
     await vi.waitFor(() =>
       expect(labelledInput(container, "Server URL").value).toBe(saved.endpoint),
@@ -474,9 +462,7 @@ it("follows the voice a reconnect saves when the voice field was edited and reve
   };
   try {
     await act(async () => {
-      root.render(
-        withQueries(<VoiceSettingsOverlay embedded scope="account" onClose={() => undefined} />),
-      );
+      root.render(withQueries(<VoiceSettingsOverlay embedded onClose={() => undefined} />));
     });
     await vi.waitFor(() => expect(labelledInput(container, "Voice").value).toBe("af_heart"));
     // Edit the voice and put the saved one back; the field still counts as edited.
@@ -513,7 +499,7 @@ it.each([null, "space-edited"])("plays a sample for the bound space %s", async (
   const root = createRoot(container);
   try {
     await act(async () => {
-      const panel = <VoiceSettingsOverlay embedded scope="account" onClose={() => undefined} />;
+      const panel = <VoiceSettingsOverlay embedded onClose={() => undefined} />;
       root.render(
         withQueries(
           spaceId ? <SpaceRpcProvider spaceId={spaceId}>{panel}</SpaceRpcProvider> : panel,
@@ -528,7 +514,7 @@ it.each([null, "space-edited"])("plays a sample for the bound space %s", async (
     await vi.waitFor(() =>
       expect(speak).toHaveBeenCalledWith(
         "Hi, this is how I'll sound when I read replies out loud.",
-        { spaceId, scope: "account" },
+        { spaceId },
       ),
     );
   } finally {
@@ -554,12 +540,7 @@ it("reopens with the cached providers and refreshes them in the background", asy
   const mount = async () => {
     const root = createRoot(container);
     await act(async () => {
-      root.render(
-        withQueries(
-          <VoiceSettingsOverlay embedded scope="account" onClose={() => undefined} />,
-          client,
-        ),
-      );
+      root.render(withQueries(<VoiceSettingsOverlay embedded onClose={() => undefined} />, client));
     });
     return root;
   };
@@ -611,12 +592,7 @@ it("keeps the provider picked during a background refresh and only its voices", 
   const mount = async () => {
     const root = createRoot(container);
     await act(async () => {
-      root.render(
-        withQueries(
-          <VoiceSettingsOverlay embedded scope="account" onClose={() => undefined} />,
-          client,
-        ),
-      );
+      root.render(withQueries(<VoiceSettingsOverlay embedded onClose={() => undefined} />, client));
     });
     return root;
   };
@@ -668,12 +644,7 @@ it("shows what a disconnect left, not a read sent before it", async () => {
   const mount = async () => {
     const root = createRoot(container);
     await act(async () => {
-      root.render(
-        withQueries(
-          <VoiceSettingsOverlay embedded scope="account" onClose={() => undefined} />,
-          client,
-        ),
-      );
+      root.render(withQueries(<VoiceSettingsOverlay embedded onClose={() => undefined} />, client));
     });
     return root;
   };
@@ -738,12 +709,7 @@ it("lets a background refresh update untouched fields but keeps edited ones", as
   const mount = async () => {
     const root = createRoot(container);
     await act(async () => {
-      root.render(
-        withQueries(
-          <VoiceSettingsOverlay embedded scope="account" onClose={() => undefined} />,
-          client,
-        ),
-      );
+      root.render(withQueries(<VoiceSettingsOverlay embedded onClose={() => undefined} />, client));
     });
     return root;
   };
@@ -778,56 +744,6 @@ it("lets a background refresh update untouched fields but keeps edited ones", as
     expect(labelledInput(container, "Speech model").value).toBe("tts-typed");
     await act(async () => second.unmount());
   } finally {
-    container.remove();
-    vi.unstubAllGlobals();
-  }
-});
-
-it("picks a Space's own voice from the account's connections without managing them", async () => {
-  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-  voice.catalog
-    .mockReset()
-    .mockResolvedValue([
-      { id: "fish-audio", name: "Fish Audio", description: "", transcribe: true },
-    ]);
-  voice.credentials.mockReset().mockResolvedValue([fish]);
-  voice.status.mockReset().mockResolvedValue({ ready: true, provider: "fish-audio" });
-  voice.voices.mockReset().mockResolvedValue([
-    { id: "voice-1", label: "Aria" },
-    { id: "voice-2", label: "Bo" },
-  ]);
-  voice.setVoice.mockReset().mockResolvedValue({ ready: true, provider: "fish-audio" });
-  const container = document.createElement("div");
-  document.body.append(container);
-  const root = createRoot(container);
-  try {
-    await act(async () => {
-      root.render(
-        withQueries(<VoiceSettingsOverlay embedded scope="space" onClose={() => undefined} />),
-      );
-    });
-    await vi.waitFor(() => expect(container.textContent).toContain("Hear a sample"));
-    expect(voice.credentials).toHaveBeenCalledWith({ scope: "space" }, expect.anything());
-    expect(voice.status).toHaveBeenCalledWith({ scope: "space" }, expect.anything());
-    // The connection itself belongs to the account.
-    expect(container.querySelector('input[type="password"]')).toBeNull();
-    const buttons = [...container.querySelectorAll("button")].map((item) => item.textContent);
-    expect(buttons).not.toContain("Disconnect");
-    expect(buttons).not.toContain("Replace key");
-
-    const voiceSelect = container.querySelectorAll("select")[1];
-    if (!voiceSelect) throw new Error("Missing voice select");
-    await act(async () => {
-      voiceSelect.value = "voice-2";
-      voiceSelect.dispatchEvent(new Event("change", { bubbles: true }));
-    });
-    expect(voice.setVoice).toHaveBeenCalledWith({
-      scope: "space",
-      voiceId: "voice-2",
-      provider: "fish-audio",
-    });
-  } finally {
-    await act(async () => root.unmount());
     container.remove();
     vi.unstubAllGlobals();
   }
@@ -869,9 +785,7 @@ it("saves a typed self-hosted voice on blur without dropping other unsaved edits
   };
   try {
     await act(async () => {
-      root.render(
-        withQueries(<VoiceSettingsOverlay embedded scope="account" onClose={() => undefined} />),
-      );
+      root.render(withQueries(<VoiceSettingsOverlay embedded onClose={() => undefined} />));
     });
     await vi.waitFor(() => expect(labelledInput(container, "Voice").value).toBe("af_heart"));
 
@@ -884,7 +798,6 @@ it("saves a typed self-hosted voice on blur without dropping other unsaved edits
     await type(labelledInput(container, "Voice"), " am_custom ");
     await blur(labelledInput(container, "Voice"));
     expect(voice.setVoice).toHaveBeenCalledWith({
-      scope: "account",
       voiceId: "am_custom",
       provider: "openai-compatible",
     });
@@ -916,9 +829,7 @@ it("connects a keyless provider without asking for a key", async () => {
   const root = createRoot(container);
   try {
     await act(async () => {
-      root.render(
-        withQueries(<VoiceSettingsOverlay embedded scope="account" onClose={() => undefined} />),
-      );
+      root.render(withQueries(<VoiceSettingsOverlay embedded onClose={() => undefined} />));
     });
     expect(container.textContent).not.toContain("API key");
     const connect = [...container.querySelectorAll("button")].find(
@@ -936,58 +847,49 @@ it("connects a keyless provider without asking for a key", async () => {
   }
 });
 
-it.each(["account", "space"] as const)(
-  "activates a connected keyless provider with one voice in %s settings",
-  async (scope) => {
-    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-    voice.catalog.mockResolvedValue([
-      { id: "fish-audio", name: "Fish Audio", description: "", transcribe: true },
-      { id: "macos", name: "Server (Mac)", description: "", transcribe: false, keyless: true },
-    ]);
-    voice.credentials.mockResolvedValue([
-      fish,
-      { ...eleven, id: "cred-macos", provider: "macos", voiceId: "Albert", transcribe: false },
-    ]);
-    voice.status.mockResolvedValue({ ready: true, provider: "fish-audio", voiceId: "voice-1" });
-    voice.voices.mockResolvedValue([{ id: "Albert", label: "Albert" }]);
-    const saved = { ready: true, provider: "macos", voiceId: "Albert" };
-    voice.setVoice.mockClear().mockResolvedValue(saved);
-    const client = new QueryClient();
-    const container = document.createElement("div");
-    document.body.append(container);
-    const root = createRoot(container);
-    try {
-      await act(async () => {
-        root.render(
-          withQueries(
-            <VoiceSettingsOverlay embedded scope={scope} onClose={() => undefined} />,
-            client,
-          ),
-        );
-      });
-      const select = [...container.querySelectorAll("select")].find((select) =>
-        [...select.options].some((option) => option.value === "macos"),
-      );
-      expect(select).toBeTruthy();
-      await act(async () => {
-        select!.value = "macos";
-        select!.dispatchEvent(new Event("change", { bubbles: true }));
-      });
-      expect(voice.setVoice).toHaveBeenCalledExactlyOnceWith({
-        scope,
-        provider: "macos",
-        voiceId: "Albert",
-      });
-      expect(container.textContent).not.toContain("API key");
-      expect(container.textContent).not.toContain("Replace key");
-      expect(
-        [...container.querySelectorAll("select")].find((select) => select.value === "Albert"),
-      ).toBeTruthy();
-    } finally {
-      await act(async () => root.unmount());
-      container.remove();
-      client.clear();
-      vi.unstubAllGlobals();
-    }
-  },
-);
+it("activates a connected keyless provider with one voice", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  voice.catalog.mockResolvedValue([
+    { id: "fish-audio", name: "Fish Audio", description: "", transcribe: true },
+    { id: "macos", name: "Server (Mac)", description: "", transcribe: false, keyless: true },
+  ]);
+  voice.credentials.mockResolvedValue([
+    fish,
+    { ...eleven, id: "cred-macos", provider: "macos", voiceId: "Albert", transcribe: false },
+  ]);
+  voice.status.mockResolvedValue({ ready: true, provider: "fish-audio", voiceId: "voice-1" });
+  voice.voices.mockResolvedValue([{ id: "Albert", label: "Albert" }]);
+  const saved = { ready: true, provider: "macos", voiceId: "Albert" };
+  voice.setVoice.mockClear().mockResolvedValue(saved);
+  const client = new QueryClient();
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  try {
+    await act(async () => {
+      root.render(withQueries(<VoiceSettingsOverlay embedded onClose={() => undefined} />, client));
+    });
+    const select = [...container.querySelectorAll("select")].find((select) =>
+      [...select.options].some((option) => option.value === "macos"),
+    );
+    expect(select).toBeTruthy();
+    await act(async () => {
+      select!.value = "macos";
+      select!.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    expect(voice.setVoice).toHaveBeenCalledExactlyOnceWith({
+      provider: "macos",
+      voiceId: "Albert",
+    });
+    expect(container.textContent).not.toContain("API key");
+    expect(container.textContent).not.toContain("Replace key");
+    expect(
+      [...container.querySelectorAll("select")].find((select) => select.value === "Albert"),
+    ).toBeTruthy();
+  } finally {
+    await act(async () => root.unmount());
+    container.remove();
+    client.clear();
+    vi.unstubAllGlobals();
+  }
+});

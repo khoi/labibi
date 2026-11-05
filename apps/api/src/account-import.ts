@@ -689,7 +689,6 @@ class AccountImporter implements ArchiveSink {
         return;
       }
       case "agent_skill":
-        // Scoped to the imported space so a second import cannot shadow skills elsewhere.
         await prisma.agentSkill.create({
           data: {
             id: newId(),
@@ -700,7 +699,6 @@ class AccountImporter implements ArchiveSink {
             content: record.content,
             files: jsonValue(record.files),
             source: "user",
-            allSpaces: false,
             createdAt: new Date(record.createdAt),
           },
         });

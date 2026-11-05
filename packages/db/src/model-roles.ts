@@ -1,9 +1,4 @@
-import type {
-  ModelRole,
-  ModelRoleChoice,
-  ModelRoleSettings,
-  SettingsScope,
-} from "@labradoodle/contracts";
+import type { ModelRole, ModelRoleChoice, ModelRoleSettings } from "@labradoodle/contracts";
 import {
   backupChoiceKey,
   canonicalPiProviderId,
@@ -12,13 +7,11 @@ import {
 } from "@labradoodle/contracts";
 import type { PrismaClient } from "./client.js";
 import { Prisma } from "./client.js";
-import { lockSpaceSettings, settingsTarget } from "./space-settings.js";
 import { withTransactionRetry } from "./transaction-retry.js";
 
-type Scope = { userId: string; spaceId: string };
-/** Which copy of a member's model roles a call acts on: the account's or the Space's override. */
-export type ModelRoleTarget = Scope & { scope: SettingsScope };
-type RoleClient = Pick<PrismaClient, "spaceModelRoleChoice" | "userModelRoleChoice">;
+/** Whose models: a member's choices are theirs in every Space. */
+type Owner = { userId: string };
+type RoleClient = Pick<PrismaClient, "userModelRoleChoice">;
 type StoredChoice = {
   role: string;
   position: number;
@@ -26,17 +19,6 @@ type StoredChoice = {
   modelId: string;
   thinkingLevel: string | null;
   credentialId: string | null;
-};
-type RoleOwner = { userId: string; spaceId?: string };
-/** The columns both copies share; the Space's rows are also keyed by its id. */
-type RoleRows = {
-  findMany(args: {
-    where: RoleOwner & { role?: string };
-    orderBy: Array<{ role: "asc" } | { position: "asc" }>;
-    select: Record<keyof StoredChoice, true>;
-  }): Promise<StoredChoice[]>;
-  deleteMany(args: { where: RoleOwner & { role: string } }): Promise<unknown>;
-  createMany(args: { data: Array<StoredChoice & RoleOwner> }): Promise<unknown>;
 };
 const storedChoice = {
   role: true,
@@ -57,53 +39,14 @@ function roleChoice(row: StoredChoice): ModelRoleChoice {
   };
 }
 
-function roleRows(prisma: RoleClient, target: ModelRoleTarget) {
-  return target.scope === "space"
-    ? {
-        table: prisma.spaceModelRoleChoice as unknown as RoleRows,
-        owner: { userId: target.userId, spaceId: target.spaceId },
-      }
-    : {
-        table: prisma.userModelRoleChoice as unknown as RoleRows,
-        owner: { userId: target.userId },
-      };
-}
-
-/**
- * The copy of the member's models a call acts on: the one `requested` names, else the
- * Space's own when it overrides them, else the account's.
- */
-export async function modelRoleTarget(
-  prisma: Pick<PrismaClient, "spaceSettingOverride">,
-  scope: Scope,
-  requested?: SettingsScope,
-): Promise<ModelRoleTarget> {
-  return {
-    userId: scope.userId,
-    spaceId: scope.spaceId,
-    scope: await settingsTarget(prisma, scope, "models", requested),
-  };
-}
-
-/** The member's ordered models for a purpose as they apply in the Space, or in `requested`. */
-export async function appliedModelRole(
-  prisma: RoleClient & Pick<PrismaClient, "spaceSettingOverride">,
-  scope: Scope,
-  role: ModelRole,
-  requested?: SettingsScope,
-): Promise<ModelRoleSettings> {
-  return getModelRole(prisma, await modelRoleTarget(prisma, scope, requested), role);
-}
-
 /** The member's own ordered models for a purpose; empty when the deployment's defaults apply. */
 export async function getModelRole(
   prisma: RoleClient,
-  target: ModelRoleTarget,
+  owner: Owner,
   role: ModelRole,
 ): Promise<ModelRoleSettings> {
-  const { table, owner } = roleRows(prisma, target);
-  const rows = await table.findMany({
-    where: { ...owner, role },
+  const rows = await prisma.userModelRoleChoice.findMany({
+    where: { userId: owner.userId, role },
     orderBy: [{ position: "asc" }],
     select: storedChoice,
   });
@@ -114,48 +57,34 @@ export async function getModelRole(
   };
 }
 
-/** Every purpose's models in one copy, each purpose's in order. */
+/** Every purpose's models, each purpose's in order. */
 export async function listModelRoleChoices(
   prisma: RoleClient,
-  target: ModelRoleTarget,
+  owner: Owner,
 ): Promise<Array<ModelRoleChoice & { role: string; position: number }>> {
-  const { table, owner } = roleRows(prisma, target);
-  const rows = await table.findMany({
-    where: owner,
+  const rows = await prisma.userModelRoleChoice.findMany({
+    where: { userId: owner.userId },
     orderBy: [{ role: "asc" }, { position: "asc" }],
     select: storedChoice,
   });
   return rows.map((row) => ({ ...roleChoice(row), role: row.role, position: row.position }));
 }
 
-/**
- * Saves a purpose's list to the copy `target.scope` names, or, when it names none, to the
- * copy that applies in the Space at the moment of the save.
- */
+/** Saves a purpose's list. Saves queue on the user, so each rewrite sees the previous one. */
 export async function updateModelRole(
   prisma: PrismaClient,
-  target: Scope & { scope?: SettingsScope },
+  owner: Owner,
   role: ModelRole,
   patch: Partial<ModelRoleSettings>,
 ): Promise<ModelRoleSettings> {
   return withTransactionRetry(() =>
     prisma.$transaction(
       async (tx) => {
-        await lockSpaceSettings(tx, target);
-        const resolved = await modelRoleTarget(
-          tx,
-          { userId: target.userId, spaceId: target.spaceId },
-          target.scope,
-        );
-        // The account's list is shared by every Space, so its saves also queue on the user.
-        // At ReadCommitted, the rewrite after these locks observes the previous writer's list.
-        if (resolved.scope === "account") {
-          const users = await tx.$queryRaw<Array<{ locked: number }>>`
-            SELECT 1 AS locked FROM "user" WHERE "id" = ${target.userId} FOR UPDATE
-          `;
-          if (users.length !== 1) throw new Error("Model settings owner not found");
-        }
-        return writeModelRole(tx, resolved, role, patch);
+        const users = await tx.$queryRaw<Array<{ locked: number }>>`
+          SELECT 1 AS locked FROM "user" WHERE "id" = ${owner.userId} FOR UPDATE
+        `;
+        if (users.length !== 1) throw new Error("Model settings owner not found");
+        return writeModelRole(tx, owner, role, patch);
       },
       { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted },
     ),
@@ -168,12 +97,11 @@ export async function updateModelRole(
  */
 export async function writeModelRole(
   tx: RoleClient,
-  target: ModelRoleTarget,
+  owner: Owner,
   role: ModelRole,
   patch: Partial<ModelRoleSettings>,
 ): Promise<ModelRoleSettings> {
-  const { table, owner } = roleRows(tx, target);
-  const current = await getModelRole(tx, target, role);
+  const current = await getModelRole(tx, owner, role);
   const saved = [...(current.primary ? [current.primary] : []), ...current.backups];
   // The same row first, then the same model on another connection.
   const savedThinking = (choice: ModelRoleChoice) =>
@@ -208,13 +136,13 @@ export async function writeModelRole(
         (!primary || modelRoleChoiceKey(backup) !== modelRoleChoiceKey(primary)) &&
         list.findIndex((item) => modelRoleChoiceKey(item) === modelRoleChoiceKey(backup)) === index,
     );
-  await table.deleteMany({ where: { ...owner, role } });
-  await table.createMany({
+  await tx.userModelRoleChoice.deleteMany({ where: { userId: owner.userId, role } });
+  await tx.userModelRoleChoice.createMany({
     data: [
       ...(primary ? [{ ...primary, position: 0 }] : []),
       ...backups.map((backup, index) => ({ ...backup, position: index + 1 })),
     ].map((row) => ({
-      ...owner,
+      userId: owner.userId,
       role,
       position: row.position,
       provider: row.provider,
@@ -223,5 +151,5 @@ export async function writeModelRole(
       credentialId: row.credentialId ?? null,
     })),
   });
-  return getModelRole(tx, target, role);
+  return getModelRole(tx, owner, role);
 }

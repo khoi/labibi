@@ -42,11 +42,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, Ellipsis, Plus, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ErrorNotice } from "../components/ErrorNotice";
-import {
-  AvailabilityControl,
-  reachesOtherSpaces,
-  useOwnSpaces,
-} from "../components/integrations/space-availability";
 import { McpServerHealthLine } from "../components/McpServerHealthLine";
 import { connectMcpOauth, MCP_OAUTH_CHANNEL, mcpOAuthRedirectUri } from "../lib/mcp-connect";
 import { useSpaceQueries } from "../lib/query";
@@ -142,7 +137,6 @@ export function McpServersOverlay({
     },
   });
   const servers = serversQuery.data ?? [];
-  const spaceCount = useOwnSpaces().length;
   const loadFailed = serversQuery.isError;
   const shownError = error ?? (loadFailed ? errorDetails(t`Could not load MCP servers`) : null);
 
@@ -789,14 +783,6 @@ export function McpServersOverlay({
           <McpServerHealthLine health={server.health} checking={testing} />
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          {server.installId ? null : (
-            <AvailabilityControl
-              kind="mcpServer"
-              id={server.id}
-              availability={server.availability}
-              onChanged={() => serversQuery.refetch()}
-            />
-          )}
           {signInFirst ? (
             <Button
               type="button"
@@ -897,13 +883,7 @@ export function McpServersOverlay({
           >
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>
-                  {reachesOtherSpaces(deleting.availability, spaceCount) ? (
-                    <Trans>Remove from every space?</Trans>
-                  ) : (
-                    t`Delete ${deleting.name}?`
-                  )}
-                </AlertDialogTitle>
+                <AlertDialogTitle>{t`Delete ${deleting.name}?`}</AlertDialogTitle>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>

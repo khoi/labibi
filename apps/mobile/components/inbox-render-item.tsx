@@ -67,15 +67,12 @@ export function useInboxRenderItem({
           </Pressable>
           {sharing ? null : (
             <MenuView
-              actions={[
-                { id: "members", title: t("Members"), image: "person.2" },
-                { id: "settings", title: t("Settings"), image: "gearshape" },
-              ]}
+              actions={[{ id: "members", title: t("Members"), image: "person.2" }]}
               colorScheme={appearance}
-              onPressAction={({ nativeEvent }) => {
+              onPressAction={() => {
                 if (!item.space) return;
                 router.push({
-                  pathname: nativeEvent.event === "members" ? "/space-members" : "/space",
+                  pathname: "/space-members",
                   params: { spaceId: item.space.id, name: item.space.name },
                 });
               }}

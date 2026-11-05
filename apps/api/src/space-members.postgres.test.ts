@@ -372,15 +372,6 @@ describePostgres("shared spaces: invites and membership (PostgreSQL)", () => {
     await system.mcpServer.create({
       data: { spaceId: home, userId: invitee.id, slug: "notes", name: "Notes", transport: "http" },
     });
-    await system.actionApprovalRule.create({
-      data: {
-        spaceId: home,
-        createdByUserId: invitee.id,
-        effect: "allow",
-        matchKind: "tool",
-        matchValue: "send_email",
-      },
-    });
     await system.notificationPreference.create({ data: { spaceId: home, userId: invitee.id } });
     // Their own Space is not touched.
     const ownConnection = await system.connection.create({
@@ -443,9 +434,6 @@ describePostgres("shared spaces: invites and membership (PostgreSQL)", () => {
     await expect(system.secret.count({ where: leftover })).resolves.toBe(0);
     await expect(system.mcpServer.count({ where: leftover })).resolves.toBe(0);
     await expect(system.notificationPreference.count({ where: leftover })).resolves.toBe(0);
-    await expect(
-      system.actionApprovalRule.count({ where: { spaceId: home, createdByUserId: invitee.id } }),
-    ).resolves.toBe(0);
     await expect(
       system.spaceMember.count({ where: { spaceId: home, userId: invitee.id } }),
     ).resolves.toBe(0);
@@ -1000,12 +988,12 @@ describePostgres("shared spaces: invites and membership (PostgreSQL)", () => {
     expect(bots[0]?.computer).toMatchObject({ userId: owner.id, scope: "team" });
   });
 
-  it("keeps what a leaving member made available elsewhere and hands their threads over", async () => {
+  it("keeps what a leaving member added and hands their threads over", async () => {
     const owner = await person("owner");
     const invitee = await person("invitee");
     const home = await sharedSpace(owner, "Home");
     await call(invitee.actor, "spaces/invites/accept", { token: await invite(owner, home) });
-    const everywhere = await system.mcpServer.create({
+    const added = await system.mcpServer.create({
       data: {
         spaceId: home,
         userId: invitee.id,
@@ -1013,29 +1001,6 @@ describePostgres("shared spaces: invites and membership (PostgreSQL)", () => {
         name: "Notes",
         transport: "http",
         endpoint: "https://mcp.example.test",
-        allSpaces: true,
-      },
-    });
-    const work = await sharedSpace(invitee, "Work");
-    const chosen = await system.mcpServer.create({
-      data: {
-        spaceId: home,
-        userId: invitee.id,
-        slug: "work-tracker",
-        name: "Work tracker",
-        transport: "http",
-        endpoint: "https://mcp.example.test/work",
-        availableIn: { create: { spaceId: work, userId: invitee.id } },
-      },
-    });
-    const onlyHere = await system.mcpServer.create({
-      data: {
-        spaceId: home,
-        userId: invitee.id,
-        slug: "home-only",
-        name: "Home only",
-        transport: "http",
-        endpoint: "https://mcp.example.test/home",
       },
     });
     // A plugin whose server is already in their own Space under that name goes whole.
@@ -1056,7 +1021,6 @@ describePostgres("shared spaces: invites and membership (PostgreSQL)", () => {
         kind: "plugin",
         name: "Calendar",
         source: "test",
-        allSpaces: true,
         mcpServers: {
           create: {
             spaceId: home,
@@ -1065,7 +1029,6 @@ describePostgres("shared spaces: invites and membership (PostgreSQL)", () => {
             name: "Calendar",
             transport: "http",
             endpoint: "https://mcp.example.test/calendar",
-            allSpaces: true,
           },
         },
       },
@@ -1085,13 +1048,8 @@ describePostgres("shared spaces: invites and membership (PostgreSQL)", () => {
     ).resolves.toBeNull();
 
     await expect(
-      system.mcpServer.findUniqueOrThrow({ where: { id: everywhere.id } }),
+      system.mcpServer.findUniqueOrThrow({ where: { id: added.id } }),
     ).resolves.toMatchObject({ spaceId: invitee.spaceId, userId: invitee.id });
-    // One chosen for another Space moves there, not to a Space it was never available in.
-    await expect(
-      system.mcpServer.findUniqueOrThrow({ where: { id: chosen.id } }),
-    ).resolves.toMatchObject({ spaceId: work });
-    await expect(system.mcpServer.findUnique({ where: { id: onlyHere.id } })).resolves.toBeNull();
     await expect(
       system.thread.findUniqueOrThrow({ where: { id: thread.id } }),
     ).resolves.toMatchObject({ userId: owner.id });

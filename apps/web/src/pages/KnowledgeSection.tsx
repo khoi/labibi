@@ -8,12 +8,6 @@ import { ORPCError } from "@orpc/client";
 import { skipToken, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Download, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import {
-  AvailabilityControl,
-  AvailabilityLabel,
-  reachesOtherSpaces,
-  useOwnSpaces,
-} from "../components/integrations/space-availability";
 import { SettingsSectionHeading } from "../components/SettingsSectionHeading";
 import { downloadArtifactBytes } from "../lib/artifact-open";
 import { useSpaceQueries } from "../lib/query";
@@ -356,7 +350,6 @@ export function AgentSkills() {
   const error = actionError ?? (listQuery.isError ? t`Could not load` : null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const selection = useRef(0);
-  const spaceCount = useOwnSpaces().length;
 
   async function refresh() {
     return fetchFresh(queryClient, list);
@@ -467,7 +460,6 @@ export function AgentSkills() {
                   {entry.name}
                 </span>
                 <span className="flex shrink-0 items-center gap-2">
-                  <AvailabilityLabel availability={entry.availability} />
                   <SkillSourceBadge source={entry.source} />
                 </span>
               </span>
@@ -488,29 +480,6 @@ export function AgentSkills() {
                 {open.name}
               </div>
               <SkillSourceBadge source={open.source} />
-              {open.source === "user" ? (
-                <div className="ms-auto">
-                  <AvailabilityControl
-                    kind="skill"
-                    id={open.id}
-                    availability={open.availability}
-                    onChanged={async () => {
-                      // Another skill may have been opened while this was saving; leave it alone.
-                      const opened = selection.current;
-                      // Narrowed away from this space, the skill can no longer be read here.
-                      const here = (await refresh()).some((entry) => entry.id === open.id);
-                      if (selection.current !== opened) return;
-                      if (!here) {
-                        selection.current += 1;
-                        setOpen(null);
-                        return;
-                      }
-                      const fresh = await rpc.agentSkills.get({ skillId: open.id });
-                      if (selection.current === opened) setOpen(fresh);
-                    }}
-                  />
-                </div>
-              ) : null}
             </div>
           ) : null}
           <Textarea
@@ -559,15 +528,7 @@ export function AgentSkills() {
                   confirmingDelete ? "bg-destructive/10 text-destructive" : "text-destructive"
                 }`}
               >
-                {confirmingDelete ? (
-                  reachesOtherSpaces(open.availability, spaceCount) ? (
-                    <Trans>Remove from every space?</Trans>
-                  ) : (
-                    <Trans>Confirm delete</Trans>
-                  )
-                ) : (
-                  <Trans>Delete</Trans>
-                )}
+                {confirmingDelete ? <Trans>Confirm delete</Trans> : <Trans>Delete</Trans>}
               </Button>
             ) : null}
           </div>

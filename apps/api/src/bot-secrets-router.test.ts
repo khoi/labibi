@@ -96,10 +96,7 @@ function botSecretDeps(seed: Row[] = []) {
     // Counted before a prepared value that was never committed is deleted from the store.
     secret: { count: vi.fn(async () => 0) },
     integrationProviderConfig: { count: vi.fn(async () => 0) },
-    spaceSettingOverride: {
-      findUnique: vi.fn<() => Promise<{ setting: string } | null>>(async () => null),
-    },
-    // The member's settings lock always finds the membership row.
+    // The member's vault lock always finds the user row.
     $queryRaw: vi.fn(async () => [{ locked: 1 }]),
     $transaction: vi.fn(),
   };
@@ -212,25 +209,12 @@ describe("vault router", () => {
   it("saves, lists and removes in the account vault by default", async () => {
     const { rows, call } = botSecretDeps();
     expect((await call("vault/put", { destination, value: FAKE_VALUE })).status).toBe(200);
-    expect(rows).toEqual([
-      expect.objectContaining({ userId: "user-1", spaceId: null, name: "portal" }),
-    ]);
+    expect(rows).toEqual([expect.objectContaining({ userId: "user-1", name: "portal" })]);
     const listed = await call("vault/list", {});
     expect(listed.body.json).toEqual([expect.objectContaining({ name: "portal" })]);
     expect(listed.text).not.toContain(FAKE_VALUE);
     expect((await call("vault/remove", { name: "portal" })).status).toBe(200);
     expect(rows).toEqual([]);
-  });
-
-  it("keeps a Space's own vault apart from the account vault", async () => {
-    const { prisma, rows, call } = botSecretDeps();
-    prisma.spaceSettingOverride.findUnique.mockResolvedValue({ setting: "credentials" });
-    await call("vault/put", { scope: "space", destination, value: FAKE_VALUE });
-    expect(rows).toEqual([expect.objectContaining({ spaceId: "space-1", name: "portal" })]);
-    expect((await call("vault/list", { scope: "account" })).body.json).toEqual([]);
-    expect((await call("vault/list", { scope: "space" })).body.json).toEqual([
-      expect.objectContaining({ name: "portal" }),
-    ]);
   });
 
   it("reveals a value only after this session confirmed it's the owner", async () => {
@@ -246,11 +230,10 @@ describe("vault router", () => {
     events.record.mockClear();
     const shown = await call("vault/reveal", { name: "portal" });
     expect(shown.body.json).toEqual({ value: FAKE_VALUE });
-    // The event names the vault that was read, though the call left scope to the Space.
     expect(events.record).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "credential.revealed",
-        metadata: expect.objectContaining({ scope: "account", name: "portal" }),
+        metadata: expect.objectContaining({ name: "portal" }),
       }),
     );
     expect(JSON.stringify(events.record.mock.calls)).not.toContain(FAKE_VALUE);
@@ -290,19 +273,6 @@ describe("vault router", () => {
     expect((await call("vault/reveal", { name: "site" })).body.json).toEqual({ fields });
   });
 
-  it("refuses a save the Space stops customizing while it is being prepared", async () => {
-    const { prisma, secrets, rows, call } = botSecretDeps();
-    // Customized when the save is prepared, back on the account vault by the time it stores.
-    prisma.spaceSettingOverride.findUnique.mockResolvedValueOnce({ setting: "credentials" });
-    const refused = await call("vault/put", { scope: "space", destination, value: FAKE_VALUE });
-    expect(refused.status).toBe(400);
-    expect(refused.text).toContain("This Space uses the account vault");
-    expect(rows).toEqual([]);
-    expect(secrets.put).toHaveBeenCalledOnce();
-    const prepared = await secrets.put.mock.results[0]!.value;
-    expect(secrets.delete).toHaveBeenCalledWith(prepared.ciphertext, expect.anything());
-  });
-
   it("keeps a saved login on its site when saved again for another one", async () => {
     const login = {
       name: "portal",
@@ -312,7 +282,6 @@ describe("vault router", () => {
     const saved = {
       id: "login-1",
       userId: "user-1",
-      spaceId: null,
       ...login,
       ciphertext: "enc:login-1",
     };
@@ -331,14 +300,5 @@ describe("vault router", () => {
       expect(refused.text).not.toContain(FAKE_VALUE);
     }
     expect(rows).toEqual([saved]);
-  });
-
-  it("refuses to save into a Space's own vault the Space no longer uses", async () => {
-    const { rows, call } = botSecretDeps();
-    const refused = await call("vault/put", { scope: "space", destination, value: FAKE_VALUE });
-    expect(refused.status).toBe(400);
-    expect(refused.text).toContain("This Space uses the account vault");
-    expect(refused.text).not.toContain(FAKE_VALUE);
-    expect(rows).toEqual([]);
   });
 });

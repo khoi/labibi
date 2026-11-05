@@ -33,7 +33,6 @@ describe("procedureSecurityEvent", () => {
       ["vault", "put"],
       // The real RPC shape, so a renamed field fails here instead of silently dropping the name.
       VaultPutInput.parse({
-        scope: "account",
         destination: { name: "github-deploy", auth: { type: "command" } },
         value: "ghp_secretvalue",
       }),
@@ -42,7 +41,6 @@ describe("procedureSecurityEvent", () => {
     expect(event?.metadata).toEqual({
       procedure: "vault.put",
       kind: "vault_credential",
-      scope: "account",
       name: "github-deploy",
     });
     expect(JSON.stringify(event)).not.toContain("ghp_secretvalue");

@@ -32,8 +32,6 @@ afterEach(() => {
 });
 
 const scope = { userId: "user-1", spaceId: "space-1" };
-// These rows sit in the Space's own vault, so lookups match their spaceId.
-const ownVault = { findUnique: vi.fn(async () => ({ setting: "credentials" })) };
 const destination: BotSecretDestination = {
   name: "example_api",
   origin: "https://api.example.test",
@@ -61,7 +59,6 @@ async function fixture(auth = destination.auth) {
       : null,
   );
   const prisma = {
-    spaceSettingOverride: ownVault,
     vaultCredential: { findFirst },
     secret: { findFirst: vi.fn(async () => null) },
   } as unknown as PrismaClient;
@@ -134,7 +131,7 @@ describe("authenticated secret requests", () => {
     },
   );
 
-  it.each(["userId", "spaceId"] as const)(
+  it.each(["userId"] as const)(
     "denies a different %s before decrypting or sending",
     async (key) => {
       const { input, fetch } = await fixture();
@@ -241,7 +238,6 @@ describe("authenticated secret requests", () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () => Response.json({ ok: true }));
     const input = {
       prisma: {
-        spaceSettingOverride: ownVault,
         vaultCredential: { findFirst },
       } as unknown as PrismaClient,
       secretStore,
@@ -284,7 +280,6 @@ describe("authenticated secret requests", () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () => Response.json({ ok: true }));
     const input = {
       prisma: {
-        spaceSettingOverride: ownVault,
         vaultCredential: { findFirst },
       } as unknown as PrismaClient,
       secretStore,
@@ -853,7 +848,6 @@ describe("saved website logins", () => {
     const findMany = vi.fn(async (query) => matchingRows([row], query));
     return {
       prisma: {
-        spaceSettingOverride: ownVault,
         vaultCredential: { findFirst, findMany },
         secret: { findFirst: vi.fn(async () => null) },
       } as unknown as PrismaClient,
@@ -874,7 +868,6 @@ describe("saved website logins", () => {
     );
     rows.push({ ...scope, ...login, ...encrypted });
     const prisma = {
-      spaceSettingOverride: ownVault,
       vaultCredential: { findMany: vi.fn(async (query) => matchingRows(rows, query)) },
     } as unknown as PrismaClient;
     expect(await loadLoginPasswordRedactions(prisma, secretStore, scope)).toContain(password);
@@ -923,7 +916,6 @@ describe("saved website logins", () => {
   it("skips an unreadable login and logs only its id", async () => {
     const row = { ...scope, ...login, id: "login-broken", ciphertext: "not-a-ciphertext" };
     const prisma = {
-      spaceSettingOverride: ownVault,
       vaultCredential: { findMany: vi.fn(async () => [row]) },
     } as unknown as PrismaClient;
     const warn = vi.fn();
@@ -1136,7 +1128,6 @@ describe("logins kept for one run", () => {
       { recordId: "saved-login" },
     );
     return {
-      spaceSettingOverride: { findUnique: vi.fn(async () => null) },
       secret: {
         findFirst: vi.fn(async ({ where }) => (matching(where) ? row : null)),
         findMany: vi.fn(async ({ where }) => (matching(where) ? [row] : [])),

@@ -106,20 +106,17 @@ describe("built-in skill precedence in the API", () => {
     expect(agentSkill.deleteMany).not.toHaveBeenCalled();
   });
 
-  it.each([{ spaceId: "other-space" }, { userId: "other-user" }])(
-    "does not let foreign skills shadow the builtin: %j",
-    async (foreignOwner) => {
-      const { service } = setup([{ ...savedSkill(" Interrogate "), ...foreignOwner }]);
-      await expect(service.get(actor, { name: "interrogate" })).resolves.toMatchObject({
-        id: "builtin:Interrogate",
-        readOnly: true,
-      });
-      expect(interrogates(await service.list(actor))).toEqual([
-        expect.objectContaining({ id: "builtin:Interrogate" }),
-      ]);
-      await expect(service.get(actor, { skillId: "saved-1" })).rejects.toThrow();
-    },
-  );
+  it("does not let another person's skills shadow the builtin", async () => {
+    const { service } = setup([{ ...savedSkill(" Interrogate "), userId: "other-user" }]);
+    await expect(service.get(actor, { name: "interrogate" })).resolves.toMatchObject({
+      id: "builtin:Interrogate",
+      readOnly: true,
+    });
+    expect(interrogates(await service.list(actor))).toEqual([
+      expect.objectContaining({ id: "builtin:Interrogate" }),
+    ]);
+    await expect(service.get(actor, { skillId: "saved-1" })).rejects.toThrow();
+  });
 });
 
 describe("imported skill content in the API", () => {

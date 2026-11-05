@@ -59,7 +59,13 @@ describePostgres("MCP OAuth refresh (PostgreSQL contract)", () => {
       signal: new AbortController().signal,
     });
     await prisma.secret.create({
-      data: { id: stored.id, userId: id, spaceId: id, kind: "mcp", ciphertext: stored.ciphertext },
+      data: {
+        id: stored.id,
+        userId: id,
+        spaceId: null,
+        kind: "mcp",
+        ciphertext: stored.ciphertext,
+      },
     });
     const server = await prisma.mcpServer.create({
       data: {

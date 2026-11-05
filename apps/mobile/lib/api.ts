@@ -906,14 +906,7 @@ async function request(
       status: () =>
         rpc("aiConsent/status", { uses, ...consentTarget }, { requestContext: consentContext }),
       prompt: promptAiConsent,
-      allow: (input) =>
-        rpc(
-          "aiConsent/allow",
-          consentTarget.settingsScope
-            ? { ...input, settingsScope: consentTarget.settingsScope }
-            : input,
-          { requestContext: consentContext },
-        ),
+      allow: (input) => rpc("aiConsent/allow", input, { requestContext: consentContext }),
       coalesceKey: consentContext ? aiConsentCoalesceKey(consentContext) : undefined,
     });
   }

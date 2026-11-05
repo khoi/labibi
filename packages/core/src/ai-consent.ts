@@ -1,10 +1,5 @@
-import type {
-  AiConsentStatus,
-  AiDataUse,
-  AiRecipient,
-  SettingsScope,
-} from "@labradoodle/contracts";
-import { AI_CONSENT_REQUIRED, SettingsScopeSchema } from "@labradoodle/contracts";
+import type { AiConsentStatus, AiDataUse, AiRecipient } from "@labradoodle/contracts";
+import { AI_CONSENT_REQUIRED } from "@labradoodle/contracts";
 
 /** A foreground check failed before the requested mutation was dispatched. */
 export class AiConsentBlocked extends Error {
@@ -90,13 +85,9 @@ export function aiConsentTarget(input: unknown): {
   botId?: string;
   groupId?: string;
   routineId?: string;
-  settingsScope?: SettingsScope;
 } {
   if (!input || typeof input !== "object") return {};
-  // A request that names a settings copy is asked about that copy's recipients.
-  const scope = SettingsScopeSchema.safeParse((input as { scope?: unknown }).scope).data;
-  const thread = threadConsentTarget(input);
-  return scope ? { ...thread, settingsScope: scope } : thread;
+  return threadConsentTarget(input);
 }
 
 /** A send that starts routines is also checked as each routine's own test run would be. */

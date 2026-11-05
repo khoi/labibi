@@ -2277,33 +2277,25 @@ describe("answerRunInput", () => {
   });
 
   it.each([
-    ["destination.write", {}, "tool", "destination.write", false],
-    ["web_fetch", { url: "https://docs.example.com/a?b=c" }, "site", "example.com", true],
+    ["destination.write", {}, "tool", "destination.write"],
+    ["web_fetch", { url: "https://docs.example.com/a?b=c" }, "site", "example.com"],
     [
       "paid_request",
       { url: "https://api.example.com/quote", method: "GET" },
       "site",
       "example.com",
-      false,
     ],
     // secret_request also carries a url, but its card allows the tool, not a site.
-    [
-      "secret_request",
-      { name: "API", url: "https://api.example.com/x" },
-      "tool",
-      "secret_request",
-      false,
-    ],
+    ["secret_request", { name: "API", url: "https://api.example.com/x" }, "tool", "secret_request"],
     [
       "COMPOSIO_MULTI_EXECUTE_TOOL",
       { tools: [{ tool_slug: "GMAIL_SEND_EMAIL", arguments: {} }] },
       "tool",
       "GMAIL_SEND_EMAIL",
-      false,
     ],
   ])(
     "approves %s and upserts always-allow without overwriting the task prompt",
-    async (kind, request, matchKind, matchValue, spaceOverridesConfirmations) => {
+    async (kind, request, matchKind, matchValue) => {
       const fanout = new TestFanout();
       const tx = {
         $queryRaw: vi.fn().mockResolvedValue([{ id: "thread-1" }]),
@@ -2341,19 +2333,6 @@ describe("answerRunInput", () => {
             batchActions: kind === "COMPOSIO_MULTI_EXECUTE_TOOL" ? ["GMAIL_SEND_EMAIL"] : null,
           }),
           update: vi.fn().mockResolvedValue({ id: "effect-1" }),
-        },
-        spaceSettingOverride: {
-          findUnique: vi
-            .fn()
-            .mockResolvedValue(spaceOverridesConfirmations ? { setting: "confirmations" } : null),
-        },
-        actionApprovalRule: {
-          findMany: vi.fn().mockResolvedValue([
-            { id: "rule-0", matchValue: matchValue.toUpperCase() },
-            { id: "rule-other", matchValue: `${matchValue}.other` },
-          ]),
-          deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
-          upsert: vi.fn().mockResolvedValue({ id: "rule-1" }),
         },
         userActionApprovalRule: {
           findMany: vi
@@ -2394,41 +2373,16 @@ describe("answerRunInput", () => {
         where: { id: "effect-1" },
         data: { status: "approved" },
       });
-      expect(tx.spaceSettingOverride.findUnique).toHaveBeenCalledWith({
-        where: {
-          spaceId_userId_setting: {
-            spaceId: "workspace-1",
-            userId: "user-1",
-            setting: "confirmations",
-          },
-        },
-        select: { setting: true },
+      const row = { userId: "user-1", effect: "always_allow", matchKind, matchValue };
+      // The opposite rule on the same match goes, ignoring case.
+      expect(tx.userActionApprovalRule.deleteMany).toHaveBeenCalledWith({
+        where: { id: { in: ["account-rule-0"] } },
       });
-      const rule = { effect: "always_allow", matchKind, matchValue };
-      if (spaceOverridesConfirmations) {
-        const row = { spaceId: "workspace-1", createdByUserId: "user-1", ...rule };
-        // The opposite rule on the same match goes, ignoring case.
-        expect(tx.actionApprovalRule.deleteMany).toHaveBeenCalledWith({
-          where: { id: { in: ["rule-0"] } },
-        });
-        expect(tx.actionApprovalRule.upsert).toHaveBeenCalledWith({
-          where: { spaceId_createdByUserId_effect_matchKind_matchValue: row },
-          create: row,
-          update: {},
-        });
-        expect(tx.userActionApprovalRule.upsert).not.toHaveBeenCalled();
-      } else {
-        const row = { userId: "user-1", ...rule };
-        expect(tx.userActionApprovalRule.deleteMany).toHaveBeenCalledWith({
-          where: { id: { in: ["account-rule-0"] } },
-        });
-        expect(tx.userActionApprovalRule.upsert).toHaveBeenCalledWith({
-          where: { userId_effect_matchKind_matchValue: row },
-          create: row,
-          update: {},
-        });
-        expect(tx.actionApprovalRule.upsert).not.toHaveBeenCalled();
-      }
+      expect(tx.userActionApprovalRule.upsert).toHaveBeenCalledWith({
+        where: { userId_effect_matchKind_matchValue: row },
+        create: row,
+        update: {},
+      });
     },
   );
 
@@ -2482,13 +2436,11 @@ describe("answerRunInput", () => {
         }),
         update: vi.fn().mockResolvedValue({ id: "effect-1" }),
       },
-      spaceSettingOverride: { findUnique: vi.fn().mockResolvedValue(null) },
       userActionApprovalRule: {
         findMany: vi.fn().mockResolvedValue([]),
         deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
         upsert: vi.fn().mockResolvedValue({ id: "rule-1" }),
       },
-      actionApprovalRule: { upsert: vi.fn() },
       thread: { update: vi.fn().mockResolvedValue({ nextEventSeq: 10 }) },
       event: {
         create: vi.fn(async ({ data }: { data: { seq: number; type: string } }) => ({
@@ -2556,7 +2508,6 @@ describe("answerRunInput", () => {
           .fn()
           .mockResolvedValue({ id: "effect-1", status: "intended", kind: "destination.write" }),
       },
-      actionApprovalRule: { upsert: vi.fn() },
       userActionApprovalRule: { upsert: vi.fn() },
     };
     const prisma = {
@@ -2575,7 +2526,6 @@ describe("answerRunInput", () => {
     ).resolves.toBe(false);
 
     expect(tx.run.updateMany).not.toHaveBeenCalled();
-    expect(tx.actionApprovalRule.upsert).not.toHaveBeenCalled();
     expect(tx.userActionApprovalRule.upsert).not.toHaveBeenCalled();
   });
 

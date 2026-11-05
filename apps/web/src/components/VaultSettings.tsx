@@ -1,9 +1,4 @@
-import type {
-  BotSecretMetadata,
-  SettingsScope,
-  VaultKind,
-  VaultRevealed,
-} from "@labradoodle/contracts";
+import type { BotSecretMetadata, VaultKind, VaultRevealed } from "@labradoodle/contracts";
 import { isIdentityConfirmationRequired, VAULT_KINDS, vaultKind } from "@labradoodle/contracts";
 import { fetchFresh, writeSaved } from "@labradoodle/core/query";
 import {
@@ -36,19 +31,13 @@ const REVEAL_CANCELLED = new Error("Reveal cancelled");
 
 type Editing = { kind: VaultKind; mode: "new" | "edit"; initial?: VaultEditorInitial };
 
-/** The items in the account's vault, or in the bound Space's own once it customizes them. */
-export function VaultSettings({
-  scope,
-  onBusyChange,
-}: {
-  scope: SettingsScope;
-  onBusyChange?: (busy: boolean) => void;
-}) {
+/** The items in the member's vault, which every Space uses. */
+export function VaultSettings({ onBusyChange }: { onBusyChange?: (busy: boolean) => void }) {
   const { t } = useLingui();
   const rpc = useSpaceRpc();
   const queries = useSpaceQueries();
   const queryClient = useQueryClient();
-  const list = queries.vault.list.queryOptions({ input: { scope } });
+  const list = queries.vault.list.queryOptions();
   const listQuery = useQuery({ ...list, refetchOnMount: "always" });
   const items = listQuery.data;
   const { one, many } = useVaultKindLabels();
@@ -81,7 +70,6 @@ export function VaultSettings({
     setBusy(true);
     try {
       await rpc.vault.put({
-        scope,
         destination: result.destination,
         ...(result.value !== undefined ? { value: result.value } : {}),
         ...(result.title !== undefined ? { title: result.title } : {}),
@@ -100,7 +88,7 @@ export function VaultSettings({
     try {
       const shown = await withIdentityConfirmation(async () => {
         try {
-          return await rpc.vault.reveal({ scope, name });
+          return await rpc.vault.reveal({ name });
         } catch (err) {
           // A reveal whose item closed while it waited must not ask the person to confirm.
           throw current() ? err : REVEAL_CANCELLED;
@@ -126,7 +114,7 @@ export function VaultSettings({
     setDetailError(null);
     setBusy(true);
     try {
-      await rpc.vault.remove({ scope, name });
+      await rpc.vault.remove({ name });
     } catch (err) {
       setDetailError(errorText(err, t`Could not remove the credential`));
       return false;

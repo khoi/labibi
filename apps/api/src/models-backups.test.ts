@@ -21,8 +21,6 @@ function setup(
     existing?: Array<Record<string, unknown>>;
     /** An openai-compatible connection with this stored list and own model. */
     compatible?: { enabledModelIds: string[]; defaultModel: string };
-    /** Spaces whose member keeps their own models instead of the account's. */
-    overrides?: Array<{ userId: string; spaceId: string }>;
   } = {},
 ) {
   const credential = {
@@ -34,17 +32,15 @@ function setup(
     createdAt: new Date(0),
     updatedAt: new Date(0),
   };
-  // `existing` describes the main model's fallbacks, positioned after its primary. A row
-  // with a spaceId is that Space's own copy; one without is the account's.
+  // `existing` describes the main model's fallbacks, positioned after its primary.
   let roleRows: Array<Record<string, unknown>> = (options.existing ?? []).map((row) => ({
     ...row,
     role: "main",
     position: Number(row.position) + 1,
     thinkingLevel: null,
   }));
-  const roleTable = (copy: "account" | "space") => {
+  const roleTable = () => {
     const owns = (row: Record<string, unknown>, where: Record<string, string>) =>
-      (copy === "space") === (row.spaceId !== undefined) &&
       Object.entries(where).every(([key, value]) => row[key] === value);
     return {
       findMany: vi.fn(async ({ where }: { where: Record<string, string> }) =>
@@ -62,38 +58,9 @@ function setup(
       }),
     };
   };
-  const userModelRoleChoice = roleTable("account");
-  const spaceModelRoleChoice = roleTable("space");
-  type OverrideKey = { spaceId: string; userId: string; setting: string };
-  let overrides: OverrideKey[] = (options.overrides ?? []).map((row) => ({
-    ...row,
-    setting: "models",
-  }));
-  const sameOverride = (left: OverrideKey, right: OverrideKey) =>
-    left.spaceId === right.spaceId &&
-    left.userId === right.userId &&
-    left.setting === right.setting;
-  const spaceSettingOverride = {
-    findUnique: vi.fn(
-      async ({ where }: { where: { spaceId_userId_setting: OverrideKey } }) =>
-        overrides.find((row) => sameOverride(row, where.spaceId_userId_setting)) ?? null,
-    ),
-    findMany: vi.fn(async ({ where }: { where: { spaceId: string; userId: string } }) =>
-      overrides.filter((row) => row.spaceId === where.spaceId && row.userId === where.userId),
-    ),
-    create: vi.fn(async ({ data }: { data: OverrideKey }) => {
-      overrides.push(data);
-      return data;
-    }),
-    delete: vi.fn(async ({ where }: { where: { spaceId_userId_setting: OverrideKey } }) => {
-      overrides = overrides.filter((row) => !sameOverride(row, where.spaceId_userId_setting));
-      return where.spaceId_userId_setting;
-    }),
-  };
+  const userModelRoleChoice = roleTable();
   const tx = {
     userModelRoleChoice,
-    spaceModelRoleChoice,
-    spaceSettingOverride,
     $queryRaw: vi.fn().mockResolvedValue([{ locked: 1 }]),
   };
   const prisma = {
@@ -105,8 +72,6 @@ function setup(
       findFirst: vi.fn(async () => ({ organization: { modelCredits: { mode: "credits" } } })),
     },
     userModelRoleChoice,
-    spaceModelRoleChoice,
-    spaceSettingOverride,
     userModelCredential: {
       findMany: vi.fn(async ({ where }: { where: { userId: string; provider?: string } }) =>
         !options.credits &&
@@ -194,14 +159,13 @@ function setup(
   const rows = () =>
     roleRows
       .filter((row) => row.role === "main" && Number(row.position) > 0)
-      .map(({ userId, spaceId, provider, modelId, position }) => ({
+      .map(({ userId, provider, modelId, position }) => ({
         userId,
-        spaceId,
         provider,
         modelId,
         position: Number(position) - 1,
       }));
-  return { rows, roles, prisma, userModelRoleChoice, spaceModelRoleChoice, call };
+  return { rows, roles, prisma, userModelRoleChoice, call };
 }
 
 const availableModel = listPiCatalog().find(
@@ -242,17 +206,10 @@ describe("model backup settings API", () => {
     expect(userModelRoleChoice.createMany).not.toHaveBeenCalled();
   });
 
-  it("reads the member's account list, ignoring stale Space copies and other users", async () => {
+  it("reads the member's account list, ignoring other users", async () => {
     const { call, prisma } = setup({
       existing: [
         { userId: "user-one", provider: "openrouter", modelId: "first", position: 0 },
-        {
-          userId: "user-one",
-          spaceId: "space-one",
-          provider: "openrouter",
-          modelId: "stale-space-copy",
-          position: 0,
-        },
         { userId: "user-two", provider: "openrouter", modelId: "other-user", position: 0 },
       ],
     });
@@ -266,49 +223,6 @@ describe("model backup settings API", () => {
     expect(prisma.userModelRoleChoice.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { userId: owner.userId, role: "main" } }),
     );
-  });
-
-  it("reads and writes a Space's own list while it overrides the account's", async () => {
-    const { call, rows } = setup({
-      overrides: [{ userId: owner.userId, spaceId: owner.spaceId }],
-      existing: [
-        { userId: owner.userId, provider: "openrouter", modelId: "account", position: 0 },
-        {
-          userId: owner.userId,
-          spaceId: owner.spaceId,
-          provider: "openrouter",
-          modelId: "space-own",
-          position: 0,
-        },
-      ],
-    });
-
-    const legacy = await call("models/backups", null);
-    expect((await legacy.response.json()).json).toEqual([
-      { provider: "openrouter", modelId: "space-own" },
-    ]);
-    const account = await call("models/role", { role: "main", scope: "account" });
-    expect((await account.response.json()).json.backups).toEqual([
-      expect.objectContaining({ modelId: "account" }),
-    ]);
-
-    const input = [{ provider: availableModel.provider, modelId: availableModel.id }];
-    expect((await call("models/setBackups", input)).response.status).toBe(200);
-    expect(rows()).toEqual([
-      expect.objectContaining({ modelId: "account" }),
-      expect.objectContaining({ spaceId: owner.spaceId, modelId: availableModel.id }),
-    ]);
-
-    // An explicit account write leaves the Space's copy alone.
-    const accountWrite = await call("models/setRole", {
-      role: "main",
-      scope: "account",
-      backups: [],
-    });
-    expect(accountWrite.response.status).toBe(200);
-    expect(rows()).toEqual([
-      expect.objectContaining({ spaceId: owner.spaceId, modelId: availableModel.id }),
-    ]);
   });
 
   it("persists an ordered list for a connected usable model without changing the primary", async () => {
@@ -438,36 +352,6 @@ describe("model backup settings API", () => {
     expect(userModelRoleChoice.deleteMany).toHaveBeenCalledWith({
       where: { userId: actor.userId, role: "main" },
     });
-  });
-});
-
-describe("Space model overrides", () => {
-  it("starts a Space's own models from the account's and drops them when it follows again", async () => {
-    const { call, rows } = setup({
-      existing: [{ userId: owner.userId, provider: "openrouter", modelId: "account", position: 0 }],
-    });
-    const overrides = async () =>
-      (await (await call("spaceSettings/overrides", null)).response.json()).json;
-    expect(await overrides()).toEqual([]);
-
-    const customize = await call("spaceSettings/setOverride", { setting: "models", enabled: true });
-    expect((await customize.response.json()).json).toEqual(["models"]);
-    expect(rows()).toEqual([
-      expect.objectContaining({ modelId: "account" }),
-      expect.objectContaining({ spaceId: owner.spaceId, modelId: "account" }),
-    ]);
-
-    // Changes now land in the Space's copy only.
-    expect((await call("models/setBackups", [])).response.status).toBe(200);
-    expect(rows()).toEqual([expect.objectContaining({ modelId: "account" })]);
-
-    const reset = await call("spaceSettings/setOverride", { setting: "models", enabled: false });
-    expect((await reset.response.json()).json).toEqual([]);
-    expect(await overrides()).toEqual([]);
-    const legacy = await call("models/backups", null);
-    expect((await legacy.response.json()).json).toEqual([
-      { provider: "openrouter", modelId: "account" },
-    ]);
   });
 });
 

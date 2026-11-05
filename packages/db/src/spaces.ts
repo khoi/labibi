@@ -507,7 +507,7 @@ export async function deleteClaimedSpaceForMember(
         // was cut short; a retry finishes it.
         if (remainingBots > 0 || provisioned > 0) throw new SpaceDeletionInProgressError();
         const pageShareSecrets = await deletePageShareSecrets(tx, { spaceId: input.spaceId });
-        await rehomeGuestItems(tx, input.spaceId);
+        await rehomeSpaceItems(tx, input.spaceId);
         await releasePendingSpacePayments(tx, input.spaceId);
         const { organizationId } = await tx.space.delete({
           where: { id: input.spaceId },
@@ -536,46 +536,28 @@ export async function deleteClaimedSpaceForMember(
 }
 
 /**
- * What the departing person made available in other Spaces of theirs was homed in this one, and
- * would go when it does. Each item moves to a Space it is already available in: one it was chosen
- * for, or for an item available everywhere their fallback Space. A plugin moves with its servers
- * and skills, as one. An item whose new home already has one with the same name stays, and goes
- * with this Space.
+ * A person's skills, MCP servers and plugins work in every Space of theirs but are homed in the
+ * one they were added in. Before they leave that Space, or it goes, each moves to their fallback
+ * Space, a plugin with its servers and skills as one. An item whose name is taken there stays,
+ * and goes with this Space.
  */
-export async function rehomeSharedItems(
+export async function rehomeMemberItems(
   tx: Prisma.TransactionClient,
   input: { spaceId: string; userId: string },
 ): Promise<void> {
   const { spaceId, userId } = input;
-  const fallback = await fallbackSpaceForMember(tx, userId, spaceId);
-  const shared = {
-    spaceId,
-    userId,
-    OR: [{ allSpaces: true }, { availableIn: { some: { spaceId: { not: spaceId } } } }],
-  };
-  const chosen = {
-    where: { spaceId: { not: spaceId }, space: { deletingAt: null } },
-    select: { spaceId: true },
-    orderBy: { spaceId: "asc" as const },
-    take: 1,
-  };
+  const home = await fallbackSpaceForMember(tx, userId, spaceId);
+  if (!home) return;
+  const own = { spaceId, userId };
   const [servers, skills, installs] = await Promise.all([
-    tx.mcpServer.findMany({
-      where: shared,
-      select: { id: true, slug: true, installId: true, allSpaces: true, availableIn: chosen },
-    }),
+    tx.mcpServer.findMany({ where: { ...own, installId: null }, select: { id: true, slug: true } }),
     tx.agentSkill.findMany({
-      where: shared,
-      select: { id: true, name: true, installId: true, allSpaces: true, availableIn: chosen },
+      where: { ...own, installId: null },
+      select: { id: true, name: true },
     }),
-    tx.capabilityInstall.findMany({
-      where: shared,
-      select: { id: true, allSpaces: true, availableIn: chosen },
-    }),
+    tx.capabilityInstall.findMany({ where: own, select: { id: true } }),
   ]);
-  const homeOf = (item: { allSpaces: boolean; availableIn: Array<{ spaceId: string }> }) =>
-    item.allSpaces ? fallback : (item.availableIn[0]?.spaceId ?? null);
-  const nameTaken = async (home: string, items: { slugs: string[]; names: string[] }) =>
+  const nameTaken = async (items: { slugs: string[]; names: string[] }) =>
     (items.slugs.length > 0 &&
       (await tx.mcpServer.count({ where: { spaceId: home, userId, slug: { in: items.slugs } } })) >
         0) ||
@@ -589,22 +571,14 @@ export async function rehomeSharedItems(
       )
     ).some((count) => count > 0);
   for (const server of servers) {
-    const home = homeOf(server);
-    if (server.installId || !home) continue;
-    if (await nameTaken(home, { slugs: [server.slug], names: [] })) continue;
+    if (await nameTaken({ slugs: [server.slug], names: [] })) continue;
     await tx.mcpServer.update({ where: { id: server.id }, data: { spaceId: home } });
-    await tx.mcpServerSpace.deleteMany({ where: { serverId: server.id, spaceId: home } });
   }
   for (const skill of skills) {
-    const home = homeOf(skill);
-    if (skill.installId || !home) continue;
-    if (await nameTaken(home, { slugs: [], names: [skill.name] })) continue;
+    if (await nameTaken({ slugs: [], names: [skill.name] })) continue;
     await tx.agentSkill.update({ where: { id: skill.id }, data: { spaceId: home } });
-    await tx.agentSkillSpace.deleteMany({ where: { skillId: skill.id, spaceId: home } });
   }
   for (const install of installs) {
-    const home = homeOf(install);
-    if (!home) continue;
     const parts = await Promise.all([
       tx.mcpServer.findMany({ where: { installId: install.id }, select: { slug: true } }),
       tx.agentSkill.findMany({ where: { installId: install.id }, select: { name: true } }),
@@ -613,22 +587,18 @@ export async function rehomeSharedItems(
       slugs: parts[0].map((server) => server.slug),
       names: parts[1].map((skill) => skill.name),
     };
-    if (await nameTaken(home, items)) continue;
+    if (await nameTaken(items)) continue;
     const moved = { where: { installId: install.id }, data: { spaceId: home } };
     await tx.capabilityInstall.update({ where: { id: install.id }, data: { spaceId: home } });
     await tx.mcpServer.updateMany(moved);
     await tx.agentSkill.updateMany(moved);
-    await tx.capabilityInstallSpace.deleteMany({ where: { installId: install.id, spaceId: home } });
   }
 }
 
-/** Before a Space goes, what its guests made available elsewhere moves out of it (see above). */
-async function rehomeGuestItems(tx: Prisma.TransactionClient, spaceId: string): Promise<void> {
-  const guests = await tx.spaceMember.findMany({
-    where: { spaceId, role: { not: "owner" } },
-    select: { userId: true },
-  });
-  for (const { userId } of guests) await rehomeSharedItems(tx, { spaceId, userId });
+/** Before a Space goes, what each member added in it moves to another Space of theirs. */
+async function rehomeSpaceItems(tx: Prisma.TransactionClient, spaceId: string): Promise<void> {
+  const members = await tx.spaceMember.findMany({ where: { spaceId }, select: { userId: true } });
+  for (const { userId } of members) await rehomeMemberItems(tx, { spaceId, userId });
 }
 
 /**
@@ -786,7 +756,7 @@ export async function deleteClaimedSpace(
         }
         // Teardown was cut short; deleting again finishes it.
         if (remainingBots > 0 || remainingComputers > 0) throw new SpaceDeletionInProgressError();
-        await rehomeGuestItems(tx, spaceId);
+        await rehomeSpaceItems(tx, spaceId);
         // The page links' tokens go with the Space; the caller removes them from the store.
         const pageShareSecrets = await tx.secret.findMany({
           where: { pageShare: { is: { spaceId } } },

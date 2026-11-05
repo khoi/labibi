@@ -145,8 +145,6 @@ describe("tickRoutineWatch", () => {
       prisma: {
         routine: { updateMany },
         connection: { findMany: vi.fn(async () => []) },
-        spaceSettingOverride: { findUnique: vi.fn(async () => null) },
-        actionApprovalRule: { findMany: vi.fn(async () => []) },
         userActionApprovalRule: { findMany: vi.fn(async () => []) },
         bot: {
           findUnique: vi.fn(async () => ({
@@ -367,23 +365,6 @@ describe("tickRoutineWatch", () => {
     expect(deps.connector!.execute).not.toHaveBeenCalled();
   });
 
-  it("refuses under the Space's own rules when it overrides the account's", async () => {
-    const { deps, routine } = setup({ data: "ok" });
-    vi.mocked(deps.connector!.discoverTools).mockResolvedValue([]);
-    deps.connector!.resolveCall = vi.fn(async (call) => ({
-      call,
-      tool: { name: "actual_read", readOnly: true, description: "Read", inputSchema: {} },
-    }));
-    vi.mocked(deps.prisma.spaceSettingOverride.findUnique).mockResolvedValue({
-      setting: "confirmations",
-    } as never);
-    vi.mocked(deps.prisma.actionApprovalRule.findMany).mockResolvedValue([
-      { effect: "require_approval", matchKind: "tool", matchValue: "actual_read" },
-    ] as never);
-    await expect(checkRoutineWatch(deps, routine)).rejects.toThrow("needs approval");
-    expect(deps.prisma.userActionApprovalRule.findMany).not.toHaveBeenCalled();
-  });
-
   it("keeps sub-second modification times in file signatures", async () => {
     const { deps, routine } = setup({});
     routine.watch = { kind: "files", paths: ["inbox"] } as unknown as typeof routine.watch;
@@ -486,8 +467,6 @@ describe("tool results", () => {
       const deps = {
         prisma: {
           connection: { findMany: vi.fn(async () => []) },
-          spaceSettingOverride: { findUnique: vi.fn(async () => null) },
-          actionApprovalRule: { findMany: vi.fn(async () => []) },
           userActionApprovalRule: { findMany: vi.fn(async () => []) },
         },
         connector: {
@@ -557,7 +536,6 @@ describe("tickRoutineWatch on a computer", () => {
         ...(options?.vault
           ? {
               vaultCredential: options.vault.prisma.vaultCredential,
-              spaceSettingOverride: options.vault.prisma.spaceSettingOverride,
             }
           : {}),
       },
@@ -739,7 +717,6 @@ describe("tickRoutineWatch on a computer", () => {
     const result = await checkRoutineWatch(deps, routine);
     expect(result.state.entries).toEqual({ "inbox/note.txt": "3:1.25" });
     expect(vault.prisma.vaultCredential.findMany).not.toHaveBeenCalled();
-    expect(vault.prisma.spaceSettingOverride.findUnique).not.toHaveBeenCalled();
     expect(execute).toHaveBeenCalledWith(
       expect.anything(),
       expect.not.objectContaining({ env: expect.anything() }),
@@ -1430,8 +1407,6 @@ describe("watch tool guard", () => {
     const deps = {
       prisma: {
         connection: { findMany: vi.fn(async () => []) },
-        spaceSettingOverride: { findUnique: vi.fn(async () => null) },
-        actionApprovalRule: { findMany: vi.fn(async () => []) },
         userActionApprovalRule: { findMany: vi.fn(async () => rules) },
       },
       connector: {
@@ -1551,8 +1526,6 @@ it("loads authorized connection context for discovery, creation validation and c
           { ...connection, id: "revoked", status: "revoked" },
         ]),
       },
-      spaceSettingOverride: { findUnique: vi.fn(async () => null) },
-      actionApprovalRule: { findMany: vi.fn(async () => []) },
       userActionApprovalRule: { findMany: vi.fn(async () => rules) },
     },
     connector: { discoverTools, execute },

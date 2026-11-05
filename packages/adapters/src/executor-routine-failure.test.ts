@@ -177,7 +177,6 @@ async function failRun(scenario: Scenario) {
     computer: { updateMany: vi.fn(async () => ({ count: 1 })) },
     connection: { findMany: vi.fn(async () => []) },
     userModelPreference: { findFirst: vi.fn(async () => null) },
-    spaceSettingOverride: { findUnique: vi.fn(async () => null) },
     userModelRoleChoice: {
       findMany: vi.fn(async ({ where }: { where: { role: string } }) =>
         where.role !== "main"

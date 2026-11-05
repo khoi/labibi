@@ -26,7 +26,6 @@ import {
   SpaceDeletionInProgressError,
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
-import { rehomeItemsLeaving } from "./availability.js";
 
 /** Bound for one bot or sandbox teardown. Providers may ignore the abort signal,
  * so without a deadline a hung destroy would keep the deletion claim renewed
@@ -170,7 +169,6 @@ export async function deleteSpaceWithContent(
       clearInterval(claimRenewal);
       claimRenewal = null;
     }
-    await rehomeItemsLeaving(deps.prisma, spaceId);
     const deleted = await deleteClaimedSpaceForMember(deps.prisma, claimedInput);
     // Rows are gone; leftover stored files are unreachable, so cleanup failures only log.
     const cleanup = await Promise.allSettled([

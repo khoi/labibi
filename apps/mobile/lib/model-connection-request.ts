@@ -1,6 +1,5 @@
 import type { ModelRoleChoice } from "@labradoodle/contracts";
 import type { Href } from "expo-router";
-import type { SettingsTarget } from "./settings-target";
 
 export type ModelConnectionRequest = {
   provider: string;
@@ -10,8 +9,6 @@ export type ModelConnectionRequest = {
   baseUrl?: string;
   /** Only the main model's empty first slot takes the new connection's model on connect. */
   makeDefault: boolean;
-  /** Whose main model makeDefault sets: the account's, or a Space's override. */
-  target: SettingsTarget;
   /**
    * Set when connecting fills a model slot; managing a connection leaves it unset.
    * May return the screen to continue in, such as the slot's picker for this connection.

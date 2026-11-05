@@ -25,7 +25,6 @@ import {
 import {
   AccessGrantInputSchema,
   AccessGrantSchema,
-  AccountItemSchema,
   ActionApprovalRuleSchema,
   ActionAutoReviewSettingsSchema,
   AgentSkillCatalogEntrySchema,
@@ -36,7 +35,6 @@ import {
   ArtifactSchema,
   ArtifactVersionSchema,
   ArtifactWithContentSchema,
-  AvailabilityKindSchema,
   AvatarStyleSchema,
   BillingClientSchema,
   BillingStatusSchema,
@@ -95,7 +93,6 @@ import {
   ServerUpdateStatusSchema,
   SignupSurveySchema,
   SkillPlaybookSchema,
-  SpaceAvailabilitySchema,
   SpaceInviteLinkSchema,
   SpaceInvitePreviewSchema,
   SpaceMembersSchema,
@@ -146,7 +143,6 @@ import {
 } from "./runs.js";
 import { SearchQueryOutputSchema } from "./search.js";
 import { SecurityEventListInputSchema, SecurityEventSchema } from "./security-events.js";
-import { SettingsScopeSchema, SpaceSettingSchema, settingsScopeInput } from "./settings-scope.js";
 
 const botId = z.object({ botId: Id });
 const groupId = z.object({ groupId: Id });
@@ -235,8 +231,6 @@ export const appContract = {
           scope: z.string(),
           version: z.string(),
           keys: z.array(z.string()).min(1).max(200),
-          /** The settings copy the reviewed recipients came from, as in `status`. */
-          settingsScope: SettingsScopeSchema.optional(),
         }),
       )
       .output(AiConsentStatusSchema),
@@ -407,7 +401,6 @@ export const appContract = {
         z.object({
           role: ModelRoleSchema,
           expectedUserId: Id.optional(),
-          scope: SettingsScopeSchema.optional(),
         }),
       )
       .output(ModelRoleViewSchema),
@@ -416,7 +409,6 @@ export const appContract = {
         ModelRoleUpdateSchema.extend({
           role: ModelRoleSchema,
           expectedUserId: Id.optional(),
-          scope: SettingsScopeSchema.optional(),
         }),
       )
       .output(ModelRoleViewSchema),
@@ -454,7 +446,6 @@ export const appContract = {
           modelId: z.string().optional(),
           thinkingLevel: ThinkingLevelSchema.nullable().optional(),
           makeDefault: z.boolean().optional(),
-          scope: SettingsScopeSchema.optional(),
           /** No loopback listener (web, mobile): the provider shows a code to paste instead. */
           codePage: z.boolean().optional(),
         }),
@@ -820,22 +811,6 @@ export const appContract = {
     update: oc.input(UpdateAgentSkillInput).output(AgentSkillSchema),
     remove: oc.input(z.object({ skillId: Id })).output(z.object({ ok: z.literal(true) })),
   },
-  availability: {
-    set: oc
-      .input(z.object({ kind: AvailabilityKindSchema, id: Id }).and(SpaceAvailabilitySchema))
-      .output(SpaceAvailabilitySchema),
-    /** The user's own skills, MCP servers, plugins and tool sources across their spaces. */
-    items: oc.output(z.array(AccountItemSchema)),
-    /** Make exactly the listed items available in a space, keeping each one's other spaces. */
-    chooseForSpace: oc
-      .input(
-        z.object({
-          spaceId: Id,
-          items: z.array(z.object({ kind: AvailabilityKindSchema, id: Id })).max(500),
-        }),
-      )
-      .output(z.object({ ok: z.literal(true) })),
-  },
   marketplace: {
     catalog: oc
       .input(z.object({ query: z.string().trim().max(200).default("") }))
@@ -1001,19 +976,17 @@ export const appContract = {
     ),
   },
   approvalRules: {
-    list: oc.input(settingsScopeInput.optional()).output(z.array(ActionApprovalRuleSchema)),
+    list: oc.output(z.array(ActionApprovalRuleSchema)),
     set: oc
       .input(
-        settingsScopeInput.extend({
+        z.object({
           effect: z.enum(["always_allow", "require_approval", "deny"]),
           matchKind: z.enum(["tool", "connector", "site"]),
           matchValue: z.string().trim().min(1),
         }),
       )
       .output(ActionApprovalRuleSchema),
-    remove: oc
-      .input(settingsScopeInput.extend({ id: Id }))
-      .output(z.object({ ok: z.literal(true) })),
+    remove: oc.input(z.object({ id: Id })).output(z.object({ ok: z.literal(true) })),
   },
   /**
    * Sites the signed-in user opens from chat links without the external-link prompt, in every
@@ -1029,24 +1002,16 @@ export const appContract = {
       .output(z.object({ ok: z.literal(true) })),
   },
   autoReview: {
-    get: oc.input(settingsScopeInput.optional()).output(ActionAutoReviewSettingsSchema),
+    get: oc.output(ActionAutoReviewSettingsSchema),
     set: oc
       .input(
-        settingsScopeInput.extend({
+        z.object({
           mode: ApprovalModeSchema.optional(),
           enabled: z.boolean().optional(),
           skipApprovals: z.boolean().optional(),
         }),
       )
       .output(ActionAutoReviewSettingsSchema),
-  },
-  /** Which account settings the bound Space overrides for the member. */
-  spaceSettings: {
-    overrides: oc.output(z.array(SpaceSettingSchema)),
-    /** Customizing copies the account's settings into the Space; ending it drops the copy. */
-    setOverride: oc
-      .input(z.object({ setting: SpaceSettingSchema, enabled: z.boolean() }))
-      .output(z.array(SpaceSettingSchema)),
   },
   artifacts: {
     list: oc.input(botId).output(z.array(ArtifactSchema)),
@@ -1191,8 +1156,8 @@ export const appContract = {
   },
   voice: {
     catalog: oc.output(z.array(VoiceCatalogEntrySchema)),
-    status: oc.input(settingsScopeInput.optional()).output(VoiceStatusSchema),
-    credentials: oc.input(settingsScopeInput.optional()).output(z.array(VoiceCredentialSchema)),
+    status: oc.output(VoiceStatusSchema),
+    credentials: oc.output(z.array(VoiceCredentialSchema)),
     connect: oc
       .input(
         z
@@ -1206,8 +1171,6 @@ export const appContract = {
             baseUrl: z.string().max(2048).optional(),
             ttsModel: z.string().max(200).optional(),
             sttModel: z.string().max(200).optional(),
-            /** Where the connection becomes the default voice. */
-            scope: SettingsScopeSchema.optional(),
           })
           .superRefine((input, ctx) => {
             // Hosted keys are checked by the server, which knows which providers are keyless.
@@ -1222,7 +1185,7 @@ export const appContract = {
       .output(z.object({ ok: z.literal(true) })),
     setVoice: oc
       .input(
-        settingsScopeInput.extend({
+        z.object({
           voiceId: z.string().min(1).max(120),
           provider: z.string().optional(),
         }),
@@ -1230,14 +1193,14 @@ export const appContract = {
       .output(VoiceStatusSchema),
     setSpeechModel: oc
       .input(
-        settingsScopeInput.extend({
+        z.object({
           provider: z.string().min(1),
           speechModel: z.string().max(64),
         }),
       )
       .output(VoiceCredentialSchema),
     voices: oc
-      .input(settingsScopeInput.extend({ provider: z.string().optional() }))
+      .input(z.object({ provider: z.string().optional() }))
       .output(z.array(VoiceInfoSchema)),
     prepare: oc
       .input(
@@ -1245,18 +1208,17 @@ export const appContract = {
           text: z.string().max(20000),
           voiceId: z.string().max(120).optional(),
           botId: Id.optional(),
-          scope: SettingsScopeSchema.optional(),
         }),
       )
       .output(z.object({ ready: z.boolean(), utterances: z.array(z.string()) })),
   },
   vault: {
-    list: oc.input(settingsScopeInput.optional()).output(z.array(BotSecretMetadata)),
+    list: oc.output(z.array(BotSecretMetadata)),
     put: oc.input(VaultPutInput).output(BotSecretMetadata),
     /** Needs a recent identity confirmation on this session (IDENTITY_CONFIRMATION_REQUIRED). */
     reveal: oc.input(VaultRevealInput).output(VaultRevealed),
     remove: oc
-      .input(settingsScopeInput.extend({ name: StoredBotSecretName }))
+      .input(z.object({ name: StoredBotSecretName }))
       .output(z.object({ ok: z.literal(true) })),
   },
 };

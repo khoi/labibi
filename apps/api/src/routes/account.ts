@@ -5,13 +5,7 @@ import {
   isAutoReviewCheckerConfigured,
   PushSessionEndedError,
 } from "@labradoodle/adapters";
-import type {
-  ActionApprovalRule,
-  Actor,
-  ChatAlert,
-  Me,
-  SettingsScope,
-} from "@labradoodle/contracts";
+import type { ActionApprovalRule, Actor, ChatAlert, Me } from "@labradoodle/contracts";
 import { approvalModeFromPreference, approvalPreferenceFromMode } from "@labradoodle/core";
 import { urlSite } from "@labradoodle/core/egress";
 import {
@@ -23,7 +17,6 @@ import {
   listApprovalRules,
   listAuditEvents,
   listVoicePreferences,
-  lockSpaceSettings,
   newestVoiceCredentialOrder,
   Prisma,
   removeApprovalRule,
@@ -31,7 +24,6 @@ import {
   saveApprovalRule,
   saveAutoReviewPreference,
   selectVoicePreference,
-  voicePreferenceTarget,
 } from "@labradoodle/db";
 import { ORPCError } from "@orpc/server";
 import { createAccessGrant, listAccessGrants, revokeAccessGrant } from "../access-grants.js";
@@ -217,20 +209,17 @@ export function accountRoutes(ctx: RouterContext) {
       }),
     },
     approvalRules: {
-      list: authed.approvalRules.list.handler(async ({ context, input }) => {
-        const rows = await listApprovalRules(deps.prisma, context.actor, input?.scope);
+      list: authed.approvalRules.list.handler(async ({ context }) => {
+        const rows = await listApprovalRules(deps.prisma, context.actor);
         return rows.map(approvalRuleDto);
       }),
       set: authed.approvalRules.set.handler(async ({ context, input }) => {
-        const { scope, ...rule } = input;
         return approvalRuleDto(
-          await deps.prisma.$transaction((tx) => saveApprovalRule(tx, context.actor, rule, scope)),
+          await deps.prisma.$transaction((tx) => saveApprovalRule(tx, context.actor, input)),
         );
       }),
       remove: authed.approvalRules.remove.handler(async ({ context, input }) => {
-        await deps.prisma.$transaction((tx) =>
-          removeApprovalRule(tx, context.actor, input.id, input.scope),
-        );
+        await removeApprovalRule(deps.prisma, context.actor, input.id);
         return { ok: true as const };
       }),
     },
@@ -262,22 +251,19 @@ export function accountRoutes(ctx: RouterContext) {
       }),
     },
     autoReview: {
-      get: authed.autoReview.get.handler(async ({ context, input }) => {
-        return loadAutoReviewSettings(deps, context.actor, input?.scope);
+      get: authed.autoReview.get.handler(async ({ context }) => {
+        return loadAutoReviewSettings(deps, context.actor);
       }),
       set: authed.autoReview.set.handler(async ({ context, input }) => {
-        await deps.prisma.$transaction((tx) =>
-          saveAutoReviewPreference(
-            tx,
-            context.actor,
-            input.mode
-              ? approvalPreferenceFromMode(input.mode)
-              : { enabled: input.enabled, skipApprovals: input.skipApprovals },
-            { enabled: true, skipApprovals: false },
-            input.scope,
-          ),
+        await saveAutoReviewPreference(
+          deps.prisma,
+          context.actor,
+          input.mode
+            ? approvalPreferenceFromMode(input.mode)
+            : { enabled: input.enabled, skipApprovals: input.skipApprovals },
+          { enabled: true, skipApprovals: false },
         );
-        return loadAutoReviewSettings(deps, context.actor, input.scope);
+        return loadAutoReviewSettings(deps, context.actor);
       }),
     },
     notifications: {
@@ -346,18 +332,17 @@ export function accountRoutes(ctx: RouterContext) {
       catalog: authed.voice.catalog.handler(async () =>
         listVoiceCatalog({ allowPrivateEndpoint: deps.env?.mcpAllowPrivateEndpoint }),
       ),
-      status: authed.voice.status.handler(async ({ context, input }) => {
-        const cred = await findDefaultVoiceCredential(deps.prisma, context.actor, input?.scope);
+      status: authed.voice.status.handler(async ({ context }) => {
+        const cred = await findDefaultVoiceCredential(deps.prisma, context.actor);
         return toVoiceStatus(cred);
       }),
-      credentials: authed.voice.credentials.handler(async ({ context, input }) => {
-        const target = await voicePreferenceTarget(deps.prisma, context.actor, input?.scope);
+      credentials: authed.voice.credentials.handler(async ({ context }) => {
         const [rows, preferences] = await Promise.all([
           deps.prisma.userVoiceCredential.findMany({
             where: { userId: context.actor.userId },
             orderBy: newestVoiceCredentialOrder,
           }),
-          listVoicePreferences(deps.prisma, target),
+          listVoicePreferences(deps.prisma, context.actor),
         ]);
         return Promise.all(
           rows.map(async (row) => {
@@ -381,7 +366,6 @@ export function accountRoutes(ctx: RouterContext) {
           baseUrl: input.baseUrl,
           ttsModel: input.ttsModel,
           sttModel: input.sttModel,
-          scope: input.scope,
           signal: context.signal,
         }),
       ),
@@ -392,19 +376,17 @@ export function accountRoutes(ctx: RouterContext) {
         const cred = await withSerializableRetry(() =>
           deps.prisma.$transaction(
             async (tx) => {
-              await lockSpaceSettings(tx, context.actor);
-              const target = await voicePreferenceTarget(tx, context.actor, input.scope);
               const found = input.provider
                 ? await tx.userVoiceCredential.findFirst({
                     where: { userId: context.actor.userId, provider: input.provider },
                     orderBy: newestVoiceCredentialOrder,
                   })
-                : await findDefaultVoiceCredential(tx, context.actor, target.scope);
+                : await findDefaultVoiceCredential(tx, context.actor);
               if (!found) {
                 throw new ORPCError("BAD_REQUEST", { message: "Connect a voice provider first." });
               }
               // Picking a voice also makes its provider the one speak/transcribe use.
-              await selectVoicePreference(tx, target, found.id, input.voiceId);
+              await selectVoicePreference(tx, context.actor, found.id, input.voiceId);
               return { ...found, voiceId: input.voiceId, isDefault: true };
             },
             { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
@@ -416,10 +398,10 @@ export function accountRoutes(ctx: RouterContext) {
         updateVoiceSpeechModel(deps, context.actor, input),
       ),
       voices: authed.voice.voices.handler(async ({ context, input }) => {
-        // A named provider lists its voices even before the copy has a default voice.
+        // A named provider lists its voices even before it is the default voice.
         const row = input.provider
-          ? await loadVoiceCredential(deps, context.actor, input.provider, input.scope)
-          : await loadDefaultVoiceCredential(deps, context.actor, input.scope);
+          ? await loadVoiceCredential(deps, context.actor, input.provider)
+          : await loadDefaultVoiceCredential(deps, context.actor);
         if (!row) return [];
         return (await voiceProviderFor(deps, row.cred.provider)).listVoices(
           row.apiKey,
@@ -449,17 +431,10 @@ function approvalRuleDto(row: {
   };
 }
 
-async function loadAutoReviewSettings(deps: RouterDeps, actor: Actor, scope?: SettingsScope) {
+async function loadAutoReviewSettings(deps: RouterDeps, actor: Actor) {
   const [role, preference] = await Promise.all([
-    // The account page judges the account's approval model; a Space, the one that applies there.
-    effectiveModelRole(
-      deps.prisma,
-      actor,
-      "approval",
-      { env: process.env },
-      scope === "account" ? "account" : undefined,
-    ),
-    findAutoReviewPreference(deps.prisma, actor, scope),
+    effectiveModelRole(deps.prisma, actor, "approval", { env: process.env }),
+    findAutoReviewPreference(deps.prisma, actor),
   ]);
   const stored = {
     enabled: preference?.enabled ?? true,

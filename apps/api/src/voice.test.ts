@@ -146,7 +146,6 @@ function makeDisconnectDeps(
   const rows = overrides.existing ?? [];
   const findMany = vi.fn().mockResolvedValue(rows);
   const preferenceDeleteMany = vi.fn().mockResolvedValue({ count: rows.length });
-  const accountPreferenceDeleteMany = vi.fn().mockResolvedValue({ count: rows.length });
   const credentialDeleteMany = vi.fn().mockResolvedValue({ count: rows.length });
   const modelCount = vi.fn().mockResolvedValue(overrides.modelReferences ?? 0);
   const voiceCount = vi.fn().mockResolvedValue(overrides.voiceReferences ?? 0);
@@ -157,8 +156,7 @@ function makeDisconnectDeps(
       deleteMany: credentialDeleteMany,
       count: voiceCount,
     },
-    spaceVoicePreference: { deleteMany: preferenceDeleteMany },
-    userVoicePreference: { deleteMany: accountPreferenceDeleteMany },
+    userVoicePreference: { deleteMany: preferenceDeleteMany },
     userModelCredential: { count: modelCount },
     secret: { deleteMany: secretDeleteMany },
     $transaction: vi.fn(),
@@ -174,7 +172,6 @@ function makeDisconnectDeps(
     deps,
     findMany,
     preferenceDeleteMany,
-    accountPreferenceDeleteMany,
     credentialDeleteMany,
     secretDeleteMany,
     transaction: prisma.$transaction,
@@ -189,14 +186,8 @@ describe("disconnectVoiceCredential", () => {
       userId: actor.userId,
       provider: "scripted",
     };
-    const {
-      deps,
-      findMany,
-      preferenceDeleteMany,
-      accountPreferenceDeleteMany,
-      credentialDeleteMany,
-      secretDeleteMany,
-    } = makeDisconnectDeps({ existing: [existing] });
+    const { deps, findMany, preferenceDeleteMany, credentialDeleteMany, secretDeleteMany } =
+      makeDisconnectDeps({ existing: [existing] });
 
     await expect(disconnectVoiceCredential(deps, actor, { provider: "scripted" })).resolves.toEqual(
       {
@@ -206,10 +197,6 @@ describe("disconnectVoiceCredential", () => {
 
     expect(findMany).toHaveBeenCalledWith({
       where: { userId: actor.userId, provider: "scripted" },
-    });
-    // From the account's voice and every Space's own.
-    expect(accountPreferenceDeleteMany).toHaveBeenCalledWith({
-      where: { userId: actor.userId, credentialId: { in: ["cred-1"] } },
     });
     expect(preferenceDeleteMany).toHaveBeenCalledWith({
       where: { userId: actor.userId, credentialId: { in: ["cred-1"] } },
@@ -331,10 +318,7 @@ describe("fishSpeechModelValue", () => {
 });
 
 describe("updateVoiceSpeechModel", () => {
-  function speechDeps(
-    preference: { voiceId: string; isDefault: boolean } | null,
-    { overridden = false } = {},
-  ) {
+  function speechDeps(preference: { voiceId: string; isDefault: boolean } | null) {
     const credential = {
       id: "cred-1",
       userId: actor.userId,
@@ -354,11 +338,7 @@ describe("updateVoiceSpeechModel", () => {
     });
     const prisma = {
       userVoiceCredential: { findFirst: vi.fn().mockResolvedValue(credential) },
-      spaceSettingOverride: {
-        findUnique: vi.fn().mockResolvedValue(overridden ? { setting: "voice" } : null),
-      },
       userVoicePreference: table(),
-      spaceVoicePreference: table(),
       $queryRaw: vi.fn().mockResolvedValue([{ locked: 1 }]),
       $transaction: vi.fn(),
     };
@@ -368,12 +348,11 @@ describe("updateVoiceSpeechModel", () => {
     return {
       deps: { prisma, secrets: { put: vi.fn(), load: vi.fn() } } as unknown as VoiceDeps,
       account: prisma.userVoicePreference,
-      space: prisma.spaceVoicePreference,
     };
   }
 
   it("stores the override without changing the selected voice", async () => {
-    const { deps, account, space } = speechDeps({ voiceId: "voice-1", isDefault: false });
+    const { deps, account } = speechDeps({ voiceId: "voice-1", isDefault: false });
 
     await expect(
       updateVoiceSpeechModel(deps, actor, { provider: "fish-audio", speechModel: " s1 " }),
@@ -389,7 +368,6 @@ describe("updateVoiceSpeechModel", () => {
       update: { speechModel: "s1" },
     });
     expect(account.updateMany).not.toHaveBeenCalled();
-    expect(space.upsert).not.toHaveBeenCalled();
   });
 
   it("clears the override when the model is blank", async () => {
@@ -418,29 +396,6 @@ describe("updateVoiceSpeechModel", () => {
     expect(account.updateMany).not.toHaveBeenCalled();
   });
 
-  it("writes the Space's own copy in a Space that overrides voice", async () => {
-    const { deps, account, space } = speechDeps(
-      { voiceId: "voice-1", isDefault: true },
-      { overridden: true },
-    );
-
-    await updateVoiceSpeechModel(deps, actor, { provider: "fish-audio", speechModel: "s1" });
-
-    expect(space.upsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: {
-          spaceId_userId_credentialId: {
-            spaceId: actor.spaceId,
-            userId: actor.userId,
-            credentialId: "cred-1",
-          },
-        },
-        update: { speechModel: "s1" },
-      }),
-    );
-    expect(account.upsert).not.toHaveBeenCalled();
-  });
-
   it("rejects speech models for other providers before writing", async () => {
     const { deps, account } = speechDeps({ voiceId: "voice-1", isDefault: true });
 
@@ -461,7 +416,6 @@ describe("prepareVoice", () => {
   function depsWith(summarize?: ReturnType<typeof vi.fn>) {
     const prisma = {
       bot: { findFirst: vi.fn().mockResolvedValue({ voiceId: "voice-1" }) },
-      spaceSettingOverride: { findUnique: vi.fn().mockResolvedValue(null) },
       userVoicePreference: {
         findFirst: vi.fn().mockResolvedValue({
           isDefault: true,
@@ -557,7 +511,6 @@ describe("synthesizeVoice", () => {
       .mockResolvedValue({ bytes: new Uint8Array(), mimeType: "audio/mpeg" });
     vi.spyOn(adapters, "createVoiceProvider").mockReturnValue({ synthesize } as never);
     const prisma = {
-      spaceSettingOverride: { findUnique: vi.fn().mockResolvedValue(null) },
       userVoicePreference: {
         findFirst: vi.fn().mockResolvedValue({
           isDefault: true,
@@ -601,7 +554,6 @@ describe("synthesizeVoice", () => {
       .mockResolvedValue({ bytes: new Uint8Array(), mimeType: "audio/mpeg" });
     vi.spyOn(adapters, "createVoiceProvider").mockReturnValue({ synthesize } as never);
     const prisma = {
-      spaceSettingOverride: { findUnique: vi.fn().mockResolvedValue(null) },
       userVoicePreference: {
         findFirst: vi.fn().mockResolvedValue({
           isDefault: true,
@@ -631,43 +583,6 @@ describe("synthesizeVoice", () => {
     expect(synthesize.mock.calls[0]?.[0]).toMatchObject({ model: undefined });
   });
 
-  it("speaks with the account voice when asked for it in a Space that overrides voice", async () => {
-    const synthesize = vi
-      .fn()
-      .mockResolvedValue({ bytes: new Uint8Array(), mimeType: "audio/mpeg" });
-    vi.spyOn(adapters, "createVoiceProvider").mockReturnValue({ synthesize } as never);
-    const preference = (voiceId: string) => ({
-      isDefault: true,
-      voiceId,
-      speechModel: null,
-      credential: {
-        id: "cred-1",
-        userId: actor.userId,
-        provider: "fish-audio",
-        secretId: "secret-1",
-        createdAt: new Date(0),
-        updatedAt: new Date(0),
-      },
-    });
-    const prisma = {
-      spaceSettingOverride: { findUnique: vi.fn().mockResolvedValue({ setting: "voice" }) },
-      userVoicePreference: { findFirst: vi.fn().mockResolvedValue(preference("account-voice")) },
-      spaceVoicePreference: { findFirst: vi.fn().mockResolvedValue(preference("space-voice")) },
-      secret: {
-        findFirst: vi.fn().mockResolvedValue({ id: "secret-1", ciphertext: "cipher" }),
-      },
-    };
-    const deps = {
-      prisma,
-      secrets: { load: vi.fn().mockReturnValue("fish-key"), put: vi.fn() },
-    } as unknown as VoiceDeps;
-
-    await synthesizeVoice(deps, actor, { text: "Hello", scope: "account" });
-    expect(synthesize.mock.calls[0]?.[0]).toMatchObject({ voiceId: "account-voice" });
-    await synthesizeVoice(deps, actor, { text: "Hello" });
-    expect(synthesize.mock.calls[1]?.[0]).toMatchObject({ voiceId: "space-voice" });
-  });
-
   it.each([
     ["VOICE_OUT_OF_CREDIT", 402],
     ["VOICE_KEY_REJECTED", 403],
@@ -682,7 +597,6 @@ describe("synthesizeVoice", () => {
       );
     vi.spyOn(adapters, "createVoiceProvider").mockReturnValue({ synthesize } as never);
     const prisma = {
-      spaceSettingOverride: { findUnique: vi.fn().mockResolvedValue(null) },
       userVoicePreference: {
         findFirst: vi.fn().mockResolvedValue({
           isDefault: true,
@@ -885,9 +799,9 @@ describe("persistVoiceCredential", () => {
       next: { baseUrl: "http://100.64.0.10:8810", ttsModel: "new-model" },
     },
   ])(
-    "re-picks voices for every copy when the self-hosted $change changes",
+    "re-picks the voice when the self-hosted $change changes",
     async ({ previous: before, next }) => {
-      for (const scope of ["account", "space"] as const) {
+      {
         vi.restoreAllMocks();
         const previous = serializeAsOwner(before);
         vi.spyOn(adapters, "createVoiceProvider").mockReturnValue({
@@ -903,9 +817,6 @@ describe("persistVoiceCredential", () => {
           provider: "openai-compatible",
         } as never);
         const select = vi.spyOn(db, "selectVoicePreference").mockResolvedValue(undefined as never);
-        vi.spyOn(db, "runAsSystemInTransaction").mockImplementation(
-          async (_tx, _reason, fn) => fn() as never,
-        );
         vi.spyOn(db, "deleteUnreferencedCredentialSecret").mockResolvedValue(undefined as never);
         const savedPreference = { voiceId: "af_heart", speechModel: null };
         const tx = {
@@ -914,14 +825,7 @@ describe("persistVoiceCredential", () => {
             update: vi.fn().mockResolvedValue({ id: "cred-1", provider: "openai-compatible" }),
           },
           secret: { create: vi.fn().mockResolvedValue({ id: "new-secret" }) },
-          spaceSettingOverride: {
-            findUnique: vi.fn().mockResolvedValue(scope === "space" ? { setting: "voice" } : null),
-          },
           userVoicePreference: {
-            findUnique: vi.fn().mockResolvedValue(savedPreference),
-            updateMany: vi.fn().mockResolvedValue({ count: 1 }),
-          },
-          spaceVoicePreference: {
             findUnique: vi.fn().mockResolvedValue(savedPreference),
             updateMany: vi.fn().mockResolvedValue({ count: 1 }),
           },
@@ -955,36 +859,7 @@ describe("persistVoiceCredential", () => {
         expect(JSON.stringify(saved)).not.toContain("local-test-key");
         expect(saved).not.toHaveProperty("apiKey");
         expect(saved).not.toHaveProperty("secretId");
-        expect(select).toHaveBeenCalledWith(
-          tx,
-          { userId: actor.userId, spaceId: actor.spaceId, scope },
-          "cred-1",
-          "bm_george",
-          null,
-        );
-        const stale = {
-          userId: actor.userId,
-          credentialId: "cred-1",
-          voiceId: { notIn: ["bm_george", "af_sky"] },
-        };
-        // The account's voice moves unless it was the copy just saved.
-        if (scope === "space") {
-          expect(tx.userVoicePreference.updateMany).toHaveBeenCalledWith({
-            where: stale,
-            data: { voiceId: "bm_george" },
-          });
-        } else {
-          expect(tx.userVoicePreference.updateMany).not.toHaveBeenCalled();
-        }
-        // Only Spaces with their own voice move; the rest follow the account.
-        expect(tx.spaceVoicePreference.updateMany).toHaveBeenCalledWith({
-          where: {
-            ...stale,
-            spaceMember: { settingOverrides: { some: { setting: "voice" } } },
-            ...(scope === "space" ? { spaceId: { not: actor.spaceId } } : {}),
-          },
-          data: { voiceId: "bm_george" },
-        });
+        expect(select).toHaveBeenCalledWith(tx, actor, "cred-1", "bm_george", null);
       }
     },
   );

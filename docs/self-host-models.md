@@ -37,8 +37,7 @@ the API and worker, for models that have no stored credential.
 Approvals have three modes in **Settings → Approvals**: Never ask runs every action, Auto lets an
 approval model pass actions that fit the request, and Ask asks before any change. A space starts
 in Auto, which asks like Ask until an approval model is available. Each
-person can allow or block single tools and sites in every mode, and a space can customize its
-approvals apart from the account.
+person can allow or block single tools and sites in every mode.
 
 In **Settings → Models → Approval model**, each user can select a model
 from an existing connection and add ordered backups, independently of their main model. Personal

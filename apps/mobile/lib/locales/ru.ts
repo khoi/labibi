@@ -748,8 +748,6 @@ export const RU_MESSAGES: Record<string, string> = {
   Skip: "Пропустить",
   Space: "Пространство",
   "Space actions for {name}": "Действия пространства {name}",
-  Customize: "Настроить",
-  "Customize {setting}": "Настроить: {setting}",
   "Read replies aloud": "Читать ответы вслух",
   "Speak message": "Озвучить сообщение",
   Play: "Воспроизвести",
@@ -918,7 +916,6 @@ export const RU_MESSAGES: Record<string, string> = {
     "Ожидание входа — срок действия кода истекает примерно через {minutes} мин.",
   "Waiting for sign-in — the link expires in about {minutes} minutes.":
     "Ожидание входа — срок действия ссылки истекает примерно через {minutes} мин.",
-  Settings: "Настройки",
   "Could not speak that.": "Не удалось озвучить.",
 
   Artifact: "Артефакт",
@@ -1220,7 +1217,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "Basic auth": "Базовая аутентификация",
   "{variable} is reserved. Choose another name.":
     "{variable} зарезервировано. Выберите другое имя.",
-  "Delete this Space's credentials?": "Удалить учетные данные этого пространства?",
   "Copy {label}": "Скопировать: {label}",
   Hidden: "Скрыто",
   "Add field": "Добавить поле",
@@ -1274,11 +1270,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "Your skills": "Ваши навыки",
   Plugins: "Плагины",
   Browse: "Обзор",
-  "All spaces": "Все пространства",
-  "Available in": "Доступно в",
-  "Could not change where this is available": "Не удалось изменить, где это доступно",
-  "{count} spaces": "Пространств: {count}",
-  "Remove from every space?": "Удалить из всех пространств?",
   "New skill": "Новый навык",
   "Could not load skill": "Не удалось загрузить навык",
   "Could not save skill": "Не удалось сохранить навык",

@@ -42,9 +42,6 @@ vi.mock("@labradoodle/ui-web", () => {
   };
 });
 
-vi.mock("./SpaceSettingOverrides", () => ({
-  SpaceSettingOverrides: () => <div data-testid="space-setting-overrides" />,
-}));
 vi.mock("../components/SpaceMembersSettings", () => ({
   SpaceMembersSettings: () => <div data-testid="space-members-settings" />,
 }));
@@ -63,7 +60,6 @@ async function render(props: Partial<Props>) {
         space={{ id: "space-a", name: "Support", canRename: true }}
         onRename={async () => undefined}
         onLeft={() => undefined}
-        onClose={() => undefined}
         {...props}
       />,
     );
@@ -192,7 +188,5 @@ describe("SpaceSettingsPanel", () => {
       space: { id: "space-a", name: "Personal", canRename: false },
     });
     expect(container.querySelector("input")).toBeNull();
-    // Every member can still customize their own settings for the space.
-    expect(container.querySelector('[data-testid="space-setting-overrides"]')).not.toBeNull();
   });
 });

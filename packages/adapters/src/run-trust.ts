@@ -70,7 +70,6 @@ export function createRunTrustLoaders(
   const loadApprovalRules = () => {
     approvalRulesPromise ??= listApprovalRules(deps.prisma, {
       userId: run.userId,
-      spaceId: run.spaceId,
     }).then((rules) => rules as ActionApprovalRule[]);
     return approvalRulesPromise;
   };
@@ -78,7 +77,7 @@ export function createRunTrustLoaders(
   const loadApprovalModel = () =>
     (approvalModelPromise ??= effectiveModelRole(
       deps.prisma,
-      { userId: run.userId, spaceId: run.spaceId },
+      { userId: run.userId },
       "approval",
       {},
     ));
@@ -88,7 +87,6 @@ export function createRunTrustLoaders(
   const loadAutoReviewPreference = () => {
     autoReviewPreferencePromise ??= findAutoReviewPreference(deps.prisma, {
       userId: run.userId,
-      spaceId: run.spaceId,
     }).then((row) => ({
       enabled: row?.enabled ?? true,
       skipApprovals: row?.skipApprovals ?? false,

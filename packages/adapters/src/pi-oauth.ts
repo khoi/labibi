@@ -17,7 +17,6 @@ import type {
   ModelContextLimits,
   ModelOAuthBegin,
   ModelOAuthSignInMode,
-  SettingsScope,
   ThinkingLevel,
 } from "@labradoodle/contracts";
 import {
@@ -320,8 +319,6 @@ export type PiOAuthConnected = {
   modelId?: string;
   thinkingLevel?: string | null;
   makeDefault?: boolean;
-  /** Which copy of the member's models makeDefault sets; omitted means the one that applies. */
-  settingsScope?: SettingsScope;
   label?: string;
   signal: AbortSignal;
 };
@@ -365,7 +362,6 @@ type BeginInput = SignInActor & {
   modelId?: string;
   thinkingLevel?: string | null;
   makeDefault?: boolean;
-  settingsScope?: SettingsScope;
   label?: string;
   /** The client has no loopback listener, so the provider shows the code to paste. */
   codePage?: boolean;
@@ -394,7 +390,6 @@ type Session = {
   modelId?: string;
   thinkingLevel?: string | null;
   makeDefault?: boolean;
-  settingsScope?: SettingsScope;
   label?: string;
   abort: AbortController;
   state: SessionState;
@@ -1168,7 +1163,6 @@ export class PiOAuthLogins {
         modelId: input.modelId,
         thinkingLevel: input.thinkingLevel,
         makeDefault: input.makeDefault,
-        settingsScope: input.settingsScope,
         label: input.label,
         abort,
         state: "pending",
@@ -1343,7 +1337,6 @@ export class PiOAuthLogins {
       modelId: input.modelId,
       thinkingLevel: input.thinkingLevel,
       makeDefault: input.makeDefault,
-      settingsScope: input.settingsScope,
       label: input.label,
       codePage: input.codePage,
       verifier,
@@ -1465,7 +1458,6 @@ export class PiOAuthLogins {
         modelId: session.modelId,
         thinkingLevel: session.thinkingLevel,
         makeDefault: session.makeDefault,
-        settingsScope: session.settingsScope,
         label: session.label,
         signal: session.abort.signal,
       };

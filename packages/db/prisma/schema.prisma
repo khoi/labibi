@@ -8,81 +8,79 @@ datasource db {
 }
 
 model AiDataConsent {
-  userId String
-  spaceId String
+  userId       String
+  spaceId      String
   recipientKey String
-  version String
-  grantedAt DateTime @default(now())
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  spaceMember SpaceMember @relation(fields: [spaceId, userId], references: [spaceId, userId], onDelete: Cascade)
+  version      String
+  grantedAt    DateTime    @default(now())
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  space        Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  spaceMember  SpaceMember @relation(fields: [spaceId, userId], references: [spaceId, userId], onDelete: Cascade)
 
   @@id([userId, spaceId, recipientKey])
   @@map("ai_data_consents")
 }
 
 model User {
-  aiDataConsents AiDataConsent[]
-  pages          Page[]
-  id                          String                       @id
-  name                        String
-  email                       String
-  emailVerified               Boolean                      @default(false)
-  image                       String?
-  createdAt                   DateTime                     @default(now())
-  updatedAt                   DateTime                     @updatedAt
-  avatarStyle                 String                       @default("organic")
+  aiDataConsents                  AiDataConsent[]
+  pages                           Page[]
+  id                              String                          @id
+  name                            String
+  email                           String
+  emailVerified                   Boolean                         @default(false)
+  image                           String?
+  createdAt                       DateTime                        @default(now())
+  updatedAt                       DateTime                        @updatedAt
+  avatarStyle                     String                          @default("organic")
   /// IANA timezone such as "Pacific/Auckland". Null until set; bots then get UTC only.
-  timezone                    String?
+  timezone                        String?
   /// The app language last chosen, such as "es" or "pt-BR". Null until an app reports it;
   /// emails then follow the language of the browser that asked for them.
-  locale                      String?
-  marketingEmailOptOutAt      DateTime?
+  locale                          String?
+  marketingEmailOptOutAt          DateTime?
   /// When an organization this person owns first subscribed; uses up every trial kind.
-  billingTrialUsedAt          DateTime?
+  billingTrialUsedAt              DateTime?
   /// When an organization this person owns was given free own-key days; uses up only that
   /// trial, and survives the organization the days belonged to.
-  byokTrialUsedAt             DateTime?
+  byokTrialUsedAt                 DateTime?
   /// The organization whose open checkout session holds this owner's one own-key trial,
   /// and until when that hold lasts. Null once the session is paid, expired, or cancelled.
   byokTrialCheckoutOrganizationId String?
   byokTrialCheckoutExpiresAt      DateTime?
   /// Set while the account may not sign in or run work; its content stays. Cleared to reactivate.
-  deactivatedAt               DateTime?
-  sessions                    Session[]
-  accounts                    Account[]
-  scimSubject                 ScimSubject?
-  scimUsers                   ScimUser[]
-  scimIdentityTombstones      ScimIdentityTombstone[]
-  scimProjectionGrants        ScimProjectionGrant[]
-  passkeys                    Passkey[]
-  members                     Member[]
-  accessGrants                AccessGrant[]
-  invitations                 Invitation[]
-  modelCredentials            UserModelCredential[]
-  voiceCredentials            UserVoiceCredential[]
-  paymentWallet               PaymentWallet?
-  spendingLimit               SpendingLimit?
-  payments                    Payment[]
-  secrets                     Secret[]
-  mcpServers                  McpServer[]
-  actionApprovalRules         ActionApprovalRule[]
-  actionAutoReviewPreferences ActionAutoReviewPreference[]
-  modelRoleChoices            UserModelRoleChoice[]
-  modelPreferences            UserModelPreference[]
-  voicePreferences            UserVoicePreference[]
-  approvalRules               UserActionApprovalRule[]
-  autoReviewPreference        UserActionAutoReviewPreference?
-  createdSpaces               Space[]                      @relation("SpaceCreator")
-  spaceInvites                SpaceInvite[]                @relation("SpaceInviteCreator")
-  vaultCredentials VaultCredential[]
-  pushToken                   PushToken?
-  trustedLinkSites            TrustedLinkSite[]
-  feedbackReports             FeedbackReport[]
-  emailSends                  EmailSend[]
-  signupSurvey                SignupSurvey?
-  computerRuns                ComputerRun[]
-  devices                     UserDevice[]
+  deactivatedAt                   DateTime?
+  sessions                        Session[]
+  accounts                        Account[]
+  scimSubject                     ScimSubject?
+  scimUsers                       ScimUser[]
+  scimIdentityTombstones          ScimIdentityTombstone[]
+  scimProjectionGrants            ScimProjectionGrant[]
+  passkeys                        Passkey[]
+  members                         Member[]
+  accessGrants                    AccessGrant[]
+  invitations                     Invitation[]
+  modelCredentials                UserModelCredential[]
+  voiceCredentials                UserVoiceCredential[]
+  paymentWallet                   PaymentWallet?
+  spendingLimit                   SpendingLimit?
+  payments                        Payment[]
+  secrets                         Secret[]
+  mcpServers                      McpServer[]
+  modelRoleChoices                UserModelRoleChoice[]
+  modelPreferences                UserModelPreference[]
+  voicePreferences                UserVoicePreference[]
+  approvalRules                   UserActionApprovalRule[]
+  autoReviewPreference            UserActionAutoReviewPreference?
+  createdSpaces                   Space[]                         @relation("SpaceCreator")
+  spaceInvites                    SpaceInvite[]                   @relation("SpaceInviteCreator")
+  vaultCredentials                VaultCredential[]
+  pushToken                       PushToken?
+  trustedLinkSites                TrustedLinkSite[]
+  feedbackReports                 FeedbackReport[]
+  emailSends                      EmailSend[]
+  signupSurvey                    SignupSurvey?
+  computerRuns                    ComputerRun[]
+  devices                         UserDevice[]
 
   @@unique([email])
   @@map("user")
@@ -121,14 +119,14 @@ model Session {
 /// One current device registration per account, matching the notification API contract.
 /// No session FK: password changes delete a session before the replacement is created.
 model PushToken {
-  userId String @id
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ciphertext String
-  tokenDigest String @unique
-  sessionId String
+  userId       String   @id
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ciphertext   String
+  tokenDigest  String   @unique
+  sessionId    String
   /// "android_sender" when the installed Android build renders data-only sender pushes.
   presentation String?
-  updatedAt DateTime @updatedAt
+  updatedAt    DateTime @updatedAt
 
   @@map("push_tokens")
 }
@@ -402,35 +400,35 @@ model Organization {
 }
 
 model BillingAccount {
-  organizationId      String       @id
-  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  customerId          String       @unique
-  creditAmountCents   Int?
-  byokPriceCents      Int?
+  organizationId         String       @id
+  organization           Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customerId             String       @unique
+  creditAmountCents      Int?
+  byokPriceCents         Int?
   /// "month" or "year": how often byokPriceCents bills.
-  byokInterval        String?
+  byokInterval           String?
   /// "standard", "pro" or "max": the own-key plan's tier; null reads as standard.
-  byokTier            String?
-  subscriptionId      String?
-  subscriptionItemId  String?
-  priceId             String?
-  status              String?
-  seats               Int?
-  trialEndsAt         DateTime?
-  currentPeriodStartsAt DateTime?
-  currentPeriodEndsAt DateTime?
-  cancelAtPeriodEnd   Boolean      @default(false)
-  endedAt             DateTime?
-  cancellationReason  String?
-  cancellationComment String?
-  subscribedAt        DateTime?
+  byokTier               String?
+  subscriptionId         String?
+  subscriptionItemId     String?
+  priceId                String?
+  status                 String?
+  seats                  Int?
+  trialEndsAt            DateTime?
+  currentPeriodStartsAt  DateTime?
+  currentPeriodEndsAt    DateTime?
+  cancelAtPeriodEnd      Boolean      @default(false)
+  endedAt                DateTime?
+  cancellationReason     String?
+  cancellationComment    String?
+  subscribedAt           DateTime?
   /// When a subscription was first seen active, so a trial that never paid is not a paid plan.
-  paidAt              DateTime?
-  syncedAt            DateTime?
-  checkoutLeaseId     String?
+  paidAt                 DateTime?
+  syncedAt               DateTime?
+  checkoutLeaseId        String?
   checkoutLeaseExpiresAt DateTime?
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
 
   @@map("billing_accounts")
 }
@@ -475,63 +473,32 @@ model AccessGrant {
 }
 
 model PluginSubmission {
-  id           String    @id @default(cuid())
-  email        String
-  name         String
-  website      String?
-  logo         String?
+  id               String    @id @default(cuid())
+  email            String
+  name             String
+  website          String?
+  logo             String?
   /// The integration page slug this claims; claims have no source or testing.
-  claim        String?
+  claim            String?
   /// Hash of the emailed link that moves an unconfirmed claim into review.
   confirmToken     String?   @unique
   confirmExpiresAt DateTime?
-  source       String?
-  description  String
-  testing      String?
-  status       String    @default("pending")
-  reason       String?
-  pinnedSource String?
-  hasConnector Boolean   @default(false)
-  skillCount   Int       @default(0)
-  reviewedAt   DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  source           String?
+  description      String
+  testing          String?
+  status           String    @default("pending")
+  reason           String?
+  pinnedSource     String?
+  hasConnector     Boolean   @default(false)
+  skillCount       Int       @default(0)
+  reviewedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   @@index([status, createdAt])
   @@index([source])
   @@index([claim, status])
   @@map("plugin_submissions")
-}
-
-model ActionApprovalRule {
-  id              String   @id @default(cuid())
-  spaceId         String
-  space           Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  createdByUserId String
-  createdByUser   User     @relation(fields: [createdByUserId], references: [id], onDelete: Cascade)
-  effect          String
-  matchKind       String
-  matchValue      String
-  createdAt       DateTime @default(now())
-
-  @@unique([spaceId, createdByUserId, effect, matchKind, matchValue])
-  @@index([spaceId, createdByUserId])
-  @@map("action_approval_rules")
-}
-
-model ActionAutoReviewPreference {
-  id            String   @id @default(cuid())
-  spaceId       String
-  space         Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  enabled       Boolean  @default(false)
-  skipApprovals Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@unique([spaceId, userId])
-  @@map("action_auto_review_preferences")
 }
 
 model Member {
@@ -551,53 +518,47 @@ model Member {
 }
 
 model Space {
-  aiDataConsents              AiDataConsent[]
-  id                          String                       @id
-  organizationId              String
-  organization                Organization                 @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  name                        String
-  isDefault                   Boolean                      @default(false)
-  createdByUserId             String?
-  createdByUser               User?                        @relation("SpaceCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
-  createdAt                   DateTime                     @default(now())
-  deletingAt                  DateTime?
-  deletionClaimId             String?
-  memberships                 SpaceMember[]
-  invites                     SpaceInvite[]
-  bots                        Bot[]
-  botDeletions                BotDeletion[]
-  threads                     Thread[]
-  events                      Event[]
-  tasks                       Task[]
-  runs                        Run[]
-  routines                    Routine[]
-  taughtSkills                TaughtSkill[]
-  agentSkills                 AgentSkill[]
-  connections                 Connection[]
-  capabilities                CapabilityInstall[]
-  memoryDocuments             MemoryDocument[]
-  agentHomes                  AgentHome[]
-  browserProfiles             BrowserProfile[]
-  artifacts                   Artifact[]
-  pages                       Page[]
-  notificationPreferences     NotificationPreference[]
-  computers                   Computer[]
-  computerRuns                ComputerRun[]
-  externalEffects             ExternalEffect[]
-  mcpServers                  McpServer[]
-  mcpOAuthSessions            McpOAuthSession[]
-  modelOAuthSessions          ModelOAuthSession[]
-  purchases                   Purchase[]
-  feedbackReports             FeedbackReport[]
-  actionApprovalRules         ActionApprovalRule[]
-  actionAutoReviewPreferences ActionAutoReviewPreference[]
-  memoryConfig                SpaceMemoryConfig?
-  secrets                     Secret[]
-  chatGroups                  ChatGroup[]
-  vaultCredentials            VaultCredential[]
-  agentSkillSpaces            AgentSkillSpace[]
-  mcpServerSpaces             McpServerSpace[]
-  capabilityInstallSpaces     CapabilityInstallSpace[]
+  aiDataConsents          AiDataConsent[]
+  id                      String                   @id
+  organizationId          String
+  organization            Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name                    String
+  isDefault               Boolean                  @default(false)
+  createdByUserId         String?
+  createdByUser           User?                    @relation("SpaceCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  createdAt               DateTime                 @default(now())
+  deletingAt              DateTime?
+  deletionClaimId         String?
+  memberships             SpaceMember[]
+  invites                 SpaceInvite[]
+  bots                    Bot[]
+  botDeletions            BotDeletion[]
+  threads                 Thread[]
+  events                  Event[]
+  tasks                   Task[]
+  runs                    Run[]
+  routines                Routine[]
+  taughtSkills            TaughtSkill[]
+  agentSkills             AgentSkill[]
+  connections             Connection[]
+  capabilities            CapabilityInstall[]
+  memoryDocuments         MemoryDocument[]
+  agentHomes              AgentHome[]
+  browserProfiles         BrowserProfile[]
+  artifacts               Artifact[]
+  pages                   Page[]
+  notificationPreferences NotificationPreference[]
+  computers               Computer[]
+  computerRuns            ComputerRun[]
+  externalEffects         ExternalEffect[]
+  mcpServers              McpServer[]
+  mcpOAuthSessions        McpOAuthSession[]
+  modelOAuthSessions      ModelOAuthSession[]
+  purchases               Purchase[]
+  feedbackReports         FeedbackReport[]
+  memoryConfig            SpaceMemoryConfig?
+  secrets                 Secret[]
+  chatGroups              ChatGroup[]
 
   @@unique([id, organizationId])
   @@index([organizationId, createdAt])
@@ -622,19 +583,15 @@ model SpaceKey {
 }
 
 model SpaceMember {
-  id               String                 @id
-  spaceId          String
-  organizationId   String
-  space            Space                  @relation(fields: [spaceId, organizationId], references: [id, organizationId], onDelete: Cascade)
-  userId           String
-  member           Member                 @relation(fields: [organizationId, userId], references: [organizationId, userId], onDelete: Cascade)
-  role             String                 @default("member")
-  createdAt        DateTime
-  modelPreferences SpaceModelPreference[]
-  voicePreferences SpaceVoicePreference[]
+  id             String          @id
+  spaceId        String
+  organizationId String
+  space          Space           @relation(fields: [spaceId, organizationId], references: [id, organizationId], onDelete: Cascade)
+  userId         String
+  member         Member          @relation(fields: [organizationId, userId], references: [organizationId, userId], onDelete: Cascade)
+  role           String          @default("member")
+  createdAt      DateTime
   aiDataConsents AiDataConsent[]
-  modelRoleChoices SpaceModelRoleChoice[]
-  settingOverrides SpaceSettingOverride[]
 
   @@unique([spaceId, userId])
   @@index([organizationId, userId])
@@ -662,16 +619,16 @@ model Invitation {
 /// A single-use link that adds whoever opens it to a space. Only the token's
 /// SHA-256 is stored, so a database copy cannot be used to join.
 model SpaceInvite {
-  id              String    @id @default(cuid())
-  spaceId         String
-  space           Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  tokenHash       String    @unique
-  createdByUserId String
-  createdBy       User      @relation("SpaceInviteCreator", fields: [createdByUserId], references: [id], onDelete: Cascade)
-  expiresAt       DateTime
-  acceptedAt      DateTime?
+  id               String    @id @default(cuid())
+  spaceId          String
+  space            Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  tokenHash        String    @unique
+  createdByUserId  String
+  createdBy        User      @relation("SpaceInviteCreator", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  expiresAt        DateTime
+  acceptedAt       DateTime?
   acceptedByUserId String?
-  createdAt       DateTime  @default(now())
+  createdAt        DateTime  @default(now())
 
   @@index([spaceId, createdAt])
   @@map("space_invites")
@@ -759,17 +716,15 @@ model AuditEventForwarding {
 }
 
 model UserModelCredential {
-  id          String                 @id @default(cuid())
-  userId      String
-  user        User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  provider    String
-  label       String
-  secretId    String
-  supportsImages Boolean              @default(false)
-  createdAt   DateTime               @default(now())
-  updatedAt   DateTime               @updatedAt
-  preferences SpaceModelPreference[]
-  roleChoices SpaceModelRoleChoice[]
+  id              String                @id @default(cuid())
+  userId          String
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider        String
+  label           String
+  secretId        String
+  supportsImages  Boolean               @default(false)
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
   userPreferences UserModelPreference[]
   userRoleChoices UserModelRoleChoice[]
 
@@ -814,14 +769,13 @@ model TrustedLinkSite {
 }
 
 model UserVoiceCredential {
-  id          String                 @id @default(cuid())
-  userId      String
-  user        User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  provider    String
-  secretId    String
-  createdAt   DateTime               @default(now())
-  updatedAt   DateTime               @updatedAt
-  preferences SpaceVoicePreference[]
+  id              String                @id @default(cuid())
+  userId          String
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider        String
+  secretId        String
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
   userPreferences UserVoicePreference[]
 
   @@unique([id, userId])
@@ -829,82 +783,43 @@ model UserVoiceCredential {
   @@map("user_voice_credentials")
 }
 
-model SpaceModelPreference {
-  id           String              @id @default(cuid())
-  spaceId      String
-  userId       String
-  spaceMember  SpaceMember         @relation(fields: [spaceId, userId], references: [spaceId, userId], onDelete: Cascade)
-  credentialId String
-  credential   UserModelCredential @relation(fields: [credentialId, userId], references: [id, userId], onDelete: Cascade)
-  modelId      String?
-  thinkingLevel String?
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
-
-  @@unique([spaceId, userId, credentialId])
-  @@index([credentialId])
-  @@map("space_model_preferences")
-}
-
-model SpaceVoicePreference {
-  id           String              @id @default(cuid())
-  spaceId      String
-  userId       String
-  spaceMember  SpaceMember         @relation(fields: [spaceId, userId], references: [spaceId, userId], onDelete: Cascade)
-  credentialId String
-  credential   UserVoiceCredential @relation(fields: [credentialId, userId], references: [id, userId], onDelete: Cascade)
-  voiceId      String              @default("")
-  // Fish speech-model override. Null keeps the deployment default.
-  speechModel  String?
-  isDefault    Boolean             @default(false)
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
-
-  @@unique([spaceId, userId, credentialId])
-  @@index([spaceId, userId, isDefault, updatedAt])
-  @@index([credentialId])
-  // Partial unique index space_voice_preferences_default_key is created in SQL.
-  @@map("space_voice_preferences")
-}
-
 model Bot {
-  screenGeneration Int @default(0)
-  id                String            @id @default(cuid())
-  spaceId           String
-  space             Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  userId            String
-  name              String
-  instructions      String            @default("")
-  instructionHistory Json @default("[]")
-  color             String
-  notifyOnFinish    Boolean           @default(true)
-  archivedAt        DateTime?
-  memoryScope       String?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
-  thread            Thread?
-  computerId        String?
-  computer          Computer?         @relation(fields: [computerId], references: [id], onDelete: SetNull)
-  computerSwitching Boolean           @default(false)
-  voiceId           String?
-  autoSpeak         Boolean           @default(false)
-  modelProvider     String?
-  modelId           String?
-  thinkingLevel     String?
-  disabledBuiltinTools String[] @default([])
-  webhookSecretId   String?
-  routines          Routine[]
-  taughtSkills      TaughtSkill[]
-  memoryDocuments   MemoryDocument[]
-  agentHome         AgentHome?
-  browserProfile    BrowserProfile?
-  artifacts         Artifact[]
-  pages             Page[]
-  tasks             Task[]
-  runs              Run[]
-  steeringMessages  SteeringMessage[]
-  groupMembers      ChatGroupMember[]
-
+  screenGeneration     Int               @default(0)
+  id                   String            @id @default(cuid())
+  spaceId              String
+  space                Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  userId               String
+  name                 String
+  instructions         String            @default("")
+  instructionHistory   Json              @default("[]")
+  color                String
+  notifyOnFinish       Boolean           @default(true)
+  archivedAt           DateTime?
+  memoryScope          String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  thread               Thread?
+  computerId           String?
+  computer             Computer?         @relation(fields: [computerId], references: [id], onDelete: SetNull)
+  computerSwitching    Boolean           @default(false)
+  voiceId              String?
+  autoSpeak            Boolean           @default(false)
+  modelProvider        String?
+  modelId              String?
+  thinkingLevel        String?
+  disabledBuiltinTools String[]          @default([])
+  webhookSecretId      String?
+  routines             Routine[]
+  taughtSkills         TaughtSkill[]
+  memoryDocuments      MemoryDocument[]
+  agentHome            AgentHome?
+  browserProfile       BrowserProfile?
+  artifacts            Artifact[]
+  pages                Page[]
+  tasks                Task[]
+  runs                 Run[]
+  steeringMessages     SteeringMessage[]
+  groupMembers         ChatGroupMember[]
 
   @@index([spaceId, userId, archivedAt, updatedAt])
   @@index([computerId])
@@ -956,30 +871,30 @@ model ChatGroupMember {
 }
 
 model Thread {
-  id                          String     @id @default(cuid())
-  spaceId                     String
-  space                       Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  botId                       String?    @unique
-  bot                         Bot?       @relation(fields: [botId], references: [id], onDelete: Cascade)
-  groupId                     String?    @unique
-  group                       ChatGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  userId                      String
-  createdAt                   DateTime   @default(now())
-  nextEventSeq                Int        @default(0)
-  nextMessageSeq              Int        @default(0)
-  historyCompactedUpToSeq     Int?
-  historyCompactionSummary    String?    @db.Text
-  historyCompactionGeneration Int        @default(0)
+  id                             String     @id @default(cuid())
+  spaceId                        String
+  space                          Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  botId                          String?    @unique
+  bot                            Bot?       @relation(fields: [botId], references: [id], onDelete: Cascade)
+  groupId                        String?    @unique
+  group                          ChatGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId                         String
+  createdAt                      DateTime   @default(now())
+  nextEventSeq                   Int        @default(0)
+  nextMessageSeq                 Int        @default(0)
+  historyCompactedUpToSeq        Int?
+  historyCompactionSummary       String?    @db.Text
+  historyCompactionGeneration    Int        @default(0)
   /// After a summary came back over the size limit, compaction waits until nextMessageSeq reaches this.
   historyCompactionRetryAfterSeq Int?
-  unread                      Boolean    @default(false)
+  unread                         Boolean    @default(false)
   /// Highest message seq the user has read; the "New" divider goes after it. -1 = none read.
-  lastReadSeq                 Int        @default(-1)
-  messages                    Message[]
-  events                      Event[]
-  tasks                       Task[]
-  runs                        Run[]
-  routines                    Routine[]
+  lastReadSeq                    Int        @default(-1)
+  messages                       Message[]
+  events                         Event[]
+  tasks                          Task[]
+  runs                           Run[]
+  routines                       Routine[]
 
   @@index([spaceId])
   @@index([spaceId, userId])
@@ -987,9 +902,9 @@ model Thread {
 }
 
 model Message {
-  id               String    @id @default(cuid())
+  id               String            @id @default(cuid())
   threadId         String
-  thread           Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  thread           Thread            @relation(fields: [threadId], references: [id], onDelete: Cascade)
   seq              Int
   role             String
   blocks           Json
@@ -999,15 +914,15 @@ model Message {
   authorUserId     String?
   replyToMessageId String?
   replyQuote       String?
-  replyTo          Message?  @relation("MessageReplies", fields: [replyToMessageId], references: [id], onDelete: SetNull)
-  replies          Message[] @relation("MessageReplies")
+  replyTo          Message?          @relation("MessageReplies", fields: [replyToMessageId], references: [id], onDelete: SetNull)
+  replies          Message[]         @relation("MessageReplies")
   runId            String?
   clientNonce      String?
   /// Blind-index search tokens for the encrypted blocks; NULL until the row is encrypted.
   searchTokens     Int[]
-  sourceRuns            Run[]             @relation("RunSourceMessage")
+  sourceRuns       Run[]             @relation("RunSourceMessage")
   steeringMessages SteeringMessage[]
-  createdAt        DateTime  @default(now())
+  createdAt        DateTime          @default(now())
 
   @@unique([threadId, seq])
   @@unique([threadId, clientNonce])
@@ -1056,51 +971,51 @@ model Task {
 }
 
 model Run {
-  id                   String            @id @default(cuid())
-  spaceId              String
-  space                Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  botId                String
-  bot                  Bot               @relation(fields: [botId], references: [id], onDelete: Cascade)
-  threadId             String
-  thread               Thread            @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  taskId               String
-  task                 Task              @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  userId               String
-  status               String
-  trigger              String
-  modelProvider        String?
-  modelId              String?
-  thinkingLevel        String?
+  id                 String            @id @default(cuid())
+  spaceId            String
+  space              Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  botId              String
+  bot                Bot               @relation(fields: [botId], references: [id], onDelete: Cascade)
+  threadId           String
+  thread             Thread            @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  taskId             String
+  task               Task              @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId             String
+  status             String
+  trigger            String
+  modelProvider      String?
+  modelId            String?
+  thinkingLevel      String?
   // True when these columns are the model the run must keep. A later attempt
   // may record the model it used in the same columns without setting this.
-  modelPinned          Boolean           @default(false)
+  modelPinned        Boolean           @default(false)
   // A group message that named nobody reached this member; it may end without a reply.
-  groupReplyOptional   Boolean           @default(false)
-  error                String?
-  leaseOwner           String?
-  leaseFence           Int               @default(0)
-  leaseExpiresAt       DateTime?
-  checkpoint           String?
-  clientNonce          String?
-  sourceMessageId      String?
-  sourceMessage        Message?          @relation("RunSourceMessage", fields: [sourceMessageId], references: [id], onDelete: SetNull)
-  routineId            String?
-  routine              Routine?          @relation(fields: [routineId], references: [id], onDelete: SetNull)
+  groupReplyOptional Boolean           @default(false)
+  error              String?
+  leaseOwner         String?
+  leaseFence         Int               @default(0)
+  leaseExpiresAt     DateTime?
+  checkpoint         String?
+  clientNonce        String?
+  sourceMessageId    String?
+  sourceMessage      Message?          @relation("RunSourceMessage", fields: [sourceMessageId], references: [id], onDelete: SetNull)
+  routineId          String?
+  routine            Routine?          @relation(fields: [routineId], references: [id], onDelete: SetNull)
   // The failed routine run this run retries. Unique, so a run is retried at most once.
-  retryOfRunId         String?           @unique
+  retryOfRunId       String?           @unique
   // Durable retry schedule; null means runnable immediately when queued.
-  wakeAt               DateTime?
+  wakeAt             DateTime?
   // Server-side first visible output, preserved across attempts and resumes.
-  firstResponseAt      DateTime?
-  startedAt            DateTime?
+  firstResponseAt    DateTime?
+  startedAt          DateTime?
   // The occurrence a recurring timer run was due at, recorded at its first start only when it started late.
-  lateSince            DateTime?
-  completedAt          DateTime?
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
-  attempts             Attempt[]
-  effects              ExternalEffect[]
-  steeringMessages     SteeringMessage[]
+  lateSince          DateTime?
+  completedAt        DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  attempts           Attempt[]
+  effects            ExternalEffect[]
+  steeringMessages   SteeringMessage[]
 
   @@unique([spaceId, clientNonce])
   @@index([status, wakeAt])
@@ -1119,22 +1034,22 @@ model Run {
 }
 
 model SteeringMessage {
-  id        String   @id @default(cuid())
-  messageId String
-  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  botId     String
-  bot       Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
-  userId    String
-  runId     String?
-  run       Run?     @relation(fields: [runId], references: [id], onDelete: SetNull)
+  id            String    @id @default(cuid())
+  messageId     String
+  message       Message   @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  botId         String
+  bot           Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
+  userId        String
+  runId         String?
+  run           Run?      @relation(fields: [runId], references: [id], onDelete: SetNull)
   /// Set when a pending row must resume as this trigger so its reply can be delivered.
   originTrigger String?
   /// Model agreed for an inbound delivery that had to wait. Empty follows the bot.
   modelProvider String?
   modelId       String?
   thinkingLevel String?
-  claimedAt DateTime?
-  createdAt DateTime @default(now())
+  claimedAt     DateTime?
+  createdAt     DateTime  @default(now())
 
   @@unique([messageId, botId])
   @@index([botId, runId, createdAt])
@@ -1159,34 +1074,34 @@ model Attempt {
 // Deliberately independent of chat/user cascades: the worker must still be able
 // to cancel remote work after its originating chat or account is deleted.
 model CloudAgent {
-  id                  String   @id @default(uuid())
-  operationKey        String   @unique
-  providerKey         String
-  spaceId             String
-  userId              String
-  botId               String
-  threadId            String
-  messageId           String?
-  remoteId            String?
-  latestRunId         String?
-  title               String
-  status              String   @default("running")
-  url                 String   @default("")
-  branch              String?
-  prUrl               String?
-  launchRequest       Json
-  launchDispatched    Boolean  @default(false)
-  followup            Json?
+  id                   String    @id @default(uuid())
+  operationKey         String    @unique
+  providerKey          String
+  spaceId              String
+  userId               String
+  botId                String
+  threadId             String
+  messageId            String?
+  remoteId             String?
+  latestRunId          String?
+  title                String
+  status               String    @default("running")
+  url                  String    @default("")
+  branch               String?
+  prUrl                String?
+  launchRequest        Json
+  launchDispatched     Boolean   @default(false)
+  followup             Json?
   followupDispatchedAt DateTime?
-  cancelRequested     Boolean  @default(false)
-  generation          Int      @default(0)
-  wakeGeneration      Int      @default(-1)
-  version             Int      @default(0)
-  leaseToken          String?
-  leaseExpiresAt      DateTime?
-  nextPollAt          DateTime? @default(now())
-  errorCount          Int      @default(0)
-  createdAt           DateTime @default(now())
+  cancelRequested      Boolean   @default(false)
+  generation           Int       @default(0)
+  wakeGeneration       Int       @default(-1)
+  version              Int       @default(0)
+  leaseToken           String?
+  leaseExpiresAt       DateTime?
+  nextPollAt           DateTime? @default(now())
+  errorCount           Int       @default(0)
+  createdAt            DateTime  @default(now())
 
   @@index([providerKey, nextPollAt])
   @@index([spaceId, userId, id])
@@ -1233,52 +1148,52 @@ model Payment {
 }
 
 model PaymentWallet {
-  id         String    @id @default(cuid())
-  userId     String    @unique
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  provider   String
-  status     String
-  ciphertext String
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider        String
+  status          String
+  ciphertext      String
   verificationUrl String?
-  userCode   String?
-  expiresAt  DateTime?
-  nextPollAt DateTime?
-  pollIntervalMs Int?
-  refreshAt  DateTime?
-  connectedAt DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  userCode        String?
+  expiresAt       DateTime?
+  nextPollAt      DateTime?
+  pollIntervalMs  Int?
+  refreshAt       DateTime?
+  connectedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@map("payment_wallets")
 }
 
 model Purchase {
-  id           String    @id @default(uuid())
-  operationKey String    @unique
-  spaceId      String
-  space        Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  userId       String
-  botId        String
-  threadId     String
-  threadGeneration Int
-  provider     String
-  remoteId     String
-  merchantName String
-  merchantUrl  String
-  amount       Int
-  currency     String
-  status       String
-  approvalUrl  String?
-  nextPollAt   DateTime?
-  wokenStatus  String?
-  cardCiphertext String?
-  credentialType String  @default("card")
+  id                String    @id @default(uuid())
+  operationKey      String    @unique
+  spaceId           String
+  space             Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  userId            String
+  botId             String
+  threadId          String
+  threadGeneration  Int
+  provider          String
+  remoteId          String
+  merchantName      String
+  merchantUrl       String
+  amount            Int
+  currency          String
+  status            String
+  approvalUrl       String?
+  nextPollAt        DateTime?
+  wokenStatus       String?
+  cardCiphertext    String?
+  credentialType    String    @default("card")
   merchantAccountId String?
-  paymentChallenge String?
+  paymentChallenge  String?
   requestCiphertext String?
-  tokenCiphertext String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  tokenCiphertext   String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   @@index([nextPollAt])
   @@index([spaceId, userId, createdAt])
@@ -1313,36 +1228,36 @@ model ExternalEffect {
 }
 
 model Routine {
-  id             String    @id @default(cuid())
-  spaceId        String
-  space          Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  botId          String
-  bot            Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
-  userId         String
-  threadId       String?
-  thread         Thread?   @relation(fields: [threadId], references: [id], onDelete: SetNull)
-  name           String
-  prompt         String
-  crons          String[]
-  timezone       String    @default("UTC")
-  active         Boolean   @default(false)
-  notify         Boolean   @default(true)
-  webhookEnabled Boolean   @default(false)
-  githubEnabled  Boolean   @default(false)
-  modelProvider  String?
-  modelId        String?
-  thinkingLevel  String?
+  id              String    @id @default(cuid())
+  spaceId         String
+  space           Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  botId           String
+  bot             Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
+  userId          String
+  threadId        String?
+  thread          Thread?   @relation(fields: [threadId], references: [id], onDelete: SetNull)
+  name            String
+  prompt          String
+  crons           String[]
+  timezone        String    @default("UTC")
+  active          Boolean   @default(false)
+  notify          Boolean   @default(true)
+  webhookEnabled  Boolean   @default(false)
+  githubEnabled   Boolean   @default(false)
+  modelProvider   String?
+  modelId         String?
+  thinkingLevel   String?
   /// Change trigger (RoutineWatchSchema); null when the routine does not watch anything.
-  watch          Json?
+  watch           Json?
   /// Last check's result (RoutineWatchStateSchema), written by the checker.
-  watchState     Json?
-  lastRunAt      DateTime?
-  nextRunAt      DateTime?
+  watchState      Json?
+  lastRunAt       DateTime?
+  nextRunAt       DateTime?
   /// Runs in a row the model provider refused for the account; each one spaces out the schedule.
-  accountFailures Int      @default(0)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  runs           Run[]
+  accountFailures Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  runs            Run[]
 
   @@index([active, nextRunAt])
   @@index([spaceId, botId])
@@ -1377,9 +1292,9 @@ model TaughtSkill {
 /// Claude Agent Skills: SKILL.md recipes shared across assistants (not per-bot).
 /// Distinct from TaughtSkill (demo/record playbooks).
 model AgentSkill {
-  id          String   @id @default(cuid())
+  id          String             @id @default(cuid())
   spaceId     String
-  space       Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  space       Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   userId      String
   name        String
   description String
@@ -1387,14 +1302,11 @@ model AgentSkill {
   /// Text reference files beside SKILL.md, keyed by relative path (plugin skills).
   files       Json?
   /// user | builtin | plugin — only user skills are writable via API/tools.
-  source      String   @default("user")
+  source      String             @default("user")
   installId   String?
   install     CapabilityInstall? @relation(fields: [installId], references: [id], onDelete: Cascade)
-  /// Available in every space of its owner, including later ones; otherwise in spaceId and availableIn.
-  allSpaces   Boolean  @default(false)
-  availableIn AgentSkillSpace[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
 
   @@index([spaceId, userId])
   @@index([installId])
@@ -1433,13 +1345,10 @@ model CapabilityInstall {
   digest    String?
   secretId  String?
   config    Json     @default("{}")
-  /// Available in every space of its owner, including later ones; otherwise in spaceId and availableIn.
-  allSpaces Boolean  @default(false)
   createdAt DateTime @default(now())
 
   agentSkills AgentSkill[]
   mcpServers  McpServer[]
-  availableIn CapabilityInstallSpace[]
 
   @@index([spaceId, userId])
   @@map("capability_installs")
@@ -1524,7 +1433,7 @@ model ComputerUpdate {
 }
 
 model Computer {
-  screenGeneration Int @default(0)
+  screenGeneration        Int                      @default(0)
   id                      String                   @id @default(cuid())
   spaceId                 String
   space                   Space                    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
@@ -1603,22 +1512,22 @@ model HomeDeletionNotice {
 /// `computerId` is deliberately not a relation, so the row outlives a deleted computer. Deleting
 /// the user or space anonymises the row instead of erasing the run time it records.
 model ComputerRun {
-  id         String    @id @default(cuid())
-  computerId String
-  spaceId    String?
-  space      Space?    @relation(fields: [spaceId], references: [id], onDelete: SetNull)
-  userId     String?
-  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  kind       String
+  id          String    @id @default(cuid())
+  computerId  String
+  spaceId     String?
+  space       Space?    @relation(fields: [spaceId], references: [id], onDelete: SetNull)
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  kind        String
   /// The provider's id for the sandbox, to match runs with the provider's own usage and billing.
   providerRef String?
-  startedAt  DateTime
+  startedAt   DateTime
   /// Null while running. When the end was not seen as it happened, this is when it was detected.
-  endedAt    DateTime?
+  endedAt     DateTime?
   /// How it ended; see `ComputerRunEnd` in packages/db/src/computer-runs.ts.
-  endReason  String?
+  endReason   String?
   /// When Labradoodle last saw this stretch running: at its start and at each idle check.
-  lastSeenAt DateTime?
+  lastSeenAt  DateTime?
 
   @@unique([computerId, startedAt])
   @@index([spaceId, userId, startedAt])
@@ -1645,22 +1554,22 @@ model ComputerExecutionLease {
 }
 
 model Artifact {
-  id         String     @id @default(cuid())
-  spaceId    String
-  space      Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  botId      String?
-  bot        Bot?       @relation(fields: [botId], references: [id], onDelete: SetNull)
-  groupId    String?
-  group      ChatGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  userId     String
-  runId      String?
-  name       String
+  id          String     @id @default(cuid())
+  spaceId     String
+  space       Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  botId       String?
+  bot         Bot?       @relation(fields: [botId], references: [id], onDelete: SetNull)
+  groupId     String?
+  group       ChatGroup? @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId      String
+  runId       String?
+  name        String
   description String?
-  mimeType   String
-  size       Int
-  hash       String
-  storageKey String
-  createdAt  DateTime   @default(now())
+  mimeType    String
+  size        Int
+  hash        String
+  storageKey  String
+  createdAt   DateTime   @default(now())
 
   // Null on the first version; that row's id is the family's stable id.
   rootArtifactId String?
@@ -1811,42 +1720,39 @@ model Secret {
 }
 
 model McpServer {
-  id            String            @id @default(cuid())
-  spaceId       String
-  space         Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  userId        String
-  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  slug          String
-  name          String
-  description   String            @default("")
-  transport     String
-  endpoint      String?
-  command       String?
+  id              String             @id @default(cuid())
+  spaceId         String
+  space           Space              @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug            String
+  name            String
+  description     String             @default("")
+  transport       String
+  endpoint        String?
+  command         String?
   /// Legacy plaintext; arguments now live in the encrypted secret, and `hasArgs` marks them.
-  args          Json              @default("[]")
-  hasArgs       Boolean           @default(false)
-  env           Json              @default("{}")
-  files         Json              @default("{}")
-  headers       Json              @default("{}")
-  secretId      String?
-  secret        Secret?           @relation(fields: [secretId], references: [id], onDelete: SetNull)
-  installId     String?
-  install       CapabilityInstall? @relation(fields: [installId], references: [id], onDelete: Cascade)
-  enabled       Boolean           @default(true)
+  args            Json               @default("[]")
+  hasArgs         Boolean            @default(false)
+  env             Json               @default("{}")
+  files           Json               @default("{}")
+  headers         Json               @default("{}")
+  secretId        String?
+  secret          Secret?            @relation(fields: [secretId], references: [id], onDelete: SetNull)
+  installId       String?
+  install         CapabilityInstall? @relation(fields: [installId], references: [id], onDelete: Cascade)
+  enabled         Boolean            @default(true)
   /// Tool results from this server stay whole. A result that cannot fit fails the turn.
-  verbatimResults Boolean         @default(false)
-  revision      Int               @default(1)
+  verbatimResults Boolean            @default(false)
+  revision        Int                @default(1)
   /// Last launch/discovery outcome: unknown | installing | ok | error.
-  healthStatus    String          @default("unknown")
+  healthStatus    String             @default("unknown")
   healthMessage   String?
   healthToolCount Int?
   healthCheckedAt DateTime?
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-  oauthSessions McpOAuthSession[]
-  /// Available in every space of its owner, including later ones; otherwise in spaceId and availableIn.
-  allSpaces     Boolean           @default(false)
-  availableIn   McpServerSpace[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  oauthSessions   McpOAuthSession[]
 
   @@unique([spaceId, userId, slug])
   @@index([spaceId, userId])
@@ -1897,8 +1803,6 @@ model VaultCredential {
   id         String   @id
   userId     String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  spaceId    String?
-  space      Space?   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   name       String
   /// What people call it; empty uses a default read from the item.
   title      String   @default("")
@@ -1910,14 +1814,13 @@ model VaultCredential {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  @@index([spaceId])
-  // Unique index vault_credentials_userId_spaceId_name_key (NULLS NOT DISTINCT) is created in SQL.
+  @@unique([userId, name])
   @@map("vault_credentials")
 }
 
 // Deployment-owned integration credentials; never exposed through read DTOs.
 model IntegrationProviderConfig {
-  id         String @id
+  id         String   @id
   ciphertext String
   updatedAt  DateTime @updatedAt
 
@@ -2010,37 +1913,6 @@ model ModelCreditLot {
   @@map("model_credit_lots")
 }
 
-model SpaceModelRoleChoice {
-  spaceId       String
-  userId        String
-  spaceMember   SpaceMember @relation(fields: [spaceId, userId], references: [spaceId, userId], onDelete: Cascade)
-  role          String
-  position      Int
-  provider      String
-  modelId       String
-  thinkingLevel String?
-  credentialId  String?
-  credential    UserModelCredential? @relation(fields: [credentialId, userId], references: [id, userId], onDelete: Cascade)
-
-  @@id([spaceId, userId, role, position])
-  @@index([credentialId, userId])
-  @@map("space_model_role_choices")
-}
-
-/// Which of a member's account-wide settings a Space replaces with its own. Without a row the
-/// Space follows the account: "models" covers every model role, "voice" the voice choices,
-/// "confirmations" the approval rules and auto review.
-model SpaceSettingOverride {
-  spaceId     String
-  userId      String
-  spaceMember SpaceMember @relation(fields: [spaceId, userId], references: [spaceId, userId], onDelete: Cascade)
-  setting     String
-  createdAt   DateTime    @default(now())
-
-  @@id([spaceId, userId, setting])
-  @@map("space_setting_overrides")
-}
-
 /// The member's account-wide models per purpose; position 0 runs, the rest take over in order.
 model UserModelRoleChoice {
   userId        String
@@ -2114,40 +1986,4 @@ model UserActionAutoReviewPreference {
   updatedAt     DateTime @updatedAt
 
   @@map("user_action_auto_review_preferences")
-}
-
-model AgentSkillSpace {
-  skillId String
-  skill   AgentSkill @relation(fields: [skillId], references: [id], onDelete: Cascade)
-  spaceId String
-  space   Space      @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  userId  String
-
-  @@id([skillId, spaceId])
-  @@index([spaceId, userId])
-  @@map("agent_skill_spaces")
-}
-
-model McpServerSpace {
-  serverId String
-  server   McpServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  spaceId  String
-  space    Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  userId   String
-
-  @@id([serverId, spaceId])
-  @@index([spaceId, userId])
-  @@map("mcp_server_spaces")
-}
-
-model CapabilityInstallSpace {
-  installId String
-  install   CapabilityInstall @relation(fields: [installId], references: [id], onDelete: Cascade)
-  spaceId   String
-  space     Space             @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  userId    String
-
-  @@id([installId, spaceId])
-  @@index([spaceId, userId])
-  @@map("capability_install_spaces")
 }

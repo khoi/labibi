@@ -52,12 +52,6 @@ msgstr "{0, plural, one {# tane daha} other {# tane daha}}"
 msgid "{0, plural, one {# skill} other {# skills}}"
 msgstr "{0, plural, one {# beceri} other {# beceri}}"
 
-#. placeholder {0}: availability.spaceIds.length
-#. placeholder {0}: chosen.length
-#: src/components/integrations/space-availability.tsx
-msgid "{0, plural, one {# space} other {# spaces}}"
-msgstr "{0, plural, one {# alan} other {# alan}}"
-
 #. placeholder {0}: server.health.toolCount
 #: src/pages/McpServersOverlay.tsx
 msgid "{0, plural, one {# tool} other {# tools}}"
@@ -419,10 +413,6 @@ msgstr "@{0}"
 msgid "/ month"
 msgstr "/ ay"
 
-#: src/components/integrations/space-availability.tsx
-msgid "1 space"
-msgstr "1 alan"
-
 #: src/pages/shell/message-cards.tsx
 msgid "A bit of everything"
 msgstr "Hepsi biraz"
@@ -679,10 +669,6 @@ msgstr "{credit} tutarın tamamı model kullanımına gider."
 msgid "All bots"
 msgstr "Tüm botlar"
 
-#: src/components/integrations/space-availability.tsx
-msgid "All spaces"
-msgstr "Tüm alanlar"
-
 #: src/pages/ActivityList.tsx
 msgid "All statuses"
 msgstr "Tüm durumlar"
@@ -828,7 +814,6 @@ msgid "Approval model"
 msgstr "Onay modeli"
 
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Approvals"
 msgstr "Onaylar"
 
@@ -933,10 +918,6 @@ msgstr "Rutin kaydedildikten sonra kullanılabilir"
 #: src/components/ModelCredits.tsx
 msgid "Available credits"
 msgstr "Kullanılabilir krediler"
-
-#: src/components/integrations/space-availability.tsx
-msgid "Available in"
-msgstr "Kullanılabilir:"
 
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Available to shell commands as {commandVariable}"
@@ -1111,7 +1092,6 @@ msgstr "Görselleri okuyamaz"
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
 msgstr "İptal"
 
@@ -1721,10 +1701,6 @@ msgstr "Değiştirilemedi"
 msgid "Could not change password"
 msgstr "Parola değiştirilemedi"
 
-#: src/components/integrations/space-availability.tsx
-msgid "Could not change where this is available"
-msgstr "Kullanılabilir alanlar değiştirilemedi"
-
 #: src/components/pages/PageViewHost.tsx
 msgid "Could not change who can view this page. Try again."
 msgstr "Bu sayfayı kimin görebileceği değiştirilemedi. Tekrar deneyin."
@@ -2310,14 +2286,6 @@ msgstr "Mevcut parola"
 msgid "Custom header"
 msgstr "Özel başlık"
 
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Customize"
-msgstr "Özelleştir"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Customize {label}"
-msgstr "{label}: özelleştir"
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "Günlük"
@@ -2371,7 +2339,6 @@ msgstr "Varsayılan kapsam"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete"
 msgstr "Sil"
 
@@ -2407,10 +2374,6 @@ msgstr "Grubu sil"
 #: src/pages/shell/dialogs.tsx
 msgid "Delete memories too"
 msgstr "Hafızayı da sil"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Delete this Space's credentials?"
-msgstr "Bu alanın kimlik bilgileri silinsin mi?"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -3678,7 +3641,6 @@ msgstr "Model seçenekleri"
 
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Models"
 msgstr "Modeller"
 
@@ -4666,13 +4628,6 @@ msgstr "Kaldır: {site}"
 msgid "Remove change trigger"
 msgstr "Değişiklik tetikleyicisini kaldır"
 
-#: src/components/integrations/plugin-marketplace.tsx
-#: src/pages/KnowledgeSection.tsx
-#: src/pages/McpServersOverlay.tsx
-#: src/pages/PluginsOverlay.tsx
-msgid "Remove from every space?"
-msgstr "Her alandan kaldırılsın mı?"
-
 #: src/pages/RoutineEditor.tsx
 msgid "Remove Git event"
 msgstr "Git olayını kaldır"
@@ -4829,7 +4784,6 @@ msgstr "Çalışma alanın geri yükleniyor"
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Retry"
 msgstr "Yeniden dene"
 
@@ -5734,7 +5688,6 @@ msgstr "Bu tarayıcıda cihaz üstü dikte yok. Transkripsiyon destekli bir ses 
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "This can't be undone."
 msgstr "Bu işlem geri alınamaz."
 
@@ -6086,14 +6039,6 @@ msgstr "Bulunan bir modeli kullan"
 msgid "Use Connect to verify the key."
 msgstr "Anahtarı doğrulamak için Bağlan'ı kullan."
 
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Use defaults"
-msgstr "Varsayılanlarını kullan"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Use defaults for {label}"
-msgstr "{label}: varsayılanlarını kullan"
-
 #: src/components/ModelCredits.tsx
 msgid "Use Labradoodle credits"
 msgstr "Labradoodle kredilerini kullan"
@@ -6157,7 +6102,6 @@ msgid "Variables"
 msgstr "Değişkenler"
 
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Vault"
 msgstr "Kasa"
 
@@ -6183,7 +6127,6 @@ msgstr "Kaynağı görüntüle"
 
 #: src/pages/settings-nav.ts
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Voice"
 msgstr "Ses"
@@ -6389,10 +6332,6 @@ msgstr "Bilgisayarınızın diski neredeyse dolu. Artık ihtiyaç duymadığın�
 #: src/components/AccountDataSettings.tsx
 msgid "Your data"
 msgstr "Verilerin"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Your defaults"
-msgstr "Varsayılanların"
 
 #: src/pages/Auth.tsx
 msgid "Your email address"

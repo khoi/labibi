@@ -17,7 +17,6 @@ import { rpc } from "../../lib/rpc";
 import type { ErrorDetails } from "../../lib/user-error";
 import { errorDetails } from "../../lib/user-error";
 import { ErrorNotice } from "../ErrorNotice";
-import { AvailabilityControl, reachesOtherSpaces, useOwnSpaces } from "./space-availability";
 
 export type PluginSelection = {
   source: string;
@@ -180,7 +179,6 @@ export function PluginDetail({
   const [noAuth, setNoAuth] = useState(new Set<string>());
   const [attempt, setAttempt] = useState(0);
   const live = useRef(true);
-  const spaceCount = useOwnSpaces().length;
   useEffect(() => {
     live.current = true;
     return () => {
@@ -316,7 +314,6 @@ export function PluginDetail({
   const headerOn = parts.includes(headerPart);
   const skillsOn = parts.includes("skills");
   const busy = Boolean(pending);
-  const everywhere = reachesOtherSpaces(install?.availability, spaceCount);
   const ready = Boolean(detail) && (Boolean(install) || Boolean(preview));
 
   function headerAction() {
@@ -348,13 +345,7 @@ export function PluginDetail({
               void setParts("header", toggle(headerPart, false), t`Could not remove plugin`)
             }
           >
-            {pending === "header" ? (
-              <Trans>Removing…</Trans>
-            ) : everywhere ? (
-              <Trans>Remove from every space?</Trans>
-            ) : (
-              <Trans>Confirm removal</Trans>
-            )}
+            {pending === "header" ? <Trans>Removing…</Trans> : <Trans>Confirm removal</Trans>}
           </Button>
         </>
       ) : (
@@ -428,15 +419,6 @@ export function PluginDetail({
         <p className="text-[15px] leading-6 text-muted-foreground">
           {detail?.description || selection.description}
         </p>
-      ) : null}
-
-      {install ? (
-        <AvailabilityControl
-          kind="install"
-          id={install.id}
-          availability={install.availability}
-          onChanged={onChanged}
-        />
       ) : null}
 
       {error ? (

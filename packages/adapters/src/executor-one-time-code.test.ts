@@ -198,9 +198,6 @@ function world(printed = "") {
             defaultModelId: "local-model",
           }),
         },
-        actionAutoReviewPreference: {
-          findUnique: async () => ({ enabled: false, skipApprovals: true }),
-        },
         userActionAutoReviewPreference: {
           findUnique: async () => ({ enabled: false, skipApprovals: true }),
         },

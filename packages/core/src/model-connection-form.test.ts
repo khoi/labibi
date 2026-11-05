@@ -281,7 +281,7 @@ describe("modelConnectRequest", () => {
         form: draft({ apiKey: " sk-long-enough ", thinkingLevel: "medium" }),
         selected: anthropic,
         credentialId: null,
-        makeDefault: { makeDefault: true, scope: "account" },
+        makeDefault: { makeDefault: true },
       }),
     ).toEqual({
       status: "ready",
@@ -293,7 +293,6 @@ describe("modelConnectRequest", () => {
         modelId: "opus",
         thinkingLevel: "high",
         makeDefault: true,
-        scope: "account",
         maxTokens: null,
         label: "Anthropic",
         credentialId: null,

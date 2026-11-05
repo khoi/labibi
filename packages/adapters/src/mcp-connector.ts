@@ -18,7 +18,7 @@ import {
   resolveMcpOAuthFileTemplate,
 } from "@labradoodle/contracts";
 import type { McpServer, PrismaClient, ThreadEvents } from "@labradoodle/db";
-import { availableInSpace, itemSecretIn } from "@labradoodle/db";
+import { itemSecretIn } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { sanitizedError } from "@labradoodle/logging/monitoring";
 import { UnauthorizedError } from "@modelcontextprotocol/sdk/client/auth.js";
@@ -398,7 +398,7 @@ export class McpConnector implements ConnectorProvider {
   private async authorizedTools(context: AdapterContext): Promise<ConnectorTool[]> {
     if (!context.botId) return [];
     const servers = await this.prisma.mcpServer.findMany({
-      where: { enabled: true, ...availableInSpace(context) },
+      where: { enabled: true, userId: context.userId },
     });
     const groups = await Promise.all(
       servers.map(async (server): Promise<ConnectorTool[]> => {
@@ -581,7 +581,7 @@ export class McpConnector implements ConnectorProvider {
       return;
     }
     const server = await this.prisma.mcpServer.findFirst({
-      where: { id: call.route.resourceId, enabled: true, ...availableInSpace(context) },
+      where: { id: call.route.resourceId, enabled: true, userId: context.userId },
     });
     if (server && call.route.toolName === UNAVAILABLE_TOOL) {
       const reason =
@@ -961,7 +961,7 @@ export class McpConnector implements ConnectorProvider {
       if (server.secretId && !secret) {
         // OAuth refresh replaces the secret without updating this run's server snapshot.
         const current = await this.prisma.mcpServer.findFirst({
-          where: { id: server.id, revision: server.revision, ...availableInSpace(context) },
+          where: { id: server.id, revision: server.revision, userId: context.userId },
           select: { secretId: true },
         });
         if (current?.secretId) {

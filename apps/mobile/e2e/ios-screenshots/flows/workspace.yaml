@@ -38,13 +38,6 @@ name: Workspace
     timeout: 3000
 - takeScreenshot: 06-vault-new-card
 - tapOn: "Cancel"
-- openLink: "rakazo:///space?spaceId=${RAKAZO_SCREENSHOT_TEAM_SPACE_ID}"
-- extendedWaitUntil:
-    visible: ".*Customize.*"
-    timeout: 15000
-- waitForAnimationToEnd:
-    timeout: 3000
-- takeScreenshot: 08-space-settings
 - openLink: "rakazo:///space-members?spaceId=${RAKAZO_SCREENSHOT_TEAM_SPACE_ID}"
 - extendedWaitUntil:
     visible: "Owner"

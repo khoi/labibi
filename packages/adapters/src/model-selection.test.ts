@@ -1373,9 +1373,7 @@ describe("live-only catalog validation", () => {
     const prisma = {
       bot: { findMany: savedBots },
       routine: { findMany: async () => [] },
-      spaceSettingOverride: { findUnique: vi.fn(async () => null) },
       userModelRoleChoice: { findMany: async () => [] },
-      spaceModelRoleChoice: { findMany: async () => [] },
       deploymentSettings: { findFirst: async () => null },
       userModelPreference: { findFirst: async () => null, findMany: async () => [] },
       userModelCredential: { findMany: async () => [selected], findFirst: async () => selected },

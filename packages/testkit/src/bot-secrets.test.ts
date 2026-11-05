@@ -230,12 +230,7 @@ describeIntegration("reusable credential lifecycle", () => {
         const stored = await db.vaultCredential.findFirstOrThrow({
           where: { userId: seeded.me.userId },
         });
-        // Saved in the account vault, which the Space uses until it has its own.
-        expect(stored).toMatchObject({
-          ...destination,
-          userId: seeded.me.userId,
-          spaceId: null,
-        });
+        expect(stored).toMatchObject({ ...destination, userId: seeded.me.userId });
         expect(stored.ciphertext).toMatch(/^v2:/);
         expect(stored.ciphertext).not.toContain(key);
         expect(await db.secret.count({ where: { kind: `run-secret:${seeded.run.id}` } })).toBe(0);

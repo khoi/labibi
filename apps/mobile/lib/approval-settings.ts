@@ -1,10 +1,9 @@
 import type { ActionAutoReviewSettings, ApprovalMode } from "@labradoodle/contracts";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Alert } from "react-native";
+import { rpc } from "./api";
 import { useI18n } from "./i18n";
-import type { SettingsTarget } from "./settings-target";
-import { settingsRpc } from "./settings-target";
 import { errorText } from "./user-error";
 
 export type ApprovalSettings = {
@@ -19,11 +18,8 @@ export type ApprovalSettings = {
 /**
  * The approval mode and the number of saved rules, for the Approvals rows in settings. Reads
  * again whenever the screen regains focus, so the count follows rules removed on the rules list.
- * Without `enabled` (a Space that follows the account) nothing is read.
  */
-export function useApprovalSettings(target: SettingsTarget, enabled = true): ApprovalSettings {
-  const rpc = useMemo(() => settingsRpc(target), [target]);
-  const scope = target.scope;
+export function useApprovalSettings(): ApprovalSettings {
   const { t } = useI18n();
   const [settings, setSettings] = useState<ActionAutoReviewSettings | null>(null);
   const [ruleCount, setRuleCount] = useState(0);
@@ -36,25 +32,16 @@ export function useApprovalSettings(target: SettingsTarget, enabled = true): App
   const saving = useRef(false);
   // A read wanted while a save runs could return the mode being replaced, so it waits for the save.
   const readAfterSave = useRef(false);
-  // Counts the times a Space went back to following the account, so a save from before is dropped.
-  const resets = useRef(0);
 
   useFocusEffect(
     useCallback(() => {
-      if (!enabled) {
-        resets.current += 1;
-        setSettings(null);
-        setRuleCount(0);
-        setLoadError(null);
-        return;
-      }
       if (saving.current) {
         readAfterSave.current = true;
         return;
       }
       let current = true;
       const savesAtRead = saves.current;
-      void Promise.all([rpc("autoReview/get", { scope }), rpc("approvalRules/list", { scope })])
+      void Promise.all([rpc("autoReview/get"), rpc("approvalRules/list")])
         .then(([nextSettings, rules]) => {
           if (!current) return;
           // A save doesn't change the rules, so a read it overtook still brings a fresh count.
@@ -70,22 +57,20 @@ export function useApprovalSettings(target: SettingsTarget, enabled = true): App
       return () => {
         current = false;
       };
-    }, [attempt, enabled, rpc, scope, t]),
+    }, [attempt, t]),
   );
 
   async function setMode(mode: ApprovalMode) {
     if (!settings || saving.current || mode === settings.mode) return;
     const previous = settings;
-    const resetsAtSave = resets.current;
     saves.current += 1;
     saving.current = true;
     setPending(true);
     setSettings({ ...previous, mode });
     try {
-      const saved = await rpc("autoReview/set", { scope, mode });
-      if (resets.current === resetsAtSave) setSettings(saved);
+      setSettings(await rpc("autoReview/set", { mode }));
     } catch (err) {
-      if (resets.current === resetsAtSave) setSettings(previous);
+      setSettings(previous);
       Alert.alert(t("Could not save that preference"), errorText(err, t("Try again.")));
       // The save may have landed before the reply was lost, so read what is actually stored.
       readAfterSave.current = true;

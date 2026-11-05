@@ -2,7 +2,6 @@ import { z } from "zod";
 import { AGENT_SECRET_NAME_PATTERN } from "./agent-secret-name.js";
 import { Id } from "./ids.js";
 import { isCloudMetadataHost, isPrivateNetworkHost } from "./network-host.js";
-import { settingsScopeInput } from "./settings-scope.js";
 
 // An opaque reference handle: matched exactly by secret_request/forget_secret,
 // displayed in list_secrets. Never interpolated into shells, env, or URLs, so
@@ -740,11 +739,10 @@ export const VaultItemTitle = z.string().trim().max(80);
 export const VaultItemNote = z.string().trim().max(200);
 
 /**
- * An item the owner saves in a vault: the account's or, with scope "space", the Space's. Without a
- * name it is a new item, named from its title. With the name of a saved item, `value` may be left
- * out to change only its title or note.
+ * An item the owner saves in their vault. Without a name it is a new item, named from its title.
+ * With the name of a saved item, `value` may be left out to change only its title or note.
  */
-export const VaultPutInput = settingsScopeInput.extend({
+export const VaultPutInput = z.object({
   destination: z
     .object({ ...destinationInputShape, name: BotSecretName.optional() })
     .superRefine(requireSite),
@@ -754,7 +752,7 @@ export const VaultPutInput = settingsScopeInput.extend({
 });
 export type VaultPutInput = z.infer<typeof VaultPutInput>;
 
-export const VaultRevealInput = settingsScopeInput.extend({ name: StoredBotSecretName });
+export const VaultRevealInput = z.object({ name: StoredBotSecretName });
 
 /**
  * A saved value shown to its owner after they confirm it's them: a login's fields, a card, or the

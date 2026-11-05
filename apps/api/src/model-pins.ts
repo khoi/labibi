@@ -2,14 +2,11 @@ import type { CodexLiveCatalog, parseModelSecret } from "@labradoodle/adapters";
 import { findConnectedModelCredential, validateConnectedModelChoice } from "@labradoodle/adapters";
 import type { Actor } from "@labradoodle/contracts";
 import { OPENAI_COMPATIBLE_PROVIDER_ID, usableModelId } from "@labradoodle/contracts";
-import { modelRoleTarget, runAsSystem } from "@labradoodle/db";
+import { runAsSystem } from "@labradoodle/db";
 import { ORPCError } from "@orpc/server";
 import type { RouterDeps } from "./router.js";
 
-/**
- * The actor's active compatible bot, routine and role pins on `modelId`. Role rows come from the
- * account's models (spaceId null) and from the Spaces that override them.
- */
+/** The actor's active compatible bot, routine and role pins on `modelId`. */
 async function compatibleModelPins(
   deps: RouterDeps,
   actor: Actor,
@@ -20,32 +17,22 @@ async function compatibleModelPins(
   const pin = { spaceId: true, modelId: true } as const;
   const role = { modelId: true, role: true, position: true, credentialId: true } as const;
   // A connection is the account's, so its pins are checked in every Space it is used in.
-  const [bots, routines, accountRoles, spaceRoles] = await runAsSystem(
-    "model pins across the account's Spaces",
-    () =>
-      Promise.all([
-        deps.prisma.bot.findMany({
-          where: { ...where, archivedAt: null, modelProvider: provider },
-          select: { ...pin, name: true },
-        }),
-        deps.prisma.routine.findMany({
-          where: { ...where, modelProvider: provider, bot: { archivedAt: null } },
-          select: { ...pin, name: true },
-        }),
-        deps.prisma.userModelRoleChoice.findMany({ where: { ...where, provider }, select: role }),
-        deps.prisma.spaceModelRoleChoice.findMany({
-          where: {
-            ...where,
-            provider,
-            spaceMember: { settingOverrides: { some: { setting: "models" } } },
-          },
-          select: { ...role, spaceId: true },
-        }),
-      ]),
+  const [bots, routines, roles] = await runAsSystem("model pins across the account's Spaces", () =>
+    Promise.all([
+      deps.prisma.bot.findMany({
+        where: { ...where, archivedAt: null, modelProvider: provider },
+        select: { ...pin, name: true },
+      }),
+      deps.prisma.routine.findMany({
+        where: { ...where, modelProvider: provider, bot: { archivedAt: null } },
+        select: { ...pin, name: true },
+      }),
+      deps.prisma.userModelRoleChoice.findMany({ where: { ...where, provider }, select: role }),
+    ]),
   );
   return {
     named: [...bots, ...routines],
-    backups: [...accountRoles.map((row) => ({ ...row, spaceId: null })), ...spaceRoles],
+    backups: roles.map((row) => ({ ...row, spaceId: null })),
   };
 }
 
@@ -117,18 +104,12 @@ export async function assertCompatibleDefaultChange(
   }
   const outgoing = enabled.find((id) => id !== requested && !stored?.includes(id));
   if (!outgoing) return;
-  const [pins, target] = await Promise.all([
-    compatibleModelPins(deps, actor, outgoing),
-    modelRoleTarget(deps.prisma, actor),
-  ]);
-  const replacedSpaceId = target.scope === "space" ? actor.spaceId : null;
+  const pins = await compatibleModelPins(deps, actor, outgoing);
   // The main model's own row is the choice being replaced, not a pin left behind.
   refuseModelPins(
     {
       ...pins,
-      backups: pins.backups.filter(
-        (row) => !(row.role === "main" && row.position === 0 && row.spaceId === replacedSpaceId),
-      ),
+      backups: pins.backups.filter((row) => !(row.role === "main" && row.position === 0)),
     },
     () => true,
   );

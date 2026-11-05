@@ -431,7 +431,7 @@ describe("shell command environment", () => {
     expect(environment.TOOL_119).toBe("fake-merged-value");
   });
 
-  it("exports the command variables of the vault this Space uses", async () => {
+  it("exports the member's command variables in every Space", async () => {
     const db = fakeDatabase();
     await save(db, "cli-token", "fake-cli-token-1");
     await save(db, "api", "fake-bearer-1", {
@@ -439,16 +439,7 @@ describe("shell command environment", () => {
       auth: { type: "bearer" },
     });
     const otherSpace = { ...scope, spaceId: "space-2" };
-    // The account vault reaches every Space that has no vault of its own.
     expect(await loadBotCommandEnvironment(db.prisma, secretStore, otherSpace)).toEqual({
-      CLI_TOKEN: "fake-cli-token-1",
-    });
-    db.useOwnVault("space-2");
-    await save(db, "private-token", "fake-private-1", {}, otherSpace);
-    expect(await loadBotCommandEnvironment(db.prisma, secretStore, otherSpace)).toEqual({
-      PRIVATE_TOKEN: "fake-private-1",
-    });
-    expect(await loadBotCommandEnvironment(db.prisma, secretStore, scope)).toEqual({
       CLI_TOKEN: "fake-cli-token-1",
     });
     expect(

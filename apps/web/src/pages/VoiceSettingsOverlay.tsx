@@ -1,5 +1,4 @@
 import type {
-  SettingsScope,
   VoiceCatalogEntry,
   VoiceCredential,
   VoiceInfo,
@@ -37,34 +36,26 @@ export function VoiceSettingsOverlay({
   onClose,
   embedded = false,
   onBusyChange,
-  scope,
 }: {
   onClose: () => void;
   /** Render the content only, inside the shared Settings shell's scroller. */
   embedded?: boolean;
   onBusyChange?: (busy: boolean) => void;
-  /**
-   * The account's voice, or the bound Space's own when it overrides it. Connections are
-   * account-wide, so a Space only picks among them and connects missing ones.
-   */
-  scope: SettingsScope;
 }) {
   const rpc = useSpaceRpc();
   const spaceId = useBoundSpaceId();
   const queries = useSpaceQueries();
   const queryClient = useQueryClient();
-  const scoped = { input: { scope } };
-  // A revisit opens with what this scope showed last time and refreshes it in the background.
+  // A revisit opens with what it showed last time and refreshes it in the background.
   const [cached] = useState(() => {
     const catalog = queryClient.getQueryData(queries.voice.catalog.queryKey());
-    const credentials = queryClient.getQueryData(queries.voice.credentials.queryKey(scoped));
-    const status = queryClient.getQueryData(queries.voice.status.queryKey(scoped));
+    const credentials = queryClient.getQueryData(queries.voice.credentials.queryKey());
+    const status = queryClient.getQueryData(queries.voice.status.queryKey());
     if (!catalog || !credentials || !status) return null;
     const provider = selectedProvider(catalog, [status.provider]);
     const credential = credentials.find((entry) => entry.provider === provider);
     const voices = credential
-      ? (queryClient.getQueryData(queries.voice.voices.queryKey({ input: { provider, scope } })) ??
-        [])
+      ? (queryClient.getQueryData(queries.voice.voices.queryKey({ input: { provider } })) ?? [])
       : [];
     return { catalog, credentials, status, provider, credential, voices };
   });
@@ -145,7 +136,7 @@ export function VoiceSettingsOverlay({
     return queryClient
       .fetchQuery(
         queries.voice.voices.queryOptions({
-          input: { provider: nextProvider, scope },
+          input: { provider: nextProvider },
           staleTime: 0,
         }),
       )
@@ -165,8 +156,8 @@ export function VoiceSettingsOverlay({
   async function refresh(nextProvider?: string, { keepForm = false, reuse = false } = {}) {
     const [nextCatalog, nextCredentials, nextStatus] = await Promise.all([
       fetchFresh(queryClient, queries.voice.catalog.queryOptions(), { reuse }),
-      fetchFresh(queryClient, queries.voice.credentials.queryOptions(scoped), { reuse }),
-      fetchFresh(queryClient, queries.voice.status.queryOptions(scoped), { reuse }),
+      fetchFresh(queryClient, queries.voice.credentials.queryOptions(), { reuse }),
+      fetchFresh(queryClient, queries.voice.status.queryOptions(), { reuse }),
     ]);
     const current = providerRef.current;
     const selected = selectedProvider(nextCatalog, [nextProvider, current, nextStatus.provider]);
@@ -189,12 +180,11 @@ export function VoiceSettingsOverlay({
       markPending("voice");
       try {
         const saved = await rpc.voice.setVoice({
-          scope,
           voiceId: cred.voiceId,
           provider: nextProvider,
         });
         setStatus(saved);
-        queryClient.setQueryData(queries.voice.status.queryKey(scoped), saved);
+        queryClient.setQueryData(queries.voice.status.queryKey(), saved);
       } catch (err) {
         setError(errorText(err, t`Could not save that voice`));
         return;
@@ -224,8 +214,6 @@ export function VoiceSettingsOverlay({
   );
 
   const selfHosted = selected?.id === OPENAI_COMPATIBLE_PROVIDER_ID;
-  // Connections are managed from the account; a Space can still connect one it lacks.
-  const managesConnection = scope === "account" || !credential;
   const keyless = Boolean(selected?.keyless);
   const canConnect = keyless || (selfHosted ? Boolean(baseUrl.trim()) : apiKey.trim().length >= 8);
 
@@ -238,7 +226,6 @@ export function VoiceSettingsOverlay({
     markPending("connect");
     try {
       await rpc.voice.connect({
-        scope,
         provider: selected.id,
         apiKey: sentApiKey.trim(),
         // The server drops this voice when the address or speech model really changed.
@@ -290,7 +277,7 @@ export function VoiceSettingsOverlay({
     markPending("voice");
     setError(null);
     try {
-      await rpc.voice.setVoice({ scope, voiceId: nextVoiceId, provider: selected?.id });
+      await rpc.voice.setVoice({ voiceId: nextVoiceId, provider: selected?.id });
       await refresh(selected?.id, { keepForm: true });
     } catch (err) {
       setError(errorText(err, t`Could not save that voice`));
@@ -309,7 +296,6 @@ export function VoiceSettingsOverlay({
     markPending("voice");
     try {
       const saved = await rpc.voice.setSpeechModel({
-        scope,
         provider: selected.id,
         speechModel: next,
       });
@@ -317,7 +303,7 @@ export function VoiceSettingsOverlay({
       const update = (current: VoiceCredential[]) =>
         current.map((entry) => (entry.id === saved.id ? saved : entry));
       setCredentials(update);
-      queryClient.setQueryData(queries.voice.credentials.queryKey(scoped), (current) =>
+      queryClient.setQueryData(queries.voice.credentials.queryKey(), (current) =>
         current ? update(current) : current,
       );
     } catch (err) {
@@ -335,7 +321,6 @@ export function VoiceSettingsOverlay({
     try {
       await speaker.speak(t`Hi, this is how I'll sound when I read replies out loud.`, {
         spaceId,
-        scope,
       });
       if (speaker.state.error) {
         setError(speaker.state.error);
@@ -385,7 +370,7 @@ export function VoiceSettingsOverlay({
           </NativeSelect>
         </Field>
       ) : null}
-      {hiddenSelfHosted && scope === "account" ? (
+      {hiddenSelfHosted ? (
         <Button
           variant="ghost"
           disabled={busy}
@@ -396,121 +381,113 @@ export function VoiceSettingsOverlay({
       ) : null}
       {selected ? (
         <>
-          {managesConnection ? (
+          {selfHosted ? (
+            <Field className="mt-5">
+              <FieldLabel htmlFor={baseUrlId}>
+                <Trans>Server URL</Trans>
+              </FieldLabel>
+              <Input
+                id={baseUrlId}
+                type="url"
+                autoComplete="off"
+                spellCheck={false}
+                value={baseUrl}
+                onChange={(event) => {
+                  edited.current.add("baseUrl");
+                  setBaseUrl(event.target.value);
+                }}
+                placeholder="http://192.168.1.10:8880/v1"
+              />
+            </Field>
+          ) : null}
+          {keyless ? null : (
+            <Field className="mt-5">
+              <FieldLabel htmlFor={apiKeyId}>
+                <Trans>API key</Trans>
+              </FieldLabel>
+              <Input
+                id={apiKeyId}
+                type="password"
+                autoComplete="new-password"
+                value={apiKey}
+                onChange={(event) => setApiKey(event.target.value)}
+                placeholder={
+                  selfHosted
+                    ? t`Optional`
+                    : credential
+                      ? t`Paste a replacement key`
+                      : t`Paste your API key`
+                }
+              />
+            </Field>
+          )}
+          {selfHosted ? (
             <>
-              {selfHosted ? (
-                <Field className="mt-5">
-                  <FieldLabel htmlFor={baseUrlId}>
-                    <Trans>Server URL</Trans>
-                  </FieldLabel>
-                  <Input
-                    id={baseUrlId}
-                    type="url"
-                    autoComplete="off"
-                    spellCheck={false}
-                    value={baseUrl}
-                    onChange={(event) => {
-                      edited.current.add("baseUrl");
-                      setBaseUrl(event.target.value);
-                    }}
-                    placeholder="http://192.168.1.10:8880/v1"
-                  />
-                </Field>
-              ) : null}
-              {keyless ? null : (
-                <Field className="mt-5">
-                  <FieldLabel htmlFor={apiKeyId}>
-                    <Trans>API key</Trans>
-                  </FieldLabel>
-                  <Input
-                    id={apiKeyId}
-                    type="password"
-                    autoComplete="new-password"
-                    value={apiKey}
-                    onChange={(event) => setApiKey(event.target.value)}
-                    placeholder={
-                      selfHosted
-                        ? t`Optional`
-                        : credential
-                          ? t`Paste a replacement key`
-                          : t`Paste your API key`
-                    }
-                  />
-                </Field>
-              )}
-              {selfHosted ? (
-                <>
-                  <Field className="mt-5">
-                    <FieldLabel htmlFor={ttsModelId}>
-                      <Trans>Speech model</Trans>
-                    </FieldLabel>
-                    <Input
-                      id={ttsModelId}
-                      autoComplete="off"
-                      spellCheck={false}
-                      value={ttsModel}
-                      maxLength={200}
-                      onChange={(event) => {
-                        edited.current.add("ttsModel");
-                        setTtsModel(event.target.value);
-                      }}
-                      placeholder={DEFAULT_COMPATIBLE_TTS_MODEL}
-                    />
-                  </Field>
-                  <Field className="mt-5">
-                    <FieldLabel htmlFor={sttModelId}>
-                      <Trans>Transcription model</Trans>
-                    </FieldLabel>
-                    <Input
-                      id={sttModelId}
-                      autoComplete="off"
-                      spellCheck={false}
-                      value={sttModel}
-                      maxLength={200}
-                      onChange={(event) => {
-                        edited.current.add("sttModel");
-                        setSttModel(event.target.value);
-                      }}
-                      placeholder={DEFAULT_COMPATIBLE_STT_MODEL}
-                    />
-                  </Field>
-                </>
-              ) : null}
-              {keyless && credential ? null : (
-                <Button
-                  type="button"
-                  className="mt-3"
-                  disabled={busy || !canConnect}
-                  onClick={() => void connectKey()}
-                >
-                  {pending === "connect" ? (
-                    <Trans>Connecting…</Trans>
-                  ) : credential && selfHosted ? (
-                    <Trans>Reconnect</Trans>
-                  ) : credential ? (
-                    <Trans>Replace key</Trans>
-                  ) : (
-                    <Trans>Connect</Trans>
-                  )}
-                </Button>
-              )}
-              {credential ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="mt-3"
-                  disabled={busy}
-                  onClick={() => void disconnectProvider()}
-                >
-                  {pending === "disconnect" ? (
-                    <Trans>Disconnecting…</Trans>
-                  ) : (
-                    <Trans>Disconnect</Trans>
-                  )}
-                </Button>
-              ) : null}
+              <Field className="mt-5">
+                <FieldLabel htmlFor={ttsModelId}>
+                  <Trans>Speech model</Trans>
+                </FieldLabel>
+                <Input
+                  id={ttsModelId}
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={ttsModel}
+                  maxLength={200}
+                  onChange={(event) => {
+                    edited.current.add("ttsModel");
+                    setTtsModel(event.target.value);
+                  }}
+                  placeholder={DEFAULT_COMPATIBLE_TTS_MODEL}
+                />
+              </Field>
+              <Field className="mt-5">
+                <FieldLabel htmlFor={sttModelId}>
+                  <Trans>Transcription model</Trans>
+                </FieldLabel>
+                <Input
+                  id={sttModelId}
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={sttModel}
+                  maxLength={200}
+                  onChange={(event) => {
+                    edited.current.add("sttModel");
+                    setSttModel(event.target.value);
+                  }}
+                  placeholder={DEFAULT_COMPATIBLE_STT_MODEL}
+                />
+              </Field>
             </>
+          ) : null}
+          {keyless && credential ? null : (
+            <Button
+              type="button"
+              className="mt-3"
+              disabled={busy || !canConnect}
+              onClick={() => void connectKey()}
+            >
+              {pending === "connect" ? (
+                <Trans>Connecting…</Trans>
+              ) : credential && selfHosted ? (
+                <Trans>Reconnect</Trans>
+              ) : credential ? (
+                <Trans>Replace key</Trans>
+              ) : (
+                <Trans>Connect</Trans>
+              )}
+            </Button>
+          )}
+          {credential ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-3"
+              disabled={busy}
+              onClick={() => void disconnectProvider()}
+            >
+              {pending === "disconnect" ? <Trans>Disconnecting…</Trans> : <Trans>Disconnect</Trans>}
+            </Button>
           ) : null}
 
           {credential ? (

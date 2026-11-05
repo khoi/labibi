@@ -602,7 +602,6 @@ async function readTool(
     readOnly: declaredRead(resolved.tool),
     rules: (await listApprovalRules(deps.prisma, {
       userId: routine.userId,
-      spaceId: routine.spaceId,
     })) as ActionApprovalRule[],
   });
   if (refusal) throw new RoutineWatchError(refusal);

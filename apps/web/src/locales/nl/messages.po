@@ -52,12 +52,6 @@ msgstr ""
 msgid "{0, plural, one {# skill} other {# skills}}"
 msgstr ""
 
-#. placeholder {0}: availability.spaceIds.length
-#. placeholder {0}: chosen.length
-#: src/components/integrations/space-availability.tsx
-msgid "{0, plural, one {# space} other {# spaces}}"
-msgstr ""
-
 #. placeholder {0}: server.health.toolCount
 #: src/pages/McpServersOverlay.tsx
 msgid "{0, plural, one {# tool} other {# tools}}"
@@ -419,10 +413,6 @@ msgstr "@{0}"
 msgid "/ month"
 msgstr "/ maand"
 
-#: src/components/integrations/space-availability.tsx
-msgid "1 space"
-msgstr ""
-
 #: src/pages/shell/message-cards.tsx
 msgid "A bit of everything"
 msgstr "Van alles een beetje"
@@ -679,10 +669,6 @@ msgstr "De volledige {credit} gaat naar modelgebruik."
 msgid "All bots"
 msgstr "Alle bots"
 
-#: src/components/integrations/space-availability.tsx
-msgid "All spaces"
-msgstr ""
-
 #: src/pages/ActivityList.tsx
 msgid "All statuses"
 msgstr "Alle statussen"
@@ -828,7 +814,6 @@ msgid "Approval model"
 msgstr "Goedkeuringsmodel"
 
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Approvals"
 msgstr "Goedkeuringen"
 
@@ -932,10 +917,6 @@ msgstr "Beschikbaar zodra de routine is opgeslagen"
 
 #: src/components/ModelCredits.tsx
 msgid "Available credits"
-msgstr ""
-
-#: src/components/integrations/space-availability.tsx
-msgid "Available in"
 msgstr ""
 
 #: src/components/vault/VaultItemEditor.tsx
@@ -1111,7 +1092,6 @@ msgstr "Kan afbeeldingen niet lezen"
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
 msgstr "Annuleren"
 
@@ -1721,10 +1701,6 @@ msgstr ""
 msgid "Could not change password"
 msgstr "Wachtwoord wijzigen mislukt"
 
-#: src/components/integrations/space-availability.tsx
-msgid "Could not change where this is available"
-msgstr ""
-
 #: src/components/pages/PageViewHost.tsx
 msgid "Could not change who can view this page. Try again."
 msgstr "Kon niet wijzigen wie deze pagina kan bekijken. Probeer het opnieuw."
@@ -2310,14 +2286,6 @@ msgstr "Huidig wachtwoord"
 msgid "Custom header"
 msgstr "Aangepaste header"
 
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Customize"
-msgstr "Aanpassen"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Customize {label}"
-msgstr "{label} aanpassen"
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "Dagelijks"
@@ -2371,7 +2339,6 @@ msgstr "Standaardbereik"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete"
 msgstr "Verwijderen"
 
@@ -2407,10 +2374,6 @@ msgstr "Groep verwijderen"
 #: src/pages/shell/dialogs.tsx
 msgid "Delete memories too"
 msgstr "Herinneringen ook verwijderen"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Delete this Space's credentials?"
-msgstr "De gegevens van deze Space verwijderen?"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -3678,7 +3641,6 @@ msgstr "Modelopties"
 
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Models"
 msgstr "Modellen"
 
@@ -4666,13 +4628,6 @@ msgstr "{site} verwijderen"
 msgid "Remove change trigger"
 msgstr "Wijzigingstrigger verwijderen"
 
-#: src/components/integrations/plugin-marketplace.tsx
-#: src/pages/KnowledgeSection.tsx
-#: src/pages/McpServersOverlay.tsx
-#: src/pages/PluginsOverlay.tsx
-msgid "Remove from every space?"
-msgstr ""
-
 #: src/pages/RoutineEditor.tsx
 msgid "Remove Git event"
 msgstr "Git-gebeurtenis verwijderen"
@@ -4829,7 +4784,6 @@ msgstr "Je werkruimte herstellen"
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Retry"
 msgstr "Opnieuw proberen"
 
@@ -5734,7 +5688,6 @@ msgstr ""
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "This can't be undone."
 msgstr "Dit kan niet ongedaan worden gemaakt."
 
@@ -6086,14 +6039,6 @@ msgstr "Een gevonden model gebruiken"
 msgid "Use Connect to verify the key."
 msgstr "Gebruik Verbinden om de sleutel te verifiëren."
 
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Use defaults"
-msgstr "Standaardinstellingen gebruiken"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Use defaults for {label}"
-msgstr "Standaardinstellingen gebruiken voor {label}"
-
 #: src/components/ModelCredits.tsx
 msgid "Use Labradoodle credits"
 msgstr ""
@@ -6157,7 +6102,6 @@ msgid "Variables"
 msgstr ""
 
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Vault"
 msgstr "Kluis"
 
@@ -6183,7 +6127,6 @@ msgstr ""
 
 #: src/pages/settings-nav.ts
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Voice"
 msgstr "Stem"
@@ -6389,10 +6332,6 @@ msgstr "De schijf van je computer is bijna vol. Maak ruimte vrij door build-uitv
 #: src/components/AccountDataSettings.tsx
 msgid "Your data"
 msgstr ""
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Your defaults"
-msgstr "Jouw standaardinstellingen"
 
 #: src/pages/Auth.tsx
 msgid "Your email address"

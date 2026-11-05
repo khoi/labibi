@@ -52,12 +52,6 @@ msgstr ""
 msgid "{0, plural, one {# skill} other {# skills}}"
 msgstr ""
 
-#. placeholder {0}: availability.spaceIds.length
-#. placeholder {0}: chosen.length
-#: src/components/integrations/space-availability.tsx
-msgid "{0, plural, one {# space} other {# spaces}}"
-msgstr ""
-
 #. placeholder {0}: server.health.toolCount
 #: src/pages/McpServersOverlay.tsx
 msgid "{0, plural, one {# tool} other {# tools}}"
@@ -419,10 +413,6 @@ msgstr "@{0}"
 msgid "/ month"
 msgstr "/ חודש"
 
-#: src/components/integrations/space-availability.tsx
-msgid "1 space"
-msgstr ""
-
 #: src/pages/shell/message-cards.tsx
 msgid "A bit of everything"
 msgstr "קצת מהכול"
@@ -679,10 +669,6 @@ msgstr "כל {credit} הולכים לשימוש במודלים."
 msgid "All bots"
 msgstr "כל הבוטים"
 
-#: src/components/integrations/space-availability.tsx
-msgid "All spaces"
-msgstr ""
-
 #: src/pages/ActivityList.tsx
 msgid "All statuses"
 msgstr "כל הסטטוסים"
@@ -828,7 +814,6 @@ msgid "Approval model"
 msgstr "מודל אישור"
 
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Approvals"
 msgstr "אישורים"
 
@@ -932,10 +917,6 @@ msgstr "זמין אחרי שמירת הרוטינה"
 
 #: src/components/ModelCredits.tsx
 msgid "Available credits"
-msgstr ""
-
-#: src/components/integrations/space-availability.tsx
-msgid "Available in"
 msgstr ""
 
 #: src/components/vault/VaultItemEditor.tsx
@@ -1111,7 +1092,6 @@ msgstr "לא ניתן לקרוא תמונות"
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
 msgstr "ביטול"
 
@@ -1721,10 +1701,6 @@ msgstr ""
 msgid "Could not change password"
 msgstr "לא ניתן לשנות את הסיסמה"
 
-#: src/components/integrations/space-availability.tsx
-msgid "Could not change where this is available"
-msgstr ""
-
 #: src/components/pages/PageViewHost.tsx
 msgid "Could not change who can view this page. Try again."
 msgstr "לא ניתן היה לשנות מי יכול לצפות בדף הזה. נסו שוב."
@@ -2310,14 +2286,6 @@ msgstr "סיסמה נוכחית"
 msgid "Custom header"
 msgstr "כותרת מותאמת אישית"
 
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Customize"
-msgstr "התאמה אישית"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Customize {label}"
-msgstr "התאמה אישית של {label}"
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "יומי"
@@ -2371,7 +2339,6 @@ msgstr "היקף ברירת מחדל"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete"
 msgstr "מחיקה"
 
@@ -2407,10 +2374,6 @@ msgstr "מחיקת הקבוצה"
 #: src/pages/shell/dialogs.tsx
 msgid "Delete memories too"
 msgstr "מחיקת הזיכרונות גם כן"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Delete this Space's credentials?"
-msgstr "למחוק את פרטי הגישה של המרחב הזה?"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -3678,7 +3641,6 @@ msgstr "אפשרויות מודל"
 
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Models"
 msgstr "מודלים"
 
@@ -4666,13 +4628,6 @@ msgstr "הסרת {site}"
 msgid "Remove change trigger"
 msgstr ""
 
-#: src/components/integrations/plugin-marketplace.tsx
-#: src/pages/KnowledgeSection.tsx
-#: src/pages/McpServersOverlay.tsx
-#: src/pages/PluginsOverlay.tsx
-msgid "Remove from every space?"
-msgstr ""
-
 #: src/pages/RoutineEditor.tsx
 msgid "Remove Git event"
 msgstr "הסרת אירוע Git"
@@ -4829,7 +4784,6 @@ msgstr "משחזר את סביבת העבודה"
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Retry"
 msgstr "לנסות שוב"
 
@@ -5734,7 +5688,6 @@ msgstr ""
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "This can't be undone."
 msgstr "לא ניתן לבטל פעולה זו."
 
@@ -6086,14 +6039,6 @@ msgstr "שימוש במודל שנמצא"
 msgid "Use Connect to verify the key."
 msgstr "יש ללחוץ על חיבור כדי לאמת את המפתח."
 
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Use defaults"
-msgstr "שימוש בברירות המחדל"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Use defaults for {label}"
-msgstr "שימוש בברירות המחדל עבור {label}"
-
 #: src/components/ModelCredits.tsx
 msgid "Use Labradoodle credits"
 msgstr ""
@@ -6157,7 +6102,6 @@ msgid "Variables"
 msgstr ""
 
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Vault"
 msgstr "כספת"
 
@@ -6183,7 +6127,6 @@ msgstr ""
 
 #: src/pages/settings-nav.ts
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Voice"
 msgstr "קול"
@@ -6389,10 +6332,6 @@ msgstr "הדיסק של המחשב כמעט מלא. פנה מקום על ידי 
 #: src/components/AccountDataSettings.tsx
 msgid "Your data"
 msgstr ""
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Your defaults"
-msgstr "ברירות המחדל שלך"
 
 #: src/pages/Auth.tsx
 msgid "Your email address"

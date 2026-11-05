@@ -920,11 +920,10 @@ async function commitAnswerRunInput(
     const site = alwaysAllowedSite(approvalEffect!);
     const tools = storedBatchActions(approvalEffect!.batchActions) ?? [approvalEffect!.kind];
     if (input.answer === "always" && (site || approvalEffect!.kind !== "web_fetch")) {
-      // Saved where the member's confirmations apply in this Space: the account or its override.
       for (const tool of site ? [site] : tools) {
         await saveApprovalRule(
           tx,
-          { userId: approvalUserId!, spaceId: input.spaceId },
+          { userId: approvalUserId! },
           { effect: "always_allow", matchKind: site ? "site" : "tool", matchValue: tool },
         );
       }

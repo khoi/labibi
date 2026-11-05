@@ -27,7 +27,7 @@ type Row = {
   kind?: string;
   ciphertext?: string;
   userId?: string;
-  spaceId?: string;
+  spaceId?: string | null;
   botId?: string;
   endpoint?: string;
   secretId?: string | null;
@@ -49,7 +49,6 @@ function database() {
     ["space", [{ id: "space", organizationId: "organization" }]],
     ["organization", [{ id: "organization" }]],
     ["mcpServer", []],
-    ["mcpServerSpace", []],
   ]);
   const matches = (row: Row, where: Record<string, unknown> = {}): boolean =>
     Object.entries(where).every(([key, value]) => {
@@ -350,7 +349,7 @@ describe("MCP OAuth prepared persistence", () => {
       );
       db.tables
         .get("secret")!
-        .push({ id: initial.id, ciphertext: initial.ciphertext, spaceId: "space", userId: "user" });
+        .push({ id: initial.id, ciphertext: initial.ciphertext, spaceId: null, userId: "user" });
       db.tables.get("mcpServer")!.push({
         id: "server",
         endpoint: "https://mcp.example.test/mcp",
@@ -491,7 +490,7 @@ describe("MCP OAuth prepared persistence", () => {
         db.tables.get("secret")!.push({
           id: staticRecord.id,
           ciphertext: staticRecord.ciphertext,
-          spaceId: "space",
+          spaceId: null,
           userId: "user",
         });
         db.tables.get("mcpServer")![0]!.secretId = staticRecord.id;
@@ -557,7 +556,6 @@ describe("prepared run-secret writes", () => {
         : undefined;
       Object.assign(prisma, {
         run: { findFirst: async () => ({ botId: "bot", userId: "user" }) },
-        spaceSettingOverride: { findUnique: async () => null },
         message: {
           findFirst: async () => ({
             blocks: [
@@ -631,7 +629,6 @@ describe("prepared run-secret writes", () => {
     };
     Object.assign(prisma, {
       run: { findFirst: async () => ({ botId: "bot", userId: "user" }) },
-      spaceSettingOverride: { findUnique: async () => null },
       message: {
         findFirst: async () => ({
           blocks: [
@@ -705,7 +702,6 @@ describe("prepared run-secret writes", () => {
     const origin = "https://login.example.test";
     Object.assign(prisma, {
       run: { findFirst: async () => ({ botId: "bot", userId: "user" }) },
-      spaceSettingOverride: { findUnique: async () => null },
       message: {
         findFirst: async () => ({
           blocks: [

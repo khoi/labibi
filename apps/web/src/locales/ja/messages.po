@@ -52,12 +52,6 @@ msgstr ""
 msgid "{0, plural, one {# skill} other {# skills}}"
 msgstr ""
 
-#. placeholder {0}: availability.spaceIds.length
-#. placeholder {0}: chosen.length
-#: src/components/integrations/space-availability.tsx
-msgid "{0, plural, one {# space} other {# spaces}}"
-msgstr ""
-
 #. placeholder {0}: server.health.toolCount
 #: src/pages/McpServersOverlay.tsx
 msgid "{0, plural, one {# tool} other {# tools}}"
@@ -419,10 +413,6 @@ msgstr "@{0}"
 msgid "/ month"
 msgstr "/ 月"
 
-#: src/components/integrations/space-availability.tsx
-msgid "1 space"
-msgstr ""
-
 #: src/pages/shell/message-cards.tsx
 msgid "A bit of everything"
 msgstr "いろいろ少しずつ"
@@ -679,10 +669,6 @@ msgstr "{credit} はすべてモデルの利用に充てられます。"
 msgid "All bots"
 msgstr "すべてのボット"
 
-#: src/components/integrations/space-availability.tsx
-msgid "All spaces"
-msgstr ""
-
 #: src/pages/ActivityList.tsx
 msgid "All statuses"
 msgstr "すべてのステータス"
@@ -828,7 +814,6 @@ msgid "Approval model"
 msgstr "承認モデル"
 
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Approvals"
 msgstr "承認"
 
@@ -933,10 +918,6 @@ msgstr "ルーティンの保存後に利用可能"
 #: src/components/ModelCredits.tsx
 msgid "Available credits"
 msgstr "利用可能なクレジット"
-
-#: src/components/integrations/space-availability.tsx
-msgid "Available in"
-msgstr ""
 
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Available to shell commands as {commandVariable}"
@@ -1111,7 +1092,6 @@ msgstr "画像を読み取れません"
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
 msgstr "キャンセル"
 
@@ -1721,10 +1701,6 @@ msgstr ""
 msgid "Could not change password"
 msgstr "パスワードを変更できませんでした"
 
-#: src/components/integrations/space-availability.tsx
-msgid "Could not change where this is available"
-msgstr ""
-
 #: src/components/pages/PageViewHost.tsx
 msgid "Could not change who can view this page. Try again."
 msgstr "このページを閲覧できる人を変更できませんでした。もう一度お試しください。"
@@ -2310,14 +2286,6 @@ msgstr "現在のパスワード"
 msgid "Custom header"
 msgstr "カスタムヘッダー"
 
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Customize"
-msgstr "カスタマイズ"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Customize {label}"
-msgstr "{label}をカスタマイズ"
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "毎日"
@@ -2371,7 +2339,6 @@ msgstr "デフォルトの範囲"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete"
 msgstr "削除"
 
@@ -2407,10 +2374,6 @@ msgstr "グループを削除"
 #: src/pages/shell/dialogs.tsx
 msgid "Delete memories too"
 msgstr "メモリも削除"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Delete this Space's credentials?"
-msgstr "このスペースの認証情報を削除しますか？"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -3678,7 +3641,6 @@ msgstr "モデルのオプション"
 
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Models"
 msgstr "モデル"
 
@@ -4666,13 +4628,6 @@ msgstr "{site} を削除"
 msgid "Remove change trigger"
 msgstr "変更トリガーを削除"
 
-#: src/components/integrations/plugin-marketplace.tsx
-#: src/pages/KnowledgeSection.tsx
-#: src/pages/McpServersOverlay.tsx
-#: src/pages/PluginsOverlay.tsx
-msgid "Remove from every space?"
-msgstr ""
-
 #: src/pages/RoutineEditor.tsx
 msgid "Remove Git event"
 msgstr "Gitイベントを削除"
@@ -4829,7 +4784,6 @@ msgstr "ワークスペースを復元中"
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Retry"
 msgstr "再試行"
 
@@ -5734,7 +5688,6 @@ msgstr ""
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "This can't be undone."
 msgstr "この操作は元に戻せません。"
 
@@ -6086,14 +6039,6 @@ msgstr "見つかったモデルを使用"
 msgid "Use Connect to verify the key."
 msgstr "「接続」でキーを確認してください。"
 
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Use defaults"
-msgstr "デフォルトを使用"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Use defaults for {label}"
-msgstr "{label}でデフォルトを使用"
-
 #: src/components/ModelCredits.tsx
 msgid "Use Labradoodle credits"
 msgstr "Labradoodleクレジットを使用"
@@ -6157,7 +6102,6 @@ msgid "Variables"
 msgstr ""
 
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Vault"
 msgstr "保管庫"
 
@@ -6183,7 +6127,6 @@ msgstr ""
 
 #: src/pages/settings-nav.ts
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Voice"
 msgstr "音声"
@@ -6389,10 +6332,6 @@ msgstr "コンピューターのディスクがほぼいっぱいです。不要
 #: src/components/AccountDataSettings.tsx
 msgid "Your data"
 msgstr ""
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Your defaults"
-msgstr "デフォルト設定"
 
 #: src/pages/Auth.tsx
 msgid "Your email address"

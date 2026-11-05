@@ -1,19 +1,19 @@
 import { MenuView } from "@expo/ui/community/menu";
 import type { ActionApprovalRule } from "@labradoodle/contracts";
 import { humanizeToolName, toolNameFromLabel } from "@labradoodle/core";
-import { useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useFocusEffect, useNavigation } from "expo-router";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { Alert, Platform, ScrollView, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LoadFailure } from "../../components/load-failure";
 import { TextFieldDialog } from "../../components/name-dialog";
 import { NativeActionButton } from "../../components/native-action-button";
 import { SettingsGroup, SettingsRow } from "../../components/settings-group";
+import { rpc } from "../../lib/api";
 import { mobileTokens } from "../../lib/appearance";
 import { useI18n } from "../../lib/i18n";
 import { native, useResolvedAppearance, useThemedStyles } from "../../lib/native";
 import { iosAtLeast } from "../../lib/native-controls";
-import { settingsRpc, settingsTarget } from "../../lib/settings-target";
 import { useSideInsets } from "../../lib/side-insets";
 import { errorText } from "../../lib/user-error";
 
@@ -21,14 +21,9 @@ type RuleAction = ActionApprovalRule["effect"] | "remove";
 
 /**
  * The tools and sites allowed, asked about or blocked. Rules come from approval cards or are
- * added here by tool name; the approval mode itself is a row in settings. Opened with a Space,
- * it edits that Space's override instead of the account's.
+ * added here by tool name; the approval mode itself is a row in settings.
  */
 export default function ApprovalRules() {
-  const { spaceId } = useLocalSearchParams<{ spaceId?: string }>();
-  const target = useMemo(() => settingsTarget(spaceId), [spaceId]);
-  const rpc = useMemo(() => settingsRpc(target), [target]);
-  const scope = target.scope;
   const { t } = useI18n();
   const navigation = useNavigation();
   const colorScheme = useResolvedAppearance();
@@ -49,7 +44,7 @@ export default function ApprovalRules() {
     useCallback(() => {
       let current = true;
       const savesAtRead = saves.current;
-      void rpc("approvalRules/list", { scope })
+      void rpc("approvalRules/list")
         .then((nextRules) => {
           if (!current || saves.current !== savesAtRead) return;
           setRules(nextRules);
@@ -61,7 +56,7 @@ export default function ApprovalRules() {
       return () => {
         current = false;
       };
-    }, [attempt, rpc, scope, t]),
+    }, [attempt, t]),
   );
 
   async function save(change: () => Promise<void>) {
@@ -81,13 +76,12 @@ export default function ApprovalRules() {
   const applyRuleAction = (rule: ActionApprovalRule, action: RuleAction) =>
     save(async () => {
       if (action === "remove") {
-        await rpc("approvalRules/remove", { scope, id: rule.id });
+        await rpc("approvalRules/remove", { id: rule.id });
         setRules((current) => current?.filter((entry) => entry.id !== rule.id) ?? null);
         return;
       }
       if (action === rule.effect || rule.matchKind === "category") return;
       const saved = await rpc("approvalRules/set", {
-        scope,
         effect: action,
         matchKind: rule.matchKind,
         matchValue: rule.matchValue,
@@ -117,7 +111,6 @@ export default function ApprovalRules() {
         return;
       }
       const saved = await rpc("approvalRules/set", {
-        scope,
         effect: "require_approval",
         matchKind: "tool",
         matchValue: name,

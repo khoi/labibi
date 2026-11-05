@@ -11,11 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ModelConnection from "../app/(settings)/model-connection";
 import Models from "../app/(settings)/models";
 import type { ModelConnectionRequest } from "./model-connection-request";
-import {
-  MODEL_CONNECT_TIMEOUT_MS,
-  modelConnectionRequest,
-  openModelConnection,
-} from "./model-connection-request";
+import { openModelConnection } from "./model-connection-request";
 import { modelPickerRequest } from "./model-picker-selection";
 import { queryClient } from "./query";
 
@@ -23,7 +19,7 @@ const savedEndpoint = "https://models.example.test/v1";
 const { push, back, params, rpcCalls, saved } = vi.hoisted(() => ({
   push: vi.fn(),
   back: vi.fn(),
-  params: {} as { requestId?: string; spaceId?: string },
+  params: {} as { requestId?: string },
   rpcCalls: [] as [
     string,
     unknown,
@@ -276,7 +272,6 @@ async function renderConnection(request: Partial<ModelConnectionRequest> = {}) {
     provider: "openai-compatible",
     credentialId: "credential-fixture",
     makeDefault: false,
-    target: { scope: "account" },
     ...request,
   });
   await act(async () => root.render(createElement(ModelConnection)));
@@ -286,7 +281,6 @@ beforeEach(async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   queryClient.clear();
   rpcCalls.length = 0;
-  delete params.spaceId;
   back.mockClear();
   container = document.createElement("div");
   document.body.appendChild(container);
@@ -412,7 +406,6 @@ it("hands a connected model back to the slot that asked for it", async () => {
     provider: "openai-compatible",
     modelId: "model-fixture",
     makeDefault: true,
-    scope: "account",
   });
   expect(onConnected).toHaveBeenCalledWith({
     provider: "openai-compatible",
@@ -420,72 +413,6 @@ it("hands a connected model back to the slot that asked for it", async () => {
     credentialId: "credential-new",
   });
   expect(back).toHaveBeenCalledOnce();
-});
-
-describe("a Space's model override", () => {
-  const otherSpace = { headers: { "x-rakazo-space-id": "space-other" } };
-
-  it("edits that Space's lists in that Space and leaves connections to the account", async () => {
-    params.spaceId = "space-other";
-    await notConnectedChoices();
-    expect(rpcCalls).toContainEqual([
-      "models/role",
-      { role: "main", expectedUserId: "user-fixture", scope: "space" },
-      { requestContext: otherSpace },
-    ]);
-    expect(container.textContent).not.toContain("Add provider");
-    const picker = modelPickerRequest(
-      (push.mock.calls.at(-1)![0] as { params: { requestId: string } }).params.requestId,
-    )!;
-    const connect = picker.continueTo?.(picker.connectChoices![0]!) as unknown as {
-      params: { requestId: string };
-    };
-    expect(modelConnectionRequest(connect.params.requestId)?.target).toEqual({
-      scope: "space",
-      spaceId: "space-other",
-    });
-  });
-
-  it("connects through that Space so a new main model lands in its override", async () => {
-    const onConnected = vi.fn(async () => undefined);
-    await remount(() =>
-      renderConnection({
-        makeDefault: true,
-        target: { scope: "space", spaceId: "space-other" },
-        onConnected,
-      }),
-    );
-    const save = [...container.querySelectorAll("button")].find(
-      (button) => button.textContent === "Save",
-    )!;
-    await act(async () => save.click());
-    const connect = rpcCalls.find(([procedure]) => procedure === "models/connect");
-    expect(connect?.[1]).toMatchObject({ makeDefault: true, scope: "space" });
-    expect(connect?.[2]).toEqual({
-      requestContext: otherSpace,
-      timeoutMs: MODEL_CONNECT_TIMEOUT_MS,
-    });
-  });
-
-  it("moves that Space's bots onto the main model in that Space", async () => {
-    params.spaceId = "space-other";
-    saved.bots = [
-      { id: "bot-own", name: "Archie", modelProvider: "anthropic", modelId: "claude-fixture" },
-    ];
-    try {
-      await remount(async () => {
-        await act(async () => root.render(createElement(Models)));
-      });
-      rpcCalls.length = 0;
-      await switchToSpaceDefault("Switch 1 bot to the space default?");
-      const sent = (procedure: string) => rpcCalls.find(([name]) => name === procedure)?.[2];
-      expect(sent("bots/update")).toEqual({ requestContext: otherSpace });
-      expect(sent("bots/list")).toMatchObject({ requestContext: otherSpace });
-      expect(container.textContent).toContain("1 bot now uses the space default.");
-    } finally {
-      saved.bots = [];
-    }
-  });
 });
 
 async function switchToSpaceDefault(confirmTitle: string) {

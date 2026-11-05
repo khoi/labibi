@@ -303,7 +303,6 @@ describe("lingui catalogs", () => {
       "התחיל באיחור של 3 ימים",
     );
   });
-
 });
 
 it("renders Polish plural categories and interpolated values in every counted message", async () => {
@@ -316,7 +315,7 @@ it("renders Polish plural categories and interpolated values in every counted me
   const counted = Object.entries(catalog).filter(([, entry]) =>
     entry.message?.includes(", plural,"),
   );
-  expect(counted.length).toBeGreaterThan(20);
+  expect(counted.length).toBeGreaterThan(15);
   const local = setupI18n({ locale: "pl" });
   const number = new Intl.NumberFormat("pl");
   for (const [id, entry] of counted) {

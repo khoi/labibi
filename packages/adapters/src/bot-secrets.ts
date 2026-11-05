@@ -6,7 +6,6 @@ import type {
   LoginField,
   LoginSecretValue,
   PurchaseCardField,
-  SettingsScope,
   VaultPreview,
 } from "@labradoodle/contracts";
 import {
@@ -38,14 +37,7 @@ import {
   sameLoginFieldLabel,
 } from "@labradoodle/contracts";
 import type { Prisma, PrismaClient } from "@labradoodle/db";
-import {
-  lockSpaceSettings,
-  runCodeKind,
-  runCodeSpentKind,
-  runLoginKind,
-  settingsTarget,
-  withTransactionRetry,
-} from "@labradoodle/db";
+import { runCodeKind, runCodeSpentKind, runLoginKind, withTransactionRetry } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { z } from "zod";
 import { combineSignals, redactConnectorPayload } from "./connector-safety.js";
@@ -55,39 +47,12 @@ import { generateSecretValue } from "./secret-generator.js";
 import { persistPreparedSecret } from "./secret-persistence.js";
 import { readBodyCapped, withAbort } from "./web-ssrf.js";
 
-/**
- * The member a credential call acts for, in one Space. `vault` picks the account's vault or the
- * Space's own; omitted, it is whichever this Space uses, which is what bots read and write.
- */
-export type BotSecretScope = { userId: string; spaceId: string; vault?: SettingsScope };
-type VaultClient = Pick<PrismaClient, "spaceSettingOverride">;
+/** The member a credential call acts for, in one Space. Their vault is the same in every Space. */
+export type BotSecretScope = { userId: string; spaceId: string };
 
-/**
- * Orders a vault write after any change of vault (the member's settings lock) and after every
- * other write by the member, since Spaces without their own vault share the account's.
- */
+/** Orders a vault write after every other write by the member. */
 async function lockVault(tx: Pick<Prisma.TransactionClient, "$queryRaw">, scope: BotSecretScope) {
-  await lockSpaceSettings(tx, scope);
   await tx.$queryRaw`SELECT id FROM "user" WHERE id = ${scope.userId} FOR UPDATE`;
-}
-
-export const SPACE_VAULT_NOT_IN_USE = "This Space uses the account vault";
-
-/**
- * A write aimed at a Space's own vault is refused once the Space stops customizing credentials,
- * since nothing would read it and it would only wait to be deleted.
- */
-async function assertVaultInUse(client: VaultClient, scope: BotSecretScope) {
-  if (scope.vault !== "space") return;
-  if ((await settingsTarget(client, scope, "credentials")) !== "space") {
-    throw new Error(SPACE_VAULT_NOT_IN_USE);
-  }
-}
-
-/** The vault rows a call reads and writes: the account's (no Space) or the Space's own. */
-async function vaultFields(client: VaultClient, scope: BotSecretScope) {
-  const target = await settingsTarget(client, scope, "credentials", scope.vault);
-  return { userId: scope.userId, spaceId: target === "space" ? scope.spaceId : null };
 }
 
 const metadata = { name: true, origin: true, auth: true } as const;
@@ -207,7 +172,7 @@ export async function loadBotCommandEnvironment(
   unsetVariables?: Set<string>,
 ): Promise<Record<string, string>> {
   const rows = await prisma.vaultCredential.findMany({
-    where: await vaultFields(prisma, scope),
+    where: { userId: scope.userId },
     select: { id: true, name: true, auth: true, ciphertext: true },
     orderBy: { name: "asc" },
   });
@@ -230,8 +195,8 @@ export async function loadBotCommandEnvironment(
 }
 
 /**
- * The environment for one shell command: the command variables of the vault this Space uses,
- * loaded fresh. The values are handed to `registerRedactions` before this returns, so the
+ * The environment for one shell command: the command variables in the member's vault, loaded
+ * fresh. The values are handed to `registerRedactions` before this returns, so the
  * command's output is redacted.
  */
 export async function shellCommandEnvironment(input: {
@@ -262,7 +227,7 @@ export async function findCommandVariableConflict(
   if (destination.auth.type !== "command") return undefined;
   const variable = commandVariableName(destination.name);
   const rows = await client.vaultCredential.findMany({
-    where: { ...(await vaultFields(client, scope)), name: { not: destination.name } },
+    where: { userId: scope.userId, name: { not: destination.name } },
     select: { name: true, auth: true },
   });
   return rows.find(
@@ -508,7 +473,7 @@ export function canReplaceLoginSite(
 /** The credential saved under `name`. Its row id is for a card that replaces it, never for the bot. */
 export async function findBotSecret(prisma: PrismaClient, scope: BotSecretScope, name: string) {
   const row = await prisma.vaultCredential.findFirst({
-    where: { ...(await vaultFields(prisma, scope)), name },
+    where: { userId: scope.userId, name },
     select: { ...metadata, id: true },
   });
   return row ? { id: row.id, destination: normalizeSecretDestination(row) } : null;
@@ -521,7 +486,7 @@ export async function findBotSecret(prisma: PrismaClient, scope: BotSecretScope,
 export async function findSiteLogin(prisma: PrismaClient, scope: BotSecretScope, origin: string) {
   if (!origin.startsWith("https://")) return null;
   const rows = await prisma.vaultCredential.findMany({
-    where: { ...(await vaultFields(prisma, scope)), origin },
+    where: { userId: scope.userId, origin },
     select: metadata,
   });
   // A row saved before today's name or site rules can't be filled, so it doesn't count.
@@ -587,8 +552,7 @@ export async function prepareBotSecret(input: {
       throw new Error(UNUSABLE_CREDENTIAL);
     }
   } else credentialHeader(destination, plaintext);
-  await assertVaultInUse(prisma, scope);
-  const vault = await vaultFields(prisma, scope);
+  const vault = { userId: scope.userId };
   const existing = await prisma.vaultCredential.findFirst({
     where: { ...vault, name: destination.name },
   });
@@ -621,13 +585,9 @@ export async function prepareBotSecret(input: {
     ciphertext: stored.ciphertext,
     async store(tx: Prisma.TransactionClient) {
       await lockVault(tx, scope);
-      await assertVaultInUse(tx, scope);
       const current = await tx.vaultCredential.findFirst({
         where: { ...vault, name: destination.name },
       });
-      if (JSON.stringify(await vaultFields(tx, scope)) !== JSON.stringify(vault)) {
-        throw Object.assign(new Error("Vault changed while saving; retry"), { code: "P2034" });
-      }
       validate(current, await tx.vaultCredential.count({ where: vault }));
       const conflict = await findCommandVariableConflict(tx, scope, destination);
       if (conflict) {
@@ -783,7 +743,7 @@ export async function listBotSecrets(
   scope: BotSecretScope,
 ) {
   const rows = await prisma.vaultCredential.findMany({
-    where: await vaultFields(prisma, scope),
+    where: { userId: scope.userId },
     select: { ...metadata, ...labels, id: true, ciphertext: true },
     orderBy: { name: "asc" },
   });
@@ -810,7 +770,7 @@ const ownerMetadata = { ...metadata, ...labels, createdAt: true, updatedAt: true
 
 export async function listBotSecretMetadata(prisma: PrismaClient, scope: BotSecretScope) {
   return prisma.vaultCredential.findMany({
-    where: await vaultFields(prisma, scope),
+    where: { userId: scope.userId },
     select: ownerMetadata,
     orderBy: { name: "asc" },
   });
@@ -878,7 +838,7 @@ export async function listVaultItems(
   name?: string,
 ) {
   const rows = await prisma.vaultCredential.findMany({
-    where: { ...(await vaultFields(prisma, scope)), ...(name !== undefined ? { name } : {}) },
+    where: { userId: scope.userId, ...(name !== undefined ? { name } : {}) },
     select: { ...ownerMetadata, id: true, ciphertext: true },
     orderBy: { name: "asc" },
   });
@@ -910,7 +870,7 @@ export async function newVaultItemName(
   const taken = new Set(
     (
       await prisma.vaultCredential.findMany({
-        where: { ...(await vaultFields(prisma, scope)), name: { startsWith: stem } },
+        where: { userId: scope.userId, name: { startsWith: stem } },
         select: { name: true },
       })
     ).map((row) => row.name),
@@ -929,14 +889,13 @@ export async function relabelVaultItem(
   name: string,
   labels: { title?: string; note?: string },
 ) {
-  await assertVaultInUse(prisma, scope);
   // Only these columns: the rest of a request never reaches the row.
   const data = {
     ...(labels.title !== undefined ? { title: labels.title } : {}),
     ...(labels.note !== undefined ? { note: labels.note } : {}),
   };
   const updated = await prisma.vaultCredential.updateMany({
-    where: { ...(await vaultFields(prisma, scope)), name },
+    where: { userId: scope.userId, name },
     data,
   });
   return updated.count > 0;
@@ -948,7 +907,7 @@ export async function getBotSecretMetadata(
   name: string,
 ) {
   return client.vaultCredential.findFirst({
-    where: { ...(await vaultFields(client, scope)), name },
+    where: { userId: scope.userId, name },
     select: ownerMetadata,
   });
 }
@@ -964,7 +923,7 @@ export async function revealBotSecret(input: {
   name: string;
 }): Promise<LoginSecretValue | { card: CardSecretValue } | { value: string } | null> {
   const row = await input.prisma.vaultCredential.findFirst({
-    where: { ...(await vaultFields(input.prisma, input.scope)), name: input.name },
+    where: { userId: input.scope.userId, name: input.name },
   });
   if (!row) return null;
   const plaintext = await input.secretStore.load(row.ciphertext, row.id);
@@ -977,7 +936,7 @@ export async function revealBotSecret(input: {
 export async function forgetBotSecret(prisma: PrismaClient, scope: BotSecretScope, name: string) {
   await prisma.$transaction(async (tx) => {
     await lockVault(tx, scope);
-    await tx.vaultCredential.deleteMany({ where: { ...(await vaultFields(tx, scope)), name } });
+    await tx.vaultCredential.deleteMany({ where: { userId: scope.userId, name } });
   });
   return { removed: true };
 }
@@ -994,7 +953,7 @@ export async function requestWithBotSecret(input: {
 }): Promise<unknown> {
   const request = SecretHttpRequest.parse(input.request);
   const row = await input.prisma.vaultCredential.findFirst({
-    where: { ...(await vaultFields(input.prisma, input.scope)), name: request.name },
+    where: { userId: input.scope.userId, name: request.name },
   });
   if (!row) return { error: "Credential is unavailable. Use request_secret to save it first." };
   const destination = normalizeSecretDestination(row);
@@ -1113,7 +1072,7 @@ export async function loadLoginPasswordRedactions(
   // Every saved login and card, however many other credentials the bot has; only they are read.
   const rows = await prisma.vaultCredential.findMany({
     where: {
-      ...(await vaultFields(prisma, scope)),
+      userId: scope.userId,
       OR: [
         { auth: { path: ["type"], equals: "login" } },
         { auth: { path: ["type"], equals: "card" } },
@@ -1304,7 +1263,7 @@ export async function resolveLoginFill(input: {
   const row = runLogin
     ? undefined
     : await input.prisma.vaultCredential.findFirst({
-        where: { ...(await vaultFields(input.prisma, input.scope)), name: input.name },
+        where: { userId: input.scope.userId, name: input.name },
       });
   const stored = runLogin
     ? { name: input.name, origin: runLogin.origin, auth: { type: "login" } }
@@ -1451,7 +1410,7 @@ export async function resolveVaultCardFill(input: {
 }): Promise<{ text: string; origin: string; redactions: string[] } | { error: string }> {
   const target = OneTimeCodeTarget.safeParse({ origin: input.site });
   if (!target.success) return { error: "site must be the checkout page's HTTPS origin." };
-  const vault = await vaultFields(input.prisma, input.scope);
+  const vault = { userId: input.scope.userId };
   const row = await input.prisma.vaultCredential.findFirst({
     where: { ...vault, name: input.name },
   });

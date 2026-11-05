@@ -23,7 +23,6 @@ const state = vi.hoisted(() => ({
   copy: vi.fn(async () => true),
   actionSheet: vi.fn(),
   confirmIdentity: vi.fn(async () => true),
-  spaceId: undefined as string | undefined,
   focused: true,
   credentials: [] as Credential[],
   setOptions: vi.fn(),
@@ -56,7 +55,6 @@ vi.mock("expo-router", () => ({
   // Focus effects run while `state.focused` holds and clean up once a render clears it.
   useFocusEffect: (effect: () => undefined | (() => void)) =>
     useEffect(() => (state.focused ? effect() : undefined), [effect, state.focused]),
-  useLocalSearchParams: () => ({ spaceId: state.spaceId }),
   useNavigation: () => ({ setOptions: state.setOptions }),
 }));
 // Older iOS: New sits above the list in a native menu instead of the header.
@@ -284,7 +282,6 @@ async function open(title: string) {
 
 beforeEach(() => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-  state.spaceId = undefined;
   state.focused = true;
   state.alert.mockReset();
   state.actionSheet.mockReset();
@@ -330,7 +327,7 @@ afterEach(() => {
 
 it("lists the account vault with each item's title and subtitle", async () => {
   await render();
-  expect(state.rpc).toHaveBeenCalledWith("vault/list", { scope: "account" });
+  expect(state.rpc).toHaveBeenCalledWith("vault/list");
   expect(rows()).toEqual(["api.github.com: API key", "netbird-key: $NETBIRD_KEY"]);
   expect([...menu("New item").querySelectorAll("button")].map((node) => node.textContent)).toEqual([
     "Login",
@@ -366,30 +363,6 @@ it("filters by kind only once there are two kinds, and searches only a long list
   expect(container.querySelector('input[aria-label="Search"]')).not.toBeNull();
 });
 
-it("edits a Space's own vault through that Space", async () => {
-  state.spaceId = "space-work";
-  await render();
-  expect(state.rpc).toHaveBeenCalledWith(
-    "vault/list",
-    { scope: "space" },
-    { requestContext: { headers: { space: "space-work" } } },
-  );
-
-  await act(async () => button("Variable", menu("New item"))!.click());
-  await act(async () => button("Save", dialog())!.click());
-  expect(state.rpc).toHaveBeenCalledWith(
-    "vault/put",
-    {
-      scope: "space",
-      destination: { name: "netbird-key", auth: { type: "command" } },
-      value: "example-value",
-      title: "",
-      note: "",
-    },
-    { requestContext: { headers: { space: "space-work" } } },
-  );
-});
-
 it("adds an item of the kind picked from New, and closes the editor once saved", async () => {
   state.credentials = [credential({})];
   await render();
@@ -417,7 +390,6 @@ it("opens an item's detail on tap, and edits it from there or from its menu", as
   expect(container.querySelector('dialog[aria-label="Edit api_key github"]')).not.toBeNull();
   await act(async () => button("Save", dialog())!.click());
   expect(state.rpc).toHaveBeenLastCalledWith("vault/put", {
-    scope: "account",
     destination: { name: "github", auth: { type: "bearer" } },
     title: "Renamed",
     note: "",
@@ -460,7 +432,7 @@ it("removes an item only once the destructive alert is confirmed", async () => {
   expect(state.rpc).not.toHaveBeenCalledWith("vault/remove", expect.anything());
 
   await act(async () => alertButton("Remove").onPress?.());
-  expect(state.rpc).toHaveBeenCalledWith("vault/remove", { scope: "account", name: "github" });
+  expect(state.rpc).toHaveBeenCalledWith("vault/remove", { name: "github" });
   expect(rows()).toEqual(["netbird-key: $NETBIRD_KEY"]);
 });
 
@@ -496,7 +468,7 @@ it("shows a value in a native alert with a copy action, and never on the screen"
   await render();
   await open("netbird-key");
   await act(async () => button("Show", dialog())!.click());
-  expect(state.rpc).toHaveBeenCalledWith("vault/reveal", { scope: "account", name: "netbird-key" });
+  expect(state.rpc).toHaveBeenCalledWith("vault/reveal", { name: "netbird-key" });
   expect(state.alert).toHaveBeenCalledWith("netbird-key", "example-value", expect.any(Array));
   expect(container.textContent).not.toContain("example-value");
 
@@ -550,18 +522,6 @@ it("shows a card's number, expiry and security code once revealed", async () => 
     expect.any(Array),
   );
   expect(container.textContent).not.toContain("4242424242424242");
-});
-
-it("reveals a Space's own vault through that Space", async () => {
-  state.spaceId = "space-work";
-  await render();
-  await open("api.github.com");
-  await act(async () => button("Show", dialog())!.click());
-  expect(state.rpc).toHaveBeenCalledWith(
-    "vault/reveal",
-    { scope: "space", name: "github" },
-    { requestContext: { headers: { space: "space-work" } } },
-  );
 });
 
 it("confirms it's the person and retries once when the server asks", async () => {

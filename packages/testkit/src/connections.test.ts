@@ -10,7 +10,7 @@ import {
   ThirdPartyConnectorEmulator,
 } from "@labradoodle/adapters";
 import type { createApp } from "@labradoodle/api/app";
-import { appliedModelRole, runAsSystem, runAsTenant, updateModelRole } from "@labradoodle/db";
+import { getModelRole, runAsSystem, runAsTenant, updateModelRole } from "@labradoodle/db";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { sessionCookieHeader } from "./index.js";
 import { asSystem } from "./system-db.js";
@@ -91,7 +91,7 @@ describeWithDatabase("Composio catalog reconciliation", () => {
     const replace = (actor: Actor, backups: typeof first) =>
       runAsTenant(actor, () => updateModelRole(handles.prisma, actor, "main", { backups }));
     const backups = async (actor: Actor) =>
-      (await runAsTenant(actor, () => appliedModelRole(handles.prisma, actor, "main"))).backups;
+      (await runAsTenant(actor, () => getModelRole(handles.prisma, actor, "main"))).backups;
     await replace(other, first);
     await Promise.all([replace(owner, first), replace(owner, second)]);
     expect([first, second]).toContainEqual(await backups(owner));

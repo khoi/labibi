@@ -52,12 +52,6 @@ msgstr "{0, plural, one {Jeszcze #} few {Jeszcze #} many {Jeszcze #} other {Jesz
 msgid "{0, plural, one {# skill} other {# skills}}"
 msgstr "{0, plural, one {# umiejętność} few {# umiejętności} many {# umiejętności} other {# umiejętności}}"
 
-#. placeholder {0}: availability.spaceIds.length
-#. placeholder {0}: chosen.length
-#: src/components/integrations/space-availability.tsx
-msgid "{0, plural, one {# space} other {# spaces}}"
-msgstr "{0, plural, one {# przestrzeń} few {# przestrzenie} many {# przestrzeni} other {# przestrzeni}}"
-
 #. placeholder {0}: server.health.toolCount
 #: src/pages/McpServersOverlay.tsx
 msgid "{0, plural, one {# tool} other {# tools}}"
@@ -419,10 +413,6 @@ msgstr "@{0}"
 msgid "/ month"
 msgstr "/ miesiąc"
 
-#: src/components/integrations/space-availability.tsx
-msgid "1 space"
-msgstr "1 przestrzeń"
-
 #: src/pages/shell/message-cards.tsx
 msgid "A bit of everything"
 msgstr "Po trochu wszystkiego"
@@ -679,10 +669,6 @@ msgstr "Cała kwota {credit} pokrywa użycie modeli."
 msgid "All bots"
 msgstr "Wszystkie boty"
 
-#: src/components/integrations/space-availability.tsx
-msgid "All spaces"
-msgstr "Wszystkie przestrzenie"
-
 #: src/pages/ActivityList.tsx
 msgid "All statuses"
 msgstr "Wszystkie statusy"
@@ -828,7 +814,6 @@ msgid "Approval model"
 msgstr "Model zatwierdzania"
 
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Approvals"
 msgstr "Zatwierdzenia"
 
@@ -933,10 +918,6 @@ msgstr "Dostępne po zapisaniu rutyny"
 #: src/components/ModelCredits.tsx
 msgid "Available credits"
 msgstr "Dostępne środki"
-
-#: src/components/integrations/space-availability.tsx
-msgid "Available in"
-msgstr "Dostępne w"
 
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Available to shell commands as {commandVariable}"
@@ -1111,7 +1092,6 @@ msgstr "Nie odczytuje obrazów"
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
 msgstr "Anuluj"
 
@@ -1721,10 +1701,6 @@ msgstr "Nie udało się zmienić"
 msgid "Could not change password"
 msgstr "Nie udało się zmienić hasła"
 
-#: src/components/integrations/space-availability.tsx
-msgid "Could not change where this is available"
-msgstr "Nie udało się zmienić dostępności"
-
 #: src/components/pages/PageViewHost.tsx
 msgid "Could not change who can view this page. Try again."
 msgstr "Nie udało się zmienić uprawnień do wyświetlania tej strony. Spróbuj ponownie."
@@ -2310,14 +2286,6 @@ msgstr "Bieżące hasło"
 msgid "Custom header"
 msgstr "Własny nagłówek"
 
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Customize"
-msgstr "Dostosuj"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Customize {label}"
-msgstr "Dostosuj {label}"
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "Codziennie"
@@ -2371,7 +2339,6 @@ msgstr "Domyślny zakres"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete"
 msgstr "Usuń"
 
@@ -2407,10 +2374,6 @@ msgstr "Usuń grupę"
 #: src/pages/shell/dialogs.tsx
 msgid "Delete memories too"
 msgstr "Usuń również wspomnienia"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Delete this Space's credentials?"
-msgstr "Usunąć dane uwierzytelniające tej przestrzeni?"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -3678,7 +3641,6 @@ msgstr "Opcje modelu"
 
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Models"
 msgstr "Modele"
 
@@ -4666,13 +4628,6 @@ msgstr "Usuń {site}"
 msgid "Remove change trigger"
 msgstr "Usuń wyzwalacz zmiany"
 
-#: src/components/integrations/plugin-marketplace.tsx
-#: src/pages/KnowledgeSection.tsx
-#: src/pages/McpServersOverlay.tsx
-#: src/pages/PluginsOverlay.tsx
-msgid "Remove from every space?"
-msgstr "Usunąć ze wszystkich przestrzeni?"
-
 #: src/pages/RoutineEditor.tsx
 msgid "Remove Git event"
 msgstr "Usuń zdarzenie Git"
@@ -4829,7 +4784,6 @@ msgstr "Przywracanie obszaru roboczego"
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Retry"
 msgstr "Ponów"
 
@@ -5734,7 +5688,6 @@ msgstr "Ta przeglądarka nie obsługuje dyktowania na urządzeniu. Połącz dost
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "This can't be undone."
 msgstr "Tej operacji nie można cofnąć."
 
@@ -6086,14 +6039,6 @@ msgstr "Użyj znalezionego modelu"
 msgid "Use Connect to verify the key."
 msgstr "Wybierz Połącz, aby zweryfikować klucz."
 
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Use defaults"
-msgstr "Użyj domyślnych"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Use defaults for {label}"
-msgstr "Użyj domyślnych dla {label}"
-
 #: src/components/ModelCredits.tsx
 msgid "Use Labradoodle credits"
 msgstr "Użyj środków Labradoodle"
@@ -6157,7 +6102,6 @@ msgid "Variables"
 msgstr "Zmienne"
 
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Vault"
 msgstr "Sejf"
 
@@ -6183,7 +6127,6 @@ msgstr "Zobacz źródło"
 
 #: src/pages/settings-nav.ts
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Voice"
 msgstr "Głos"
@@ -6389,10 +6332,6 @@ msgstr "Dysk Twojego komputera jest prawie pełny. Zwolnij miejsce, usuwając ni
 #: src/components/AccountDataSettings.tsx
 msgid "Your data"
 msgstr "Twoje dane"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Your defaults"
-msgstr "Twoje ustawienia domyślne"
 
 #: src/pages/Auth.tsx
 msgid "Your email address"

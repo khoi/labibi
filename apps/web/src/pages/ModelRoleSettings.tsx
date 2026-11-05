@@ -4,7 +4,6 @@ import type {
   ModelRole,
   ModelRoleChoice,
   ModelRoleSettings as ModelRoleSettingsValue,
-  SettingsScope,
   ThinkingLevel,
 } from "@labradoodle/contracts";
 import {
@@ -48,8 +47,6 @@ export type ModelRoleConnectIntent = {
 type Props = {
   userId: string;
   spaceId: string;
-  /** The account's list, or the Space's own when it overrides models. */
-  scope: SettingsScope;
   credentials: ModelCredential[];
   modelRole?: ModelRole;
   title: string;
@@ -81,7 +78,6 @@ const choiceOf = (option: RoleModelOption): ModelRoleChoice => ({
 export function ModelRoleSettings({
   userId,
   spaceId,
-  scope,
   credentials,
   modelRole: role = "main",
   title,
@@ -98,11 +94,10 @@ export function ModelRoleSettings({
   const queryClient = useQueryClient();
   const { t } = useLingui();
   const controller = useMemo(() => {
-    // The last load is cached per user, space, scope, and role, so a revisit shows it while
-    // refreshing. Which models a role can use does not depend on the scope.
+    // The last load is cached per user, space, and role, so a revisit shows it while refreshing.
     const queries = spaceQueries(userId, spaceId);
     const catalogInput = { role, expectedUserId: userId };
-    const input = { ...catalogInput, scope };
+    const input = catalogInput;
     const settingsKey = queries.models.role.queryKey({ input });
     const catalogKey = queries.models.forRole.queryKey({ input: catalogInput });
     const settings = queryClient.getQueryData(settingsKey);
@@ -127,10 +122,10 @@ export function ModelRoleSettings({
           return saved;
         },
       },
-      JSON.stringify([window.location.origin, userId, spaceId, scope, role]),
+      JSON.stringify([window.location.origin, userId, spaceId, role]),
       settings && catalog ? { settings, catalog } : undefined,
     );
-  }, [queryClient, rpc, userId, spaceId, scope, role]);
+  }, [queryClient, rpc, userId, spaceId, role]);
   const state = useSyncExternalStore(controller.subscribe, controller.snapshot);
   const [dragging, setDragging] = useState<number | null>(null);
   // After a connection the slot's picker reopens on that provider's models.

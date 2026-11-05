@@ -157,7 +157,8 @@ export function withSecretPersistence(prisma: PrismaClient, store: SecretStore):
       filter = { spaceId: { in: spaces.map((row) => row.id) } };
     }
     state.old.push(...(await lockedRows(state, "Secret", filter)));
-    state.old.push(...(await lockedRows(state, "VaultCredential", filter)));
+    // Vault items belong to the person, so only deleting them cascades to their vault.
+    if (model === "User") state.old.push(...(await lockedRows(state, "VaultCredential", filter)));
   }
   const extended = prisma.$extends({
     query: {

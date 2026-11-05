@@ -14,12 +14,9 @@ import { SettingsGroup, SettingsRow } from "./settings-group";
  */
 export function SpaceBotsModel({
   bots,
-  spaceId,
   onSwitched,
 }: {
   bots: MobileBot[];
-  /** The Space whose bots these are; the selected one when unset. */
-  spaceId?: string;
   onSwitched: () => Promise<void>;
 }) {
   const { t } = useI18n();
@@ -36,7 +33,7 @@ export function SpaceBotsModel({
     setPending(true);
     setMoved(0);
     setFailed([]);
-    const requestContext = captureApiRequestContext(spaceId);
+    const requestContext = captureApiRequestContext();
     // Each bot saves on its own; any that fail are named and stay listed to retry.
     const results = await Promise.allSettled(
       pinned.map(async (bot) =>

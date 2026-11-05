@@ -753,7 +753,6 @@ async function renderConnection(request: Partial<ModelConnectionRequest> = {}) {
         : "openrouter",
     credentialId: mocks.connected ? CREDENTIAL_ID : null,
     makeDefault: false,
-    target: { scope: "account" },
     ...request,
   });
   await renderStack("connection", { requestId });
@@ -919,7 +918,6 @@ describe("provider connection limit saves", () => {
       provider: "openrouter",
       modelId: "vendor/model-1",
       makeDefault: false,
-      scope: "account",
       maxTokens: 2000,
       label: "OpenRouter",
       // A save on a managed connection updates that connection only.

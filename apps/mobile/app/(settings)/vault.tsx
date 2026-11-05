@@ -8,8 +8,8 @@ import {
 } from "@labradoodle/contracts";
 import * as Clipboard from "expo-clipboard";
 import type { NativeStackNavigationOptions } from "expo-router";
-import { useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useFocusEffect, useNavigation } from "expo-router";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useIdentityConfirmation } from "../../components/confirm-identity";
@@ -21,12 +21,12 @@ import { NativeSymbol } from "../../components/native-symbol";
 import { SettingsGroup, SettingsRow } from "../../components/settings-group";
 import { VaultItemEditor } from "../../components/vault-item-editor";
 import { VaultItemSheet } from "../../components/vault-item-sheet";
+import { rpc } from "../../lib/api";
 import { mobileTokens } from "../../lib/appearance";
 import { useI18n } from "../../lib/i18n";
 import { presentMessageActionSheet } from "../../lib/message-action-sheet";
 import { native, useResolvedAppearance, useThemedStyles } from "../../lib/native";
 import { iosAtLeast } from "../../lib/native-controls";
-import { settingsRpc, settingsTarget } from "../../lib/settings-target";
 import { useSideInsets } from "../../lib/side-insets";
 import { errorText } from "../../lib/user-error";
 import type { VaultItem, VaultSave } from "../../lib/vault";
@@ -46,17 +46,12 @@ type RowAction = "edit" | "remove";
 type Editing = { kind: VaultKind; item?: VaultItem; revealed?: VaultRevealed };
 
 /**
- * Logins, cards, contacts, API keys and variables bots can use. Opened with a Space that keeps its
- * own vault, it edits that Space's items instead of the account's. Show reads a protected value
+ * Logins, cards, contacts, API keys and variables bots can use. Show reads a protected value
  * back once the person confirms it's them; the value lives only in the native alert that shows it,
  * never in this screen's state.
  */
 export default function Vault() {
-  const { spaceId } = useLocalSearchParams<{ spaceId?: string }>();
   const navigation = useNavigation();
-  const target = useMemo(() => settingsTarget(spaceId), [spaceId]);
-  const rpc = useMemo(() => settingsRpc(target), [target]);
-  const scope = target.scope;
   const { t } = useI18n();
   const colorScheme = useResolvedAppearance();
   const sideInsets = useSideInsets();
@@ -89,7 +84,7 @@ export default function Vault() {
     useCallback(() => {
       let current = true;
       const changesAtRead = changes.current;
-      void rpc("vault/list", { scope })
+      void rpc("vault/list")
         .then((next) => {
           if (!current || changes.current !== changesAtRead) return;
           setItems(next);
@@ -102,7 +97,7 @@ export default function Vault() {
       return () => {
         current = false;
       };
-    }, [attempt, rpc, scope, t]),
+    }, [attempt, t]),
   );
 
   const startAdding = useCallback((kind: VaultKind) => {
@@ -135,7 +130,7 @@ export default function Vault() {
   async function save(change: VaultSave) {
     changes.current += 1;
     setError(null);
-    const saved = await rpc("vault/put", { scope, ...change });
+    const saved = await rpc("vault/put", change);
     setItems((current) => withItem(current ?? [], saved));
   }
 
@@ -144,7 +139,7 @@ export default function Vault() {
     setPending(true);
     setError(null);
     try {
-      await rpc("vault/remove", { scope, name });
+      await rpc("vault/remove", { name });
       setItems((current) => current?.filter((entry) => entry.name !== name) ?? null);
       setOpened(null);
     } catch (err) {
@@ -166,7 +161,7 @@ export default function Vault() {
     setError(null);
     try {
       const revealed = await withIdentityConfirmation(() =>
-        rpc("vault/reveal", { scope, name: item.name }),
+        rpc("vault/reveal", { name: item.name }),
       );
       if (focused.current) showRevealed(item.title, revealed);
     } catch (err) {
@@ -227,7 +222,7 @@ export default function Vault() {
       setError(null);
       try {
         revealed = await withIdentityConfirmation(() =>
-          rpc("vault/reveal", { scope, name: readable.name }),
+          rpc("vault/reveal", { name: readable.name }),
         );
       } catch (err) {
         // Dismissing the confirmation prompt is the person's choice, not a failure.

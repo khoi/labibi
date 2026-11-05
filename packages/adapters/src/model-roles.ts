@@ -1,13 +1,8 @@
 import type { AgentRunRequest, SecretStore } from "@labradoodle/adapter-kit";
-import type {
-  ModelRole,
-  ModelRoleChoice,
-  ModelRoleSettings,
-  SettingsScope,
-} from "@labradoodle/contracts";
+import type { ModelRole, ModelRoleChoice, ModelRoleSettings } from "@labradoodle/contracts";
 import { backupChoiceKey, usableModelId } from "@labradoodle/contracts";
 import type { PrismaClient } from "@labradoodle/db";
-import { appliedModelRole } from "@labradoodle/db";
+import { getModelRole } from "@labradoodle/db";
 import { resolveAutoReviewChecker } from "./auto-review.js";
 import type { ModelChoice, ModelCredential } from "./model-selection.js";
 import { findConnectedModelCredential } from "./model-selection.js";
@@ -48,16 +43,12 @@ export type EffectiveModelRole = ModelRoleSettings & {
 
 /** The member's ordered models for a purpose, with the deployment's filling what they left empty. */
 export async function effectiveModelRole(
-  prisma: Pick<
-    PrismaClient,
-    "spaceModelRoleChoice" | "userModelRoleChoice" | "spaceSettingOverride"
-  >,
-  scope: { userId: string; spaceId: string },
+  prisma: Pick<PrismaClient, "userModelRoleChoice">,
+  scope: { userId: string },
   role: ModelRole,
   defaults: DeploymentModelDefaults,
-  requested?: SettingsScope,
 ): Promise<EffectiveModelRole> {
-  const own = await appliedModelRole(prisma, scope, role, requested);
+  const own = await getModelRole(prisma, scope, role);
   if (own.primary) return { ...own, primarySource: "member" };
   const deployment = deploymentModelRole(role, defaults);
   return {
@@ -77,7 +68,7 @@ export async function resolveMemberMainModel(
   deps: { prisma: PrismaClient; secretStore: Pick<SecretStore, "load"> },
   scope: { userId: string; spaceId: string },
 ): Promise<MemberMainModel | null> {
-  const { primary } = await appliedModelRole(deps.prisma, scope, "main");
+  const { primary } = await getModelRole(deps.prisma, scope, "main");
   if (!primary) return null;
   const credential = await findConnectedModelCredential(
     deps.prisma,

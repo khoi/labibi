@@ -16,13 +16,6 @@ const mocks = vi.hoisted(() => ({
   update: vi.fn(),
 }));
 const api = vi.hoisted(() => ({ mcp: { servers: mocks } }));
-// One space, so no "Available in" choice appears.
-vi.mock("../components/integrations/space-availability", () => ({
-  AvailabilityControl: () => null,
-  AvailabilityLabel: () => null,
-  reachesOtherSpaces: () => false,
-  useOwnSpaces: () => [],
-}));
 
 vi.mock("../lib/rpc", () => ({
   rpc: api,

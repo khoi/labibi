@@ -22,7 +22,6 @@ import { ModelHeadersSchema } from "./model-headers.js";
 import { NavLinkSchema } from "./nav-links.js";
 import { RoutineWatchSchema, RoutineWatchStateSchema } from "./routine-watch.js";
 import { RunTriggerSchema } from "./runs.js";
-import { SettingsScopeSchema } from "./settings-scope.js";
 
 export const ComputerModeSchema = z.enum(["team", "dedicated"]);
 export type ComputerMode = z.infer<typeof ComputerModeSchema>;
@@ -516,25 +515,6 @@ export type TaughtSkill = z.infer<typeof TaughtSkillSchema>;
 export const AgentSkillSourceSchema = z.enum(["user", "builtin", "plugin"]);
 export type AgentSkillSource = z.infer<typeof AgentSkillSourceSchema>;
 
-/** Where an account-owned item is available: every space, or these (starting with the one it was added in). */
-export const SpaceAvailabilitySchema = z.object({
-  allSpaces: z.boolean(),
-  spaceIds: z.array(Id).min(1),
-});
-export type SpaceAvailability = z.infer<typeof SpaceAvailabilitySchema>;
-
-export const AvailabilityKindSchema = z.enum(["skill", "mcpServer", "install"]);
-export type AvailabilityKind = z.infer<typeof AvailabilityKindSchema>;
-
-/** One of the user's own items, across all their spaces, for choosing what a space can use. */
-export const AccountItemSchema = z.object({
-  kind: AvailabilityKindSchema,
-  id: Id,
-  name: z.string(),
-  availability: SpaceAvailabilitySchema,
-});
-export type AccountItem = z.infer<typeof AccountItemSchema>;
-
 export const AgentSkillSchema = z.object({
   id: Id,
   name: z.string(),
@@ -542,8 +522,6 @@ export const AgentSkillSchema = z.object({
   content: z.string(),
   source: AgentSkillSourceSchema,
   readOnly: z.boolean(),
-  /** Absent for built-in skills, which every space has. */
-  availability: SpaceAvailabilitySchema.optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -555,7 +533,6 @@ export const AgentSkillCatalogEntrySchema = AgentSkillSchema.pick({
   description: true,
   source: true,
   readOnly: true,
-  availability: true,
 });
 export type AgentSkillCatalogEntry = z.infer<typeof AgentSkillCatalogEntrySchema>;
 
@@ -690,7 +667,6 @@ export const CapabilityInstallSchema = z.object({
   digest: z.string().nullable(),
   secretConfigured: z.boolean(),
   config: z.record(z.string(), z.unknown()),
-  availability: SpaceAvailabilitySchema.optional(),
   createdAt: z.string(),
 });
 export type CapabilityInstall = z.infer<typeof CapabilityInstallSchema>;
@@ -1019,7 +995,6 @@ export const McpServerSchema = z.object({
   /** Keep this server's tool results whole instead of cutting them to fit context. */
   verbatimResults: z.boolean().default(false),
   revision: z.number().int().positive(),
-  availability: SpaceAvailabilitySchema.optional(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -1361,8 +1336,6 @@ export const ModelConnectInputSchema = z
     thinkingLevel: ThinkingLevelSchema.nullable().optional(),
     /** False keeps the current main model; omitted means true. */
     makeDefault: z.boolean().optional(),
-    /** Where makeDefault sets the main model; omitted means whichever applies in the Space. */
-    scope: SettingsScopeSchema.optional(),
     maxTokens: z.number().int().min(1).max(MAX_MODEL_MAX_TOKENS).nullable().optional(),
     supportsImages: z.boolean().optional(),
     maxImagesPerPrompt: z.number().int().min(1).max(1000).nullable().optional(),

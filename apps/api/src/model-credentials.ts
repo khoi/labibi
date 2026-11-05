@@ -14,12 +14,7 @@ import {
   verifyCatalogProviderApiKey,
   verifyOpenAiCompatibleApiKey,
 } from "@labradoodle/adapters";
-import type {
-  Actor,
-  ModelConnectInput,
-  SettingsScope,
-  ThinkingLevel,
-} from "@labradoodle/contracts";
+import type { Actor, ModelConnectInput, ThinkingLevel } from "@labradoodle/contracts";
 import {
   canonicalPiProviderId,
   OPENAI_COMPATIBLE_PROVIDER_ID,
@@ -32,7 +27,6 @@ import {
   findNewestUserModelCredential,
   getModelRole,
   modelCredentialProviderFilter,
-  modelRoleTarget,
   Prisma,
   saveModelPreference,
   writeModelRole,
@@ -108,8 +102,6 @@ type ModelCredentialInput = {
   thinkingLevel?: string | null;
   /** False keeps the current main model. */
   makeDefault?: boolean;
-  /** Which copy of the member's models makeDefault sets; omitted means the one that applies. */
-  scope?: SettingsScope;
   supportsImages?: boolean;
   signal?: AbortSignal;
   /** Becomes the main model only while there is none. */
@@ -252,8 +244,7 @@ async function writeModelCredential(
       : defaultModel
         ? clampCatalogThinkingLevel(input.thinkingLevel, allowedThinking)
         : null;
-  const target = await modelRoleTarget(tx, actor, input.scope);
-  const mainRole = await getModelRole(tx, target, "main");
+  const mainRole = await getModelRole(tx, actor, "main");
   const runsMain = mainRole.primary?.credentialId === credential.id;
   // Only an explicit main-model connect changes a role. Omitted means yes for older apps.
   const becomesMain =
@@ -263,7 +254,7 @@ async function writeModelCredential(
   // A main-model connect keeps the effort its model already had.
   const ownThinking = becomesMain
     ? ((
-        await writeModelRole(tx, target, "main", {
+        await writeModelRole(tx, actor, "main", {
           primary: {
             provider: input.provider,
             modelId: defaultModel!,
@@ -407,7 +398,6 @@ export function createModelConnector(deps: RouterDeps, codexCatalog: CodexLiveCa
         thinkingLevel:
           input.provider === OPENAI_COMPATIBLE_PROVIDER_ID ? undefined : input.thinkingLevel,
         makeDefault: input.makeDefault,
-        scope: input.scope,
         supportsImages: input.supportsImages,
         signal,
       },

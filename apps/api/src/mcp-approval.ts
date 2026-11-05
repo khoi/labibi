@@ -1,12 +1,7 @@
 import type { Actor, MessageBlock } from "@labradoodle/contracts";
 import { QUEUE_HOLDING_RUN_STATUSES } from "@labradoodle/core";
 import type { Prisma, PrismaClient, ThreadEvents } from "@labradoodle/db";
-import {
-  appendEventInTransaction,
-  availableInSpace,
-  IsolationError,
-  withTransactionRetry,
-} from "@labradoodle/db";
+import { appendEventInTransaction, IsolationError, withTransactionRetry } from "@labradoodle/db";
 import { requireBotThread } from "./bot-thread.js";
 
 export type McpApprovalDeps = {
@@ -52,7 +47,7 @@ async function threadsForDecision(
   // Threads are shared by the space, but a card is about one member's own server:
   // only that member resolves it.
   const server = await deps.prisma.mcpServer.findFirst({
-    where: { id: input.serverId, ...availableInSpace(actor) },
+    where: { id: input.serverId, userId: actor.userId },
     select: { id: true },
   });
   if (!server) return [];
@@ -290,7 +285,7 @@ export async function queueMcpConnectedRun(
       select: { id: true },
     }),
     tx.mcpServer.findFirst({
-      where: { id: input.serverId, ...availableInSpace(actor) },
+      where: { id: input.serverId, userId: actor.userId },
       select: { name: true },
     }),
   ]);

@@ -36,12 +36,12 @@ export const AUDITED_PROCEDURES: Record<string, AuditedProcedure> = {
   "vault.put": {
     type: "credential.changed",
     kind: "vault_credential",
-    fields: ["scope", "destination.name"],
+    fields: ["destination.name"],
   },
   "vault.remove": {
     type: "credential.deleted",
     kind: "vault_credential",
-    fields: ["scope", "name"],
+    fields: ["name"],
   },
   "bots.rotateWebhookSecret": { type: "credential.changed", kind: "webhook", fields: ["botId"] },
   "voice.connect": { type: "credential.created", kind: "voice", fields: ["provider"] },
@@ -77,16 +77,12 @@ export const AUDITED_PROCEDURES: Record<string, AuditedProcedure> = {
   },
   "approvalRules.set": { type: "approval.policy.changed", fields: ["effect", "matchKind"] },
   "approvalRules.remove": { type: "approval.policy.changed", fields: ["id"] },
-  "models.setRole": { type: "approval.policy.changed", fields: ["role", "scope"] },
+  "models.setRole": { type: "approval.policy.changed", fields: ["role"] },
   "autoReview.set": { type: "approval.policy.changed", fields: ["enabled", "skipApprovals"] },
   "spendingLimit.set": {
     type: "approval.policy.changed",
     kind: "spending_limit",
     fields: ["limit.currency", "limit.period"],
-  },
-  "spaceSettings.setOverride": {
-    type: "approval.policy.changed",
-    fields: ["setting", "enabled"],
   },
 };
 

@@ -20,13 +20,6 @@ const memoryApi = vi.hoisted(() => ({
     omitted: [],
   })),
 }));
-// One space, so no "Available in" choice appears.
-vi.mock("../components/integrations/space-availability", () => ({
-  AvailabilityControl: () => null,
-  AvailabilityLabel: () => null,
-  reachesOtherSpaces: () => false,
-  useOwnSpaces: () => [],
-}));
 
 vi.mock("../lib/rpc", () => {
   const client = { agentSkills: api, memory: memoryApi };

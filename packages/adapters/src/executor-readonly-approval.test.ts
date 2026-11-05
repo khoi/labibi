@@ -73,7 +73,6 @@ function fixture({
   catalogPrefix,
   readOnly = true,
   rules = [] as ActionApprovalRule[],
-  confirmationsOverride = false,
   autoReview = false,
   savedPreference = true,
   approvalRole,
@@ -129,7 +128,6 @@ function fixture({
   readOnly?: boolean;
   rules?: ActionApprovalRule[];
   /** The Space has its own confirmations; otherwise `rules` and auto review are the account's. */
-  confirmationsOverride?: boolean;
   autoReview?: boolean;
   savedPreference?: boolean;
   approvalRole?: ModelRoleSettings;
@@ -426,25 +424,11 @@ function fixture({
     chatGroup: { findMany: vi.fn(async () => []) },
     vaultCredential: { findMany: vi.fn(async () => []) },
     agentSkill: { findMany: vi.fn(async () => []) },
-    spaceSettingOverride: {
-      findUnique: vi.fn(
-        async (query: { where: { spaceId_userId_setting: { setting: string } } }) =>
-          confirmationsOverride && query.where.spaceId_userId_setting.setting === "confirmations"
-            ? { setting: "confirmations" }
-            : null,
-      ),
-    },
-    actionApprovalRule: { findMany: vi.fn(async () => (confirmationsOverride ? rules : [])) },
-    userActionApprovalRule: { findMany: vi.fn(async () => (confirmationsOverride ? [] : rules)) },
+    userActionApprovalRule: { findMany: vi.fn(async () => rules) },
     routine: { findMany: vi.fn(async () => routines) },
-    actionAutoReviewPreference: {
-      findUnique: vi.fn(async () =>
-        confirmationsOverride && savedPreference ? { enabled: autoReview, skipApprovals } : null,
-      ),
-    },
     userActionAutoReviewPreference: {
       findUnique: vi.fn(async () =>
-        confirmationsOverride || !savedPreference ? null : { enabled: autoReview, skipApprovals },
+        savedPreference ? { enabled: autoReview, skipApprovals } : null,
       ),
     },
     steeringMessage: {
@@ -871,18 +855,6 @@ describe("connector read-only metadata and approval enforcement", () => {
         expect(reviewMock).not.toHaveBeenCalled();
       },
     );
-
-    it("asks under the Space's own rules when it overrides the account's", async () => {
-      const f = fixture({
-        catalog,
-        confirmationsOverride: true,
-        rules: [{ effect: "require_approval", matchKind: "tool", matchValue: "demo_get_item" }],
-      });
-      await f.run();
-      expect(f.execute).not.toHaveBeenCalled();
-      expect(f.effects).toHaveLength(1);
-      expect(f.pauseRunForInput).toHaveBeenCalledOnce();
-    });
 
     it("replays the approved arguments once and returns the result on retry", async () => {
       const f = fixture({
@@ -3328,7 +3300,6 @@ describe("a click that completes a purchase on a website", () => {
       { savedPreference: false },
       {
         rules: [{ effect: "always_allow", matchKind: "tool", matchValue: "browser_act" }],
-        confirmationsOverride: true,
       },
     ] as const) {
       const page = pageBrowser();
@@ -3427,7 +3398,6 @@ describe("a click that completes a purchase on a website", () => {
       builtin: true,
       browser: page.provider,
       rules: [{ effect: "require_approval", matchKind: "tool", matchValue: "browser_act" }],
-      confirmationsOverride: true,
     } as never);
     f.setCalls([payCall()]);
     await f.run();

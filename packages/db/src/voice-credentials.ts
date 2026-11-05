@@ -1,137 +1,77 @@
-import type { SettingsScope } from "@labradoodle/contracts";
 import type { PrismaClient } from "./client.js";
 import { newestCredentialOrder } from "./model-credentials.js";
-import { settingsTarget } from "./space-settings.js";
 
 export const newestVoiceCredentialOrder = newestCredentialOrder;
 
-type VoiceCredentialScope = { userId: string; spaceId: string };
+/** Whose voice choices: a member's are theirs in every Space. */
+type VoiceOwner = { userId: string };
 
-/** The voice copy a call acts on: the account's, or the Space's override. */
-export type VoiceTarget = VoiceCredentialScope & { scope: SettingsScope };
-
-type VoicePreferenceClient = Pick<PrismaClient, "spaceVoicePreference" | "userVoicePreference">;
-type VoiceReadClient = VoicePreferenceClient &
-  Pick<PrismaClient, "spaceSettingOverride" | "userVoiceCredential">;
-
-/** The copy that applies in the Space, unless the caller names one. */
-export async function voicePreferenceTarget(
-  prisma: Pick<PrismaClient, "spaceSettingOverride">,
-  scope: VoiceCredentialScope,
-  requested?: SettingsScope,
-): Promise<VoiceTarget> {
-  const { userId, spaceId } = scope;
-  return { userId, spaceId, scope: await settingsTarget(prisma, scope, "voice", requested) };
-}
+type VoicePreferenceClient = Pick<PrismaClient, "userVoicePreference">;
+type VoiceReadClient = VoicePreferenceClient & Pick<PrismaClient, "userVoiceCredential">;
 
 type PreferenceFilter = { isDefault?: boolean; credential?: { provider: string } };
 
 function findPreferenceWithCredential(
   prisma: VoicePreferenceClient,
-  target: VoiceTarget,
+  owner: VoiceOwner,
   where: PreferenceFilter,
 ) {
-  const include = { credential: true } as const;
-  const orderBy = [
-    { isDefault: "desc" as const },
-    { updatedAt: "desc" as const },
-    { credentialId: "desc" as const },
-  ];
-  return target.scope === "account"
-    ? prisma.userVoicePreference.findFirst({
-        where: { ...where, userId: target.userId },
-        include,
-        orderBy,
-      })
-    : prisma.spaceVoicePreference.findFirst({
-        where: { ...where, userId: target.userId, spaceId: target.spaceId },
-        include,
-        orderBy,
-      });
+  return prisma.userVoicePreference.findFirst({
+    where: { ...where, userId: owner.userId },
+    include: { credential: true },
+    orderBy: [{ isDefault: "desc" }, { updatedAt: "desc" }, { credentialId: "desc" }],
+  });
 }
 
-export function listVoicePreferences(prisma: VoicePreferenceClient, target: VoiceTarget) {
-  const include = { credential: true } as const;
-  return target.scope === "account"
-    ? prisma.userVoicePreference.findMany({ where: { userId: target.userId }, include })
-    : prisma.spaceVoicePreference.findMany({
-        where: { userId: target.userId, spaceId: target.spaceId },
-        include,
-      });
+export function listVoicePreferences(prisma: VoicePreferenceClient, owner: VoiceOwner) {
+  return prisma.userVoicePreference.findMany({
+    where: { userId: owner.userId },
+    include: { credential: true },
+  });
 }
 
 export function findVoicePreference(
   prisma: VoicePreferenceClient,
-  target: VoiceTarget,
+  owner: VoiceOwner,
   credentialId: string,
 ) {
-  return target.scope === "account"
-    ? prisma.userVoicePreference.findUnique({
-        where: { userId_credentialId: { userId: target.userId, credentialId } },
-      })
-    : prisma.spaceVoicePreference.findUnique({
-        where: {
-          spaceId_userId_credentialId: {
-            spaceId: target.spaceId,
-            userId: target.userId,
-            credentialId,
-          },
-        },
-      });
+  return prisma.userVoicePreference.findUnique({
+    where: { userId_credentialId: { userId: owner.userId, credentialId } },
+  });
 }
 
 /**
- * Saves a connection's choice in the copy; omitted fields keep what is saved. `isDefault`
- * also takes the default from the copy's other connections, so speak and transcribe use it.
+ * Saves a connection's choice; omitted fields keep what is saved. `isDefault` also takes the
+ * default from the member's other connections, so speak and transcribe use it.
  */
 export async function saveVoicePreference(
   prisma: VoicePreferenceClient,
-  target: VoiceTarget,
+  owner: VoiceOwner,
   credentialId: string,
   data: { voiceId?: string; speechModel?: string | null; isDefault?: true },
 ) {
   if (data.isDefault) {
-    const others = { isDefault: true, credentialId: { not: credentialId } };
-    if (target.scope === "account") {
-      await prisma.userVoicePreference.updateMany({
-        where: { ...others, userId: target.userId },
-        data: { isDefault: false },
-      });
-    } else {
-      await prisma.spaceVoicePreference.updateMany({
-        where: { ...others, userId: target.userId, spaceId: target.spaceId },
-        data: { isDefault: false },
-      });
-    }
+    await prisma.userVoicePreference.updateMany({
+      where: { isDefault: true, credentialId: { not: credentialId }, userId: owner.userId },
+      data: { isDefault: false },
+    });
   }
-  return target.scope === "account"
-    ? prisma.userVoicePreference.upsert({
-        where: { userId_credentialId: { userId: target.userId, credentialId } },
-        create: { userId: target.userId, credentialId, ...data },
-        update: data,
-      })
-    : prisma.spaceVoicePreference.upsert({
-        where: {
-          spaceId_userId_credentialId: {
-            spaceId: target.spaceId,
-            userId: target.userId,
-            credentialId,
-          },
-        },
-        create: { spaceId: target.spaceId, userId: target.userId, credentialId, ...data },
-        update: data,
-      });
+  return prisma.userVoicePreference.upsert({
+    where: { userId_credentialId: { userId: owner.userId, credentialId } },
+    create: { userId: owner.userId, credentialId, ...data },
+    update: data,
+  });
 }
 
-/** Makes a connection and voice the copy's default. Omitted speechModel keeps the saved one. */
+/** Makes a connection and voice the default. Omitted speechModel keeps the saved one. */
 export function selectVoicePreference(
   prisma: VoicePreferenceClient,
-  target: VoiceTarget,
+  owner: VoiceOwner,
   credentialId: string,
   voiceId: string,
   speechModel?: string | null,
 ) {
-  return saveVoicePreference(prisma, target, credentialId, {
+  return saveVoicePreference(prisma, owner, credentialId, {
     voiceId,
     speechModel,
     isDefault: true,
@@ -161,14 +101,9 @@ function withVoicePreference<
   };
 }
 
-/** The default voice connection in the copy that applies, or in the one requested. */
-export async function findDefaultVoiceCredential(
-  prisma: VoiceReadClient,
-  scope: VoiceCredentialScope,
-  requested?: SettingsScope,
-) {
-  const target = await voicePreferenceTarget(prisma, scope, requested);
-  const preference = await findPreferenceWithCredential(prisma, target, { isDefault: true });
+/** The member's default voice connection. */
+export async function findDefaultVoiceCredential(prisma: VoiceReadClient, owner: VoiceOwner) {
+  const preference = await findPreferenceWithCredential(prisma, owner, { isDefault: true });
   return preference ? withVoicePreference(preference) : null;
 }
 
@@ -183,18 +118,16 @@ export function findNewestUserVoiceCredential(
   });
 }
 
-/** A provider's connection with its choice in the copy that applies, or the one requested. */
+/** A provider's connection with the member's choice for it. */
 export async function findVoiceCredential(
   prisma: VoiceReadClient,
-  scope: VoiceCredentialScope,
+  owner: VoiceOwner,
   provider: string,
-  requested?: SettingsScope,
 ) {
-  const target = await voicePreferenceTarget(prisma, scope, requested);
-  const preference = await findPreferenceWithCredential(prisma, target, {
+  const preference = await findPreferenceWithCredential(prisma, owner, {
     credential: { provider },
   });
   if (preference) return withVoicePreference(preference);
-  const credential = await findNewestUserVoiceCredential(prisma, scope.userId, provider);
+  const credential = await findNewestUserVoiceCredential(prisma, owner.userId, provider);
   return credential ? { ...credential, isDefault: false, voiceId: "", speechModel: "" } : null;
 }

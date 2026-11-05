@@ -10,7 +10,7 @@ import {
 } from "@labradoodle/contracts";
 import { readBoundedResponseBytes } from "@labradoodle/core";
 import type { Prisma, PrismaClient } from "@labradoodle/db";
-import { availableInSpace, itemSecretIn, runAsSystem } from "@labradoodle/db";
+import { itemSecretIn, runAsSystem } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import type {
   OAuthClientProvider,
@@ -989,7 +989,7 @@ export class McpOAuthBroker {
     const server = await this.prisma.mcpServer.findFirst({
       where: {
         id: input.serverId,
-        ...availableInSpace(input),
+        userId: input.userId,
         enabled: true,
       },
     });
@@ -1139,7 +1139,7 @@ export class McpOAuthBroker {
       const server = await this.prisma.mcpServer.findFirst({
         where: {
           id: session.serverId,
-          ...availableInSpace(input),
+          userId: input.userId,
           enabled: true,
         },
       });
@@ -1179,7 +1179,7 @@ export class McpOAuthBroker {
     // The exchange sends the client secret: check it against the binding stored now, not
     // the one this flow started with, in case an overlapping flow bound the client first.
     const current = await this.prisma.mcpServer.findFirst({
-      where: { id: pending.serverId, ...availableInSpace(input) },
+      where: { id: pending.serverId, userId: input.userId },
       select: { id: true, endpoint: true, secretId: true },
     });
     if (current) {
@@ -1271,7 +1271,7 @@ export class McpOAuthBroker {
       where: { serverId: input.serverId, spaceId: input.spaceId, userId: input.userId },
     });
     const server = await this.prisma.mcpServer.findFirst({
-      where: { id: input.serverId, ...availableInSpace(input) },
+      where: { id: input.serverId, userId: input.userId },
     });
     if (!server) return;
     // With no stored credential the generation is still raised, so a first authorization
@@ -1562,7 +1562,7 @@ export class McpOAuthBroker {
     expectedEndpoint?: string | null,
   ): Promise<MaterialSnapshot> {
     const server = await tx.mcpServer.findFirst({
-      where: { id: serverId, ...availableInSpace(context) },
+      where: { id: serverId, userId: context.userId },
       select: { endpoint: true, secretId: true },
     });
     if (!server) throw new McpCredentialRefusedError("MCP server is unavailable");
@@ -1602,8 +1602,8 @@ export class McpOAuthBroker {
     incrementRevision = false,
   ): Promise<boolean> {
     const server = await tx.mcpServer.findFirst({
-      where: { id: serverId, ...availableInSpace(context) },
-      select: { endpoint: true, secretId: true, spaceId: true, allSpaces: true },
+      where: { id: serverId, userId: context.userId },
+      select: { endpoint: true, secretId: true },
     });
     if (!server) throw new McpCredentialRefusedError("MCP server is unavailable");
     if (
@@ -1619,16 +1619,11 @@ export class McpOAuthBroker {
         })
       : null;
     if (current?.ciphertext !== snapshot.secret?.ciphertext) return false;
-    // A server available beyond this space keeps its credential on the account, for every space.
-    const shared =
-      server.allSpaces ||
-      server.spaceId !== context.spaceId ||
-      (await tx.mcpServerSpace.count({ where: { serverId } })) > 0;
     if (stored)
       await tx.secret.create({
         data: {
           id: stored.id,
-          spaceId: shared ? null : context.spaceId,
+          spaceId: null,
           userId: context.userId,
           kind: "mcp",
           ciphertext: stored.ciphertext,

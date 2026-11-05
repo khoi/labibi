@@ -1,4 +1,3 @@
-import type { SettingsScope } from "@labradoodle/contracts";
 import {
   compatibleConnectionName,
   connectionDisplayName,
@@ -42,19 +41,13 @@ import { useModelSettings } from "./model-settings/use-model-settings";
 export function ModelSettingsOverlay({
   onClose,
   embedded = false,
-  scope,
 }: {
   onClose: () => void;
   /** Render the content only, inside the shared Settings shell's scroller. */
   embedded?: boolean;
-  /**
-   * The account's models, or the bound Space's own when it overrides them. Connections are
-   * account-wide, so a Space shows only its role lists.
-   */
-  scope: SettingsScope;
 }) {
   const { t } = useLingui();
-  const model = useModelSettings(onClose, scope);
+  const model = useModelSettings(onClose);
   const {
     baseUrl,
     busy,
@@ -293,7 +286,6 @@ export function ModelSettingsOverlay({
           <ModelRoleSettings
             userId={me.userId}
             spaceId={me.spaceId}
-            scope={scope}
             credentials={credentials}
             title={t`Main model`}
             defaultLabel={t`Choose a model`}
@@ -315,7 +307,6 @@ export function ModelSettingsOverlay({
           <ModelRoleSettings
             userId={me.userId}
             spaceId={me.spaceId}
-            scope={scope}
             credentials={credentials}
             modelRole="approval"
             title={t`Approval model`}
@@ -331,7 +322,6 @@ export function ModelSettingsOverlay({
           <ModelRoleSettings
             userId={me.userId}
             spaceId={me.spaceId}
-            scope={scope}
             credentials={credentials}
             modelRole="computer"
             title={t`Computer-use model`}
@@ -344,31 +334,29 @@ export function ModelSettingsOverlay({
             }
             panel={connectionAt === "computer" ? panelFor(true) : null}
           />
-          {scope === "space" ? null : (
-            <ProvidersSection
-              credentials={credentials}
-              providers={allProviders}
-              name={connectionName}
-              disabled={busy}
-              onAdd={(next) => openConnection(next, null, null, "providers:add")}
-              onOpen={(entry) =>
-                connectionAt === `providers:${entry.id}`
-                  ? closeConnection()
-                  : openConnection(
-                      { id: entry.provider, name: entry.provider },
-                      null,
-                      entry.id,
-                      `providers:${entry.id}`,
-                    )
-              }
-              panel={
-                connectionAt?.startsWith("providers:")
-                  ? panelFor(connectionAt === "providers:add")
-                  : null
-              }
-              panelAt={connectionAt?.slice("providers:".length) ?? null}
-            />
-          )}
+          <ProvidersSection
+            credentials={credentials}
+            providers={allProviders}
+            name={connectionName}
+            disabled={busy}
+            onAdd={(next) => openConnection(next, null, null, "providers:add")}
+            onOpen={(entry) =>
+              connectionAt === `providers:${entry.id}`
+                ? closeConnection()
+                : openConnection(
+                    { id: entry.provider, name: entry.provider },
+                    null,
+                    entry.id,
+                    `providers:${entry.id}`,
+                  )
+            }
+            panel={
+              connectionAt?.startsWith("providers:")
+                ? panelFor(connectionAt === "providers:add")
+                : null
+            }
+            panelAt={connectionAt?.slice("providers:".length) ?? null}
+          />
         </>
       ) : loading ? (
         <div className="grid place-items-center py-10">

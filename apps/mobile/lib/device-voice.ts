@@ -24,7 +24,7 @@ export async function loadDeviceVoiceEnabled(): Promise<boolean> {
   if (stored) return stored === "1";
   let ready: boolean;
   try {
-    ready = (await rpc("voice/status", { scope: "account" })).ready;
+    ready = (await rpc("voice/status")).ready;
   } catch {
     return true;
   }

@@ -374,13 +374,12 @@ export function SettingsOverlay({
                         space={space}
                         onRename={(name) => onRenameSpace?.(space.id, name) ?? Promise.resolve()}
                         onLeft={(activeSpaceId) => onLeftSpace?.(space.id, activeSpaceId)}
-                        onClose={requestClose}
                         onBusyChange={setVoiceBusy}
                       />
                     </div>
                   ) : null}
-                  {section === "confirmations" ? <ApprovalRulesSettings scope="account" /> : null}
-                  {section === "vault" ? <VaultSettings scope="account" /> : null}
+                  {section === "confirmations" ? <ApprovalRulesSettings /> : null}
+                  {section === "vault" ? <VaultSettings /> : null}
                   {section === "wallet" && paymentWalletProvider ? (
                     <PaymentWalletSettingsPanel provider={paymentWalletProvider} />
                   ) : null}
@@ -401,7 +400,7 @@ export function SettingsOverlay({
                   {section === "billing" && billingEnabled ? <BillingSettingsPanel /> : null}
                   {section === "updates" && showUpdates ? <UpdatesSettingsPanel /> : null}
                   {section === "models" ? (
-                    <ModelSettingsOverlay embedded scope="account" onClose={requestClose} />
+                    <ModelSettingsOverlay embedded onClose={requestClose} />
                   ) : null}
                   {section === "memory" ? (
                     <MemorySettingsOverlay
@@ -415,7 +414,6 @@ export function SettingsOverlay({
                   {section === "voice" ? (
                     <VoiceSettingsOverlay
                       embedded
-                      scope="account"
                       onClose={requestClose}
                       onBusyChange={setVoiceBusy}
                     />

@@ -75,7 +75,7 @@ beforeEach(() => {
   rpcMock.spendingLimit.get.mockResolvedValue({ limit: null, spent: 0, shown: false });
 });
 
-async function render(scope: "account" | "space" = "account") {
+async function render() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const container = document.createElement("div");
   document.body.append(container);
@@ -83,7 +83,7 @@ async function render(scope: "account" | "space" = "account") {
   await act(async () => {
     root.render(
       <QueryClientProvider client={client}>
-        <ApprovalRulesSettings scope={scope} />
+        <ApprovalRulesSettings />
       </QueryClientProvider>,
     );
   });
@@ -107,7 +107,7 @@ it("sets the mode, and lists Auto only when an approval model is there", async (
     );
     expect(button(container, "Auto")).toBeUndefined();
     await act(async () => button(container, "Never ask")?.click());
-    expect(rpcMock.autoReview.set).toHaveBeenLastCalledWith({ scope: "account", mode: "never" });
+    expect(rpcMock.autoReview.set).toHaveBeenLastCalledWith({ mode: "never" });
     await vi.waitFor(() =>
       expect(button(container, "Never ask")?.getAttribute("aria-pressed")).toBe("true"),
     );
@@ -140,7 +140,6 @@ it("blocks or removes an allowed tool", async () => {
     expect(button(container, "Allow", rules)?.getAttribute("aria-pressed")).toBe("true");
     await act(async () => button(container, "Block", rules)?.click());
     expect(rpcMock.approvalRules.set).toHaveBeenLastCalledWith({
-      scope: "account",
       effect: "deny",
       matchKind: "tool",
       matchValue: "GMAIL_SEND_EMAIL",
@@ -150,7 +149,6 @@ it("blocks or removes an allowed tool", async () => {
     );
     await act(async () => button(container, "Remove", rules)?.click());
     expect(rpcMock.approvalRules.remove).toHaveBeenLastCalledWith({
-      scope: "account",
       id: "rule-2",
     });
     await vi.waitFor(() => expect(container.querySelector(rules)).toBeNull());
@@ -210,7 +208,7 @@ it("keeps a saved mode when the revisit's older background read lands after it",
     await act(async () => {
       root.render(
         <QueryClientProvider client={client}>
-          <ApprovalRulesSettings scope="account" />
+          <ApprovalRulesSettings />
         </QueryClientProvider>,
       );
     });
@@ -247,59 +245,6 @@ it("keeps a saved mode when the revisit's older background read lands after it",
   }
 });
 
-it("reads and writes a Space's own approvals apart from the account's", async () => {
-  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-  const rule = {
-    id: "rule-1",
-    effect: "always_allow",
-    matchKind: "tool",
-    matchValue: "send_email",
-  };
-  rpcMock.approvalRules.list.mockImplementation(async ({ scope }: { scope: string }) =>
-    scope === "space" ? [rule] : [],
-  );
-  rpcMock.approvalRules.remove.mockResolvedValue({ ok: true });
-  rpcMock.autoReview.get.mockResolvedValue(settings);
-  rpcMock.autoReview.set.mockResolvedValue({ ...settings, mode: "auto", enabled: true });
-  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  const container = document.createElement("div");
-  document.body.append(container);
-  const root = createRoot(container);
-  const show = (scope: "account" | "space") =>
-    act(async () => {
-      root.render(
-        <QueryClientProvider client={client}>
-          <ApprovalRulesSettings scope={scope} />
-        </QueryClientProvider>,
-      );
-    });
-  try {
-    await show("space");
-    await vi.waitFor(() => expect(button(container, "Remove")).toBeDefined());
-    expect(rpcMock.autoReview.get).toHaveBeenCalledWith({ scope: "space" }, expect.anything());
-    await act(async () => button(container, "Auto")?.click());
-    expect(rpcMock.autoReview.set).toHaveBeenLastCalledWith({ scope: "space", mode: "auto" });
-    await act(async () => button(container, "Remove")?.click());
-    expect(rpcMock.approvalRules.remove).toHaveBeenLastCalledWith({
-      scope: "space",
-      id: "rule-1",
-    });
-
-    await show("account");
-    await vi.waitFor(() =>
-      expect(rpcMock.approvalRules.list).toHaveBeenCalledWith(
-        { scope: "account" },
-        expect.anything(),
-      ),
-    );
-    await vi.waitFor(() => expect(button(container, "Remove")).toBeUndefined());
-  } finally {
-    await act(async () => root.unmount());
-    container.remove();
-    vi.unstubAllGlobals();
-  }
-});
-
 it("switches an allowed tool back to Ask", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const rule = { id: "tool", effect: "always_allow", matchKind: "tool", matchValue: "write_file" };
@@ -313,7 +258,6 @@ it("switches an allowed tool back to Ask", async () => {
     );
     await act(async () => button(container, "Ask", '[data-testid="approval-rules"]')!.click());
     expect(rpcMock.approvalRules.set).toHaveBeenCalledWith({
-      scope: "account",
       effect: "require_approval",
       matchKind: "tool",
       matchValue: "write_file",
@@ -338,7 +282,7 @@ it("adds an explicit tool rule without waiting for an approval card", async () =
     matchKind: "tool",
     matchValue: "write_file",
   });
-  const { container, root } = await render("space");
+  const { container, root } = await render();
   try {
     await vi.waitFor(() => expect(button(container, "Add rule")!.disabled).toBe(false));
     await act(async () => button(container, "Add rule")!.click());
@@ -356,7 +300,6 @@ it("adds an explicit tool rule without waiting for an approval card", async () =
         .dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })),
     );
     expect(rpcMock.approvalRules.set).toHaveBeenCalledWith({
-      scope: "space",
       effect: "require_approval",
       matchKind: "tool",
       matchValue: "write_file",

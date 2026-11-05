@@ -469,7 +469,6 @@ describePostgres("account import (PostgreSQL)", () => {
     expect(await system.agentSkill.findFirstOrThrow({ where: { spaceId } })).toMatchObject({
       name: "triage",
       source: "user",
-      allSpaces: false,
     });
   });
 

@@ -1,6 +1,3 @@
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { PrismaClient } from "./client.js";
 import { createDb } from "./client.js";
@@ -11,25 +8,6 @@ const databaseUrl = process.env.DATABASE_URL;
 const describePostgres =
   process.env.VERIFY_DATABASE && databaseUrl ? describe.sequential : describe.skip;
 
-const migration = readFileSync(
-  join(
-    dirname(fileURLToPath(import.meta.url)),
-    "../prisma/migrations/20261025120000_model_connections/migration.sql",
-  ),
-  "utf8",
-);
-/** The migration's pinning of existing rows, without the schema changes before it. */
-const backfill = migration
-  .slice(migration.indexOf('UPDATE "space_model_role_choices"'))
-  .trim()
-  .replace(/;$/, "");
-
-class Rollback extends Error {
-  constructor(readonly rows: unknown) {
-    super("rollback");
-  }
-}
-
 describePostgres("model connections (PostgreSQL)", () => {
   const suffix = `${process.pid}-${Date.now()}`;
   const userId = `model-connections-user-${suffix}`;
@@ -38,8 +16,7 @@ describePostgres("model connections (PostgreSQL)", () => {
   const personal = `model-connections-personal-${suffix}`;
   const work = `model-connections-work-${suffix}`;
   const azure = `model-connections-azure-${suffix}`;
-  // A Space's own copy; the account's shares the same code path.
-  const scope = { userId, spaceId, scope: "space" as const };
+  const scope = { userId };
   let prisma: PrismaClient;
   let close: () => Promise<void>;
 
@@ -52,8 +29,8 @@ describePostgres("model connections (PostgreSQL)", () => {
     });
   };
   const rows = () =>
-    prisma.spaceModelRoleChoice.findMany({
-      where: { userId, spaceId },
+    prisma.userModelRoleChoice.findMany({
+      where: { userId },
       orderBy: [{ role: "asc" }, { position: "asc" }],
       select: { role: true, position: true, provider: true, modelId: true, credentialId: true },
     });
@@ -89,8 +66,7 @@ describePostgres("model connections (PostgreSQL)", () => {
   });
 
   beforeEach(async () => {
-    await prisma.spaceModelRoleChoice.deleteMany({ where: { userId } });
-    await prisma.spaceModelPreference.deleteMany({ where: { userId } });
+    await prisma.userModelRoleChoice.deleteMany({ where: { userId } });
     await prisma.userModelCredential.deleteMany({ where: { userId } });
     await prisma.secret.deleteMany({ where: { userId } });
     await connect(personal, "openai-codex");
@@ -102,42 +78,6 @@ describePostgres("model connections (PostgreSQL)", () => {
     await prisma.organization.deleteMany({ where: { id: organizationId } });
     await prisma.user.deleteMany({ where: { id: userId } });
     await close();
-  });
-
-  it("pins existing rows to the provider's only connection", async () => {
-    await connect(`${work}-xai`, "xai");
-    await connect(`${work}-xai-2`, "xai");
-    await prisma.spaceModelRoleChoice.createMany({
-      data: [
-        { spaceId, userId, role: "main", position: 0, provider: "openai-codex", modelId: "gpt-5" },
-        { spaceId, userId, role: "main", position: 1, provider: "azure", modelId: "gpt-4o" },
-        // Two connections: which one ran it is not known, so it keeps resolving at run time.
-        { spaceId, userId, role: "main", position: 2, provider: "xai", modelId: "grok" },
-        // Deployment-managed: no connection.
-        { spaceId, userId, role: "approval", position: 0, provider: "openrouter", modelId: "m" },
-      ],
-    });
-    const pinned = await prisma
-      .$transaction(async (tx) => {
-        await tx.$executeRawUnsafe(backfill);
-        throw new Rollback(
-          await tx.spaceModelRoleChoice.findMany({
-            where: { userId, spaceId },
-            orderBy: [{ role: "asc" }, { position: "asc" }],
-            select: { provider: true, credentialId: true },
-          }),
-        );
-      })
-      .catch((error: unknown) => {
-        if (error instanceof Rollback) return error.rows;
-        throw error;
-      });
-    expect(pinned).toEqual([
-      { provider: "openrouter", credentialId: null },
-      { provider: "openai-codex", credentialId: personal },
-      { provider: "azure", credentialId: azure },
-      { provider: "xai", credentialId: null },
-    ]);
   });
 
   it("lists the same model on two connections, and falls back between them", async () => {
@@ -153,10 +93,10 @@ describePostgres("model connections (PostgreSQL)", () => {
   });
 
   it("keeps a model once per connection, including rows that name none", async () => {
-    const row = { spaceId, userId, role: "main", provider: "xai", modelId: "grok" };
-    await prisma.spaceModelRoleChoice.create({ data: { ...row, position: 0 } });
+    const row = { userId, role: "main", provider: "xai", modelId: "grok" };
+    await prisma.userModelRoleChoice.create({ data: { ...row, position: 0 } });
     await expect(
-      prisma.spaceModelRoleChoice.create({ data: { ...row, position: 1 } }),
+      prisma.userModelRoleChoice.create({ data: { ...row, position: 1 } }),
     ).rejects.toThrow();
   });
 

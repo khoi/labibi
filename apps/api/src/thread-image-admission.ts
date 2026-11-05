@@ -16,7 +16,7 @@ import {
 import type { Actor, MessageBlock } from "@labradoodle/contracts";
 import { MODEL_IMAGE_INPUT_ERROR, MODEL_IMAGE_INPUT_UNKNOWN } from "@labradoodle/core";
 import type { PrismaClient } from "@labradoodle/db";
-import { appliedModelRole, findModelCredential, findModelCredentialById } from "@labradoodle/db";
+import { findModelCredential, findModelCredentialById, getModelRole } from "@labradoodle/db";
 import { ORPCError } from "@orpc/server";
 
 type ModelChoice = {
@@ -136,7 +136,7 @@ export async function assertThreadImageInput(
 
 /** The main model as resolveMemberMainModel picks it, without reading secrets. */
 async function mainModelWithoutSecrets(prisma: PrismaClient, actor: Actor) {
-  const { primary } = await appliedModelRole(prisma, actor, "main");
+  const { primary } = await getModelRole(prisma, actor, "main");
   if (!primary) return null;
   return {
     ...primary,

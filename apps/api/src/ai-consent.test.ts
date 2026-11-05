@@ -15,9 +15,7 @@ function setup() {
     env: { agentRuntime: "scripted" },
     prisma: {
       userModelPreference: { findMany: vi.fn(async () => []), findFirst: vi.fn(async () => null) },
-      spaceSettingOverride: { findUnique: vi.fn(async () => null) },
       userModelRoleChoice: { findMany: vi.fn(async () => []) },
-      spaceModelRoleChoice: { findMany: vi.fn(async () => []) },
       userModelCredential: { findMany: vi.fn(async () => []) },
       secret: { findMany: vi.fn(async () => []) },
       bot: { findMany: vi.fn(async () => []) },
@@ -122,19 +120,6 @@ describe("consent grants", () => {
         orderBy: [{ role: "asc" }, { position: "asc" }],
       }),
     );
-    expect(deps.prisma.spaceModelRoleChoice.findMany).not.toHaveBeenCalled();
-  });
-  it("discloses a Space's own models instead of the account's when it overrides them", async () => {
-    const { deps, actor } = setup();
-    deps.env.agentRuntime = "pi";
-    vi.mocked(deps.prisma.spaceSettingOverride.findUnique).mockResolvedValue({
-      setting: "models",
-    } as never);
-    await aiConsentStatus(deps, actor, { uses: ["model"] });
-    expect(deps.prisma.spaceModelRoleChoice.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { userId: actor.userId, spaceId: actor.spaceId } }),
-    );
-    expect(deps.prisma.userModelRoleChoice.findMany).not.toHaveBeenCalled();
   });
   it("discloses only the selected voice provider before a voice action", async () => {
     const { deps, actor } = setup();
@@ -208,65 +193,4 @@ it("discloses the self-hosted voice origin without its encrypted key", async () 
   expect(JSON.stringify(status)).toContain("http://100.64.0.10:8810");
   expect(JSON.stringify(status)).not.toContain("local-test-key");
   expect(JSON.stringify(status)).not.toContain("apiKey");
-});
-
-it("discloses the Space's own voices where it overrides voice", async () => {
-  const { deps, actor } = setup();
-  Object.assign(deps.prisma, {
-    spaceVoicePreference: {
-      findMany: vi.fn(async () => [{ credential: { provider: "elevenlabs" } }]),
-    },
-  });
-  vi.mocked(deps.prisma.spaceSettingOverride.findUnique).mockResolvedValue({
-    setting: "voice",
-  } as never);
-  const status = await aiConsentStatus(deps, actor);
-  expect(status.recipients.map((recipient) => recipient.name)).toEqual(["ElevenLabs"]);
-  expect(deps.prisma.userVoicePreference.findMany).not.toHaveBeenCalled();
-});
-
-it("asks about the account's voice provider when a voice action names the account copy", async () => {
-  const { deps, actor } = setup();
-  Object.assign(deps.prisma, {
-    spaceVoicePreference: {
-      findFirst: vi.fn(async () => ({ credential: { provider: "elevenlabs" }, voiceId: "space" })),
-    },
-  });
-  vi.mocked(deps.prisma.spaceSettingOverride.findUnique).mockResolvedValue({
-    setting: "voice",
-  } as never);
-  const applied = await aiConsentStatus(deps, actor, { uses: ["voice"] });
-  expect(applied.recipients.map((recipient) => recipient.name)).toEqual(["ElevenLabs"]);
-  const account = await aiConsentStatus(deps, actor, {
-    uses: ["voice"],
-    settingsScope: "account",
-  });
-  expect(account.recipients.map((recipient) => recipient.name)).toEqual(["OpenAI"]);
-});
-
-it("grants the account's voice provider when the grant names the account copy", async () => {
-  const { deps, actor, upsert } = setup();
-  Object.assign(deps.prisma, {
-    spaceVoicePreference: {
-      findMany: vi.fn(async () => [{ credential: { provider: "elevenlabs" } }]),
-    },
-  });
-  vi.mocked(deps.prisma.spaceSettingOverride.findUnique).mockResolvedValue({
-    setting: "voice",
-  } as never);
-  const reviewed = await aiConsentStatus(deps, actor, {
-    uses: ["voice"],
-    settingsScope: "account",
-  });
-  const keys = reviewed.recipients.map((recipient) => recipient.key);
-  await expect(
-    allowAiConsent(deps, actor, { scope: reviewed.scope, version: reviewed.version, keys }),
-  ).rejects.toThrow("AI data sharing changed");
-  await allowAiConsent(deps, actor, {
-    scope: reviewed.scope,
-    version: reviewed.version,
-    keys,
-    settingsScope: "account",
-  });
-  expect(upsert).toHaveBeenCalled();
 });

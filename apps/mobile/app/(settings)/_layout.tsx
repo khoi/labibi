@@ -93,16 +93,6 @@ export default function SettingsLayout() {
           contentStyle: { backgroundColor: native.groupedPage },
         }}
       />
-      <Stack.Screen
-        name="space"
-        // Named after the Space it opened from.
-        options={({ route }) => ({
-          ...glassHeaderOptions(
-            (route.params as { name?: string } | undefined)?.name ?? t("Space"),
-          ),
-          contentStyle: { backgroundColor: native.groupedPage },
-        })}
-      />
       <Stack.Screen name="integrations" options={glassHeaderOptions(t("Integrations"))} />
       <Stack.Screen name="skills" options={glassHeaderOptions(t("Skills"))} />
       {/* Titled by the screen once the skill loads. */}

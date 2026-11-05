@@ -1,4 +1,4 @@
-import type { ModelOAuthBegin, SettingsScope, ThinkingLevel } from "@labradoodle/contracts";
+import type { ModelOAuthBegin, ThinkingLevel } from "@labradoodle/contracts";
 import { cancelModelOAuthAttempt, finishModelOAuthAttempt } from "@labradoodle/core";
 import { useEffect, useRef, useState } from "react";
 import { desktopBridge, oauthStateOf, onDesktopOAuthCallback } from "./desktop";
@@ -13,8 +13,6 @@ export type ModelOAuthSignInBegin = {
   modelId?: string;
   thinkingLevel?: ThinkingLevel | null;
   makeDefault?: boolean;
-  /** Where makeDefault sets the main model. */
-  scope?: SettingsScope;
   label?: string;
 };
 
@@ -143,7 +141,6 @@ export function useModelOAuthSignIn(options: {
           modelId: begin.modelId,
           thinkingLevel: begin.thinkingLevel,
           makeDefault: begin.makeDefault,
-          ...(begin.scope ? { scope: begin.scope } : {}),
           label: begin.label,
           // Desktop receives the loopback redirect; a browser tab cannot, so it gets a code page.
           codePage: !desktopBridge(),

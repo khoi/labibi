@@ -52,12 +52,6 @@ msgstr ""
 msgid "{0, plural, one {# skill} other {# skills}}"
 msgstr ""
 
-#. placeholder {0}: availability.spaceIds.length
-#. placeholder {0}: chosen.length
-#: src/components/integrations/space-availability.tsx
-msgid "{0, plural, one {# space} other {# spaces}}"
-msgstr ""
-
 #. placeholder {0}: server.health.toolCount
 #: src/pages/McpServersOverlay.tsx
 msgid "{0, plural, one {# tool} other {# tools}}"
@@ -419,10 +413,6 @@ msgstr "@{0}"
 msgid "/ month"
 msgstr "/ месяц"
 
-#: src/components/integrations/space-availability.tsx
-msgid "1 space"
-msgstr ""
-
 #: src/pages/shell/message-cards.tsx
 msgid "A bit of everything"
 msgstr ""
@@ -679,10 +669,6 @@ msgstr "Все {credit} идут на использование моделей.
 msgid "All bots"
 msgstr ""
 
-#: src/components/integrations/space-availability.tsx
-msgid "All spaces"
-msgstr ""
-
 #: src/pages/ActivityList.tsx
 msgid "All statuses"
 msgstr ""
@@ -828,7 +814,6 @@ msgid "Approval model"
 msgstr "Модель проверки действий"
 
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Approvals"
 msgstr "Подтверждения"
 
@@ -932,10 +917,6 @@ msgstr "Доступно после сохранения задачи"
 
 #: src/components/ModelCredits.tsx
 msgid "Available credits"
-msgstr ""
-
-#: src/components/integrations/space-availability.tsx
-msgid "Available in"
 msgstr ""
 
 #: src/components/vault/VaultItemEditor.tsx
@@ -1111,7 +1092,6 @@ msgstr "Не может читать изображения"
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
 msgstr "Отмена"
 
@@ -1721,10 +1701,6 @@ msgstr ""
 msgid "Could not change password"
 msgstr "Не удалось изменить пароль"
 
-#: src/components/integrations/space-availability.tsx
-msgid "Could not change where this is available"
-msgstr ""
-
 #: src/components/pages/PageViewHost.tsx
 msgid "Could not change who can view this page. Try again."
 msgstr "Не удалось изменить, кто может видеть эту страницу. Попробуйте ещё раз."
@@ -2310,14 +2286,6 @@ msgstr "Текущий пароль"
 msgid "Custom header"
 msgstr ""
 
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Customize"
-msgstr "Настроить"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Customize {label}"
-msgstr "Настроить: {label}"
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "Ежедневно"
@@ -2371,7 +2339,6 @@ msgstr "Область действия по умолчанию"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete"
 msgstr "Удалить"
 
@@ -2407,10 +2374,6 @@ msgstr "Удалить группу"
 #: src/pages/shell/dialogs.tsx
 msgid "Delete memories too"
 msgstr "Удалите воспоминания тоже"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Delete this Space's credentials?"
-msgstr "Удалить учётные данные этого пространства?"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -3678,7 +3641,6 @@ msgstr "Варианты модели"
 
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Models"
 msgstr "Модели"
 
@@ -4666,13 +4628,6 @@ msgstr "Удалить {site}"
 msgid "Remove change trigger"
 msgstr "Удалить триггер изменений"
 
-#: src/components/integrations/plugin-marketplace.tsx
-#: src/pages/KnowledgeSection.tsx
-#: src/pages/McpServersOverlay.tsx
-#: src/pages/PluginsOverlay.tsx
-msgid "Remove from every space?"
-msgstr ""
-
 #: src/pages/RoutineEditor.tsx
 msgid "Remove Git event"
 msgstr "Удалить событие Git"
@@ -4829,7 +4784,6 @@ msgstr "Восстановление вашего рабочего простр�
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Retry"
 msgstr "Повторить"
 
@@ -5734,7 +5688,6 @@ msgstr ""
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "This can't be undone."
 msgstr "Это действие нельзя отменить."
 
@@ -6086,14 +6039,6 @@ msgstr "Использовать найденную модель"
 msgid "Use Connect to verify the key."
 msgstr "Используйте «Подключить», чтобы проверить ключ."
 
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Use defaults"
-msgstr "Использовать ваши настройки"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Use defaults for {label}"
-msgstr "Использовать ваши настройки: {label}"
-
 #: src/components/ModelCredits.tsx
 msgid "Use Labradoodle credits"
 msgstr ""
@@ -6157,7 +6102,6 @@ msgid "Variables"
 msgstr ""
 
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Vault"
 msgstr "Хранилище"
 
@@ -6183,7 +6127,6 @@ msgstr ""
 
 #: src/pages/settings-nav.ts
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Voice"
 msgstr "Голос"
@@ -6389,10 +6332,6 @@ msgstr "Диск компьютера почти заполнен. Освобо�
 #: src/components/AccountDataSettings.tsx
 msgid "Your data"
 msgstr ""
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Your defaults"
-msgstr "Ваши настройки по умолчанию"
 
 #: src/pages/Auth.tsx
 msgid "Your email address"

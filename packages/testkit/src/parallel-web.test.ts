@@ -79,7 +79,6 @@ function executorFixture(
     connection: { findMany: async () => [] },
     chatGroup: { findMany: async () => [] },
     userModelPreference: { findFirst: async () => null },
-    spaceSettingOverride: { findUnique: vi.fn(async () => null) },
     userModelRoleChoice: { findMany: async () => [] },
     userModelCredential: { findFirst: async () => null },
     deploymentSettings: {

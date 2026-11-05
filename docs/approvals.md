@@ -71,7 +71,6 @@ is more than it costs for nearly all of them; a Cayman Islands dollar is worth a
 dollar, so a price in it counts a little less. A saved card pays whatever the shop charges, so the limit relies on
 the total the page shows; only a wallet's single-use card holds the shop to the approved amount.
 
-## Per space
+## Every space
 
-Approval settings are account defaults that every [space](./spaces.md) follows. To give one space
-different rules, open its settings and choose **Customize** next to **Approvals**.
+Approval settings are yours and apply in every [space](./spaces.md).

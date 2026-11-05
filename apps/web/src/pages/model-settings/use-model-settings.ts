@@ -1,10 +1,4 @@
-import type {
-  Me,
-  ModelApiProtocol,
-  ModelHeaderRow,
-  SettingsScope,
-  ThinkingLevel,
-} from "@labradoodle/contracts";
+import type { Me, ModelApiProtocol, ModelHeaderRow, ThinkingLevel } from "@labradoodle/contracts";
 import {
   CLOUDFLARE_AI_GATEWAY_PROVIDER_ID,
   cloudflareModelRouting,
@@ -68,8 +62,7 @@ export type ModelConnectIntent = {
   }) => void | Promise<void>;
 };
 
-/** `scope` is where a connection made for an empty main model becomes that model. */
-export function useModelSettings(onClose: () => void, scope: SettingsScope) {
+export function useModelSettings(onClose: () => void) {
   const rpc = useSpaceRpc();
   const intentRef = useRef<ModelConnectIntent | null>(null);
   // Sign-in finishes later; it keeps the slot it was started for even if the dialog closes.
@@ -560,7 +553,7 @@ export function useModelSettings(onClose: () => void, scope: SettingsScope) {
       credential,
       credentialId: credential?.id ?? null,
       settingsOnly,
-      ...(intent ? { makeDefault: { makeDefault: intent.makeDefault, scope } } : {}),
+      ...(intent ? { makeDefault: { makeDefault: intent.makeDefault } } : {}),
     });
     if (request.status === "incomplete") return;
     if (request.status === "invalid") {
@@ -644,7 +637,7 @@ export function useModelSettings(onClose: () => void, scope: SettingsScope) {
       provider: selected.provider,
       credentialId: credential?.id ?? null,
       modelId: selected.id,
-      ...(intent ? { makeDefault: intent.makeDefault, scope } : {}),
+      ...(intent ? { makeDefault: intent.makeDefault } : {}),
       thinkingLevel: clampCatalogThinkingLevel(
         thinkingLevel,
         selected.thinkingLevels,

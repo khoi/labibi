@@ -74,24 +74,22 @@ vi.mock("./SpaceSettingsPanel", () => ({
     <div data-testid="space-settings">{space.name}</div>
   ),
 }));
-const { scopes, recordScope } = vi.hoisted(() => {
-  const scopes: string[] = [];
+const { shown, recordPanel } = vi.hoisted(() => {
+  const shown: string[] = [];
   return {
-    scopes,
-    recordScope:
-      (name: string) =>
-      ({ scope }: { scope: string }) => {
-        scopes.push(`${name}:${scope}`);
-        return null;
-      },
+    shown,
+    recordPanel: (name: string) => () => {
+      shown.push(name);
+      return null;
+    },
   };
 });
-vi.mock("./ModelSettingsOverlay", () => ({ ModelSettingsOverlay: recordScope("models") }));
-vi.mock("./VoiceSettingsOverlay", () => ({ VoiceSettingsOverlay: recordScope("voice") }));
+vi.mock("./ModelSettingsOverlay", () => ({ ModelSettingsOverlay: recordPanel("models") }));
+vi.mock("./VoiceSettingsOverlay", () => ({ VoiceSettingsOverlay: recordPanel("voice") }));
 vi.mock("../components/ApprovalRulesSettings", () => ({
-  ApprovalRulesSettings: recordScope("confirmations"),
+  ApprovalRulesSettings: recordPanel("confirmations"),
 }));
-vi.mock("../components/VaultSettings", () => ({ VaultSettings: recordScope("vault") }));
+vi.mock("../components/VaultSettings", () => ({ VaultSettings: recordPanel("vault") }));
 vi.mock("../components/ComputersUnavailableHint", () => ({
   computersAreUnavailable: () => false,
 }));
@@ -221,8 +219,8 @@ it("opens a linked billing section once billing turns out to be on", async () =>
   }
 });
 
-it("edits the account's models, voice, confirmations, and vault", async () => {
-  scopes.length = 0;
+it("shows the models, voice, confirmations, and vault panels", async () => {
+  shown.length = 0;
   const props = { space: acme, spaces };
   const { container, rerender, cleanup } = await render({ ...props, section: "models" });
   try {
@@ -233,9 +231,7 @@ it("edits the account's models, voice, confirmations, and vault", async () => {
     expect(vaultNav?.textContent).toBe("Vault");
     expect(vaultNav?.getAttribute("aria-current")).toBe("page");
     expect(container.querySelector("h2")?.textContent).toBe("Vault");
-    expect(new Set(scopes)).toEqual(
-      new Set(["models:account", "voice:account", "confirmations:account", "vault:account"]),
-    );
+    expect(new Set(shown)).toEqual(new Set(["models", "voice", "confirmations", "vault"]));
   } finally {
     await cleanup();
   }

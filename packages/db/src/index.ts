@@ -42,7 +42,6 @@ export * from "./scope.js";
 export * from "./security-events.js";
 export * from "./sessions.js";
 export * from "./space-members.js";
-export * from "./space-settings.js";
 export * from "./spaces.js";
 export * from "./spending.js";
 export * from "./test-bot.js";

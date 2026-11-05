@@ -16,7 +16,6 @@ type Rule = {
 };
 const state = vi.hoisted(() => ({
   rpc: vi.fn(),
-  spaceId: undefined as string | undefined,
   settings: { mode: "ask", enabled: false, skipApprovals: false, checkerAvailable: false },
   rules: [] as Rule[],
   headerItems: [] as { label: string; onPress: () => void }[],
@@ -47,7 +46,6 @@ vi.mock("./api", () => ({
 }));
 vi.mock("expo-router", () => ({
   useFocusEffect: (effect: () => undefined | (() => void)) => useEffect(effect, [effect]),
-  useLocalSearchParams: () => ({ spaceId: state.spaceId }),
   useNavigation: () => ({
     setOptions: (options: { unstable_headerRightItems: () => typeof state.headerItems }) => {
       state.headerItems = options.unstable_headerRightItems();
@@ -154,7 +152,6 @@ async function render() {
 
 beforeEach(() => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-  state.spaceId = undefined;
   state.settings = { mode: "ask", enabled: false, skipApprovals: false, checkerAvailable: false };
   state.rules = [];
   state.headerItems = [];
@@ -210,7 +207,6 @@ it("switches and removes rules, keeping legacy category rules removable only", a
 
   await act(async () => menuButton("example.com", "Block")!.click());
   expect(state.rpc).toHaveBeenCalledWith("approvalRules/set", {
-    scope: "account",
     effect: "deny",
     matchKind: "site",
     matchValue: "example.com",
@@ -218,15 +214,8 @@ it("switches and removes rules, keeping legacy category rules removable only", a
   expect(rows()).toEqual(["Send email: Allow", "example.com: Block", "email: Ask"]);
 
   await act(async () => menuButton("Send email", "Remove")!.click());
-  expect(state.rpc).toHaveBeenCalledWith("approvalRules/remove", { scope: "account", id: "tool" });
+  expect(state.rpc).toHaveBeenCalledWith("approvalRules/remove", { id: "tool" });
   expect(rows()).toEqual(["example.com: Block", "email: Ask"]);
-});
-
-it("edits a Space's own copy when opened with one", async () => {
-  state.spaceId = "space-1";
-  await render();
-  const spaceContext = { requestContext: { headers: { space: "space-1" } } };
-  expect(state.rpc.mock.calls).toEqual([["approvalRules/list", { scope: "space" }, spaceContext]]);
 });
 
 function retry() {
@@ -261,7 +250,6 @@ it("switches a tool rule back to Ask", async () => {
   await render();
   await act(async () => menuButton("Write file", "Ask")!.click());
   expect(state.rpc).toHaveBeenCalledWith("approvalRules/set", {
-    scope: "account",
     effect: "require_approval",
     matchKind: "tool",
     matchValue: "write_file",
@@ -279,7 +267,6 @@ it("adds a tool rule from the header prompt", async () => {
   ];
   await act(async () => buttons.find((button) => button.text === "Save")!.onPress!(" write_file "));
   expect(state.rpc).toHaveBeenCalledWith("approvalRules/set", {
-    scope: "account",
     effect: "require_approval",
     matchKind: "tool",
     matchValue: "write_file",

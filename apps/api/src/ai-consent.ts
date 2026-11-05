@@ -7,13 +7,7 @@ import {
   selectConfiguredModel,
   toStringRecord,
 } from "@labradoodle/adapters";
-import type {
-  Actor,
-  AiConsentQuery,
-  AiConsentStatus,
-  AiRecipient,
-  SettingsScope,
-} from "@labradoodle/contracts";
+import type { Actor, AiConsentQuery, AiConsentStatus, AiRecipient } from "@labradoodle/contracts";
 import { AI_DISCLOSURE_VERSION, AI_PRIVACY_URL } from "@labradoodle/contracts";
 import {
   findDefaultVoiceCredential,
@@ -21,8 +15,6 @@ import {
   findModelCredentialById,
   listModelRoleChoices,
   listVoicePreferences,
-  modelRoleTarget,
-  voicePreferenceTarget,
 } from "@labradoodle/db";
 import { ORPCError } from "@orpc/server";
 import type { RouterDeps } from "./router.js";
@@ -51,11 +43,7 @@ export async function aiConsentStatus(
             include: { credential: true },
           })
         : [],
-      modelsEnabled
-        ? modelRoleTarget(deps.prisma, actor).then((roles) =>
-            listModelRoleChoices(deps.prisma, roles),
-          )
-        : [],
+      modelsEnabled ? listModelRoleChoices(deps.prisma, actor) : [],
       modelsEnabled
         ? resolveMemberMainModel({ prisma: deps.prisma, secretStore: deps.secrets }, actor)
         : null,
@@ -91,12 +79,10 @@ export async function aiConsentStatus(
         : [],
       uses.includes("voice")
         ? query.uses
-          ? findDefaultVoiceCredential(deps.prisma, actor, query.settingsScope).then(
-              (credential) => (credential ? [{ credential }] : []),
+          ? findDefaultVoiceCredential(deps.prisma, actor).then((credential) =>
+              credential ? [{ credential }] : [],
             )
-          : voicePreferenceTarget(deps.prisma, actor, query.settingsScope).then((target) =>
-              listVoicePreferences(deps.prisma, target),
-            )
+          : listVoicePreferences(deps.prisma, actor)
         : [],
       uses.includes("memory")
         ? deps.prisma.spaceMemoryConfig.findUnique({ where: { spaceId: actor.spaceId } })
@@ -247,14 +233,9 @@ export async function aiConsentStatus(
 export async function allowAiConsent(
   deps: RouterDeps,
   actor: Actor,
-  input: { scope: string; version: string; keys: string[]; settingsScope?: SettingsScope },
+  input: { scope: string; version: string; keys: string[] },
 ) {
-  // Checked against the same settings copy the member reviewed.
-  const current = await aiConsentStatus(
-    deps,
-    actor,
-    input.settingsScope ? { settingsScope: input.settingsScope } : {},
-  );
+  const current = await aiConsentStatus(deps, actor);
   const known = new Set(current.recipients.map((recipient) => recipient.key));
   if (
     input.scope !== current.scope ||

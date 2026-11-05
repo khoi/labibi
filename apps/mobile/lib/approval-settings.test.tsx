@@ -7,8 +7,6 @@ import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { ApprovalModeRow } from "../components/approval-settings-rows";
 import { useApprovalSettings } from "./approval-settings";
-import type { SettingsTarget } from "./settings-target";
-import { ACCOUNT_SETTINGS } from "./settings-target";
 
 type Settings = {
   mode: string;
@@ -41,7 +39,6 @@ vi.mock("./i18n", () => {
 vi.mock("./user-error", () => ({ errorText: (_: unknown, fallback: string) => fallback }));
 vi.mock("./api", () => ({
   rpc: state.rpc,
-  captureApiRequestContext: async (spaceId: string) => ({ headers: { space: spaceId } }),
 }));
 vi.mock("expo-router", () => ({
   useFocusEffect: (effect: () => undefined | (() => void)) => {
@@ -160,8 +157,8 @@ function slowSaves({ storedAtOnce = false } = {}) {
   return control;
 }
 
-function Harness({ target, enabled }: { target: SettingsTarget; enabled?: boolean }) {
-  const approvals = useApprovalSettings(target, enabled);
+function Harness() {
+  const approvals = useApprovalSettings();
   return createElement(
     "div",
     null,
@@ -170,8 +167,8 @@ function Harness({ target, enabled }: { target: SettingsTarget; enabled?: boolea
   );
 }
 
-async function render(target: SettingsTarget = ACCOUNT_SETTINGS, enabled?: boolean) {
-  await act(async () => root.render(createElement(Harness, { target, enabled })));
+async function render() {
+  await act(async () => root.render(createElement(Harness)));
 }
 
 beforeEach(() => {
@@ -208,7 +205,7 @@ it("shows the mode as the row's value and saves a pick from the menu at once", a
   expect(choices()).toEqual(["Never ask", "Ask*"]);
 
   await act(async () => choice("Never ask").click());
-  expect(sets()).toEqual([["autoReview/set", { scope: "account", mode: "never" }]]);
+  expect(sets()).toEqual([["autoReview/set", { mode: "never" }]]);
   expect(row()).toBe("Approvals | Never ask");
   expect(choices()).toEqual(["Never ask*", "Ask"]);
 
@@ -290,21 +287,6 @@ it("shows the saved mode when a read started during the save lands after it", as
   expect(row()).toBe("Approvals | Never ask");
   // It reads again once the save is done, so the rule count is fresh too.
   expect(reads()).toBe(2);
-});
-
-it("drops a save that lands after the Space went back to following the account", async () => {
-  const target: SettingsTarget = { scope: "space", spaceId: "space-1" };
-  await render(target, true);
-  const slow = slowSaves({ storedAtOnce: true });
-  await act(async () => choice("Never ask").click());
-
-  // Customizing is turned off and on again before the reply comes back; the Space starts again
-  // from the account's mode.
-  await render(target, false);
-  state.settings = { ...state.settings, mode: "ask" };
-  await render(target, true);
-  await act(async () => slow.finish());
-  expect(row()).toBe("Approvals | Ask");
 });
 
 it("tells screen readers the row is unavailable while loading or saving", async () => {
@@ -443,18 +425,4 @@ it("shows a refresh failure from a read started after a successful save", async 
   expect(row()).toBe("Approvals | Retry | Something went wrong. Try again.");
   await act(async () => container.querySelector("span")!.click());
   expect(row()).toBe("Approvals | Never ask");
-});
-
-it("reads and saves a Space's own copy, and nothing while the Space follows the account", async () => {
-  const spaceContext = { requestContext: { headers: { space: "space-1" } } };
-  const target: SettingsTarget = { scope: "space", spaceId: "space-1" };
-  await render(target, false);
-  expect(state.rpc).not.toHaveBeenCalled();
-  expect(row()).toBe("Approvals");
-
-  await render(target, true);
-  expect(state.rpc).toHaveBeenCalledWith("autoReview/get", { scope: "space" }, spaceContext);
-  expect(state.rpc).toHaveBeenCalledWith("approvalRules/list", { scope: "space" }, spaceContext);
-  await act(async () => choice("Never ask").click());
-  expect(sets()).toEqual([["autoReview/set", { scope: "space", mode: "never" }, spaceContext]]);
 });

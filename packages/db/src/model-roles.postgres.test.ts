@@ -13,17 +13,15 @@ describePostgres("model roles (PostgreSQL)", () => {
   const userId = `model-roles-user-${suffix}`;
   const organizationId = `model-roles-organization-${suffix}`;
   const spaceId = `model-roles-space-${suffix}`;
-  const otherSpaceId = `model-roles-other-space-${suffix}`;
   const anthropic = `model-roles-anthropic-${suffix}`;
   const compatible = `model-roles-compatible-${suffix}`;
-  // A Space's own copy; see the account test below for the member's defaults.
-  const scope = { userId, spaceId, scope: "space" as const };
+  const scope = { userId };
   let prisma: PrismaClient;
   let close: () => Promise<void>;
 
-  const mainRows = (space = spaceId) =>
-    prisma.spaceModelRoleChoice.findMany({
-      where: { userId, spaceId: space, role: "main" },
+  const mainRows = () =>
+    prisma.userModelRoleChoice.findMany({
+      where: { userId, role: "main" },
       orderBy: { position: "asc" },
       select: { position: true, provider: true, modelId: true, thinkingLevel: true },
     });
@@ -50,14 +48,12 @@ describePostgres("model roles (PostgreSQL)", () => {
     await prisma.member.create({
       data: { id: `${userId}-member`, organizationId, userId, role: "owner", createdAt },
     });
-    for (const id of [spaceId, otherSpaceId]) {
-      await prisma.space.create({
-        data: { id, organizationId, name: id, createdByUserId: userId },
-      });
-      await prisma.spaceMember.create({
-        data: { id: `${id}-member`, spaceId: id, organizationId, userId, createdAt },
-      });
-    }
+    await prisma.space.create({
+      data: { id: spaceId, organizationId, name: spaceId, createdByUserId: userId },
+    });
+    await prisma.spaceMember.create({
+      data: { id: `${spaceId}-member`, spaceId, organizationId, userId, createdAt },
+    });
     for (const [id, provider] of [
       [anthropic, "azure-openai-responses"],
       [compatible, "openai-compatible"],
@@ -72,7 +68,6 @@ describePostgres("model roles (PostgreSQL)", () => {
   });
 
   beforeEach(async () => {
-    await prisma.spaceModelRoleChoice.deleteMany({ where: { userId } });
     await prisma.userModelRoleChoice.deleteMany({ where: { userId } });
   });
 
@@ -93,28 +88,6 @@ describePostgres("model roles (PostgreSQL)", () => {
       { position: 0, provider: "openai-compatible", modelId: "llama", thinkingLevel: "low" },
       { position: 1, provider: "azure", modelId: "gpt-5", thinkingLevel: null },
     ]);
-  });
-
-  it("keeps the account's models apart from a Space's own copy", async () => {
-    const account = { userId, spaceId, scope: "account" as const };
-    await updateModelRole(prisma, account, "main", {
-      primary: { provider: "azure", modelId: "gpt-5", thinkingLevel: "high" },
-    });
-    await updateModelRole(prisma, scope, "main", {
-      primary: { provider: "openai-compatible", modelId: "llama" },
-    });
-
-    await expect(getModelRole(prisma, account, "main")).resolves.toEqual({
-      primary: { provider: "azure", modelId: "gpt-5", thinkingLevel: "high" },
-      backups: [],
-    });
-    await expect(
-      getModelRole(prisma, { ...account, spaceId: otherSpaceId }, "main"),
-    ).resolves.toMatchObject({ primary: { modelId: "gpt-5" } });
-    await expect(getModelRole(prisma, scope, "main")).resolves.toMatchObject({
-      primary: { modelId: "llama" },
-    });
-    expect(await mainRows(otherSpaceId)).toEqual([]);
   });
 
   it("keeps a model's effort when the list is reordered", async () => {

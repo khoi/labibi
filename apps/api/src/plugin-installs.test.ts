@@ -60,12 +60,10 @@ function setup() {
       create: vi.fn(async ({ data }) => ({ ...data, id: "skill-test" })),
       deleteMany: vi.fn(),
     },
-    agentSkillSpace: { createMany: vi.fn() },
     mcpServer: {
       create: vi.fn(async ({ data }) => ({ ...data, id: "server-test" })),
       findMany: vi.fn().mockResolvedValue([]),
     },
-    mcpServerSpace: { createMany: vi.fn() },
     secret: { create: vi.fn(), count: vi.fn().mockResolvedValue(1) },
     vaultCredential: { count: vi.fn().mockResolvedValue(0) },
     integrationProviderConfig: { count: vi.fn().mockResolvedValue(0) },
@@ -107,7 +105,6 @@ describe("confirmed plugin installation", () => {
       data: expect.objectContaining({
         spaceId: actor.spaceId,
         userId: actor.userId,
-        allSpaces: true,
         source: "plugin",
         installId: "install-test",
         name: "example-skill",
@@ -120,13 +117,12 @@ describe("confirmed plugin installation", () => {
     expect(prisma.mcpServer.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         installId: "install-test",
-        allSpaces: true,
         secretId: "secret-test",
         headers: { "X-Tenant": true },
         transport: "streamable_http",
       }),
     });
-    // A connector available in every space keeps its credential on the account.
+    // A connector works in every space, so its credential is the account's.
     expect(prisma.secret.create).toHaveBeenCalledWith({
       data: expect.objectContaining({ id: "secret-test", spaceId: null, userId: actor.userId }),
     });
@@ -162,9 +158,7 @@ describe("confirmed plugin installation", () => {
       code: "CONFLICT",
     });
     // A same-named skill in any of the user's spaces clashes, since the plugin reaches them all.
-    prisma.agentSkill.findMany.mockResolvedValueOnce([
-      { spaceId: "other-space", allSpaces: false, availableIn: [] },
-    ] as never);
+    prisma.agentSkill.findMany.mockResolvedValueOnce([{ id: "taken" }] as never);
     await expect(installPlugin(deps, actor, await input())).rejects.toMatchObject({
       code: "CONFLICT",
     });
@@ -303,8 +297,6 @@ describe("plugin RPC boundary", () => {
       id: "install-test",
       spaceId: actor.spaceId,
       userId: actor.userId,
-      allSpaces: true,
-      availableIn: [],
       kind: "plugin",
       source,
       version: sha,
@@ -357,8 +349,6 @@ describe("plugin RPC boundary", () => {
       id: "install-test",
       spaceId: actor.spaceId,
       userId: actor.userId,
-      allSpaces: true,
-      availableIn: [],
       kind: "plugin",
       source,
       version: sha,

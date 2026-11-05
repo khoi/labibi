@@ -1343,7 +1343,6 @@ describe("MCP server deletion", () => {
         findFirst: vi.fn().mockResolvedValue({ id: "server-1", secretId: "old-secret" }),
         delete: deleteServer,
       },
-      mcpServerSpace: { findMany: vi.fn(async () => []) },
       secret: { deleteMany: deleteSecrets },
       message: { findMany: vi.fn().mockResolvedValue([]) },
       $transaction: vi.fn(async (run: (tx: unknown) => Promise<unknown>) => run(prisma)),
@@ -1384,7 +1383,7 @@ describe("MCP server deletion", () => {
       where: {
         id: "old-secret",
         userId: "user-1",
-        OR: [{ spaceId: "workspace-1" }, { spaceId: null }],
+        spaceId: null,
       },
     });
   });
@@ -1434,7 +1433,6 @@ describe("MCP prepared credential updates", () => {
           return { ...server };
         },
       },
-      mcpServerSpace: { findMany: vi.fn(async () => []) },
       secret: {
         findFirst: async ({ where }: { where: { id: string } }) => rows.get(where.id) ?? null,
         create: async ({ data }: { data: { id: string; ciphertext: string } }) => {
@@ -1575,7 +1573,6 @@ describe("MCP pre-registered OAuth client", () => {
           return server;
         }),
       },
-      mcpServerSpace: { findMany: vi.fn(async () => []) },
       mcpOAuthSession: { deleteMany: vi.fn(async () => ({ count: 0 })) },
       secret: {
         create: vi.fn(async ({ data }: { data: { id: string; ciphertext: string } }) => {
@@ -2142,7 +2139,6 @@ describe("MCP loopback endpoints", () => {
           .fn()
           .mockResolvedValue({ id: "server-1", endpoint: LOOPBACK, secretId: null }),
       },
-      mcpServerSpace: { findMany: vi.fn(async () => []) },
       mcpOAuthSession: {
         count: vi.fn().mockResolvedValue(0),
         deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
@@ -2306,7 +2302,6 @@ describe("MCP server health", () => {
         }),
         updateMany,
       },
-      mcpServerSpace: { findMany: vi.fn(async () => []) },
       secret: { findFirst: vi.fn(), create: vi.fn(), deleteMany: vi.fn() },
       user: {
         findUnique: vi.fn(async () => ({ email: "owner@rakazo.test", emailVerified: true })),
@@ -2495,9 +2490,6 @@ describe("MCP server health", () => {
 
       await expect(
         clientFor({ userId: "member-1" }).mcp.servers.test({ id: "server-1" }),
-      ).rejects.toThrow();
-      await expect(
-        clientFor({ spaceId: "workspace-2" }).mcp.servers.test({ id: "server-1" }),
       ).rejects.toThrow();
       await expect(clientFor().mcp.servers.test({ id: "does-not-exist" })).rejects.toThrow();
       expect(probe).not.toHaveBeenCalled();
@@ -5638,7 +5630,6 @@ describe("model disconnect", () => {
     const tx = {
       $queryRaw: vi.fn(async () => [{ bypass: null }]),
       userModelRoleChoice: { deleteMany: vi.fn(async () => ({ count: 1 })) },
-      spaceModelRoleChoice: { deleteMany: vi.fn(async () => ({ count: 1 })) },
       userModelCredential: {
         findMany: vi.fn(async () => connections),
         deleteMany: vi.fn(async () => ({ count: 1 })),
@@ -5690,9 +5681,7 @@ describe("model disconnect", () => {
         OR: [{ credentialId: { in: ["work"] } }],
       },
     };
-    // The account's models and every Space's own lose the connection.
     expect(tx.userModelRoleChoice.deleteMany).toHaveBeenCalledWith(workRows);
-    expect(tx.spaceModelRoleChoice.deleteMany).toHaveBeenCalledWith(workRows);
     expect(tx.userModelCredential.deleteMany).toHaveBeenCalledWith({
       where: { userId: actor.userId, id: { in: ["work"] } },
     });
@@ -5712,7 +5701,6 @@ describe("model disconnect", () => {
       },
     };
     expect(tx.userModelRoleChoice.deleteMany).toHaveBeenCalledWith(providerRows);
-    expect(tx.spaceModelRoleChoice.deleteMany).toHaveBeenCalledWith(providerRows);
     expect(tx.userModelCredential.deleteMany).toHaveBeenCalledWith({
       where: { userId: actor.userId, id: { in: ["personal", "work"] } },
     });
@@ -7617,7 +7605,6 @@ describe("openai-compatible enabled models", () => {
       userModelRoleChoice: {
         findMany: vi.fn(async ({ where }: { where: PinWhere }) => matching(roleChoices, where)),
       },
-      spaceModelRoleChoice: { findMany: vi.fn(async () => []) },
     };
   }
 
@@ -9092,7 +9079,6 @@ describe("API-key live model catalog", () => {
         bot: { findMany: vi.fn(async () => [{ modelProvider: "openai", modelId: saved }]) },
         routine: { findMany: vi.fn(async () => []) },
         userModelRoleChoice: { findMany: vi.fn(async () => []) },
-        spaceModelRoleChoice: { findMany: vi.fn(async () => []) },
         deploymentSettings: { findFirst: vi.fn(async () => null) },
       };
       const load = vi.fn(async () => "fake-api-key");

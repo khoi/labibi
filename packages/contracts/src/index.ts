@@ -38,7 +38,6 @@ export * from "./runs.js";
 export * from "./search.js";
 export * from "./security-events.js";
 export * from "./server-headers.js";
-export * from "./settings-scope.js";
 export * from "./terminal.js";
 export * from "./user-devices.js";
 export * from "./vault-items.js";

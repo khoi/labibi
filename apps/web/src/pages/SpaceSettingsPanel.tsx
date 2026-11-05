@@ -3,22 +3,19 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useId, useState } from "react";
 import { SettingsGroup, SettingsRow } from "../components/SettingsRows";
 import { SpaceMembersSettings } from "../components/SpaceMembersSettings";
-import { SpaceSettingOverrides } from "./SpaceSettingOverrides";
 import type { SettingsSpace } from "./shell/dialogs";
 
-/** One space's page: its name, its members and the account settings it customizes. */
+/** One space's page: its name and its members. */
 export function SpaceSettingsPanel({
   space,
   onRename,
   onLeft,
-  onClose,
   onBusyChange,
 }: {
   space: SettingsSpace;
   onRename: (name: string) => Promise<void>;
   /** After leaving, with the space the server moved this person to. */
   onLeft: (activeSpaceId: string) => void;
-  onClose: () => void;
   onBusyChange?: (busy: boolean) => void;
 }) {
   const { t } = useLingui();
@@ -26,12 +23,10 @@ export function SpaceSettingsPanel({
   const [draft, setDraft] = useState(space.name);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [overridesBusy, setOverridesBusy] = useState(false);
   // A rename in flight holds the dialog open, so a failure is shown instead of lost on leaving.
-  const busy = pending || overridesBusy;
   useEffect(() => {
-    onBusyChange?.(busy);
-  }, [busy, onBusyChange]);
+    onBusyChange?.(pending);
+  }, [pending, onBusyChange]);
 
   async function save() {
     const trimmed = draft.trim();
@@ -102,7 +97,6 @@ export function SpaceSettingsPanel({
         </SettingsGroup>
       ) : null}
       <SpaceMembersSettings space={space} onLeft={onLeft} />
-      <SpaceSettingOverrides onClose={onClose} onBusyChange={setOverridesBusy} />
     </div>
   );
 }

@@ -7,7 +7,6 @@ import {
   parseSkillMd,
 } from "@labradoodle/core";
 import type { PrismaClient } from "@labradoodle/db";
-import { availableInSpace } from "@labradoodle/db";
 import { BUILTIN_AGENT_SKILLS } from "./builtin-skills.js";
 
 export const SKILL_TOOL_NAMES = new Set([
@@ -82,28 +81,14 @@ function rejectInvalidSkillFields(name: string, description: string): string | u
   return undefined;
 }
 
-/**
- * A bot changes only skills that live in its own space alone: writing this space's details into
- * a skill other spaces read would carry them across the boundary.
- */
-function onlyInSpace(owner: SkillOwner) {
-  return {
-    spaceId: owner.spaceId,
-    userId: owner.userId,
-    allSpaces: false,
-    availableIn: { none: {} },
-  };
-}
-
-const SHARED_SKILL_ERROR =
-  "Could not change this skill. A skill available in other spaces can only be changed by the user.";
+const SKILL_GONE_ERROR = "Could not change this skill. It may have been removed.";
 
 export async function listAgentSkillRecords(
   prisma: PrismaClient,
   owner: SkillOwner,
 ): Promise<Array<SkillRecord & { id: string }>> {
   const rows = await prisma.agentSkill.findMany({
-    where: availableInSpace(owner),
+    where: { userId: owner.userId },
     // Reference files are read one at a time through skill_read, never with the catalog.
     omit: { files: true },
     orderBy: [{ name: "asc" }, { id: "asc" }],
@@ -144,7 +129,7 @@ export async function skillReadFromTool(
   const row = skill.id.startsWith("builtin:")
     ? null
     : await prisma.agentSkill.findFirst({
-        where: { id: skill.id, ...availableInSpace(owner) },
+        where: { id: skill.id, userId: owner.userId },
         select: { files: true },
       });
   const files = skillFiles(row?.files);
@@ -287,14 +272,14 @@ export async function skillUpdateFromTool(
   try {
     // Re-scope mutate to owner + user source so a stale id cannot cross tenants.
     const updated = await prisma.agentSkill.updateMany({
-      where: { id: existing.id, ...onlyInSpace(owner), source: "user" },
+      where: { id: existing.id, userId: owner.userId, source: "user" },
       data: {
         name: nextName,
         description: nextDescription,
         content: nextContent,
       },
     });
-    if (updated.count !== 1) return { error: SHARED_SKILL_ERROR };
+    if (updated.count !== 1) return { error: SKILL_GONE_ERROR };
     return { ok: true, id: existing.id, name: nextName, description: nextDescription };
   } catch {
     return { error: "Could not update skill." };
@@ -312,8 +297,8 @@ export async function skillDeleteFromTool(
     return { error: "Builtin and plugin skills are read-only." };
   }
   const deleted = await prisma.agentSkill.deleteMany({
-    where: { id: existing.id, ...onlyInSpace(owner), source: "user" },
+    where: { id: existing.id, userId: owner.userId, source: "user" },
   });
-  if (deleted.count !== 1) return { error: SHARED_SKILL_ERROR };
+  if (deleted.count !== 1) return { error: SKILL_GONE_ERROR };
   return { ok: true, name: existing.name };
 }

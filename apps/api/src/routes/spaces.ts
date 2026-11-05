@@ -26,8 +26,6 @@ import {
   SpaceMemberNotFoundError,
   SpaceNotFoundError,
   SpaceOwnerCannotLeaveError,
-  setSpaceSettingOverride,
-  spaceSettingOverrides,
 } from "@labradoodle/db";
 import { ORPCError } from "@orpc/server";
 import { otherSpaceOfBot } from "../bot-space.js";
@@ -80,14 +78,6 @@ async function asMemberOf<T>(
 export function spacesRoutes(ctx: RouterContext) {
   const { deps, repos, groupRepos, authed } = ctx;
   return {
-    spaceSettings: {
-      overrides: authed.spaceSettings.overrides.handler(({ context }) =>
-        spaceSettingOverrides(deps.prisma, context.actor),
-      ),
-      setOverride: authed.spaceSettings.setOverride.handler(({ context, input }) =>
-        setSpaceSettingOverride(deps.prisma, context.actor, input.setting, input.enabled),
-      ),
-    },
     spaces: {
       list: authed.spaces.list.handler(async ({ context }) =>
         spaceNavigationDto(deps, context.actor, repos, groupRepos),

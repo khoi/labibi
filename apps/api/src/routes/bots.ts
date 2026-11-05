@@ -13,19 +13,12 @@ import {
   pageUrlOrigin,
   relabelVaultItem,
   revealBotSecret,
-  SPACE_VAULT_NOT_IN_USE,
   stopCancelledGroupRuns,
   storeBotSecret,
   toComputerRef,
   validateBotModelChange,
 } from "@labradoodle/adapters";
-import type {
-  Actor,
-  Bot,
-  BotSecretMetadata,
-  SettingsScope,
-  VaultPutInput,
-} from "@labradoodle/contracts";
+import type { Actor, Bot, BotSecretMetadata, VaultPutInput } from "@labradoodle/contracts";
 import { BotSecretAuth } from "@labradoodle/contracts";
 import { ACTIVE_RUN_STATUSES } from "@labradoodle/core";
 import {
@@ -38,7 +31,6 @@ import {
   recordComputerRunEnd,
   recordSecurityEvent,
   SpaceDeletionInProgressError,
-  settingsTarget,
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { ORPCError } from "@orpc/server";
@@ -68,7 +60,6 @@ const BOT_SECRET_INPUT_ERRORS = [
   "Credential limit reached",
   "Invalid card",
   "Invalid contact",
-  SPACE_VAULT_NOT_IN_USE,
 ];
 
 /** A credential the user typed that cannot be stored, as a bad request. Never echoes the value. */
@@ -96,17 +87,13 @@ function mapBotSecretStoreError(error: unknown): unknown {
   return error;
 }
 
-function vaultScope(actor: Actor, vault?: SettingsScope) {
-  return { userId: actor.userId, spaceId: actor.spaceId, vault };
-}
-
 /**
  * Save a vault item. One without a name is new and gets a free name from its title. One already
  * saved under the name keeps its value when none is given, so its title or note can change alone.
  */
 async function saveVaultCredential(
   deps: RouterDeps,
-  scope: ReturnType<typeof vaultScope>,
+  scope: Pick<Actor, "userId" | "spaceId">,
   input: Pick<VaultPutInput, "destination" | "value" | "title" | "note">,
 ) {
   const { name } = input.destination;
@@ -161,7 +148,7 @@ async function saveVaultCredential(
 
 async function vaultItemDto(
   deps: RouterDeps,
-  scope: ReturnType<typeof vaultScope>,
+  scope: Pick<Actor, "userId" | "spaceId">,
   name: string,
 ): Promise<BotSecretMetadata> {
   const [row] = await listVaultItems(deps.prisma, deps.secrets, scope, name);
@@ -487,25 +474,19 @@ export function botsRoutes(ctx: RouterContext) {
       }),
     },
     vault: {
-      list: authed.vault.list.handler(async ({ context, input }) => {
-        const rows = await listVaultItems(
-          deps.prisma,
-          deps.secrets,
-          vaultScope(context.actor, input?.scope),
-        );
+      list: authed.vault.list.handler(async ({ context }) => {
+        const rows = await listVaultItems(deps.prisma, deps.secrets, context.actor);
         return rows.map(botSecretMetadataDto);
       }),
       put: authed.vault.put.handler(({ context, input }) =>
-        saveVaultCredential(deps, vaultScope(context.actor, input.scope), input),
+        saveVaultCredential(deps, context.actor, input),
       ),
       reveal: authed.vault.reveal.handler(async ({ context, input }) => {
         await requireIdentityConfirmation(deps.auth, context);
-        // Resolved here, so the event names the vault that was read even when scope is omitted.
-        const scope = await settingsTarget(deps.prisma, context.actor, "credentials", input.scope);
         const revealed = await revealBotSecret({
           prisma: deps.prisma,
           secretStore: deps.secrets,
-          scope: vaultScope(context.actor, scope),
+          scope: context.actor,
           name: input.name,
         });
         if (!revealed) throw new ORPCError("NOT_FOUND", { message: "Credential not found" });
@@ -516,14 +497,13 @@ export function botsRoutes(ctx: RouterContext) {
           metadata: {
             procedure: "vault.reveal",
             kind: "vault_credential",
-            scope,
             name: input.name,
           },
         });
         return revealed;
       }),
       remove: authed.vault.remove.handler(async ({ context, input }) => {
-        await forgetBotSecret(deps.prisma, vaultScope(context.actor, input.scope), input.name);
+        await forgetBotSecret(deps.prisma, context.actor, input.name);
         return { ok: true as const };
       }),
     },

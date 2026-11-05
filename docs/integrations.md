@@ -60,11 +60,10 @@ and a message an app suggests goes into the message box for you to send.
 When a bot adds an MCP server for you, it stays off until you approve it in the chat. Choose
 **Approve**, or **Authorize** if the server needs you to sign in.
 
-## Available in
+## Every space
 
-If you have more than one [space](./spaces.md), each skill, MCP server and plugin you add has an
-**Available in** choice: **All spaces**, including spaces you create later, or only the spaces you
-pick. App connections stay in the space you connected them in.
+Skills, MCP servers and plugins you add work in all your [spaces](./spaces.md). App connections stay
+in the space you connected them in.
 
 ## APIs without an integration
 

@@ -1237,8 +1237,6 @@ describe("MCP connector session cache", () => {
           findFirst: vi.fn().mockResolvedValue(SERVER),
         },
         connection: { findMany: vi.fn().mockResolvedValue([]) },
-        spaceSettingOverride: { findUnique: vi.fn().mockResolvedValue(null) },
-        actionApprovalRule: { findMany: vi.fn().mockResolvedValue([]) },
         userActionApprovalRule: { findMany: vi.fn().mockResolvedValue([]) },
       };
       const mcp = new McpConnector(prisma as never, {} as never, { network: TEST_NETWORK });

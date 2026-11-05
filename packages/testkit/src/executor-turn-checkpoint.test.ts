@@ -91,7 +91,6 @@ function fixture(
               },
             }
           : undefined,
-      spaceSettingOverride: { findUnique: async () => null },
       userActionApprovalRule: {
         findMany: async () => [
           {

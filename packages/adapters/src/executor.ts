@@ -31,7 +31,6 @@ import type { ThreadEvents } from "@labradoodle/db";
 import {
   accountDeactivated,
   appendEventInTransaction,
-  availableInSpace,
   cancelDeactivatedAccountRuns,
   cancelRunsInTransaction,
   createPendingSteeringRun,
@@ -235,7 +234,7 @@ async function verbatimMcpServersForRun(
     where: {
       verbatimResults: true,
       enabled: true,
-      ...availableInSpace(scope),
+      userId: scope.userId,
     },
     select: { id: true, slug: true },
   });

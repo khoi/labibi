@@ -2,7 +2,6 @@ import type { SecretStore } from "@labradoodle/adapter-kit";
 import { persistPreparedSecret } from "@labradoodle/adapters";
 import type { PrismaClient } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
-import { serverSecretSpace } from "./availability.js";
 import type { McpSecretMaterial } from "./mcp-material.js";
 import { legacyMcpArgs } from "./mcp-material.js";
 
@@ -64,7 +63,7 @@ export async function moveMcpArgsIntoSecrets(
               data: {
                 id: stored.id,
                 userId: row.userId,
-                spaceId: secret ? secret.spaceId : await serverSecretSpace(tx, current),
+                spaceId: null,
                 kind: "mcp",
                 ciphertext: stored.ciphertext,
               },

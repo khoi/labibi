@@ -10,11 +10,11 @@ import {
 import type { Actor, McpServer, McpServerConfigInput } from "@labradoodle/contracts";
 import { mcpOAuthEnvReferences } from "@labradoodle/contracts";
 import type { McpServer as McpServerRow, Prisma } from "@labradoodle/db";
-import { itemSecretIn, spaceAvailability } from "@labradoodle/db";
+import { itemSecretIn } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { ORPCError } from "@orpc/server";
 import { isAdmin } from "./admins.js";
-import { assertNameFreeWhereAvailable, userAddedAvailability } from "./availability.js";
+import { assertNameFree } from "./availability.js";
 import { dismissMcpServerApprovals } from "./mcp-approval.js";
 import type { McpSecretMaterial } from "./mcp-material.js";
 import { legacyMcpArgs } from "./mcp-material.js";
@@ -38,8 +38,6 @@ export function mcpServerDto(
     headers: unknown;
     secretId: string | null;
     installId?: string | null;
-    allSpaces?: boolean;
-    availableIn?: Array<{ spaceId: string }>;
     enabled: boolean;
     verbatimResults?: boolean;
     revision: number;
@@ -78,7 +76,6 @@ export function mcpServerDto(
     verbatimResults: row.verbatimResults ?? false,
     revision: row.revision,
     health: mcpServerHealthDto(row),
-    availability: spaceAvailability({ ...row, allSpaces: row.allSpaces ?? false }),
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -282,23 +279,14 @@ export function createMcpServers(
     actor: Actor,
     input: McpServerConfigInput,
     stored: Awaited<ReturnType<typeof prepareMcpServer>>,
-    // What the user adds reaches all their spaces and agents; an import stays with its agent.
-    options: { everywhere?: boolean } = {},
   ) => {
-    if (options.everywhere)
-      await assertNameFreeWhereAvailable(
-        tx,
-        "mcpServer",
-        actor,
-        input.slug,
-        userAddedAvailability(actor),
-      );
+    await assertNameFree(tx, "mcpServer", actor, input.slug);
     if (stored) {
       await tx.secret.create({
         data: {
           id: stored.id,
           userId: actor.userId,
-          spaceId: options.everywhere ? null : actor.spaceId,
+          spaceId: null,
           kind: "mcp",
           ciphertext: stored.ciphertext,
         },
@@ -308,7 +296,6 @@ export function createMcpServers(
       data: {
         spaceId: actor.spaceId,
         userId: actor.userId,
-        allSpaces: options.everywhere ?? false,
         slug: input.slug,
         name: input.name,
         description: input.description,

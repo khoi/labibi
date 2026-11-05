@@ -8,7 +8,6 @@ import type {
   RpcInput,
   RpcPath,
   ModelRoleSettings as Settings,
-  SettingsScope,
   ThinkingLevel,
 } from "@labradoodle/contracts";
 import {
@@ -58,7 +57,6 @@ const connectKey = (provider: ConnectableProvider) =>
 export function ModelRoleSettings({
   userId,
   spaceId,
-  scope,
   modelRole: role,
   credentials,
   title,
@@ -71,9 +69,8 @@ export function ModelRoleSettings({
   onChanged,
 }: {
   userId: string;
-  /** The Space the calls go to; a Space scope edits its override. */
+  /** The Space the calls go to. */
   spaceId: string;
-  scope: SettingsScope;
   modelRole: ModelRole;
   credentials: ModelCredential[];
   title: string;
@@ -103,14 +100,14 @@ export function ModelRoleSettings({
       send,
       controller: createModelRoleSettings(
         {
-          load: () => send("models/role", { ...target, scope }),
+          load: () => send("models/role", target),
           catalog: () => send("models/forRole", target),
-          save: (patch) => send("models/setRole", { ...target, ...patch, scope }),
+          save: (patch) => send("models/setRole", { ...target, ...patch }),
         },
-        JSON.stringify([apiBase, userId, spaceId, scope, role]),
+        JSON.stringify([apiBase, userId, spaceId, role]),
       ),
     };
-  }, [apiBase, userId, spaceId, scope, role]);
+  }, [apiBase, userId, spaceId, role]);
   const state = useSyncExternalStore(controller.subscribe, controller.snapshot);
   useEffect(() => {
     void controller.load();

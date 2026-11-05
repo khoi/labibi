@@ -2,7 +2,6 @@ import type {
   ActionApprovalRule,
   ActionAutoReviewSettings,
   ApprovalMode,
-  SettingsScope,
 } from "@labradoodle/contracts";
 import { humanizeToolName, toolNameFromLabel } from "@labradoodle/core";
 import { writeSaved } from "@labradoodle/core/query";
@@ -20,15 +19,14 @@ import { SpendingLimitSettings } from "./SpendingLimitSettings";
 const segmented = "rounded-lg bg-muted p-1";
 const segment = "h-7 px-3 text-[13px] aria-pressed:bg-background aria-pressed:shadow-sm";
 
-/** Approvals for the account, or for the bound Space when it customizes them. */
-export function ApprovalRulesSettings({ scope }: { scope: SettingsScope }) {
+/** The member's approvals, which apply in every Space. */
+export function ApprovalRulesSettings() {
   const rpc = useSpaceRpc();
   const { t } = useLingui();
   const queries = useSpaceQueries();
   const queryClient = useQueryClient();
-  const input = { scope };
-  const rulesQuery = useQuery(queries.approvalRules.list.queryOptions({ input }));
-  const autoReviewQuery = useQuery(queries.autoReview.get.queryOptions({ input }));
+  const rulesQuery = useQuery(queries.approvalRules.list.queryOptions());
+  const autoReviewQuery = useQuery(queries.autoReview.get.queryOptions());
   const rules = rulesQuery.data ?? [];
   const autoReview = autoReviewQuery.data ?? null;
   const loading = rulesQuery.isPending || autoReviewQuery.isPending;
@@ -49,13 +47,13 @@ export function ApprovalRulesSettings({ scope }: { scope: SettingsScope }) {
   ];
 
   function setRules(update: (current: ActionApprovalRule[]) => ActionApprovalRule[]) {
-    return writeSaved(queryClient, queries.approvalRules.list.queryKey({ input }), (current) =>
+    return writeSaved(queryClient, queries.approvalRules.list.queryKey(), (current) =>
       update(current ?? []),
     );
   }
 
   function setAutoReview(next: ActionAutoReviewSettings) {
-    return writeSaved(queryClient, queries.autoReview.get.queryKey({ input }), () => next);
+    return writeSaved(queryClient, queries.autoReview.get.queryKey(), () => next);
   }
 
   async function save(work: () => Promise<unknown>, failure: string) {
@@ -73,14 +71,13 @@ export function ApprovalRulesSettings({ scope }: { scope: SettingsScope }) {
 
   const setMode = (mode: ApprovalMode) =>
     save(
-      async () => setAutoReview(await rpc.autoReview.set({ scope, mode })),
+      async () => setAutoReview(await rpc.autoReview.set({ mode })),
       t`Could not save Auto Review`,
     );
 
   async function putRule(rule: Pick<ActionApprovalRule, "effect" | "matchKind" | "matchValue">) {
     if (rule.matchKind === "category") return;
     const saved = await rpc.approvalRules.set({
-      scope,
       effect: rule.effect,
       matchKind: rule.matchKind,
       matchValue: rule.matchValue,
@@ -114,7 +111,7 @@ export function ApprovalRulesSettings({ scope }: { scope: SettingsScope }) {
 
   const removeRule = (rule: ActionApprovalRule) =>
     save(async () => {
-      await rpc.approvalRules.remove({ scope, id: rule.id });
+      await rpc.approvalRules.remove({ id: rule.id });
       await setRules((current) => current.filter((other) => other.id !== rule.id));
     }, t`Could not remove rule`);
 
@@ -151,7 +148,7 @@ export function ApprovalRulesSettings({ scope }: { scope: SettingsScope }) {
         </SettingsRow>
       </SettingsGroup>
       {/* Spending is the person's own across every Space, so it is set with the account's approvals. */}
-      {scope === "account" ? <SpendingLimitSettings /> : null}
+      <SpendingLimitSettings />
       <Button
         variant="outline"
         size="sm"

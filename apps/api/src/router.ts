@@ -32,7 +32,6 @@ import type { NavLink } from "@labradoodle/contracts";
 import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
 import type { BillingService } from "./billing.js";
 import { accountRoutes } from "./routes/account.js";
-import { availabilityRoutes } from "./routes/availability.js";
 import { botsRoutes } from "./routes/bots.js";
 import { computerRoutes } from "./routes/computer.js";
 import { computerProviderRoutes } from "./routes/computer-provider.js";
@@ -138,7 +137,6 @@ export function createRouter(deps: RouterDeps) {
     ...memoryRoutes(ctx),
     ...routinesRoutes(ctx),
     ...mcpRoutes(ctx),
-    ...availabilityRoutes(ctx),
     ...connectionsRoutes(ctx),
     ...contentRoutes(ctx),
     ...pagesRoutes(ctx),

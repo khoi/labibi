@@ -4,7 +4,6 @@ import type {
   ModelConnectInput,
   ModelCredential,
   ModelHeaderRow,
-  SettingsScope,
   ThinkingLevel,
 } from "@labradoodle/contracts";
 import {
@@ -166,7 +165,7 @@ export type ModelConnectRequest =
 
 /**
  * The `models.connect` input for a connection form. `settingsOnly` saves a catalog provider's
- * limits and gateway ids without the key field. `makeDefault` is sent with its scope when set.
+ * limits and gateway ids without the key field. `makeDefault` is sent when set.
  */
 export function modelConnectRequest(input: {
   form: ConnectionFormDraft;
@@ -174,7 +173,7 @@ export function modelConnectRequest(input: {
   credential?: Pick<ModelCredential, "modelId" | "thinkingLevel">;
   credentialId: string | null;
   settingsOnly?: boolean;
-  makeDefault?: { makeDefault: boolean; scope: SettingsScope };
+  makeDefault?: { makeDefault: boolean };
 }): ModelConnectRequest {
   const { form, selected, credential, credentialId, settingsOnly = false, makeDefault } = input;
   const compatible = selected.provider === OPENAI_COMPATIBLE_PROVIDER_ID;

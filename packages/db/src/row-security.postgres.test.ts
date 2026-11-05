@@ -37,34 +37,10 @@ type Tenant = {
 function rowsFor(t: Tenant, tag: string): Array<[string, Record<string, unknown>]> {
   return [
     [
-      "spaceModelRoleChoice",
-      {
-        spaceId: t.spaceId,
-        userId: t.userId,
-        role: `approval-${tag}`,
-        position: 0,
-        provider: "openrouter",
-        modelId: `model-${tag}`,
-      },
-    ],
-    [
-      "vaultCredential",
-      {
-        id: `rls-vault-space-${tag}-${t.spaceId}`,
-        userId: t.userId,
-        spaceId: t.spaceId,
-        name: `n-${tag}`,
-        origin: "https://example.test",
-        auth: {},
-        ciphertext: "c",
-      },
-    ],
-    [
       "vaultCredential",
       {
         id: `rls-vault-account-${tag}-${t.userId}`,
         userId: t.userId,
-        spaceId: null,
         name: `n-${tag}`,
         origin: "https://example.test",
         auth: {},
@@ -431,18 +407,6 @@ describePostgres("row-level security (PostgreSQL)", () => {
           data: { spaceId: t.spaceId, userId: t.userId, provider: "p", model: "m" },
         }),
       );
-      keep(
-        "actionApprovalRule",
-        await o.actionApprovalRule.create({
-          data: {
-            spaceId: t.spaceId,
-            createdByUserId: t.userId,
-            effect: "allow",
-            matchKind: "tool",
-            matchValue: `v-${tag}`,
-          },
-        }),
-      );
       created.set(t.name, ids);
     };
     await runAsSystem("row-level security test", async () => {
@@ -635,8 +599,7 @@ describePostgres("row-level security (PostgreSQL)", () => {
     };
     expect(await owners()).toEqual(none);
     expect(await runAsTenant(a, owners)).toEqual({
-      // The member's account vault and their Space's own vault.
-      vaultCredential: [a.userId, a.userId],
+      vaultCredential: [a.userId],
       taughtSkill: [a.spaceId],
       agentSkill: [a.spaceId],
       userVoiceCredential: [a.userId],

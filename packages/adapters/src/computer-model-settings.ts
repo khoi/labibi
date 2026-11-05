@@ -1,7 +1,7 @@
 import type { AgentRunModel } from "@labradoodle/adapter-kit";
 import { isModelCredentialRejected } from "@labradoodle/adapter-kit";
 import type { PrismaClient } from "@labradoodle/db";
-import { appliedModelRole } from "@labradoodle/db";
+import { getModelRole } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { computerTarget } from "./pi-runtime-computer-mode.js";
 import { isTerminalModelSetupError } from "./run-model.js";
@@ -30,7 +30,7 @@ export async function resolveComputerRunModel(
 ): Promise<AgentRunModel | undefined> {
   // A paused turn pins both identities by connection, so a hosted main model cannot switch.
   if (!main.connectionId) return undefined;
-  const { primary, backups } = await appliedModelRole(deps.prisma, scope, "computer");
+  const { primary, backups } = await getModelRole(deps.prisma, scope, "computer");
   for (const choice of primary ? [primary, ...backups] : []) {
     try {
       const connectionId =

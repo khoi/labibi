@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import type { BotSecretMetadata, SettingsScope } from "@labradoodle/contracts";
+import type { BotSecretMetadata } from "@labradoodle/contracts";
 import { encodeCardSecret, encodeLoginSecret } from "@labradoodle/contracts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
@@ -113,11 +113,11 @@ async function flush() {
   });
 }
 
-async function render(scope: SettingsScope = "account") {
+async function render() {
   await act(async () => {
     root.render(
       <QueryClientProvider client={queryClient}>
-        <VaultSettings scope={scope} />
+        <VaultSettings />
       </QueryClientProvider>,
     );
   });
@@ -221,7 +221,7 @@ describe("VaultSettings list", () => {
       "deploy-token$DEPLOY_TOKEN",
     ]);
     expect(document.body.innerHTML).not.toContain(FAKE_VALUE);
-    expect(vault.list.mock.calls[0]?.[0]).toEqual({ scope: "account" });
+    expect(vault.list.mock.calls[0]?.[0]).toBeUndefined();
   });
 
   it("shows only New until there is something to list", async () => {
@@ -266,15 +266,6 @@ describe("VaultSettings list", () => {
       ),
     ).toEqual(["key-3"]);
   });
-
-  it("reads and writes the Space's own vault when scoped to the Space", async () => {
-    await render("space");
-    expect(vault.list.mock.calls[0]?.[0]).toEqual({ scope: "space" });
-    await click(rowNamed("deploy-token"));
-    await click("vault-item-remove");
-    await click("vault-item-remove-confirm");
-    expect(vault.remove).toHaveBeenCalledWith({ scope: "space", name: "deploy-token" });
-  });
 });
 
 describe("VaultSettings new items", () => {
@@ -288,7 +279,6 @@ describe("VaultSettings new items", () => {
     await type(field("Billing address"), "home");
     await click(buttonIn(editor(), "Save")!);
     expect(vault.put).toHaveBeenCalledWith({
-      scope: "account",
       destination: { name: undefined, origin: "", auth: { type: "card" } },
       value: encodeCardSecret({
         number: "4242424242424242",
@@ -311,7 +301,6 @@ describe("VaultSettings new items", () => {
     await type(field("When to use"), "Deliveries");
     await click(buttonIn(editor(), "Save")!);
     expect(vault.put).toHaveBeenCalledWith({
-      scope: "account",
       destination: { name: undefined, origin: "", auth: { type: "contact" } },
       value: JSON.stringify({ line1: "1 Main St" }),
       title: "Office",
@@ -331,7 +320,6 @@ describe("VaultSettings new items", () => {
     await type(values[1]!, FAKE_VALUE);
     await click(buttonIn(editor(), "Save")!);
     expect(vault.put).toHaveBeenCalledWith({
-      scope: "account",
       destination: {
         name: undefined,
         origin: "https://portal.example.com",
@@ -356,7 +344,6 @@ describe("VaultSettings new items", () => {
     await type(field("Value"), FAKE_VALUE);
     await click(buttonIn(editor(), "Save")!);
     expect(vault.put).toHaveBeenCalledWith({
-      scope: "account",
       destination: {
         name: undefined,
         origin: "https://api.example.com",
@@ -379,7 +366,6 @@ describe("VaultSettings new items", () => {
     await type(field("Variable name"), "NETBIRD_SETUP_KEY");
     await click(buttonIn(editor(), "Save")!);
     expect(vault.put).toHaveBeenCalledWith({
-      scope: "account",
       destination: { name: "netbird_setup_key", origin: "", auth: { type: "command" } },
       value: FAKE_VALUE,
     });
@@ -418,7 +404,7 @@ describe("VaultSettings item details", () => {
     expect(detail()?.textContent).toContain('Header "X-Api-Key"');
     await click("vault-item-show");
     await click("identity-confirm");
-    expect(vault.reveal).toHaveBeenCalledWith({ scope: "account", name: "custom" });
+    expect(vault.reveal).toHaveBeenCalledWith({ name: "custom" });
     expect(byTestId("vault-item-value").textContent).toContain(FAKE_VALUE);
     // A shown value never lands in the query cache.
     const cached = queryClient
@@ -475,7 +461,6 @@ describe("VaultSettings item details", () => {
     await type(field("Name"), "Travel card");
     await click(buttonIn(editor(), "Save")!);
     expect(vault.put).toHaveBeenCalledWith({
-      scope: "account",
       destination: { name: "visa", origin: "", auth: { type: "card" } },
       value: encodeCardSecret({
         number: "4242424242424242",
@@ -496,7 +481,6 @@ describe("VaultSettings item details", () => {
     await type(field("Name"), "Service");
     await click(buttonIn(editor(), "Save")!);
     expect(vault.put).toHaveBeenCalledWith({
-      scope: "account",
       destination: {
         name: "custom",
         origin: "https://svc.example.com",
@@ -514,7 +498,7 @@ describe("VaultSettings item details", () => {
     expect(vault.remove).not.toHaveBeenCalled();
     expect(detail()?.textContent).toContain("Remove deploy-token?");
     await click("vault-item-remove-confirm");
-    expect(vault.remove).toHaveBeenCalledWith({ scope: "account", name: "deploy-token" });
+    expect(vault.remove).toHaveBeenCalledWith({ name: "deploy-token" });
     expect(detail()).toBeNull();
   });
 

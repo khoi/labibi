@@ -36,7 +36,7 @@ import {
 } from "@labradoodle/core";
 import * as Clipboard from "expo-clipboard";
 import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   AccessibilityInfo,
   ActivityIndicator,
@@ -59,6 +59,7 @@ import { NativeSwitch } from "../../components/native-switch";
 import { Checkmark } from "../../components/row-accessories";
 import { SettingsRow } from "../../components/settings-group";
 import type { MobileMe, MobileModel, MobileModelCredential } from "../../lib/api";
+import { rpc } from "../../lib/api";
 import { mobileTokens } from "../../lib/appearance";
 import { useI18n } from "../../lib/i18n";
 import {
@@ -71,7 +72,6 @@ import {
   modelConnectionRequest,
 } from "../../lib/model-connection-request";
 import { native, useThemedStyles } from "../../lib/native";
-import { ACCOUNT_SETTINGS, settingsRpc } from "../../lib/settings-target";
 import { thinkingLevelLabel } from "../../lib/thinking-level";
 import { useListSearch } from "../../lib/use-list-search";
 import { errorText } from "../../lib/user-error";
@@ -90,9 +90,6 @@ export default function ModelConnection() {
   const { requestId = "" } = useLocalSearchParams<{ requestId?: string }>();
   const [request] = useState(() => modelConnectionRequest(requestId));
   const makeDefault = request?.makeDefault ?? false;
-  const target = request?.target ?? ACCOUNT_SETTINGS;
-  // A Space's override connects through that Space, where makeDefault and sign-in apply.
-  const rpc = useMemo(() => settingsRpc(target), [target]);
   // A new connection is managed by its id once it is saved, so later saves update it.
   const [credentialId, setCredentialId] = useState(request?.credentialId ?? null);
   const credentialIdRef = useRef(credentialId);
@@ -433,7 +430,7 @@ export default function ModelConnection() {
       credential,
       credentialId: credentialIdRef.current,
       settingsOnly: limitsOnly,
-      makeDefault: { makeDefault, scope: target.scope },
+      makeDefault: { makeDefault },
     });
     if (connect.status === "incomplete") return;
     // Drop the previous result before the limit check so it cannot sit beside the new one.
@@ -525,7 +522,6 @@ export default function ModelConnection() {
             selected.thinkingLevels,
           ) as ThinkingLevel | null,
           makeDefault,
-          scope: target.scope,
           label: selected.providerName ?? selected.provider,
           credentialId: credentialIdRef.current,
           codePage: true,

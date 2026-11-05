@@ -52,12 +52,6 @@ msgstr "{0, plural, one {还有 # 个} other {还有 # 个}}"
 msgid "{0, plural, one {# skill} other {# skills}}"
 msgstr "{0, plural, one {# 个技能} other {# 个技能}}"
 
-#. placeholder {0}: availability.spaceIds.length
-#. placeholder {0}: chosen.length
-#: src/components/integrations/space-availability.tsx
-msgid "{0, plural, one {# space} other {# spaces}}"
-msgstr "{0, plural, one {# 个工作区} other {# 个工作区}}"
-
 #. placeholder {0}: server.health.toolCount
 #: src/pages/McpServersOverlay.tsx
 msgid "{0, plural, one {# tool} other {# tools}}"
@@ -419,10 +413,6 @@ msgstr "@{0}"
 msgid "/ month"
 msgstr "/ 月"
 
-#: src/components/integrations/space-availability.tsx
-msgid "1 space"
-msgstr "1 个工作区"
-
 #: src/pages/shell/message-cards.tsx
 msgid "A bit of everything"
 msgstr "什么都做一点"
@@ -679,10 +669,6 @@ msgstr "全部 {credit} 都用于模型用量。"
 msgid "All bots"
 msgstr "全部 Bot"
 
-#: src/components/integrations/space-availability.tsx
-msgid "All spaces"
-msgstr "所有工作区"
-
 #: src/pages/ActivityList.tsx
 msgid "All statuses"
 msgstr "全部状态"
@@ -828,7 +814,6 @@ msgid "Approval model"
 msgstr "审批模型"
 
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Approvals"
 msgstr "审批"
 
@@ -933,10 +918,6 @@ msgstr "保存例行任务后可用"
 #: src/components/ModelCredits.tsx
 msgid "Available credits"
 msgstr "可用额度"
-
-#: src/components/integrations/space-availability.tsx
-msgid "Available in"
-msgstr "可用于"
 
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Available to shell commands as {commandVariable}"
@@ -1111,7 +1092,6 @@ msgstr "无法读取图像"
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Cancel"
 msgstr "取消"
 
@@ -1721,10 +1701,6 @@ msgstr "无法更改"
 msgid "Could not change password"
 msgstr "无法修改密码"
 
-#: src/components/integrations/space-availability.tsx
-msgid "Could not change where this is available"
-msgstr "无法更改可用的工作区"
-
 #: src/components/pages/PageViewHost.tsx
 msgid "Could not change who can view this page. Try again."
 msgstr "无法更改谁可以查看此页面。请重试。"
@@ -2310,14 +2286,6 @@ msgstr "当前密码"
 msgid "Custom header"
 msgstr "自定义请求头"
 
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Customize"
-msgstr "自定义"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Customize {label}"
-msgstr "自定义{label}"
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "Daily"
 msgstr "每天"
@@ -2371,7 +2339,6 @@ msgstr "默认范围"
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/dialogs.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Delete"
 msgstr "删除"
 
@@ -2407,10 +2374,6 @@ msgstr "删除群组"
 #: src/pages/shell/dialogs.tsx
 msgid "Delete memories too"
 msgstr "同时删除记忆"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Delete this Space's credentials?"
-msgstr "要删除此工作区的凭据吗？"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -3678,7 +3641,6 @@ msgstr "模型选项"
 
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Models"
 msgstr "模型"
 
@@ -4666,13 +4628,6 @@ msgstr "移除 {site}"
 msgid "Remove change trigger"
 msgstr "移除变化触发器"
 
-#: src/components/integrations/plugin-marketplace.tsx
-#: src/pages/KnowledgeSection.tsx
-#: src/pages/McpServersOverlay.tsx
-#: src/pages/PluginsOverlay.tsx
-msgid "Remove from every space?"
-msgstr "从所有工作区移除？"
-
 #: src/pages/RoutineEditor.tsx
 msgid "Remove Git event"
 msgstr "移除 Git 事件"
@@ -4829,7 +4784,6 @@ msgstr "正在恢复工作区"
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Retry"
 msgstr "重试"
 
@@ -5734,7 +5688,6 @@ msgstr ""
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "This can't be undone."
 msgstr "此操作无法撤销。"
 
@@ -6086,14 +6039,6 @@ msgstr "使用找到的模型"
 msgid "Use Connect to verify the key."
 msgstr "请使用“连接”验证密钥。"
 
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Use defaults"
-msgstr "使用默认设置"
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Use defaults for {label}"
-msgstr "{label}使用默认设置"
-
 #: src/components/ModelCredits.tsx
 msgid "Use Labradoodle credits"
 msgstr "使用 Labradoodle 额度"
@@ -6157,7 +6102,6 @@ msgid "Variables"
 msgstr ""
 
 #: src/pages/settings-nav.ts
-#: src/pages/SpaceSettingOverrides.tsx
 msgid "Vault"
 msgstr "保管库"
 
@@ -6183,7 +6127,6 @@ msgstr "查看源代码"
 
 #: src/pages/settings-nav.ts
 #: src/pages/shell/bot-panel.tsx
-#: src/pages/SpaceSettingOverrides.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Voice"
 msgstr "语音"
@@ -6389,10 +6332,6 @@ msgstr "电脑的磁盘快满了。请删除不再需要的构建输出和缓存
 #: src/components/AccountDataSettings.tsx
 msgid "Your data"
 msgstr ""
-
-#: src/pages/SpaceSettingOverrides.tsx
-msgid "Your defaults"
-msgstr "你的默认设置"
 
 #: src/pages/Auth.tsx
 msgid "Your email address"

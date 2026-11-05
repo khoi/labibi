@@ -212,9 +212,6 @@ async function runTool(
         }),
       },
       // These runs act without approval cards; the card flow has its own tests.
-      actionAutoReviewPreference: {
-        findUnique: async () => ({ enabled: false, skipApprovals: true }),
-      },
       userActionAutoReviewPreference: {
         findUnique: async () => ({ enabled: false, skipApprovals: true }),
       },

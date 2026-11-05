@@ -9,12 +9,11 @@ import {
   skillUpdateFromTool,
 } from "./skill-tools.js";
 
-type Scope = { spaceId?: string; userId?: string; OR?: Array<{ spaceId?: string }> };
-/** The owner's rows here: added in this space (no fixture is available beyond one). */
+type Scope = { spaceId?: string; userId?: string };
+/** The owner's rows, wherever they were added. */
 function inScope(row: Record<string, unknown>, where: Scope): boolean {
   if (where.userId && row.userId !== where.userId) return false;
   if (where.spaceId && row.spaceId !== where.spaceId) return false;
-  if (where.OR && !where.OR.some((branch) => branch.spaceId === row.spaceId)) return false;
   return true;
 }
 
@@ -57,11 +56,7 @@ function makePrisma(rows: Array<Record<string, unknown>> = []) {
           data: Record<string, unknown>;
         }) => {
           const index = store.findIndex(
-            (row) =>
-              row.id === where.id &&
-              row.spaceId === where.spaceId &&
-              row.userId === where.userId &&
-              row.source === where.source,
+            (row) => row.id === where.id && inScope(row, where) && row.source === where.source,
           );
           if (index < 0) return { count: 0 };
           store[index] = { ...store[index], ...data, updatedAt: new Date() };
@@ -76,11 +71,7 @@ function makePrisma(rows: Array<Record<string, unknown>> = []) {
       }),
       deleteMany: vi.fn(async ({ where }: { where: Record<string, string> }) => {
         const index = store.findIndex(
-          (row) =>
-            row.id === where.id &&
-            row.spaceId === where.spaceId &&
-            row.userId === where.userId &&
-            row.source === where.source,
+          (row) => row.id === where.id && inScope(row, where) && row.source === where.source,
         );
         if (index < 0) return { count: 0 };
         store.splice(index, 1);

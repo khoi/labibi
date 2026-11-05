@@ -17,7 +17,7 @@ Nothing crosses between spaces unless you allow it:
 
 Your account settings apply in every space: [models](./models.md), [voice](./voice-and-calls.md),
 [approvals](./approvals.md) and your credentials vault. Skills, MCP servers and plugins you add are
-available in all your spaces too, unless you narrow them with **Available in**.
+available in all your spaces too.
 
 ## Share a space
 
@@ -34,13 +34,11 @@ runs are billed to their own account. Only the person a bot is waiting on can ta
 computer for them.
 
 The owner can remove people. Anyone else can **Leave**. What a person who leaves made in the space,
-such as bots and routines, passes to the owner, with routines paused, and their own credentials for
-that space are deleted.
+such as bots and routines, passes to the owner, with routines paused, and the app accounts they
+connected there are disconnected. Their skills, MCP servers and plugins stay theirs in their other
+spaces.
 
-## Customize one space
+## Space settings
 
 Right-click a space in the sidebar and choose **Settings**, or open **Settings → General** and choose
-**Manage** next to the space.
-
-There you can rename the space, or give it its own **Models**, **Voice**, **Approvals** or **Vault**
-with **Customize**. **Use defaults** goes back to your account settings.
+**Manage** next to the space. There you can rename the space and manage its members.

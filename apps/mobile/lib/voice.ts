@@ -1,4 +1,3 @@
-import type { SettingsScope } from "@labradoodle/contracts";
 import {
   ensureAiDataConsent,
   readVoiceAudio,
@@ -31,8 +30,6 @@ import { errorText, voiceAccountErrorText } from "./user-error";
 export type PlaybackSpeaker = { name?: string; color?: string };
 type SpeechOptions = {
   requestContext?: ApiRequestContext;
-  /** Which copy of the voice settings to use; omitted means whichever applies in the space. */
-  scope?: SettingsScope;
   voiceId?: string;
   botId?: string;
   messageId?: string;
@@ -228,7 +225,7 @@ async function speakPrepared(text: string, opts: SpeechOptions, epoch: number): 
     if (!isCurrentSpeech(epoch)) return false;
     const prepared = await rpc(
       "voice/prepare",
-      { text, voiceId: opts.voiceId, botId: opts.botId, scope: opts.scope },
+      { text, voiceId: opts.voiceId, botId: opts.botId },
       { requestContext },
     );
     if (!isCurrentSpeech(epoch)) return false;
@@ -416,17 +413,9 @@ export async function speakUtterance(
   const requestContext = opts.requestContext ?? (await captureApiRequestContext());
   await ensureAiDataConsent({
     uses: ["voice"],
-    status: () =>
-      rpc(
-        "aiConsent/status",
-        { uses: ["voice"], ...(opts.scope ? { settingsScope: opts.scope } : {}) },
-        { requestContext },
-      ),
+    status: () => rpc("aiConsent/status", { uses: ["voice"] }, { requestContext }),
     prompt: promptAiConsent,
-    allow: (input) =>
-      rpc("aiConsent/allow", opts.scope ? { ...input, settingsScope: opts.scope } : input, {
-        requestContext,
-      }),
+    allow: (input) => rpc("aiConsent/allow", input, { requestContext }),
     coalesceKey: aiConsentCoalesceKey(requestContext),
   });
   return renderUtterance(text, opts, requestContext);
@@ -453,7 +442,6 @@ async function renderUtterance(
             text,
             voiceId: opts.voiceId,
             botId: opts.botId,
-            scope: opts.scope,
           }),
           signal: deadline.signal,
         },

@@ -34,8 +34,8 @@ function matches(row: Row, where: Where): boolean {
   });
 }
 
-/** A row in the member's account vault, which every Space without its own vault uses. */
-export const accountVault = { userId: "user-1", spaceId: null };
+/** A row in the member's vault, which every Space uses. */
+export const accountVault = { userId: "user-1" };
 
 export function fakeDatabase() {
   let rows: Row[] = [];
@@ -45,8 +45,6 @@ export function fakeDatabase() {
     tick += 1000;
     return new Date(tick);
   };
-  // Spaces that customized "credentials" and so use their own vault.
-  const ownVaults = new Set<string>();
   const vaultCredential = {
     findFirst: vi.fn(
       async ({ where }: { where: Where }) => rows.find((r) => matches(r, where)) ?? null,
@@ -80,16 +78,10 @@ export function fakeDatabase() {
   };
   const client: Record<string, unknown> = {
     vaultCredential,
-    spaceSettingOverride: {
-      findUnique: vi.fn(
-        async ({ where }: { where: { spaceId_userId_setting: { spaceId: string } } }) =>
-          ownVaults.has(where.spaceId_userId_setting.spaceId) ? { setting: "credentials" } : null,
-      ),
-    },
     secret: { count: vi.fn(async () => 0), findFirst: vi.fn(async () => null) },
     // The previous release's table, still counted before a stored value is deleted.
     integrationProviderConfig: { count: vi.fn(async () => 0) },
-    // The member's settings lock always finds the membership row.
+    // The member's vault lock always finds the user row.
     $queryRaw: vi.fn(async () => [{ locked: 1 }]),
   };
   // One transaction at a time, as the bot row lock serializes them in Postgres, and a failed
@@ -110,7 +102,6 @@ export function fakeDatabase() {
   };
   return {
     rows: () => rows,
-    useOwnVault: (spaceId: string) => ownVaults.add(spaceId),
     prisma: client as unknown as PrismaClient,
   };
 }

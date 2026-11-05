@@ -154,7 +154,6 @@ async function runInSpace(space: Space, options: RunOptions = {}) {
     taughtSkill: { findMany: vi.fn(async () => options.taughtSkills ?? []) },
     agentSkill: { findMany: vi.fn(async (_args: unknown) => []) },
     externalEffect: { findMany: vi.fn(async () => []) },
-    spaceSettingOverride: { findUnique: async () => null },
     userActionApprovalRule: { findMany: vi.fn(async () => []) },
     userActionAutoReviewPreference: { findUnique: vi.fn(async () => null) },
     artifact: { findMany: vi.fn(async () => []) },

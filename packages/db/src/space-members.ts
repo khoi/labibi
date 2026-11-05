@@ -11,7 +11,7 @@ import { runAsSystem } from "./row-security.js";
 import {
   lockSpaceDeletion,
   personalOrganizationIds,
-  rehomeSharedItems,
+  rehomeMemberItems,
   SpaceNotFoundError,
 } from "./spaces.js";
 import { activeRunStatuses } from "./thread-listing.js";
@@ -545,25 +545,17 @@ async function departSpace(
           });
 
           const own = { spaceId, userId };
-          // Their vault for this Space only; the account vault every Space uses stays theirs.
-          await tx.vaultCredential.deleteMany({ where: own });
-          // What they made available in other Spaces of theirs keeps working there; the rest
-          // of their tools here, plugins with all their parts, goes.
-          await rehomeSharedItems(tx, { spaceId, userId });
+          // Their tools stay theirs in their other Spaces; with nowhere to go, they go.
+          await rehomeMemberItems(tx, { spaceId, userId });
           await tx.capabilityInstall.deleteMany({ where: own });
           await tx.mcpServer.deleteMany({ where: own });
           await tx.agentSkill.deleteMany({ where: own });
-          await tx.mcpServerSpace.deleteMany({ where: own });
-          await tx.capabilityInstallSpace.deleteMany({ where: own });
-          await tx.agentSkillSpace.deleteMany({ where: own });
           await tx.mcpOAuthSession.deleteMany({ where: own });
           await tx.modelOAuthSession.deleteMany({ where: own });
           await tx.connection.deleteMany({ where: own });
-          await tx.actionApprovalRule.deleteMany({ where: { spaceId, createdByUserId: userId } });
-          await tx.actionAutoReviewPreference.deleteMany({ where: own });
           await tx.notificationPreference.deleteMany({ where: own });
           await tx.secret.deleteMany({ where: own });
-          // Model, voice and role preferences, setting overrides and AI consents cascade from here.
+          // AI consents cascade from here.
           await tx.spaceMember.delete({ where: { id: departing.id } });
           // A guest belonged only through its Spaces; a full member keeps their organization.
           await tx.member.deleteMany({

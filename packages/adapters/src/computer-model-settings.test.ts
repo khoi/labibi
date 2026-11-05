@@ -14,7 +14,6 @@ const main: AgentRunModel = {
 const scope = { userId: "user", spaceId: "space" };
 function setup(choices: ModelRoleChoice[] = [], unavailable: string[] = []) {
   const prisma = {
-    spaceSettingOverride: { findUnique: vi.fn(async () => null) },
     userModelRoleChoice: {
       findMany: vi.fn(async () =>
         choices.map((choice, position) => ({

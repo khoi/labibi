@@ -22,8 +22,6 @@ type MockClient = {
     findMany?: (args: unknown) => Promise<unknown>;
   };
   userModelRoleChoice?: unknown;
-  spaceModelRoleChoice?: unknown;
-  spaceSettingOverride?: unknown;
   $transaction?: ((...args: unknown[]) => Promise<unknown>) & { modelRoles?: true };
 };
 
@@ -99,14 +97,6 @@ export function withModelRoles<T>(prisma: T, rows: RoleRow[] = []): T {
             ),
           }
         : (own ?? roleTable);
-    target.spaceSettingOverride ??= {
-      findUnique: vi.fn(async () => null),
-      findMany: vi.fn(async () => []),
-    };
-    target.spaceModelRoleChoice ??= {
-      findMany: vi.fn(async () => []),
-      deleteMany: vi.fn(async () => ({ count: 0 })),
-    };
     return target;
   };
   augment(client);

@@ -26,17 +26,14 @@ import {
 import { clampCatalogThinkingLevel } from "@labradoodle/core";
 import type { PrismaClient } from "@labradoodle/db";
 import {
-  appliedModelRole,
   comparePreferenceOrder,
   defaultModelCredentialCandidates,
   deleteUnreferencedCredentialSecret,
   findModelCredential,
   getModelRole,
   modelCredentialProviderFilter,
-  modelRoleTarget,
   newestModelCredentialOrder,
   Prisma,
-  runAsSystemInTransaction,
   saveModelPreference,
   updateModelRole,
   writeModelRole,
@@ -153,44 +150,30 @@ export function modelsRoutes(ctx: RouterContext) {
           throw new ORPCError("FORBIDDEN");
         return withDeploymentDefault(
           input.role,
-          await getModelRole(
-            deps.prisma,
-            await modelRoleTarget(deps.prisma, context.actor, input.scope),
-            input.role,
-          ),
+          await getModelRole(deps.prisma, context.actor, input.role),
         );
       }),
       setRole: authed.models.setRole.handler(async ({ context, input }) => {
         if (input.expectedUserId && input.expectedUserId !== context.actor.userId)
           throw new ORPCError("FORBIDDEN");
-        const { role, primary, backups, scope } = input;
+        const { role, primary, backups } = input;
         await validateRoleChoices(context.actor, role, [
           ...(primary ? [primary] : []),
           ...(backups ?? []),
         ]);
         return withDeploymentDefault(
           role,
-          await updateModelRole(
-            deps.prisma,
-            { userId: context.actor.userId, spaceId: context.actor.spaceId, scope },
-            role,
-            { primary, backups },
-          ),
+          await updateModelRole(deps.prisma, context.actor, role, { primary, backups }),
         );
       }),
       backups: authed.models.backups.handler(async ({ context }) =>
-        (await appliedModelRole(deps.prisma, context.actor, "main")).backups.map(
+        (await getModelRole(deps.prisma, context.actor, "main")).backups.map(
           ({ provider, modelId }) => ({ provider, modelId }),
         ),
       ),
       setBackups: authed.models.setBackups.handler(async ({ context, input }) => {
         await validateRoleChoices(context.actor, "main", input);
-        await updateModelRole(
-          deps.prisma,
-          { userId: context.actor.userId, spaceId: context.actor.spaceId },
-          "main",
-          { backups: input },
-        );
+        await updateModelRole(deps.prisma, context.actor, "main", { backups: input });
         return { ok: true as const };
       }),
       connect: authed.models.connect.handler(async ({ context, input }) => {
@@ -307,7 +290,6 @@ export function modelsRoutes(ctx: RouterContext) {
             modelId: input.modelId,
             thinkingLevel: input.thinkingLevel,
             makeDefault: input.makeDefault,
-            settingsScope: input.scope,
             label: input.label,
             codePage: input.codePage,
             signal: context.signal,
@@ -366,7 +348,6 @@ export function modelsRoutes(ctx: RouterContext) {
                 modelId: login.modelId,
                 thinkingLevel: login.thinkingLevel,
                 makeDefault: login.makeDefault,
-                scope: login.settingsScope,
                 signal: login.signal,
               },
               codexCatalog,
@@ -395,13 +376,8 @@ export function modelsRoutes(ctx: RouterContext) {
         if (!modelId) throw new ORPCError("BAD_REQUEST", { message: "Choose a model" });
         // An omitted level keeps the one this model already has in the main list: on the
         // chosen connection first, then on another, as writeModelRole does.
-        const savedChoices = async (
-          client: Pick<
-            PrismaClient,
-            "spaceModelRoleChoice" | "userModelRoleChoice" | "spaceSettingOverride"
-          >,
-        ) => {
-          const main = await appliedModelRole(client, context.actor, "main");
+        const savedChoices = async (client: Pick<PrismaClient, "userModelRoleChoice">) => {
+          const main = await getModelRole(client, context.actor, "main");
           const key = backupChoiceKey({ provider: input.provider, modelId });
           return [...(main.primary ? [main.primary] : []), ...main.backups].filter(
             (choice) => backupChoiceKey(choice) === key,
@@ -552,7 +528,7 @@ export function modelsRoutes(ctx: RouterContext) {
                 }
                 thinkingLevel = clampCatalogThinkingLevel(thinkingLevel, thinking.allowed);
               }
-              await writeModelRole(tx, await modelRoleTarget(tx, context.actor), "main", {
+              await writeModelRole(tx, context.actor, "main", {
                 primary: {
                   provider: input.provider,
                   modelId,
@@ -614,17 +590,8 @@ export function modelsRoutes(ctx: RouterContext) {
                   ...(lastConnection ? [{ credentialId: null }] : []),
                 ],
               };
-              // Its models leave every purpose in the account's models and every Space's,
-              // like the connection itself; the tenant scope would otherwise limit the
-              // Space deletes to the active Space.
+              // Its models leave every purpose, like the connection itself.
               await tx.userModelRoleChoice.deleteMany({ where: roleRows });
-              await runAsSystemInTransaction(
-                tx,
-                "disconnect a model connection from every Space",
-                async () => {
-                  await tx.spaceModelRoleChoice.deleteMany({ where: roleRows });
-                },
-              );
               if (existing.length === 0) return;
               // Credentials are account-wide, so disconnecting removes them from every Space.
               await tx.userModelCredential.deleteMany({

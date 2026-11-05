@@ -8,7 +8,7 @@ import type {
   SecretStore,
 } from "@labradoodle/adapter-kit";
 import type { PrismaClient } from "@labradoodle/db";
-import { availableInSpace, itemSecretIn } from "@labradoodle/db";
+import { itemSecretIn } from "@labradoodle/db";
 import { parse as parseYaml } from "yaml";
 import { z } from "zod";
 import {
@@ -183,7 +183,7 @@ export class InstalledConnectorProvider implements ConnectorProvider {
   private async authorizedTools(context: AdapterContext): Promise<ConnectorTool[]> {
     const installs = await this.prisma.capabilityInstall.findMany({
       where: {
-        ...availableInSpace(context),
+        userId: context.userId,
         kind: { in: ["mcp", "api", "graphql"] },
       },
       orderBy: { createdAt: "asc" },
@@ -296,7 +296,7 @@ export class InstalledConnectorProvider implements ConnectorProvider {
     const install = await this.prisma.capabilityInstall.findFirst({
       where: {
         id: installId,
-        ...availableInSpace(context),
+        userId: context.userId,
         kind: { in: ["mcp", "api", "graphql"] },
       },
     });
