@@ -369,9 +369,6 @@ export function createRouterContext(deps: RouterDeps) {
       return result;
     });
 
-      return next();
-    });
-
   return {
     deps,
     os,
