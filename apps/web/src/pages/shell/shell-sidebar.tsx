@@ -129,7 +129,7 @@ export function ShellSidebar({
         inert={mobileOpen ? undefined : true}
         tabIndex={mobileOpen ? undefined : -1}
         onClick={() => setMobileOpen(false)}
-        className={`absolute inset-y-0 end-0 start-[min(calc(100%-48px),316px)] z-30 bg-overlay transition-opacity duration-150 ease-out motion-reduce:transition-none md:hidden ${
+        className={`absolute inset-y-0 end-0 start-[min(calc(100%-48px),316px)] z-30 bg-overlay transition-opacity duration-250 ease-drawer motion-reduce:transition-none md:hidden ${
           mobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
       />
@@ -144,7 +144,7 @@ export function ShellSidebar({
         data-collapsed={collapsed ? "true" : "false"}
         className={
           isMobile
-            ? `absolute inset-y-0 start-0 z-40 flex w-[calc(100%-48px)] max-w-[316px] shrink-0 flex-col border-e border-sidebar-border bg-sidebar transition-transform duration-200 ease-out motion-reduce:transition-none ${mobileOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"}`
+            ? `absolute inset-y-0 start-0 z-40 flex w-[calc(100%-48px)] max-w-[316px] shrink-0 flex-col border-e border-sidebar-border bg-sidebar transition-transform duration-250 ease-drawer motion-reduce:transition-none ${mobileOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"}`
             : "h-full overflow-hidden border-sidebar-border"
         }
       >

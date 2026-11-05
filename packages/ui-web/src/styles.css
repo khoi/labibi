@@ -30,6 +30,8 @@
   --text-heading1: 26px;
   --text-heading1--line-height: 32px;
   --text-heading1--letter-spacing: -0.015em;
+  --ease-snappy: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 /* The system font reads light at 400 on macOS; regular text uses 420 there. Medium and semibold stay. */
@@ -194,5 +196,16 @@
 
   .labradoodle-bot-avatar {
     transition: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
