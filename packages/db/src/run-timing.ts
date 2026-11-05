@@ -10,8 +10,6 @@ const RESPONSE_BLOCK_KINDS = new Set<string>([
   "app_connect",
   "connect",
   "computer",
-  "voice_call",
-  "call_request",
   "image",
   "file",
   "page",

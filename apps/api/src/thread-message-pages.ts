@@ -7,7 +7,6 @@ import type {
 import { MessageBlock as MessageBlockSchema } from "@labradoodle/contracts";
 import {
   BACKGROUND_RUN_TRIGGERS,
-  callIdFromClientNonce,
   isBackgroundInputBlock,
   isBackgroundRunTrigger,
   isPeerReceiptBlocks,
@@ -279,7 +278,6 @@ type MessageRow = {
     blocks: Prisma.JsonValue;
   } | null;
   runId: string | null;
-  clientNonce?: string | null;
   createdAt: Date;
 };
 
@@ -318,7 +316,6 @@ function toThreadMessage(row: MessageRow, authors: Map<string, MessageAuthor>): 
     replyQuote: row.replyQuote ?? undefined,
     replyPreview,
     runId: row.runId ?? undefined,
-    callId: callIdFromClientNonce(row.clientNonce),
     createdAt: row.createdAt.toISOString(),
   };
 }

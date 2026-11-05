@@ -540,67 +540,6 @@ const rich: Scenario = {
   ],
 };
 
-// Call messages carry their callId; the transcript groups a call's turns into one card.
-const calls: Scenario = {
-  id: "calls",
-  label: "Calls",
-  messages: [
-    bot(
-      [
-        {
-          kind: "voice_call",
-          callId: "call-paginated",
-          title: "Deploy check",
-          farewell: "Bye",
-          durationSeconds: 125,
-        },
-      ],
-      { callId: "call-paginated", runId: "run-paginated" },
-    ),
-    say("Here is the deployment checklist.", { runId: "run-paginated" }),
-    bot(
-      [
-        {
-          kind: "call_request",
-          callId: "call-1",
-          reason: "The venue needs an answer today",
-          opening: "Hi, quick question about the venue.",
-          status: "ringing",
-          expiresAt: "2099-01-01T00:00:00.000Z",
-        },
-      ],
-      { callId: "call-1" },
-    ),
-    bot(
-      [
-        {
-          kind: "call_request",
-          callId: "call-2",
-          reason: "Confirm the budget",
-          opening: "Hi, about the budget.",
-          status: "missed",
-          expiresAt: "2026-10-26T09:30:00.000Z",
-        },
-      ],
-      { callId: "call-2" },
-    ),
-    user("Can we go over the offsite?", { callId: "call-3", runId: "run-3" }),
-    say("Sure. The Loft is booked for Tuesday.", { callId: "call-3", runId: "run-3" }),
-    bot(
-      [
-        {
-          kind: "voice_call",
-          callId: "call-3",
-          title: "Offsite planning",
-          farewell: "Talk soon.",
-          durationSeconds: 184,
-        },
-      ],
-      { callId: "call-3" },
-    ),
-  ],
-};
-
 // Every markdown style a reply can use, so type and weight changes can be judged in one place.
 const textStyles: Scenario = {
   id: "text-styles",
@@ -635,7 +574,6 @@ const SCENARIOS: Scenario[] = [
   working,
   team,
   rich,
-  calls,
 ];
 
 const IMAGE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320"><rect width="480" height="320" fill="#d4d4d4"/><circle cx="160" cy="150" r="70" fill="#a3a3a3"/><rect x="250" y="90" width="150" height="120" rx="12" fill="#737373"/></svg>`;

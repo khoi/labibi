@@ -53,7 +53,6 @@ export type DiagnosticsInput = {
     | "mcpStdioAllowedCommands"
     | "mcpAllowPrivateEndpoint"
     | "userDevicesEnabled"
-    | "phoneCallsEnabled"
   > & { secretStore: string };
   nodeVersion: string;
   database:
@@ -90,7 +89,6 @@ export function renderDiagnostics(input: DiagnosticsInput): string {
     `- MCP_STDIO_ALLOWED_COMMANDS: ${env.mcpStdioAllowedCommands.length}`,
     `- MCP_ALLOW_PRIVATE_ENDPOINT: ${onOff(env.mcpAllowPrivateEndpoint)}`,
     `- User devices: ${onOff(env.userDevicesEnabled)}`,
-    `- Phone calls: ${onOff(env.phoneCallsEnabled)}`,
     "",
     "### Database",
     "",

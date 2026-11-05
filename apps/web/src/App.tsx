@@ -13,14 +13,12 @@ import {
 } from "react";
 import { Navigate, Outlet, Route, Routes, useLocation, useSearchParams } from "react-router-dom";
 import { LoadingState } from "./components/ai/primitives";
-import { CallLayout } from "./components/call/CallLayout";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { MarkdownLinkPrompt } from "./components/markdown-link-prompt";
 import { PageLoading } from "./components/PageLoading";
 import { SignInEntrance } from "./components/SignInEntrance";
 import { SubscriptionGate } from "./components/SubscriptionGate";
 import { authClient } from "./lib/auth";
-import { syncCallIdentity } from "./lib/call-session";
 import { desktopBridge } from "./lib/desktop";
 import { syncWebLogoAvatarIdentity } from "./lib/logo-avatar-activity";
 import { identifyMonitoringUser } from "./lib/monitoring";
@@ -143,7 +141,6 @@ function SessionApp() {
   useLayoutEffect(() => {
     if (gate !== "authenticated" && gate !== "anonymous") return;
     syncWebLogoAvatarIdentity(analyticsUserId ?? null);
-    syncCallIdentity(analyticsUserId ?? null);
     syncLogOutFailure(gate === "authenticated");
     if (gate === "authenticated") rememberSignedIn();
   }, [gate, analyticsUserId]);
@@ -286,12 +283,10 @@ function SessionApp() {
                 <Route path="/app" element={<ShellPage />} />
                 <Route path="/app/g/:groupId" element={<ShellPage />} />
                 <Route path="/app/:botId" element={<ShellPage />} />
-                <Route element={<CallLayout />}>
-                  <Route path="/onboarding/:step?" element={<OnboardingPage />} />
-                  <Route path="/app/artifacts" element={<ArtifactsPage />} />
-                  <Route path="/app/artifacts/:artifactId" element={<ArtifactsPage />} />
-                  <Route path="/app/x/:linkId" element={<NavLinkPage />} />
-                </Route>
+                <Route path="/onboarding/:step?" element={<OnboardingPage />} />
+                <Route path="/app/artifacts" element={<ArtifactsPage />} />
+                <Route path="/app/artifacts/:artifactId" element={<ArtifactsPage />} />
+                <Route path="/app/x/:linkId" element={<NavLinkPage />} />
               </Route>
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

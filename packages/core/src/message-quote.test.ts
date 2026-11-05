@@ -208,7 +208,6 @@ const visibleBlocks: Array<[MessageBlock, string]> = [
     "Mail",
   ],
   [{ kind: "computer", state: "ready", text: "Ready" }, "Ready"],
-  [{ kind: "voice_call", title: "Voice call", farewell: "Bye" }, "Voice call"],
   [{ kind: "meta", text: "Paused" }, "Paused"],
   [{ kind: "progress", text: "Working" }, "Working"],
   [{ kind: "steps", steps: [{ label: "Search", count: 1 }] }, "Search"],

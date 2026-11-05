@@ -3353,19 +3353,12 @@ describe("user_computer_shell", () => {
       { userDevices: devices().gateway, trigger: "follow_up", sourceRole: "bot" },
     ],
     ["another member's bot", { userDevices: devices().gateway, botUserId: "user-2" }],
-    ...[
-      "webhook",
-      "routine",
-      "messaging",
-      "bot_message",
-      "spawn",
-      "tickets",
-      "reaction",
-      "call_end",
-    ].map((trigger): [string, Parameters<typeof fixture>[0]] => [
-      `a ${trigger} run`,
-      { userDevices: devices().gateway, trigger },
-    ]),
+    ...["webhook", "routine", "messaging", "bot_message", "spawn", "tickets", "reaction"].map(
+      (trigger): [string, Parameters<typeof fixture>[0]] => [
+        `a ${trigger} run`,
+        { userDevices: devices().gateway, trigger },
+      ],
+    ),
   ])("is not offered for %s", async (_label, options) => {
     const f = fixture({ ...ownRun, ...options });
     await f.run();

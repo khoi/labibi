@@ -50,9 +50,6 @@ export interface ExecutorDeps {
   dataDir?: string;
   notifications?: NotificationProvider;
   jobs: JobPublisher;
-  phoneCallsEnabled?: boolean;
-  phoneCallCooldownMinutes?: number;
-  phoneCallRingSeconds?: number;
   /** Messaging surface; absent means zero identity queries and no chat prompts. */
   messaging?: { hasIdentity(botId: string): Promise<boolean> };
   listConnectedPluginSlugs?: (userId: string) => Promise<string[]>;

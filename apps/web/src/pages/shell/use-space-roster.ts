@@ -60,10 +60,6 @@ export function useSpaceRoster({
   // A failed first load falls back to the shell, whose polling and footer can still recover.
   const [initialLoadFailed, setInitialLoadFailed] = useState(false);
   const [bootstrapMe, setBootstrapMe] = useState<Me | null | undefined>(seed?.me);
-  const callsEnabledRef = useRef(false);
-  useEffect(() => {
-    callsEnabledRef.current = bootstrapMe?.phoneCallsEnabled === true;
-  }, [bootstrapMe?.phoneCallsEnabled]);
   const botsRefreshEpoch = useRef(0);
   const botsRefreshApplied = useRef(0);
   const archivedBotsRefreshEpoch = useRef(0);
@@ -214,7 +210,6 @@ export function useSpaceRoster({
     setInitialLoadFailed,
     bootstrapMe,
     setBootstrapMe,
-    callsEnabledRef,
     botsRefreshApplied,
     botsRefreshInFlight,
     routeBotId,
@@ -280,7 +275,6 @@ export function useSpaceBootstrap({
     setInitialLoadFailed,
     bootstrapMe,
     setBootstrapMe,
-    callsEnabledRef,
     botsRefreshApplied,
     botsRefreshInFlight,
     routeBotId,
@@ -428,7 +422,7 @@ export function useSpaceBootstrap({
       });
     let refreshTimer: number | undefined;
     const refreshVisibleBots = () => {
-      if (document.visibilityState !== "visible" && !callsEnabledRef.current) return;
+      if (document.visibilityState !== "visible") return;
       window.clearTimeout(refreshTimer);
       refreshTimer = window.setTimeout(
         () =>

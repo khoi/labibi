@@ -98,7 +98,6 @@ describe("userComputerOwner", () => {
     { trigger: "routine" },
     { trigger: "webhook" },
     { trigger: "messaging" },
-    { trigger: "call_end" },
     { sourceRole: "bot" },
     { sourceRole: undefined },
     { messagingChannelRun: true },

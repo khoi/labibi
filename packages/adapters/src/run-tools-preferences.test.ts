@@ -251,7 +251,6 @@ describe("update_preferences", () => {
         followUpFromUser,
       }).some((tool) => tool.name === "update_preferences");
     expect(offered("user")).toBe(true);
-    expect(offered("call_end")).toBe(true);
     expect(offered("follow_up", true)).toBe(true);
     for (const trigger of [
       "follow_up",

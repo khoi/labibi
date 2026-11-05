@@ -115,7 +115,7 @@ describe("Dictation on the desktop app", () => {
   it("dictates through the system recognizer without a voice provider", async () => {
     const onFinal = vi.fn();
     const dictation = new Dictation();
-    await dictation.listen({ mode: "hold", transcribe: false, onFinal });
+    await dictation.listen({ transcribe: false, onFinal });
     const session = desktop.session();
     expect(desktop.speech.start).toHaveBeenCalledTimes(1);
 
@@ -127,25 +127,9 @@ describe("Dictation on the desktop app", () => {
     expect(desktop.speech.stop).toHaveBeenCalledWith(session);
   });
 
-  it("keeps listening across the recognizer's own pauses in a call", async () => {
-    vi.useFakeTimers();
-    const onFinal = vi.fn();
-    const dictation = new Dictation();
-    await dictation.listen({ mode: "endpoint", transcribe: false, onFinal });
-    const first = desktop.session();
-    desktop.emit({ session: first, type: "result", text: "quiero saber" });
-    desktop.emit({ session: first, type: "end" });
-    const second = desktop.session();
-    expect(second).not.toBe(first);
-
-    desktop.emit({ session: second, type: "result", text: "el clima de mañana" });
-    await vi.advanceTimersByTimeAsync(1_300);
-    expect(onFinal).toHaveBeenCalledWith("quiero saber el clima de mañana");
-  });
-
   it("explains where to allow dictation after macOS refused it", async () => {
     const dictation = new Dictation();
-    await dictation.listen({ mode: "hold", transcribe: false, onFinal: () => undefined });
+    await dictation.listen({ transcribe: false, onFinal: () => undefined });
     desktop.emit({ session: desktop.session(), type: "error", error: "not-allowed" });
     expect(dictation.state.error).toBe(
       "Allow Labradoodle to use Speech Recognition and the microphone in System Settings.",

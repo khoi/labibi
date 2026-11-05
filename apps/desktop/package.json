@@ -72,8 +72,8 @@
       "entitlements": "assets/entitlements.mac.plist",
       "entitlementsInherit": "assets/entitlements.mac.plist",
       "extendInfo": {
-        "NSMicrophoneUsageDescription": "Labradoodle uses the microphone for dictation and voice calls with your bots.",
-        "NSSpeechRecognitionUsageDescription": "Labradoodle turns what you say into text for dictation and voice calls with your bots."
+        "NSMicrophoneUsageDescription": "Labradoodle uses the microphone for dictation.",
+        "NSSpeechRecognitionUsageDescription": "Labradoodle turns what you say into text for dictation."
       },
       "extraResources": [
         {

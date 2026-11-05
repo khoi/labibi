@@ -111,11 +111,6 @@ msgstr "{0} GB"
 msgid "{0} handling"
 msgstr "{0} handling"
 
-#. placeholder {0}: bot.name
-#: src/components/call/IncomingCall.tsx
-msgid "{0} is calling you"
-msgstr "{0} is calling you"
-
 #. placeholder {0}: updated.name
 #: src/pages/McpServersOverlay.tsx
 msgid "{0} is not working"
@@ -841,11 +836,6 @@ msgstr "Another assistant"
 msgid "Answer"
 msgstr "Answer"
 
-#: src/components/call/IncomingCall.tsx
-msgctxt "incoming call"
-msgid "Answer"
-msgstr "Answer"
-
 #: src/components/AskCard.tsx
 msgid "Answered"
 msgstr "Answered"
@@ -932,10 +922,6 @@ msgstr "Approvals"
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
 msgstr "Approve"
-
-#: src/lib/call-session.ts
-msgid "Approve or deny it on screen."
-msgstr "Approve or deny it on screen."
 
 #: src/pages/shell/message-cards.tsx
 msgid "Approve this server to let your agent use its tools."
@@ -1201,27 +1187,6 @@ msgstr "Browse MCP servers"
 #: src/pages/shell/agent-import.tsx
 msgid "Built-in"
 msgstr "Built-in"
-
-#: src/pages/shell/chat-header.tsx
-msgid "Call"
-msgstr "Call"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Call back"
-msgstr "Call back"
-
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Call with {0}"
-msgstr "Call with {0}"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Calling you…"
-msgstr "Calling you…"
-
-#: src/components/call/CallCard.tsx
-msgid "Calling…"
-msgstr "Calling…"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Calls"
@@ -2400,11 +2365,6 @@ msgstr "Could not search catalog"
 msgid "Could not send reset email"
 msgstr "Could not send reset email"
 
-#: src/components/call/IncomingCall.tsx
-#: src/lib/call-session.ts
-msgid "Could not send that"
-msgstr "Could not send that"
-
 #: src/components/VaultSettings.tsx
 msgid "Could not show the credential"
 msgstr "Could not show the credential"
@@ -2667,7 +2627,6 @@ msgstr "Day-to-day work"
 msgid "days"
 msgstr "days"
 
-#: src/components/call/IncomingCall.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Decline"
 msgstr "Decline"
@@ -2829,10 +2788,6 @@ msgid "Dictate"
 msgstr "Dictate"
 
 #: src/lib/dictation.ts
-msgid "Dictation ended unexpectedly."
-msgstr "Dictation ended unexpectedly."
-
-#: src/lib/dictation.ts
 msgid "Dictation failed: {code}"
 msgstr "Dictation failed: {code}"
 
@@ -2918,10 +2873,6 @@ msgstr "Docker"
 #: src/pages/HostComputerPrompt.tsx
 msgid "Docker limits access to your computer for added security. Using {hostLabel} lets bots work with your local files and tools."
 msgstr "Docker limits access to your computer for added security. Using {hostLabel} lets bots work with your local files and tools."
-
-#: src/components/SidebarFooter.tsx
-msgid "Docs"
-msgstr "Docs"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Document changed. Reopen to edit the latest version."
@@ -3435,18 +3386,6 @@ msgstr "Group settings"
 msgid "Group updates"
 msgstr "Group updates"
 
-#: src/components/call/CallCard.tsx
-msgid "Hang up"
-msgstr "Hang up"
-
-#: src/lib/call-session.ts
-msgid "Hang up first, then enter the code on screen."
-msgstr "Hang up first, then enter the code on screen."
-
-#: src/lib/call-session.ts
-msgid "Hang up, then enter the code on screen."
-msgstr "Hang up, then enter the code on screen."
-
 #: src/pages/RoutineEditor.tsx
 msgid "header"
 msgstr "header"
@@ -3490,10 +3429,6 @@ msgstr "Hide"
 #: src/components/I18nBootstrap.tsx
 msgid "Hide password"
 msgstr "Hide password"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Hide transcript"
-msgstr "Hide transcript"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
@@ -3603,10 +3538,6 @@ msgstr "Inbox & email"
 #: src/pages/shell/agent-import.tsx
 msgid "Include API keys"
 msgstr "Include API keys"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Incoming call"
-msgstr "Incoming call"
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Inherit default"
@@ -3849,10 +3780,6 @@ msgstr "Link SSO"
 #: src/pages/Artifacts.tsx
 msgid "List view"
 msgstr "List view"
-
-#: src/components/call/CallCard.tsx
-msgid "Listening"
-msgstr "Listening"
 
 #: src/components/composer/HoldToTalk.tsx
 msgid "Listening…"
@@ -4149,7 +4076,6 @@ msgstr "Messaged {peer}"
 msgid "Messaging"
 msgstr "Messaging"
 
-#: src/lib/call-session.ts
 #: src/lib/dictation.ts
 msgid "Microphone failed"
 msgstr "Microphone failed"
@@ -4172,10 +4098,6 @@ msgstr "Minimize"
 msgid "Minimize bots"
 msgstr "Minimize bots"
 
-#: src/components/call/CallCard.tsx
-msgid "Minimize call"
-msgstr "Minimize call"
-
 #: src/lib/cron.ts
 msgid "minute"
 msgstr "minute"
@@ -4184,10 +4106,6 @@ msgstr "minute"
 #: src/pages/RoutineEditor.tsx
 msgid "minutes"
 msgstr "minutes"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Missed call"
-msgstr "Missed call"
 
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Mode"
@@ -4289,14 +4207,6 @@ msgstr "Move to"
 #: src/pages/ModelRoleSettings.tsx
 msgid "Move up"
 msgstr "Move up"
-
-#: src/components/call/CallCard.tsx
-msgid "Mute"
-msgstr "Mute"
-
-#: src/components/call/CallCard.tsx
-msgid "Muted"
-msgstr "Muted"
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "My computers"
@@ -4739,15 +4649,6 @@ msgstr "Open {title}"
 msgid "Open <0>{0}</0> and enter this code:"
 msgstr "Open <0>{0}</0> and enter this code:"
 
-#: src/pages/shell/chat-header.tsx
-msgid "Open call"
-msgstr "Open call"
-
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Open chat with {0}"
-msgstr "Open chat with {0}"
-
 #: src/components/ComputersUnavailableHint.tsx
 msgid "Open computer settings"
 msgstr "Open computer settings"
@@ -4986,10 +4887,6 @@ msgstr "Personal"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Phone"
 msgstr "Phone"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Phone call"
-msgstr "Phone call"
 
 #: src/pages/shell/chat-context.tsx
 #: src/pages/shell/chat-shared.ts
@@ -5557,11 +5454,6 @@ msgstr "Retry now"
 msgid "Retry screen"
 msgstr "Retry screen"
 
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Return to call with {0}"
-msgstr "Return to call with {0}"
-
 #: src/pages/McpOAuthCallback.tsx
 #: src/pages/SlackInstallCallback.tsx
 msgid "Return to Labradoodle"
@@ -5730,10 +5622,6 @@ msgstr "Saving..."
 #: src/pages/shell/dialogs.tsx
 msgid "Saving…"
 msgstr "Saving…"
-
-#: src/lib/call-session.ts
-msgid "Say yes or no, or answer in a sentence."
-msgstr "Say yes or no, or answer in a sentence."
 
 #: src/pages/RoutineEditor.tsx
 msgid "Schedule delayed"
@@ -5911,7 +5799,6 @@ msgstr "Server URL"
 msgid "Set"
 msgstr "Set"
 
-#: src/components/call/CallCard.tsx
 #: src/components/SidebarFooter.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/SettingsOverlay.tsx
@@ -6013,10 +5900,6 @@ msgstr "Show selected"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Show tool activity"
 msgstr "Show tool activity"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Show transcript"
-msgstr "Show transcript"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Sidebar density"
@@ -6187,10 +6070,6 @@ msgstr "Speak"
 #: src/pages/shell/message-view.tsx
 msgid "Speak this reply"
 msgstr "Speak this reply"
-
-#: src/components/call/CallCard.tsx
-msgid "Speaking"
-msgstr "Speaking"
 
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Speech model"
@@ -6451,10 +6330,6 @@ msgstr "The bot can use the file but won't see the picture."
 msgid "The bot's browser stays signed in for everyone in this space"
 msgstr "The bot's browser stays signed in for everyone in this space"
 
-#: src/lib/dictation.ts
-msgid "The browser keeps dropping the microphone. Start dictation again to retry."
-msgstr "The browser keeps dropping the microphone. Start dictation again to retry."
-
 #: src/lib/model-connection-preflight.ts
 msgid "The connection timed out."
 msgstr "The connection timed out."
@@ -6527,7 +6402,6 @@ msgstr "These saved settings can't be read. Remove it and add it again."
 msgid "They get {weeks} weeks free."
 msgstr "They get {weeks} weeks free."
 
-#: src/components/call/CallCard.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
@@ -6560,17 +6434,8 @@ msgid "This bot runs on this computer, not a Linux desktop. Shell and files use 
 msgstr "This bot runs on this computer, not a Linux desktop. Shell and files use your home folder."
 
 #: src/lib/dictation.ts
-msgid "This browser can't detect when you stop talking. Use Chrome, the desktop app, or hold-to-talk in the composer."
-msgstr "This browser can't detect when you stop talking. Use Chrome, the desktop app, or hold-to-talk in the composer."
-
-#: src/lib/dictation.ts
 msgid "This browser has no on-device dictation. Connect a voice provider with transcription, or use Chrome / the desktop app."
 msgstr "This browser has no on-device dictation. Connect a voice provider with transcription, or use Chrome / the desktop app."
-
-#: src/components/call/IncomingCall.tsx
-#: src/lib/user-error.ts
-msgid "This call is no longer ringing."
-msgstr "This call is no longer ringing."
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -6768,10 +6633,6 @@ msgstr "Tools"
 msgid "Transcribing…"
 msgstr "Transcribing…"
 
-#: src/components/call/CallCard.tsx
-msgid "Transcript"
-msgstr "Transcript"
-
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Transcription model"
 msgstr "Transcription model"
@@ -6862,10 +6723,6 @@ msgstr "Uninstall"
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Unlink"
 msgstr "Unlink"
-
-#: src/components/call/CallCard.tsx
-msgid "Unmute"
-msgstr "Unmute"
 
 #: src/components/pages/PagesList.tsx
 #: src/pages/BotContextMenu.tsx
@@ -7271,10 +7128,6 @@ msgstr "You can close this tab if it does not redirect automatically."
 #: src/pages/McpOAuthCallback.tsx
 msgid "You can close this window."
 msgstr "You can close this window."
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "You declined"
-msgstr "You declined"
 
 #: src/components/InviteDialog.tsx
 msgid "You get a free month when they start their trial with a new card."

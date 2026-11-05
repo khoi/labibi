@@ -5,7 +5,6 @@ import {
 } from "@labradoodle/contracts";
 import { toast } from "@labradoodle/ui-web";
 import { t } from "@lingui/core/macro";
-import { getSnapshot as activeCall } from "./call-session";
 import { CLIENT_BUILD } from "./client-build";
 import {
   composerHoldsUnsavedWork,
@@ -39,10 +38,10 @@ export type ClientUpdateDeps = {
   servedBuild: () => Promise<string | null>;
   /** The shared recovery reload; false when its loop guard refused. */
   reload: () => boolean;
-  /** Work a reload would lose at any moment: a call, a send in flight, attachments in memory. */
+  /** Work a reload would lose at any moment: a send in flight, attachments in memory. */
   holdsUnsavedWork: () => boolean;
   /**
-   * The part of it that finishes on its own: a call or a send in flight. A refused build waits only
+   * The part of it that finishes on its own: a send in flight. A refused build waits only
    * for this, since the server rejects the requests that would send attachments.
    */
   holdsWorkInFlight: () => boolean;
@@ -239,8 +238,8 @@ export function clientUpdates(): ReturnType<typeof createClientUpdates> {
       return response.ok ? (await response.text()).trim() : null;
     },
     reload: recoveryReload,
-    holdsUnsavedWork: () => activeCall() !== null || composerHoldsUnsavedWork(),
-    holdsWorkInFlight: () => activeCall() !== null || composerHoldsWorkInFlight(),
+    holdsUnsavedWork: composerHoldsUnsavedWork,
+    holdsWorkInFlight: composerHoldsWorkInFlight,
     offerReload: () =>
       toast(t`Update required`, {
         id: "client-update-required",

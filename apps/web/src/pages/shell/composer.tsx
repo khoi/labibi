@@ -38,7 +38,6 @@ import {
 } from "../../components/composer/HoldToTalk";
 import type { ArtifactTarget } from "../../lib/artifact-open";
 import { attachmentPickerAccept } from "../../lib/attachment-picker-accept";
-import { useCallSession } from "../../lib/call-session";
 import {
   beginComposerDraftSubmission,
   readComposerDraft,
@@ -88,7 +87,6 @@ const ComposerBody = memo(function Composer({
   onRemoveAttachment,
   onSend,
   onStop,
-  phoneCallsEnabled,
   dictationTranscribe,
   replyTarget,
   replyQuote,
@@ -127,7 +125,6 @@ const ComposerBody = memo(function Composer({
     imageHandling?: "file",
   ) => Promise<boolean>;
   onStop: () => Promise<void>;
-  phoneCallsEnabled?: boolean;
   /** Hold-to-talk falls back to the voice provider's transcription; undefined while unknown. */
   dictationTranscribe?: boolean;
   artifactTarget: ArtifactTarget;
@@ -186,10 +183,9 @@ const ComposerBody = memo(function Composer({
     const slashMatch = /^\/([^\n]*)$/.exec(draft);
     return slashMatch ? (slashMatch[1] ?? "") : null;
   });
-  const onCall = useCallSession() !== null;
   const talk = useHoldToTalk({
     transcribe: dictationTranscribe,
-    disabled: disabled || onCall || !phoneCallsEnabled,
+    disabled,
     onText: (text) => {
       // A refused send keeps the words: they land in the field to edit or retry.
       void onSend(text, [], newClientId())
@@ -237,7 +233,7 @@ const ComposerBody = memo(function Composer({
   const dictateKey = useRef({ talk, available: false });
   dictateKey.current = {
     talk,
-    available: Boolean(phoneCallsEnabled) && !disabled && !onCall && draft.trim().length === 0,
+    available: !disabled && draft.trim().length === 0,
   };
   useEffect(() => {
     const apple = isApplePlatform();
@@ -980,8 +976,8 @@ const ComposerBody = memo(function Composer({
             <HoldToTalkControls talk={talk} />
           ) : running ? (
             <>
-              {phoneCallsEnabled && draft.trim().length === 0 ? (
-                <HoldToTalkControls talk={talk} disabled={disabled || onCall} />
+              {draft.trim().length === 0 ? (
+                <HoldToTalkControls talk={talk} disabled={disabled} />
               ) : null}
               <Button
                 size="icon"
@@ -1005,8 +1001,8 @@ const ComposerBody = memo(function Composer({
             </>
           ) : (
             <>
-              {phoneCallsEnabled && draft.trim().length === 0 ? (
-                <HoldToTalkControls talk={talk} disabled={disabled || onCall} />
+              {draft.trim().length === 0 ? (
+                <HoldToTalkControls talk={talk} disabled={disabled} />
               ) : null}
               <Button
                 size="icon"

@@ -69,7 +69,7 @@ export function useThreadSend({
   showLatest: () => void;
   /** Clears the "New" divider: the user has caught up. */
   markCaughtUp: () => void;
-  openBotChat: (target: MobileBot, ring: boolean) => void;
+  openBotChat: (target: MobileBot) => void;
 }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -157,7 +157,7 @@ export function useThreadSend({
         ? findSwitchTarget(plan.trimmed, mentionBotsRef.current)
         : undefined;
     if (typedSwitch && typedSwitch.id !== initialBotTarget) {
-      openBotChat(typedSwitch, false);
+      openBotChat(typedSwitch);
       return;
     }
     preparingSend.current = true;

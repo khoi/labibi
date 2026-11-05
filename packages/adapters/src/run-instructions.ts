@@ -6,18 +6,6 @@ import type { UserComputerState } from "./run-tools-user-computer.js";
 import { SCHEDULE_TOOL_NAMES } from "./schedule-tools.js";
 import { DESKTOP_HELD_FOR_TAKEOVER_MESSAGE } from "./takeover-resume.js";
 
-/** Added to the turn prompt when the user spoke this message on a live voice call. */
-const VOICE_CALL_BASE_INSTRUCTION =
-  "You are on a live voice call. Reply in one to three short spoken sentences. No markdown, lists, links, or option cards; do not use ask_user unless you truly cannot proceed. Answer directly from what you already know when you can; use tools or subagents only when the answer requires them.";
-
-export const VOICE_CALL_INSTRUCTION = `${VOICE_CALL_BASE_INSTRUCTION} If the user asks to end the call or hang up, or the conversation is finished, call end_call with a short title and a one-sentence farewell instead of saying goodbye in text, then do any remaining work as a normal chat reply.`;
-
-export function voiceCallInstruction(disabled?: ReadonlySet<string>): string {
-  return builtinOffered(disabled, "end_call")
-    ? VOICE_CALL_INSTRUCTION
-    : VOICE_CALL_BASE_INSTRUCTION;
-}
-
 /** Cap the roster so a large Space cannot flood the prompt. */
 export const BOT_DIRECTORY_LIMIT = 40;
 

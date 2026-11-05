@@ -21,7 +21,6 @@ the sign-in screen and enter its address. For a server on your local network, fo
 - Answer questions and [approvals](./approvals.md), and save credentials a bot asks for.
 - Open a bot's profile to see its **Computer**, **Routines** and settings.
 - Take control of a bot's computer, with an on-screen keyboard.
-- Call a bot, or answer when a bot calls you. See [Voice and calls](./voice-and-calls.md).
 - Connect apps, manage skills, models, voice, approvals, chat apps and your vault from Settings.
 
 The first time you send something, the app asks permission to share it with the AI services your

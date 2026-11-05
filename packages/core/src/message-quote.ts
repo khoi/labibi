@@ -160,12 +160,9 @@ function replyBlockText(block: MessageBlock): string {
       return block.lines.map((line) => `${line.k}: ${line.v}`).join(", ");
     case "steps":
       return block.steps.map((step) => step.label).join(", ");
-    case "voice_call":
     case "cloud_agent":
     case "page":
       return block.title;
-    case "call_request":
-      return block.reason;
     case "subagent":
       return block.name || block.task;
     case "child_bot":

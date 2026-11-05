@@ -111,11 +111,6 @@ msgstr "{0} GB"
 msgid "{0} handling"
 msgstr "{0} işleme biçimi"
 
-#. placeholder {0}: bot.name
-#: src/components/call/IncomingCall.tsx
-msgid "{0} is calling you"
-msgstr "{0} seni arıyor"
-
 #. placeholder {0}: updated.name
 #: src/pages/McpServersOverlay.tsx
 msgid "{0} is not working"
@@ -841,11 +836,6 @@ msgstr "Başka bir asistan"
 msgid "Answer"
 msgstr "Yanıtla"
 
-#: src/components/call/IncomingCall.tsx
-msgctxt "incoming call"
-msgid "Answer"
-msgstr "Yanıtla"
-
 #: src/components/AskCard.tsx
 msgid "Answered"
 msgstr "Yanıtlandı"
@@ -932,10 +922,6 @@ msgstr "Onaylar"
 #: src/pages/shell/message-cards.tsx
 msgid "Approve"
 msgstr "Onayla"
-
-#: src/lib/call-session.ts
-msgid "Approve or deny it on screen."
-msgstr "Ekranda onayla veya reddet."
 
 #: src/pages/shell/message-cards.tsx
 msgid "Approve this server to let your agent use its tools."
@@ -1201,27 +1187,6 @@ msgstr "MCP sunucularına göz at"
 #: src/pages/shell/agent-import.tsx
 msgid "Built-in"
 msgstr "Yerleşik"
-
-#: src/pages/shell/chat-header.tsx
-msgid "Call"
-msgstr "Ara"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Call back"
-msgstr "Geri ara"
-
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Call with {0}"
-msgstr "{0} ile ara"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Calling you…"
-msgstr "Seni arıyor…"
-
-#: src/components/call/CallCard.tsx
-msgid "Calling…"
-msgstr "Arıyor…"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Calls"
@@ -2400,11 +2365,6 @@ msgstr "Katalogda arama yapılamadı"
 msgid "Could not send reset email"
 msgstr "Sıfırlama e-postası gönderilemedi"
 
-#: src/components/call/IncomingCall.tsx
-#: src/lib/call-session.ts
-msgid "Could not send that"
-msgstr "Gönderilemedi"
-
 #: src/components/VaultSettings.tsx
 msgid "Could not show the credential"
 msgstr "Kimlik bilgisi gösterilemedi"
@@ -2667,7 +2627,6 @@ msgstr "Günlük işler"
 msgid "days"
 msgstr "gün"
 
-#: src/components/call/IncomingCall.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Decline"
 msgstr "Reddet"
@@ -2829,10 +2788,6 @@ msgid "Dictate"
 msgstr "Dikte et"
 
 #: src/lib/dictation.ts
-msgid "Dictation ended unexpectedly."
-msgstr "Dikte beklenmedik şekilde sona erdi."
-
-#: src/lib/dictation.ts
 msgid "Dictation failed: {code}"
 msgstr "Dikte başarısız oldu: {code}"
 
@@ -2918,10 +2873,6 @@ msgstr "Docker"
 #: src/pages/HostComputerPrompt.tsx
 msgid "Docker limits access to your computer for added security. Using {hostLabel} lets bots work with your local files and tools."
 msgstr "Docker, ek güvenlik için bilgisayarına erişimi sınırlar. {hostLabel} kullanıldığında botlar yerel dosyaların ve araçlarınla çalışabilir."
-
-#: src/components/SidebarFooter.tsx
-msgid "Docs"
-msgstr "Belgeler"
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Document changed. Reopen to edit the latest version."
@@ -3037,6 +2988,10 @@ msgstr "Son kullanıcı kimliği"
 #: src/lib/billing.ts
 msgid "Ends {day}"
 msgstr "{day} tarihinde sona eriyor"
+
+#: src/components/GitHubStarPrompt.tsx
+msgid "Enjoying Labradoodle?"
+msgstr ""
 
 #: src/lib/user-error.ts
 msgid "Enter a password"
@@ -3435,18 +3390,6 @@ msgstr "Grup ayarları"
 msgid "Group updates"
 msgstr "Grup güncellemeleri"
 
-#: src/components/call/CallCard.tsx
-msgid "Hang up"
-msgstr "Aramayı sonlandır"
-
-#: src/lib/call-session.ts
-msgid "Hang up first, then enter the code on screen."
-msgstr "Önce aramayı sonlandır, sonra kodu ekrana gir."
-
-#: src/lib/call-session.ts
-msgid "Hang up, then enter the code on screen."
-msgstr "Aramayı sonlandır, sonra kodu ekrana gir."
-
 #: src/pages/RoutineEditor.tsx
 msgid "header"
 msgstr "başlık"
@@ -3490,10 +3433,6 @@ msgstr "Gizle"
 #: src/components/I18nBootstrap.tsx
 msgid "Hide password"
 msgstr "Parolayı gizle"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Hide transcript"
-msgstr "Dökümü gizle"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
@@ -3603,10 +3542,6 @@ msgstr "Gelen kutusu ve e-posta"
 #: src/pages/shell/agent-import.tsx
 msgid "Include API keys"
 msgstr "API anahtarlarını dahil et"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Incoming call"
-msgstr "Gelen arama"
 
 #: src/pages/shell/bot-panel.tsx
 msgid "Inherit default"
@@ -3849,10 +3784,6 @@ msgstr "SSO bağla"
 #: src/pages/Artifacts.tsx
 msgid "List view"
 msgstr "Liste görünümü"
-
-#: src/components/call/CallCard.tsx
-msgid "Listening"
-msgstr "Dinliyor"
 
 #: src/components/composer/HoldToTalk.tsx
 msgid "Listening…"
@@ -4149,7 +4080,6 @@ msgstr "{peer} botuna mesaj gönderildi"
 msgid "Messaging"
 msgstr "Mesajlaşma"
 
-#: src/lib/call-session.ts
 #: src/lib/dictation.ts
 msgid "Microphone failed"
 msgstr "Mikrofon hatası"
@@ -4172,10 +4102,6 @@ msgstr "Küçült"
 msgid "Minimize bots"
 msgstr "Botları küçült"
 
-#: src/components/call/CallCard.tsx
-msgid "Minimize call"
-msgstr "Aramayı küçült"
-
 #: src/lib/cron.ts
 msgid "minute"
 msgstr "dakika"
@@ -4184,10 +4110,6 @@ msgstr "dakika"
 #: src/pages/RoutineEditor.tsx
 msgid "minutes"
 msgstr "dakika"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Missed call"
-msgstr "Cevapsız arama"
 
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Mode"
@@ -4289,14 +4211,6 @@ msgstr "Taşı"
 #: src/pages/ModelRoleSettings.tsx
 msgid "Move up"
 msgstr "Yukarı taşı"
-
-#: src/components/call/CallCard.tsx
-msgid "Mute"
-msgstr "Sesi kapat"
-
-#: src/components/call/CallCard.tsx
-msgid "Muted"
-msgstr "Sessiz"
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "My computers"
@@ -4615,6 +4529,7 @@ msgstr "Labradoodle kataloğunda yok"
 msgid "Not in the plugin catalog"
 msgstr "Eklenti kataloğunda yok"
 
+#: src/components/GitHubStarPrompt.tsx
 #: src/pages/shell/message-cards.tsx
 msgid "Not now"
 msgstr "Şimdi değil"
@@ -4738,15 +4653,6 @@ msgstr "{title} aç"
 #: src/pages/Onboarding.tsx
 msgid "Open <0>{0}</0> and enter this code:"
 msgstr "<0>{0}</0> adresini aç ve bu kodu gir:"
-
-#: src/pages/shell/chat-header.tsx
-msgid "Open call"
-msgstr "Aramayı aç"
-
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Open chat with {0}"
-msgstr "{0} ile sohbeti aç"
 
 #: src/components/ComputersUnavailableHint.tsx
 msgid "Open computer settings"
@@ -4986,10 +4892,6 @@ msgstr "Kişisel"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Phone"
 msgstr "Telefon"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Phone call"
-msgstr "Telefon araması"
 
 #: src/pages/shell/chat-context.tsx
 #: src/pages/shell/chat-shared.ts
@@ -5557,11 +5459,6 @@ msgstr "Şimdi tekrar dene"
 msgid "Retry screen"
 msgstr "Ekranı yeniden dene"
 
-#. placeholder {0}: call.botName
-#: src/components/call/CallCard.tsx
-msgid "Return to call with {0}"
-msgstr "{0} aramasına dön"
-
 #: src/pages/McpOAuthCallback.tsx
 #: src/pages/SlackInstallCallback.tsx
 msgid "Return to Labradoodle"
@@ -5730,10 +5627,6 @@ msgstr "Kaydediliyor..."
 #: src/pages/shell/dialogs.tsx
 msgid "Saving…"
 msgstr "Kaydediliyor…"
-
-#: src/lib/call-session.ts
-msgid "Say yes or no, or answer in a sentence."
-msgstr "Evet ya da hayır de veya bir cümleyle yanıtla."
 
 #: src/pages/RoutineEditor.tsx
 msgid "Schedule delayed"
@@ -5911,7 +5804,6 @@ msgstr "Sunucu URL'si"
 msgid "Set"
 msgstr "Ayarla"
 
-#: src/components/call/CallCard.tsx
 #: src/components/SidebarFooter.tsx
 #: src/pages/MessagingSettingsPanel.tsx
 #: src/pages/SettingsOverlay.tsx
@@ -6013,10 +5905,6 @@ msgstr "Seçilenleri göster"
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Show tool activity"
 msgstr "Araç etkinliğini göster"
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "Show transcript"
-msgstr "Dökümü göster"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Sidebar density"
@@ -6188,10 +6076,6 @@ msgstr "Seslendir"
 msgid "Speak this reply"
 msgstr "Bu yanıtı seslendir"
 
-#: src/components/call/CallCard.tsx
-msgid "Speaking"
-msgstr "Konuşuyor"
-
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Speech model"
 msgstr "Konuşma modeli"
@@ -6207,6 +6091,10 @@ msgstr "SSO"
 #: src/lib/user-error.ts
 msgid "SSO is temporarily unavailable. Try again."
 msgstr "SSO geçici olarak kullanılamıyor. Yeniden deneyin."
+
+#: src/components/GitHubStarPrompt.tsx
+msgid "Star on GitHub"
+msgstr ""
 
 #: src/pages/shell/computer-overlay.tsx
 msgid "Start"
@@ -6451,10 +6339,6 @@ msgstr "Bot dosyayı kullanabilir ama resmi göremez."
 msgid "The bot's browser stays signed in for everyone in this space"
 msgstr ""
 
-#: src/lib/dictation.ts
-msgid "The browser keeps dropping the microphone. Start dictation again to retry."
-msgstr "Tarayıcı mikrofonu sürekli bırakıyor. Tekrar denemek için dikteyi yeniden başlat."
-
 #: src/lib/model-connection-preflight.ts
 msgid "The connection timed out."
 msgstr "Bağlantı zaman aşımına uğradı."
@@ -6527,7 +6411,6 @@ msgstr "Bu kayıtlı ayarlar okunamıyor. Kaldırıp yeniden ekle."
 msgid "They get {weeks} weeks free."
 msgstr "Arkadaşın {weeks} hafta ücretsiz kullanır."
 
-#: src/components/call/CallCard.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/shell/bot-panel.tsx
@@ -6560,17 +6443,8 @@ msgid "This bot runs on this computer, not a Linux desktop. Shell and files use 
 msgstr "Bu bot bir Linux masaüstünde değil, bu bilgisayarda çalışır. Kabuk ve dosyalar senin kullanıcı klasörünü kullanır."
 
 #: src/lib/dictation.ts
-msgid "This browser can't detect when you stop talking. Use Chrome, the desktop app, or hold-to-talk in the composer."
-msgstr "Bu tarayıcı konuşmayı bıraktığını algılayamıyor. Chrome, masaüstü uygulaması veya mesaj alanında basılı tutarak konuşmayı kullan."
-
-#: src/lib/dictation.ts
 msgid "This browser has no on-device dictation. Connect a voice provider with transcription, or use Chrome / the desktop app."
 msgstr "Bu tarayıcıda cihaz üstü dikte yok. Transkripsiyon destekli bir ses sağlayıcısı bağla veya Chrome / masaüstü uygulamasını kullan."
-
-#: src/components/call/IncomingCall.tsx
-#: src/lib/user-error.ts
-msgid "This call is no longer ringing."
-msgstr "Bu arama artık çalmıyor."
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -6768,10 +6642,6 @@ msgstr "Araçlar"
 msgid "Transcribing…"
 msgstr "Yazıya dökülüyor…"
 
-#: src/components/call/CallCard.tsx
-msgid "Transcript"
-msgstr "Döküm"
-
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Transcription model"
 msgstr "Transkripsiyon modeli"
@@ -6862,10 +6732,6 @@ msgstr "Kaldır"
 #: src/pages/MessagingSettingsPanel.tsx
 msgid "Unlink"
 msgstr "Bağlantıyı kaldır"
-
-#: src/components/call/CallCard.tsx
-msgid "Unmute"
-msgstr "Sesi aç"
 
 #: src/components/pages/PagesList.tsx
 #: src/pages/BotContextMenu.tsx
@@ -7271,10 +7137,6 @@ msgstr "Otomatik yönlendirilmezsen bu sekmeyi kapatabilirsin."
 #: src/pages/McpOAuthCallback.tsx
 msgid "You can close this window."
 msgstr "Bu pencereyi kapatabilirsin."
-
-#: src/components/call/VoiceChatCard.tsx
-msgid "You declined"
-msgstr "Reddettin"
 
 #: src/components/InviteDialog.tsx
 msgid "You get a free month when they start their trial with a new card."

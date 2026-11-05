@@ -21,7 +21,6 @@ import {
 import {
   ACTIVE_RUN_STATUSES,
   blocksToAgentHistoryText,
-  callIdFromClientNonce,
   instructionUpdateDiff,
   isApprovalAskBlock,
   isConversationalRun,
@@ -79,7 +78,6 @@ export class AnswerTooLongError extends Error {
 const EVENT_BATCH_SIZE = 200;
 const PUSH_CATCH_UP_MS = 30_000;
 const POLL_ONLY_CATCH_UP_MS = 400;
-const INCOMING_CALL_POLL_MS = 3_000;
 
 export interface AppendEventInput {
   spaceId: string;
@@ -106,8 +104,6 @@ export function transientRunEventsWhere(): Prisma.EventWhereInput {
 }
 
 export interface ThreadEvents {
-  notifyIncomingCalls?(userId: string): Promise<void>;
-  followIncomingCalls?(userId: string, signal?: AbortSignal): AsyncGenerator<void>;
   publishChatAlert?(userId: string, alert: ChatAlert): Promise<void>;
   followChatAlerts?(
     userId: string,
@@ -288,8 +284,6 @@ export interface AnswerRunInput {
   messageId: string;
   answeredByUserId: string;
   answer: string;
-  /** Identifies a spoken answer as part of a live voice call. */
-  clientNonce?: string;
   /** A login card's answer, one per requested field. */
   fields?: LoginFieldInput[];
   /** A login card's answer from apps that predate `fields`; `answer` carries its password. */
@@ -371,10 +365,6 @@ export function createThreadEvents(
   return {
     publishChatAlert: chatAlerts.publish,
     followChatAlerts: chatAlerts.follow,
-    notifyIncomingCalls: async (userId) => {
-      await realtime?.publish(`incoming-calls:${userId}`, "");
-    },
-    followIncomingCalls: (userId, signal) => followIncomingCallSignals(realtime, userId, signal),
     answerRunInput: (input) => answerRunInput(prisma, input, realtime, options.runSecretWriter),
     append: (input) => appendEvent(prisma, input, realtime, options.analytics),
     claimSteering: (input) => claimSteering(prisma, input),
@@ -405,7 +395,7 @@ export async function clearThread(
         ...(input.groupId ? { groupId: input.groupId } : { botId: input.botId }),
       },
       data: { unread: false },
-      select: { nextMessageSeq: true, historyCompactionGeneration: true, userId: true },
+      select: { nextMessageSeq: true, historyCompactionGeneration: true },
     });
     const activeRuns = await tx.run.findMany({
       where: {
@@ -458,14 +448,11 @@ export async function clearThread(
     });
     return {
       event,
-      userId: thread.userId,
       cancelledRunIds: runIds,
       historyCompactionGeneration: thread.historyCompactionGeneration,
     };
   }, THREAD_LOCK_TRANSACTION_OPTIONS);
   await notifyRealtime(realtime, committed.event.threadId, committed.event.seq);
-  if (!input.groupId && committed.userId)
-    await realtime?.publish(`incoming-calls:${committed.userId}`, "").catch(() => undefined);
   // Legacy execution bindings point at runs of pre-lease releases, which kept writing
   // Computer.executionRunId. Clearing them inside the transaction reaches for the
   // computer row while holding the thread row — the inverted half of a cycle with a
@@ -666,9 +653,6 @@ export async function sendUserMessage(
           role: "user",
           blocks: input.blocks,
           author,
-          // Carries the call id on the live event so a spoken turn groups into the
-          // call card immediately, instead of after a refetch reads the nonce.
-          callId: callIdFromClientNonce(message.clientNonce),
         },
       });
       return { message, task, run, busy, event };
@@ -1012,33 +996,6 @@ async function commitAnswerRunInput(
   if (queued.count !== 1) return null;
 
   const recordedAnswer = secretAsk ? "" : (selectedChoice?.id ?? approvalAnswer);
-  const callId = callIdFromClientNonce(input.clientNonce);
-  const recordsCallUtterance = Boolean(callId && !secretAsk);
-
-  // Give spoken answers the same durable, call-scoped user utterance as other voice turns.
-  // Secret asks stay out of message history; the call UI requires those answers on screen.
-  if (recordsCallUtterance) {
-    const blocks = [{ kind: "text" as const, text: input.answer }];
-    const utterance = await createThreadMessageInTransaction(tx, {
-      threadId: input.threadId,
-      role: "user",
-      blocks,
-      botId: run.botId,
-      authorUserId: input.answeredByUserId,
-      runId: input.runId,
-      clientNonce: input.clientNonce,
-    });
-    const author = await loadMessageAuthor(tx, input.answeredByUserId);
-    await appendEventInTransaction(tx, {
-      spaceId: input.spaceId,
-      threadId: input.threadId,
-      botId: run.botId,
-      type: "thread.message.created",
-      runId: input.runId,
-      payload: { messageId: utterance.id, role: "user", blocks, callId, author },
-    });
-  }
-
   if (approvalAsk) {
     if (pendingAsk.instructionUpdate) {
       if (editedInstructions !== undefined) {
@@ -2301,32 +2258,6 @@ function mapProductEvent(event: {
     createdAt: event.createdAt.toISOString(),
     payload: event.payload as Record<string, unknown>,
   };
-}
-
-/** One account stream; signals carry no content, and a periodic re-read covers a missed publish. */
-async function* followIncomingCallSignals(
-  realtime: RealtimeFanout | undefined,
-  userId: string,
-  signal?: AbortSignal,
-): AsyncGenerator<void> {
-  const latch = new ChangeLatch();
-  const unsubscribe = await realtime
-    ?.subscribe(`incoming-calls:${userId}`, () => latch.notify())
-    .catch(() => undefined);
-  // Without fanout each wake re-reads every ringing request, so poll gently.
-  const catchUpMs = unsubscribe ? PUSH_CATCH_UP_MS : INCOMING_CALL_POLL_MS;
-  try {
-    let seen = latch.generation;
-    yield;
-    while (!signal?.aborted) {
-      await latch.waitForChange(seen, catchUpMs, signal);
-      if (signal?.aborted) return;
-      seen = latch.generation;
-      yield;
-    }
-  } finally {
-    await unsubscribe?.();
-  }
 }
 
 class ChangeLatch {

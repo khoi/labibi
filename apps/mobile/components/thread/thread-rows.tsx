@@ -1,32 +1,21 @@
-import type { ThreadItem } from "@labradoodle/core";
 import {
   answerableAskMessageIds,
   dismissableAskMessageIds,
-  groupVoiceChats,
   memberName,
   otherAuthor,
   timeSeparatorIds,
   unreadDividerMessageId,
-  voiceChatHoldsMessage,
 } from "@labradoodle/core";
 import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import type { ListRenderItemInfo } from "react-native";
-import { StyleSheet, View } from "react-native";
 import type { MobileBot, MobileMessage, MobileSnapshot } from "../../lib/api";
 import { useI18n } from "../../lib/i18n";
 import { threadHeaderFloats } from "../../lib/thread-edges";
 import { previewMessageText } from "../../lib/thread-message-text";
 import type { useThreadTranscript } from "../../lib/thread-transcript";
 import type { UserBubble } from "../../lib/user-bubble";
-import { TimeSeparator } from "../time-separator";
-import { UnreadDivider } from "../unread-divider";
-import { VoiceChatCard } from "../VoiceChatCard";
 import type { MessageRowActions } from "./message-row";
 import { MessageRow } from "./message-row";
-
-const rowStyles = StyleSheet.create({
-  row: { marginTop: 12, width: "100%" },
-});
 
 /** Stable row actions that call the latest screen actions, so settled rows don't re-render. */
 export function useLatestRowActions(current: MessageRowActions): MessageRowActions {
@@ -59,7 +48,7 @@ export function useLatestRowActions(current: MessageRowActions): MessageRowActio
   );
 }
 
-/** Renders the chat's message rows and voice call cards for the live list and pinned pages. */
+/** Renders the chat's message rows for the live list and pinned pages. */
 export function useThreadRows({
   snap,
   userId,
@@ -69,7 +58,6 @@ export function useThreadRows({
   groupId,
   inGroup,
   readOnly,
-  onCall,
   displayName,
   mentionBots,
   currentBot,
@@ -88,7 +76,6 @@ export function useThreadRows({
   groupId?: string;
   inGroup: boolean;
   readOnly: boolean;
-  onCall: boolean;
   displayName?: string;
   mentionBots: MobileBot[];
   currentBot?: MobileBot;
@@ -109,8 +96,7 @@ export function useThreadRows({
     () => unreadDividerMessageId(visibleMessages, readSeq, snap?.olderCursor ?? null),
     [visibleMessages, readSeq, snap?.olderCursor],
   );
-  // Group calls in reading order, then reverse for the inverted list.
-  const liveItems = useMemo(() => groupVoiceChats(visibleMessages).reverse(), [visibleMessages]);
+  const liveItems = useMemo(() => [...visibleMessages].reverse(), [visibleMessages]);
   const messagesById = useMemo(
     () => new Map((snap?.messages ?? []).map((message) => [message.id, message])),
     [snap?.messages],
@@ -155,7 +141,6 @@ export function useThreadRows({
           bots={mentionBots}
           members={snap?.members}
           readOnly={readOnly}
-          onCall={onCall}
           canAnswer={!readOnly && answerableAskIds.has(message.id)}
           canDismiss={dismissableAskIds.has(message.id)}
           highlighted={highlightedMessageId === message.id}
@@ -205,7 +190,6 @@ export function useThreadRows({
       userBubble,
       rowActions,
       readOnly,
-      onCall,
       answerableAskIds,
       dismissableAskIds,
       highlightedMessageId,
@@ -221,30 +205,8 @@ export function useThreadRows({
   );
 
   const renderItem = useCallback(
-    ({ item }: ListRenderItemInfo<ThreadItem<MobileMessage>>) =>
-      item.kind === "voiceChat" ? (
-        <View
-          style={[
-            rowStyles.row,
-            threadHeaderFloats() && item.messages[0]?.id === visibleMessages[0]?.id
-              ? { marginTop: 0 }
-              : undefined,
-          ]}
-        >
-          {item.messages[0] && separatorIds.has(item.messages[0].id) ? (
-            <TimeSeparator createdAt={item.messages[0].createdAt} />
-          ) : null}
-          {voiceChatHoldsMessage(item, unreadDividerId) ? (
-            <UnreadDivider
-              afterSeparator={Boolean(item.messages[0] && separatorIds.has(item.messages[0].id))}
-            />
-          ) : null}
-          <VoiceChatCard group={item} />
-        </View>
-      ) : (
-        renderMessageRow(item.message)
-      ),
-    [renderMessageRow, separatorIds, unreadDividerId, visibleMessages[0]?.id],
+    ({ item }: ListRenderItemInfo<MobileMessage>) => renderMessageRow(item),
+    [renderMessageRow],
   );
 
   return { liveItems, renderMessageRow, renderItem };
