@@ -17,6 +17,7 @@ import { CallLayout } from "./components/call/CallLayout";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { MarkdownLinkPrompt } from "./components/markdown-link-prompt";
 import { PageLoading } from "./components/PageLoading";
+import { SignInEntrance } from "./components/SignInEntrance";
 import { SubscriptionGate } from "./components/SubscriptionGate";
 import { authClient } from "./lib/auth";
 import { getTicketBoardEnabled, subscribeTicketBoardEnabled } from "./lib/bootstrap";
@@ -303,6 +304,7 @@ function SessionApp() {
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
+          <SignInEntrance pathname={pathname} />
         </div>
       </MarkdownLinkPrompt>
     </QueryUserProvider>

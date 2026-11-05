@@ -1,0 +1,126 @@
+@property --sign-in-iris {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+.sign-in-entrance {
+  --pupil-at: calc(50% + 23.5px) calc(50% - 16px);
+
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.sign-in-entrance-stage {
+  position: absolute;
+  inset: 0;
+  background: var(--background);
+  animation: sign-in-vanish 1ms linear 1240ms forwards;
+}
+
+.sign-in-entrance-dood {
+  position: absolute;
+  top: calc(50% - 48px);
+  left: calc(50% - 48px);
+  width: 96px;
+  height: 96px;
+  overflow: visible;
+  transform-origin: 71.5px 32px;
+  animation: sign-in-dive 480ms cubic-bezier(0.7, 0, 0.84, 0) 760ms forwards;
+}
+
+.sign-in-entrance-scribble {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: sign-in-draw 320ms cubic-bezier(0.77, 0, 0.175, 1) forwards;
+}
+
+.sign-in-entrance-glance {
+  animation: sign-in-glance 300ms ease-in-out 440ms;
+}
+
+.sign-in-entrance-eyes {
+  fill: var(--foreground);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sign-in-pop 260ms cubic-bezier(0.23, 1, 0.32, 1) 180ms both;
+}
+
+.sign-in-entrance-pupil {
+  position: absolute;
+  inset: 0;
+  background: var(--foreground);
+  clip-path: circle(0 at var(--pupil-at));
+  animation: sign-in-swallow 480ms cubic-bezier(0.7, 0, 0.84, 0) 760ms forwards;
+}
+
+.sign-in-entrance-iris {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 50%,
+    transparent var(--sign-in-iris),
+    var(--foreground) calc(var(--sign-in-iris) + 1px)
+  );
+  animation: sign-in-open 560ms cubic-bezier(0.23, 1, 0.32, 1) 1300ms both;
+}
+
+@keyframes sign-in-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes sign-in-pop {
+  from {
+    transform: scale(0);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes sign-in-glance {
+  30%,
+  45% {
+    transform: translateX(-1.4px);
+  }
+  75% {
+    transform: translateX(1.4px);
+  }
+}
+
+@keyframes sign-in-dive {
+  to {
+    transform: scale(5);
+  }
+}
+
+@keyframes sign-in-swallow {
+  from {
+    clip-path: circle(11.7px at var(--pupil-at));
+  }
+  to {
+    clip-path: circle(150vmax at var(--pupil-at));
+  }
+}
+
+@keyframes sign-in-vanish {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes sign-in-open {
+  from {
+    --sign-in-iris: 0px;
+  }
+  to {
+    --sign-in-iris: 75vmax;
+  }
+}

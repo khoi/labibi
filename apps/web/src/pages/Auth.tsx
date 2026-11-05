@@ -19,6 +19,7 @@ import { fetchAuthCapabilities } from "../lib/auth-capabilities";
 import { desktopBridge } from "../lib/desktop";
 import { clearSpaceSelection } from "../lib/rpc";
 import { newAccountDestination, signInNext } from "../lib/sign-in-next";
+import { markSignInPending, takeSignInPending } from "../lib/sign-in-pending";
 import { runSsoFlow } from "../lib/sso-flow";
 import { authErrorText, credentialIssueText } from "../lib/user-error";
 import { WindowChrome } from "./WindowChrome";
@@ -71,6 +72,10 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
     ) : (
       <Trans>Reset your password</Trans>
     );
+
+  useEffect(() => {
+    if (searchParams.get("error")) takeSignInPending();
+  }, [searchParams]);
 
   useEffect(() => {
     setReset(null);
@@ -197,6 +202,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
 
   function enterApp() {
     clearSpaceSelection();
+    markSignInPending();
     // The routes move a signed-in user on once the session refetch lands. Navigating
     // first beats it, so the guards bounce through sign-in and the shell.
     entering.current = true;
@@ -211,6 +217,7 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
 
   async function signInWithSso() {
     setError(null);
+    markSignInPending();
     try {
       const result = await runSsoFlow(
         (disableRedirect, callbackURL) =>
@@ -223,8 +230,12 @@ export function AuthPage({ mode }: { mode: AuthMode }) {
           }),
         ["/app", "/onboarding", "/integrations/setup", "/sign-in", ...(next ? [next] : [])],
       );
-      if (result.error) setError(authErrorText(result.error, t`Could not continue`));
+      if (result.error) {
+        takeSignInPending();
+        setError(authErrorText(result.error, t`Could not continue`));
+      }
     } catch {
+      takeSignInPending();
       setError(t`Could not continue`);
     }
   }
