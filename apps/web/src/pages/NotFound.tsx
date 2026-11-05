@@ -1,5 +1,6 @@
 import { Trans } from "@lingui/react/macro";
 import { Link } from "react-router-dom";
+import { WatchingDood } from "../components/WatchingDood";
 import { WindowChrome } from "./WindowChrome";
 
 export function NotFoundPage() {
@@ -9,10 +10,7 @@ export function NotFoundPage() {
         <WindowChrome />
       </div>
       <main className="flex flex-1 flex-col items-center justify-center gap-8 px-5 pb-[90px] text-center">
-        <div className="flex size-20 items-center justify-center gap-3 rounded-full bg-primary sm:size-24">
-          <span className="h-5 w-2.5 translate-x-1.5 -translate-y-1 rounded-full bg-primary-foreground sm:h-6 sm:w-[11px]" />
-          <span className="h-5 w-2.5 translate-x-1.5 -translate-y-1 rounded-full bg-primary-foreground sm:h-6 sm:w-[11px]" />
-        </div>
+        <WatchingDood size={88} />
         <div className="flex flex-col items-center gap-3">
           <p className="text-[15px] tracking-[0.2em] text-muted-foreground">404</p>
           <h1 className="text-[40px] leading-tight tracking-[-0.03em] text-foreground sm:text-[52px]">

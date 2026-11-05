@@ -1,42 +1,41 @@
-import { Image, StyleSheet, View } from "react-native";
-import appMark from "../assets/monochrome-icon.png";
-import { native, useThemedStyles } from "../lib/native";
+import {
+  DOOD_INK,
+  DOOD_PATHS,
+  DOOD_STROKE_WIDTH,
+  DOOD_VIEWBOX,
+  doodEyeShapes,
+} from "@labradoodle/core";
+import { View } from "react-native";
+import Svg, { G, Path } from "react-native-svg";
+import { useMobileTokens } from "../lib/native";
 
 const MARK = 56;
-// The face of the 1024 px monochrome icon: a 480 px circle inside the silhouette, eyes included.
-const CROP = { x: 272, y: 303, size: 480 };
-const SCALE = MARK / CROP.size;
 
+/** Doodle, the dood every bot starts as, signing off the bottom of Settings. */
 export function AppMark() {
-  const styles = useThemedStyles(createAppMarkStyles);
+  const tokens = useMobileTokens();
   return (
     <View
       accessible={false}
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={styles.circle}
+      style={{ alignSelf: "center" }}
     >
-      <Image source={appMark} style={styles.image} />
+      <Svg width={MARK} height={MARK} viewBox={DOOD_VIEWBOX}>
+        <Path
+          d={DOOD_PATHS.coil}
+          fill="none"
+          stroke={DOOD_INK.yellow.ink}
+          strokeWidth={DOOD_STROKE_WIDTH}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <G fill={tokens.foreground}>
+          {doodEyeShapes("round").map(({ d }) => (
+            <Path key={d} d={d} />
+          ))}
+        </G>
+      </Svg>
     </View>
   );
-}
-
-function createAppMarkStyles() {
-  return StyleSheet.create({
-    circle: {
-      width: MARK,
-      height: MARK,
-      borderRadius: MARK / 2,
-      overflow: "hidden",
-      alignSelf: "center",
-    },
-    image: {
-      position: "absolute",
-      width: 1024 * SCALE,
-      height: 1024 * SCALE,
-      left: -CROP.x * SCALE,
-      top: -CROP.y * SCALE,
-      tintColor: native.label,
-    },
-  });
 }

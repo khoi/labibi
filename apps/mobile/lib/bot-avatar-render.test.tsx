@@ -156,11 +156,7 @@ describe("BotAvatar", () => {
     mobileTokens.current = undefined;
   });
 
-  function render(
-    color: string,
-    props: Partial<BotAvatarProps> = {},
-    focused = true,
-  ) {
+  function render(color: string, props: Partial<BotAvatarProps> = {}, focused = true) {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     container = document.createElement("div");
     document.body.append(container);

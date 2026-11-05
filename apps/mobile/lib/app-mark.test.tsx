@@ -24,21 +24,18 @@ vi.mock("react-native", () => {
     );
   }
 
-  function MockImage(props: { style?: { tintColor?: string } }) {
-    return createElement("img", { "data-tint": props.style?.tintColor });
-  }
-
-  return {
-    Image: MockImage,
-    StyleSheet: { create: <T,>(styles: T) => styles },
-    View: MockView,
-  };
+  return { View: MockView };
 });
 
-vi.mock("./native", () => ({
-  native: { label: "label" },
-  useThemedStyles: <T,>(factory: () => T) => factory(),
-}));
+vi.mock("react-native-svg", () => {
+  const element =
+    (tag: string) =>
+    ({ children, fill, stroke }: { children?: ReactNode; fill?: string; stroke?: string }) =>
+      createElement(tag, { "data-fill": fill, "data-stroke": stroke }, children);
+  return { default: element("svg"), G: element("g"), Path: element("path") };
+});
+
+vi.mock("./native", () => ({ useMobileTokens: () => ({ foreground: "#141414" }) }));
 
 import { AppMark } from "../components/app-mark";
 
@@ -60,7 +57,7 @@ describe("AppMark", () => {
     container?.remove();
   });
 
-  it("is hidden from VoiceOver and TalkBack and tinted like text", () => {
+  it("draws Doodle, hidden from VoiceOver and TalkBack, with eyes in the text colour", () => {
     act(() => {
       root?.render(<AppMark />);
     });
@@ -69,6 +66,7 @@ describe("AppMark", () => {
     expect(mark?.getAttribute("aria-hidden")).toBe("true");
     expect(mark?.dataset.accessible).toBe("false");
     expect(mark?.dataset.important).toBe("no-hide-descendants");
-    expect(container?.querySelector("img")?.dataset.tint).toBe("label");
+    expect(container?.querySelector("path")?.dataset.stroke).toBe("#FFBC0A");
+    expect(container?.querySelector("g")?.dataset.fill).toBe("#141414");
   });
 });
