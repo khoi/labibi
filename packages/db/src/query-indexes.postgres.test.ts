@@ -28,13 +28,6 @@ const hotQueries = [
     sql: `SELECT "computerId" FROM computer_execution_leases WHERE "botId" = ANY(ARRAY[$1]) AND "expiresAt" > now()`,
   },
   {
-    name: "bot-message outcomes still to return",
-    index: "runs_bot_outcome_pending_idx",
-    sql: `SELECT id FROM runs WHERE trigger = 'bot_message' AND "botOutcomeReturnedAt" IS NULL
-      AND (status IN ('completed', 'failed') OR (status = 'cancelled' AND error = $1))
-      ORDER BY "updatedAt", id LIMIT 100`,
-  },
-  {
     name: "a bot thread's latest run",
     index: "runs_threadId_createdAt_id_idx",
     sql: `SELECT id FROM runs WHERE "threadId" = $1 AND trigger NOT IN ('bot_message', 'tickets')

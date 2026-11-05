@@ -239,23 +239,17 @@ describePostgres("messaging outbound drain order (PostgreSQL)", () => {
     await system.messagingOutbound.deleteMany({ where: { threadId } });
   });
 
-  /**
-   * A run mirrored to the DM identity: a messaging run whose source carries no
-   * channel block, or a delegated bot_message run with no source at all.
-   */
-  async function dmRunWithReply(trigger: "messaging" | "bot_message", reply: string, seq: number) {
-    const source =
-      trigger === "messaging"
-        ? await system.message.create({
-            data: {
-              threadId: identity.threadId,
-              seq,
-              role: "user",
-              blocks: [{ kind: "text", text: "dm hi" }],
-              clientNonce: `dm-src-${seq}-${address}`,
-            },
-          })
-        : null;
+  /** A run mirrored to the DM identity: a messaging run whose source carries no channel block. */
+  async function dmRunWithReply(reply: string, seq: number) {
+    const source = await system.message.create({
+      data: {
+        threadId: identity.threadId,
+        seq,
+        role: "user",
+        blocks: [{ kind: "text", text: "dm hi" }],
+        clientNonce: `dm-src-${seq}-${address}`,
+      },
+    });
     const task = await system.task.create({
       data: { ...identity, prompt: "mirror fixture", status: "completed" },
     });
@@ -264,8 +258,8 @@ describePostgres("messaging outbound drain order (PostgreSQL)", () => {
         ...identity,
         taskId: task.id,
         status: "completed",
-        trigger,
-        ...(source ? { sourceMessageId: source.id } : {}),
+        trigger: "messaging",
+        sourceMessageId: source.id,
       },
     });
     await system.message.create({
@@ -283,8 +277,8 @@ describePostgres("messaging outbound drain order (PostgreSQL)", () => {
 
   it("never interleaves two mirrors of one DM identity, not even on a clock tie", async () => {
     // Seq stays clear of the group fixture's rows in the same thread.
-    const runA = await dmRunWithReply("messaging", `one ${"x".repeat(4_100)} END-A`, 201);
-    const runB = await dmRunWithReply("bot_message", `two ${"y".repeat(4_100)} END-B`, 203);
+    const runA = await dmRunWithReply(`one ${"x".repeat(4_100)} END-A`, 201);
+    const runB = await dmRunWithReply(`two ${"y".repeat(4_100)} END-B`, 203);
     const { messaging } = fakeSurface();
     const deps = makeDeps(system, messaging);
 

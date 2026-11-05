@@ -660,27 +660,6 @@ describePages("pages", () => {
     expect(await db().secret.count({ where: { kind: "page_share", userId } })).toBe(1);
   });
 
-  it("shows a page a bot saved while answering another bot in that bot's history", async () => {
-    const cookie = await signup(app, `pages-peer-${stamp}@rakazo.test`, "Peer Owner");
-    const asker = await createBot(app, cookie, "Asker");
-    const builder = await createBot(app, cookie, "Builder");
-    const args = { title: "Peer report", source: page("Peer report") };
-    await sendAndWait(app, cookie, asker.id, {
-      text: `message the bot named Builder saying call save_page with ${JSON.stringify(args)}`,
-    });
-    const start = Date.now();
-    let blocks: unknown[] = [];
-    while (Date.now() - start < 20_000) {
-      const snap = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { botId: builder.id });
-      blocks = snap.messages.flatMap((message) => message.blocks.filter((b) => b.kind === "page"));
-      if (blocks.length) break;
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
-    expect(blocks).toEqual([
-      { kind: "page", pageId: expect.any(String), version: 1, title: "Peer report" },
-    ]);
-  });
-
   it("ends a member's shared pages with their account, and any link whose sealed token is gone", async () => {
     const ownerCookie = await signup(app, `pages-host-${stamp}@rakazo.test`, "Space Host");
     const host = await rpc<{ userId: string; spaceId: string }>(app, ownerCookie, "me");
@@ -1072,7 +1051,6 @@ async function createBot(app: App, cookie: string, name: string) {
   return rpc<{ id: string }>(app, cookie, "bots/create", {
     name,
     title: name,
-    description: "tests pages",
     instructions: "",
     notifyOnFinish: true,
   });
