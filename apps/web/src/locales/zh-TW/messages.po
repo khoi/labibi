@@ -14,14 +14,9 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: @lingui/cli\n"
 
-#: src/pages/shell/sidebar-roster.tsx
+#: src/pages/shell/chat-list.tsx
 msgid " (unread)"
 msgstr "（未讀）"
-
-#. placeholder {0}: pinned.length
-#: src/pages/model-settings/space-bots-model.tsx
-msgid "{0, plural, one {# bot has its own model:} other {# bots have their own model:}}"
-msgstr "{0, plural, one {# 個機器人使用自己的模型：} other {# 個機器人使用自己的模型：}}"
 
 #. placeholder {0}: servers.length
 #: src/pages/PluginsOverlay.tsx
@@ -57,11 +52,6 @@ msgstr ""
 #: src/pages/McpServersOverlay.tsx
 msgid "{0, plural, one {# tool} other {# tools}}"
 msgstr ""
-
-#. placeholder {0}: pinned.length
-#: src/pages/model-settings/space-bots-model.tsx
-msgid "{0, plural, one {Switch # bot to the space default?} other {Switch # bots to the space default?}}"
-msgstr "{0, plural, one {將 # 個機器人切換為空間預設模型？} other {將 # 個機器人切換為空間預設模型？}}"
 
 #. placeholder {0}: Math.ceil(oauth.expiresInSeconds / 60)
 #: src/pages/model-settings/connection-controls.tsx
@@ -129,10 +119,6 @@ msgstr "{0} TB"
 #: src/lib/billing.ts
 msgid "{amount} / {period}"
 msgstr "{amount} / {period}"
-
-#: src/pages/shell/computer-view.tsx
-msgid "{botName}’s computer"
-msgstr "{botName} 的電腦"
 
 #: src/components/vault/VaultItemEditor.tsx
 msgid "{commandVariable} is reserved and cannot be used as a command variable. Choose another name."
@@ -202,32 +188,13 @@ msgstr "{label}，空白"
 msgid "{minutes}m ago"
 msgstr "{minutes} 分鐘前"
 
-#: src/pages/model-settings/space-bots-model.tsx
-msgid "{moved, plural, one {# bot now uses the space default.} other {# bots now use the space default.}}"
-msgstr "{moved, plural, one {# 個機器人已改用空間預設模型。} other {# 個機器人已改用空間預設模型。}}"
-
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "{name} (same name as a built-in skill)"
 msgstr ""
 
-#. js-lingui-explicit-id
-#: src/lib/browser-notifications.ts
-msgid "{name} failed"
-msgstr "{name} 失敗"
-
-#. js-lingui-explicit-id
-#: src/lib/browser-notifications.ts
-msgid "{name} finished"
-msgstr "{name} 已完成"
-
 #: src/pages/ModelRoleSettings.tsx
 msgid "{name} options"
 msgstr "{name} 選項"
-
-#. js-lingui-explicit-id
-#: src/lib/browser-notifications.ts
-msgid "{name} stopped"
-msgstr "{name} 已停止"
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
@@ -392,10 +359,6 @@ msgstr "{summary} 將於 {date} 重設。"
 msgid "{summary} Your backup models also failed."
 msgstr "{summary} 備援模型也失敗。"
 
-#: src/pages/ActivityList.tsx
-msgid "{title}, {label}"
-msgstr "{title}，{label}"
-
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/PluginsOverlay.tsx
 msgid "{toolCount, plural, one {# tool} other {# tools}}"
@@ -461,7 +424,7 @@ msgstr "存取權杖（選填）"
 msgid "Account"
 msgstr "帳號"
 
-#: src/pages/shell/bot-panel.tsx
+#: src/pages/DoodleSettings.tsx
 msgid "Account default"
 msgstr "帳號預設"
 
@@ -478,32 +441,25 @@ msgstr "帳號標籤"
 msgid "Account menu for {name}"
 msgstr "{name} 的帳號選單"
 
-#. placeholder {0}: bot.name
-#. placeholder {0}: group.spaceName
 #. placeholder {0}: page.title
+#. placeholder {0}: server.name
 #: src/components/pages/PagesList.tsx
-#: src/pages/BotContextMenu.tsx
 #: src/pages/McpServersOverlay.tsx
-#: src/pages/shell/sidebar-roster.tsx
 msgid "Actions for {0}"
 msgstr "{0} 的操作"
+
+#: src/pages/shell/chat-list.tsx
+msgid "Actions for {label}"
+msgstr "{label} 的操作"
 
 #: src/components/SpaceMembersSettings.tsx
 msgid "Actions for {name}"
 msgstr ""
 
-#: src/pages/shell/shell-dialogs.tsx
-msgid "Actions for space"
-msgstr "空間操作"
-
 #: src/pages/BillingSettingsPanel.tsx
 #: src/pages/RoutineEditor.tsx
 msgid "Active"
 msgstr "啟用"
-
-#: src/pages/shell/sidebar-header.tsx
-msgid "Activity"
-msgstr "動態"
 
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/SecretAskCard.tsx
@@ -511,11 +467,6 @@ msgstr "動態"
 #: src/pages/PluginsOverlay.tsx
 msgid "Add"
 msgstr "新增"
-
-#. placeholder {0}: bot.name
-#: src/pages/GroupPanel.tsx
-msgid "Add {0} to the group"
-msgstr "將 {0} 加入群組"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Add a command to run"
@@ -595,6 +546,10 @@ msgstr "新增 MCP 伺服器"
 msgid "Add passkey"
 msgstr "新增通行金鑰"
 
+#: src/pages/shell/side-panel.tsx
+msgid "Add people"
+msgstr "新增成員"
+
 #: src/pages/model-settings/providers-section.tsx
 msgid "Add provider"
 msgstr "新增供應商"
@@ -649,7 +604,6 @@ msgstr ""
 #: src/pages/Onboarding.tsx
 #: src/pages/RoutineEditor.tsx
 #: src/pages/RoutineSchedule.tsx
-#: src/pages/shell/bot-panel.tsx
 msgid "Advanced"
 msgstr "進階"
 
@@ -667,12 +621,8 @@ msgid "All {credit} goes to model usage."
 msgstr "全部 {credit} 都用於模型用量。"
 
 #: src/pages/Artifacts.tsx
-msgid "All bots"
-msgstr "所有機器人"
-
-#: src/pages/ActivityList.tsx
-msgid "All statuses"
-msgstr "所有狀態"
+msgid "All chats"
+msgstr "所有聊天"
 
 #: src/pages/Artifacts.tsx
 msgid "All time"
@@ -853,10 +803,6 @@ msgstr "成品"
 msgid "Ask"
 msgstr "詢問"
 
-#: src/pages/shell/computer-panel.tsx
-msgid "Asleep"
-msgstr "休眠中"
-
 #. placeholder {0}: preset.time
 #: src/lib/cron.ts
 msgid "at {0}"
@@ -934,7 +880,6 @@ msgstr "Shell 命令可透過 {commandVariable} 使用"
 #: src/pages/NavLinkPage.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/SettingsOverlay.tsx
 msgid "Back"
 msgstr "返回"
 
@@ -992,32 +937,8 @@ msgid "Booting live desktop…"
 msgstr "正在啟動即時桌面…"
 
 #: src/lib/identity-display.ts
-#: src/pages/Shell.tsx
-#: src/pages/shell/message-view.tsx
-#: src/pages/SpaceSearch.tsx
 msgid "Bot"
 msgstr "機器人"
-
-#. js-lingui-explicit-id
-#: src/lib/browser-notifications.ts
-msgid "Bot"
-msgstr "機器人"
-
-#: src/components/teach/TeachRecordingChrome.tsx
-msgid "Bot is watching, not acting"
-msgstr "機器人只觀察，不操作"
-
-#: src/pages/model-settings/space-bots-model.tsx
-msgid "Bot models"
-msgstr "機器人模型"
-
-#: src/pages/shell/computer-overlay.tsx
-msgid "Bot screen"
-msgstr "機器人螢幕"
-
-#: src/pages/shell/computer-panel.tsx
-msgid "Bot screen preview"
-msgstr "機器人螢幕預覽"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Bot's model"
@@ -1087,18 +1008,14 @@ msgstr "無法讀取影像"
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/model-settings/connection-controls.tsx
-#: src/pages/model-settings/space-bots-model.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/Onboarding.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/shell/side-panel.tsx
 msgid "Cancel"
 msgstr "取消"
-
-#: src/pages/GroupPanel.tsx
-msgid "Cancel new group"
-msgstr "取消新增群組"
 
 #: src/components/SpaceMembersSettings.tsx
 msgid "Cancel open invites"
@@ -1117,7 +1034,7 @@ msgid "cancelled"
 msgstr "已取消"
 
 #: src/components/AskCard.tsx
-#: src/pages/ActivityList.tsx
+#: src/pages/RoutineRunHistory.tsx
 msgid "Cancelled"
 msgstr "已取消"
 
@@ -1166,6 +1083,7 @@ msgid "Chart failed to render: {error}"
 msgstr "圖表渲染失敗：{error}"
 
 #: src/pages/AccountSettingsOverlay.tsx
+#: src/pages/SpaceSearch.tsx
 msgid "Chat"
 msgstr ""
 
@@ -1264,28 +1182,15 @@ msgstr ""
 msgid "Claude subscription"
 msgstr "Claude 訂閱"
 
-#: src/pages/shell/computer-panel.tsx
-msgid "Clean up"
-msgstr "清理"
-
 #: src/components/SecretAskCard.tsx
 #: src/pages/shell/dialogs.tsx
 msgid "Clear"
 msgstr "清空"
 
-#. placeholder {0}: bot.name
 #: src/pages/shell/dialogs.tsx
-msgid "Clear {0}’s conversation?"
-msgstr "清空與 {0} 的對話？"
-
-#: src/pages/BotContextMenu.tsx
-#: src/pages/shell/bot-panel.tsx
+#: src/pages/shell/side-panel.tsx
 msgid "Clear conversation"
 msgstr "清空對話"
-
-#: src/pages/ActivityList.tsx
-msgid "Clear filter {label}"
-msgstr "清除篩選條件 {label}"
 
 #: src/pages/shell/dialogs.tsx
 msgid "Clearing…"
@@ -1338,7 +1243,6 @@ msgstr "關閉導覽"
 msgid "Close page"
 msgstr "關閉頁面"
 
-#: src/pages/GroupPanel.tsx
 #: src/pages/shell/side-panel.tsx
 msgid "Close panel"
 msgstr "關閉面板"
@@ -1378,11 +1282,6 @@ msgctxt "email sign-in"
 msgid "Code"
 msgstr "驗證碼"
 
-#. placeholder {0}: group.title
-#: src/pages/shell/sidebar-roster.tsx
-msgid "Collapse {0}"
-msgstr "摺疊 {0}"
-
 #: src/components/markdown-copy.tsx
 msgid "column {index}"
 msgstr "第 {index} 欄"
@@ -1417,8 +1316,6 @@ msgstr "緊湊"
 msgid "Completed"
 msgstr "已完成"
 
-#: src/pages/settings-nav.ts
-#: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/message-view.tsx
 msgid "Computer"
 msgstr "電腦"
@@ -1431,10 +1328,6 @@ msgstr "電腦啟動失敗"
 #: src/components/ModelCredits.tsx
 msgid "Computer hours left"
 msgstr "剩餘電腦時數"
-
-#: src/pages/shell/computer-panel.tsx
-msgid "Computer is {percent}% full"
-msgstr "電腦已使用 {percent}% 空間"
 
 #: src/pages/shell/computer-overlay.tsx
 msgid "Computer is asleep"
@@ -1766,25 +1659,9 @@ msgstr "無法連線至電腦螢幕"
 msgid "Could not continue"
 msgstr "無法繼續"
 
-#: src/pages/GroupPanel.tsx
-msgid "Could not create group"
-msgstr "無法建立群組"
-
 #: src/components/SpaceMembersSettings.tsx
 msgid "Could not create invite link"
 msgstr ""
-
-#: src/pages/Onboarding.tsx
-msgid "Could not create your bot"
-msgstr "無法建立你的機器人"
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not delete bot"
-msgstr "無法刪除機器人"
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not delete group"
-msgstr "無法刪除群組"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Could not delete MCP server"
@@ -1801,10 +1678,6 @@ msgstr "無法刪除例行任務"
 #: src/pages/KnowledgeSection.tsx
 msgid "Could not delete skill"
 msgstr "無法刪除技能"
-
-#: src/pages/shell/dialogs.tsx
-msgid "Could not delete space"
-msgstr "無法刪除空間"
 
 #: src/pages/Artifacts.tsx
 msgid "Could not delete this artifact."
@@ -1866,10 +1739,6 @@ msgstr ""
 msgid "Could not load"
 msgstr "無法載入"
 
-#: src/pages/ActivityList.tsx
-msgid "Could not load activity"
-msgstr "無法載入活動紀錄"
-
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Could not load approval rules"
 msgstr "無法載入核准規則"
@@ -1881,10 +1750,6 @@ msgstr "無法載入成品。"
 #: src/pages/BillingSettingsPanel.tsx
 msgid "Could not load billing"
 msgstr "無法載入帳務資訊"
-
-#: src/pages/IntegrationSetup.tsx
-msgid "Could not load bots. Reload to try again."
-msgstr "無法載入機器人，請重新載入後再試。"
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "Could not load computer settings"
@@ -1947,6 +1812,10 @@ msgstr "無法登出，請再試一次。"
 #: src/pages/Paywall.tsx
 msgid "Could not open billing"
 msgstr "無法開啟帳務頁面"
+
+#: src/pages/Onboarding.tsx
+msgid "Could not open your chat"
+msgstr "無法開啟你的聊天"
 
 #: src/components/pages/PagesList.tsx
 msgid "Could not pin this page. Try again."
@@ -2013,14 +1882,14 @@ msgstr "無法移除憑證"
 msgid "Could not rename connection"
 msgstr "無法重新命名連線"
 
-#: src/pages/SpaceSettingsPanel.tsx
-msgid "Could not rename space"
-msgstr "無法重新命名空間"
-
 #: src/components/pages/PagesList.tsx
 #: src/components/pages/PageViewHost.tsx
 msgid "Could not rename this page. Try again."
 msgstr "無法重新命名此頁面。請再試一次。"
+
+#: src/pages/SpaceSettingsPanel.tsx
+msgid "Could not rename workspace"
+msgstr "無法重新命名工作區"
 
 #: src/pages/shell/message-cards.tsx
 msgid "Could not render chart"
@@ -2042,9 +1911,10 @@ msgstr ""
 msgid "Could not run routine"
 msgstr "無法執行例行任務"
 
+#: src/pages/DoodleSettings.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
-#: src/pages/shell/bot-panel.tsx
+#: src/pages/shell/side-panel.tsx
 msgid "Could not save"
 msgstr "無法儲存"
 
@@ -2055,10 +1925,6 @@ msgstr "無法儲存自動審查"
 #: src/components/ComputerProviderSettings.tsx
 msgid "Could not save computer settings"
 msgstr ""
-
-#: src/pages/GroupPanel.tsx
-msgid "Could not save group"
-msgstr "無法儲存群組"
 
 #: src/pages/Onboarding.tsx
 msgid "Could not save model"
@@ -2134,10 +2000,6 @@ msgstr "無法停止電腦"
 msgid "Could not submit this answer"
 msgstr "無法提交此回答"
 
-#: src/pages/model-settings/space-bots-model.tsx
-msgid "Could not switch {failedNames}. Try again."
-msgstr "無法切換 {failedNames}，請再試一次。"
-
 #: src/pages/shell/use-computer.tsx
 msgid "Could not take control"
 msgstr "無法接管"
@@ -2165,10 +2027,6 @@ msgstr "無法更新姓名"
 #: src/pages/shell/use-composer-actions.ts
 msgid "Could not update reaction"
 msgstr "無法更新反應"
-
-#: src/pages/MemorySettingsOverlay.tsx
-msgid "Could not update the default memory scope"
-msgstr "無法更新預設記憶範圍"
 
 #: src/components/ComputersUnavailableHint.tsx
 msgid "Could not verify computer setup ({failureMessage}). Fix the connection, then check again."
@@ -2210,17 +2068,9 @@ msgstr ""
 msgid "Country"
 msgstr ""
 
-#: src/pages/shell/sidebar-header.tsx
-msgid "Create"
-msgstr "建立"
-
 #: src/pages/Auth.tsx
 msgid "Create account"
 msgstr "建立帳號"
-
-#: src/pages/GroupPanel.tsx
-msgid "Create group"
-msgstr "建立群組"
 
 #: src/pages/RoutineEditor.tsx
 msgid "Create Routine"
@@ -2237,10 +2087,6 @@ msgstr "建立你的 Labradoodle"
 #: src/components/AskCard.tsx
 msgid "Created"
 msgstr "已建立"
-
-#: src/pages/GroupPanel.tsx
-msgid "Creating…"
-msgstr "正在建立…"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Credential"
@@ -2322,20 +2168,15 @@ msgid "Default"
 msgstr "預設"
 
 #. placeholder {0}: thinkingLevelLabel(defaultThinkingLevel)
+#: src/pages/DoodleSettings.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/bot-panel.tsx
 msgid "Default ({0})"
 msgstr "預設（{0}）"
-
-#: src/pages/MemorySettingsOverlay.tsx
-msgid "Default scope"
-msgstr "預設範圍"
 
 #: src/components/AccountAccess.tsx
 #: src/components/pages/PagesList.tsx
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
-#: src/pages/BotContextMenu.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/RoutineEditor.tsx
@@ -2355,7 +2196,6 @@ msgstr "刪除「{0}」？"
 msgid "Delete {0}"
 msgstr "刪除 {0}"
 
-#. placeholder {0}: bot.name
 #. placeholder {0}: deleting.name
 #. placeholder {0}: item.name
 #: src/pages/McpServersOverlay.tsx
@@ -2368,13 +2208,10 @@ msgstr "刪除 {0}？"
 msgid "Delete account"
 msgstr "刪除帳號"
 
-#: src/pages/GroupPanel.tsx
-msgid "Delete group"
-msgstr "刪除群組"
-
-#: src/pages/shell/dialogs.tsx
-msgid "Delete memories too"
-msgstr "同時刪除記憶"
+#: src/pages/shell/chat-list.tsx
+#: src/pages/shell/side-panel.tsx
+msgid "Delete chat"
+msgstr "刪除聊天"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -2440,7 +2277,7 @@ msgstr ""
 msgid "Did you mean <0>{emailSuggestion}</0>?"
 msgstr "你是指 <0>{emailSuggestion}</0> 嗎？"
 
-#: src/pages/shell/bot-panel.tsx
+#: src/pages/DoodleSettings.tsx
 msgid "Disable a tool"
 msgstr "停用工具"
 
@@ -2488,7 +2325,6 @@ msgstr "正在中斷…"
 #: src/components/SecretAskCard.tsx
 #: src/components/teach/TeachComputerOverlay.tsx
 #: src/components/vault/VaultItemEditor.tsx
-#: src/pages/shell/computer-panel.tsx
 #: src/pages/shell/message-cards.tsx
 msgid "Dismiss"
 msgstr "忽略"
@@ -2524,10 +2360,32 @@ msgstr "還沒有帳號？"
 
 #: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
-#: src/pages/ActivityList.tsx
+#: src/pages/RoutineRunHistory.tsx
 #: src/pages/shell/message-view.tsx
 msgid "Done"
 msgstr "完成"
+
+#: src/pages/DoodleSettings.tsx
+#: src/pages/shell/new-chat-dialog.tsx
+#: src/pages/shell/side-panel.tsx
+msgid "Doodle"
+msgstr "Doodle"
+
+#: src/components/teach/TeachRecordingChrome.tsx
+msgid "Doodle is watching, not acting"
+msgstr ""
+
+#: src/pages/shell/transcript.tsx
+msgid "Doodle joined"
+msgstr "Doodle 已加入"
+
+#: src/pages/shell/transcript.tsx
+msgid "Doodle left"
+msgstr "Doodle 已離開"
+
+#: src/pages/shell/computer-view.tsx
+msgid "Doodle runs on this computer, not a Linux desktop. Shell and files use your home folder."
+msgstr ""
 
 #: src/components/ModelCredits.tsx
 msgid "Downgrade at renewal"
@@ -2579,14 +2437,6 @@ msgstr "編輯"
 msgid "Edit first"
 msgstr "先編輯"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "Edit name"
-msgstr "編輯名稱"
-
-#: src/pages/BotContextMenu.tsx
-msgid "Edit Profile"
-msgstr "編輯資料"
-
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/AdminAccessPage.tsx
@@ -2607,7 +2457,7 @@ msgid "Email verification required"
 msgstr "需要驗證電子信箱"
 
 #. placeholder {0}: humanizeTool(toolName)
-#: src/pages/shell/bot-panel.tsx
+#: src/pages/DoodleSettings.tsx
 msgid "Enable {0}"
 msgstr "啟用 {0}"
 
@@ -2654,11 +2504,6 @@ msgstr ""
 msgid "Environment variables"
 msgstr "環境變數"
 
-#: src/lib/roster-status.ts
-#: src/pages/shell/sidebar-roster.tsx
-msgid "Error"
-msgstr "錯誤"
-
 #: src/lib/cron.ts
 msgid "Every"
 msgstr "每"
@@ -2681,10 +2526,6 @@ msgstr "每 {intervalAmountSelect} {intervalUnitSelect}"
 #: src/lib/cron.ts
 msgid "Every {n} hours at :{minute}"
 msgstr "每 {n} 小時 {minute} 分"
-
-#: src/pages/KnowledgeSection.tsx
-msgid "Every bot in this space reads these notes and keeps them up to date."
-msgstr "此空間中的每個機器人都會讀取並更新這些筆記。"
 
 #: src/lib/cron.ts
 #: src/pages/RoutineEditor.tsx
@@ -2729,11 +2570,6 @@ msgstr "Executor 權杖"
 msgid "Expand"
 msgstr "展開"
 
-#. placeholder {0}: group.title
-#: src/pages/shell/sidebar-roster.tsx
-msgid "Expand {0}"
-msgstr "展開 {0}"
-
 #: src/components/markdown-copy.tsx
 msgid "Expand table"
 msgstr "展開表格"
@@ -2755,7 +2591,6 @@ msgid "Expiry"
 msgstr ""
 
 #: src/components/AccountDataSettings.tsx
-#: src/pages/shell/bot-panel.tsx
 msgid "Export"
 msgstr "匯出"
 
@@ -2782,7 +2617,7 @@ msgid "failed"
 msgstr "失敗"
 
 #: src/components/SubagentCard.tsx
-#: src/pages/ActivityList.tsx
+#: src/pages/RoutineRunHistory.tsx
 msgid "Failed"
 msgstr "失敗"
 
@@ -2793,11 +2628,6 @@ msgstr "傳送訊息失敗"
 #: src/pages/shell/use-composer-actions.ts
 msgid "Failed to stop"
 msgstr "停止失敗"
-
-#. js-lingui-explicit-id
-#: src/lib/browser-notifications.ts
-msgid "Failed."
-msgstr "失敗。"
 
 #: src/components/teach/SkillDraftCard.tsx
 msgid "Failure handling"
@@ -2816,6 +2646,10 @@ msgstr "要比較的欄位，例如 id, modifiedTime（選填）"
 msgid "File"
 msgstr "檔案"
 
+#: src/pages/shell/side-panel.tsx
+msgid "Files"
+msgstr "檔案"
+
 #: src/pages/RoutineEditor.tsx
 msgid "Files or folders on the computer"
 msgstr "電腦上的檔案或資料夾"
@@ -2824,16 +2658,11 @@ msgstr "電腦上的檔案或資料夾"
 msgid "Files or folders, one per line"
 msgstr "檔案或資料夾，每行一個"
 
-#: src/pages/GroupPanel.tsx
-msgid "Filter bots"
-msgstr "篩選機器人"
-
 #: src/pages/Artifacts.tsx
 msgid "Filter by date"
 msgstr "依日期篩選"
 
 #: src/pages/Artifacts.tsx
-#: src/pages/shell/shell-sidebar.tsx
 msgid "Filters"
 msgstr "篩選器"
 
@@ -2868,11 +2697,6 @@ msgstr "請完成訂閱登入，然後重新測試。"
 msgid "finished"
 msgstr "已完成"
 
-#. js-lingui-explicit-id
-#: src/lib/browser-notifications.ts
-msgid "Finished."
-msgstr "已完成。"
-
 #: src/pages/McpOAuthCallback.tsx
 msgid "Finishing MCP connection…"
 msgstr "正在完成 MCP 連線…"
@@ -2904,15 +2728,6 @@ msgstr "免費方案將於 {day} 結束"
 #: src/lib/cron.ts
 msgid "Friday"
 msgstr "週五"
-
-#: src/pages/ActivityList.tsx
-msgid "From"
-msgstr "從"
-
-#. placeholder {0}: filters.dateRange.from
-#: src/pages/ActivityList.tsx
-msgid "From {0}"
-msgstr "自 {0} 起"
 
 #: src/components/integrations/skills-dialog.tsx
 #: src/pages/PluginsOverlay.tsx
@@ -2979,15 +2794,8 @@ msgid "Granting…"
 msgstr ""
 
 #: src/lib/identity-display.ts
-#: src/pages/shell/chat-header.tsx
-#: src/pages/shell/side-panel.tsx
-#: src/pages/SpaceSearch.tsx
 msgid "Group"
 msgstr "群組"
-
-#: src/pages/GroupPanel.tsx
-msgid "Group settings"
-msgstr "群組設定"
 
 #: src/pages/RoutineEditor.tsx
 msgid "header"
@@ -3116,10 +2924,6 @@ msgstr "未啟用"
 msgid "Inbox & email"
 msgstr "收件匣和郵件"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "Inherit default"
-msgstr "沿用預設"
-
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Input"
 msgstr "輸入"
@@ -3186,10 +2990,6 @@ msgstr "驗證碼無效"
 msgid "Invite"
 msgstr ""
 
-#: src/pages/shell/chat-header.tsx
-msgid "Invite a friend"
-msgstr "邀請朋友"
-
 #: src/components/SidebarFooter.tsx
 msgid "Invite friends"
 msgstr "邀請朋友"
@@ -3203,10 +3003,9 @@ msgstr "邀請連結"
 msgid "Invite link copied"
 msgstr ""
 
-#: src/pages/MemorySettingsOverlay.tsx
-#: src/pages/shell/bot-panel.tsx
-msgid "Isolated"
-msgstr "隔離"
+#: src/pages/shell/sidebar-header.tsx
+msgid "Invite people"
+msgstr "邀請成員"
 
 #: src/pages/Artifacts.tsx
 msgid "Isolated preview — no access to your account"
@@ -3215,10 +3014,6 @@ msgstr "隔離預覽 — 無法存取你的帳號"
 #: src/components/pages/PageViewHost.tsx
 msgid "It may have been deleted, or it belongs to someone else."
 msgstr "它可能已被刪除，或屬於其他人。"
-
-#: src/pages/shell/dialogs.tsx
-msgid "Its conversation, files, and routines will be permanently deleted. Bots it created stay in your list."
-msgstr "它的對話、檔案和例行任務將被永久刪除。它建立的機器人仍留在清單中。"
 
 #: src/components/pages/PagesList.tsx
 msgid "Its shared link stops working and its cards in chat show it as deleted. This can't be undone."
@@ -3243,10 +3038,6 @@ msgstr "跳轉到回覆的訊息：{excerpt}"
 #: src/lib/relative-time.ts
 msgid "just now"
 msgstr "剛剛"
-
-#: src/pages/shell/dialogs.tsx
-msgid "Keep memories"
-msgstr "保留記憶"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Keep tool results whole"
@@ -3301,6 +3092,11 @@ msgstr "退出"
 msgid "Leave {0}?"
 msgstr ""
 
+#: src/pages/shell/chat-list.tsx
+#: src/pages/shell/side-panel.tsx
+msgid "Leave chat"
+msgstr "離開聊天"
+
 #: src/components/SpaceMembersSettings.tsx
 msgid "Leave space"
 msgstr ""
@@ -3310,8 +3106,8 @@ msgid "Let bots use this computer"
 msgstr ""
 
 #: src/pages/MemorySettingsOverlay.tsx
-msgid "Lets bots save and recall facts by meaning, alongside MEMORY.md."
-msgstr "讓機器人在 MEMORY.md 之外，依語意儲存和回想事實。"
+msgid "Lets Doodle save and recall facts by meaning, alongside MEMORY.md."
+msgstr ""
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -3355,10 +3151,6 @@ msgstr "載入更早的執行紀錄"
 msgid "Load web images automatically"
 msgstr "自動載入網路圖片"
 
-#: src/pages/ActivityList.tsx
-msgid "Loading activity…"
-msgstr "正在載入動態…"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Loading integrations…"
 msgstr "正在載入整合…"
@@ -3390,7 +3182,6 @@ msgstr "正在載入語音供應商…"
 #: src/components/SpaceMembersSettings.tsx
 #: src/pages/AdminAccessPage.tsx
 #: src/pages/Artifacts.tsx
-#: src/pages/IntegrationSetup.tsx
 #: src/pages/Invite.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/RoutineRunHistory.tsx
@@ -3434,14 +3225,11 @@ msgid "Main model"
 msgstr "主模型"
 
 #: src/pages/BillingSettingsPanel.tsx
-#: src/pages/SettingsOverlay.tsx
 msgid "Manage"
 msgstr "管理"
 
-#. placeholder {0}: option.name
 #. placeholder {0}: providerName(choice)
 #: src/pages/ModelRoleSettings.tsx
-#: src/pages/SettingsOverlay.tsx
 msgid "Manage {0}"
 msgstr "管理 {0}"
 
@@ -3462,7 +3250,7 @@ msgstr "手動"
 msgid "Manual setup required"
 msgstr "需要手動設定"
 
-#: src/pages/BotContextMenu.tsx
+#: src/pages/shell/chat-list.tsx
 msgid "Mark as Read"
 msgstr "標為已讀"
 
@@ -3470,7 +3258,7 @@ msgstr "標為已讀"
 msgid "Mark as unread"
 msgstr "標為未讀"
 
-#: src/pages/BotContextMenu.tsx
+#: src/pages/shell/chat-list.tsx
 msgid "Mark as Unread"
 msgstr "標為未讀"
 
@@ -3537,20 +3325,12 @@ msgstr "成員"
 msgid "Members"
 msgstr ""
 
-#. placeholder {0}: selected.length
-#: src/pages/GroupPanel.tsx
-msgid "Members ({0})"
-msgstr "成員（{0}）"
-
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/MemorySettingsOverlay.tsx
 #: src/pages/settings-nav.ts
+#: src/pages/shell/side-panel.tsx
 msgid "Memory"
 msgstr "記憶"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Memory scope"
-msgstr "記憶範圍"
 
 #: src/pages/shell/composer.tsx
 msgid "Mentions"
@@ -3559,11 +3339,6 @@ msgstr "提及"
 #: src/pages/shell/chat-shared.ts
 #: src/pages/shell/composer.tsx
 #: src/pages/SpaceSearch.tsx
-msgid "Message"
-msgstr "訊息"
-
-#. js-lingui-explicit-id
-#: src/lib/browser-notifications.ts
 msgid "Message"
 msgstr "訊息"
 
@@ -3598,8 +3373,8 @@ msgid "Minimize"
 msgstr "最小化"
 
 #: src/pages/shell/sidebar-header.tsx
-msgid "Minimize bots"
-msgstr "最小化機器人面板"
+msgid "Minimize chats"
+msgstr "最小化聊天"
 
 #: src/lib/cron.ts
 msgid "minute"
@@ -3615,20 +3390,16 @@ msgid "Mode"
 msgstr "模式"
 
 #: src/pages/AccountSettingsOverlay.tsx
+#: src/pages/DoodleSettings.tsx
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/bot-panel.tsx
 msgid "Model"
 msgstr "模型"
 
 #: src/lib/model-connection-preflight.ts
 msgid "Model \"{modelId}\" was not listed."
 msgstr "模型「{modelId}」未列出。"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Model connections"
-msgstr "模型連線"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 #: src/pages/Onboarding.tsx
@@ -3697,13 +3468,15 @@ msgstr "更多電腦操作"
 msgid "Move down"
 msgstr "下移"
 
-#: src/pages/shell/dialogs.tsx
-msgid "Move them to your shared memory."
-msgstr "把它們移到共享記憶。"
-
 #: src/pages/ModelRoleSettings.tsx
 msgid "Move up"
 msgstr "上移"
+
+#: src/pages/settings-nav.ts
+#: src/pages/SettingsOverlay.tsx
+#: src/pages/shell/computer-view.tsx
+msgid "My computer"
+msgstr "我的電腦"
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "My computers"
@@ -3713,12 +3486,11 @@ msgstr ""
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Auth.tsx
-#: src/pages/GroupPanel.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/model-settings/providers-section.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/bot-panel.tsx
+#: src/pages/shell/new-chat-dialog.tsx
 #: src/pages/SpaceSettingsPanel.tsx
 msgid "Name"
 msgstr "名稱"
@@ -3728,36 +3500,23 @@ msgstr "名稱"
 msgid "Name on card"
 msgstr ""
 
-#: src/pages/GroupPanel.tsx
-msgid "Name this group"
-msgstr "給這個群組命名"
-
 #: src/pages/RoutineEditor.tsx
 msgid "Name this routine"
 msgstr "給這個例行任務命名"
-
-#: src/lib/roster-status.ts
-msgid "Needs an answer"
-msgstr "需要回覆"
 
 #: src/components/McpServerHealthLine.tsx
 #: src/lib/user-error.ts
 msgid "Needs an OAuth client ID"
 msgstr "需要 OAuth 用戶端 ID"
 
-#: src/pages/ActivityList.tsx
-msgid "Needs attention"
-msgstr "需要處理"
-
-#: src/pages/ActivityList.tsx
+#: src/pages/RoutineRunHistory.tsx
 msgid "Needs input"
 msgstr "需要輸入"
 
-#: src/pages/ActivityList.tsx
+#: src/pages/RoutineRunHistory.tsx
 msgid "Needs takeover"
 msgstr "需要接管"
 
-#: src/lib/roster-status.ts
 #: src/pages/shell/computer-overlay.tsx
 #: src/pages/shell/message-view.tsx
 msgid "Needs you"
@@ -3781,6 +3540,14 @@ msgstr ""
 msgid "New card"
 msgstr ""
 
+#: src/pages/Shell.tsx
+#: src/pages/shell/chat-list.tsx
+#: src/pages/shell/new-chat-dialog.tsx
+#: src/pages/shell/sidebar-header.tsx
+#: src/pages/SpaceSearch.tsx
+msgid "New chat"
+msgstr "新聊天"
+
 #: src/components/ComputerProviderSettings.tsx
 msgid "New computers run on"
 msgstr ""
@@ -3789,12 +3556,6 @@ msgstr ""
 msgid "New contact"
 msgstr ""
 
-#: src/pages/GroupPanel.tsx
-msgid "New group"
-msgstr "新增群組"
-
-#: src/pages/Shell.tsx
-#: src/pages/shell/bot-picker.tsx
 #: src/pages/shell/keyboard-shortcuts-dialog.tsx
 msgid "New group chat"
 msgstr "新增群組聊天"
@@ -3852,11 +3613,6 @@ msgstr "無驗證"
 msgid "No authentication"
 msgstr "無驗證"
 
-#: src/pages/GroupPanel.tsx
-#: src/pages/shell/bot-picker.tsx
-msgid "No bots match"
-msgstr "沒有符合的機器人"
-
 #: src/components/AskCard.tsx
 #: src/components/SecretAskCard.tsx
 msgid "No longer active"
@@ -3879,10 +3635,6 @@ msgstr "此頁面沒有符合的成品。"
 #: src/pages/shell/chat-model-picker.tsx
 msgid "No matching models"
 msgstr "沒有符合的模型"
-
-#: src/pages/GroupPanel.tsx
-msgid "No members yet"
-msgstr "尚無成員"
 
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "No model catalog is available."
@@ -3911,6 +3663,8 @@ msgstr "不重設"
 #: src/pages/model-settings/providers-section.tsx
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/shell/command-palette.tsx
+#: src/pages/shell/new-chat-dialog.tsx
+#: src/pages/shell/side-panel.tsx
 #: src/pages/SpaceSearch.tsx
 msgid "No results"
 msgstr "無結果"
@@ -3918,10 +3672,6 @@ msgstr "無結果"
 #: src/components/markdown-copy.tsx
 msgid "No rows"
 msgstr "沒有資料列"
-
-#: src/pages/ActivityList.tsx
-msgid "No runs match these filters."
-msgstr "沒有符合篩選條件的執行紀錄。"
 
 #: src/pages/RoutineRunHistory.tsx
 msgid "No runs yet"
@@ -3968,10 +3718,6 @@ msgstr "無法正常工作"
 #: src/pages/KnowledgeSection.tsx
 msgid "Nothing remembered yet"
 msgstr "尚無記憶"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Notifications"
-msgstr "通知"
 
 #: src/components/vault/VaultItemDetail.tsx
 msgid "Number"
@@ -4047,15 +3793,10 @@ msgstr "僅限自己"
 #: src/components/markdown-link-prompt.tsx
 #: src/components/pages/PagesList.tsx
 #: src/pages/PaymentWalletSettingsPanel.tsx
-#: src/pages/shell/computer-panel.tsx
+#: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/message-view.tsx
 msgid "Open"
 msgstr "開啟"
-
-#. placeholder {0}: group.title
-#: src/pages/shell/sidebar-roster.tsx
-msgid "Open {0}"
-msgstr "開啟 {0}"
 
 #: src/components/pages/PageCard.tsx
 msgid "Open {title}"
@@ -4074,10 +3815,6 @@ msgstr "開啟電腦設定"
 #: src/components/markdown-link-prompt.tsx
 msgid "Open external link?"
 msgstr "開啟外部連結？"
-
-#: src/pages/shell/computer-panel.tsx
-msgid "Open in full window"
-msgstr "在完整視窗中開啟"
 
 #: src/components/pages/PublicPageShell.tsx
 #: src/pages/Invite.tsx
@@ -4191,19 +3928,9 @@ msgstr "找不到頁面"
 msgid "Page title"
 msgstr "頁面標題"
 
-#: src/pages/GroupPanel.tsx
-#: src/pages/shell/bot-panel.tsx
 #: src/pages/shell/command-palette.tsx
 msgid "Pages"
 msgstr "頁面"
-
-#: src/components/pages/PagesList.tsx
-msgid "Pages this bot builds for you appear here. Ask for a dashboard, tracker or plan to make one."
-msgstr "此機器人為你建立的頁面會顯示在這裡。請它做一個儀表板、追蹤表或計畫即可建立。"
-
-#: src/components/pages/PagesList.tsx
-msgid "Pages this group builds for you appear here. Ask for a dashboard, tracker or plan to make one."
-msgstr "此群組為你建立的頁面會顯示在這裡。請它做一個儀表板、追蹤表或計畫即可建立。"
 
 #: src/components/PasskeySettings.tsx
 msgid "Passkey"
@@ -4287,10 +4014,6 @@ msgstr ""
 #: src/pages/shell/chat-shared.ts
 msgid "Photo"
 msgstr "照片"
-
-#: src/pages/GroupPanel.tsx
-msgid "Pick {GROUP_MEMBER_MIN}–{GROUP_MEMBER_MAX}"
-msgstr "選擇 {GROUP_MEMBER_MIN}–{GROUP_MEMBER_MAX} 個"
 
 #: src/lib/model-connection-preflight.ts
 msgid "Pick a model from the catalog."
@@ -4379,10 +4102,6 @@ msgstr "上一頁"
 msgid "Previous settings sections"
 msgstr "上一組設定區段"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "Private"
-msgstr "私人"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Productivity"
 msgstr ""
@@ -4409,7 +4128,7 @@ msgstr "供應商"
 msgid "Pull request"
 msgstr "Pull request"
 
-#: src/pages/ActivityList.tsx
+#: src/pages/RoutineRunHistory.tsx
 msgid "Queued"
 msgstr "排隊中"
 
@@ -4425,7 +4144,7 @@ msgstr "回應"
 msgid "Reactions"
 msgstr "表情回應"
 
-#: src/pages/shell/bot-panel.tsx
+#: src/pages/VoiceSettingsOverlay.tsx
 msgid "Read replies aloud"
 msgstr "朗讀回覆"
 
@@ -4449,10 +4168,6 @@ msgstr "僅回想"
 #: src/pages/AdminAccessPage.tsx
 msgid "Received"
 msgstr ""
-
-#: src/pages/ActivityList.tsx
-msgid "Recent"
-msgstr "最近"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Recommended"
@@ -4494,14 +4209,9 @@ msgstr "復原電腦"
 msgid "Recover computer?"
 msgstr "要復原電腦嗎？"
 
-#. placeholder {0}: update.name
 #: src/components/ComputerUpdateProgress.tsx
-msgid "Recovering {0}’s Computer"
-msgstr "正在復原 {0} 的電腦"
-
-#: src/components/ComputerUpdateProgress.tsx
-msgid "Recovering Team Computer"
-msgstr "正在復原團隊電腦"
+msgid "Recovering your computer"
+msgstr "正在復原你的電腦"
 
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Recovering…"
@@ -4608,11 +4318,6 @@ msgstr "移除"
 msgid "Remove {0}"
 msgstr "移除 {0}"
 
-#. placeholder {0}: bot.name
-#: src/pages/GroupPanel.tsx
-msgid "Remove {0} from the group"
-msgstr "將 {0} 移出群組"
-
 #: src/components/SpaceMembersSettings.tsx
 msgid "Remove {memberName}?"
 msgstr ""
@@ -4662,6 +4367,7 @@ msgstr "正在移除…"
 #: src/components/pages/PagesList.tsx
 #: src/components/pages/PageView.tsx
 #: src/components/PasskeySettings.tsx
+#: src/pages/shell/side-panel.tsx
 msgid "Rename"
 msgstr "重新命名"
 
@@ -4710,10 +4416,6 @@ msgstr "調研和寫作"
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Reset"
 msgstr "重設"
-
-#: src/pages/ActivityList.tsx
-msgid "Reset all"
-msgstr "全部重設"
 
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Reset computer"
@@ -4827,7 +4529,7 @@ msgstr "輪換金鑰"
 msgid "Routine"
 msgstr "例行任務"
 
-#: src/pages/shell/bot-panel.tsx
+#: src/pages/shell/side-panel.tsx
 msgid "Routines"
 msgstr "例行任務"
 
@@ -4860,8 +4562,8 @@ msgid "running"
 msgstr "執行中"
 
 #: src/components/SubagentCard.tsx
-#: src/pages/ActivityList.tsx
 #: src/pages/RoutineEditor.tsx
+#: src/pages/RoutineRunHistory.tsx
 msgid "Running"
 msgstr "執行中"
 
@@ -4893,14 +4595,12 @@ msgstr "週六"
 #: src/components/teach/SkillDraftCard.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/AccountSettingsOverlay.tsx
-#: src/pages/GroupPanel.tsx
 #: src/pages/KnowledgeSection.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/model-settings/providers-section.tsx
 #: src/pages/ModelSettingsOverlay.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/bot-panel.tsx
 msgid "Save"
 msgstr "儲存"
 
@@ -4933,7 +4633,6 @@ msgstr "正在儲存工作空間"
 #: src/components/SecretAskCard.tsx
 #: src/components/teach/SkillDraftCard.tsx
 #: src/components/vault/VaultItemEditor.tsx
-#: src/pages/GroupPanel.tsx
 #: src/pages/McpServersOverlay.tsx
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/model-settings/providers-section.tsx
@@ -4964,10 +4663,11 @@ msgstr "螢幕未連線"
 #: src/pages/model-settings/providers-section.tsx
 #: src/pages/model-settings/role-model-picker.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/shell/bot-picker.tsx
 #: src/pages/shell/chat-model-picker.tsx
 #: src/pages/shell/command-palette.tsx
+#: src/pages/shell/new-chat-dialog.tsx
 #: src/pages/shell/shell-sidebar.tsx
+#: src/pages/shell/side-panel.tsx
 #: src/pages/shell/sidebar-header.tsx
 msgid "Search"
 msgstr "搜尋"
@@ -4985,13 +4685,13 @@ msgstr "搜尋成品…"
 msgid "Search bots"
 msgstr "搜尋機器人"
 
-#: src/pages/shell/command-palette.tsx
-msgid "Search bots, actions, and settings"
-msgstr ""
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Search by domain"
 msgstr "依網域搜尋"
+
+#: src/pages/shell/command-palette.tsx
+msgid "Search chats, actions, and settings"
+msgstr "搜尋聊天、操作與設定"
 
 #: src/components/integrations/IntegrationSetup.tsx
 msgid "Search integrations.sh"
@@ -5004,10 +4704,6 @@ msgstr "搜尋 integrations.sh"
 msgid "Search models"
 msgstr "搜尋模型"
 
-#: src/pages/shell/shell-sidebar.tsx
-msgid "Search runs"
-msgstr "搜尋執行紀錄"
-
 #: src/components/integrations/skills-dialog.tsx
 msgid "Search skills"
 msgstr ""
@@ -5015,11 +4711,6 @@ msgstr ""
 #: src/components/VaultSettings.tsx
 msgid "Search Vault"
 msgstr ""
-
-#. placeholder {0}: filters.query.trim()
-#: src/pages/ActivityList.tsx
-msgid "Search: {0}"
-msgstr "搜尋：{0}"
 
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/SpaceSearch.tsx
@@ -5038,10 +4729,6 @@ msgstr ""
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Security code"
 msgstr ""
-
-#: src/pages/shell/chat-header.tsx
-msgid "Select a bot"
-msgstr "選擇機器人"
 
 #: src/pages/memory-providers/ConnectionModeFields.tsx
 msgid "Self-hosted"
@@ -5113,7 +4800,6 @@ msgstr "設定"
 #: src/components/SidebarFooter.tsx
 #: src/pages/SettingsOverlay.tsx
 #: src/pages/shell/keyboard-shortcuts-dialog.tsx
-#: src/pages/shell/shell-dialogs.tsx
 msgid "Settings"
 msgstr "設定"
 
@@ -5156,27 +4842,17 @@ msgid "Share, anyone with the link can view"
 msgstr "共用，任何擁有連結的人都能檢視"
 
 #: src/components/pages/PagesList.tsx
-#: src/pages/MemorySettingsOverlay.tsx
-#: src/pages/shell/bot-panel.tsx
 msgid "Shared"
 msgstr "共享"
-
-#: src/pages/KnowledgeSection.tsx
-msgid "Shared memory"
-msgstr "共用記憶"
 
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/VaultSettings.tsx
 msgid "Show"
 msgstr "顯示"
 
-#: src/pages/GroupPanel.tsx
-msgid "Show all"
-msgstr "顯示全部"
-
 #: src/pages/shell/sidebar-header.tsx
-msgid "Show bots"
-msgstr "顯示機器人"
+msgid "Show chats"
+msgstr "顯示聊天"
 
 #: src/pages/Artifacts.tsx
 msgid "Show list"
@@ -5191,10 +4867,6 @@ msgstr "顯示更多"
 #: src/components/I18nBootstrap.tsx
 msgid "Show password"
 msgstr "顯示密碼"
-
-#: src/pages/GroupPanel.tsx
-msgid "Show selected"
-msgstr "顯示已選取項目"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Show tool activity"
@@ -5257,10 +4929,6 @@ msgstr ""
 msgid "Site"
 msgstr "網站"
 
-#: src/pages/shell/computer-overlay.tsx
-msgid "Sites you sign in to stay signed in for everyone in this space"
-msgstr ""
-
 #. placeholder {0}: skill.name
 #: src/pages/shell/composer.tsx
 msgid "Skill {0}"
@@ -5321,16 +4989,7 @@ msgid "Sorted by {column}, descending"
 msgstr "已依 {column} 遞減排序"
 
 #: src/lib/identity-display.ts
-#: src/pages/SettingsOverlay.tsx
 msgid "Space"
-msgstr "空間"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Space default"
-msgstr "空間預設"
-
-#: src/pages/SettingsOverlay.tsx
-msgid "Spaces"
 msgstr "空間"
 
 #: src/pages/shell/message-view.tsx
@@ -5366,6 +5025,10 @@ msgstr "啟動"
 msgid "Start {trialDays}-day free trial"
 msgstr "開始 {trialDays} 天免費試用"
 
+#: src/pages/shell/new-chat-dialog.tsx
+msgid "Start chat"
+msgstr "開始聊天"
+
 #: src/components/ModelCredits.tsx
 msgid "Start plan"
 msgstr "開始方案"
@@ -5394,12 +5057,11 @@ msgstr "延遲 {count} 小時開始"
 msgid "Started {count}m late"
 msgstr "延遲 {count} 分鐘開始"
 
-#: src/pages/ActivityList.tsx
+#: src/pages/RoutineRunHistory.tsx
 msgid "Starting"
 msgstr "正在開始"
 
 #: src/components/teach/TeachComputerOverlay.tsx
-#: src/lib/roster-status.ts
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/Onboarding.tsx
 msgid "Starting…"
@@ -5408,10 +5070,6 @@ msgstr "正在開始…"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "State or region"
 msgstr ""
-
-#: src/pages/ActivityList.tsx
-msgid "Status"
-msgstr "狀態"
 
 #: src/components/teach/SkillDraftCard.tsx
 msgid "Steps"
@@ -5435,11 +5093,6 @@ msgstr "停止朗讀"
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Stop teaching"
 msgstr "停止示範"
-
-#. js-lingui-explicit-id
-#: src/lib/browser-notifications.ts
-msgid "Stopped."
-msgstr "已停止。"
 
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Stopping…"
@@ -5506,7 +5159,6 @@ msgid "Supports thinking"
 msgstr "支援思考"
 
 #: src/components/ModelCredits.tsx
-#: src/pages/model-settings/space-bots-model.tsx
 msgid "Switch"
 msgstr "切換"
 
@@ -5521,10 +5173,6 @@ msgstr "切換為按年"
 #: src/components/ModelCredits.tsx
 msgid "Switch to yearly?"
 msgstr "切換為按年付費？"
-
-#: src/pages/model-settings/space-bots-model.tsx
-msgid "Switching…"
-msgstr "正在切換…"
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -5550,14 +5198,6 @@ msgstr "示範任務"
 #: src/pages/Shell.tsx
 msgid "Teaching in progress. Stop teaching before sending a new message."
 msgstr "正在示範，傳送新訊息前請先停止示範。"
-
-#: src/pages/shell/bot-panel.tsx
-msgid "Team"
-msgstr "團隊"
-
-#: src/pages/shell/computer-view.tsx
-msgid "Team Computer"
-msgstr "團隊電腦"
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "Template"
@@ -5647,10 +5287,6 @@ msgstr "共用連結將失效"
 msgid "The unused difference is credited to your next invoice."
 msgstr "未使用的差額將抵扣到你的下一張帳單。"
 
-#: src/pages/model-settings/space-bots-model.tsx
-msgid "Their own model is cleared. You can pick one again in each bot."
-msgstr "已清除機器人的個別模型設定。你可以隨時為各機器人重新選擇模型。"
-
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/VaultSettings.tsx
 msgid "These saved settings can't be read. Remove it and add it again."
@@ -5660,9 +5296,9 @@ msgstr "無法讀取已儲存的設定，請移除後重新新增。"
 msgid "They get {weeks} weeks free."
 msgstr "對方可免費使用 {weeks} 週。"
 
+#: src/pages/DoodleSettings.tsx
 #: src/pages/ModelRoleSettings.tsx
 #: src/pages/RoutineEditor.tsx
-#: src/pages/shell/bot-panel.tsx
 msgid "Thinking"
 msgstr "思考"
 
@@ -5678,10 +5314,6 @@ msgstr "此帳戶已停用"
 #: src/lib/user-error.ts
 msgid "This app needs its own sign-in setup to connect."
 msgstr "此應用程式需要單獨設定登入才能連線。"
-
-#: src/pages/shell/computer-view.tsx
-msgid "This bot runs on this computer, not a Linux desktop. Shell and files use your home folder."
-msgstr "此機器人執行在這臺電腦上，而不是 Linux 桌面。Shell 和檔案使用你的主目錄。"
 
 #: src/lib/dictation.ts
 msgid "This browser has no on-device dictation. Connect a voice provider with transcription, or use Chrome / the desktop app."
@@ -5784,10 +5416,6 @@ msgstr "這將從每個空間移除該連線。"
 msgid "This reset link is invalid or expired"
 msgstr "此重設連結無效或已過期"
 
-#: src/pages/shell/message-cards.tsx
-msgid "This server cannot be assigned without a bot."
-msgstr "沒有機器人就無法分配此伺服器。"
-
 #: src/pages/McpServersOverlay.tsx
 msgid "This server did not request browser authorization."
 msgstr "此伺服器未請求瀏覽器授權。"
@@ -5821,19 +5449,6 @@ msgstr "時間"
 msgid "Timezone"
 msgstr "時區"
 
-#: src/pages/ActivityList.tsx
-msgid "To"
-msgstr "到"
-
-#. placeholder {0}: filters.dateRange.to
-#: src/pages/ActivityList.tsx
-msgid "To {0}"
-msgstr "截至 {0}"
-
-#: src/pages/shell/bot-picker.tsx
-msgid "To:"
-msgstr "收件人："
-
 #: src/pages/Artifacts.tsx
 #: src/pages/shell/chat-context.tsx
 msgid "Today"
@@ -5864,8 +5479,8 @@ msgstr "工具參數必須是 JSON"
 msgid "Tool name"
 msgstr "工具名稱"
 
+#: src/pages/DoodleSettings.tsx
 #: src/pages/PluginsOverlay.tsx
-#: src/pages/shell/bot-panel.tsx
 msgid "Tools"
 msgstr "工具"
 
@@ -5911,7 +5526,6 @@ msgstr "受信任的網站"
 
 #: src/components/pages/PageNotice.tsx
 #: src/components/pages/PagesList.tsx
-#: src/pages/ActivityList.tsx
 #: src/pages/Onboarding.tsx
 #: src/pages/SharedPage.tsx
 #: src/pages/SpaceSearch.tsx
@@ -5951,10 +5565,6 @@ msgstr "解除安裝"
 msgid "Unpin"
 msgstr "取消置頂"
 
-#: src/pages/ActivityList.tsx
-msgid "Unread"
-msgstr "未讀"
-
 #. placeholder {0}: pending.file.name
 #: src/pages/shell/use-composer-actions.ts
 msgid "Unsupported file type: {0}"
@@ -5992,14 +5602,9 @@ msgstr "需要更新"
 msgid "Updates"
 msgstr "更新"
 
-#. placeholder {0}: update.name
 #: src/components/ComputerUpdateProgress.tsx
-msgid "Updating {0}’s Computer"
-msgstr "正在更新 {0} 的電腦"
-
-#: src/components/ComputerUpdateProgress.tsx
-msgid "Updating Team Computer"
-msgstr "正在更新團隊電腦"
+msgid "Updating your computer"
+msgstr "正在更新你的電腦"
 
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Updating…"
@@ -6051,10 +5656,6 @@ msgstr "使用我的訂閱或 API 金鑰"
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Use Protected input for passwords."
 msgstr "輸入密碼時，請使用受保護的輸入。"
-
-#: src/pages/model-settings/space-bots-model.tsx
-msgid "Use space default"
-msgstr "使用空間預設模型"
 
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
 msgid "Use up to 512 letters, digits, _ or -."
@@ -6126,8 +5727,8 @@ msgstr ""
 msgid "View source"
 msgstr ""
 
+#: src/pages/DoodleSettings.tsx
 #: src/pages/settings-nav.ts
-#: src/pages/shell/bot-panel.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Voice"
 msgstr "語音"
@@ -6140,17 +5741,9 @@ msgstr ""
 msgid "Wait a moment and test again."
 msgstr "請稍候並重新測試。"
 
-#: src/lib/roster-status.ts
-msgid "Waiting in line…"
-msgstr "排隊等候…"
-
 #: src/pages/shell/message-cards.tsx
 msgid "Waiting…"
 msgstr "等待中…"
-
-#: src/pages/shell/computer-panel.tsx
-msgid "Wake"
-msgstr "喚醒"
 
 #: src/pages/settings-nav.ts
 msgid "Wallet"
@@ -6194,10 +5787,6 @@ msgstr "每週"
 msgid "Welcome to Labradoodle"
 msgstr "歡迎使用 Labradoodle"
 
-#: src/pages/shell/dialogs.tsx
-msgid "What about its memories?"
-msgstr "它的記憶怎麼處理？"
-
 #: src/components/SignupSurvey.tsx
 msgid "What do you most want Labradoodle to help with?"
 msgstr "你最希望 Labradoodle 幫你做什麼？"
@@ -6226,10 +5815,6 @@ msgstr "監視內容"
 msgid "When a webhook fires"
 msgstr "當 Webhook 觸發時"
 
-#: src/pages/shell/bot-panel.tsx
-msgid "When it finishes or needs input"
-msgstr "完成任務或需要輸入時"
-
 #: src/pages/RoutineEditor.tsx
 msgid "When something changes"
 msgstr "發生變化時"
@@ -6256,12 +5841,7 @@ msgstr "誰可以開啟此頁面"
 msgid "Work"
 msgstr "工作"
 
-#: src/pages/ActivityList.tsx
-msgid "Working"
-msgstr "工作中"
-
 #: src/components/ToolActivityDisclosure.tsx
-#: src/lib/roster-status.ts
 #: src/pages/Auth.tsx
 #: src/pages/shell/transcript.tsx
 msgid "Working…"
@@ -6272,8 +5852,14 @@ msgid "Works with your ChatGPT or Claude plan."
 msgstr "可使用你的 ChatGPT 或 Claude 方案。"
 
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
+#: src/pages/settings-nav.ts
+#: src/pages/SettingsOverlay.tsx
 msgid "Workspace"
 msgstr "工作空間"
+
+#: src/pages/shell/sidebar-header.tsx
+msgid "Workspace settings"
+msgstr "工作區設定"
 
 #: src/lib/billing.ts
 msgid "year"
@@ -6284,7 +5870,7 @@ msgid "Yearly"
 msgstr "按年"
 
 #: src/pages/shell/chat-context.tsx
-#: src/pages/shell/sidebar-roster.tsx
+#: src/pages/shell/chat-list.tsx
 msgid "Yesterday"
 msgstr "昨天"
 
@@ -6293,6 +5879,7 @@ msgstr "昨天"
 #: src/pages/Shell.tsx
 #: src/pages/shell/message-view.tsx
 #: src/pages/shell/shell-sidebar.tsx
+#: src/pages/shell/side-panel.tsx
 msgid "You"
 msgstr "你"
 
@@ -6325,10 +5912,6 @@ msgstr "今天將從你的卡中扣款 {annualPrice}，並抵扣本月未使用�
 #: src/components/ModelCredits.tsx
 msgid "Your card is charged the prorated difference today."
 msgstr "今天將從你的卡片扣除按比例計算的差額。"
-
-#: src/pages/Shell.tsx
-msgid "Your computer's disk is nearly full. Free up space by removing build output and caches you no longer need."
-msgstr "電腦的磁碟快滿了。請刪除不再需要的建置輸出和快取，以釋放空間。"
 
 #: src/components/AccountDataSettings.tsx
 msgid "Your data"
