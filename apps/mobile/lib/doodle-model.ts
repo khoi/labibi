@@ -1,5 +1,10 @@
 import type { ChatModelChoice } from "@labradoodle/core";
-import { chatModelChoices, connectedModelChoices } from "@labradoodle/core";
+import {
+  chatModelChoices,
+  connectedModelChoices,
+  doodleModelSelection,
+  parseModelOptionKey,
+} from "@labradoodle/core";
 import type { MobileMe, MobileModel, MobileModelCredential } from "./api";
 
 /**
@@ -13,12 +18,12 @@ export function doodleModelPickerChoices(
   selectedKey: string,
   t: (message: string) => string,
 ): ChatModelChoice[] {
-  const defaultEntry =
-    me?.defaultModel && me.defaultProvider
-      ? catalog.find(
-          (entry) => entry.provider === me.defaultProvider && entry.id === me.defaultModel,
-        )
-      : undefined;
+  const { defaultEntry } = doodleModelSelection({
+    saved: parseModelOptionKey(selectedKey) ?? { provider: null, modelId: null },
+    ownDefault: { provider: me?.defaultProvider, modelId: me?.defaultModel },
+    catalog,
+    credentials,
+  });
   const choices = chatModelChoices(
     connectedModelChoices(credentials, catalog),
     selectedKey,

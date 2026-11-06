@@ -3,10 +3,8 @@ import { BUILTIN_TOOL_NAMES, isBuiltinToolName } from "@labradoodle/contracts";
 import {
   chatModelChoices,
   connectedModelChoices,
-  credentialForModel,
-  modelOptionKey,
+  doodleModelSelection,
   parseModelOptionKey,
-  resolveSelectableModelId,
 } from "@labradoodle/core";
 import {
   Button,
@@ -82,42 +80,23 @@ function DoodleSettingsForm({
     }
   }
 
-  const storedModel =
-    doodle.modelProvider && doodle.modelId
-      ? {
-          provider: doodle.modelProvider,
-          modelId: resolveSelectableModelId(catalog, doodle.modelProvider, doodle.modelId),
-        }
-      : null;
-  const selectedModelKey = storedModel
-    ? modelOptionKey(storedModel.provider, storedModel.modelId)
-    : "";
-  const defaultEntry = me?.defaultModel
-    ? catalog.find((entry) => entry.provider === me.defaultProvider && entry.id === me.defaultModel)
-    : undefined;
+  const {
+    selectedKey: selectedModelKey,
+    defaultEntry,
+    thinkingLevels: thinkingOptions,
+    defaultThinkingLevel,
+  } = doodleModelSelection({
+    saved: { provider: doodle.modelProvider, modelId: doodle.modelId },
+    ownDefault: { provider: me?.defaultProvider, modelId: me?.defaultModel },
+    catalog,
+    credentials,
+  });
   const modelChoices = chatModelChoices(
     connectedModelChoices(credentials, catalog),
     selectedModelKey,
     t`Account default`,
     defaultEntry?.images,
   );
-  const effectiveProvider = storedModel?.provider ?? me?.defaultProvider ?? null;
-  const effectiveModelId = storedModel?.modelId ?? me?.defaultModel ?? null;
-  const effectiveEntry =
-    effectiveProvider && effectiveModelId
-      ? catalog.find(
-          (entry) =>
-            entry.provider === effectiveProvider &&
-            resolveSelectableModelId(catalog, entry.provider, entry.id) === effectiveModelId,
-        )
-      : undefined;
-  const effectiveCredential = credentialForModel(credentials, effectiveProvider, effectiveModelId);
-  const thinkingOptions = (
-    effectiveCredential?.thinkingLevels ??
-    effectiveEntry?.thinkingLevels ??
-    []
-  ).filter((level) => level !== "off");
-  const defaultThinkingLevel = effectiveCredential?.thinkingLevel ?? "medium";
   const disabledTools = doodle.disabledBuiltinTools;
 
   return (

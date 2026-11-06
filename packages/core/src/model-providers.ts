@@ -1,4 +1,9 @@
-import type { ModelApiProtocol, ModelCatalogEntry } from "@labradoodle/contracts";
+import type {
+  ModelApiProtocol,
+  ModelCatalogEntry,
+  ModelCredential,
+  ThinkingLevel,
+} from "@labradoodle/contracts";
 import {
   canonicalPiProviderId,
   DEFAULT_MODEL_MAX_TOKENS,
@@ -396,6 +401,57 @@ export function chatModelChoices(
     });
   }
   return choices.concat(connected);
+}
+
+/**
+ * Doodle's model in its owner's settings. `saved` is the owner's pick, or none to follow each
+ * asker's default, which the owner sees as their own `ownDefault`. Returns the picker key, the
+ * catalog entry of that default, and the thinking levels of whichever model runs.
+ */
+export function doodleModelSelection(input: {
+  saved: { provider: string | null; modelId: string | null };
+  ownDefault: { provider?: string | null; modelId?: string | null };
+  catalog: readonly ModelCatalogEntry[];
+  credentials: readonly ModelCredential[];
+}): {
+  selectedKey: string;
+  defaultEntry: ModelCatalogEntry | undefined;
+  thinkingLevels: ThinkingLevel[];
+  defaultThinkingLevel: ThinkingLevel;
+} {
+  const { saved, ownDefault, catalog, credentials } = input;
+  const selected =
+    saved.provider && saved.modelId
+      ? {
+          provider: saved.provider,
+          modelId: resolveSelectableModelId(catalog, saved.provider, saved.modelId),
+        }
+      : null;
+  const defaultEntry =
+    ownDefault.provider && ownDefault.modelId
+      ? catalog.find(
+          (entry) => entry.provider === ownDefault.provider && entry.id === ownDefault.modelId,
+        )
+      : undefined;
+  const provider = selected?.provider ?? ownDefault.provider ?? null;
+  const modelId = selected?.modelId ?? ownDefault.modelId ?? null;
+  const entry =
+    provider && modelId
+      ? catalog.find(
+          (candidate) =>
+            candidate.provider === provider &&
+            resolveSelectableModelId(catalog, candidate.provider, candidate.id) === modelId,
+        )
+      : undefined;
+  const credential = credentialForModel(credentials, provider, modelId);
+  return {
+    selectedKey: selected ? modelOptionKey(selected.provider, selected.modelId) : "",
+    defaultEntry,
+    thinkingLevels: (credential?.thinkingLevels ?? entry?.thinkingLevels ?? []).filter(
+      (level) => level !== "off",
+    ),
+    defaultThinkingLevel: credential?.thinkingLevel ?? "medium",
+  };
 }
 
 /**

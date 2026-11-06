@@ -1,12 +1,10 @@
 import type { ThinkingLevel, UpdateDoodleInput, VoiceInfo } from "@labradoodle/contracts";
 import { BOT_INSTRUCTIONS_MAX_LENGTH, BUILTIN_TOOL_NAMES } from "@labradoodle/contracts";
 import {
-  credentialForModel,
   DOODLE_NAME,
+  doodleModelSelection,
   MODEL_SEARCH_THRESHOLD,
-  modelOptionKey,
   parseModelOptionKey,
-  resolveSelectableModelId,
 } from "@labradoodle/core";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import type { ReactNode } from "react";
@@ -83,34 +81,12 @@ export default function DoodleSettingsScreen() {
     }
   }
 
-  const storedModel =
-    doodle?.modelProvider && doodle.modelId
-      ? { provider: doodle.modelProvider, modelId: doodle.modelId }
-      : null;
-  const selectedModel = storedModel
-    ? {
-        provider: storedModel.provider,
-        modelId: resolveSelectableModelId(catalog, storedModel.provider, storedModel.modelId),
-      }
-    : null;
-  const selectedModelKey = selectedModel
-    ? modelOptionKey(selectedModel.provider, selectedModel.modelId)
-    : "";
-  const effectiveProvider = selectedModel?.provider ?? me?.defaultProvider ?? null;
-  const effectiveModelId = selectedModel?.modelId ?? me?.defaultModel ?? null;
-  const effectiveEntry =
-    effectiveProvider && effectiveModelId
-      ? catalog.find(
-          (entry) =>
-            entry.provider === effectiveProvider &&
-            resolveSelectableModelId(catalog, entry.provider, entry.id) === effectiveModelId,
-        )
-      : undefined;
-  const thinkingOptions = (
-    credentialForModel(credentials, effectiveProvider, effectiveModelId)?.thinkingLevels ??
-    effectiveEntry?.thinkingLevels ??
-    []
-  ).filter((level) => level !== "off");
+  const { selectedKey: selectedModelKey, thinkingLevels: thinkingOptions } = doodleModelSelection({
+    saved: { provider: doodle?.modelProvider ?? null, modelId: doodle?.modelId ?? null },
+    ownDefault: { provider: me?.defaultProvider, modelId: me?.defaultModel },
+    catalog,
+    credentials,
+  });
   const modelChoices = useMemo(
     () => doodleModelPickerChoices(me, catalog, credentials, selectedModelKey, t),
     [catalog, credentials, me, selectedModelKey, t],
