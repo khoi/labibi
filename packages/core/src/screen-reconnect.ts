@@ -136,21 +136,6 @@ export function createScreenReconnect(): ScreenReconnect {
   };
 }
 
-/** One reconnect allowance per computer screen, so one bot's drop doesn't use another's. */
-export function createScreenReconnects(): { for(key: string): ScreenReconnect } {
-  const screens = new Map<string, ScreenReconnect>();
-  return {
-    for(key) {
-      let screen = screens.get(key);
-      if (!screen) {
-        screen = createScreenReconnect();
-        screens.set(key, screen);
-      }
-      return screen;
-    },
-  };
-}
-
 /** Answers that mean the screen isn't reachable yet rather than refused: wait them out. */
 const SCREEN_NOT_YET = new Set<number | null>([null, 502, 503]);
 

@@ -165,7 +165,7 @@ export function useThreadSync({
         queryClient,
         queries.routines.list.queryOptions({ input: { threadId: id } }),
       ).catch(() => null),
-      refreshComputerScreen(id).catch(() => null),
+      refreshComputerScreen().catch(() => null),
     ]).then(([routines]) => {
       if (
         activeThreadId.current !== id ||
@@ -315,7 +315,7 @@ export function useThreadSync({
           // waiting_input: reconcile ask cards if a stale post-send refresh raced SSE.
           void snapshotRefresh.invalidate().catch(() => undefined);
         } else if (isComputerStatusEvent(event)) {
-          void refreshComputerScreen(threadId).catch(() => undefined);
+          void refreshComputerScreen().catch(() => undefined);
         }
         if (isRunTerminalEvent(event)) refreshRoutineHistory(event.runId);
       },

@@ -182,61 +182,56 @@ function pendingBoot() {
 }
 
 describe("computer boot ownership", () => {
-  it("starts B independently and refuses a second A after switching A to B to A", async () => {
-    const inFlight = new Map<string, symbol>();
+  it("refuses a second boot while one is out, then allows the next", async () => {
+    const inFlight = { current: null as symbol | null };
     const a = pendingBoot();
-    const b = pendingBoot();
     const duplicate = vi.fn();
-    const first = bootComputerOnce(inFlight, "a", () => a.promise);
-    const second = bootComputerOnce(inFlight, "b", () => b.promise);
-    await bootComputerOnce(inFlight, "a", duplicate);
+    const first = bootComputerOnce(inFlight, () => a.promise);
+    await bootComputerOnce(inFlight, duplicate);
     expect(duplicate).not.toHaveBeenCalled();
-    b.resolve();
-    await second;
-    expect(inFlight.has("a")).toBe(true);
     a.resolve();
     await first;
-    await bootComputerOnce(inFlight, "a", duplicate);
+    await bootComputerOnce(inFlight, duplicate);
     expect(duplicate).toHaveBeenCalledOnce();
-    expect(inFlight.size).toBe(0);
+    expect(inFlight.current).toBeNull();
   });
 
   it("lets takeover proceed while a boot request is in flight", async () => {
-    const inFlight = new Map<string, symbol>();
+    const inFlight = { current: null as symbol | null };
     const boot = pendingBoot();
-    const first = bootComputerOnce(inFlight, "a", () => boot.promise);
+    const first = bootComputerOnce(inFlight, () => boot.promise);
     const duplicateBoot = vi.fn();
     const takeover = vi.fn();
-    await bootComputerOnce(inFlight, "a", duplicateBoot);
+    await bootComputerOnce(inFlight, duplicateBoot);
     await takeover();
     expect(duplicateBoot).not.toHaveBeenCalled();
     expect(takeover).toHaveBeenCalledOnce();
-    expect(inFlight.has("a")).toBe(true);
+    expect(inFlight.current).not.toBeNull();
     boot.resolve();
     await first;
   });
 
   it("allows a retry after failure", async () => {
-    const inFlight = new Map<string, symbol>();
+    const inFlight = { current: null as symbol | null };
     const a = pendingBoot();
-    const first = bootComputerOnce(inFlight, "a", () => a.promise);
+    const first = bootComputerOnce(inFlight, () => a.promise);
     const rejected = expect(first).rejects.toThrow("Boot failed");
     a.reject(new Error("Boot failed"));
     await rejected;
     const retry = vi.fn();
-    await bootComputerOnce(inFlight, "a", retry);
+    await bootComputerOnce(inFlight, retry);
     expect(retry).toHaveBeenCalledOnce();
   });
 
   it("does not release a replacement owner's marker when an older request finishes", async () => {
-    const inFlight = new Map<string, symbol>();
+    const inFlight = { current: null as symbol | null };
     const a = pendingBoot();
-    const first = bootComputerOnce(inFlight, "a", () => a.promise);
+    const first = bootComputerOnce(inFlight, () => a.promise);
     const replacement = Symbol("replacement");
-    inFlight.set("a", replacement);
+    inFlight.current = replacement;
     a.resolve();
     await first;
-    expect(inFlight.get("a")).toBe(replacement);
+    expect(inFlight.current).toBe(replacement);
   });
 });
 

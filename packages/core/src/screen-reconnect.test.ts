@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   createScreenReconnect,
-  createScreenReconnects,
   SCREEN_RECONNECT_DELAY_MS,
   SCREEN_RECONNECT_STABLE_MS,
   SCREEN_RECONNECT_TRIES,
@@ -164,21 +163,6 @@ describe("screen reconnect", () => {
     } finally {
       vi.useRealTimers();
     }
-  });
-});
-
-describe("screen reconnects per computer", () => {
-  it("gives each bot's screen its own allowance", () => {
-    const screens = createScreenReconnects();
-    screens.for("bot-a").loaded();
-    screens.for("bot-a").report("connected", 0);
-    expect(screens.for("bot-a").report("disconnected", 1_000)).toBe("reconnect");
-    // bot-a's reload raced a restart and tries again; bot-b's drop is unaffected.
-    screens.for("bot-a").loaded();
-    expect(screens.for("bot-a").report("failed", 3_000)).toBe("reconnect");
-    screens.for("bot-b").loaded();
-    screens.for("bot-b").report("connected", 0);
-    expect(screens.for("bot-b").report("disconnected", 1_000)).toBe("reconnect");
   });
 });
 

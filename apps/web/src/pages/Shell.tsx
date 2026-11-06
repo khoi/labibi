@@ -225,7 +225,7 @@ function SpaceShell() {
   );
   const activeThreadId = useRef<string | undefined>(active?.id);
   activeThreadId.current = active?.id;
-  const computerState = useComputerState({ rpc, activeId: active?.id, activeThreadId });
+  const computerState = useComputerState({ rpc });
   const { computer, computerOpen, setComputerOpen, booting, commitComputer } = computerState;
   useReportedUiLocale(rpc, bootstrapMe?.locale);
   const dialogs = useShellDialogs();
@@ -481,11 +481,9 @@ function SpaceShell() {
   const computerControls = useComputerControls({
     rpc,
     state: computerState,
-    active,
-    activeThreadId,
+    activeId: active?.id,
     runStatus: snapshot?.run?.status,
     sandboxProvider: bootstrapMe?.sandboxProvider,
-    refreshThread,
   });
   const { openComputer } = computerControls;
   const composer = useComposerActions({
@@ -1008,9 +1006,7 @@ function SpaceShell() {
           onTakeControl={() => void openComputer(true)}
           onStart={() => void openComputer()}
           onRefreshTeaching={refreshActiveTeaching}
-          onRefreshComputer={async () => {
-            await computerControls.refreshComputerFor(computerControls.computerViewId);
-          }}
+          onRefreshComputer={computerControls.refreshComputer}
           onClose={() => setComputerOpen(false)}
         />
       ) : null}
