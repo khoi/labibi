@@ -3,13 +3,10 @@ import { displayMessageBlock, displayName } from "./display-name.js";
 import { identitySourceField, preserveIdentitySource } from "./identity-source.js";
 
 export type IdentityLabels = {
-  bot: string;
-  group: string;
-  space: string;
+  workspace: string;
   routine: string;
   member: string;
   subagent: string;
-  owner: string;
 };
 
 type Project = (value: unknown) => unknown;
@@ -60,74 +57,33 @@ export function displayIdentityResult(
   result: unknown,
   labels: IdentityLabels,
 ): unknown {
-  const member: Project = (value) => fields(value, { name: label(labels.bot) });
-  const bot: Project = (value) => fields(value, { name: label(labels.bot), title: label("") });
-  const group: Project = (value) =>
-    fields(value, { name: label(labels.group), members: list(member) });
+  const workspace: Project = (value) => fields(value, { name: label(labels.workspace) });
+  const member: Project = (value) => fields(value, { name: label(labels.member) });
+  const chat: Project = (value) => fields(value, { members: list(member) });
   const routine: Project = (value) => fields(value, { name: label(labels.routine) });
-  const thread: Project = (value) =>
-    fields(value, {
-      groupName: (name) => (name === null ? null : label(labels.group)(name)),
-      members: list(member),
-      messages: list((message) =>
-        fields(message, {
-          blocks: list((block) => displayMessageBlock(block as MessageBlock, labels)),
-        }),
-      ),
-    });
-  const space: Project = (value) =>
-    fields(value, {
-      name: label(labels.space),
-      bots: list(bot),
-      groups: list(group),
-    });
+  const messages = list((message) =>
+    fields(message, {
+      blocks: list((block) => displayMessageBlock(block as MessageBlock, labels)),
+    }),
+  );
+  const thread: Project = (value) => fields(value, { chat, messages });
   const procedure = path.join("/");
   if (procedure === "bootstrap")
-    return fields(result, {
-      bots: list(bot),
-      groups: list(group),
-      spaces: list(space),
-      routines: list(routine),
-      thread,
-    });
-  if (procedure === "spaces/list") return fields(result, { current: space, spaces: list(space) });
-  if (procedure === "spaces/rename") return space(result);
-  if (procedure === "bots/list") return list(bot)(result);
-  if (/^bots\/(get|create|update|restoreInstructions|setComputer)$/.test(procedure))
-    return bot(result);
-  if (procedure === "groups/list") return list(group)(result);
-  if (/^groups\/(get|create|update)$/.test(procedure)) return group(result);
-  if (procedure === "routines/list") return list(routine)(result);
-  if (procedure === "routines/listForMentions")
-    return list((value) => fields(value, { routines: list(routine) }))(result);
-  if (/^routines\/(create|update)$/.test(procedure)) return routine(result);
+    return fields(result, { workspaces: list(workspace), chats: list(chat), thread });
+  if (procedure === "spaces/list") return list(workspace)(result);
+  if (procedure === "spaces/rename") return workspace(result);
+  if (procedure === "threads/list") return list(chat)(result);
+  if (procedure === "threads/members") return list(member)(result);
   if (procedure === "threads/get" || procedure === "threads/messages") return thread(result);
-  if (procedure === "runs/list")
-    return fields(result, {
-      runs: list((run) =>
-        fields(run, {
-          botName: label(labels.bot),
-          groupName: (name) => (name === null ? null : label(labels.group)(name)),
-        }),
-      ),
-    });
+  if (procedure === "routines/list") return list(routine)(result);
+  if (/^routines\/(create|update)$/.test(procedure)) return routine(result);
   if (procedure === "search/query")
     return fields(result, {
-      hits: list((value) => {
-        const hit = value as { kind?: string; groupId?: string };
-        return fields(value, {
-          botName: label(labels.bot),
-          groupName: label(labels.group),
-          ...(hit.kind === "conversation" || hit.kind === "message"
-            ? { title: label(hit.groupId ? labels.group : labels.bot) }
-            : {}),
-          ...(hit.kind === "routine" ? { title: label(labels.routine) } : {}),
-        });
-      }),
-    });
-  if (procedure === "computer/status")
-    return fields(result, {
-      busyBotName: (name) => (name === null ? null : label(labels.bot)(name)),
+      hits: list((value) =>
+        (value as { kind?: string }).kind === "routine"
+          ? fields(value, { title: label(labels.routine) })
+          : value,
+      ),
     });
   return result;
 }

@@ -46,8 +46,8 @@ describe("composer drafts", () => {
   it("keeps raw text and restores exact, versioned occurrence bindings", () => {
     const storage = memoryStorage();
     const bindings = [
-      { start: 0, end: 4, mention: { kind: "bot" as const, id: "bot-bob", name: "Bob" } },
-      { start: 9, end: 13, mention: { kind: "group" as const, id: "group-bob", name: "Bob" } },
+      { start: 0, end: 4, mention: { kind: "person" as const, id: "bot-bob", name: "Bob" } },
+      { start: 9, end: 13, mention: { kind: "routine" as const, id: "routine-bob", name: "Bob" } },
     ];
     writeComposerDraft("thread", "@Bob and @Bob", storage, bindings);
     expect(storage.getItem(composerDraftStorageKey("thread"))).toBe("@Bob and @Bob");
@@ -80,9 +80,11 @@ describe("composer drafts", () => {
     vi.stubGlobal("localStorage", storage);
     try {
       const group = [
-        { start: 0, end: 4, mention: { kind: "group" as const, id: "group", name: "Bob" } },
+        { start: 0, end: 4, mention: { kind: "routine" as const, id: "group", name: "Bob" } },
       ];
-      const bot = [{ start: 0, end: 4, mention: { kind: "bot" as const, id: "bot", name: "Bob" } }];
+      const bot = [
+        { start: 0, end: 4, mention: { kind: "person" as const, id: "bot", name: "Bob" } },
+      ];
       writeComposerDraft("thread", "@Bob", storage, group);
       const submitted = beginComposerDraftSubmission("thread", "@Bob");
       storage.setItem(

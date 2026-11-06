@@ -58,9 +58,9 @@ export function ComputerMaintenanceActions({
     setError(null);
     try {
       if (action === "stop") await rpc.computer.stop();
-      else if (action === "recover") await computerUpdates.start("own", "recover");
+      else if (action === "recover") await computerUpdates.start("recover");
       else if (action === "reset") await rpc.computer.reset();
-      else await computerUpdates.start("own");
+      else await computerUpdates.start();
       setConfirmAction(null);
       setMenuOpen(false);
       await onChanged();

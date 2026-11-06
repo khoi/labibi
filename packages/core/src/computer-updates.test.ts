@@ -25,7 +25,7 @@ describe("computer update presentation", () => {
       dismiss: async () => {},
     });
     const stop = store.watch();
-    await store.start("bot-1");
+    await store.start();
     resolve([]);
     await Promise.resolve();
     expect(store.getSnapshot()).toEqual({ updates: [update], openId: update.id });

@@ -4,50 +4,33 @@ import { displayIdentityEvent, displayIdentityResult } from "./identity-display.
 import { identitySource } from "./identity-source.js";
 
 const labels = {
-  bot: "Бот",
-  group: "Группа",
-  space: "Пространство",
+  workspace: "Пространство",
   routine: "Задача",
   member: "Участник",
   subagent: "субагент",
-  owner: "Владелец",
 };
 
 describe("localized identity projections", () => {
   it("localizes invalid names without translating legitimate names or mutating wire values", () => {
     const source = [
       {
-        id: "group-1",
-        name: "__TestTok1__",
+        id: "chat-1",
         members: [
-          { name: "Group", botId: "bot-1" },
-          { name: "__TestTok2__", botId: "bot-2" },
+          { name: "Ada", userId: "user-1" },
+          { name: "__TestTok2__", userId: "user-2" },
         ],
       },
     ];
-    expect(displayIdentityResult(["groups", "list"], source, labels)).toMatchObject([
+    expect(displayIdentityResult(["threads", "list"], source, labels)).toMatchObject([
       {
         ...source[0],
-        name: "Группа",
         members: [
-          { name: "Group", botId: "bot-1" },
-          { name: "Бот", botId: "bot-2" },
+          { name: "Ada", userId: "user-1" },
+          { name: "Участник", userId: "user-2" },
         ],
       },
     ]);
-    expect(source[0]?.name).toBe("__TestTok1__");
-  });
-  it("localizes routine names in batched mention reads like per-bot reads", () => {
-    const routines = [{ id: "routine-1", name: "__TestTok1__" }];
-    expect(
-      displayIdentityResult(
-        ["routines", "listForMentions"],
-        [{ botId: "bot-1", routines }],
-        labels,
-      ),
-    ).toEqual([
-      { botId: "bot-1", routines: displayIdentityResult(["routines", "list"], routines, labels) },
-    ]);
+    expect(source[0]?.members[1]?.name).toBe("__TestTok2__");
   });
   it("covers bootstrap, threads and activity without touching message text or IDs", () => {
     const message = {
@@ -57,15 +40,15 @@ describe("localized identity projections", () => {
       displayIdentityResult(
         ["bootstrap"],
         {
-          bots: [{ name: "__TestTok1__" }],
-          groups: [{ name: "" }],
+          workspaces: [{ name: "__TestTok1__" }],
+          chats: [{ members: [{ name: "" }] }],
           thread: { messages: [message] },
         },
         labels,
       ),
     ).toMatchObject({
-      bots: [{ name: "Бот" }],
-      groups: [{ name: "Группа" }],
+      workspaces: [{ name: "Пространство" }],
+      chats: [{ members: [{ name: "Участник" }] }],
       thread: {
         messages: [
           {
@@ -74,9 +57,6 @@ describe("localized identity projections", () => {
         ],
       },
     });
-    expect(
-      displayIdentityResult(["runs", "list"], { runs: [{ botName: "", groupName: null }] }, labels),
-    ).toMatchObject({ runs: [{ botName: "Бот", groupName: null }] });
   });
   it("leaves provider configuration and file metadata alone", () => {
     const result = { name: "__TestTok1__", content: { botName: "__TestTok1__" } };
@@ -108,26 +88,19 @@ it("keeps server-projected subagent names localizable at the client boundary", (
   });
 });
 
-it("guards message search titles while preserving link URLs", () => {
+it("guards routine search titles while preserving link URLs", () => {
   const result = displayIdentityResult(
     ["search", "query"],
     {
       hits: [
-        { kind: "message", botId: "bot", botName: "__TestTok1__", title: "__TestTok1__" },
-        { kind: "message", groupId: "group", groupName: "__TestTok1__", title: "__TestTok1__" },
+        { kind: "routine", title: "__TestTok1__" },
         { kind: "link", title: "https://example.com/__TestTok1__" },
       ],
     },
     labels,
   );
   expect(result).toMatchObject({
-    hits: [{ title: "Бот" }, { title: "Группа" }, { title: "https://example.com/__TestTok1__" }],
-  });
-});
-
-it("preserves null thread group names", () => {
-  expect(displayIdentityResult(["threads", "get"], { groupName: null }, labels)).toEqual({
-    groupName: null,
+    hits: [{ title: "Задача" }, { title: "https://example.com/__TestTok1__" }],
   });
 });
 

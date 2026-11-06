@@ -221,7 +221,7 @@ const skill = {
   source: "user",
   readOnly: false,
 } as const;
-const bot = { kind: "bot", id: "bot-2", name: "Helper" } as const;
+const bot = { kind: "person", id: "bot-2", name: "Helper" } as const;
 const props: Omit<ComponentProps<typeof ThreadComposer>, "ref"> = {
   agentSkills: [skill],
   composerMentionTargets: [bot],
@@ -279,8 +279,6 @@ describe("thread composer isolation", () => {
         onMentionRequested={catalog.onMentionRequested}
         composerMentionTargets={buildComposerMentionOptions({
           query: "",
-          bots: [],
-          groups: [],
           routines: catalog.routines,
           connectors: catalog.connectors,
         })}
@@ -424,27 +422,6 @@ describe("thread composer isolation", () => {
     return [...container.querySelectorAll<HTMLButtonElement>('button[aria-label="@{name}"]')];
   }
 
-  it("puts everyone first in a group and filters by the words of a name", () => {
-    const everyone = { kind: "everyone", id: "everyone", name: "everyone" } as const;
-    const members = [
-      { kind: "bot", id: "bot-a", name: "Research Bot" },
-      { kind: "bot", id: "bot-b", name: "Chef" },
-    ] as const;
-    render({ composerMentionTargets: [everyone, ...members] });
-    type("@");
-    expect(pickerRows().map((row) => row.textContent)).toEqual([
-      "everyone",
-      "Research Bot",
-      "Chef",
-    ]);
-    type("@bo");
-    expect(pickerRows().map((row) => row.textContent)).toEqual(["Research Bot"]);
-    type("@al");
-    expect(pickerRows().map((row) => row.textContent)).toEqual(["everyone"]);
-    type("@zzz");
-    expect(container.querySelector('[data-testid="mention-picker"]')).toBeNull();
-  });
-
   it("adds a page's reply on the same line as the draft, without sending it", () => {
     act(() => composer.current!.addReply("Pick B"));
     expect(composer.current!.snapshot().promptText).toBe("Pick B");
@@ -528,7 +505,7 @@ describe("thread composer isolation", () => {
   });
 
   it("replaces routing metadata when completing over an already selected token", () => {
-    const other = { kind: "bot", id: "bot-3", name: "HelperOther" } as const;
+    const other = { kind: "person", id: "bot-3", name: "HelperOther" } as const;
     render({ composerMentionTargets: [bot, other] });
     type("before @He");
     press("@{name}");
@@ -547,8 +524,8 @@ describe("thread composer isolation", () => {
     act(() => options[index]!.click());
   }
 
-  it("replaces a selected group binding with a bot sharing its name at the same occurrence", () => {
-    const group = { kind: "group", id: "group-1", name: "Helper" } as const;
+  it("replaces a selected routine binding with a person sharing its name at the same occurrence", () => {
+    const group = { kind: "routine", id: "routine-1", name: "Helper" } as const;
     render({ composerMentionTargets: [group, bot] });
     type("before @He");
     pickMentionAt(0);
@@ -559,24 +536,24 @@ describe("thread composer isolation", () => {
     expect(composer.current!.snapshot().mentions).toEqual([bot]);
   });
 
-  const bobBot = { kind: "bot", id: "bob-bot", name: "Bob" } as const;
-  const bobGroup = { kind: "group", id: "bob-group", name: "Bob" } as const;
+  const bobPerson = { kind: "person", id: "bob-bot", name: "Bob" } as const;
+  const bobRoutine = { kind: "routine", id: "bob-routine", name: "Bob" } as const;
 
   function selectBothBobs(separator = "and ") {
-    render({ composerMentionTargets: [bobBot, bobGroup] });
+    render({ composerMentionTargets: [bobPerson, bobRoutine] });
     type("@Bo");
     pickMentionAt(0);
     type(`@Bob ${separator}@Bo`);
     pickMentionAt(1);
-    expect(composer.current!.snapshot().mentions).toMatchObject([bobBot, bobGroup]);
+    expect(composer.current!.snapshot().mentions).toMatchObject([bobPerson, bobRoutine]);
   }
 
-  it("removes only the deleted group binding when a bot has the same name", () => {
+  it("removes only the deleted routine binding when a person has the same name", () => {
     selectBothBobs();
     select(9, 13);
     type("@Bob and  ");
     select(9);
-    expect(composer.current!.snapshot().mentions).toEqual([bobBot]);
+    expect(composer.current!.snapshot().mentions).toEqual([bobPerson]);
   });
 
   it.each(["text-first", "selection-first"])(
@@ -588,7 +565,7 @@ describe("thread composer isolation", () => {
       type("@Bob ");
       if (order === "text-first") select(0);
       expect(composer.current!.snapshot().mentions).toMatchObject([
-        { ...bobGroup, ranges: [{ start: 0, end: 4 }] },
+        { ...bobRoutine, ranges: [{ start: 0, end: 4 }] },
       ]);
     },
   );
@@ -599,7 +576,7 @@ describe("thread composer isolation", () => {
     select(10);
     type("@Bob ");
     select(5);
-    expect(composer.current!.snapshot().mentions).toEqual([bobBot]);
+    expect(composer.current!.snapshot().mentions).toEqual([bobPerson]);
   });
 
   it.each(["text-first", "selection-first"])(
@@ -621,7 +598,7 @@ describe("thread composer isolation", () => {
           end: index === 0 ? 0 : 9,
         });
         expect(composer.current!.snapshot().mentions).toMatchObject(
-          index === 0 ? [bobGroup] : [bobBot],
+          index === 0 ? [bobRoutine] : [bobPerson],
         );
       }
     },
@@ -638,11 +615,11 @@ describe("thread composer isolation", () => {
     expect(composer.current!.snapshot().mentions).toEqual([]);
   });
 
-  it.each(["bot", "group"] as const)(
-    "retires a shorter %s mention when replacing it with a multiword bot name",
+  it.each(["person", "routine"] as const)(
+    "retires a shorter %s mention when replacing it with a multiword name",
     (kind) => {
       const shorter = { ...bot, kind };
-      const longer = { kind: "bot", id: "bot-3", name: "Helper Smith" } as const;
+      const longer = { kind: "person", id: "bot-3", name: "Helper Smith" } as const;
       render({ composerMentionTargets: [shorter, longer] });
       type("before @He");
       pickMentionAt(0);
@@ -654,7 +631,7 @@ describe("thread composer isolation", () => {
   );
 
   it("keeps a separate shorter mention when replacing another occurrence with a longer name", () => {
-    const longer = { kind: "bot", id: "bot-3", name: "Helper Smith" } as const;
+    const longer = { kind: "person", id: "bot-3", name: "Helper Smith" } as const;
     render({ composerMentionTargets: [bot, longer] });
     type("@He");
     pickMentionAt(0);
@@ -669,8 +646,8 @@ describe("thread composer isolation", () => {
   });
 
   it("replaces the entire recognized multiword name when the caret is inside its first word", () => {
-    const smith = { kind: "bot", id: "bot-3", name: "Helper Smith" } as const;
-    const jones = { kind: "bot", id: "bot-4", name: "Helper Jones" } as const;
+    const smith = { kind: "person", id: "bot-3", name: "Helper Smith" } as const;
+    const jones = { kind: "person", id: "bot-4", name: "Helper Jones" } as const;
     render({ composerMentionTargets: [smith, jones] });
     type("before @He");
     pickMentionAt(0);
@@ -681,7 +658,7 @@ describe("thread composer isolation", () => {
   });
 
   it("backspacing into a shorter mention leaves a longer recognized name intact", () => {
-    const longer = { kind: "bot", id: "bot-3", name: "Helper Smith" } as const;
+    const longer = { kind: "person", id: "bot-3", name: "Helper Smith" } as const;
     render({ composerMentionTargets: [bot, longer] });
     type("@He");
     pickMentionAt(0);

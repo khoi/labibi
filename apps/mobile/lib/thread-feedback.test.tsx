@@ -109,7 +109,7 @@ function payload(text = "Hello"): SendPayload {
 describe("composer settlement", () => {
   const submitted: ComposerSnapshot = {
     promptText: "Hello",
-    mentions: [{ kind: "bot", id: "bot-1", name: "Bot" }],
+    mentions: [{ kind: "person", id: "bot-1", name: "Bot" }],
     skill: null,
     replyTargetId: "reply-1",
     replyQuote: "Quoted message",
@@ -121,7 +121,7 @@ describe("composer settlement", () => {
 
   it.each<Partial<ComposerSnapshot>>([
     { promptText: "Edited" },
-    { mentions: [{ kind: "bot", id: "bot-2", name: "Bot" }] },
+    { mentions: [{ kind: "person", id: "bot-2", name: "Bot" }] },
     { skill: { id: "skill-1", name: "Skill", description: "", source: "user", readOnly: false } },
     { replyTargetId: "reply-2" },
     { replyQuote: "Edited quote" },

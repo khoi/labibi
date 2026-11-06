@@ -49,7 +49,7 @@ export function validateComposerMentionBindings(
     )
       continue;
     const mention: ComposerMention = { kind: source.kind, id: source.id, name: source.name };
-    for (const key of ["subtitle", "color", "botId", "connectionId"] as const)
+    for (const key of ["subtitle", "color", "connectionId"] as const)
       if (typeof source[key] === "string") mention[key] = source[key];
     if (source.authStatus === "connected" || source.authStatus === "needs_auth")
       mention.authStatus = source.authStatus;
@@ -196,13 +196,7 @@ export function composerMentionsForPrompt(
 ): ComposerMention[] {
   const offset = (skill ? skill.name.length + 2 : 0) - (draft.length - draft.trimStart().length);
   return composerSelectedMentions(bindings).map((mention) => {
-    if (
-      mention.kind === "doodle" ||
-      mention.kind === "person" ||
-      mention.kind === "bot" ||
-      mention.kind === "everyone"
-    )
-      return mention;
+    if (mention.kind === "doodle" || mention.kind === "person") return mention;
     return {
       ...mention,
       ranges: bindings

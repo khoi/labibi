@@ -31,7 +31,6 @@ export * from "./email-typo.js";
 export * from "./events.js";
 export * from "./featured-connectors.js";
 export * from "./format-file-size.js";
-export * from "./group-mentions.js";
 export * from "./http-response.js";
 export * from "./identity-display.js";
 export { identitySource } from "./identity-source.js";

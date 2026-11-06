@@ -45,7 +45,7 @@ export function accountDisplay(
 /** Only identity metadata changes; message text, filenames and tool identifiers stay literal. */
 export function displayMessageBlock(
   block: MessageBlock,
-  labels = { bot: "Bot", member: "Member", subagent: "subagent" },
+  labels = { subagent: "subagent" },
 ): MessageBlock {
   const source = block;
   block = identitySource(block);

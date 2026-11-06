@@ -53,16 +53,15 @@ describe("inline mention completion", () => {
   });
 
   it("does not retain or remove a shorter name inside a recognized longer mention", () => {
-    const short = { kind: "group", id: "group-bob", name: "Bob" } as const;
-    const long = { kind: "person", id: "bot-bob", name: "Bob Smith" } as const;
+    const short = { kind: "routine", id: "routine-bob", name: "Bob" } as const;
+    const long = { kind: "person", id: "person-bob", name: "Bob Smith" } as const;
     const text = "ask @Bob Smith ";
     expect(removeComposerMention(text, short, [short, long])).toBe(text);
     expect(
       resolveComposerSendPlan({ text, mentions: [long], hasAttachments: false }),
     ).toMatchObject({
       trimmed: "ask @Bob Smith",
-      rerouteGroupId: null,
-      mentionPayload: [{ kind: "person", id: "bot-bob" }],
+      mentionPayload: [{ kind: "person", id: "person-bob" }],
     });
   });
 
@@ -72,9 +71,9 @@ describe("inline mention completion", () => {
     const text = "@Bob and ask @Bob Smith ";
     expect(removeComposerMention(text, short, [short, long])).toBe(" and ask @Bob Smith ");
   });
-  it("strips a separate group occurrence without stripping a longer bot name on send", () => {
-    const short = { kind: "group", id: "group-bob", name: "Bob" } as const;
-    const long = { kind: "person", id: "bot-bob", name: "Bob Smith" } as const;
+  it("strips a separate routine occurrence without stripping a longer person name on send", () => {
+    const short = { kind: "routine", id: "routine-bob", name: "Bob" } as const;
+    const long = { kind: "person", id: "person-bob", name: "Bob Smith" } as const;
     expect(
       resolveComposerSendPlan({
         text: "@Bob and ask @Bob Smith",
@@ -83,8 +82,8 @@ describe("inline mention completion", () => {
       }),
     ).toMatchObject({
       trimmed: "and ask @Bob Smith",
-      rerouteGroupId: "group-bob",
-      mentionPayload: [{ kind: "person", id: "bot-bob" }],
+      routineIds: ["routine-bob"],
+      mentionPayload: [{ kind: "person", id: "person-bob" }],
     });
   });
 });

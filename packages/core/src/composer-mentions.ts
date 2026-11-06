@@ -4,15 +4,7 @@ import { ENGLISH_CRON_LABELS, formatCron } from "./cron.js";
 import { displayName } from "./display-name.js";
 import { DOOD_INK, DOODLE_DOOD, DOODLE_NAME } from "./dood.js";
 
-export const COMPOSER_MENTION_KINDS = [
-  "doodle",
-  "person",
-  "bot",
-  "group",
-  "routine",
-  "connector",
-  "everyone",
-] as const;
+export const COMPOSER_MENTION_KINDS = ["doodle", "person", "routine", "connector"] as const;
 
 export type ComposerMentionKind = (typeof COMPOSER_MENTION_KINDS)[number];
 
@@ -27,27 +19,13 @@ export type ComposerMention = {
   ranges?: ComposerMentionRange[];
   subtitle?: string;
   color?: string;
-  /** Owning bot for routine chips (test-run lands on that bot). */
-  botId?: string;
   /** Connected connection row id when kind is connector + connected. */
   connectionId?: string;
   authStatus?: "connected" | "needs_auth";
 };
 
-export type MentionPickerBot = {
-  id: string;
-  name: string;
-  color?: string;
-};
-export type MentionPickerGroup = { id: string; name: string };
 export type MentionPickerPerson = { id: string; name: string };
-export type MentionPickerRoutine = {
-  id: string;
-  name: string;
-  crons: string[];
-  botId?: string;
-  botName?: string;
-};
+export type MentionPickerRoutine = { id: string; name: string; crons: string[] };
 export type MentionPickerConnector = {
   id: string;
   name: string;
@@ -154,8 +132,8 @@ function pickerWords(value: string): string[] {
 
 /**
  * Picker order for a typed query: every query word must appear in the name, a word that starts
- * a name word counts more than one inside it, and ties keep the given order. `everyone` also
- * answers to `all`. An empty query keeps every target in order.
+ * a name word counts more than one inside it, and ties keep the given order. An empty query
+ * keeps every target in order.
  */
 export function filterComposerMentionTargets<T extends Pick<ComposerMention, "kind" | "name">>(
   targets: readonly T[],
@@ -168,12 +146,7 @@ export function filterComposerMentionTargets<T extends Pick<ComposerMention, "ki
     const name = nameWords.join(" ");
     let score = 0;
     for (const word of words) {
-      if (
-        target.kind === "everyone" &&
-        ["everyone", "all"].some((alias) => alias.startsWith(word))
-      ) {
-        score += 2;
-      } else if (nameWords.some((nameWord) => nameWord.startsWith(word))) {
+      if (nameWords.some((nameWord) => nameWord.startsWith(word))) {
         score += 2;
       } else if (name.includes(word)) {
         score += 1;
@@ -285,22 +258,6 @@ export function stripMentionKinds(
   return result.trim();
 }
 
-export function partitionComposerMentions(mentions: readonly ComposerMention[]) {
-  const bots: ComposerMention[] = [];
-  const groups: ComposerMention[] = [];
-  const routines: ComposerMention[] = [];
-  const connectors: ComposerMention[] = [];
-  let everyone = false;
-  for (const mention of mentions) {
-    if (mention.kind === "bot") bots.push(mention);
-    else if (mention.kind === "group") groups.push(mention);
-    else if (mention.kind === "routine") routines.push(mention);
-    else if (mention.kind === "connector") connectors.push(mention);
-    else if (mention.kind === "everyone") everyone = true;
-  }
-  return { bots, groups, routines, connectors, everyone };
-}
-
 /** Payload entries for `threads/send` mentions. */
 export function toThreadMentionPayload(mentions: readonly ComposerMention[]): ChatMentionTarget[] {
   const payload: ChatMentionTarget[] = [];
@@ -349,13 +306,9 @@ export function appendConnectorIntent(text: string, names: readonly string[]): s
 
 export function routineScheduleSubtitle(
   crons: readonly string[],
-  botName?: string,
   labels: CronLabels = ENGLISH_CRON_LABELS,
 ): string {
-  const schedule = crons.map((cron) => formatCron(cron, labels)).join(", ");
-  const name = displayName(botName, "");
-  if (name) return `${schedule} (${name})`;
-  return schedule;
+  return crons.map((cron) => formatCron(cron, labels)).join(", ");
 }
 
 export function buildComposerMentionOptions(input: {
@@ -364,12 +317,8 @@ export function buildComposerMentionOptions(input: {
   doodle?: boolean;
   /** People in this chat other than the writer. */
   people?: readonly MentionPickerPerson[];
-  bots?: readonly MentionPickerBot[];
-  groups?: readonly MentionPickerGroup[];
   routines: readonly MentionPickerRoutine[];
   connectors: readonly MentionPickerConnector[];
-  currentGroupId?: string | null;
-  includeEveryone?: boolean;
   /** Localized schedule words for routine subtitles; English when omitted. */
   cronLabels?: CronLabels;
   /** When omitted, return every match (catalog build). When set, apply after query filter. */
@@ -379,16 +328,6 @@ export function buildComposerMentionOptions(input: {
   const options: ComposerMention[] = [];
 
   const matches = (name: string) => !query || name.toLowerCase().startsWith(query);
-
-  if (input.includeEveryone && matches("everyone")) {
-    options.push({
-      kind: "everyone",
-      id: "everyone",
-      name: "everyone",
-      subtitle: "Everyone in this group",
-      color: "#85858A",
-    });
-  }
 
   if (input.doodle && matches(DOODLE_NAME)) {
     options.push({
@@ -405,49 +344,14 @@ export function buildComposerMentionOptions(input: {
     options.push({ kind: "person", id: person.id, name });
   }
 
-  for (const bot of input.bots ?? []) {
-    const name = displayName(bot.name, "Bot");
-    if (!matches(name)) continue;
-    options.push({
-      kind: "bot",
-      id: bot.id,
-      name,
-      subtitle: "Bot",
-      color: bot.color,
-    });
-  }
-
-  for (const group of input.groups ?? []) {
-    if (input.currentGroupId && group.id === input.currentGroupId) continue;
-    const name = displayName(group.name, "Group");
-    if (!matches(name)) continue;
-    options.push({
-      kind: "group",
-      id: group.id,
-      name,
-      subtitle: "Group",
-    });
-  }
-
-  const routineNameCounts = new Map<string, number>();
-  for (const routine of input.routines) {
-    const key = displayName(routine.name, "Routine").toLowerCase();
-    routineNameCounts.set(key, (routineNameCounts.get(key) ?? 0) + 1);
-  }
   for (const routine of input.routines) {
     const name = displayName(routine.name, "Routine");
     if (!matches(name)) continue;
-    const duplicate = (routineNameCounts.get(name.toLowerCase()) ?? 0) > 1;
     options.push({
       kind: "routine",
       id: routine.id,
       name,
-      botId: routine.botId,
-      subtitle: routineScheduleSubtitle(
-        routine.crons,
-        duplicate ? routine.botName : undefined,
-        input.cronLabels,
-      ),
+      subtitle: routineScheduleSubtitle(routine.crons, input.cronLabels),
     });
   }
 
@@ -467,12 +371,7 @@ export function buildComposerMentionOptions(input: {
   return options.slice(0, input.limit);
 }
 
-/**
- * Shared send routing for web + mobile composers.
- * Chip-only `@Group` opens that group (no fabricated body), including from
- * another group thread. Routines always test-run; with a group chip, open after.
- * Callers should omit the current group from the picker (`currentGroupId`).
- */
+/** Shared send routing for web + mobile composers. Routines always test-run. */
 export function resolveComposerSendPlan(input: {
   text: string;
   mentions: readonly ComposerMention[];
@@ -480,36 +379,32 @@ export function resolveComposerSendPlan(input: {
 }): {
   trimmed: string;
   routineIds: string[];
-  rerouteGroupId: string | null;
-  rerouteGroupName: string | null;
   mentionPayload: ReturnType<typeof toThreadMentionPayload>;
   shouldSend: boolean;
-  shouldOpenGroup: boolean;
   shouldRunRoutines: boolean;
   isNoOp: boolean;
 } {
-  const parts = partitionComposerMentions(input.mentions);
-  const mentionedGroup = parts.groups[0];
-  let trimmed = stripMentionKinds(input.text, input.mentions, ["group", "routine", "connector"]);
+  const connectors = input.mentions.filter((mention) => mention.kind === "connector");
+  let trimmed = stripMentionKinds(input.text, input.mentions, ["routine", "connector"]);
   trimmed = appendConnectorIntent(trimmed, needsAuthConnectorNames(input.mentions));
-  if (!trimmed && parts.connectors.length) {
-    trimmed = parts.connectors.map((mention) => `@${mention.name}`).join(" ");
+  if (!trimmed && connectors.length) {
+    trimmed = connectors.map((mention) => `@${mention.name}`).join(" ");
   }
-  const routineIds = [...new Set(parts.routines.map((routine) => routine.id))];
+  const routineIds = [
+    ...new Set(
+      input.mentions.filter((mention) => mention.kind === "routine").map((mention) => mention.id),
+    ),
+  ];
   const shouldSend = Boolean(trimmed) || input.hasAttachments;
-  const shouldOpenGroup = Boolean(mentionedGroup);
   const shouldRunRoutines = routineIds.length > 0;
   return {
     trimmed,
     routineIds,
-    rerouteGroupId: mentionedGroup?.id ?? null,
-    rerouteGroupName: mentionedGroup?.name ?? null,
     mentionPayload: toThreadMentionPayload(
-      input.mentions.filter((mention) => mention.kind !== "group" && mention.kind !== "routine"),
+      input.mentions.filter((mention) => mention.kind !== "routine"),
     ),
     shouldSend,
-    shouldOpenGroup,
     shouldRunRoutines,
-    isNoOp: !shouldSend && !shouldOpenGroup && !shouldRunRoutines,
+    isNoOp: !shouldSend && !shouldRunRoutines,
   };
 }

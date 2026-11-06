@@ -15,6 +15,6 @@ export const computerUpdates = createComputerUpdates({
     }
   },
   // Always the caller's own computer; the target the shared poller passes means nothing here.
-  start: (_own, action) => rpc(`computer/${action}`),
+  start: (action) => rpc(`computer/${action}`),
   dismiss: (id) => rpc("computer/dismissUpdate", { id }),
 });

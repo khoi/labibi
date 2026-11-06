@@ -15,12 +15,12 @@ import type { ComposerMention, ComposerMentionRange } from "./composer-mentions.
 import { composerMentionQuery, resolveComposerSendPlan } from "./composer-mentions.js";
 import { serializeComposerPrompt } from "./composer-slash.js";
 
-const bot: ComposerMention = { kind: "person", id: "bot-bob", name: "Bob" };
-const group: ComposerMention = { kind: "group", id: "group-bob", name: "Bob" };
+const person: ComposerMention = { kind: "person", id: "person-bob", name: "Bob" };
+const routine: ComposerMention = { kind: "routine", id: "routine-bob", name: "Bob" };
 const text = "@Bob and @Bob ";
 const bindings: ComposerMentionBinding[] = [
-  { start: 0, end: 4, mention: bot },
-  { start: 9, end: 13, mention: group },
+  { start: 0, end: 4, mention: person },
+  { start: 9, end: 13, mention: routine },
 ];
 const shift = (items: ComposerMentionBinding[], offset: number) =>
   items.map((item) => ({ ...item, start: item.start + offset, end: item.end + offset }));
@@ -45,19 +45,19 @@ describe("completed mention occurrence bindings", () => {
         "@Bob @Bob ",
         "@Bob ",
         [
-          { start: 0, end: 4, mention: bot },
-          { start: 5, end: 9, mention: group },
+          { start: 0, end: 4, mention: person },
+          { start: 5, end: 9, mention: routine },
         ],
         { before, after: { start: 0, end: 0 } },
       );
-      expect(result).toEqual([{ start: 0, end: 4, mention: group }]);
+      expect(result).toEqual([{ start: 0, end: 4, mention: routine }]);
     },
   );
 
   it("does not retain an intersected binding when an edited name still appears elsewhere", () => {
     const next = text.replace("and @Bob", "and @Bobby");
     expect(composerSelectedMentions(updateComposerMentionBindings(text, next, bindings))).toEqual([
-      bot,
+      person,
     ]);
   });
 
@@ -78,16 +78,16 @@ describe("completed mention occurrence bindings", () => {
   });
 
   it("completion replaces the bound occurrence identity even when the text is unchanged", () => {
-    const query = composerMentionQuery(text, 2, 2, [bot, group], bindings)!;
-    const result = bindComposerMention(text, query, group, bindings);
+    const query = composerMentionQuery(text, 2, 2, [person, routine], bindings)!;
+    const result = bindComposerMention(text, query, routine, bindings);
     expect(result.text).toBe(text);
-    expect(result.bindings.map((binding) => binding.mention)).toEqual([group, group]);
-    expect(composerSelectedMentions(result.bindings)).toEqual([group]);
+    expect(result.bindings.map((binding) => binding.mention)).toEqual([routine, routine]);
+    expect(composerSelectedMentions(result.bindings)).toEqual([routine]);
   });
 
   it("deduplicates routing but retains repeated occurrences", () => {
-    const twice = bindings.map((binding) => ({ ...binding, mention: bot }));
-    expect(composerSelectedMentions(twice)).toEqual([bot]);
+    const twice = bindings.map((binding) => ({ ...binding, mention: person }));
+    expect(composerSelectedMentions(twice)).toEqual([person]);
     expect(composerMentionSegments(text, twice).filter((segment) => segment.binding)).toHaveLength(
       2,
     );
@@ -164,14 +164,14 @@ describe("completed mention occurrence bindings", () => {
 
   it("places an ambiguous deletion with the same hints the bindings use", () => {
     const doubled = "@@Bob ";
-    const mention = [{ start: 1, end: 5, mention: bot }];
+    const mention = [{ start: 1, end: 5, mention: person }];
     const caret = (at: number) => ({ start: at, end: at });
     expect(
       resolveComposerMentionEdit(doubled, "@Bob ", mention, {
         before: [caret(1)],
         after: caret(0),
       }),
-    ).toEqual({ text: "@Bob ", bindings: [{ start: 0, end: 4, mention: bot }], caret: null });
+    ).toEqual({ text: "@Bob ", bindings: [{ start: 0, end: 4, mention: person }], caret: null });
     expect(
       resolveComposerMentionEdit(doubled, "@Bob ", mention, {
         before: [caret(1)],
@@ -183,7 +183,7 @@ describe("completed mention occurrence bindings", () => {
     ).toMatchObject({ text: "@ ", caret: 1 });
   });
 
-  it("preserves the bot's same-name text when stripping a separate group occurrence", () => {
+  it("preserves the person's same-name text when stripping a separate routine occurrence", () => {
     const draft = "  @Bob and @Bob ";
     const occurrences = bindings.map((binding) => ({
       ...binding,
@@ -197,17 +197,17 @@ describe("completed mention occurrence bindings", () => {
         resolveComposerSendPlan({ text: prompt, mentions, hasAttachments: false }),
       ).toMatchObject({
         trimmed: skill ? "/Write\n@Bob and" : "@Bob and",
-        rerouteGroupId: group.id,
-        mentionPayload: [{ kind: "person", id: bot.id }],
+        routineIds: [routine.id],
+        mentionPayload: [{ kind: "person", id: person.id }],
       });
     }
   });
 
   it("prioritizes an explicitly bound short name over an unselected longer catalog name", () => {
     const value = "@Bob Smith ";
-    expect(composerMentionQuery(value, 2, 2, [bot, { name: "Bob Smith" }], [bindings[0]!])).toEqual(
-      { start: 0, end: 4, query: "B" },
-    );
+    expect(
+      composerMentionQuery(value, 2, 2, [person, { name: "Bob Smith" }], [bindings[0]!]),
+    ).toEqual({ start: 0, end: 4, query: "B" });
   });
 
   it("validates persisted metadata without inferring ambiguous identities", () => {
@@ -215,8 +215,8 @@ describe("completed mention occurrence bindings", () => {
     expect(
       validateComposerMentionBindings(text, [
         ...bindings,
-        { start: 0, end: 4, mention: group },
-        { start: 99, end: 103, mention: bot },
+        { start: 0, end: 4, mention: routine },
+        { start: 99, end: 103, mention: person },
       ]),
     ).toEqual(bindings);
     expect(validateComposerMentionBindings("changed", bindings)).toEqual([]);
@@ -259,7 +259,7 @@ describe("two-step mention delete", () => {
     );
     expect(result).toEqual({
       text: "and @Bob ",
-      bindings: [{ start: 4, end: 8, mention: group }],
+      bindings: [{ start: 4, end: 8, mention: routine }],
       caret: 0,
       selected: null,
     });
@@ -267,7 +267,7 @@ describe("two-step mention delete", () => {
 
   it("never leaves a mention glued to the next word in mid-text", () => {
     const mid = "hi @Bob now";
-    const only = [{ start: 3, end: 7, mention: bot }];
+    const only = [{ start: 3, end: 7, mention: person }];
     const first = resolveComposerMentionBackspace(
       mid,
       "hi @Bobnow",
@@ -296,7 +296,7 @@ describe("two-step mention delete", () => {
     );
     expect(result).toEqual({
       text: "and @Bob ",
-      bindings: [{ start: 4, end: 8, mention: group }],
+      bindings: [{ start: 4, end: 8, mention: routine }],
       caret: 0,
       selected: null,
     });
@@ -306,7 +306,7 @@ describe("two-step mention delete", () => {
     const result = resolveComposerMentionBackspace(
       "hi @Bob",
       "hi @Bo",
-      [{ start: 3, end: 7, mention: bot }],
+      [{ start: 3, end: 7, mention: person }],
       { before: [caret(7)] },
       3,
     );

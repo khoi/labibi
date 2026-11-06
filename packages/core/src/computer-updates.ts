@@ -5,7 +5,7 @@ import { isRetryableError, retryDelayMs } from "./retry-policy.js";
 /** Shared polling and local presentation state; the server owns operation lifetime. */
 export function createComputerUpdates(client: {
   list: () => Promise<ComputerUpdate[]>;
-  start: (botId: string, action: "update" | "recover") => Promise<ComputerUpdate>;
+  start: (action: "update" | "recover") => Promise<ComputerUpdate>;
   dismiss: (id: string) => Promise<unknown>;
 }) {
   let state: { updates: ComputerUpdate[]; openId: string | null } = { updates: [], openId: null };
@@ -63,9 +63,9 @@ export function createComputerUpdates(client: {
       state = { ...state, openId: id };
       emit();
     },
-    async start(botId: string, action: "update" | "recover" = "update") {
+    async start(action: "update" | "recover" = "update") {
       const epoch = generation;
-      const update = await client.start(botId, action);
+      const update = await client.start(action);
       if (epoch !== generation) return;
       revision++;
       state = {

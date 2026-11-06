@@ -37,7 +37,7 @@ afterEach(() => {
   localStorage.clear();
 });
 
-const bob: ComposerMention = { kind: "bot", id: "bot-2", name: "Bob" };
+const bob: ComposerMention = { kind: "person", id: "bot-2", name: "Bob" };
 const summarize: AgentSkillCatalogEntry = {
   id: "skill-1",
   name: "summarize",
@@ -327,8 +327,8 @@ describe("Composer", () => {
     expect(container?.querySelector('[data-testid="mention-picker"]')).toBeNull();
   });
 
-  it("replaces a selected bot without retaining its previous routing target", async () => {
-    const bobby: ComposerMention = { kind: "bot", id: "bot-3", name: "Bobby" };
+  it("replaces a selected person without retaining their previous routing target", async () => {
+    const bobby: ComposerMention = { kind: "person", id: "bot-3", name: "Bobby" };
     const onSend = vi.fn().mockResolvedValue(true);
     const textarea = renderComposer(onSend, { mentionTargets: [bob, bobby] });
     type(textarea, "ask @Bo");
@@ -346,11 +346,11 @@ describe("Composer", () => {
     expect(onSend).toHaveBeenCalledWith("ask @Bobby", [bobby], expect.any(String));
   });
 
-  it.each(["bot", "group"] as const)(
+  it.each(["person", "routine"] as const)(
     "replaces an overlapping %s name without stale routing",
     async (kind) => {
       const short: ComposerMention = { kind, id: "short", name: "Bob" };
-      const long: ComposerMention = { kind: "bot", id: "long", name: "Bob Smith" };
+      const long: ComposerMention = { kind: "person", id: "long", name: "Bob Smith" };
       const onSend = vi.fn().mockResolvedValue(true);
       const textarea = renderComposer(onSend, { mentionTargets: [short, long] });
       type(textarea, "ask @Bo");
@@ -373,8 +373,8 @@ describe("Composer", () => {
   );
 
   it("replaces the full existing multiword name and preserves a separate short mention", async () => {
-    const smith: ComposerMention = { kind: "bot", id: "smith", name: "Bob Smith" };
-    const jones: ComposerMention = { kind: "bot", id: "jones", name: "Bob Jones" };
+    const smith: ComposerMention = { kind: "person", id: "smith", name: "Bob Smith" };
+    const jones: ComposerMention = { kind: "person", id: "jones", name: "Bob Jones" };
     const onSend = vi.fn().mockResolvedValue(true);
     const textarea = renderComposer(onSend, { mentionTargets: [bob, smith, jones] });
     type(textarea, "@Bo");
@@ -418,10 +418,10 @@ describe("Composer", () => {
     expect(onSend).toHaveBeenCalledWith("@Bo", [], expect.any(String));
   });
 
-  it("retires the replaced group identity when a bot has the same name", async () => {
-    const group: ComposerMention = { kind: "group", id: "group-bob", name: "Bob" };
+  it("retires the replaced routine identity when a person has the same name", async () => {
+    const routine: ComposerMention = { kind: "routine", id: "routine-bob", name: "Bob" };
     const onSend = vi.fn().mockResolvedValue(true);
-    const textarea = renderComposer(onSend, { mentionTargets: [group, bob] });
+    const textarea = renderComposer(onSend, { mentionTargets: [routine, bob] });
     type(textarea, "ask @Bo");
     pressEnter(textarea);
     act(() => {
@@ -435,59 +435,59 @@ describe("Composer", () => {
     expect(onSend).toHaveBeenCalledWith("ask @Bob", [bob], expect.any(String));
   });
 
-  it.each(["bot", "group"])(
+  it.each(["person", "routine"])(
     "deleting only a same-name %s occurrence retires that target",
     async (deleted) => {
-      const group: ComposerMention = { kind: "group", id: "group-bob", name: "Bob" };
+      const routine: ComposerMention = { kind: "routine", id: "routine-bob", name: "Bob" };
       const onSend = vi.fn().mockResolvedValue(true);
-      const textarea = renderComposer(onSend, { mentionTargets: [bob, group] });
+      const textarea = renderComposer(onSend, { mentionTargets: [bob, routine] });
       type(textarea, "ask @Bo");
       pressEnter(textarea);
       type(textarea, `${textarea.value}then @Bo`);
       act(() => container?.querySelectorAll<HTMLButtonElement>('[role="option"]')[1]?.click());
       type(textarea, `${textarea.value}please`);
-      type(textarea, deleted === "group" ? "ask @Bob then please" : "ask then @Bob please");
+      type(textarea, deleted === "routine" ? "ask @Bob then please" : "ask then @Bob please");
       pressEnter(textarea);
       await act(async () => {});
       expect(onSend).toHaveBeenCalledWith(
-        deleted === "group" ? "ask @Bob then please" : "ask then @Bob please",
-        [expect.objectContaining(deleted === "group" ? bob : group)],
+        deleted === "routine" ? "ask @Bob then please" : "ask then @Bob please",
+        [expect.objectContaining(deleted === "routine" ? bob : routine)],
         expect.any(String),
       );
       const [text, mentions] = onSend.mock.calls[0]!;
-      expect(
-        resolveComposerSendPlan({ text, mentions, hasAttachments: false }).rerouteGroupId,
-      ).toBe(deleted === "group" ? null : group.id);
+      expect(resolveComposerSendPlan({ text, mentions, hasAttachments: false }).routineIds).toEqual(
+        deleted === "routine" ? [] : [routine.id],
+      );
     },
   );
 
-  it.each(["bot", "group"])(
+  it.each(["person", "routine"])(
     "deleting a same-name %s card with Backspace removes only its occurrence",
     async (removed) => {
-      const group: ComposerMention = { kind: "group", id: "group-bob", name: "Bob" };
+      const routine: ComposerMention = { kind: "routine", id: "routine-bob", name: "Bob" };
       const onSend = vi.fn().mockResolvedValue(true);
-      const textarea = renderComposer(onSend, { mentionTargets: [bob, group] });
+      const textarea = renderComposer(onSend, { mentionTargets: [bob, routine] });
       type(textarea, "ask @Bo");
       pressEnter(textarea);
       type(textarea, `${textarea.value}then @Bo`);
       act(() => container?.querySelectorAll<HTMLButtonElement>('[role="option"]')[1]?.click());
-      const end = removed === "group" ? 18 : 8;
+      const end = removed === "routine" ? 18 : 8;
       nativeDelete(textarea, [end, end], [end - 1, end]);
-      expect(textarea.value).toBe(removed === "group" ? "ask @Bob then  " : "ask  then @Bob ");
+      expect(textarea.value).toBe(removed === "routine" ? "ask @Bob then  " : "ask  then @Bob ");
       pressEnter(textarea);
       await act(async () => {});
       expect(onSend).toHaveBeenCalledWith(
-        removed === "group" ? "ask @Bob then" : "ask  then @Bob",
-        [expect.objectContaining(removed === "group" ? bob : group)],
+        removed === "routine" ? "ask @Bob then" : "ask  then @Bob",
+        [expect.objectContaining(removed === "routine" ? bob : routine)],
         expect.any(String),
       );
     },
   );
 
   it("keeps the correct identity after deleting the first of adjacent identical tokens", async () => {
-    const group: ComposerMention = { kind: "group", id: "group-bob", name: "Bob" };
+    const routine: ComposerMention = { kind: "routine", id: "routine-bob", name: "Bob" };
     const onSend = vi.fn().mockResolvedValue(true);
-    const textarea = renderComposer(onSend, { mentionTargets: [bob, group] });
+    const textarea = renderComposer(onSend, { mentionTargets: [bob, routine] });
     type(textarea, "@Bo");
     pressEnter(textarea);
     type(textarea, `${textarea.value}@Bo`);
@@ -501,19 +501,19 @@ describe("Composer", () => {
     await act(async () => {});
     expect(onSend).toHaveBeenCalledWith(
       "@Bob",
-      [expect.objectContaining(group)],
+      [expect.objectContaining(routine)],
       expect.any(String),
     );
     const [text, mentions] = onSend.mock.calls[0]!;
-    expect(resolveComposerSendPlan({ text, mentions, hasAttachments: false }).shouldOpenGroup).toBe(
-      true,
-    );
+    expect(
+      resolveComposerSendPlan({ text, mentions, hasAttachments: false }).shouldRunRoutines,
+    ).toBe(true);
   });
 
   it("restores occurrence identity after remounting a persisted draft", async () => {
-    const group: ComposerMention = { kind: "group", id: "group-bob", name: "Bob" };
+    const routine: ComposerMention = { kind: "routine", id: "routine-bob", name: "Bob" };
     const onSend = vi.fn().mockResolvedValue(true);
-    let textarea = renderComposer(onSend, { mentionTargets: [bob, group] });
+    let textarea = renderComposer(onSend, { mentionTargets: [bob, routine] });
     type(textarea, "ask @Bo");
     pressEnter(textarea);
     type(textarea, `${textarea.value}then @Bo`);
@@ -530,9 +530,9 @@ describe("Composer", () => {
   });
 
   it("restores text and occurrence identity together after a refused send", async () => {
-    const group: ComposerMention = { kind: "group", id: "group-bob", name: "Bob" };
+    const routine: ComposerMention = { kind: "routine", id: "routine-bob", name: "Bob" };
     const onSend = vi.fn().mockResolvedValueOnce(false).mockResolvedValue(true);
-    const textarea = renderComposer(onSend, { mentionTargets: [bob, group] });
+    const textarea = renderComposer(onSend, { mentionTargets: [bob, routine] });
     type(textarea, "ask @Bo");
     pressEnter(textarea);
     type(textarea, `${textarea.value}then @Bo`);
@@ -549,9 +549,9 @@ describe("Composer", () => {
 
   it("restores a legacy raw same-name draft without inventing either target identity", async () => {
     localStorage.setItem("rakazo.composerDraft.bot:bot-1", "@Bob ");
-    const group: ComposerMention = { kind: "group", id: "group-bob", name: "Bob" };
+    const routine: ComposerMention = { kind: "routine", id: "routine-bob", name: "Bob" };
     const onSend = vi.fn().mockResolvedValue(true);
-    const textarea = renderComposer(onSend, { mentionTargets: [bob, group] });
+    const textarea = renderComposer(onSend, { mentionTargets: [bob, routine] });
     expect(textarea.value).toBe("@Bob ");
     expect(container?.querySelectorAll('[data-testid="mention-chip"]')).toHaveLength(0);
     pressEnter(textarea);
@@ -562,7 +562,7 @@ describe("Composer", () => {
   it.each([false, true])(
     "keeps the keyboard mention selection when targets refresh (reorder: %s)",
     (reorder) => {
-      const alice: ComposerMention = { kind: "bot", id: "bot-3", name: "Alice" };
+      const alice: ComposerMention = { kind: "person", id: "bot-3", name: "Alice" };
       const textarea = renderComposer(vi.fn(), { mentionTargets: [alice, bob] });
       type(textarea, "@");
       act(() => {
@@ -575,13 +575,15 @@ describe("Composer", () => {
       });
       pressEnter(textarea);
 
-      expect(container?.querySelector('[data-testid="mention-chip"]')?.textContent).toBe("@Bob");
+      expect(container?.querySelector('[data-testid="mention-chip"]')?.lastChild?.textContent).toBe(
+        "Bob",
+      );
       expect(container?.querySelector('[data-testid="mention-picker"]')).toBeNull();
     },
   );
 
   it("falls back to the first mention when the highlighted target disappears", () => {
-    const alice: ComposerMention = { kind: "bot", id: "bot-3", name: "Alice" };
+    const alice: ComposerMention = { kind: "person", id: "bot-3", name: "Alice" };
     const textarea = renderComposer(vi.fn(), { mentionTargets: [alice, bob] });
     type(textarea, "@");
     act(() => {
@@ -591,7 +593,9 @@ describe("Composer", () => {
     rerenderComposer({ mentionTargets: [alice] });
     pressEnter(textarea);
 
-    expect(container?.querySelector('[data-testid="mention-chip"]')?.textContent).toBe("@Alice");
+    expect(container?.querySelector('[data-testid="mention-chip"]')?.lastChild?.textContent).toBe(
+      "Alice",
+    );
   });
 
   it.each([false, true])(
@@ -653,7 +657,7 @@ describe("Composer", () => {
     const textarea = renderComposer(onSend);
     const mentionChips = () =>
       [...(container?.querySelectorAll("[data-testid='mention-chip']") ?? [])].map(
-        (chip) => chip.textContent,
+        (chip) => chip.lastChild?.textContent,
       );
     type(textarea, "@Bo");
     pressEnter(textarea);
@@ -664,7 +668,7 @@ describe("Composer", () => {
     expect(mentionChips()).toEqual([]);
     await act(async () => finishSend(false));
     expect(textarea.value).toBe("@Bob hello");
-    expect(mentionChips()).toEqual(["@Bob"]);
+    expect(mentionChips()).toEqual(["Bob"]);
   });
 
   it("restores the chosen skill when the send fails", async () => {

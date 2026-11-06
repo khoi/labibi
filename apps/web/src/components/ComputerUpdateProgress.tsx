@@ -168,7 +168,7 @@ export function ComputerUpdateProgress({ onCompleted }: { onCompleted: () => voi
                     setRecovering(true);
                     setError(false);
                     void computerUpdates
-                      .start("own", "recover")
+                      .start("recover")
                       .catch(() => setError(true))
                       .finally(() => setRecovering(false));
                   }}

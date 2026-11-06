@@ -131,7 +131,7 @@ export function ComputerUpdateProgress() {
                   setBusy(true);
                   setError(false);
                   void computerUpdates
-                    .start("own", "recover")
+                    .start("recover")
                     .catch(() => setError(true))
                     .finally(() => setBusy(false));
                 }}
