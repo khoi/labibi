@@ -1,6 +1,13 @@
-import type { AdapterContext } from "@labradoodle/adapter-kit";
+import type {
+  AdapterContext,
+  AgentHomeStore,
+  ArtifactStore,
+  JobPublisher,
+  SandboxProvider,
+  SecretStore,
+} from "@labradoodle/adapter-kit";
 import { forgetPageShareSecrets, removeAgentHome, toComputerRef } from "@labradoodle/adapters";
-import type { Prisma, ThreadEvents } from "@labradoodle/db";
+import type { Prisma, PrismaClient, ThreadEvents } from "@labradoodle/db";
 import {
   claimSpacesLeavingWithAccount,
   deleteClaimedSpace,
@@ -11,8 +18,18 @@ import {
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import type { BillingService } from "./billing.js";
-import type { SpaceDeletionDeps } from "./space-deletion.js";
 import { afterSpaceDeparture } from "./space-departure.js";
+
+export type SpaceDeletionDeps = {
+  prisma: PrismaClient;
+  sandbox: SandboxProvider;
+  home: AgentHomeStore;
+  jobs: JobPublisher;
+  artifacts: ArtifactStore;
+  dataDir: string;
+  /** Removes deleted page links' tokens from a remote secret store. */
+  secrets?: Pick<SecretStore, "delete">;
+};
 
 /**
  * Each sandbox is destroyed at its provider before its row goes, so a failure keeps the handle

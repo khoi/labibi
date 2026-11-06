@@ -9,12 +9,7 @@ import {
 } from "@labradoodle/adapters";
 import type { createApp } from "@labradoodle/api/app";
 import type { appContract } from "@labradoodle/contracts";
-import {
-  createSpaceForMember,
-  pushSessionExpiresAt,
-  runAsSystem,
-  runAsTenant,
-} from "@labradoodle/db";
+import { pushSessionExpiresAt, runAsSystem, runAsTenant } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { sessionCookieHeader } from "./index.js";
 import { asSystem } from "./system-db.js";
@@ -63,12 +58,6 @@ describeWithDatabase("API authorization and resource isolation", () => {
     app = handles.app;
     db = asSystem(handles.prisma);
   });
-
-  /** A further Space for the signed-in person, made where the product no longer can. */
-  async function extraSpace(cookie: string, name: string) {
-    const actor = await rpc<Actor>(app, cookie, "me");
-    return createSpaceForMember(db, { currentSpaceId: actor.spaceId, userId: actor.userId, name });
-  }
 
   afterAll(async () => {
     await handles?.stop();
@@ -639,7 +628,6 @@ describeWithDatabase("API authorization and resource isolation", () => {
   it("keeps the Better Auth organization routes closed to product sessions", async () => {
     const cookie = await signup(app, `org-routes-${stamp}@labradoodle.test`, "Org Routes");
     const actor = await rpc<Actor>(app, cookie, "me");
-    const marker = await extraSpace(cookie, "Marker");
 
     for (const route of ["delete", "leave", "update", "list"]) {
       const res = await app.request(`/api/auth/organization/${route}`, {
@@ -658,11 +646,8 @@ describeWithDatabase("API authorization and resource isolation", () => {
     }
 
     await expect(
-      handles.prisma.space.findMany({
-        where: { id: { in: [actor.spaceId, marker.id] } },
-        select: { id: true },
-      }),
-    ).resolves.toHaveLength(2);
+      handles.prisma.space.findMany({ where: { id: actor.spaceId }, select: { id: true } }),
+    ).resolves.toHaveLength(1);
     await expect(
       handles.prisma.member.count({ where: { userId: actor.userId } }),
     ).resolves.toBeGreaterThan(0);

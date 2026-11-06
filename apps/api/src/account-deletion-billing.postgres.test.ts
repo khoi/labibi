@@ -13,9 +13,9 @@ import {
   SPACE_DELETION_CLAIM_TIMEOUT_MS,
 } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import type { SpaceDeletionDeps } from "./account-deletion.js";
 import { deleteAccountContent } from "./account-deletion.js";
 import { createBillingService } from "./billing.js";
-import type { SpaceDeletionDeps } from "./space-deletion.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 const describePostgres =
