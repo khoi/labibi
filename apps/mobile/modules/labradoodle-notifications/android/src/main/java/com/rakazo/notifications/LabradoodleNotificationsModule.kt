@@ -40,8 +40,8 @@ class LabradoodleNotificationsModule : Module() {
       resume(endpoint, token, spaceId, locale, headers)
     }
 
-    AsyncFunction("resumeAfterMute") { endpoint: String, token: String, spaceId: String, locale: String, headers: String, botId: String ->
-      resume(endpoint, token, spaceId, locale, headers, mutedBotId = botId)
+    AsyncFunction("resumeAfterMute") { endpoint: String, token: String, spaceId: String, locale: String, headers: String, threadId: String ->
+      resume(endpoint, token, spaceId, locale, headers, mutedThreadId = threadId)
     }
 
     AsyncFunction("stop") { clearSession: Boolean ->
@@ -57,8 +57,8 @@ class LabradoodleNotificationsModule : Module() {
       }
     }
 
-    AsyncFunction("setOpenThread") { botId: String?, threadId: String? ->
-      LabradoodleNotificationService.setOpenThread(context(), botId, threadId)
+    AsyncFunction("setOpenThread") { threadId: String? ->
+      LabradoodleNotificationService.setOpenThread(context(), threadId)
     }
 
     AsyncFunction("openSettings") {
@@ -107,7 +107,7 @@ class LabradoodleNotificationsModule : Module() {
     spaceId: String,
     locale: String,
     headers: String,
-    mutedBotId: String? = null,
+    mutedThreadId: String? = null,
   ) {
     val context = context()
     if (endpoint.isNotBlank() && !isAllowedNotificationEndpoint(endpoint)) {
@@ -120,7 +120,7 @@ class LabradoodleNotificationsModule : Module() {
       storage.spaceId = spaceId
       storage.locale = locale
       if (storage.settings.liveConnection && endpoint.isNotBlank() && token.isNotBlank()) {
-        LabradoodleNotificationService.start(context, mutedBotId = mutedBotId)
+        LabradoodleNotificationService.start(context, mutedThreadId = mutedThreadId)
       }
     }
   }

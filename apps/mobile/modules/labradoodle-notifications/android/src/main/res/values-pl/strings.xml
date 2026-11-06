@@ -6,7 +6,6 @@
   <string name="rakazo_channel_attention">Wymagają uwagi</string>
 
   <string name="rakazo_live_one">%1$s pracuje</string>
-  <string name="rakazo_live_many">%1$s i jeszcze %2$d pracują</string>
   <string name="rakazo_live_working">W trakcie pracy</string>
 
   <string name="rakazo_scheduled_title">%1$s · Zaplanowane zadanie</string>

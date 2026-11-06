@@ -12,10 +12,10 @@ final class NotificationService: UNNotificationServiceExtension {
     handler = contentHandler
     fallback = request.content
     let data = request.content.userInfo["body"] as? [AnyHashable: Any] ?? request.content.userInfo
+    // Doodle's sender carries its portrait; a person's has only a name, which iOS draws as initials.
     guard let sender = data["sender"] as? [String: Any],
-          let botId = sender["botId"] as? String,
           let name = sender["name"] as? String,
-          !botId.isEmpty, !name.isEmpty else {
+          !name.isEmpty else {
       finish(request.content)
       return
     }
@@ -24,9 +24,9 @@ final class NotificationService: UNNotificationServiceExtension {
       ? Data(base64Encoded: encoded).flatMap { $0.isEmpty ? nil : INImage(imageData: $0) }
       : nil
     let person = INPerson(
-      personHandle: INPersonHandle(value: botId, type: .unknown),
+      personHandle: INPersonHandle(value: name, type: .unknown),
       nameComponents: nil, displayName: name, image: image,
-      contactIdentifier: nil, customIdentifier: botId
+      contactIdentifier: nil, customIdentifier: name
     )
     let intent = INSendMessageIntent(
       recipients: nil, outgoingMessageType: .outgoingMessageText,

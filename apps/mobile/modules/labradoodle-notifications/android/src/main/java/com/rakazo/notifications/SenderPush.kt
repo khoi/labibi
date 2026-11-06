@@ -32,13 +32,12 @@ internal object SenderPush {
 
   fun present(context: Context, data: JSONObject): Boolean {
     val title = data.optString("notificationTitle").takeIf(String::isNotBlank) ?: return false
-    val botId = data.optString("botId").takeIf(String::isNotBlank) ?: return false
     val threadId = data.optString("threadId").takeIf(String::isNotBlank) ?: return false
-    if (LabradoodleNotificationService.isOpenThread(botId, threadId)) return true
+    if (LabradoodleNotificationService.isOpenThread(threadId)) return true
     // Matches the app's foreground handler: finished work is already on screen.
     val foreground = inForeground()
     if (data.optString("kind") == "completion" && foreground) return true
-    return runCatching { post(context, data, title, botId, threadId, foreground) }
+    return runCatching { post(context, data, title, threadId, foreground) }
       .onFailure { Log.w("LabradoodleSenderPush", "Could not post push", it) }
       .isSuccess
   }
@@ -47,7 +46,6 @@ internal object SenderPush {
     context: Context,
     data: JSONObject,
     title: String,
-    botId: String,
     threadId: String,
     foreground: Boolean,
   ) {
@@ -65,7 +63,7 @@ internal object SenderPush {
       .setContentTitle(title)
       .setContentText(body)
       .setStyle(Notification.BigTextStyle().bigText(body))
-      .setContentIntent(openThread(context, data, botId, threadId))
+      .setContentIntent(openThread(context, data, threadId))
       .setAutoCancel(true)
       .setCategory(Notification.CATEGORY_MESSAGE)
       .apply { if (data.has("notificationBadge")) setNumber(data.optInt("notificationBadge")) }
@@ -78,10 +76,8 @@ internal object SenderPush {
         }
       }
       .addExtras(Bundle().apply {
-        putString("rakazo.botId", botId)
         putString("rakazo.threadId", threadId)
         data.optString("runId").takeIf(String::isNotBlank)?.let { putString(LabradoodleNotificationService.EXTRA_RUN_ID, it) }
-        data.optString("groupId").takeIf(String::isNotBlank)?.let { putString("rakazo.groupId", it) }
       })
     runCatching { addSender(context, builder, data, title, body) }
       .onFailure { Log.w("LabradoodleSenderPush", "Posting without the sender", it) }
@@ -96,7 +92,7 @@ internal object SenderPush {
     if (Build.VERSION.SDK_INT < 28) return
     val person = Person.Builder()
       .setName(name)
-      .setKey(sender.optString("botId").ifBlank { name })
+      .setKey(name)
       .apply { portrait?.let { setIcon(Icon.createWithBitmap(it)) } }
       .build()
     val user = Person.Builder().setName(context.applicationInfo.loadLabel(context.packageManager)).build()
@@ -115,10 +111,8 @@ internal object SenderPush {
     else BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
   }.getOrNull()
 
-  private fun openThread(context: Context, data: JSONObject, botId: String, threadId: String): PendingIntent {
-    val groupId = data.optString("groupId")
-    val owner = if (groupId.isNotBlank()) "group-thread?groupId=${Uri.encode(groupId)}" else "thread?botId=${Uri.encode(botId)}"
-    val link = "rakazo://$owner&spaceId=${Uri.encode(data.optString("spaceId"))}&threadId=${Uri.encode(threadId)}"
+  private fun openThread(context: Context, data: JSONObject, threadId: String): PendingIntent {
+    val link = "rakazo://thread?threadId=${Uri.encode(threadId)}&spaceId=${Uri.encode(data.optString("spaceId"))}"
     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link)).setPackage(context.packageName).apply {
       flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
     }

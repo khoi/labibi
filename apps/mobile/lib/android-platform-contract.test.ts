@@ -69,7 +69,7 @@ describe("Android mobile platform contract", () => {
       /waiting_input[\s\S]*filter \{ it\.notificationsEnabled \}[\s\S]*alertedAttention\.add/,
     );
     expect(service).toContain(
-      "if (openThreadId != null) openThreadId == threadId else openBotId == botId",
+      "fun isOpenThread(threadId: String): Boolean = synchronized(sessionLock) { openThreadId == threadId }",
     );
     expect(service).toContain("manager.notify(run.threadId.hashCode(), notification)");
     expect(service).toContain("THREAD_NOTIFICATION_IDS");
@@ -87,11 +87,11 @@ describe("Android mobile platform contract", () => {
       "fun clearSession(context: Context) {\n      synchronized(sessionLock)",
     );
     expect(service).not.toContain("private fun postCompletion(");
-    expect(service).toContain('"rakazo://group-thread?groupId=');
+    expect(service).toContain('"rakazo://thread?threadId=');
     expect(service).toMatch(/&spaceId=\$\{Uri\.encode\(run\.spaceId\)\}/);
     expect(service).toContain('putString("rakazo.spaceId", run.spaceId)');
-    expect(service).toMatch(/&threadId=\$\{Uri\.encode\(run\.threadId\)\}/);
-    expect(service).toContain('if (run.groupId != null) put("groupId", run.groupId)');
+    expect(service).toMatch(/[?&]threadId=\$\{Uri\.encode\(run\.threadId\)\}/);
+    expect(service).toContain('JSONObject().put("threadId", run.threadId)');
     expect(service).toContain('if (message.optString("runId") != run.runId) continue');
     expect(service).toContain('if (block.optString("kind") == "handoff") return null');
     expect(service).toContain("run?.threadId?.hashCode() ?: 0");
@@ -114,7 +114,7 @@ describe("Android mobile platform contract", () => {
     expect(service).toMatch(
       /private fun showLive\(active: List<RunRecord>[\s\S]*val primary = active\.first\(\)/,
     );
-    expect(service).toContain('putString("rakazo.botId", run.botId)');
+    expect(service).toContain('putString("rakazo.threadId", run.threadId)');
     expect(service).toMatch(/if \(working\.isEmpty\(\)\) \{[\s\S]*stop\(\)[\s\S]*return[\s\S]*\}/);
   });
 

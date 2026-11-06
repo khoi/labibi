@@ -15,7 +15,6 @@ const keys = [
   "rakazo_channel_scheduled",
   "rakazo_channel_attention",
   "rakazo_live_one",
-  "rakazo_live_many",
   "rakazo_live_working",
   "rakazo_scheduled_title",
   "rakazo_replied_group",
@@ -63,15 +62,5 @@ describe("Android notification resources", () => {
       const argumentsOf = (value: string) => value.match(/%\d+\$[sd]/g)?.sort() ?? [];
       expect(argumentsOf(polish.get(key) ?? ""), key).toEqual(argumentsOf(source.get(key) ?? ""));
     }
-  });
-
-  it("keeps positional format arguments in translated strings", () => {
-    expect(strings("de")).toContain("%1$s und %2$d");
-    expect(strings("ru")).toContain("%1$s и ещё %2$d");
-    expect(strings("zh-CN")).toContain("%1$s 和另外 %2$d");
-    expect(strings("nl")).toContain("%1$s en %2$d anderen");
-    expect(strings("ja")).toContain("%1$sとほか%2$d件");
-    expect(strings("es")).toContain("%1$s y %2$d más");
-    expect(strings("pl")).toContain("%1$s i jeszcze %2$d");
   });
 });

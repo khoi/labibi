@@ -6,7 +6,6 @@
   <string name="rakazo_channel_attention">Vereist aandacht</string>
 
   <string name="rakazo_live_one">%1$s is bezig</string>
-  <string name="rakazo_live_many">%1$s en %2$d anderen zijn bezig</string>
   <string name="rakazo_live_working">Bezig</string>
 
   <string name="rakazo_scheduled_title">%1$s · Geplande taak</string>

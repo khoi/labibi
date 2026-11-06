@@ -102,27 +102,24 @@ class NotificationPollingTest {
   }
 
   @Test
-  fun `muting drops a pending direct reply missing from recent but preserves groups and other bots`() {
+  fun `muting drops a pending reply missing from recent but preserves other chats`() {
     val seen = mutableSetOf<String>()
     val completions = PollCompletions(seen)
     val direct = run("muted")
-    val group = run("group").copy(groupId = "group-1")
-    val other = run("other").copy(botId = "other-bot")
-    completions.page(listOf(direct, group, other))
-    val recent = (1..20).map { run("new-$it").copy(botId = "other-bot") }
+    val other = run("other")
+    completions.page(listOf(direct, other))
+    val recent = (1..20).map { run("new-$it") }
     assertTrue(direct in completions.page(recent))
 
-    completions.muteBot("bot") {}
+    completions.muteThread(direct.threadId) {}
     val afterMute = completions.page(recent)
     assertFalse("the muted reply must be discarded even when absent from recent", direct in afterMute)
-    assertTrue(group in afterMute)
     assertTrue(other in afterMute)
     val posted = mutableListOf<String>()
     // The pre-mute fetch may still return with its old RunRecord.
     completions.complete(direct, alreadyPosted = { false }) { posted += direct.runId }
-    completions.complete(group, alreadyPosted = { false }) { posted += group.runId }
     completions.complete(other, alreadyPosted = { false }) { posted += other.runId }
-    assertEquals(listOf("group", "other"), posted)
+    assertEquals(listOf("other"), posted)
   }
 
   @Test
@@ -137,11 +134,11 @@ class NotificationPollingTest {
     assertEquals(listOf(muted), completions.page(listOf(muted)))
     persistSeen()
 
-    // The user mutes the bot; the poller can stop before another iteration persists.
-    completions.muteBot("bot", persistSeen)
+    // The user mutes the chat; the poller can stop before another iteration persists.
+    completions.muteThread(muted.threadId, persistSeen)
 
     // A restart rebuilds the seen set from the last persisted snapshot, and the
-    // unmuted bot's run returns on the recent page with notificationsEnabled=true.
+    // unmuted chat's run returns on the recent page with notificationsEnabled=true.
     val restarted = PollCompletions(mutableSetOf<String>().apply { addAll(writes.last()) })
     assertTrue("restart must keep the muted reply suppressed", restarted.page(listOf(muted)).isEmpty())
     var notifications = 0
@@ -159,11 +156,11 @@ class NotificationPollingTest {
   }
 
   @Test
-  fun `muting with no discarded direct reply writes no history`() {
+  fun `muting with no discarded reply writes no history`() {
     val completions = PollCompletions(mutableSetOf())
-    completions.page(listOf(run("group").copy(groupId = "group-1")))
+    completions.page(listOf(run("other")))
     var writes = 0
-    completions.muteBot("bot") { writes++ }
+    completions.muteThread("thread-muted") { writes++ }
     assertEquals(0, writes)
   }
 
@@ -327,11 +324,8 @@ class NotificationPollingTest {
   private fun run(id: String) = RunRecord(
     runId = id,
     spaceId = "space",
-    botId = "bot",
-    botName = "Bot",
-    groupId = null,
-    groupName = null,
     threadId = "thread-$id",
+    title = "Chat",
     status = "completed",
     prompt = "Prompt",
     trigger = "message",

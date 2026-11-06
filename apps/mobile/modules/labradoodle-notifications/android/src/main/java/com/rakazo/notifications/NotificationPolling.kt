@@ -3,11 +3,9 @@ package com.rakazo.notifications
 internal data class RunRecord(
   val runId: String,
   val spaceId: String,
-  val botId: String,
-  val botName: String,
-  val groupId: String?,
-  val groupName: String?,
   val threadId: String,
+  /** The chat's title for this person. */
+  val title: String,
   val status: String,
   val prompt: String,
   val trigger: String,
@@ -20,9 +18,9 @@ internal class PollCompletions(private val seen: MutableSet<String>) {
   private val pending = linkedMapOf<String, RunRecord>()
 
   // The discard must reach storage before the poller can stop: a restart reloads
-  // only what persisted, and would repost the muted reply once the bot is unmuted.
-  fun muteBot(botId: String, persistSeen: () -> Unit) {
-    val muted = pending.values.filter { it.botId == botId && it.groupId == null }
+  // only what persisted, and would repost the muted reply once the chat is unmuted.
+  fun muteThread(threadId: String, persistSeen: () -> Unit) {
+    val muted = pending.values.filter { it.threadId == threadId }
     muted.forEach { run ->
       pending.remove(run.runId)
       seen.add(run.runId)

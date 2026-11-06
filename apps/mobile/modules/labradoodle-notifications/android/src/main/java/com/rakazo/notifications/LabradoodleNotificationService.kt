@@ -63,16 +63,16 @@ class LabradoodleNotificationService : Service() {
     createLabradoodleChannels(this)
     val generation = synchronized(sessionLock) {
       if (intent?.getBooleanExtra(EXTRA_RESET_TOKEN, false) == true) tokenCache.reset()
-      intent?.getStringExtra(EXTRA_MUTED_BOT_ID)?.let { botId ->
+      intent?.getStringExtra(EXTRA_MUTED_THREAD_ID)?.let { threadId ->
         // Only a seeded poll can hold pending replies, and a discard always changes the
         // seen set, so the mute persists here instead of waiting for the next poll.
-        completions.muteBot(botId) {
+        completions.muteThread(threadId) {
           val stored = getSharedPreferences(STATE_PREFERENCES, MODE_PRIVATE).getString(SEEN_RUNS_SPACE_ID, null)
           if (ownsStoredHistory(stored, historySpaceId)) persistCompleted(seeded = true)
         }
       }
       sessionGeneration.incrementAndGet().also {
-        if (intent?.action == ACTION_THREAD_CHANGED && (openBotId != null || openThreadId != null)) {
+        if (intent?.action == ACTION_THREAD_CHANGED && openThreadId != null) {
           clearLive()
         }
       }
@@ -162,10 +162,10 @@ class LabradoodleNotificationService : Service() {
                     NotificationCopy(
                       title = when {
                         run.trigger == "routine" ->
-                          copyContext.getString(R.string.rakazo_scheduled_title, run.botName)
-                        run.groupName != null ->
-                          copyContext.getString(R.string.rakazo_replied_group, run.botName, run.groupName)
-                        else -> copyContext.getString(R.string.rakazo_replied, run.botName)
+                          copyContext.getString(R.string.rakazo_scheduled_title, run.title.ifBlank { DOODLE_NAME })
+                        run.title.isNotBlank() ->
+                          copyContext.getString(R.string.rakazo_replied_group, DOODLE_NAME, run.title)
+                        else -> copyContext.getString(R.string.rakazo_replied, DOODLE_NAME)
                       },
                       body = reply.ifBlank { run.prompt },
                       channel = if (run.trigger == "routine") Channels.SCHEDULED else Channels.MESSAGES,
@@ -257,7 +257,6 @@ class LabradoodleNotificationService : Service() {
       .addExtras(Bundle().apply {
         if (run.status == "completed") putString(EXTRA_RUN_ID, run.runId)
         putString("rakazo.spaceId", run.spaceId)
-        putString("rakazo.botId", run.botId)
         putString("rakazo.threadId", run.threadId)
       })
       .setAutoCancel(true)
@@ -268,13 +267,10 @@ class LabradoodleNotificationService : Service() {
 
   private fun showLive(active: List<RunRecord>, context: Context) {
     val primary = active.first()
-    val title = when (active.size) {
-      1 -> context.getString(R.string.rakazo_live_one, primary.botName)
-      else -> context.getString(R.string.rakazo_live_many, primary.botName, active.size - 1)
-    }
+    val title = context.getString(R.string.rakazo_live_one, DOODLE_NAME)
     val body = when {
       active.size == 1 -> primary.prompt
-      else -> active.take(3).joinToString(" · ") { it.botName }
+      else -> active.take(3).joinToString(" · ") { it.title.ifBlank { it.prompt } }
     }
     val liveBuilder = builder(Channels.LIVE)
       .setSmallIcon(R.drawable.ic_rakazo_notification)
@@ -306,7 +302,7 @@ class LabradoodleNotificationService : Service() {
     manager.cancel(LIVE_NOTIFICATION_ID)
   }
 
-  private fun isOpenThread(run: RunRecord): Boolean = isOpenThread(run.botId, run.threadId)
+  private fun isOpenThread(run: RunRecord): Boolean = isOpenThread(run.threadId)
 
   @Suppress("DEPRECATION")
   private fun builder(channel: String): Notification.Builder =
@@ -316,11 +312,8 @@ class LabradoodleNotificationService : Service() {
     val intent = if (run == null) {
       packageManager.getLaunchIntentForPackage(packageName) ?: Intent(Intent.ACTION_VIEW, Uri.parse("rakazo://"))
     } else {
-      val destination = if (run.groupId != null) {
-        "rakazo://group-thread?groupId=${Uri.encode(run.groupId)}&name=${Uri.encode(run.groupName.orEmpty())}&spaceId=${Uri.encode(run.spaceId)}&threadId=${Uri.encode(run.threadId)}"
-      } else {
-        "rakazo://thread?botId=${Uri.encode(run.botId)}&name=${Uri.encode(run.botName)}&spaceId=${Uri.encode(run.spaceId)}&threadId=${Uri.encode(run.threadId)}"
-      }
+      val destination =
+        "rakazo://thread?threadId=${Uri.encode(run.threadId)}&spaceId=${Uri.encode(run.spaceId)}"
       Intent(
         Intent.ACTION_VIEW,
         Uri.parse(destination),
@@ -350,7 +343,7 @@ class LabradoodleNotificationService : Service() {
     private const val PROMOTED_ONGOING_EXTRA = "android.requestPromotedOngoing"
     private const val RECENT_LIMIT = 20 // Keep in sync with apps/api/src/runs.ts.
     private const val EXTRA_RESET_TOKEN = "com.rakazo.notifications.RESET_TOKEN"
-    private const val EXTRA_MUTED_BOT_ID = "com.rakazo.notifications.MUTED_BOT_ID"
+    private const val EXTRA_MUTED_THREAD_ID = "com.rakazo.notifications.MUTED_THREAD_ID"
     private const val STATE_PREFERENCES = "com.rakazo.notification_state"
     private const val SEEN_RUNS = "seen_runs"
     private const val SEEN_RUNS_SEEDED = "seen_runs_seeded"
@@ -360,14 +353,13 @@ class LabradoodleNotificationService : Service() {
     private val sessionLock = Any()
     private val sessionGeneration = AtomicLong()
     private var sessionEpoch = 0L
-    private var openBotId: String? = null
     private var openThreadId: String? = null
 
-    fun start(context: Context, resetToken: Boolean = true, action: String? = null, mutedBotId: String? = null) {
+    fun start(context: Context, resetToken: Boolean = true, action: String? = null, mutedThreadId: String? = null) {
       val intent = Intent(context, LabradoodleNotificationService::class.java)
         .putExtra(EXTRA_RESET_TOKEN, resetToken)
       if (action != null) intent.action = action
-      if (mutedBotId != null) intent.putExtra(EXTRA_MUTED_BOT_ID, mutedBotId)
+      if (mutedThreadId != null) intent.putExtra(EXTRA_MUTED_THREAD_ID, mutedThreadId)
       runCatching { context.startService(intent) }
         .onFailure { error -> Log.w(TAG, "Could not start notification poller", error) }
     }
@@ -376,15 +368,10 @@ class LabradoodleNotificationService : Service() {
       context.stopService(Intent(context, LabradoodleNotificationService::class.java))
     }
 
-    fun isOpenThread(botId: String, threadId: String): Boolean = synchronized(sessionLock) {
-      if (openThreadId != null) openThreadId == threadId else openBotId == botId
-    }
+    fun isOpenThread(threadId: String): Boolean = synchronized(sessionLock) { openThreadId == threadId }
 
-    fun setOpenThread(context: Context, botId: String?, threadId: String?) {
-      synchronized(sessionLock) {
-        openBotId = botId
-        openThreadId = threadId
-      }
+    fun setOpenThread(context: Context, threadId: String?) {
+      synchronized(sessionLock) { openThreadId = threadId }
       if (threadId != null) {
         val manager = context.getSystemService(NotificationManager::class.java)
         manager.cancel(threadId.hashCode())
@@ -397,7 +384,6 @@ class LabradoodleNotificationService : Service() {
       synchronized(sessionLock) {
         sessionGeneration.incrementAndGet()
         sessionEpoch++
-        openBotId = null
         openThreadId = null
         stop(context)
         context.getSharedPreferences(STATE_PREFERENCES, MODE_PRIVATE).edit().clear().apply()
@@ -409,19 +395,22 @@ class LabradoodleNotificationService : Service() {
 
 private data class NotificationCopy(val title: String, val body: String, val channel: String)
 
+/** Every workspace's assistant has this name; it never changes. */
+private const val DOODLE_NAME = "Doodle"
+
 private fun attentionCopy(context: Context, run: RunRecord): NotificationCopy = when (run.status) {
   "failed" -> NotificationCopy(
-    context.getString(R.string.rakazo_attention_failed, run.botName),
+    context.getString(R.string.rakazo_attention_failed, DOODLE_NAME),
     run.prompt,
     Channels.ATTENTION,
   )
   "waiting_takeover" -> NotificationCopy(
-    context.getString(R.string.rakazo_attention_takeover, run.botName),
+    context.getString(R.string.rakazo_attention_takeover, DOODLE_NAME),
     run.prompt,
     Channels.ATTENTION,
   )
   else -> NotificationCopy(
-    context.getString(R.string.rakazo_attention_input, run.botName),
+    context.getString(R.string.rakazo_attention_input, DOODLE_NAME),
     run.prompt,
     Channels.ATTENTION,
   )
@@ -448,11 +437,8 @@ private fun runs(
     RunRecord(
       runId = row.requiredString("runId"),
       spaceId = spaceId,
-      botId = row.requiredString("botId"),
-      botName = row.requiredString("botName"),
-      groupId = row.optionalString("groupId"),
-      groupName = row.optionalString("groupName"),
       threadId = row.requiredString("threadId"),
+      title = row.optString("title"),
       status = row.requiredString("status"),
       prompt = row.optString("promptSnippet"),
       trigger = row.requiredString("trigger"),
@@ -471,16 +457,12 @@ private fun latestReply(
   headers: String,
   run: RunRecord,
 ): String? {
-  val target = JSONObject().apply {
-    if (run.groupId != null) put("groupId", run.groupId) else put("botId", run.botId)
-  }
-  val root = rpc(endpoint, token, spaceId, headers, "threads/get", target)
+  val root = rpc(endpoint, token, spaceId, headers, "threads/get", JSONObject().put("threadId", run.threadId))
   val messages = root.optJSONArray("messages") ?: return ""
   for (messageIndex in messages.length() - 1 downTo 0) {
     val message = messages.optJSONObject(messageIndex) ?: continue
     if (message.optString("role") != "bot") continue
     if (message.optString("runId") != run.runId) continue
-    if (run.groupId != null && message.optString("botId") != run.botId) continue
     val blocks = message.optJSONArray("blocks") ?: return ""
     val text = mutableListOf<String>()
     for (blockIndex in 0 until blocks.length()) {

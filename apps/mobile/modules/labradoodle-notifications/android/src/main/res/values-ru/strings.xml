@@ -6,7 +6,6 @@
   <string name="rakazo_channel_attention">Требуется внимание</string>
 
   <string name="rakazo_live_one">%1$s работает</string>
-  <string name="rakazo_live_many">%1$s и ещё %2$d работают</string>
   <string name="rakazo_live_working">Работает</string>
 
   <string name="rakazo_scheduled_title">%1$s · Запланированная задача</string>

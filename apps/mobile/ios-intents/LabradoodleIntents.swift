@@ -4,18 +4,15 @@ import Security
 import UIKit
 import UniformTypeIdentifiers
 
-/// Sends a message to a bot from Shortcuts, Siri or the Action button without opening the app.
-/// Without a chosen bot it goes to the one whose chat was opened last, so it needs no setup.
-struct MessageBotIntent: AppIntent {
-  static let title: LocalizedStringResource = "Message Bot"
+/// Asks Doodle from Shortcuts, Siri or the Action button: a new chat with you and Doodle, then its
+/// reply here, to show, read aloud or use in the next step.
+struct AskDoodleIntent: AppIntent {
+  static let title: LocalizedStringResource = "Ask Doodle"
   static let description = IntentDescription(
-    "Send a message to a bot. It works on it in the background and doesn't wait for a reply.")
+    "Ask Doodle in a new chat and get its reply here, to show, read aloud or use in the next step.")
   // The session is in the keychain, which is readable only while the device is unlocked.
   static let authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
 
-  @Parameter(title: "Bot", description: "Leave empty to use the chat you opened last.")
-  var bot: BotEntity?
-
   @Parameter(title: "Message", requestValueDialog: "What should it say?")
   var message: String
 
@@ -23,43 +20,14 @@ struct MessageBotIntent: AppIntent {
   var file: IntentFile?
 
   static var parameterSummary: some ParameterSummary {
-    Summary("Send \(\.$message) to \(\.$bot)") { \.$file }
-  }
-
-  func perform() async throws -> some IntentResult & ProvidesDialog {
-    guard !message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-      throw $message.needsValueError()
-    }
-    _ = try await send(message, file: file, to: bot)
-    return .result(dialog: "Sent.")
-  }
-}
-
-/// Sends like Message Bot, then waits for the reply so Siri can read it out or a shortcut can use it.
-struct AskBotIntent: AppIntent {
-  static let title: LocalizedStringResource = "Ask Bot"
-  static let description = IntentDescription(
-    "Ask a bot and get its reply here, to show, read aloud or use in the next step.")
-  static let authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
-
-  @Parameter(title: "Bot", description: "Leave empty to use the chat you opened last.")
-  var bot: BotEntity?
-
-  @Parameter(title: "Message", requestValueDialog: "What should it say?")
-  var message: String
-
-  @Parameter(title: "File")
-  var file: IntentFile?
-
-  static var parameterSummary: some ParameterSummary {
-    Summary("Ask \(\.$bot) \(\.$message)") { \.$file }
+    Summary("Ask Doodle \(\.$message)") { \.$file }
   }
 
   func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
     guard !message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
       throw $message.needsValueError()
     }
-    let sent = try await send(message, file: file, to: bot)
+    let sent = try await send(message, file: file)
     guard let reply = try await reply(to: sent), !reply.isEmpty else {
       return .result(value: "", dialog: "Sent. The reply will be in Labradoodle.")
     }
@@ -67,95 +35,23 @@ struct AskBotIntent: AppIntent {
   }
 }
 
-/// Starts a routine now, the way mentioning it in the composer does.
-struct RunRoutineIntent: AppIntent {
-  static let title: LocalizedStringResource = "Run Routine"
-  static let description = IntentDescription("Start a routine now. It runs in the background.")
-  static let authenticationPolicy: IntentAuthenticationPolicy = .requiresAuthentication
-
-  @Parameter(title: "Routine")
-  var routine: RoutineEntity
-
-  func perform() async throws -> some IntentResult & ProvidesDialog {
-    let session = try LabradoodleSession.load()
-    try await session.requireConsent(["routineId": routine.routineId], spaceId: routine.spaceId)
-    let _: Started = try await session.rpc(
-      "routines/testRun", ["routineId": routine.routineId, "clientNonce": UUID().uuidString],
-      spaceId: routine.spaceId)
-    return .result(dialog: "Started.")
-  }
-}
-
-/// Opens a bot's chat through the app's own link, the same route a notification opens.
-struct OpenBotIntent: AppIntent {
-  static let title: LocalizedStringResource = "Open Bot"
-  static let description = IntentDescription("Open a bot's chat in Labradoodle.")
-  static let openAppWhenRun = true
-
-  @Parameter(title: "Bot")
-  var bot: BotEntity
-
-  @MainActor
-  func perform() async throws -> some IntentResult {
-    await openChat(botId: bot.botId, spaceId: bot.spaceId)
-    return .result()
-  }
-}
-
-/// The single record written by lib/last-bot.ts; legacy ids have no verified owner.
-private struct SavedLastBot: Decodable {
-  let botId: String
-  let spaceId: String?
-  let apiBase: String
-  let userId: String
-}
-
-/// The chosen bot, or a saved bot owned by this authenticated account and server. Throws the
-/// verification failure (signed out, server unreachable), so a shortcut reports what went
-/// wrong; returns nil only when no bot was saved or the saved one is not this account's, which
-/// ask for a chat first.
-private func target(
-  _ bot: BotEntity?, with session: LabradoodleSession
-) async throws -> (botId: String, spaceId: String?)? {
-  if let bot { return (bot.botId, bot.spaceId) }
-  guard
-    let data = secureStoreItem("rakazo.last_bot_id")?.data(using: .utf8),
-    let last = try? JSONDecoder().decode(SavedLastBot.self, from: data),
-    !last.botId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-    !last.userId.isEmpty, last.apiBase == session.apiBase
-  else { return nil }
-  let userId = try await session.currentUserId()
-  guard userId == last.userId else { return nil }
-  let current = try LabradoodleSession.load()
-  guard current.token == session.token, current.apiBase == session.apiBase else { return nil }
-  return (last.botId, last.spaceId)
-}
-
-@MainActor
-private func openChat(botId: String, spaceId: String?) async {
-  var link = URLComponents(string: "rakazo://thread")
-  link?.queryItems = [URLQueryItem(name: "botId", value: botId)]
-  if let spaceId { link?.queryItems?.append(URLQueryItem(name: "spaceId", value: spaceId)) }
-  if let url = link?.url { await UIApplication.shared.open(url) }
-}
-
 private struct Delivery {
   let session: LabradoodleSession
-  let botId: String
+  let threadId: String
   let spaceId: String?
   let runId: String
 }
 
-/// Sends with the app's own session and the same procedures as the composer, so the bot runs it
-/// as a message the user sent. Without a chosen bot it goes to the one whose chat was opened last.
-private func send(_ message: String, file: IntentFile?, to bot: BotEntity?) async throws -> Delivery {
+/// Starts a chat with only you and Doodle, then sends with the app's own session and the same
+/// procedures as the composer, so Doodle answers it as a message the user sent.
+private func send(_ message: String, file: IntentFile?) async throws -> Delivery {
   let session = try LabradoodleSession.load()
-  guard let target = try await target(bot, with: session) else { throw MessageBotError.noBot }
-  let botId = target.botId
-  let spaceId = target.spaceId ?? session.selectedSpaceId
-  try await session.requireConsent(["botId": botId], spaceId: spaceId)
+  let spaceId = session.selectedSpaceId
+  let chat: Chat = try await session.rpc(
+    "threads/create", ["userIds": [String](), "doodle": true], spaceId: spaceId)
+  try await session.requireConsent(["threadId": chat.id], spaceId: spaceId)
   var input: [String: Any] = [
-    "botId": botId,
+    "threadId": chat.id,
     "text": message.trimmingCharacters(in: .whitespacesAndNewlines),
     "clientNonce": UUID().uuidString,
   ]
@@ -163,7 +59,7 @@ private func send(_ message: String, file: IntentFile?, to bot: BotEntity?) asyn
     let artifact: Artifact = try await session.rpc(
       "artifacts/create",
       [
-        "botId": botId,
+        "threadId": chat.id,
         "name": file.filename,
         "mimeType": file.type?.preferredMIMEType ?? "application/octet-stream",
         "contentBase64": file.data.base64EncodedString(),
@@ -173,30 +69,33 @@ private func send(_ message: String, file: IntentFile?, to bot: BotEntity?) asyn
     input["imageHandling"] = "confirm"
   }
   let sent: Sent = try await session.rpc("threads/send", input, spaceId: spaceId)
-  return Delivery(session: session, botId: botId, spaceId: spaceId, runId: sent.runId)
+  guard let runId = sent.runId else { throw DoodleIntentError.server(nil) }
+  return Delivery(session: session, threadId: chat.id, spaceId: spaceId, runId: runId)
 }
 
-/// The bot's text for the run, once it finishes or stops to wait for the user; nil if it is still
+/// Doodle's text for the run, once it finishes or stops to wait for the user; nil if it is still
 /// working after about half a minute, which is as long as Siri waits comfortably.
 private func reply(to sent: Delivery) async throws -> String? {
-  guard try await sent.session.waitForReply(runId: sent.runId, botId: sent.botId, spaceId: sent.spaceId)
+  guard
+    try await sent.session.waitForReply(
+      runId: sent.runId, threadId: sent.threadId, spaceId: sent.spaceId)
   else { return nil }
   let thread: ThreadSnapshot
   do {
     thread = try await sent.session.rpc(
-      "threads/get", ["botId": sent.botId], spaceId: sent.spaceId, timeout: 5)
+      "threads/get", ["threadId": sent.threadId], spaceId: sent.spaceId, timeout: 5)
   } catch let error as URLError {
     if error.code == .cancelled { throw error }
     return nil
   }
   if thread.run?.id == sent.runId, thread.run?.status == "failed" {
-    throw MessageBotError.server(nil)
+    throw DoodleIntentError.server(nil)
   }
   let text = thread.messages
     .filter { $0.runId == sent.runId && $0.role == "bot" }
     .flatMap(\.blocks).compactMap(\.text).joined(separator: "\n\n")
   if text.isEmpty, thread.activeRuns?.contains(where: { $0.id == sent.runId }) == true {
-    throw MessageBotError.needsYou
+    throw DoodleIntentError.needsYou
   }
   let options = AttributedString.MarkdownParsingOptions(
     interpretedSyntax: .inlineOnlyPreservingWhitespace)
@@ -204,107 +103,14 @@ private func reply(to sent: Delivery) async throws -> String? {
     ?? text
 }
 
-/// Puts the actions in Shortcuts, Spotlight and the Action button without the user building one.
+/// Puts Ask Doodle in Shortcuts, Spotlight and the Action button without the user building one.
 struct LabradoodleShortcuts: AppShortcutsProvider {
   static var appShortcuts: [AppShortcut] {
     AppShortcut(
-      intent: MessageBotIntent(),
-      phrases: ["Send a message with \(.applicationName)"],
-      shortTitle: "Message Bot",
-      systemImageName: "bubble.left")
-    AppShortcut(
-      intent: AskBotIntent(),
-      phrases: ["Ask a question in \(.applicationName)"],
-      shortTitle: "Ask Bot",
+      intent: AskDoodleIntent(),
+      phrases: ["Ask Doodle in \(.applicationName)"],
+      shortTitle: "Ask Doodle",
       systemImageName: "bubble.left.and.text.bubble.right")
-    AppShortcut(
-      intent: RunRoutineIntent(),
-      phrases: ["Run a routine in \(.applicationName)"],
-      shortTitle: "Run Routine",
-      systemImageName: "play")
-    AppShortcut(
-      intent: OpenBotIntent(),
-      phrases: ["Open a bot in \(.applicationName)"],
-      shortTitle: "Open Bot",
-      systemImageName: "arrow.up.forward.app")
-  }
-}
-
-struct BotEntity: AppEntity {
-  static let typeDisplayRepresentation: TypeDisplayRepresentation = "Bot"
-  static let defaultQuery = BotQuery()
-
-  /// The Space travels with the bot, so a saved shortcut keeps working after the app switches Space.
-  var id: String { "\(spaceId)/\(botId)" }
-  let botId: String
-  let spaceId: String
-  let name: String
-
-  var displayRepresentation: DisplayRepresentation { DisplayRepresentation(title: "\(name)") }
-}
-
-/// Looks entities up Space by Space, since each id starts with its Space.
-private func findEntities<Entity: AppEntity>(
-  _ identifiers: [String],
-  in list: (String, LabradoodleSession) async throws -> [Entity]
-) async throws -> [Entity] where Entity.ID == String {
-  let session = try LabradoodleSession.load()
-  var found: [Entity] = []
-  for spaceId in Set(identifiers.compactMap { $0.split(separator: "/").first.map(String.init) }) {
-    found += try await list(spaceId, session).filter { identifiers.contains($0.id) }
-  }
-  return found
-}
-
-struct BotQuery: EntityQuery {
-  func entities(for identifiers: [String]) async throws -> [BotEntity] {
-    try await findEntities(identifiers) { try await bots(in: $0, session: $1) }
-  }
-
-  func suggestedEntities() async throws -> [BotEntity] {
-    let session = try LabradoodleSession.load()
-    return try await bots(in: session.selectedSpaceId, session: session)
-  }
-
-  private func bots(in spaceId: String?, session: LabradoodleSession) async throws -> [BotEntity] {
-    let navigation: SpaceNavigation = try await session.rpc("spaces/list", [:], spaceId: spaceId)
-    return navigation.current.bots.map {
-      BotEntity(botId: $0.id, spaceId: navigation.current.id, name: $0.name)
-    }
-  }
-}
-
-struct RoutineEntity: AppEntity {
-  static let typeDisplayRepresentation: TypeDisplayRepresentation = "Routine"
-  static let defaultQuery = RoutineQuery()
-
-  var id: String { "\(spaceId)/\(routineId)" }
-  let routineId: String
-  let spaceId: String
-  let name: String
-
-  var displayRepresentation: DisplayRepresentation { DisplayRepresentation(title: "\(name)") }
-}
-
-struct RoutineQuery: EntityQuery {
-  func entities(for identifiers: [String]) async throws -> [RoutineEntity] {
-    try await findEntities(identifiers) { try await routines(in: $0, session: $1) }
-  }
-
-  func suggestedEntities() async throws -> [RoutineEntity] {
-    let session = try LabradoodleSession.load()
-    return try await routines(in: session.selectedSpaceId, session: session)
-  }
-
-  private func routines(in spaceId: String?, session: LabradoodleSession) async throws -> [RoutineEntity] {
-    let navigation: SpaceNavigation = try await session.rpc("spaces/list", [:], spaceId: spaceId)
-    let botIds = navigation.current.bots.prefix(100).map(\.id)
-    guard !botIds.isEmpty else { return [] }
-    let lists: [BotRoutines] = try await session.rpc(
-      "routines/listForMentions", ["botIds": Array(botIds)], spaceId: navigation.current.id)
-    return lists.flatMap(\.routines).map {
-      RoutineEntity(routineId: $0.id, spaceId: navigation.current.id, name: $0.name)
-    }
   }
 }
 
@@ -331,11 +137,11 @@ private struct LabradoodleSession {
   // The keys lib/session.ts, lib/server-config.ts and lib/api.ts keep in expo-secure-store.
   static func load() throws -> LabradoodleSession {
     guard let token = secureStoreItem("rakazo.session_token"), !token.isEmpty else {
-      throw MessageBotError.signedOut
+      throw DoodleIntentError.signedOut
     }
     let fallback = Bundle.main.object(forInfoDictionaryKey: "LabradoodleDefaultApiBase") as? String
     guard let apiBase = secureStoreItem("rakazo.api_base") ?? fallback else {
-      throw MessageBotError.signedOut
+      throw DoodleIntentError.signedOut
     }
     let space = secureStoreItem("rakazo.space_id")
     return LabradoodleSession(
@@ -354,24 +160,6 @@ private struct LabradoodleSession {
     return saved.headers
   }
 
-  /// Verify the account using this exact server and bearer before using a saved shortcut.
-  func currentUserId() async throws -> String {
-    guard let url = URL(string: "\(apiBase)/api/auth/get-session") else {
-      throw MessageBotError.signedOut
-    }
-    var request = URLRequest(url: url, timeoutInterval: 5)
-    for (name, value) in headers { request.setValue(value, forHTTPHeaderField: name) }
-    request.setValue("rakazo://", forHTTPHeaderField: "origin")
-    request.setValue("Bearer \(token)", forHTTPHeaderField: "authorization")
-    let (data, response) = try await Self.transport.data(for: request)
-    try checkResponse(response)
-    // An expired bearer can answer 200 with no user; that is a sign-in prompt, not a retry.
-    guard let userId = try? JSONDecoder().decode(SessionIdentity.self, from: data).user.id,
-      !userId.isEmpty
-    else { throw MessageBotError.signedOut }
-    return userId
-  }
-
   /// The app asks before AI first sees the user's data; an action from here cannot ask.
   func requireConsent(
     _ target: [String: String], spaceId: String?, timeout: TimeInterval = 60
@@ -382,15 +170,15 @@ private struct LabradoodleSession {
     let consent: ConsentStatus = try await rpc(
       "aiConsent/status", input, spaceId: spaceId, timeout: timeout)
     guard consent.recipients.allSatisfy({ $0.allowed || !uses.contains($0.use) }) else {
-      throw MessageBotError.consentRequired
+      throw DoodleIntentError.consentRequired
     }
   }
 
   /// Uses the same replayable SSE feed as the mobile chat, including a reply that finished
   /// before this subscription opened. The resource deadline also bounds an idle stream.
-  func waitForReply(runId: String, botId: String, spaceId: String?) async throws -> Bool {
+  func waitForReply(runId: String, threadId: String, spaceId: String?) async throws -> Bool {
     var request = try request(
-      "threads/subscribe", ["botId": botId, "cursor": 0], spaceId: spaceId, timeout: 28)
+      "threads/subscribe", ["threadId": threadId, "cursor": 0], spaceId: spaceId, timeout: 28)
     request.setValue("text/event-stream", forHTTPHeaderField: "accept")
     let config = URLSessionConfiguration.ephemeral
     config.timeoutIntervalForResource = 28
@@ -443,7 +231,7 @@ private struct LabradoodleSession {
     _ procedure: String, _ input: [String: Any], spaceId: String?, timeout: TimeInterval
   ) throws -> URLRequest {
     guard let url = URL(string: "\(apiBase)/rpc/\(procedure)") else {
-      throw MessageBotError.signedOut
+      throw DoodleIntentError.signedOut
     }
     var request = URLRequest(url: url, timeoutInterval: timeout)
     request.httpMethod = "POST"
@@ -458,8 +246,8 @@ private struct LabradoodleSession {
 
   private func checkResponse(_ response: URLResponse) throws {
     let status = (response as? HTTPURLResponse)?.statusCode ?? 0
-    if status == 401 { throw MessageBotError.signedOut }
-    guard (200..<300).contains(status) else { throw MessageBotError.server(nil) }
+    if status == 401 { throw DoodleIntentError.signedOut }
+    guard (200..<300).contains(status) else { throw DoodleIntentError.server(nil) }
   }
 
   /// Calls an oRPC procedure the way lib/api.ts does.
@@ -469,10 +257,10 @@ private struct LabradoodleSession {
     let request = try request(procedure, input, spaceId: spaceId, timeout: timeout)
     let (data, response) = try await Self.transport.data(for: request)
     let status = (response as? HTTPURLResponse)?.statusCode ?? 0
-    if status == 401 { throw MessageBotError.signedOut }
+    if status == 401 { throw DoodleIntentError.signedOut }
     guard (200..<300).contains(status) else {
       let error = try? JSONDecoder().decode(Envelope<ServerError>.self, from: data)
-      throw MessageBotError.server(error?.json.message)
+      throw DoodleIntentError.server(error?.json.message)
     }
     return try JSONDecoder().decode(Envelope<Output>.self, from: data).json
   }
@@ -499,9 +287,8 @@ private func secureStoreItem(_ key: String) -> String? {
   return nil
 }
 
-private enum MessageBotError: Error, CustomLocalizedStringResourceConvertible {
+private enum DoodleIntentError: Error, CustomLocalizedStringResourceConvertible {
   case signedOut
-  case noBot
   case needsYou
   case consentRequired
   case server(String?)
@@ -509,7 +296,6 @@ private enum MessageBotError: Error, CustomLocalizedStringResourceConvertible {
   var localizedStringResource: LocalizedStringResource {
     switch self {
     case .signedOut: "Sign in to Labradoodle first."
-    case .noBot: "Open a chat in Labradoodle first."
     case .needsYou: "It needs you in Labradoodle."
     case .consentRequired: "Review AI data sharing in Account settings before continuing."
     case .server(let message?): "\(message)"
@@ -518,10 +304,6 @@ private enum MessageBotError: Error, CustomLocalizedStringResourceConvertible {
   }
 }
 
-private struct SessionIdentity: Decodable {
-  struct User: Decodable { let id: String }
-  let user: User
-}
 
 private struct SavedHeaders: Decodable {
   let apiBase: String
@@ -529,16 +311,10 @@ private struct SavedHeaders: Decodable {
 }
 private struct Envelope<Value: Decodable>: Decodable { let json: Value }
 private struct ServerError: Decodable { let message: String? }
-private struct Sent: Decodable { let runId: String }
-private struct Started: Decodable {}
+/// No run when Doodle does not answer the message.
+private struct Sent: Decodable { let runId: String? }
+private struct Chat: Decodable { let id: String }
 private struct Artifact: Decodable { let id: String }
-private struct BotRoutines: Decodable {
-  struct Routine: Decodable {
-    let id: String
-    let name: String
-  }
-  let routines: [Routine]
-}
 private struct ReplyEvent: Decodable {
   let runId: String?
   let type: String
@@ -564,15 +340,4 @@ private struct ConsentStatus: Decodable {
     let allowed: Bool
   }
   let recipients: [Recipient]
-}
-private struct SpaceNavigation: Decodable {
-  struct Current: Decodable {
-    let id: String
-    let bots: [Bot]
-  }
-  struct Bot: Decodable {
-    let id: String
-    let name: String
-  }
-  let current: Current
 }

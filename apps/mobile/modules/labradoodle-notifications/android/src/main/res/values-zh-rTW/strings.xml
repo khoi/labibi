@@ -6,7 +6,6 @@
   <string name="rakazo_channel_attention">需要處理</string>
 
   <string name="rakazo_live_one">%1$s 正在處理</string>
-  <string name="rakazo_live_many">%1$s 和其他 %2$d 個正在處理</string>
   <string name="rakazo_live_working">正在處理</string>
 
   <string name="rakazo_scheduled_title">%1$s · 排程任務</string>
