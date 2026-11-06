@@ -46,12 +46,13 @@ describeAttachments("chat attachments", () => {
 
   it("uploads, sends with image/file, and rejects invalid attachments", async () => {
     const cookie = await signup(app, `attachments-${stamp}@rakazo.test`, "Attachment User");
-    const bot = await rpc<{ id: string }>(app, cookie, "bots/create", {
-      name: "Attacher",
-      title: "Attacher",
-      instructions: "",
-      notifyOnFinish: true,
-    });
+    const {
+      doodle: bot,
+      chats: [_botChat],
+    } = await rpc<{
+      doodle: { id: string };
+      chats: Array<{ id: string }>;
+    }>(app, cookie, "bootstrap", {});
 
     const image = await rpc<{ id: string; mimeType: string }>(app, cookie, "artifacts/create", {
       botId: bot.id,
@@ -152,12 +153,13 @@ describeAttachments("chat attachments", () => {
 
   it("attaches a workspace file into the thread", async () => {
     const cookie = await signup(app, `attach-thread-${stamp}@rakazo.test`, "Attach Thread User");
-    const bot = await rpc<{ id: string }>(app, cookie, "bots/create", {
-      name: "Attacher",
-      title: "Attacher",
-      instructions: "",
-      notifyOnFinish: true,
-    });
+    const {
+      doodle: bot,
+      chats: [_botChat],
+    } = await rpc<{
+      doodle: { id: string };
+      chats: Array<{ id: string }>;
+    }>(app, cookie, "bootstrap", {});
     await sendAndWait(app, cookie, bot.id, {
       text: "write notes/result.txt and attach it to the thread",
     });
@@ -179,13 +181,13 @@ describeAttachments("chat attachments", () => {
   it("persists server-owned reply previews, isolates threads, and handles deletion", async () => {
     const cookie = await signup(app, `replies-${stamp}@rakazo.test`, "Reply User");
     const otherCookie = await signup(app, `replies-other-${stamp}@rakazo.test`, "Other User");
-    const bot = await rpc<{ id: string }>(app, cookie, "bots/create", {
-      name: "Helper",
-      title: "Helper",
-      description: "",
-      instructions: "",
-      notifyOnFinish: true,
-    });
+    const {
+      doodle: bot,
+      chats: [_botChat],
+    } = await rpc<{
+      doodle: { id: string };
+      chats: Array<{ id: string }>;
+    }>(app, cookie, "bootstrap", {});
     await sendAndWait(app, cookie, bot.id, { text: "Parent first line\nSecond line" });
     let snapshot = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { botId: bot.id });
     const parent = snapshot.messages.find((message) => message.role === "user")!;
@@ -219,12 +221,13 @@ describeAttachments("chat attachments", () => {
       replyToMessageId: parent.id,
     });
     expect(denied.status).toBeGreaterThanOrEqual(400);
-    const otherBot = await rpc<{ id: string }>(app, cookie, "bots/create", {
-      name: "Other",
-      title: "Other",
-      instructions: "",
-      notifyOnFinish: true,
-    });
+    const {
+      doodle: otherBot,
+      chats: [_otherBotChat],
+    } = await rpc<{
+      doodle: { id: string };
+      chats: Array<{ id: string }>;
+    }>(app, cookie, "bootstrap", {});
     await sendAndWait(app, cookie, otherBot.id, {
       text: "Foreign target",
       replyToMessageId: parent.id,

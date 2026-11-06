@@ -28,7 +28,6 @@ async function main() {
       capture,
     );
   let cookie: string | undefined;
-  let botId: string | undefined;
 
   try {
     compose([
@@ -48,18 +47,14 @@ async function main() {
 
     compose(["stop", "worker"]);
     cookie = await signup(baseUrl);
-    const bot = await rpc<{ id: string }>(baseUrl, cookie, "bots/create", {
-      name: "Topology",
-      title: "Topology smoke bot",
-      instructions: "Use the file tool when asked to write a file.",
-      notifyOnFinish: false,
-    });
-    botId = bot.id;
+    const { chats } = await rpc<{ chats: Array<{ id: string }> }>(baseUrl, cookie, "bootstrap", {});
+    const threadId = chats[0]?.id;
+    if (!threadId) throw new Error("signup did not create a chat");
     const sent = await rpc<{ runId: string }>(baseUrl, cookie, "threads/send", {
-      botId: bot.id,
+      threadId,
       text: "write a file in your home called notes/result.txt that says topology-recovery-ok",
     });
-    const queued = await rpc<ThreadSnapshot>(baseUrl, cookie, "threads/get", { botId: bot.id });
+    const queued = await rpc<ThreadSnapshot>(baseUrl, cookie, "threads/get", { threadId });
     if (queued.run?.id !== sent.runId || queued.run.status !== "queued") {
       throw new Error(
         `run was not left queued while worker was stopped: ${JSON.stringify(queued.run)}`,
@@ -67,32 +62,25 @@ async function main() {
     }
 
     compose(["start", "worker"]);
-    const completed = await waitForRun(baseUrl, cookie, bot.id, sent.runId, 90_000);
+    const completed = await waitForRun(baseUrl, cookie, sent.runId, 90_000);
     if (completed.runId !== sent.runId || completed.status !== "completed") {
       throw new Error(`worker did not complete queued run: ${JSON.stringify(completed)}`);
     }
     const file = await rpc<{ content: string }>(baseUrl, cookie, "computer/readFile", {
-      botId: bot.id,
       path: "notes/result.txt",
     });
     if (file.content !== "topology-recovery-ok\n") {
       throw new Error(`unexpected sandbox file content: ${JSON.stringify(file.content)}`);
     }
-    const computer = await rpc<{ state: string }>(baseUrl, cookie, "computer/status", {
-      botId: bot.id,
-    });
+    const computer = await rpc<{ state: string }>(baseUrl, cookie, "computer/status", {});
     if (computer.state !== "running") {
       throw new Error(`Docker computer did not remain running: ${JSON.stringify(computer)}`);
     }
     // File-only runs leave desktops unopened. Request the actual screen before
     // checking the supervisor/web peers that the screen connection attaches.
-    const screen = await rpc<{ url: string | null }>(baseUrl, cookie, "computer/screenUrl", {
-      botId: bot.id,
-    });
+    const screen = await rpc<{ url: string | null }>(baseUrl, cookie, "computer/screenUrl", {});
     if (!screen.url) throw new Error("Docker computer did not expose a screen");
     assertComputerNetworkIsolation(compose, project);
-    await rpc(baseUrl, cookie, "bots/remove", { botId: bot.id });
-    botId = undefined;
 
     console.log(
       JSON.stringify(
@@ -127,9 +115,6 @@ async function main() {
         `Topology kept running. Clean up with: docker compose -p ${project} -f ${composeFile} down -v`,
       );
     } else {
-      if (cookie && botId) {
-        await rpc(baseUrl, cookie, "bots/remove", { botId }).catch(() => undefined);
-      }
       removeManagedComputers(compose, project);
       try {
         compose(["down", "--volumes", "--remove-orphans"]);
@@ -173,19 +158,13 @@ async function rpc<T>(baseUrl: string, cookie: string, procedure: string, input:
   return parsed.json as T;
 }
 
-async function waitForRun(
-  baseUrl: string,
-  cookie: string,
-  botId: string,
-  runId: string,
-  timeoutMs: number,
-) {
+async function waitForRun(baseUrl: string, cookie: string, runId: string, timeoutMs: number) {
   const started = Date.now();
   while (Date.now() - started < timeoutMs) {
     // Thread snapshots intentionally omit completed runs. Inspect persisted run
     // history so a reply from another run cannot stand in for this completion.
     const recent = await rpc<RunsListOutput>(baseUrl, cookie, "runs/list", { filter: "recent" });
-    const run = recent.runs.find((run) => run.runId === runId && run.botId === botId);
+    const run = recent.runs.find((run) => run.runId === runId);
     if (run && isTerminal(run.status)) return run;
     await delay(300);
   }

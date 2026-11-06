@@ -42,13 +42,13 @@ describeHistory("routines.history late starts", () => {
 
   it("returns the due time a late run recorded, unchanged by later schedule edits", async () => {
     const cookie = await signup(app, `routine-late-${stamp}@rakazo.test`, "Late User");
-    const bot = await rpc<{ id: string }>(app, cookie, "bots/create", {
-      name: "Brief",
-      title: "Brief",
-      description: "",
-      instructions: "",
-      notifyOnFinish: false,
-    });
+    const {
+      doodle: bot,
+      chats: [botChat],
+    } = await rpc<{
+      doodle: { id: string };
+      chats: Array<{ id: string }>;
+    }>(app, cookie, "bootstrap", {});
     const routine = await rpc<{ id: string }>(app, cookie, "routines/create", {
       botId: bot.id,
       name: "Morning brief",
@@ -58,7 +58,7 @@ describeHistory("routines.history late starts", () => {
       active: false,
       notify: false,
     });
-    const thread = await prisma.thread.findUniqueOrThrow({ where: { botId: bot.id } });
+    const thread = await prisma.thread.findUniqueOrThrow({ where: { id: botChat!.id } });
     const seed = async (clientNonce: string, lateSince: Date | null, startedAt: Date) => {
       const task = await prisma.task.create({
         data: {

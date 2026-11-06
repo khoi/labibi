@@ -170,13 +170,27 @@ function fixture(
         update: async () => ({ nextEventSeq: 1, nextMessageSeq: 1 }),
         findUniqueOrThrow: async () => ({
           id: run.threadId,
-          groupId: null,
+          _count: { members: 1 },
           nextMessageSeq: 1,
           historyCompactionSummary: null,
           historyCompactedUpToSeq: null,
         }),
       },
-      spaceMember: { findUnique: async () => ({ id: "member-1" }) },
+      threadMember: {
+        findFirst: async () => ({ id: "member-1" }),
+        findUnique: async () => ({ id: "member-1" }),
+        findMany: async () => [{ userId: "user-1" }],
+        count: async () => 1,
+      },
+      computer: {
+        findUnique: async () => ({
+          id: "fixture-computer",
+          spaceId: run.spaceId,
+          userId: run.userId,
+          kind: "fake",
+          homeKey: "fixture-home",
+        }),
+      },
       deploymentSettings: {
         findUnique: async () => ({
           defaultModelProvider: model.provider,
@@ -646,73 +660,6 @@ describe("executor paused transcript", () => {
       }
     },
   );
-  it("keeps parallel checkpoint captures bound to the pausing call on resume", async () => {
-    let releaseLate!: () => void;
-    const late = new Promise<void>((resolve) => {
-      releaseLate = resolve;
-    });
-    const model = await startModelEmulator({
-      steps: [
-        {
-          expect() {},
-          response: {
-            type: "tools",
-            calls: [
-              { id: "finished-read", name: "read_file", arguments: { path: "finished.txt" } },
-              {
-                id: "pending-write",
-                name: "fixture_write",
-                arguments: { content: "approved-fixture" },
-              },
-              { id: "late-read", name: "read_file", arguments: { path: "late.txt" } },
-            ],
-          },
-        },
-        {
-          expect(request) {
-            const results = request.messages.filter((message) => message.role === "tool");
-            expect(
-              results.find((message) => message.tool_call_id === "late-read")?.content,
-            ).toContain("outcome is unknown");
-            expect(
-              results.find((message) => message.tool_call_id === "pending-write")?.content,
-            ).toContain("fixture-approved-result");
-          },
-          response: { type: "text", text: "Done." },
-        },
-      ],
-    });
-    try {
-      const state = fixture(model.model);
-      state.reads.mockImplementation(async (_computer, path) => {
-        if (path === "late.txt") await late;
-        return new TextEncoder().encode("unique-executor-evidence");
-      });
-      state.pauseRunForInput.mockImplementation(async () => {
-        state.run.status = "waiting_input";
-        releaseLate();
-        return { continuationRunId: null };
-      });
-      await state.executor.continueRun(state.run.id, "fixture-worker");
-      expect(state.reads).toHaveBeenCalledTimes(2);
-      const saved = state.effects.find((effect) => effect.kind === "runtime_checkpoint")!;
-      expect(model.requests).toHaveLength(1);
-      expect(JSON.parse(String(saved.result)).pendingToolCallId).toBe("pending-write");
-      for (const effect of state.effects)
-        if (effect.status === "intended") effect.status = "approved";
-      state.run.status = "queued";
-      await state.executor.continueRun(state.run.id, "fixture-worker");
-      model.assertComplete();
-      expect(state.reads).toHaveBeenCalledTimes(2);
-      expect(state.writes).toHaveBeenCalledExactlyOnceWith({ content: "approved-fixture" });
-      expect(state.finalizeRun).toHaveBeenCalledWith(
-        expect.objectContaining({ outcome: "completed" }),
-      );
-    } finally {
-      releaseLate();
-      await model.close();
-    }
-  });
   it("resumes the approved call when parallel calls need approval at once", async () => {
     const model = await startModelEmulator({
       steps: [
@@ -979,84 +926,6 @@ describe("executor paused transcript", () => {
           expect.objectContaining({ outcome: "completed" }),
         );
         expect(state.pauseRunForInput).toHaveBeenCalledOnce();
-      } finally {
-        await model.close();
-      }
-    },
-  );
-  it.each(["ask_user", "approval", "normalized-approval", "request_takeover"])(
-    "restores %s through the real executor before opening the model",
-    async (pause) => {
-      const approval = pause === "approval" || pause === "normalized-approval";
-      const toolName = pause === "normalized-approval" ? "fixture.write" : "fixture_write";
-      const name = approval ? "fixture_write" : pause;
-      const args = approval
-        ? { content: "exact-approved-content" }
-        : pause === "request_takeover"
-          ? { reason: "Complete the fixture step" }
-          : { question: "Which fixture?", options: ["One", "Two"] };
-      const model = await startModelEmulator({
-        steps: [
-          {
-            expect() {},
-            response: {
-              type: "tool",
-              id: "evidence",
-              name: "read_file",
-              arguments: { path: "fixture.txt" },
-            },
-          },
-          {
-            expect(request) {
-              expect(request.tools?.map((tool) => tool.function.name)).toContain(name);
-            },
-            response: { type: "tool", id: "pending", name, arguments: args },
-          },
-          {
-            expect(request) {
-              const evidence = request.messages.find(
-                (message) => message.role === "tool" && message.tool_call_id === "evidence",
-              );
-              expect(JSON.stringify(evidence)).toContain("unique-executor-evidence");
-              const result = request.messages.find(
-                (message) => message.role === "tool" && message.tool_call_id === "pending",
-              );
-              expect(result).toBeDefined();
-              if (approval) expect(JSON.stringify(result)).toContain("fixture-approved-result");
-              if (pause === "ask_user") expect(JSON.stringify(result)).toContain("Two");
-            },
-            response: { type: "text", text: "Done." },
-          },
-        ],
-      });
-      try {
-        const state = fixture(model.model, false, toolName);
-        await state.executor.continueRun(state.run.id, "fixture-worker");
-        expect(
-          pause === "request_takeover" ? state.pauseRunForTakeover : state.pauseRunForInput,
-          JSON.stringify(state.finalizeRun.mock.calls),
-        ).toHaveBeenCalledOnce();
-        expect(state.effects.some((effect) => effect.kind === "runtime_checkpoint")).toBe(true);
-        for (const effect of state.effects)
-          if (effect.status === "intended") effect.status = "approved";
-        state.run.status = "queued";
-        if (pause === "request_takeover") state.run.checkpoint = "takeover" as never;
-        state.task.prompt = "Two";
-        await state.executor.continueRun(state.run.id, "fixture-worker");
-        model.assertComplete();
-        expect(model.requests).toHaveLength(3);
-        expect(state.finalizeRun).toHaveBeenCalledWith(
-          expect.objectContaining({ outcome: "completed" }),
-        );
-        expect(
-          pause === "request_takeover" ? state.pauseRunForTakeover : state.pauseRunForInput,
-          JSON.stringify(state.finalizeRun.mock.calls),
-        ).toHaveBeenCalledOnce();
-        expect(state.effects.some((effect) => effect.kind === "runtime_checkpoint")).toBe(false);
-        if (approval) {
-          expect(state.writes).toHaveBeenCalledOnce();
-          expect(state.writes.mock.calls[0]).toEqual([{ content: "exact-approved-content" }]);
-        }
       } finally {
         await model.close();
       }

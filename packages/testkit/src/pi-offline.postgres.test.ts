@@ -96,14 +96,14 @@ describe.skipIf(!databaseAvailable)("offline Pi product journey", () => {
         contextWindow: 160_000,
         maxTokens: 4096,
       });
-      const bot = await rpc<{ id: string }>(handles.app, cookie, "bots/create", {
-        name: "File fixture",
-        title: "",
-        instructions: "Complete the task.",
-        notifyOnFinish: false,
-      });
-      await rpc(handles.app, cookie, "bots/update", {
-        botId: bot.id,
+      const {
+        doodle: bot,
+        chats: [_botChat],
+      } = await rpc<{
+        doodle: { id: string };
+        chats: Array<{ id: string }>;
+      }>(handles.app, cookie, "bootstrap", {});
+      await rpc(handles.app, cookie, "doodle/update", {
         modelProvider: model.model.provider,
         modelId: model.model.id,
       });

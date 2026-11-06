@@ -277,11 +277,10 @@ async function prepareAccount(bench: Bench, sizes: number[]): Promise<Account> {
     const threads: BenchThread[] = [];
     for (const size of sizes) {
       const name = `Bench ${size}`;
-      const created = await rpc<{ id: string }>(page, "bots/create", {
+      const created = await rpc<{ id: string }>(page, "threads/create", {
         name,
-        title: "",
-        notifyOnFinish: false,
-        computerMode: "team",
+        userIds: [],
+        doodle: true,
       });
       threads.push(await seedThread(bench.prisma, created.id, name, size));
     }
@@ -296,14 +295,16 @@ async function prepareAccount(bench: Bench, sizes: number[]): Promise<Account> {
   }
 }
 
-async function seedThread(prisma: PrismaClient, botId: string, name: string, size: number) {
+async function seedThread(prisma: PrismaClient, threadId: string, name: string, size: number) {
   return runAsSystem("benchmark seed", async () => {
-    const bot = await prisma.bot.findUniqueOrThrow({
-      where: { id: botId },
-      select: { spaceId: true, thread: { select: { id: true } } },
+    const thread = await prisma.thread.findUniqueOrThrow({
+      where: { id: threadId },
+      select: { spaceId: true },
     });
-    const threadId = bot.thread?.id;
-    if (!threadId) throw new Error(`${name} has no thread`);
+    const { id: botId } = await prisma.bot.findUniqueOrThrow({
+      where: { spaceId: thread.spaceId },
+      select: { id: true },
+    });
     let lastMessageId = "";
     let bytes = 0;
     for (const message of benchmarkThreadMessages(size)) {
@@ -317,7 +318,7 @@ async function seedThread(prisma: PrismaClient, botId: string, name: string, siz
       });
       lastMessageId = created.id;
     }
-    return { size, name, botId, threadId, spaceId: bot.spaceId, lastMessageId, bytes };
+    return { size, name, botId, threadId, spaceId: thread.spaceId, lastMessageId, bytes };
   });
 }
 

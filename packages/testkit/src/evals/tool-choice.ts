@@ -45,8 +45,6 @@ export type ToolChoiceExpect = z.infer<typeof ExpectSchema>;
 const BotSetupSchema = z
   .object({
     instructions: z.string().optional(),
-    notifyOnFinish: z.boolean().optional(),
-    autoSpeak: z.boolean().optional(),
     thinkingLevel: z.string().optional(),
   })
   .strict();

@@ -7,40 +7,6 @@ const PRODUCT_HELP = { anyOf: [{ tool: "skill_read", args: { name: "~rakazo" } }
 export const TOOL_CHOICE_DEFINITIONS: ToolChoiceCase[] = [
   // Bot settings the user asks for.
   {
-    id: "settings-rename",
-    area: "settings",
-    kind: "guard",
-    purpose: "Rename itself when asked.",
-    prompt: "Please rename yourself to Scout.",
-    expect: { calls: [{ tool: "update_bot" }], bot: { name: "~scout" } },
-  },
-  {
-    id: "settings-rename-indirect",
-    area: "settings",
-    kind: "guard",
-    purpose: "Treat 'go by' as a rename.",
-    prompt: "Can you go by Atlas from now on?",
-    expect: { bot: { name: "~atlas" } },
-  },
-  {
-    id: "settings-notifications-off",
-    area: "settings",
-    kind: "guard",
-    purpose: "Turn finish notifications off when asked.",
-    bot: { notifyOnFinish: true },
-    prompt: "Stop notifying me every time you finish something.",
-    expect: { bot: { notifyOnFinish: false } },
-  },
-  {
-    id: "settings-notifications-on",
-    area: "settings",
-    kind: "guard",
-    purpose: "Turn finish notifications back on when asked.",
-    bot: { notifyOnFinish: false },
-    prompt: "Please turn your finish notifications back on.",
-    expect: { bot: { notifyOnFinish: true } },
-  },
-  {
     id: "settings-instructions-add",
     area: "settings",
     kind: "guard",
@@ -106,24 +72,6 @@ export const TOOL_CHOICE_DEFINITIONS: ToolChoiceCase[] = [
     purpose: "Treat a standing request to reason more deeply as a thinking change.",
     prompt: "Going forward, please reason much more deeply about everything I ask.",
     expect: { bot: { thinkingLevel: ["high", "xhigh", "max"] } },
-  },
-  {
-    id: "settings-read-aloud-on",
-    area: "settings",
-    kind: "guard",
-    purpose: "Turn on reading replies aloud.",
-    bot: { autoSpeak: false },
-    prompt: "Read your replies out loud from now on.",
-    expect: { bot: { autoSpeak: true } },
-  },
-  {
-    id: "settings-read-aloud-off",
-    area: "settings",
-    kind: "guard",
-    purpose: "Turn off reading replies aloud.",
-    bot: { autoSpeak: true },
-    prompt: "Stop reading your answers out loud.",
-    expect: { bot: { autoSpeak: false } },
   },
   // Settings it must leave alone.
   {
@@ -250,14 +198,6 @@ export const TOOL_CHOICE_DEFINITIONS: ToolChoiceCase[] = [
     expect: PRODUCT_HELP,
   },
   {
-    id: "help-spaces-groups",
-    area: "product-help",
-    kind: "guard",
-    purpose: "Look up product concepts.",
-    prompt: "What's the difference between a space and a group in Labradoodle?",
-    expect: PRODUCT_HELP,
-  },
-  {
     id: "help-general-knowledge",
     area: "product-help",
     kind: "control",
@@ -365,34 +305,6 @@ export const TOOL_CHOICE_DEFINITIONS: ToolChoiceCase[] = [
     prompt:
       "Interrogate this plan: we will cache every API response forever to make the app faster.",
     expect: { calls: [{ tool: "skill_read", args: { name: "~interrogate" } }] },
-  },
-  {
-    id: "fleet-spawn",
-    area: "fleet",
-    kind: "guard",
-    purpose: "Create a new bot when asked.",
-    prompt: "Create a new bot called Researcher that finds papers on battery chemistry.",
-    expect: { calls: [{ tool: "spawn_bot" }] },
-  },
-  {
-    id: "fleet-list",
-    area: "fleet",
-    kind: "guard",
-    purpose: "Inspect the fleet rather than guessing.",
-    prompt: "Which other bots are in this space?",
-    expect: { calls: [{ tool: "list_fleet" }] },
-  },
-  {
-    id: "fleet-rename-child",
-    area: "fleet",
-    kind: "guard",
-    purpose: "Rename a bot it created, not itself.",
-    priorTurns: ["Create a new bot called Researcher that finds papers on battery chemistry."],
-    prompt: "Rename Researcher to Librarian.",
-    expect: {
-      calls: [{ tool: "update_bot", args: { bot_id: "*", name: "~librarian" } }],
-      bot: { name: "Assistant" },
-    },
   },
   {
     id: "secrets-request",

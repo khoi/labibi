@@ -378,7 +378,7 @@ async function ensurePage(
     data: {
       spaceId: input.spaceId,
       userId: input.userId,
-      botId: input.botId,
+      threadId: input.threadId,
       title: PAGE_TITLE,
       versions: {
         create: {

@@ -71,7 +71,6 @@ describe("silence outcome grading", () => {
               kind: "completion",
               title: "Done",
               body: "All clear",
-              botId: "bot",
               threadId: "thread",
             },
           ],

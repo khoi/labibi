@@ -249,18 +249,16 @@ async function prepareAuthenticatedProfile(benchmark: BenchmarkContext, profile:
 }
 
 async function seedBenchmarkThread(prisma: PrismaClient) {
-  const bot = await prisma.bot.findFirst({
-    where: { name: "Chief" },
-    select: { thread: { select: { id: true } } },
+  const thread = await prisma.thread.findFirst({
+    orderBy: { createdAt: "asc" },
+    select: { id: true },
   });
-  const threadId = bot?.thread?.id;
-  if (!threadId) throw new Error("Benchmark onboarding did not create a thread");
+  const threadId = thread?.id;
+  if (!threadId) throw new Error("Benchmark onboarding did not create a chat");
   await prisma.$transaction([
     prisma.message.deleteMany({ where: { threadId } }),
-    prisma.thread.update({
-      where: { id: threadId },
-      data: { nextMessageSeq: 0, unread: false },
-    }),
+    prisma.thread.update({ where: { id: threadId }, data: { nextMessageSeq: 0 } }),
+    prisma.threadMember.updateMany({ where: { threadId }, data: { unread: false } }),
   ]);
   for (let index = 0; index < 100; index += 1) {
     const role = index % 2 === 0 ? "user" : "bot";

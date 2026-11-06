@@ -533,14 +533,12 @@ describeIntegration("reusable credential lifecycle", () => {
         value: JSON.stringify({ username: "fake-user", password: "fake-password-www" }),
       });
       const saved = await db.vaultCredential.findFirstOrThrow({ where: { userId } });
-      // A second bot of the same member asks to replace the same login for another site.
-      const bot = await rpc<{ id: string }>(seeded.cookie, "bots/create", {
-        name: "Executor login-replace 2",
-        title: "",
-        instructions: "",
-        notifyOnFinish: false,
+      // Another chat of the same member asks to replace the same login for another site.
+      const bot = seeded.bot;
+      const thread = await rpc<{ id: string }>(seeded.cookie, "threads/create", {
+        userIds: [],
+        doodle: true,
       });
-      const thread = await db.thread.findUniqueOrThrow({ where: { botId: bot.id } });
       const task = await db.task.create({
         data: {
           userId,
@@ -643,13 +641,11 @@ describeIntegration("reusable credential lifecycle", () => {
   ) {
     const cookie = await signup(`executor-${label}-${stamp}@rakazo.test`, `Executor ${label}`);
     const me = await rpc<{ userId: string; spaceId: string }>(cookie, "me");
-    const bot = await rpc<{ id: string }>(cookie, "bots/create", {
-      name: `Executor ${label}`,
-      title: "",
-      instructions: "",
-      notifyOnFinish: false,
-    });
-    const thread = await db.thread.findUniqueOrThrow({ where: { botId: bot.id } });
+    const { doodle: bot, chats } = await rpc<{
+      doodle: { id: string };
+      chats: Array<{ id: string }>;
+    }>(cookie, "bootstrap", {});
+    const thread = chats[0]!;
     const task = await db.task.create({
       data: {
         spaceId: me.spaceId,

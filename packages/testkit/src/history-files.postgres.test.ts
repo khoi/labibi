@@ -111,15 +111,15 @@ describe.skipIf(!enabled)("earlier files through history tools", () => {
         contextWindow: 160_000,
         maxTokens: 4096,
       });
-      const bot = await rpc<{ id: string }>("bots/create", {
-        name: "Files fixture",
-        title: "",
-        instructions: "",
-        notifyOnFinish: false,
-      });
+      const {
+        doodle: bot,
+        chats: [botChat],
+      } = await rpc<{
+        doodle: { id: string };
+        chats: Array<{ id: string }>;
+      }>("bootstrap", {});
       await handles.awaitIdle?.();
-      await rpc("bots/update", {
-        botId: bot.id,
+      await rpc("doodle/update", {
         modelProvider: model.model.provider,
         modelId: model.model.id,
       });
@@ -142,7 +142,7 @@ describe.skipIf(!enabled)("earlier files through history tools", () => {
       // Three later turns with files push the lease out of the recent attachment window.
       const later = [];
       for (const index of [1, 2, 3]) later.push(await upload(`weekly-${index}.md`, "Filler."));
-      const thread = await db.thread.findFirstOrThrow({ where: { botId: bot.id } });
+      const thread = await db.thread.findUniqueOrThrow({ where: { id: botChat!.id } });
       await db.message.create({
         data: {
           threadId: thread.id,

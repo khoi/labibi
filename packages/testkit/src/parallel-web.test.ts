@@ -42,7 +42,20 @@ function executorFixture(
         (args: { select?: Record<string, boolean> }) => Promise<{ timezone: string } | null>
       >(async () => null),
     },
-    spaceMember: { findUnique: async () => ({ id: "member-1" }) },
+    threadMember: {
+      findFirst: async () => ({ id: "member-1" }),
+      findMany: async () => [{ userId: "user" }],
+      count: async () => 1,
+    },
+    computer: {
+      findUnique: async () => ({
+        id: "computer",
+        spaceId: "space",
+        userId: "user",
+        kind: "fake",
+        homeKey: "home",
+      }),
+    },
     run: {
       findUnique: async () => run,
       findUniqueOrThrow: async () => run,
@@ -68,7 +81,7 @@ function executorFixture(
       update: vi.fn(),
       updateMany: async () => ({ count: 1 }),
     },
-    thread: { findUniqueOrThrow: async () => ({ id: "thread", groupId: null }) },
+    thread: { findUniqueOrThrow: async () => ({ id: "thread", _count: { members: 1 } }) },
     message: { findMany: async () => [] },
     task: {
       findUniqueOrThrow: async () => ({

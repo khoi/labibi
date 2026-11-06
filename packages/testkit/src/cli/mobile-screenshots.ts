@@ -319,31 +319,21 @@ export function configureEnvironment() {
 
 async function seedFixture(app: App, prisma: PrismaClient) {
   const cookie = await signup(app);
-  const researcher = await rpc<{ id: string }>(app, cookie, "bots/create", {
-    name: "Researcher",
-    title: "Product research",
-    instructions: "Find evidence and summarize it clearly.",
-    notifyOnFinish: true,
-  });
-  const writer = await rpc<{ id: string }>(app, cookie, "bots/create", {
-    name: "Writer",
-    title: "Clear writing",
-    instructions: "Write concise drafts from the available evidence.",
-    notifyOnFinish: true,
-  });
-  const support = await rpc<{ id: string }>(app, cookie, "bots/create", {
-    name: "Support",
-    title: "Customer support",
-    instructions: "Prepare accurate and friendly customer replies.",
-    notifyOnFinish: false,
-  });
-
-  const group = await rpc<{ id: string }>(app, cookie, "groups/create", {
+  const { doodle, chats } = await rpc<{ doodle: { id: string }; chats: { id: string }[] }>(
+    app,
+    cookie,
+    "bootstrap",
+    {},
+  );
+  const first = chats[0];
+  if (!first) throw new Error("Fixture signup did not create a chat");
+  const launch = await rpc<{ id: string }>(app, cookie, "threads/create", {
     name: "Launch team",
-    botIds: [researcher.id, writer.id, support.id],
+    userIds: [],
+    doodle: true,
   });
   const routine = await rpc<{ id: string }>(app, cookie, "routines/create", {
-    botId: researcher.id,
+    threadId: first.id,
     name: "Weekly fixture review",
     prompt: "Review the fixture launch notes and summarize the open questions.",
     crons: ["0 9 * * 1"],
@@ -352,47 +342,46 @@ async function seedFixture(app: App, prisma: PrismaClient) {
     notify: true,
   });
 
-  const botThread = await prisma.thread.findUniqueOrThrow({ where: { botId: researcher.id } });
-  const groupThread = await prisma.thread.findUniqueOrThrow({ where: { groupId: group.id } });
+  const chat = await prisma.thread.findUniqueOrThrow({ where: { id: first.id } });
   const question = await createThreadMessage(prisma, {
-    threadId: botThread.id,
+    threadId: chat.id,
     role: "user",
     blocks: [{ kind: "text", text: "Summarize the fixture launch checklist." }],
   });
   await createThreadMessage(prisma, {
-    threadId: botThread.id,
+    threadId: chat.id,
     role: "bot",
-    botId: researcher.id,
+    botId: doodle.id,
     blocks: [{ kind: "text", text: "The fixture workspace is ready." }],
   });
   await createThreadMessage(prisma, {
-    threadId: groupThread.id,
+    threadId: launch.id,
     role: "user",
     blocks: [{ kind: "text", text: "Coordinate the fixture launch plan." }],
   });
   await createThreadMessage(prisma, {
-    threadId: groupThread.id,
+    threadId: launch.id,
     role: "bot",
-    botId: writer.id,
+    botId: doodle.id,
     blocks: [{ kind: "text", text: "The fixture launch plan is ready." }],
   });
 
   const task = await prisma.task.create({
     data: {
-      spaceId: botThread.spaceId,
-      userId: botThread.userId,
-      botId: researcher.id,
-      threadId: botThread.id,
+      spaceId: chat.spaceId,
+      userId: chat.userId,
+      botId: doodle.id,
+      threadId: chat.id,
       prompt: "Prepare the fixture workspace",
       status: "completed",
     },
   });
   await prisma.run.create({
     data: {
-      spaceId: botThread.spaceId,
-      userId: botThread.userId,
-      botId: researcher.id,
-      threadId: botThread.id,
+      spaceId: chat.spaceId,
+      userId: chat.userId,
+      botId: doodle.id,
+      threadId: chat.id,
       taskId: task.id,
       status: "completed",
       trigger: "user",
@@ -404,10 +393,10 @@ async function seedFixture(app: App, prisma: PrismaClient) {
     },
   });
   return {
-    botId: researcher.id,
-    groupId: group.id,
+    botId: doodle.id,
+    groupId: launch.id,
     routineId: routine.id,
-    threadId: botThread.id,
+    threadId: chat.id,
     cookie,
   };
 }

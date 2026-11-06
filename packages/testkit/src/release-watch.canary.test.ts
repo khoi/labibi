@@ -90,13 +90,13 @@ describeLive("live release-watch eval (GPT 5.6 Luna + GitHub emulator)", () => {
       expect.arrayContaining([...RELEASE_WATCH_GITHUB_TOOL_NAMES]),
     );
 
-    const bot = await rpc<{ id: string }>(handles.app, cookie, "bots/create", {
-      name: "Chief",
-      title: "Chief of staff",
-      description: "Release watch eval",
-      instructions: "You are a chief of staff.",
-      notifyOnFinish: true,
-    });
+    const {
+      doodle: bot,
+      chats: [_botChat],
+    } = await rpc<{
+      doodle: { id: string };
+      chats: Array<{ id: string }>;
+    }>(handles.app, cookie, "bootstrap", {});
 
     // Mirror the Discord user ask: no tool names, no Bing/browser coaching.
     // schedule_create + connected-plugin guidance should steer the model.

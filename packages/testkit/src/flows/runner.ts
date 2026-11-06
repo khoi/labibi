@@ -106,6 +106,7 @@ export async function runFlow<World>(
     harnessTokens.output += usage.outputTokens ?? 0;
   };
   let botId = "";
+  let threadId = "";
   let cookie = "";
   let world: World | undefined;
   let endedBy: FlowEvidence<unknown>["endedBy"] = "user-done";
@@ -161,7 +162,7 @@ export async function runFlow<World>(
         createdAt: string;
         blocks: MessageBlock[];
       }>;
-    }>("threads/get", { botId });
+    }>("threads/get", { threadId });
     let pending: Extract<Settled, { kind: "ask" | "mcp" }> | undefined;
     for (const message of snapshot.messages) {
       if (message.role !== "bot") continue;
@@ -205,7 +206,7 @@ export async function runFlow<World>(
   /** Checked before every paid step, the bot's or the harness's. */
   const withinSpend = async () => {
     if ((await botCost()) + harnessCostUsd > options.spendCapUsd) {
-      await rpc("threads/stop", { botId }).catch(() => undefined);
+      await rpc("threads/stop", { threadId }).catch(() => undefined);
       throw new FlowStop("spend-cap");
     }
   };
@@ -220,7 +221,7 @@ export async function runFlow<World>(
       await withinLimits();
       const runs = await prisma.run.findMany({
         where: {
-          botId,
+          threadId,
           status: { in: [...WORKING_RUN_STATUSES, "waiting_input", "waiting_takeover"] },
         },
         select: { id: true, status: true },
@@ -252,27 +253,31 @@ export async function runFlow<World>(
     if (!signup.ok) throw new Error(`Signup failed (${signup.status})`);
     cookie = sessionCookieHeader(signup);
     await rpc("preferences/adoptTimezone", { timezone: flow.timezone });
-    // A fresh bot exactly as a new user would create it: no test instructions.
-    const bot = await rpc<{ id: string }>("bots/create", { name: "Errands" });
-    botId = bot.id;
-    // The intro run can hold the computer while it starts; wait it out like a person would.
+    // The workspace's Doodle and first chat exactly as a new user gets them: no test instructions.
+    const { doodle, chats } = await rpc<{ doodle: { id: string }; chats: Array<{ id: string }> }>(
+      "bootstrap",
+      {},
+    );
+    if (!chats[0]) throw new Error("Signup did not create a chat");
+    botId = doodle.id;
+    threadId = chats[0].id;
     for (let attempt = 0; ; attempt += 1) {
       try {
-        await rpc("computer/boot", { botId });
+        await rpc("computer/boot", {});
         break;
       } catch (error) {
         if (attempt >= 30 || !String(error).includes(" 409:")) throw error;
         await new Promise((resolve) => setTimeout(resolve, 5_000));
       }
     }
-    const stored = await prisma.bot.findUniqueOrThrow({
-      where: { id: botId },
-      include: { computer: true },
+    const chat = await prisma.thread.findUniqueOrThrow({ where: { id: threadId } });
+    const stored = await prisma.computer.findUniqueOrThrow({
+      where: { spaceId_userId: { spaceId: chat.spaceId, userId: chat.userId } },
     });
     const ref: ComputerRef = {
-      id: stored.computer!.providerRef!,
-      providerRef: stored.computer!.providerRef!,
-      botId: stored.computer!.homeKey,
+      id: stored.providerRef!,
+      providerRef: stored.providerRef!,
+      botId: stored.homeKey,
       kind: options.sandboxKind,
     };
     const context: AdapterContext = {
@@ -319,7 +324,7 @@ export async function runFlow<World>(
     );
     /** The person takes the screen through the product's takeover path, acts, and hands it back. */
     const takeOver = async (wake?: number) => {
-      await rpc("computer/takeover", { botId });
+      await rpc("computer/takeover", {});
       const log = screenStepLog();
       for (let step = 0; step < MAX_SCREEN_STEPS; step += 1) {
         await withinLimits();
@@ -336,7 +341,7 @@ export async function runFlow<World>(
         const move = await user(transcript, situation, abort.signal);
         options.log(`user at screen: ${describeMove(move)}`);
         if (move.kind === "release") {
-          await rpc("computer/release", { botId, reason: "done" });
+          await rpc("computer/release", { reason: "done" });
           transcript.push({
             from: "user",
             at: new Date().toISOString(),
@@ -347,23 +352,21 @@ export async function runFlow<World>(
         }
         if (move.kind === "click")
           await rpc("computer/input", {
-            botId,
             kind: "pointer",
             payload: { x: move.x, y: move.y, type: "click" },
           });
         else if (move.kind === "type")
           // Marked sensitive like a real password field, so it is never recorded as teaching.
           await rpc("computer/input", {
-            botId,
             kind: "clipboard",
             payload: { text: move.text, sensitive: true },
           });
         else if (move.kind === "key")
-          await rpc("computer/input", { botId, kind: "key", payload: { key: move.key } });
+          await rpc("computer/input", { kind: "key", payload: { key: move.key } });
         log.did(describeMove(move), move.kind === "click" ? move : undefined);
         await new Promise((resolve) => setTimeout(resolve, 1_000));
       }
-      await rpc("computer/release", { botId, reason: "skipped" }).catch(() => undefined);
+      await rpc("computer/release", { reason: "skipped" }).catch(() => undefined);
       throw new FlowStop("takeover");
     };
 
@@ -386,7 +389,7 @@ export async function runFlow<World>(
         if (move.kind === "done") return;
         if (state.kind === "ask") {
           await rpc("threads/answer", {
-            botId,
+            threadId,
             runId: state.runId,
             messageId: state.messageId,
             answer:
@@ -400,7 +403,7 @@ export async function runFlow<World>(
             ...(move.kind === "secret" && move.username ? { username: move.username } : {}),
           });
         } else if (state.kind === "mcp" && move.kind === "choose") {
-          const request = mcpCardRequest(state, move.actionId, botId);
+          const request = mcpCardRequest(state, move.actionId);
           // Stopping still grades the run.
           if (!request) {
             options.log("cannot complete an MCP OAuth popup");
@@ -408,7 +411,7 @@ export async function runFlow<World>(
           }
           await rpc(request.procedure, request.body);
         } else if (move.kind === "say") {
-          await rpc("threads/send", { botId, text: move.text });
+          await rpc("threads/send", { threadId, text: move.text });
         } else {
           // Buttons and secrets only make sense on a card; treat a stray one as the person moving on.
           return;
@@ -437,7 +440,7 @@ export async function runFlow<World>(
       observations.conversation = await flow.observe(computer, world);
       for (let wake = 1; wake <= (flow.routineWakes ?? 0); wake += 1) {
         const routine = await prisma.routine.findFirst({
-          where: { botId, active: true },
+          where: { threadId, active: true },
           orderBy: { createdAt: "asc" },
         });
         if (!routine) break;
@@ -463,7 +466,7 @@ export async function runFlow<World>(
           payload: { routineId: routine.id, scheduledFor: scheduledFor.toISOString() },
         });
         const waitStart = Date.now();
-        while ((await prisma.run.count({ where: { botId, routineId: routine.id } })) < wake) {
+        while ((await prisma.run.count({ where: { threadId, routineId: routine.id } })) < wake) {
           if (Date.now() - waitStart > 60_000) throw new Error("Routine wake did not start a run");
           await new Promise((resolve) => setTimeout(resolve, 1_000));
         }
@@ -479,7 +482,7 @@ export async function runFlow<World>(
     }
 
     const tools = await prisma.event.findMany({
-      where: { botId, type: "agent.tool.called" },
+      where: { threadId, type: "agent.tool.called" },
       select: { payload: true },
     });
     for (const event of tools) {
@@ -488,7 +491,7 @@ export async function runFlow<World>(
     }
     result.toolCalls = tools.length;
     const runs = await prisma.run.findMany({
-      where: { botId },
+      where: { threadId },
       orderBy: { createdAt: "asc" },
       select: { id: true, trigger: true, routineId: true, status: true, error: true },
     });
@@ -501,7 +504,7 @@ export async function runFlow<World>(
         botMessages: await prisma.message.count({ where: { runId: run.id, role: "bot" } }),
       })),
     );
-    result.routines = (await prisma.routine.findMany({ where: { botId } })).map((routine) => ({
+    result.routines = (await prisma.routine.findMany({ where: { threadId } })).map((routine) => ({
       name: routine.name,
       prompt: routine.prompt,
       crons: routine.crons,
@@ -550,7 +553,7 @@ export async function runFlow<World>(
     result.status = "error";
     result.error = error instanceof Error ? error.message : String(error);
   } finally {
-    if (botId && cookie) await rpc("threads/stop", { botId }).catch(() => undefined);
+    if (threadId && cookie) await rpc("threads/stop", { threadId }).catch(() => undefined);
     clearInterval(recorder);
     await recording;
     abort.abort();
@@ -665,12 +668,11 @@ export function mcpPendingCard(threadId: string, block: MessageBlock) {
 export function mcpCardRequest(
   card: { serverId: string; threadId: string; needsOAuth: boolean },
   actionId: string,
-  botId: string,
 ) {
   if (actionId === "approve" && card.needsOAuth) return undefined;
   return {
     procedure: `mcp/approvals/${actionId}`,
-    body: { botId, serverId: card.serverId, threadId: card.threadId },
+    body: { serverId: card.serverId, threadId: card.threadId },
   };
 }
 

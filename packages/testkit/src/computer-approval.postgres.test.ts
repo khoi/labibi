@@ -114,18 +114,18 @@ describe.skipIf(!databaseAvailable)("offline Pi computer approval", () => {
           contextWindow: 160_000,
           maxTokens: 4096,
         });
-        const bot = await rpc<{ id: string }>(handles.app, cookie, "bots/create", {
-          name: "Computer fixture",
-          title: "",
-          instructions: "Complete the computer task.",
-          notifyOnFinish: false,
-        });
-        await rpc(handles.app, cookie, "bots/update", {
-          botId: bot.id,
+        const {
+          doodle: bot,
+          chats: [botChat],
+        } = await rpc<{
+          doodle: { id: string };
+          chats: Array<{ id: string }>;
+        }>(handles.app, cookie, "bootstrap", {});
+        await rpc(handles.app, cookie, "doodle/update", {
           modelProvider: model.model.provider,
           modelId: model.model.id,
         });
-        const storedBot = await db.bot.findUniqueOrThrow({ where: { id: bot.id } });
+        const storedBot = await db.thread.findUniqueOrThrow({ where: { id: botChat!.id } });
         await db.userActionApprovalRule.create({
           data: {
             userId: storedBot.userId,

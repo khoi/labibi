@@ -338,12 +338,13 @@ describePiApp("live OpenRouter product journey", () => {
     });
     expect(signup.status).toBeLessThan(400);
     const cookie = sessionCookieHeader(signup);
-    const botRes = await rpc<{ id: string }>(handles.app, cookie, "bots/create", {
-      name: "Chief",
-      title: "Chief of staff",
-      instructions: "Reply briefly. Prefer the write_file tool when asked to write a file.",
-      notifyOnFinish: true,
-    });
+    const {
+      doodle: botRes,
+      chats: [_botResChat],
+    } = await rpc<{
+      doodle: { id: string };
+      chats: Array<{ id: string }>;
+    }>(handles.app, cookie, "bootstrap", {});
     const sent = await rpc<{ runId: string }>(handles.app, cookie, "threads/send", {
       botId: botRes.id,
       text: "Use write_file to save notes/result.txt containing exactly openrouter-ok",
