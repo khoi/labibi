@@ -97,6 +97,7 @@ describe("finalizeRun", () => {
       const createEvent = vi.fn(async () => ({ threadId: "thread-1", seq: 0 }));
       const tx = {
         externalEffect: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+        computerExecutionLease: { updateMany: vi.fn(async () => ({ count: 0 })) },
         $queryRaw: vi.fn(async () => []),
         run: {
           findUnique: vi.fn(async () => ({ status: "running", userId: "user-1" })),
@@ -164,6 +165,7 @@ describe("finalizeRun", () => {
   it("saves the reply a failure cut short before the error, as no answer to steering", async () => {
     const tx = {
       externalEffect: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      computerExecutionLease: { updateMany: vi.fn(async () => ({ count: 0 })) },
       $queryRaw: vi.fn(async () => []),
       run: {
         findUnique: vi.fn(async () => ({ status: "failed", startedAt: null })),
@@ -240,6 +242,7 @@ describe("finalizeRun", () => {
     const create = vi.fn();
     const tx = {
       externalEffect: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      computerExecutionLease: { updateMany: vi.fn(async () => ({ count: 0 })) },
       $queryRaw: vi.fn(async () => []),
       run: {
         findUnique: vi.fn(async () => ({ status: "failed", startedAt: null })),
@@ -285,6 +288,7 @@ describe("finalizeRun", () => {
   it("pins the continuation when every waited message chose the same model", async () => {
     const tx = {
       externalEffect: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      computerExecutionLease: { updateMany: vi.fn(async () => ({ count: 0 })) },
       $queryRaw: vi.fn(async () => []),
       run: {
         findUnique: vi.fn(async () => ({ status: "running", startedAt: null })),
@@ -553,6 +557,7 @@ describe("thread lock transaction budget", () => {
     const createEvent = vi.fn(async () => ({ threadId: "thread-1", seq: 0 }));
     const tx = {
       externalEffect: { deleteMany: vi.fn(async () => ({ count: 0 })) },
+      computerExecutionLease: { updateMany: vi.fn(async () => ({ count: 0 })) },
       $queryRaw: vi.fn(async () => []),
       run: {
         findUnique: vi.fn(async () => ({ status: "running", userId: "user-1" })),
