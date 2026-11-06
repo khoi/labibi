@@ -8,7 +8,6 @@ import { rpc } from "../lib/api";
 import { appConnectPresentation } from "../lib/app-connect";
 import { useI18n } from "../lib/i18n";
 import { native, useMobileTokens } from "../lib/native";
-import { useThreadReadOnly } from "../lib/thread-read-only";
 import { errorText } from "../lib/user-error";
 import { ConnectorIcon } from "./connector-icon";
 import { NativeActionButton } from "./native-action-button";
@@ -27,7 +26,6 @@ export function AppConnectCard({
   onAccessibilityAction?: ViewProps["onAccessibilityAction"];
 }) {
   const { t } = useI18n();
-  const readOnly = useThreadReadOnly();
   const tokens = useMobileTokens();
   const [busy, setBusy] = useState(false);
   const [localStatus, setLocalStatus] = useState<"pending" | "connected">(block.status);
@@ -39,7 +37,7 @@ export function AppConnectCard({
   useEffect(() => () => connectionAttempt.current?.abort(), []);
 
   async function authorize() {
-    if (readOnly || !threadId) return;
+    if (!threadId) return;
     connectionAttempt.current?.abort();
     const controller = new AbortController();
     connectionAttempt.current = controller;
@@ -113,7 +111,7 @@ export function AppConnectCard({
             {view.description}
           </Text>
         </View>
-        {view.showAuthorize && !readOnly && threadId ? (
+        {view.showAuthorize && threadId ? (
           <NativeActionButton
             label={view.actionLabel}
             accessibilityLabel={t("Connect {name}", { name: block.name })}

@@ -55,7 +55,6 @@ export function useThreadRows({
   rowActions,
   threadId,
   inGroup,
-  readOnly,
   mentionTargets,
   doodleStatus,
   userBubble,
@@ -71,7 +70,6 @@ export function useThreadRows({
   threadId?: string;
   /** Other people are in the chat. */
   inGroup: boolean;
-  readOnly: boolean;
   mentionTargets: readonly UserMentionTarget[];
   /** Doodle's activity in the chat, for its live progress row. */
   doodleStatus?: string;
@@ -131,8 +129,7 @@ export function useThreadRows({
           threadId={threadId}
           showBotSenderName={showBotSenderName}
           mentionTargets={mentionTargets}
-          readOnly={readOnly}
-          canAnswer={!readOnly && answerableAskIds.has(message.id)}
+          canAnswer={answerableAskIds.has(message.id)}
           canDismiss={dismissableAskIds.has(message.id)}
           highlighted={highlightedMessageId === message.id}
           separator={separatorIds.has(message.id)}
@@ -179,7 +176,6 @@ export function useThreadRows({
       doodleStatus,
       userBubble,
       rowActions,
-      readOnly,
       answerableAskIds,
       dismissableAskIds,
       highlightedMessageId,

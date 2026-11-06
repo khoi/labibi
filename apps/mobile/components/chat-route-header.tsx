@@ -29,13 +29,12 @@ export function chatRouteHeader(
   canInvite = false,
 ): NativeStackNavigationOptions {
   const params = (route.params ?? {}) as ChatTitleParams;
-  const readOnly = params.readOnly === "1";
   const color = mobileTokens().foreground;
   return {
     headerTitleAlign: "center",
     ...threadEdgeOptions(),
     headerTitle: () => <ChatHeaderTitle routeKey={route.key} params={params} />,
-    ...threadHeaderRight({ readOnly, t, color, onInvite: canInvite ? openInvite : undefined }),
+    ...threadHeaderRight({ t, color, onInvite: canInvite ? openInvite : undefined }),
     ...threadHeaderLeft({ split, inboxHidden, foldActive, t, color }),
   };
 }

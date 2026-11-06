@@ -13,15 +13,7 @@ import { errorText } from "./user-error";
  * Read state for one open chat: each open or return is a visit, the chat is marked read while it
  * is on screen, and "Mark as unread" holds it unread for the rest of that visit.
  */
-export function useThreadRead({
-  threadId,
-  focused,
-  readOnly,
-}: {
-  threadId?: string;
-  focused: boolean;
-  readOnly: boolean;
-}) {
+export function useThreadRead({ threadId, focused }: { threadId?: string; focused: boolean }) {
   const { t } = useI18n();
   const navigation = useNavigation();
   const readVisibleTarget = useRef<string | null>(null);
@@ -72,7 +64,6 @@ export function useThreadRead({
 
   const markReadIfVisible = useCallback(() => {
     if (
-      readOnly ||
       heldUnread.current === readVisit.current.visit ||
       AppState.currentState !== "active" ||
       !navigation.isFocused()
@@ -108,7 +99,7 @@ export function useThreadRead({
       .catch(() => {
         if (readVisibleTarget.current === target) readVisibleTarget.current = null;
       });
-  }, [threadId, navigation, readInOrder, readOnly]);
+  }, [threadId, navigation, readInOrder]);
 
   return {
     threadKey,

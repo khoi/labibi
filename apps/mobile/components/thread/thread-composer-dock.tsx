@@ -22,7 +22,6 @@ import { ReplyDismissButton } from "../reply-dismiss-button";
  * attachments over it.
  */
 export function ThreadComposerDock({
-  hidden,
   columnPadding,
   notice,
   onHeight,
@@ -36,7 +35,6 @@ export function ThreadComposerDock({
   onRemoveAttachment,
   children,
 }: {
-  hidden: boolean;
   columnPadding: ThreadColumnPadding;
   /** Shown above the reply, as part of the dock. */
   notice: ReactNode;
@@ -85,8 +83,8 @@ export function ThreadComposerDock({
   const noticeHeight = useRef(0);
   const controlsHeight = useRef(0);
   const report = () =>
-    onHeight(noticeHeight.current + (hidden ? 0 : controlsHeight.current + composerRestingPadding));
-  useEffect(report, [composerRestingPadding, hidden, onHeight]);
+    onHeight(noticeHeight.current + controlsHeight.current + composerRestingPadding);
+  useEffect(report, [composerRestingPadding, onHeight]);
 
   return (
     // Floats over the messages, which scroll underneath it; only its controls take touches.
@@ -106,10 +104,7 @@ export function ThreadComposerDock({
       >
         {notice}
       </View>
-      <Animated.View
-        pointerEvents="box-none"
-        style={[{ display: hidden ? "none" : "flex", flexShrink: 1 }, composerKeyboardPadding]}
-      >
+      <Animated.View pointerEvents="box-none" style={[{ flexShrink: 1 }, composerKeyboardPadding]}>
         <View
           pointerEvents="box-none"
           style={{ flexShrink: 1 }}

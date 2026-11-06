@@ -8,19 +8,11 @@ const ACTIVE_UNSUBSCRIBED_REFRESH_MS = 10_000;
  */
 const ACTIVE_SUBSCRIBED_REFRESH_MS = 30_000;
 const IDLE_REFRESH_MS = 60_000;
-/** Read-only threads have no SSE, so their snapshot is the live path. */
-const READ_ONLY_ACTIVE_REFRESH_MS = 750;
-const READ_ONLY_IDLE_REFRESH_MS = 5_000;
 
 export function threadRefreshDelayMs(
   runStatus: string | undefined,
-  options?: { liveSubscribed?: boolean; readOnly?: boolean },
+  options?: { liveSubscribed?: boolean },
 ): number {
-  if (options?.readOnly) {
-    return ACTIVE_REFRESH_STATUSES.has(runStatus ?? "")
-      ? READ_ONLY_ACTIVE_REFRESH_MS
-      : READ_ONLY_IDLE_REFRESH_MS;
-  }
   if (!ACTIVE_REFRESH_STATUSES.has(runStatus ?? "")) return IDLE_REFRESH_MS;
   return options?.liveSubscribed ? ACTIVE_SUBSCRIBED_REFRESH_MS : ACTIVE_UNSUBSCRIBED_REFRESH_MS;
 }

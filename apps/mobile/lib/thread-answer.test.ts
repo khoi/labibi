@@ -8,7 +8,6 @@ function setup(refresh: () => Promise<void>, overrides: Partial<ThreadAnswerCont
   const spies = { rpc, refresh: vi.fn(refresh), markRead: vi.fn() };
   const context: ThreadAnswerContext = {
     threadId: "thread-1",
-    readOnly: false,
     isCurrentTarget: () => true,
     ...spies,
     ...overrides,

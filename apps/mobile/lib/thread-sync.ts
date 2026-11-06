@@ -35,7 +35,6 @@ export function useThreadSync({
   scroll,
   threadId,
   messageId,
-  readOnly,
   foreground,
   sessionEpoch,
   activeThreadId,
@@ -49,7 +48,6 @@ export function useThreadSync({
   threadId?: string;
   /** A search hit to open the chat around. */
   messageId?: string;
-  readOnly: boolean;
   foreground: boolean;
   sessionEpoch: number;
   activeThreadId: RefObject<string | undefined>;
@@ -180,7 +178,6 @@ export function useThreadSync({
   const liveSubscribed = useThreadLiveSubscription({
     threadId,
     foreground,
-    readOnly,
     sessionEpoch,
     messageId,
     historyEpoch,
@@ -242,10 +239,7 @@ export function useThreadSync({
       let timer: ReturnType<typeof setTimeout> | undefined;
       let ticking = false;
       const refreshDelay = () =>
-        threadRefreshDelayMs(snap?.run?.status, {
-          liveSubscribed: liveSubscribed.current,
-          readOnly,
-        });
+        threadRefreshDelayMs(snap?.run?.status, { liveSubscribed: liveSubscribed.current });
       function schedule() {
         if (!cancelled) timer = setTimeout(() => void tick(), refreshDelay());
       }
@@ -269,7 +263,7 @@ export function useThreadSync({
         cancelled = true;
         if (timer !== undefined) clearTimeout(timer);
       };
-    }, [threadId, foreground, readOnly, snap?.run?.status]),
+    }, [threadId, foreground, snap?.run?.status]),
   );
 
   useEffect(() => {

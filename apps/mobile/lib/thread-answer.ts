@@ -3,7 +3,6 @@ import type { MobileMessage } from "./api";
 
 export type ThreadAnswerContext = {
   threadId: string | undefined;
-  readOnly: boolean;
   rpc: (proc: "threads/answer", body: RpcInput<"threads/answer">) => Promise<unknown>;
   isCurrentTarget: (threadId: string | undefined) => boolean;
   refresh: () => Promise<unknown>;
@@ -12,14 +11,14 @@ export type ThreadAnswerContext = {
 
 /** Sends an ask answer or dismissal; resolves once the server accepts it. */
 export async function answerThreadMessage(
-  { threadId, readOnly, rpc, isCurrentTarget, refresh, markRead }: ThreadAnswerContext,
+  { threadId, rpc, isCurrentTarget, refresh, markRead }: ThreadAnswerContext,
   message: Pick<MobileMessage, "id" | "runId">,
   answer: string,
   fields?: readonly LoginFieldInput[],
   dismiss?: boolean,
   remember?: false,
 ) {
-  if (readOnly || !threadId || !message.runId) return;
+  if (!threadId || !message.runId) return;
   markRead();
   await rpc("threads/answer", {
     threadId,

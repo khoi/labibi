@@ -20,7 +20,6 @@ import { messageHasInlineControls, quotableMessageSegments } from "../../lib/mes
 import { messageRowLayout } from "../../lib/message-row-layout";
 import { useMobileTokens, useResolvedAppearance } from "../../lib/native";
 import { selectableTextFromMarkdown } from "../../lib/selectable-text";
-import { ThreadReadOnlyContext } from "../../lib/thread-read-only";
 import type { UserBubble } from "../../lib/user-bubble";
 import { PersonAvatar } from "../chat-avatar";
 import { DoodleAvatar } from "../doodle-avatar";
@@ -67,7 +66,6 @@ type MessageRowProps = {
   showBotSenderName: boolean;
   /** Who a sent message's `@Name` can refer to. */
   mentionTargets: readonly UserMentionTarget[];
-  readOnly: boolean;
   canAnswer: boolean;
   canDismiss: boolean;
   highlighted: boolean;
@@ -96,7 +94,6 @@ export const MessageRow = memo(function MessageRow({
   threadId,
   showBotSenderName,
   mentionTargets,
-  readOnly,
   canAnswer,
   canDismiss,
   highlighted,
@@ -152,14 +149,13 @@ export const MessageRow = memo(function MessageRow({
   }>(() => {
     const messageText = selectableMobileMessageText(message);
     const includeQuote =
-      !readOnly &&
       !message.id.startsWith("progress:") &&
       quotableMessageSegments(message.role, message.blocks).length > 0;
-    const includeReact = !readOnly && canReactToThreadMessage(message);
+    const includeReact = canReactToThreadMessage(message);
     const includeSpeak = message.role === "bot" && Boolean(blockText(message));
     const includeSelect = messageText.trim().length > 0;
     // Any sent message can be marked unread; the next open starts New at the first reply from it.
-    const includeUnread = !readOnly && !markedUnread && canMarkMessageUnread(message);
+    const includeUnread = !markedUnread && canMarkMessageUnread(message);
     const reply = () => actions.reply(message);
     const quote = () => actions.quote(message);
     const speakMessage = () => actions.speak(message);
@@ -179,7 +175,7 @@ export const MessageRow = memo(function MessageRow({
       if (codeBlocks[0]) void Clipboard.setStringAsync(codeBlocks[0]).catch(() => undefined);
     };
     const menuActions = [
-      ...(!readOnly ? [{ name: "reply", text: t("Reply"), onPress: reply }] : []),
+      { name: "reply", text: t("Reply"), onPress: reply },
       ...(includeUnread
         ? [{ name: "unread", text: t("Mark as unread"), onPress: markUnread }]
         : []),
@@ -221,7 +217,6 @@ export const MessageRow = memo(function MessageRow({
       },
       reactions: MESSAGE_REACTIONS,
       include: {
-        reply: !readOnly,
         quote: includeQuote,
         react: includeReact,
         speak: includeSpeak,
@@ -237,16 +232,12 @@ export const MessageRow = memo(function MessageRow({
           : [],
         groups: [
           [
-            ...(!readOnly
-              ? [
-                  {
-                    name: "reply",
-                    text: t("Reply"),
-                    icon: "arrow-undo-outline" as const,
-                    onPress: reply,
-                  },
-                ]
-              : []),
+            {
+              name: "reply",
+              text: t("Reply"),
+              icon: "arrow-undo-outline" as const,
+              onPress: reply,
+            },
             ...(includeUnread
               ? [
                   {
@@ -337,7 +328,6 @@ export const MessageRow = memo(function MessageRow({
     message,
     actions,
     markedUnread,
-    readOnly,
     colorScheme,
     t,
     locale,
@@ -440,26 +430,24 @@ export const MessageRow = memo(function MessageRow({
             onLongPress={actionProps.onLongPress}
             onDoubleTap={messageHasInlineControls(message.blocks) ? undefined : likeMessage}
           >
-            <ThreadReadOnlyContext.Provider value={readOnly}>
-              <MessageBubble
-                threadId={threadId}
-                message={message}
-                authorName={author?.name}
-                showBotSenderName={showBotSenderName}
-                mentionTargets={mentionTargets}
-                canAnswer={canAnswer}
-                canDismiss={canDismiss}
-                onAnswer={actions.answer}
-                onOpenComputer={actions.openComputer}
-                onChoiceDismissed={onChoiceDismissed}
-                onPreviewFile={actions.previewFile}
-                onPreviewImage={actions.previewImage}
-                actionProps={actionProps}
-                doubleTapSurface={Boolean(likeMessage)}
-                onHelperToggle={actions.helperToggle}
-                userBubble={userBubble}
-              />
-            </ThreadReadOnlyContext.Provider>
+            <MessageBubble
+              threadId={threadId}
+              message={message}
+              authorName={author?.name}
+              showBotSenderName={showBotSenderName}
+              mentionTargets={mentionTargets}
+              canAnswer={canAnswer}
+              canDismiss={canDismiss}
+              onAnswer={actions.answer}
+              onOpenComputer={actions.openComputer}
+              onChoiceDismissed={onChoiceDismissed}
+              onPreviewFile={actions.previewFile}
+              onPreviewImage={actions.previewImage}
+              actionProps={actionProps}
+              doubleTapSurface={Boolean(likeMessage)}
+              onHelperToggle={actions.helperToggle}
+              userBubble={userBubble}
+            />
           </MessageContextMenu>
           {displayedReactions.size > 0 ? (
             <View

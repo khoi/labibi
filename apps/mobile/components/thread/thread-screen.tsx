@@ -97,17 +97,14 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     () => threadColumnPadding(columnInsets, I18nManager.isRTL),
     [columnInsets.left, columnInsets.right],
   );
-  const {
-    threadId: threadParam,
-    messageId,
-    readOnly: readOnlyParam,
-  } = useLocalSearchParams<{ threadId?: string; messageId?: string; readOnly?: string }>();
-  const readOnly = readOnlyParam === "1";
+  const { threadId: threadParam, messageId } = useLocalSearchParams<{
+    threadId?: string;
+    messageId?: string;
+  }>();
   const threadId = typeof threadParam === "string" && threadParam ? threadParam : undefined;
   // The composer floats over the list, which scrolls underneath; this keeps the newest message
-  // clear of it. A read-only chat has no composer.
+  // clear of it.
   const [dockHeight, setDockHeight] = useState(0);
-  const bottomInset = Math.max(dockHeight, readOnly ? insets.bottom : 0);
   const activeThreadId = useRef(threadId);
   activeThreadId.current = threadId;
   const {
@@ -119,7 +116,7 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     markedUnreadMessageId,
     markUnreadFrom,
     markReadIfVisible,
-  } = useThreadRead({ threadId, focused, readOnly });
+  } = useThreadRead({ threadId, focused });
   const markCaughtUp = () => setReadBoundary({ visit: readVisit.current.visit, seq: null });
   const artifactTarget: MobileArtifactTarget | undefined = threadId ? { threadId } : undefined;
   const history = useThreadSnapshot();
@@ -168,7 +165,6 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
   const draftScope = useMemo(() => composerDraftScope(userId, threadId), [userId, threadId]);
   const attachments = useThreadAttachments({
     threadId,
-    readOnly,
     uploadConfig: me,
     draftScope,
   });
@@ -249,7 +245,7 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     history,
     threadKey,
     anchor: headerClearance.anchor,
-    visibleBottomInset: bottomInset,
+    visibleBottomInset: dockHeight,
     latestRowKey: latestThreadRowKey(
       latestMessage?.id ?? null,
       feedback.unsentSends.map((attempt) => attempt.clientNonce),
@@ -259,7 +255,6 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
 
   useThreadHeader({
     threadId,
-    readOnly,
     chat,
     viewerUserId: userId,
     title,
@@ -268,14 +263,13 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     onCleared: history.clear,
   });
 
-  useThreadFocus({ threadId, readOnly, markReadIfVisible, speakFinishedReplyRef });
+  useThreadFocus({ threadId, markReadIfVisible, speakFinishedReplyRef });
 
   const { isCurrentTarget, refresh, applyMessageJump, showLatest } = useThreadSync({
     history,
     scroll,
     threadId,
     messageId,
-    readOnly,
     foreground,
     sessionEpoch,
     activeThreadId,
@@ -297,7 +291,6 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
 
   const composer = useThreadSend({
     threadId,
-    readOnly,
     history,
     scroll,
     feedback,
@@ -315,7 +308,6 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
   useIncomingShareImport({
     attachments,
     composerRef: composer.composerRef,
-    readOnly,
     threadKey,
     uploadConfig: me,
   });
@@ -360,7 +352,6 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     rowActions,
     threadId,
     inGroup,
-    readOnly,
     mentionTargets,
     doodleStatus,
     columnWidth,
@@ -434,7 +425,7 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
               pinnedListHandlers={paging.pinnedListHandlers}
               threadKey={threadKey}
               headerClearance={headerClearance}
-              bottomInset={bottomInset}
+              bottomInset={dockHeight}
               columnPadding={columnPadding}
               visibleMessages={visibleMessages}
               liveItems={liveItems}
@@ -450,7 +441,6 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
           </NewestPageCards.Provider>
           {/* Shrinks (the suggestion lists scroll) so the input and Send stay above the keyboard. */}
           <ThreadComposerDock
-            hidden={readOnly}
             columnPadding={columnPadding}
             notice={<ThreadFetchErrorNotice error={error} showingSaved={showingSaved} />}
             onHeight={setDockHeight}

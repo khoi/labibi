@@ -58,7 +58,6 @@ function Probe({
 }) {
   attachments = useThreadAttachments({
     threadId: botId,
-    readOnly: false,
     uploadConfig,
     draftScope,
   });
@@ -70,14 +69,12 @@ const uploadConfig = {};
 function ImportProbe({ botId }: { botId: string }) {
   attachments = useThreadAttachments({
     threadId: botId,
-    readOnly: false,
     uploadConfig,
     draftScope: { apiBase: "https://example.test", userId: "user-1", threadKey: botId },
   });
   useIncomingShareImport({
     attachments,
     composerRef: { current: null },
-    readOnly: false,
     threadKey: botId,
     uploadConfig,
   });

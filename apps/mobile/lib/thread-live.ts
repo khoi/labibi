@@ -22,7 +22,6 @@ import { errorText } from "./user-error";
 export function useThreadLiveSubscription({
   threadId,
   foreground,
-  readOnly,
   sessionEpoch,
   messageId,
   historyEpoch,
@@ -41,7 +40,6 @@ export function useThreadLiveSubscription({
 }: {
   threadId?: string;
   foreground: boolean;
-  readOnly: boolean;
   sessionEpoch: number;
   /** A pending search jump, which loads its own page instead of the latest one. */
   messageId?: string;
@@ -102,7 +100,7 @@ export function useThreadLiveSubscription({
                 setError(errorText(err));
                 return null;
               });
-      if (abort.signal.aborted || readOnly) return;
+      if (abort.signal.aborted) return;
       let cursor = liveCursor.current ?? next?.cursor ?? -1;
       liveCursor.current = cursor;
       let retryMs = 250;
@@ -173,7 +171,7 @@ export function useThreadLiveSubscription({
       snapshotRefresh.dispose();
       abort.abort();
     };
-  }, [threadId, foreground, readOnly, markReadIfVisible, onChatChanged, sessionEpoch]);
+  }, [threadId, foreground, markReadIfVisible, onChatChanged, sessionEpoch]);
 
   return liveSubscribed;
 }

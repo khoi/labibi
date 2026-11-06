@@ -16,7 +16,6 @@ import { openInvite, threadHeaderRight } from "../thread-header-right";
  */
 export function useThreadHeader({
   threadId,
-  readOnly,
   chat,
   viewerUserId,
   title,
@@ -25,7 +24,6 @@ export function useThreadHeader({
   onCleared,
 }: {
   threadId?: string;
-  readOnly: boolean;
   /** The chat, or the inbox's copy of it until the chat's snapshot arrives. */
   chat?: MobileChat;
   viewerUserId: string;
@@ -56,8 +54,8 @@ export function useThreadHeader({
 
   // The route draws the title from the screen's first frame; the chat feeds it its own data.
   useLayoutEffect(
-    () => publishChatTitle(route.key, { chat, viewerUserId, status, composing, opens: !readOnly }),
-    [route.key, chat, viewerUserId, status, composing, readOnly],
+    () => publishChatTitle(route.key, { chat, viewerUserId, status, composing }),
+    [route.key, chat, viewerUserId, status, composing],
   );
 
   useLayoutEffect(() => {
@@ -66,11 +64,10 @@ export function useThreadHeader({
       headerTitleAlign: "center",
       ...threadEdgeOptions(),
       ...threadHeaderRight({
-        readOnly,
         t,
         color: tokens.foreground,
         onInvite: canInvite && solo ? openInvite : undefined,
       }),
     });
-  }, [readOnly, canInvite, solo, title, navigation, t, tokens, colorScheme]);
+  }, [canInvite, solo, title, navigation, t, tokens, colorScheme]);
 }

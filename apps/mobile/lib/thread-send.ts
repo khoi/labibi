@@ -34,7 +34,6 @@ import { errorText } from "./user-error";
  */
 export function useThreadSend({
   threadId,
-  readOnly,
   history,
   scroll,
   feedback,
@@ -46,7 +45,6 @@ export function useThreadSend({
   markCaughtUp,
 }: {
   threadId?: string;
-  readOnly: boolean;
   history: ThreadHistory;
   scroll: ThreadListScroll;
   feedback: ReturnType<typeof useThreadFeedback>;
@@ -125,7 +123,7 @@ export function useThreadSend({
   }
 
   async function send() {
-    if (readOnly || importingShare.current) return;
+    if (importingShare.current) return;
     const originThreadKey = threadId;
     if (!originThreadKey || sending || preparingSend.current) return;
     const submitted = composerRef.current?.snapshot();
@@ -188,7 +186,7 @@ export function useThreadSend({
   }
 
   async function deliver(attempt: SendAttempt, force = false) {
-    if (!readOnly) await feedback.send(attempt, force);
+    await feedback.send(attempt, force);
   }
 
   function retry(attempt: SendAttempt) {
@@ -223,7 +221,6 @@ export function useThreadSend({
   useEffect(() => subscribeDelivered((attempt) => afterDeliveredRef.current(attempt)), []);
 
   async function stop() {
-    if (readOnly) return;
     const target = threadId;
     if (!target || sending) return;
     setSending(true);
@@ -257,18 +254,17 @@ export function useThreadSend({
       remember?: false,
     ) =>
       answerThreadMessage(
-        { threadId, readOnly, rpc, isCurrentTarget, refresh, markRead: markCaughtUp },
+        { threadId, rpc, isCurrentTarget, refresh, markRead: markCaughtUp },
         message,
         answer,
         fields,
         dismiss,
         remember,
       ),
-    [threadId, readOnly],
+    [threadId],
   );
 
   async function react(message: MobileMessage, reaction: MessageReaction) {
-    if (readOnly) return false;
     const target = threadId;
     if (!target) return false;
     try {

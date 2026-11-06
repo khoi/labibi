@@ -17,11 +17,4 @@ describe("thread refresh cadence", () => {
     expect(threadRefreshDelayMs("waiting_input", { liveSubscribed: true })).toBe(60_000);
     expect(threadRefreshDelayMs(undefined, { liveSubscribed: true })).toBe(60_000);
   });
-
-  it("keeps read-only threads on the fast snapshot cadence", () => {
-    expect(threadRefreshDelayMs("running", { readOnly: true })).toBe(750);
-    expect(threadRefreshDelayMs("queued", { readOnly: true })).toBe(750);
-    expect(threadRefreshDelayMs("waiting_input", { readOnly: true })).toBe(5_000);
-    expect(threadRefreshDelayMs(undefined, { readOnly: true })).toBe(5_000);
-  });
 });

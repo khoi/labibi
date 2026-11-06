@@ -13,12 +13,10 @@ import { useOpenNotificationThread } from "./use-open-notification-thread";
  */
 export function useThreadFocus({
   threadId,
-  readOnly,
   markReadIfVisible,
   speakFinishedReplyRef,
 }: {
   threadId?: string;
-  readOnly: boolean;
   markReadIfVisible: () => void;
   speakFinishedReplyRef: RefObject<() => void>;
 }) {
@@ -33,11 +31,10 @@ export function useThreadFocus({
   // Covers returning from a pushed screen; the AppState listener covers returning from background.
   useFocusEffect(
     useCallback(() => {
-      if (threadId && !readOnly)
-        void saveLastChatId(threadId, selectedSpaceId()).catch(() => undefined);
+      if (threadId) void saveLastChatId(threadId, selectedSpaceId()).catch(() => undefined);
       markReadIfVisible();
-      if (!readOnly) speakFinishedReplyRef.current();
-    }, [threadId, readOnly, markReadIfVisible]),
+      speakFinishedReplyRef.current();
+    }, [threadId, markReadIfVisible]),
   );
 
   useOpenNotificationThread({

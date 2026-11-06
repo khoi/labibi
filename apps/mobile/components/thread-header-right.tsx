@@ -15,20 +15,17 @@ export function openInvite() {
  * changes shape.
  */
 export function threadHeaderRight({
-  readOnly,
   t,
   color,
   onInvite,
 }: {
-  readOnly: boolean;
   t: (text: string) => string;
   color: string;
   /** Opens the invite sheet; absent when the account cannot invite. */
   onInvite?: () => void;
 }): NativeStackNavigationOptions {
   const label = t("Invite a friend");
-  if (readOnly || !onInvite)
-    return { headerRight: undefined, unstable_headerRightItems: undefined };
+  if (!onInvite) return { headerRight: undefined, unstable_headerRightItems: undefined };
   return {
     ...(iosAtLeast(26)
       ? {

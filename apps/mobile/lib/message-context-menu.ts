@@ -36,7 +36,6 @@ export function buildMessageContextMenu({
   labels: Record<MessageMenuSymbol, string>;
   reactions: readonly string[];
   include: {
-    reply?: boolean;
     quote: boolean;
     react: boolean;
     speak: boolean;
@@ -50,7 +49,7 @@ export function buildMessageContextMenu({
     ...(include.select ? [entry("select", labels.select)] : []),
   ];
   return [
-    ...(include.reply !== false ? [entry("reply", labels.reply)] : []),
+    entry("reply", labels.reply),
     ...(include.unread ? [entry("unread", labels.unread)] : []),
     entry("copy", labels.copy),
     ...(include.react

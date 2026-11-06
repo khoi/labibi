@@ -68,7 +68,6 @@ function messageMenu(role: "bot" | "user", blocks: string[], markedUnread = fals
     bubbleBotId: "bot-1",
     showBotSenderName: false,
     bots: [],
-    readOnly: false,
     canAnswer: false,
     canDismiss: false,
     highlighted: false,

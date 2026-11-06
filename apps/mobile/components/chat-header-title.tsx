@@ -20,12 +20,10 @@ export type ChatTitle = {
   /** Doodle's activity in the chat. */
   status: string | undefined;
   composing: boolean;
-  /** Tapping the title opens the chat's settings, unless the chat is read-only. */
-  opens: boolean;
 };
 
 /** The route params a chat screen opens with. */
-export type ChatTitleParams = { threadId?: string; readOnly?: string };
+export type ChatTitleParams = { threadId?: string };
 
 // The open chat screens' titles, by screen (route key): two screens of the same chat, as during
 // a push, a pop or a cancelled swipe back, each keep their own. A chat publishes its title here
@@ -68,17 +66,16 @@ export function ChatHeaderTitle({
   const published = useSyncExternalStore(subscribe, () => titles.get(routeKey));
   const inboxChat = useInboxChat(params.threadId);
   const chat = published?.chat ?? inboxChat;
-  const opens = published?.opens ?? params.readOnly !== "1";
   const label = chat ? chat.title || t("New chat") : t("Chat");
   const viewerUserId = published?.viewerUserId;
   const solo = chat ? chat.members.every((member) => member.userId === viewerUserId) : true;
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={opens ? t("Chat settings") : label}
-      disabled={!opens || !params.threadId}
+      accessibilityLabel={t("Chat settings")}
+      disabled={!params.threadId}
       onPress={() => {
-        if (opens && params.threadId)
+        if (params.threadId)
           router.push({ pathname: "/chat-settings", params: { threadId: params.threadId } });
       }}
     >

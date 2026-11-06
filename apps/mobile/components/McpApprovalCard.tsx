@@ -6,7 +6,6 @@ import { Alert, StyleSheet, Text, View } from "react-native";
 import { rpc } from "../lib/api";
 import { useI18n } from "../lib/i18n";
 import { native, useMobileTokens } from "../lib/native";
-import { useThreadReadOnly } from "../lib/thread-read-only";
 import { errorText } from "../lib/user-error";
 import { NativeActionButton } from "./native-action-button";
 
@@ -40,7 +39,6 @@ export function McpApprovalCard({
   onAccessibilityAction?: ViewProps["onAccessibilityAction"];
 }) {
   const { t } = useI18n();
-  const readOnly = useThreadReadOnly();
   const tokens = useMobileTokens();
   const [localStatus, setLocalStatus] = useState<"pending" | "connected" | "dismissed">("pending");
   const [pendingAction, setPendingAction] = useState<"approve" | "dismiss" | null>(null);
@@ -54,7 +52,7 @@ export function McpApprovalCard({
   const summary = block.endpoint ?? `stdio (${block.transport})`;
 
   async function submit(action: "approve" | "dismiss") {
-    if (readOnly || !threadId || status !== "pending" || pendingAction !== null) return;
+    if (!threadId || status !== "pending" || pendingAction !== null) return;
     setPendingAction(action);
     try {
       if (action === "approve") {
@@ -106,7 +104,7 @@ export function McpApprovalCard({
             ? t("Connected.")
             : t("Dismissed. Reconnect anytime from MCP settings.")}
         </Text>
-      ) : !readOnly ? (
+      ) : (
         <>
           <Text style={[styles.description, { color: tokens.foreground }]}>
             {block.needsOAuth
@@ -130,7 +128,7 @@ export function McpApprovalCard({
             />
           </View>
         </>
-      ) : null}
+      )}
     </View>
   );
 }

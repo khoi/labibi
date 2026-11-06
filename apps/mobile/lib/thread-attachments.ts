@@ -80,12 +80,10 @@ function formatAttachmentSkip(item: { name: string; reason: string }): string {
 /** The composer's draft attachments, kept per chat, from the picker menu or a file drop. */
 export function useThreadAttachments({
   threadId,
-  readOnly,
   uploadConfig,
   draftScope,
 }: {
   threadId?: string;
-  readOnly: boolean;
   uploadConfig?: { maxUploadSizeBytes?: number; maxAttachmentsPerMessage?: number };
   /** The chat's draft key; unsent attachments stay under it between visits to the chat. */
   draftScope?: ComposerDraftScope;
@@ -219,7 +217,7 @@ export function useThreadAttachments({
       );
     },
     {
-      enabled: !readOnly && Boolean(threadId),
+      enabled: Boolean(threadId),
       maxBytes: attachmentMaxBytes(uploadConfig),
       maxFiles: attachmentMaxCount(uploadConfig),
     },
@@ -243,13 +241,11 @@ export function useThreadAttachments({
 export function useIncomingShareImport({
   attachments,
   composerRef,
-  readOnly,
   threadKey,
   uploadConfig,
 }: {
   attachments: ReturnType<typeof useThreadAttachments>;
   composerRef: RefObject<ThreadComposerHandle | null>;
-  readOnly: boolean;
   threadKey: string | undefined;
   uploadConfig?: { maxUploadSizeBytes?: number; maxAttachmentsPerMessage?: number };
 }) {
@@ -260,7 +256,7 @@ export function useIncomingShareImport({
   const interruptedShare = useRef<{ generation: number } | null>(null);
   const [retryTick, setRetryTick] = useState(0);
   useEffect(() => {
-    if (!threadKey || readOnly || !uploadConfig || importingShare.current) return;
+    if (!threadKey || !uploadConfig || importingShare.current) return;
     const interrupted = interruptedShare.current;
     interruptedShare.current = null;
     const share = takeIncomingShare();
@@ -321,5 +317,5 @@ export function useIncomingShareImport({
     return () => {
       active = false;
     };
-  }, [threadKey, readOnly, uploadConfig, retryTick]);
+  }, [threadKey, uploadConfig, retryTick]);
 }
