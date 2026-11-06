@@ -366,7 +366,10 @@ describe("noVNC frame state report", () => {
   it("treats a Labradoodle embed page that built its viewer as connecting", () => {
     const p = page({ canvas: true });
     p.mutate();
-    expect(p.posted).toEqual([{ labradoodleScreen: "loading" }, { labradoodleScreen: "connecting" }]);
+    expect(p.posted).toEqual([
+      { labradoodleScreen: "loading" },
+      { labradoodleScreen: "connecting" },
+    ]);
   });
 
   it("stays quiet about a page that has not started connecting", () => {

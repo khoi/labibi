@@ -337,7 +337,11 @@ describe("sandbox supervisor input containment", () => {
 
   it("accepts the legacy workspace label without weakening container identity", () => {
     expect(
-      hasComputerIdentity({ "labradoodle.botId": "bot", "labradoodle.workspaceId": "space" }, "bot", "space"),
+      hasComputerIdentity(
+        { "labradoodle.botId": "bot", "labradoodle.workspaceId": "space" },
+        "bot",
+        "space",
+      ),
     ).toBe(true);
     expect(
       hasComputerIdentity(
@@ -1290,7 +1294,11 @@ describe("computer name recovery", () => {
       Config: { Labels: labels, Image: image },
     } as Docker.ContainerInspectInfo;
   }
-  const owned = { "labradoodle.botId": "bot", "labradoodle.spaceId": "space", "labradoodle.managed": "true" };
+  const owned = {
+    "labradoodle.botId": "bot",
+    "labradoodle.spaceId": "space",
+    "labradoodle.managed": "true",
+  };
   function recovery(info: Docker.ContainerInspectInfo) {
     const remove = vi.fn().mockResolvedValue(undefined);
     const cleared = vi.fn();

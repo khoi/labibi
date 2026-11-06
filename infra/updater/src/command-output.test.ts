@@ -41,7 +41,10 @@ async function plan(route = "/plan", currentTag = "v1.0.0") {
   directories.push(dir);
   await writeFile(path.join(dir, ".env"), `LABRADOODLE_IMAGE_TAG=${currentTag}\n`);
   const app = createUpdaterApp({
-    ...resolveUpdaterConfig({ LABRADOODLE_DEPLOY_DIR: "/fixture", LABRADOODLE_UPDATER_TOKEN: token }),
+    ...resolveUpdaterConfig({
+      LABRADOODLE_DEPLOY_DIR: "/fixture",
+      LABRADOODLE_UPDATER_TOKEN: token,
+    }),
     deployDir: dir,
     envFile: path.join(dir, ".env"),
   });

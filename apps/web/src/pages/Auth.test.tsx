@@ -194,7 +194,9 @@ it("selects a non-redirecting SSO request on desktop", async () => {
 
 it("lets the desktop app change its server from sign in", async () => {
   const change = vi.fn(async () => undefined);
-  window.labradoodleDesktop = { server: { change } } as unknown as NonNullable<Window["labradoodleDesktop"]>;
+  window.labradoodleDesktop = { server: { change } } as unknown as NonNullable<
+    Window["labradoodleDesktop"]
+  >;
   vi.mocked(fetchAuthCapabilities).mockResolvedValue(capabilities);
   await render();
   await act(async () =>

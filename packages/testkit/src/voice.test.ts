@@ -121,7 +121,11 @@ describeVoice("voice credentials and speech HTTP", () => {
   });
 
   it("disconnects the actor credential and leaves another user's key in place", async () => {
-    const cookie = await signup(app, `voice-disconnect-${stamp}@labradoodle.test`, "Voice Disconnect");
+    const cookie = await signup(
+      app,
+      `voice-disconnect-${stamp}@labradoodle.test`,
+      "Voice Disconnect",
+    );
     const other = await signup(
       app,
       `voice-disconnect-other-${stamp}@labradoodle.test`,

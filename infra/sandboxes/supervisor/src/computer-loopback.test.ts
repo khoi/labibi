@@ -103,7 +103,11 @@ describe("computer loopback provision lifecycle", () => {
     const container = {
       inspect: vi.fn().mockResolvedValue({
         Config: {
-          Labels: { "labradoodle.managed": "true", "labradoodle.botId": "other", "labradoodle.spaceId": "other" },
+          Labels: {
+            "labradoodle.managed": "true",
+            "labradoodle.botId": "other",
+            "labradoodle.spaceId": "other",
+          },
         },
       }),
       stop: vi.fn(),
@@ -137,7 +141,11 @@ describe("computer loopback provision lifecycle", () => {
     const container = {
       inspect: vi.fn(async () => ({
         Config: {
-          Labels: { "labradoodle.managed": "true", "labradoodle.botId": "bot", "labradoodle.spaceId": "space" },
+          Labels: {
+            "labradoodle.managed": "true",
+            "labradoodle.botId": "bot",
+            "labradoodle.spaceId": "space",
+          },
         },
         State: { Running: running },
       })),
@@ -177,7 +185,11 @@ describe("computer loopback provision lifecycle", () => {
     const container = {
       inspect: vi.fn(async () => ({
         Config: {
-          Labels: { "labradoodle.managed": "true", "labradoodle.botId": "bot", "labradoodle.spaceId": "space" },
+          Labels: {
+            "labradoodle.managed": "true",
+            "labradoodle.botId": "bot",
+            "labradoodle.spaceId": "space",
+          },
         },
         State: { Running: true },
       })),
@@ -205,7 +217,11 @@ describe("computer loopback provision lifecycle", () => {
     const container = {
       inspect: vi.fn(async () => ({
         Config: {
-          Labels: { "labradoodle.managed": "true", "labradoodle.botId": "bot", "labradoodle.spaceId": "space" },
+          Labels: {
+            "labradoodle.managed": "true",
+            "labradoodle.botId": "bot",
+            "labradoodle.spaceId": "space",
+          },
         },
         State: { Running: true },
       })),
@@ -251,7 +267,11 @@ describe("computer loopback provision lifecycle", () => {
       Image: "test-image-id",
       Config: {
         User: hostComputerUser(),
-        Labels: { "labradoodle.managed": "true", "labradoodle.botId": "bot", "labradoodle.spaceId": "space" },
+        Labels: {
+          "labradoodle.managed": "true",
+          "labradoodle.botId": "bot",
+          "labradoodle.spaceId": "space",
+        },
       },
       HostConfig: {
         NetworkMode: computerNetworkNameFor("bot"),
@@ -445,7 +465,11 @@ describe("provisioning network rollback", () => {
       inspect: vi.fn().mockResolvedValue({
         Image: "old-image",
         Config: {
-          Labels: { "labradoodle.managed": "true", "labradoodle.botId": "bot", "labradoodle.spaceId": "space" },
+          Labels: {
+            "labradoodle.managed": "true",
+            "labradoodle.botId": "bot",
+            "labradoodle.spaceId": "space",
+          },
         },
         HostConfig: { PortBindings: {} },
         State: { Running: true },
@@ -540,7 +564,11 @@ describe("restricted egress rekeying", () => {
       Image: "test-image-id",
       Config: {
         User: hostComputerUser(),
-        Labels: { "labradoodle.managed": "true", "labradoodle.botId": "bot", "labradoodle.spaceId": "space" },
+        Labels: {
+          "labradoodle.managed": "true",
+          "labradoodle.botId": "bot",
+          "labradoodle.spaceId": "space",
+        },
       },
       HostConfig: { NetworkMode: botNet, PortBindings: {} },
       State: { Running: false },
@@ -838,7 +866,9 @@ describe("space computer limit enforcement", () => {
         if (labels.some((l: string) => l.startsWith("labradoodle.botId="))) {
           return [];
         }
-        return [{ Id: "c1", Labels: { "labradoodle.managed": "true", "labradoodle.spaceId": "space-1" } }];
+        return [
+          { Id: "c1", Labels: { "labradoodle.managed": "true", "labradoodle.spaceId": "space-1" } },
+        ];
       },
     );
 
@@ -894,7 +924,10 @@ describe("space computer limit enforcement", () => {
           ];
         }
         return [
-          { Id: existing.id, Labels: { "labradoodle.managed": "true", "labradoodle.spaceId": "space-1" } },
+          {
+            Id: existing.id,
+            Labels: { "labradoodle.managed": "true", "labradoodle.spaceId": "space-1" },
+          },
         ];
       },
     );
@@ -1133,7 +1166,11 @@ describe("screen release status", () => {
     return {
       inspect: vi.fn(async () => ({
         Config: {
-          Labels: { "labradoodle.managed": "true", "labradoodle.botId": "bot", "labradoodle.spaceId": "space" },
+          Labels: {
+            "labradoodle.managed": "true",
+            "labradoodle.botId": "bot",
+            "labradoodle.spaceId": "space",
+          },
         },
         HostConfig: { NetworkMode: computerNetworkNameFor("bot") },
         State: { Running: true },
@@ -1171,7 +1208,11 @@ describe("screen release status", () => {
     const container = {
       inspect: vi.fn().mockResolvedValue({
         Config: {
-          Labels: { "labradoodle.managed": "true", "labradoodle.botId": "other", "labradoodle.spaceId": "other" },
+          Labels: {
+            "labradoodle.managed": "true",
+            "labradoodle.botId": "other",
+            "labradoodle.spaceId": "other",
+          },
         },
       }),
       exec: vi.fn(),
@@ -1413,7 +1454,11 @@ describe("computer deletion", () => {
     const container = {
       inspect: vi.fn(async () => ({
         Config: {
-          Labels: { "labradoodle.managed": "true", "labradoodle.botId": botId, "labradoodle.spaceId": "space" },
+          Labels: {
+            "labradoodle.managed": "true",
+            "labradoodle.botId": botId,
+            "labradoodle.spaceId": "space",
+          },
         },
         HostConfig: { NetworkMode: computerNetworkNameFor("bot") },
         State: { Running: true },
@@ -1432,8 +1477,9 @@ describe("computer deletion", () => {
       inspect: vi.fn().mockRejectedValue(dockerError(404)),
     });
     const resets = () =>
-      commands.filter((command) => command.includes("for marker in /tmp/labradoodle/browser-profile-*"))
-        .length;
+      commands.filter((command) =>
+        command.includes("for marker in /tmp/labradoodle/browser-profile-*"),
+      ).length;
     return { container, resets };
   }
 
@@ -1505,7 +1551,11 @@ describe("screen registry across run boundaries", () => {
     const container = {
       inspect: vi.fn(async () => ({
         Config: {
-          Labels: { "labradoodle.managed": "true", "labradoodle.botId": "bot", "labradoodle.spaceId": "space" },
+          Labels: {
+            "labradoodle.managed": "true",
+            "labradoodle.botId": "bot",
+            "labradoodle.spaceId": "space",
+          },
         },
         State: { Running: running, StartedAt: boot },
         HostConfig: { NetworkMode: computerNetworkNameFor("bot") },
@@ -1553,11 +1603,15 @@ describe("screen registry across run boundaries", () => {
     expect(registry.get("failed-first-setup")?.get("writer")).toMatchObject({ index: 0 });
     expect(boots.get("failed-first-setup")).toBe("boot-2");
     expect(
-      commands.filter((command) => command.includes("for marker in /tmp/labradoodle/browser-profile-*")),
+      commands.filter((command) =>
+        command.includes("for marker in /tmp/labradoodle/browser-profile-*"),
+      ),
     ).toHaveLength(2);
     expect((await view()).status).toBe(200);
     expect(
-      commands.filter((command) => command.includes("for marker in /tmp/labradoodle/browser-profile-*")),
+      commands.filter((command) =>
+        command.includes("for marker in /tmp/labradoodle/browser-profile-*"),
+      ),
     ).toHaveLength(2);
   });
 
@@ -1579,7 +1633,11 @@ describe("screen registry across run boundaries", () => {
       const container = {
         inspect: vi.fn(async () => ({
           Config: {
-            Labels: { "labradoodle.managed": "true", "labradoodle.botId": "bot", "labradoodle.spaceId": "space" },
+            Labels: {
+              "labradoodle.managed": "true",
+              "labradoodle.botId": "bot",
+              "labradoodle.spaceId": "space",
+            },
           },
           HostConfig: { NetworkMode: computerNetworkNameFor("bot") },
           State: { Running: true, StartedAt: `boot-${boot}` },
@@ -1666,7 +1724,11 @@ describe("screen registry across run boundaries", () => {
       Image: "old-image",
       Config: {
         User: hostComputerUser(),
-        Labels: { "labradoodle.managed": "true", "labradoodle.botId": "bot", "labradoodle.spaceId": "space" },
+        Labels: {
+          "labradoodle.managed": "true",
+          "labradoodle.botId": "bot",
+          "labradoodle.spaceId": "space",
+        },
       },
       HostConfig: { NetworkMode: computerNetworkNameFor("bot") },
       State: { Running: true, StartedAt: "boot-1" },
@@ -1735,8 +1797,9 @@ describe("screen registry across run boundaries", () => {
     ).length;
     expect((await view()).status).toBe(200);
     expect(
-      commands.filter((command) => command.includes("for marker in /tmp/labradoodle/browser-profile-*"))
-        .length,
+      commands.filter((command) =>
+        command.includes("for marker in /tmp/labradoodle/browser-profile-*"),
+      ).length,
     ).toBe(resets + 1);
   });
 
@@ -1852,7 +1915,11 @@ describe("screen registry across run boundaries", () => {
     const container = {
       inspect: vi.fn().mockResolvedValue({
         Config: {
-          Labels: { "labradoodle.managed": "true", "labradoodle.botId": "bot", "labradoodle.spaceId": "space" },
+          Labels: {
+            "labradoodle.managed": "true",
+            "labradoodle.botId": "bot",
+            "labradoodle.spaceId": "space",
+          },
         },
         HostConfig: { NetworkMode: computerNetworkNameFor("bot") },
         State: { Running: true },
@@ -1880,8 +1947,9 @@ describe("screen registry across run boundaries", () => {
         body: JSON.stringify({ interactive: false, revokeControl: false }),
       });
     const resets = () =>
-      commands.filter((command) => command.includes("for marker in /tmp/labradoodle/browser-profile-*"))
-        .length;
+      commands.filter((command) =>
+        command.includes("for marker in /tmp/labradoodle/browser-profile-*"),
+      ).length;
 
     expect((await view()).status).toBe(200);
     expect(resets()).toBe(1);
@@ -1901,7 +1969,11 @@ describe("screen registry across run boundaries", () => {
     const container = {
       inspect: vi.fn().mockResolvedValue({
         Config: {
-          Labels: { "labradoodle.managed": "true", "labradoodle.botId": "bot", "labradoodle.spaceId": "space" },
+          Labels: {
+            "labradoodle.managed": "true",
+            "labradoodle.botId": "bot",
+            "labradoodle.spaceId": "space",
+          },
         },
         HostConfig: { NetworkMode: computerNetworkNameFor("bot") },
         State: { Running: true },
@@ -1998,7 +2070,11 @@ describe("screen registry across run boundaries", () => {
     const container = {
       inspect: vi.fn().mockResolvedValue({
         Config: {
-          Labels: { "labradoodle.managed": "true", "labradoodle.botId": "bot", "labradoodle.spaceId": "space" },
+          Labels: {
+            "labradoodle.managed": "true",
+            "labradoodle.botId": "bot",
+            "labradoodle.spaceId": "space",
+          },
         },
         HostConfig: { NetworkMode: computerNetworkNameFor("bot") },
         State: { Running: true },
@@ -2085,7 +2161,11 @@ describe("computer network reclaim", () => {
       inspect: vi.fn(async () => ({
         Id: "computer-full-id",
         Config: {
-          Labels: { "labradoodle.managed": "true", "labradoodle.botId": "bot", "labradoodle.spaceId": "space" },
+          Labels: {
+            "labradoodle.managed": "true",
+            "labradoodle.botId": "bot",
+            "labradoodle.spaceId": "space",
+          },
         },
         State: { Running: running },
         // Docker keeps a stopped container's endpoint on its network.
@@ -2428,7 +2508,11 @@ describe("computer network reclaim", () => {
         Image: "image",
         Config: {
           User: hostComputerUser(),
-          Labels: { "labradoodle.managed": "true", "labradoodle.botId": "bot", "labradoodle.spaceId": "space" },
+          Labels: {
+            "labradoodle.managed": "true",
+            "labradoodle.botId": "bot",
+            "labradoodle.spaceId": "space",
+          },
         },
         HostConfig: { NetworkMode: botNet, PortBindings: {} },
         State: { Running: false },
@@ -2490,7 +2574,10 @@ describe("computer network reclaim", () => {
           expect.objectContaining({
             Name: botNet,
             Labels: {
-              "labradoodle.computerOwner": computerNetworkOwnerFor(process.env.DATA_DIR!, undefined),
+              "labradoodle.computerOwner": computerNetworkOwnerFor(
+                process.env.DATA_DIR!,
+                undefined,
+              ),
               "labradoodle.botId": "bot",
             },
             ...(egress === "restricted"
@@ -2559,7 +2646,11 @@ describe("computer network reclaim", () => {
           Image: "image",
           Config: {
             User: hostComputerUser(),
-            Labels: { "labradoodle.managed": "true", "labradoodle.botId": "bot", "labradoodle.spaceId": "space" },
+            Labels: {
+              "labradoodle.managed": "true",
+              "labradoodle.botId": "bot",
+              "labradoodle.spaceId": "space",
+            },
           },
           HostConfig: { NetworkMode: botNet, PortBindings: {} },
           State: { Running: false },

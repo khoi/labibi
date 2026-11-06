@@ -57,10 +57,7 @@ export function welcomeEmail(
       </Text>
       <Text>
         {say("Want to run it on your own servers?")}{" "}
-        <Link
-          href="https://github.com/khoi/labibi/blob/main/docs/self-host.md"
-          style={linkStyle}
-        >
+        <Link href="https://github.com/khoi/labibi/blob/main/docs/self-host.md" style={linkStyle}>
           {say("Self-host Labradoodle")}
         </Link>
         .

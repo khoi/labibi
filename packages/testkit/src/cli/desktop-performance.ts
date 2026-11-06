@@ -469,8 +469,9 @@ async function measureInteractions(app: ElectronApplication, page: Page) {
     const target = document.querySelector<HTMLInputElement>('input[placeholder^="Message "]');
     if (!target) throw new Error("Composer is missing");
     const samples: number[] = [];
-    (window as typeof window & { __labradoodleKeyPaintSamples?: number[] }).__labradoodleKeyPaintSamples =
-      samples;
+    (
+      window as typeof window & { __labradoodleKeyPaintSamples?: number[] }
+    ).__labradoodleKeyPaintSamples = samples;
     target.addEventListener("keydown", () => {
       const started = performance.now();
       requestAnimationFrame(() => samples.push(performance.now() - started));
@@ -479,14 +480,14 @@ async function measureInteractions(app: ElectronApplication, page: Page) {
   await page.keyboard.type("a".repeat(characterCount), { delay: 16 });
   await page.waitForFunction(
     (count) =>
-      ((window as typeof window & { __labradoodleKeyPaintSamples?: number[] }).__labradoodleKeyPaintSamples
-        ?.length ?? 0) >= count,
+      ((window as typeof window & { __labradoodleKeyPaintSamples?: number[] })
+        .__labradoodleKeyPaintSamples?.length ?? 0) >= count,
     characterCount,
   );
   const keyPaintMs = await page.evaluate(
     () =>
-      (window as typeof window & { __labradoodleKeyPaintSamples?: number[] }).__labradoodleKeyPaintSamples ??
-      [],
+      (window as typeof window & { __labradoodleKeyPaintSamples?: number[] })
+        .__labradoodleKeyPaintSamples ?? [],
   );
   const typingAfter = await cdpMetrics(session);
 

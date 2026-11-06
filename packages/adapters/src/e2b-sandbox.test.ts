@@ -310,9 +310,12 @@ describe("E2B computer backend", () => {
   });
 
   it("falls back to the stock desktop template when this account has not built it", async () => {
-    const missing = Object.assign(new SandboxError("404: template 'labradoodle-computer' not found"), {
-      statusCode: 404,
-    });
+    const missing = Object.assign(
+      new SandboxError("404: template 'labradoodle-computer' not found"),
+      {
+        statusCode: 404,
+      },
+    );
     const sdk: E2BSandboxSdk = {
       create: vi.fn().mockRejectedValueOnce(missing).mockResolvedValue({ sandboxId: "stock" }),
       connect: vi.fn(),

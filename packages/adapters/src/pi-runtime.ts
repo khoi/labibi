@@ -330,7 +330,8 @@ export class PiAgentRuntime implements AgentRuntime {
           restored
             ? (restored.historyMessageIds ??
                 history.flatMap((message) => {
-                  const id = (message as Message & { labradoodleMessageId?: string }).labradoodleMessageId;
+                  const id = (message as Message & { labradoodleMessageId?: string })
+                    .labradoodleMessageId;
                   return id ? [id] : [];
                 }))
             : [

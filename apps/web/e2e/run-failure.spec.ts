@@ -70,7 +70,12 @@ test("a failed run is visible once without returning after reload", async ({ pag
 
 test("a covered run error is not remembered until it is presented", async ({ page }, testInfo) => {
   const stamp = Date.now();
-  await signup(page, `covered-run-failure-${stamp}@labradoodle.test`, "password12", "Covered Failure");
+  await signup(
+    page,
+    `covered-run-failure-${stamp}@labradoodle.test`,
+    "password12",
+    "Covered Failure",
+  );
   await completeOnboarding(page);
   await page.setViewportSize({ width: 390, height: 844 });
 

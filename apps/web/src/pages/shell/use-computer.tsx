@@ -159,7 +159,10 @@ export function useComputerState({
       if (!message) return;
       if (screenFrameStarted(message)) screenFrameReported.current = true;
       if (message.labradoodleScreen === "connected") screenConnected = true;
-      else if (message.labradoodleScreen === "failed" || message.labradoodleScreen === "disconnected")
+      else if (
+        message.labradoodleScreen === "failed" ||
+        message.labradoodleScreen === "disconnected"
+      )
         screenConnected = false;
       const wuying = Boolean(screenUrl?.startsWith("wuying:"));
       if (wuying && message.labradoodleScreen === "connected") {
@@ -177,7 +180,8 @@ export function useComputerState({
         screenFrame.focus();
         screenFrame.contentWindow?.postMessage({ labradoodleScreenFocus: true }, "*");
       }
-      const ended = message.labradoodleScreen === "failed" || message.labradoodleScreen === "disconnected";
+      const ended =
+        message.labradoodleScreen === "failed" || message.labradoodleScreen === "disconnected";
       if (wuying && ended) {
         // A Wuying login code works once, so a dropped session, such as one another viewer took
         // over, comes back only through a fresh read; remounting would replay the spent code.

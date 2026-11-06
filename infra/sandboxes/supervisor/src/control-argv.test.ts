@@ -166,9 +166,21 @@ describe("controller argv restrictions", () => {
     ["env", "DISPLAY=:8", "labradoodle-focus-or-launch", "xterm"],
     ["env", `DISPLAY=${display}`, "LD_PRELOAD=/tmp/unsafe", "xdg-open", "https://example.com"],
     ["env", `DISPLAY=${display}`, "LABRADOODLE_BROWSER_PROFILE=/tmp/unsafe", "labradoodle-browser"],
-    ["env", `DISPLAY=${display}`, `LABRADOODLE_BROWSER_PROFILE=${profile}/../other`, "labradoodle-browser"],
+    [
+      "env",
+      `DISPLAY=${display}`,
+      `LABRADOODLE_BROWSER_PROFILE=${profile}/../other`,
+      "labradoodle-browser",
+    ],
     ["env", `DISPLAY=${display}`, `LABRADOODLE_BROWSER_PROFILE=${profile}`, "sh", "-c", "true"],
-    ["env", `DISPLAY=${display}`, `LABRADOODLE_BROWSER_PROFILE=${profile}`, "xdotool", "key", "Return"],
+    [
+      "env",
+      `DISPLAY=${display}`,
+      `LABRADOODLE_BROWSER_PROFILE=${profile}`,
+      "xdotool",
+      "key",
+      "Return",
+    ],
     [
       "env",
       `DISPLAY=${display}`,

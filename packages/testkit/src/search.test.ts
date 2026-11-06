@@ -147,7 +147,11 @@ describeSearch("workspace search", () => {
     }>(app, ownerCookie, "bootstrap", {});
     await sendAndWait(app, ownerCookie, ownerBotChat!.id, { text: "owner-only-token-xyz" });
 
-    const intruderCookie = await signup(app, `search-intruder-${stamp}@labradoodle.test`, "Intruder");
+    const intruderCookie = await signup(
+      app,
+      `search-intruder-${stamp}@labradoodle.test`,
+      "Intruder",
+    );
     const hits = await rpc<{ hits: unknown[] }>(app, intruderCookie, "search/query", {
       q: "owner-only-token-xyz",
     });

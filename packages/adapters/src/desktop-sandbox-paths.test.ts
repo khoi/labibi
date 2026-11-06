@@ -10,7 +10,11 @@ describe("desktop sandbox path rules", () => {
       isAllowedDesktopPath("c:\\users\\owner\\labradoodle\\BOT\\notes.txt", roots, path.win32),
     ).toBe(true);
     expect(
-      isAllowedDesktopPath("C:\\Users\\Owner\\LABRADOODLE\\bot-other\\notes.txt", roots, path.win32),
+      isAllowedDesktopPath(
+        "C:\\Users\\Owner\\LABRADOODLE\\bot-other\\notes.txt",
+        roots,
+        path.win32,
+      ),
     ).toBe(false);
     expect(isAllowedDesktopPath("D:\\notes.txt", roots, path.win32)).toBe(false);
   });
@@ -22,7 +26,11 @@ describe("desktop sandbox path rules", () => {
       isAllowedDesktopPath("\\\\SERVER\\share\\labradoodle\\BOT\\notes.txt", roots, path.win32),
     ).toBe(true);
     expect(
-      isAllowedDesktopPath("\\\\server\\share-other\\labradoodle\\bot\\notes.txt", roots, path.win32),
+      isAllowedDesktopPath(
+        "\\\\server\\share-other\\labradoodle\\bot\\notes.txt",
+        roots,
+        path.win32,
+      ),
     ).toBe(false);
   });
 

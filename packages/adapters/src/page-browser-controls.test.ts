@@ -33,7 +33,8 @@ function installSecrets(html: string, url = "https://portal.example.test/") {
   (win.Element.prototype as unknown as { getBoundingClientRect: unknown }).getBoundingClientRect =
     () => ({ width: 10, height: 10, top: 0, left: 0, right: 10, bottom: 10, x: 0, y: 0 });
   vm.runInContext(match[1], dom.getInternalVMContext());
-  const secrets = (win as unknown as { __labradoodlePageBrowser: Secrets }).__labradoodlePageBrowser;
+  const secrets = (win as unknown as { __labradoodlePageBrowser: Secrets })
+    .__labradoodlePageBrowser;
   const field = (label: string) =>
     win.document.querySelector(`[aria-label="${label}"]`) as HTMLInputElement;
   return { win, secrets, field };

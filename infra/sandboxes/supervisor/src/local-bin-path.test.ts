@@ -109,7 +109,8 @@ describe("agent shell PATH after Debian login startup", () => {
 
   it("installs the snippet where Debian login shells source it", () => {
     const dockerfile = readFileSync(path.join(computerRoot, "Dockerfile"), "utf8");
-    const copy = "COPY --chmod=644 labradoodle-local-bin.sh /etc/profile.d/labradoodle-local-bin.sh";
+    const copy =
+      "COPY --chmod=644 labradoodle-local-bin.sh /etc/profile.d/labradoodle-local-bin.sh";
     const copyAt = dockerfile.indexOf(copy);
     const userAt = dockerfile.indexOf("USER 1000:1000");
     expect(copyAt).toBeGreaterThan(-1);

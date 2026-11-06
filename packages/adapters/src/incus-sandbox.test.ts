@@ -125,7 +125,8 @@ class FakeIncus implements IncusClient {
     const name = parts[1];
     if (method === "GET" && !name) {
       const [, botId] =
-        /^config\.user\.labradoodle-bot-id eq (\S+)$/.exec(url.searchParams.get("filter") ?? "") ?? [];
+        /^config\.user\.labradoodle-bot-id eq (\S+)$/.exec(url.searchParams.get("filter") ?? "") ??
+        [];
       return {
         metadata: [...this.instances]
           .filter(([, instance]) => instance.config["user.labradoodle-bot-id"] === botId)
@@ -447,7 +448,11 @@ describe("IncusSandboxProvider", () => {
     });
     await providerFor(fake).provision({ botId: "bot-a", homePath: "/unused" }, context);
     expect(probes).toBe(2);
-    expect(fake.execs[0]?.body).toMatchObject({ user: 1000, group: 1000, cwd: "/home/labradoodle" });
+    expect(fake.execs[0]?.body).toMatchObject({
+      user: 1000,
+      group: 1000,
+      cwd: "/home/labradoodle",
+    });
   });
 
   it("reconnects to a running instance of the same bot without creating one", async () => {

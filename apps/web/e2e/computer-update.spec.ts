@@ -6,7 +6,12 @@ test("computer maintenance shows durable background progress and failure recover
   page,
 }, testInfo) => {
   await page.addInitScript(() => localStorage.setItem("labradoodle.uiAppearance", "dark"));
-  await signup(page, `computer-update-${Date.now()}@labradoodle.test`, "password12", "Computer Update");
+  await signup(
+    page,
+    `computer-update-${Date.now()}@labradoodle.test`,
+    "password12",
+    "Computer Update",
+  );
   await completeOnboarding(page);
   let updates: ComputerUpdate[] = [];
   const updating: ComputerUpdate = {

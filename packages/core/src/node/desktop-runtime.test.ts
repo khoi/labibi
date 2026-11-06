@@ -128,7 +128,9 @@ describe("shared Linux desktop lifecycle", () => {
       const environment = { ...env, bindHost };
       const host = bindHost ?? "127.0.0.1";
       const command = terminalCommand("control", "terminal", "/work", environment);
-      expect(command).toContain(`--token-source=/tmp/labradoodle/desktop-targets ${host}:6100 8>&-`);
+      expect(command).toContain(
+        `--token-source=/tmp/labradoodle/desktop-targets ${host}:6100 8>&-`,
+      );
       const pattern = command.match(/if ! pgrep -f '([^']+)'/)?.[1];
       expect(pattern).toBeDefined();
       const process = (address: string, source = "desktop-targets") =>

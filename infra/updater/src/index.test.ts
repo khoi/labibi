@@ -30,13 +30,18 @@ afterEach(async () => {
   );
 });
 
-async function deployment(env = "LABRADOODLE_IMAGE_TAG=v1.0.0\nLABRADOODLE_IMAGE_TAG_PREVIOUS=v0.9.0\n") {
+async function deployment(
+  env = "LABRADOODLE_IMAGE_TAG=v1.0.0\nLABRADOODLE_IMAGE_TAG_PREVIOUS=v0.9.0\n",
+) {
   const deployDir = await mkdtemp(path.join(os.tmpdir(), "labradoodle-updater-test-"));
   temporaryDirectories.push(deployDir);
   await writeFile(path.join(deployDir, ".env"), env);
   return {
     deployDir,
-    config: resolveUpdaterConfig({ LABRADOODLE_DEPLOY_DIR: deployDir, LABRADOODLE_UPDATER_TOKEN: token }),
+    config: resolveUpdaterConfig({
+      LABRADOODLE_DEPLOY_DIR: deployDir,
+      LABRADOODLE_UPDATER_TOKEN: token,
+    }),
   };
 }
 

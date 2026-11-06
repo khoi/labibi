@@ -151,7 +151,11 @@ describe("AWS KMS key provider", () => {
     kms.state.contexts.length = 0;
     await aws().wrap(randomBytes(32), { spaceId: "space-a", version: 3 });
     expect(kms.state.contexts).toEqual([
-      { "labradoodle:purpose": "space-key/v1", "labradoodle:space": "space-a", "labradoodle:version": "3" },
+      {
+        "labradoodle:purpose": "space-key/v1",
+        "labradoodle:space": "space-a",
+        "labradoodle:version": "3",
+      },
     ]);
   });
 
@@ -191,7 +195,9 @@ describe("AWS KMS key provider", () => {
 describe("wrapped environment values under AWS KMS", () => {
   it("binds the variable name into the KMS encryption context", async () => {
     const env = { BETTER_AUTH_SECRET: await wrapEnvValue(aws(), "BETTER_AUTH_SECRET", "fake") };
-    expect(kms.state.contexts.at(-1)).toMatchObject({ "labradoodle:space": "env:BETTER_AUTH_SECRET" });
+    expect(kms.state.contexts.at(-1)).toMatchObject({
+      "labradoodle:space": "env:BETTER_AUTH_SECRET",
+    });
     await unwrapEnv(env, aws());
     expect(env.BETTER_AUTH_SECRET).toBe("fake");
   });

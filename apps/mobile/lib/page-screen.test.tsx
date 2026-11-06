@@ -184,7 +184,10 @@ it("does not let a page that reloads right after a tap act on that tap", async (
   await act(async () => root.render(createElement(PageScreen)));
   const copy = () =>
     act(async () => {
-      host.message?.(JSON.stringify({ type: "labradoodle-page:copy", id: "a", text: "x" }), () => {});
+      host.message?.(
+        JSON.stringify({ type: "labradoodle-page:copy", id: "a", text: "x" }),
+        () => {},
+      );
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
   host.touch.onTouchStart?.(at(10, 10));

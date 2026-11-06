@@ -118,7 +118,10 @@ describe("mobile session storage", () => {
     await saveSessionToken("secret-token");
     await clearSessionToken();
 
-    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("labradoodle.session_token", "secret-token");
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
+      "labradoodle.session_token",
+      "secret-token",
+    );
     expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith("labradoodle.session_token");
   });
 

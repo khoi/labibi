@@ -96,7 +96,8 @@ export function pageCopyRequest(data: unknown): { id: string; text: string } | n
 export function pageLinkRequest(data: unknown): string | null {
   if (!data || typeof data !== "object") return null;
   const { type, url } = data as { type?: unknown; url?: unknown };
-  if (type !== "labradoodle-page:open-link" || typeof url !== "string" || url.length > 4096) return null;
+  if (type !== "labradoodle-page:open-link" || typeof url !== "string" || url.length > 4096)
+    return null;
   try {
     const parsed = new URL(url);
     return ["http:", "https:", "mailto:"].includes(parsed.protocol) ? parsed.href : null;

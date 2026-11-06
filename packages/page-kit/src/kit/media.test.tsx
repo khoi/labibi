@@ -178,7 +178,9 @@ describe("cards and people", () => {
       "Northwind, rated 4.6 out of 5 from 1,214 ratings",
     );
     click(q("a"));
-    expect(posted).toEqual([{ type: "labradoodle-page:open-link", url: "https://example.com/shirt" }]);
+    expect(posted).toEqual([
+      { type: "labradoodle-page:open-link", url: "https://example.com/shirt" },
+    ]);
     // The pill says only "View" so it never wraps; the link's name still says what it opens.
     expect(q("a")!.textContent).toBe("View");
     expect(q("a")!.getAttribute("aria-label")).toBe("View Linen shirt");

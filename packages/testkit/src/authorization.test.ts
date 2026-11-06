@@ -591,7 +591,11 @@ describeWithDatabase("API authorization and resource isolation", () => {
 
   it("keeps approval rules private to each user in a shared Space", async () => {
     const owner = await signup(app, `approval-owner-${stamp}@labradoodle.test`, "Approval Owner");
-    const member = await signup(app, `approval-member-${stamp}@labradoodle.test`, "Approval Member");
+    const member = await signup(
+      app,
+      `approval-member-${stamp}@labradoodle.test`,
+      "Approval Member",
+    );
     const ownerActor = await rpc<Actor>(app, owner, "me");
     const memberActor = await rpc<Actor>(app, member, "me");
 
@@ -706,7 +710,11 @@ describeWithDatabase("API authorization and resource isolation", () => {
   });
 
   it("validates custom thinking against the saved connection capability", async () => {
-    const cookie = await signup(app, `custom-thinking-${stamp}@labradoodle.test`, "Custom Thinking");
+    const cookie = await signup(
+      app,
+      `custom-thinking-${stamp}@labradoodle.test`,
+      "Custom Thinking",
+    );
     const { doodle } = await rpc<{ doodle: { id: string } }>(app, cookie, "bootstrap", {});
     const connection = {
       provider: "openai-compatible",
@@ -755,7 +763,11 @@ describeWithDatabase("API authorization and resource isolation", () => {
   });
 
   it("binds a new default to the space preference credential, not a newer unused duplicate", async () => {
-    const cookie = await signup(app, `model-duplicates-${stamp}@labradoodle.test`, "Model Duplicates");
+    const cookie = await signup(
+      app,
+      `model-duplicates-${stamp}@labradoodle.test`,
+      "Model Duplicates",
+    );
     const actor = await rpc<Actor>(app, cookie, "me");
     const olderSecret = await db.secret.create({
       data: {

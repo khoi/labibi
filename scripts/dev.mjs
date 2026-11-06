@@ -439,7 +439,10 @@ if (process.argv.includes("--tunnel")) {
   tunnel = await openTunnel(Number(env.WEB_PORT ?? setting("WEB_PORT") ?? DEFAULT_PORTS.web));
   env.WEB_ORIGIN = tunnel.url;
   env.BETTER_AUTH_URL = tunnel.url;
-  env.LABRADOODLE_ALLOWED_HOSTS = [setting("LABRADOODLE_ALLOWED_HOSTS"), new URL(tunnel.url).hostname]
+  env.LABRADOODLE_ALLOWED_HOSTS = [
+    setting("LABRADOODLE_ALLOWED_HOSTS"),
+    new URL(tunnel.url).hostname,
+  ]
     .filter(Boolean)
     .join(",");
   log(`Open ${tunnel.url}`);

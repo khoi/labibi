@@ -34,7 +34,8 @@ describe("resolveUpdaterConfig", () => {
       resolveUpdaterConfig({ ...base, COMPOSE_PROJECT_NAME: "operator-stack" }).projectName,
     ).toBe("operator-stack");
     expect(
-      resolveUpdaterConfig({ ...base, LABRADOODLE_COMPOSE_PROJECT_NAME: "manual-stack" }).projectName,
+      resolveUpdaterConfig({ ...base, LABRADOODLE_COMPOSE_PROJECT_NAME: "manual-stack" })
+        .projectName,
     ).toBe("manual-stack");
   });
 
@@ -46,21 +47,25 @@ describe("resolveUpdaterConfig", () => {
 
   it("binds to loopback unless the deployment says otherwise, so a stray port is not a door", () => {
     expect(resolveUpdaterConfig({ ...base }).host).toBe("127.0.0.1");
-    expect(resolveUpdaterConfig({ ...base, LABRADOODLE_UPDATER_HOST: "0.0.0.0" }).host).toBe("0.0.0.0");
+    expect(resolveUpdaterConfig({ ...base, LABRADOODLE_UPDATER_HOST: "0.0.0.0" }).host).toBe(
+      "0.0.0.0",
+    );
   });
 
   it("refuses a deployment directory that is missing or relative", () => {
-    expect(() => resolveUpdaterConfig({ LABRADOODLE_UPDATER_TOKEN: "t" })).toThrow(/LABRADOODLE_DEPLOY_DIR/);
-    expect(() => resolveUpdaterConfig({ ...base, LABRADOODLE_DEPLOY_DIR: "srv/labradoodle" })).toThrow(
+    expect(() => resolveUpdaterConfig({ LABRADOODLE_UPDATER_TOKEN: "t" })).toThrow(
       /LABRADOODLE_DEPLOY_DIR/,
     );
+    expect(() =>
+      resolveUpdaterConfig({ ...base, LABRADOODLE_DEPLOY_DIR: "srv/labradoodle" }),
+    ).toThrow(/LABRADOODLE_DEPLOY_DIR/);
   });
 
   it("refuses a compose path that escapes the deployment directory", () => {
     for (const composeFile of ["/etc/compose.yml", "../../etc/compose.yml", "a/../../b.yml"]) {
-      expect(() => resolveUpdaterConfig({ ...base, LABRADOODLE_COMPOSE_FILE: composeFile })).toThrow(
-        /LABRADOODLE_COMPOSE_FILE/,
-      );
+      expect(() =>
+        resolveUpdaterConfig({ ...base, LABRADOODLE_COMPOSE_FILE: composeFile }),
+      ).toThrow(/LABRADOODLE_COMPOSE_FILE/);
     }
   });
 
@@ -70,7 +75,10 @@ describe("resolveUpdaterConfig", () => {
         ...base,
         LABRADOODLE_COMPOSE_FILE: "infra/compose/docker-compose.prod.yml:ops/overlay.yml",
       }).composeFiles,
-    ).toEqual(["/srv/labradoodle/infra/compose/docker-compose.prod.yml", "/srv/labradoodle/ops/overlay.yml"]);
+    ).toEqual([
+      "/srv/labradoodle/infra/compose/docker-compose.prod.yml",
+      "/srv/labradoodle/ops/overlay.yml",
+    ]);
   });
 
   it("honours COMPOSE_PATH_SEPARATOR the way Compose does", () => {
@@ -106,7 +114,8 @@ describe("resolveUpdaterConfig", () => {
 
   it("appends the deployment's extra services to the built-in set", () => {
     expect(
-      resolveUpdaterConfig({ ...base, LABRADOODLE_UPDATE_SERVICES: "supervisor, caddy" }).updateServices,
+      resolveUpdaterConfig({ ...base, LABRADOODLE_UPDATE_SERVICES: "supervisor, caddy" })
+        .updateServices,
     ).toEqual(["api", "worker", "web", "supervisor", "caddy"]);
   });
 
@@ -143,7 +152,9 @@ describe("resolveUpdaterConfig", () => {
 
   it("refuses a port that is not a port", () => {
     expect(() => resolveUpdaterConfig({ ...base, LABRADOODLE_UPDATER_PORT: "0" })).toThrow(/port/);
-    expect(() => resolveUpdaterConfig({ ...base, LABRADOODLE_UPDATER_PORT: "seven" })).toThrow(/port/);
+    expect(() => resolveUpdaterConfig({ ...base, LABRADOODLE_UPDATER_PORT: "seven" })).toThrow(
+      /port/,
+    );
   });
 });
 
@@ -185,7 +196,9 @@ describe("readEnvAssignment", () => {
   });
 
   it("does not match a key that merely shares a prefix", () => {
-    expect(readEnvAssignment("LABRADOODLE_IMAGE_TAG_PREVIOUS=v1", "LABRADOODLE_IMAGE_TAG")).toBeNull();
+    expect(
+      readEnvAssignment("LABRADOODLE_IMAGE_TAG_PREVIOUS=v1", "LABRADOODLE_IMAGE_TAG"),
+    ).toBeNull();
   });
 });
 

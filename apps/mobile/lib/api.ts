@@ -518,7 +518,9 @@ export type ApiRequestContext = {
 
 /** Keeps consent prompts separate across servers and the selected Space. */
 export function aiConsentCoalesceKey(requestContext: ApiRequestContext): string {
-  return [requestContext.apiBase, requestContext.headers["x-labradoodle-space-id"] ?? ""].join("\u0000");
+  return [requestContext.apiBase, requestContext.headers["x-labradoodle-space-id"] ?? ""].join(
+    "\u0000",
+  );
 }
 
 /** Pins a request to the current server and session, and to a Space (the selected one by default). */

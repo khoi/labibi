@@ -545,7 +545,9 @@ describe("Docker sandbox", () => {
     expect(fetchMock.mock.calls[1]?.[1]?.headers).toMatchObject({
       "x-labradoodle-cancel-run-work": "1",
     });
-    expect(fetchMock.mock.calls[1]?.[1]?.headers).not.toHaveProperty("x-labradoodle-preserve-screen");
+    expect(fetchMock.mock.calls[1]?.[1]?.headers).not.toHaveProperty(
+      "x-labradoodle-preserve-screen",
+    );
 
     const abort = new AbortController();
     abort.abort();
@@ -554,7 +556,9 @@ describe("Docker sandbox", () => {
       keepScreenWarm: true,
       signal: abort.signal,
     });
-    expect(fetchMock.mock.calls[2]?.[1]?.headers).not.toHaveProperty("x-labradoodle-preserve-screen");
+    expect(fetchMock.mock.calls[2]?.[1]?.headers).not.toHaveProperty(
+      "x-labradoodle-preserve-screen",
+    );
   });
 });
 

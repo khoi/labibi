@@ -131,7 +131,8 @@ const SCREEN_FRAME_STATES: ReadonlySet<string> = new Set<ScreenFrameState>([
 export function screenFrameMessage(data: unknown): ScreenFrameMessage | null {
   if (!data || typeof data !== "object") return null;
   const { labradoodleScreen, detail } = data as Record<string, unknown>;
-  if (typeof labradoodleScreen !== "string" || !SCREEN_FRAME_STATES.has(labradoodleScreen)) return null;
+  if (typeof labradoodleScreen !== "string" || !SCREEN_FRAME_STATES.has(labradoodleScreen))
+    return null;
   const text = typeof detail === "string" ? detail.trim().slice(0, 200) : "";
   return {
     labradoodleScreen: labradoodleScreen as ScreenFrameState,
@@ -146,7 +147,8 @@ export function screenFrameStarted(message: ScreenFrameMessage): boolean {
 
 /** The error a frame report means for the screen, or null while it is fine. */
 export function screenFrameError(message: ScreenFrameMessage, fallback: string): string | null {
-  if (message.labradoodleScreen !== "failed" && message.labradoodleScreen !== "disconnected") return null;
+  if (message.labradoodleScreen !== "failed" && message.labradoodleScreen !== "disconnected")
+    return null;
   return message.labradoodleScreen === "disconnected" ? t`The screen connection closed.` : fallback;
 }
 

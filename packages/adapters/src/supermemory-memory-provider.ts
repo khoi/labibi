@@ -116,7 +116,9 @@ export function decodeLegacySupermemoryCredentials(
 }
 
 function durableContainerTag(scope: MemoryScope): string {
-  return scope.kind === "chat" ? `labradoodle:chat:${scope.threadId}` : `labradoodle:person:${scope.userId}`;
+  return scope.kind === "chat"
+    ? `labradoodle:chat:${scope.threadId}`
+    : `labradoodle:person:${scope.userId}`;
 }
 
 function historyContainerTag(history: SemanticMemoryHistory): string {

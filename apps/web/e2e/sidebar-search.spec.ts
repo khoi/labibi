@@ -4,7 +4,12 @@ import { captureScreenshot, completeOnboarding, signup } from "./helpers";
 test("sidebar search opens from its icon and closes without moving chats mid-click", async ({
   page,
 }, testInfo) => {
-  await signup(page, `sidebar-search-${Date.now()}@labradoodle.test`, "password12", "Search Sample");
+  await signup(
+    page,
+    `sidebar-search-${Date.now()}@labradoodle.test`,
+    "password12",
+    "Search Sample",
+  );
   await completeOnboarding(page);
   const sidebar = page.locator("aside").first();
   const trigger = sidebar.getByTestId("sidebar-search-trigger");

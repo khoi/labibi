@@ -249,7 +249,12 @@ function localSchedule(iso: string, timezone: string) {
 test("change-trigger screenshot walkthrough", { tag: "@nightly" }, async ({ page }, testInfo) => {
   await page.emulateMedia({ colorScheme: "light" });
   const stamp = Date.now();
-  await signup(page, `routine-walkthrough-${stamp}@labradoodle.test`, "password12", "Routine Watch");
+  await signup(
+    page,
+    `routine-walkthrough-${stamp}@labradoodle.test`,
+    "password12",
+    "Routine Watch",
+  );
   await completeOnboarding(page);
   const botId = activeThreadId(page);
 

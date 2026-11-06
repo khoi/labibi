@@ -854,7 +854,9 @@ describe("Composer", () => {
     const draftKey = "bot:draft-restore-test";
     const first = renderComposer(onSend, { draftKey });
     type(first, "unsent thought");
-    expect(window.localStorage.getItem(`labradoodle.composerDraft.${draftKey}`)).toBe("unsent thought");
+    expect(window.localStorage.getItem(`labradoodle.composerDraft.${draftKey}`)).toBe(
+      "unsent thought",
+    );
     act(() => root?.unmount());
     container?.remove();
     const second = renderComposer(onSend, { draftKey });

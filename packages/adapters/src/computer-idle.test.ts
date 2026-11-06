@@ -204,7 +204,13 @@ describe("sandbox idle", () => {
     expect(harness.sandbox.execute).toHaveBeenCalledWith(
       expect.objectContaining({ id: harness.computer.providerRef }),
       expect.objectContaining({
-        argv: ["bash", "-c", BACKGROUND_WORK_PROBE, "labradoodle-background-probe", harness.computer.id],
+        argv: [
+          "bash",
+          "-c",
+          BACKGROUND_WORK_PROBE,
+          "labradoodle-background-probe",
+          harness.computer.id,
+        ],
       }),
       expect.anything(),
     );

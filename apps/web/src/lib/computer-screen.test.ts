@@ -249,9 +249,9 @@ describe("screen frame reports", () => {
     expect(screenFrameMessage({ labradoodleScreen: "connected" })).toEqual({
       labradoodleScreen: "connected",
     });
-    expect(screenFrameMessage({ labradoodleScreen: "failed", detail: "  Failed to connect  " })).toEqual(
-      { labradoodleScreen: "failed", detail: "Failed to connect" },
-    );
+    expect(
+      screenFrameMessage({ labradoodleScreen: "failed", detail: "  Failed to connect  " }),
+    ).toEqual({ labradoodleScreen: "failed", detail: "Failed to connect" });
     expect(
       screenFrameMessage({ labradoodleScreen: "failed", detail: "x".repeat(300) })?.detail,
     ).toHaveLength(200);

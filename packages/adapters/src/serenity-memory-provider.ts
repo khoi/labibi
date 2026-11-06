@@ -161,7 +161,9 @@ export function sanitizeSerenityBrainLabel(label: string): string {
 // adding a path segment.
 export function serenityScopeEntity(scope: MemoryScope, brainLabel = ""): string {
   const [type, id] =
-    scope.kind === "chat" ? ["labradoodle-chat", scope.threadId] : ["labradoodle-person", scope.userId];
+    scope.kind === "chat"
+      ? ["labradoodle-chat", scope.threadId]
+      : ["labradoodle-person", scope.userId];
   const label = sanitizeSerenityBrainLabel(brainLabel);
   return label ? `${type}/${label}--${id}` : `${type}/${id}`;
 }

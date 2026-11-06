@@ -20,7 +20,11 @@ beforeEach(() => {
   mock.stdin.length = 0;
   mock.inspect.mockResolvedValue({
     Config: {
-      Labels: { "labradoodle.managed": "true", "labradoodle.botId": "home", "labradoodle.spaceId": "space" },
+      Labels: {
+        "labradoodle.managed": "true",
+        "labradoodle.botId": "home",
+        "labradoodle.spaceId": "space",
+      },
     },
   });
   mock.exec.mockImplementation(async (options: { Cmd: string[] }) => ({
@@ -211,7 +215,8 @@ it("closes helper stdin when the request is cancelled", async () => {
   });
   const defaultExec = mock.exec.getMockImplementation()!;
   mock.exec.mockImplementation(async (options: { Cmd: string[]; AttachStdin?: boolean }) => {
-    if (!options.Cmd.includes("/usr/local/bin/labradoodle-page-browser")) return defaultExec(options);
+    if (!options.Cmd.includes("/usr/local/bin/labradoodle-page-browser"))
+      return defaultExec(options);
     expect(options.AttachStdin).toBe(true);
     return {
       start: async (options: { stdin: boolean }) => {
@@ -533,7 +538,11 @@ describe("screen setup reuse", () => {
   beforeEach(() => {
     mock.inspect.mockResolvedValue({
       Config: {
-        Labels: { "labradoodle.managed": "true", "labradoodle.botId": "home", "labradoodle.spaceId": "space" },
+        Labels: {
+          "labradoodle.managed": "true",
+          "labradoodle.botId": "home",
+          "labradoodle.spaceId": "space",
+        },
       },
       State: { StartedAt: bootedAt },
     });

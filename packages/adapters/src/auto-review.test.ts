@@ -91,7 +91,9 @@ describe("resolveAutoReviewProviderKind", () => {
         AGENT_RUNTIME: "scripted",
       }),
     ).toBe("scripted");
-    expect(resolveAutoReviewProviderKind({ LABRADOODLE_AUTO_REVIEW_PROVIDER: "scripted" })).toBe("llm");
+    expect(resolveAutoReviewProviderKind({ LABRADOODLE_AUTO_REVIEW_PROVIDER: "scripted" })).toBe(
+      "llm",
+    );
   });
 });
 

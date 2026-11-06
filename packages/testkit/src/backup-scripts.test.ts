@@ -47,7 +47,10 @@ function fixture() {
     if (script.endsWith("backup-prod.sh")) {
       // Relocate only the fixed output directory: never write to real host backups.
       expect(source).toContain('BACKUP_ROOT="/var/backups/labradoodle"');
-      source = source.replace('BACKUP_ROOT="/var/backups/labradoodle"', `BACKUP_ROOT="${snapshots}"`);
+      source = source.replace(
+        'BACKUP_ROOT="/var/backups/labradoodle"',
+        `BACKUP_ROOT="${snapshots}"`,
+      );
     }
     write(path.join(checkout, script), source);
   }
@@ -752,7 +755,9 @@ describe("production backup deployment and archive behavior", () => {
 
   it("rejects relative deployment paths before any backup commands", () => {
     const f = fixture();
-    const result = f.run("infra/compose/backup-prod.sh", [], { LABRADOODLE_DEPLOY_DIR: "relative" });
+    const result = f.run("infra/compose/backup-prod.sh", [], {
+      LABRADOODLE_DEPLOY_DIR: "relative",
+    });
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain("absolute path");
     expect(f.commands()).toEqual([]);
@@ -825,7 +830,9 @@ describe("production backup deployment and archive behavior", () => {
     const mountpoint = path.join(f.root, "bin/mountpoint");
     write(mountpoint, "#!/bin/bash\nexit 1\n");
     chmodSync(mountpoint, 0o755);
-    const result = f.run("infra/compose/backup-prod.sh", [], { LABRADOODLE_BACKUP_REQUIRE_VOLUME: "1" });
+    const result = f.run("infra/compose/backup-prod.sh", [], {
+      LABRADOODLE_BACKUP_REQUIRE_VOLUME: "1",
+    });
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("backup volume");
     expect(f.commands()).toEqual([]);
@@ -1027,7 +1034,9 @@ describe("encrypted production backups", { timeout: 20_000 }, () => {
       expect(readFileSync(path.join(snapshot, "labradoodle.dump.age"), "utf8")).not.toContain(
         "custom-format dump",
       );
-      expect(readFileSync(path.join(snapshot, "SHA256SUMS"), "utf8")).toContain("labradoodle.dump.age");
+      expect(readFileSync(path.join(snapshot, "SHA256SUMS"), "utf8")).toContain(
+        "labradoodle.dump.age",
+      );
       expect(existsSync(path.join(f.snapshots, ".encrypted"))).toBe(true);
 
       // The drill runs where the private key lives and rejects any other identity.
@@ -1158,7 +1167,10 @@ describe("off-site copies", { timeout: 20_000 }, () => {
   it.each([
     [{ FAIL_RCLONE: "copy" }, "upload"],
     [{ FAIL_RCLONE: "check" }, "verification"],
-    [{ LABRADOODLE_BACKUP_AGE_RECIPIENTS: "" }, "off-site copies require LABRADOODLE_BACKUP_AGE_RECIPIENTS"],
+    [
+      { LABRADOODLE_BACKUP_AGE_RECIPIENTS: "" },
+      "off-site copies require LABRADOODLE_BACKUP_AGE_RECIPIENTS",
+    ],
   ])("keeps the verified local snapshot but fails the run: %j", (settings, message) => {
     const f = fixture();
     const result = f.run("infra/compose/backup-prod.sh", [], {
@@ -1178,7 +1190,9 @@ describe("off-site copies", { timeout: 20_000 }, () => {
 
   it("rejects an off-site retention that is not a whole number", () => {
     const f = fixture();
-    const result = f.run("infra/compose/backup-prod.sh", [], { LABRADOODLE_BACKUP_OFFSITE_KEEP: "08" });
+    const result = f.run("infra/compose/backup-prod.sh", [], {
+      LABRADOODLE_BACKUP_OFFSITE_KEEP: "08",
+    });
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("LABRADOODLE_BACKUP_OFFSITE_KEEP");
   });

@@ -406,7 +406,12 @@ test.describe("touch message actions", () => {
   test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 844 } });
 
   test("More exposes actions without simulated hover", async ({ page }, testInfo) => {
-    await signup(page, `touch-actions-${Date.now()}@labradoodle.test`, "password12", "Touch Actions");
+    await signup(
+      page,
+      `touch-actions-${Date.now()}@labradoodle.test`,
+      "password12",
+      "Touch Actions",
+    );
     await completeOnboarding(page);
     expect(
       await page.evaluate(() => matchMedia("(hover: hover) and (pointer: fine)").matches),

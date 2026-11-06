@@ -1828,7 +1828,13 @@ function isAllowedCreateOSScreenHost(hostname: string, baseHost: string): boolea
 }
 
 function createosCwd(cwd: string | undefined): string {
-  if (!cwd || cwd === "." || cwd === "/" || cwd === "/home/labradoodle" || cwd === "/home/desktop") {
+  if (
+    !cwd ||
+    cwd === "." ||
+    cwd === "/" ||
+    cwd === "/home/labradoodle" ||
+    cwd === "/home/desktop"
+  ) {
     return CREATEOS_WORKSPACE;
   }
   if (cwd === CREATEOS_WORKSPACE || cwd.startsWith(`${CREATEOS_WORKSPACE}/`)) return cwd;

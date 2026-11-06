@@ -154,7 +154,10 @@ async function render(canManage: boolean) {
     if (procedure === "spaces/members/list")
       return { spaceName: "Home", members: [owner, member], canManage };
     if (procedure === "spaces/invites/create")
-      return { url: "https://labradoodle.example/invite/token-1", expiresAt: "2026-10-29T00:00:00Z" };
+      return {
+        url: "https://labradoodle.example/invite/token-1",
+        expiresAt: "2026-10-29T00:00:00Z",
+      };
     if (procedure === "spaces/members/leave") return { ok: true, activeSpaceId: "space-own" };
     return { ok: true };
   });

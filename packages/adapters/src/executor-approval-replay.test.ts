@@ -272,7 +272,13 @@ describe("executor approval replay", () => {
     expect(resolved.call.args).toEqual({ text: "approved exactly" });
     expect(resolved.tool.route).toEqual(route);
     expect(
-      approvalReplayResourceError(resolved.tool.name, true, request, route, "__labradoodleCatalogTool"),
+      approvalReplayResourceError(
+        resolved.tool.name,
+        true,
+        request,
+        route,
+        "__labradoodleCatalogTool",
+      ),
     ).toBeUndefined();
     expect(
       approvalReplayResourceError(
@@ -293,7 +299,11 @@ describe("executor approval replay", () => {
       ),
     ).toContain("different connector resource");
     expect(
-      approvedReplayArgs(queue.take(resolved.tool.name), resolved.call.args, "__labradoodleCatalogTool"),
+      approvedReplayArgs(
+        queue.take(resolved.tool.name),
+        resolved.call.args,
+        "__labradoodleCatalogTool",
+      ),
     ).toEqual({ text: "approved exactly" });
     expect(queue.assertDrained).not.toThrow();
   });

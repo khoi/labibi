@@ -63,7 +63,9 @@ describe("normalizeRepoUrl", () => {
   });
 
   it("rejects an embedded newline that could smuggle a second argument", () => {
-    expect(normalizeRepoUrl("https://github.com/me/labradoodle\n--exec=id")).toHaveProperty("error");
+    expect(normalizeRepoUrl("https://github.com/me/labradoodle\n--exec=id")).toHaveProperty(
+      "error",
+    );
   });
 });
 

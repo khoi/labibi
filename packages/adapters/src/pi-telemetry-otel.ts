@@ -74,7 +74,9 @@ export function otelPiContext(
       const correlation = {
         ...ids,
         ...Object.fromEntries(
-          Object.entries(options.attributes ?? {}).filter(([key]) => key.startsWith("labradoodle.")),
+          Object.entries(options.attributes ?? {}).filter(([key]) =>
+            key.startsWith("labradoodle."),
+          ),
         ),
       };
       const parentContext = parent ?? correlatedLogContext();

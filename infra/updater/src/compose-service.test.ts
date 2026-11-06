@@ -89,7 +89,9 @@ describe("the updater compose service", () => {
   });
 
   it("is bind-mounted at the same path it has on the host", () => {
-    const mount = (updater.volumes ?? []).find((volume) => volume.includes("LABRADOODLE_DEPLOY_DIR"));
+    const mount = (updater.volumes ?? []).find((volume) =>
+      volume.includes("LABRADOODLE_DEPLOY_DIR"),
+    );
     // biome-ignore lint/suspicious/noTemplateCurlyInString: this is the literal Compose expression
     const deployDir = "${LABRADOODLE_DEPLOY_DIR:-/srv/labradoodle}";
     const separatorIndex = mount?.indexOf("}:${") ?? -1;
@@ -142,8 +144,10 @@ describe("the updater compose service", () => {
   });
 
   it("injects the actual Compose project name into the updater container", () => {
-    // biome-ignore lint/suspicious/noTemplateCurlyInString: this is the literal Compose expression
-    expect(updater.environment?.COMPOSE_PROJECT_NAME).toBe("${COMPOSE_PROJECT_NAME:-labradoodle-prod}");
+    expect(updater.environment?.COMPOSE_PROJECT_NAME).toBe(
+      // biome-ignore lint/suspicious/noTemplateCurlyInString: this is the literal Compose expression
+      "${COMPOSE_PROJECT_NAME:-labradoodle-prod}",
+    );
   });
 
   it("does not load the application env_file into the root-equivalent process", () => {

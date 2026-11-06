@@ -32,7 +32,9 @@ describe("persisted startup error", () => {
     const error = new TypeError("Bearer private-token");
     error.stack = `at /Users/example/project/startup.ts:42\n${"x".repeat(10_000)}`;
     saveStartupError(error, secureStorage, application);
-    expect(store.values.get("labradoodle.startup-error")).not.toMatch(/private-token|\/Users\/example/);
+    expect(store.values.get("labradoodle.startup-error")).not.toMatch(
+      /private-token|\/Users\/example/,
+    );
     expect(store.values.get("labradoodle.startup-error")!.length).toBeLessThan(8_192);
     expect(readStartupError(secureStorage)).toMatchObject({
       error: { name: "TypeError", stack: expect.stringContaining("startup.ts:42") },

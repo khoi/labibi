@@ -96,7 +96,9 @@ describe("DaytonaSandboxProvider", () => {
     expect(visited).not.toContain("/home/daytona/labradoodle-home/project/node_modules");
     expect(visited).not.toContain("/home/daytona/labradoodle-home/.cache");
     expect(visited).not.toContain("/home/daytona/labradoodle-home/.yarn/cache");
-    expect(visited).not.toContain("/home/daytona/labradoodle-home/.browser-profiles/chromium/Cache");
+    expect(visited).not.toContain(
+      "/home/daytona/labradoodle-home/.browser-profiles/chromium/Cache",
+    );
   });
 
   it("omits snapshot from create() when unset", async () => {

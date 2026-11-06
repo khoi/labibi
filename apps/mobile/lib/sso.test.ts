@@ -111,7 +111,10 @@ it("requires reauthentication to return the same account", async () => {
   expect(replaceSessionTokenIfCurrent).not.toHaveBeenCalled();
 });
 it("starts authenticated linking without replacing the session", async () => {
-  vi.mocked(openAuthSessionAsync).mockResolvedValue({ type: "success", url: "labradoodle://account" });
+  vi.mocked(openAuthSessionAsync).mockResolvedValue({
+    type: "success",
+    url: "labradoodle://account",
+  });
   await expect(continueWithSso("link")).resolves.toBe(true);
   expect(vi.mocked(fetchMobileJson).mock.calls[0]?.[0]).toContain("/link-social");
   expect(vi.mocked(fetchMobileJson).mock.calls[0]?.[1]?.headers).toMatchObject({

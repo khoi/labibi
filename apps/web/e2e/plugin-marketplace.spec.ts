@@ -5,7 +5,12 @@ import { captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
 test("Integrations installs a plugin, completes real broker OAuth against a fake provider, and removes its children", async ({
   page,
 }, testInfo) => {
-  await signup(page, `marketplace-${Date.now()}@labradoodle.test`, "password12", "Marketplace Test");
+  await signup(
+    page,
+    `marketplace-${Date.now()}@labradoodle.test`,
+    "password12",
+    "Marketplace Test",
+  );
   await completeOnboarding(page);
   let cancel = true;
   await page.context().route("https://marketplace-auth.example.test/authorize**", async (route) => {

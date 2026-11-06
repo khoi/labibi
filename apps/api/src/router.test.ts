@@ -3008,7 +3008,12 @@ describe("connections.complete", () => {
         {
           prefix: "/rpc",
           context: {
-            actor: { spaceId, userId, email: `${userId}@labradoodle.test`, isDeploymentOwner: true },
+            actor: {
+              spaceId,
+              userId,
+              email: `${userId}@labradoodle.test`,
+              isDeploymentOwner: true,
+            },
           },
         },
       );

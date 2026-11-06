@@ -155,7 +155,8 @@ describe("mobile API authentication", () => {
   describe.each([
     {
       name: "password reset",
-      request: () => requestPasswordReset("ada@example.test", "https://labradoodle.test/reset-password"),
+      request: () =>
+        requestPasswordReset("ada@example.test", "https://labradoodle.test/reset-password"),
       fallback: "Could not send reset email",
     },
     {
@@ -222,7 +223,10 @@ describe("mobile API authentication", () => {
         body: JSON.stringify({ email: "ada@example.com", password: "correct horse" }),
       }),
     );
-    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("labradoodle.session_token", "session-token");
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
+      "labradoodle.session_token",
+      "session-token",
+    );
     expect(resumeLiveNotifications).not.toHaveBeenCalled();
   });
 
@@ -267,7 +271,10 @@ describe("mobile API authentication", () => {
         }),
       }),
     );
-    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("labradoodle.session_token", "signup-token");
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
+      "labradoodle.session_token",
+      "signup-token",
+    );
   });
 
   it("emails a sign-in code and persists the session the code returns", async () => {
@@ -306,7 +313,10 @@ describe("mobile API authentication", () => {
         body: JSON.stringify({ email: "ada@example.test", otp: "123456", name: "Ada" }),
       }),
     );
-    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("labradoodle.session_token", "code-token");
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
+      "labradoodle.session_token",
+      "code-token",
+    );
   });
 
   it.each([
@@ -521,7 +531,10 @@ describe("mobile API authentication", () => {
 
     await changePassword("old-password", "new-password");
 
-    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("labradoodle.session_token", "rotated-token");
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
+      "labradoodle.session_token",
+      "rotated-token",
+    );
     expect(resumeLiveNotifications).toHaveBeenCalledWith(
       "http://127.0.0.1:3100",
       "rotated-token",
@@ -655,7 +668,9 @@ describe("mobile API authentication", () => {
 
     await changePassword("old-password", "new-password").catch(() => undefined);
     // Whether or not that change went through, the saved session still names the queue.
-    expect(await artifactCacheSession(store.get("labradoodle.session_token") ?? "")).toBe(namespace);
+    expect(await artifactCacheSession(store.get("labradoodle.session_token") ?? "")).toBe(
+      namespace,
+    );
 
     await changePassword("old-password", "new-password");
     expect(store.get("labradoodle.session_token")).toBe("rotated-token");
@@ -730,7 +745,10 @@ describe("mobile API authentication", () => {
     resolveFetch(jsonResponse({ token: "rotated-token", user: { id: "user-1" } }));
     await pending;
 
-    expect(SecureStore.setItemAsync).toHaveBeenCalledWith("labradoodle.session_token", "rotated-token");
+    expect(SecureStore.setItemAsync).toHaveBeenCalledWith(
+      "labradoodle.session_token",
+      "rotated-token",
+    );
   });
 
   it("does not change the password when the session token cannot be read", async () => {
@@ -1254,7 +1272,10 @@ describe("mobile API authentication", () => {
     });
 
     await expect(selectSpace("space-social")).resolves.toBe(false);
-    expect(SecureStore.setItemAsync).not.toHaveBeenCalledWith("labradoodle.space_id", "space-social");
+    expect(SecureStore.setItemAsync).not.toHaveBeenCalledWith(
+      "labradoodle.space_id",
+      "space-social",
+    );
     expect(selectedSpaceId()).toBe("space-support");
 
     vi.mocked(SecureStore.setItemAsync).mockReset();
@@ -2001,7 +2022,10 @@ describe("mobile API authentication", () => {
       storage.delete(key);
     });
     vi.mocked(SecureStore.setItemAsync).mockImplementation(async (key, value) => {
-      if (key === "labradoodle.api_base" || (key === "labradoodle.space_id" && value === "space-support")) {
+      if (
+        key === "labradoodle.api_base" ||
+        (key === "labradoodle.space_id" && value === "space-support")
+      ) {
         throw new Error("device locked");
       }
       storage.set(key, value);

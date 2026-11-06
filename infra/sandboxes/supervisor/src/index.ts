@@ -228,10 +228,14 @@ app.post("/computers", async (c) => {
     })
     .parse(await c.req.json());
   try {
-    assertRequestIdentity(c.req.header("x-labradoodle-bot-id"), c.req.header("x-labradoodle-space-id"), {
-      botId: body.botId,
-      spaceId: body.spaceId,
-    });
+    assertRequestIdentity(
+      c.req.header("x-labradoodle-bot-id"),
+      c.req.header("x-labradoodle-space-id"),
+      {
+        botId: body.botId,
+        spaceId: body.spaceId,
+      },
+    );
     return await withBotLifecycleLock(body.botId, async () => {
       await ensureComputerImage();
       await ensureRestrictedEgressEnforced();
@@ -485,7 +489,8 @@ app.post("/computers/:id/exec", async (c) => {
     // Docker would fail the exec inside the stream; answer up front so the caller can boot it.
     if (!managed.info.State.Running) return c.json({ error: "computer is not running" }, 409);
     container = managed.container;
-    const screenId = c.req.header("x-labradoodle-screen-id") || c.req.header("x-labradoodle-bot-id") || id;
+    const screenId =
+      c.req.header("x-labradoodle-screen-id") || c.req.header("x-labradoodle-bot-id") || id;
     const screenIndex = computerScreens.get(id)?.get(screenId)?.index ?? 0;
     layout = screenPorts(screenIndex);
   } catch (error) {
@@ -708,7 +713,9 @@ app.post("/computers/:id/browser", async (c) => {
           "LABRADOODLE_BROWSER_WATCH_STDIN=1",
           "LABRADOODLE_BROWSER_ARGS_STDIN=1",
           ...(process.env.LABRADOODLE_BROWSER_UPLOAD_MAX_BYTES !== undefined
-            ? [`LABRADOODLE_BROWSER_UPLOAD_MAX_BYTES=${process.env.LABRADOODLE_BROWSER_UPLOAD_MAX_BYTES}`]
+            ? [
+                `LABRADOODLE_BROWSER_UPLOAD_MAX_BYTES=${process.env.LABRADOODLE_BROWSER_UPLOAD_MAX_BYTES}`,
+              ]
             : []),
         ],
         timeoutMs: 25_000,
@@ -1114,7 +1121,8 @@ app.delete("/computers/:id/screen", async (c) => {
       c.req.header("x-labradoodle-space-id"),
     );
     containerFound = true;
-    const screenId = c.req.header("x-labradoodle-screen-id") || c.req.header("x-labradoodle-bot-id") || id;
+    const screenId =
+      c.req.header("x-labradoodle-screen-id") || c.req.header("x-labradoodle-bot-id") || id;
     const cancelRunWork = c.req.header("x-labradoodle-cancel-run-work") === "1";
     const keepScreenWarm = c.req.header("x-labradoodle-preserve-screen") === "1" && !cancelRunWork;
     const screenLeaseId = c.req.header("x-labradoodle-screen-lease-id");
@@ -1240,7 +1248,11 @@ app.delete("/computers/:id", async (c) => {
   try {
     if (!botId) throw new Error("missing computer identity");
     return await withBotLifecycleLock(botId, async () => {
-      const { container } = await managedContainer(id, botId, c.req.header("x-labradoodle-space-id"));
+      const { container } = await managedContainer(
+        id,
+        botId,
+        c.req.header("x-labradoodle-space-id"),
+      );
       await withComputerScreenLock(id, async () => {
         await container.remove({ force: true }).catch((error) => {
           // Already gone is deleted; any other failure may leave the computer running.

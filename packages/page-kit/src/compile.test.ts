@@ -21,9 +21,11 @@ describe("pageViewerCode", () => {
       '/* page-sources\n{"sales":{"rows":[1,2]}}\n*/\nexport default function App() {\n  undeclared = 1;\n}\n',
     );
     const exports = run(code);
-    expect((globalThis as { __labradoodlePageSources?: unknown }).__labradoodlePageSources).toEqual({
-      sales: { rows: [1, 2] },
-    });
+    expect((globalThis as { __labradoodlePageSources?: unknown }).__labradoodlePageSources).toEqual(
+      {
+        sales: { rows: [1, 2] },
+      },
+    );
     // Strict like the source's own module code: the stray assignment throws, from line 5.
     expect(() => exports.default!()).toThrow(ReferenceError);
     expect(code.split("\n")[4]).toContain("undeclared = 1");

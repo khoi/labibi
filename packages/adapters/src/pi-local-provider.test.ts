@@ -103,7 +103,9 @@ describe("local model provider", () => {
     delete process.env.LABRADOODLE_LOCAL_CONTEXT_WINDOW;
 
     process.env.LABRADOODLE_LOCAL_MAX_TOKENS = "-1";
-    expect(() => localProvider()).toThrow(/LABRADOODLE_LOCAL_MAX_TOKENS must be a positive integer/);
+    expect(() => localProvider()).toThrow(
+      /LABRADOODLE_LOCAL_MAX_TOKENS must be a positive integer/,
+    );
   });
 
   it("marks only the exact model ids the operator declares as reasoning", () => {

@@ -39,7 +39,12 @@ describePostgres("space search with CONTENT_ENCRYPTION on and off (PostgreSQL)",
       off = createDb(databaseUrl!, { encryptContent: false });
       const prisma = on.prisma;
       await prisma.user.create({
-        data: { id: userId, name: userId, email: `${userId}@labradoodle.test`, emailVerified: false },
+        data: {
+          id: userId,
+          name: userId,
+          email: `${userId}@labradoodle.test`,
+          emailVerified: false,
+        },
       });
       await prisma.organization.create({
         data: { id: organizationId, name: "Search", slug: organizationId, createdAt: new Date() },

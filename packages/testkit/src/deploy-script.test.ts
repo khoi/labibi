@@ -315,7 +315,10 @@ describe("production deploy script", () => {
   it("refuses to build with too little free disk", () => {
     const deploy = fixture();
     commit(deploy.upstream, "next");
-    const result = deploy.run({ FREE_KB: String(2 * 1024 * 1024), LABRADOODLE_DEPLOY_MIN_FREE_GB: "5" });
+    const result = deploy.run({
+      FREE_KB: String(2 * 1024 * 1024),
+      LABRADOODLE_DEPLOY_MIN_FREE_GB: "5",
+    });
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("Only 2GB free");
     expect(deploy.head()).toBe(deploy.first);
@@ -510,7 +513,9 @@ describe("production deploy script", () => {
     commit(deploy.upstream, "release-d");
     start = deploy.commands().length;
     expect(deploy.run().status).toBe(0);
-    expect(migrationCommands()[0]).toContain("LABRADOODLE_DEPLOYED_MIGRATIONS=001_add,002_drop migrate");
+    expect(migrationCommands()[0]).toContain(
+      "LABRADOODLE_DEPLOYED_MIGRATIONS=001_add,002_drop migrate",
+    );
   });
 
   it("starts no new container and keeps the old one serving when migrations fail", () => {
@@ -518,7 +523,9 @@ describe("production deploy script", () => {
     commit(deploy.upstream, "next");
     expect(deploy.run({ FAIL_MIGRATE: "1" }).status).toBe(1);
     const commands = rollout(deploy.commands());
-    expect(commands).toContain(`${COMPOSE} run --rm -T -e LABRADOODLE_DEPLOYED_MIGRATIONS= migrate`);
+    expect(commands).toContain(
+      `${COMPOSE} run --rm -T -e LABRADOODLE_DEPLOYED_MIGRATIONS= migrate`,
+    );
     expect(commands.some((line) => line.includes(" up "))).toBe(false);
     expect(commands.some((line) => line.startsWith("docker stop"))).toBe(false);
     expect(deploy.head()).toBe(deploy.first);

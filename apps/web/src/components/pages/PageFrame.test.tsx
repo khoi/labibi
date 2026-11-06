@@ -81,7 +81,9 @@ it("copies by selection where the page has no Clipboard API, as on plain http", 
   expect(copied).toEqual(["MRR $12,400"]);
   // The hidden field is gone once copied.
   expect(document.querySelector("textarea")).toBeNull();
-  expect(answers.mock.calls).toEqual([[{ type: "labradoodle-page:copied", id: "a", ok: true }, "*"]]);
+  expect(answers.mock.calls).toEqual([
+    [{ type: "labradoodle-page:copied", id: "a", ok: true }, "*"],
+  ]);
   await act(async () => root.unmount());
   Reflect.deleteProperty(document, "execCommand");
 });

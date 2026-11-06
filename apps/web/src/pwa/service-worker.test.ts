@@ -138,7 +138,11 @@ describe("service worker", () => {
     await sw.scope.caches.open("someone-else");
     await sw.scope.caches.open(CACHE);
     await sw.dispatch("activate", {});
-    expect([...sw.stores.keys()]).toEqual(["labradoodle-shell-20261022100000", "someone-else", CACHE]);
+    expect([...sw.stores.keys()]).toEqual([
+      "labradoodle-shell-20261022100000",
+      "someone-else",
+      CACHE,
+    ]);
   });
 
   it("prefers a build-named previous shell over a legacy hash-named one", async () => {

@@ -580,7 +580,10 @@ describe("managed env assignments", () => {
       " \tLABRADOODLE_IMAGE_TAG \t= v1.2.0 # pinned",
       "\tLABRADOODLE_IMAGE_TAG_PREVIOUS = 'v1.1.0' # rollback",
     ].join("\r\n");
-    const assignments = { LABRADOODLE_IMAGE_TAG: "v2.0.0", LABRADOODLE_IMAGE_TAG_PREVIOUS: "v1.2.0" };
+    const assignments = {
+      LABRADOODLE_IMAGE_TAG: "v2.0.0",
+      LABRADOODLE_IMAGE_TAG_PREVIOUS: "v1.2.0",
+    };
     const result = upsertEnvAssignments(contents, assignments);
 
     expect(result).toBe(

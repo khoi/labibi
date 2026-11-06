@@ -729,9 +729,8 @@ test("the app window stays on its server when a link redirects to another site",
   const openSignIn = (page: Page) =>
     page.evaluate(
       (url) =>
-        (window as typeof window & { labradoodleDesktop: LabradoodleDesktop }).labradoodleDesktop.oauth.open!(
-          url,
-        ).then(
+        (window as typeof window & { labradoodleDesktop: LabradoodleDesktop }).labradoodleDesktop
+          .oauth.open!(url).then(
           () => "opened",
           (error: Error) => error.message,
         ),

@@ -60,9 +60,9 @@ describe("rowSecurityWarning", () => {
   });
 
   it("says to rerun db:migrate when the bypass key is stale", () => {
-    expect(rowSecurityWarning({ enforced: true, role: "labradoodle_app", systemBlocked: true })).toMatch(
-      /db:migrate/,
-    );
+    expect(
+      rowSecurityWarning({ enforced: true, role: "labradoodle_app", systemBlocked: true }),
+    ).toMatch(/db:migrate/);
   });
 
   it("names the login and why it bypasses the policies", () => {
@@ -95,7 +95,9 @@ describe("provisionRuntimeRole", () => {
     sent.length = 0;
     await provisionRuntimeRole(owner, runtime);
     const setPassword = sent.find((sql) => sql.includes("PASSWORD"));
-    expect(setPassword).toMatch(/^CREATE ROLE "labradoodle_app" LOGIN PASSWORD 'SCRAM-SHA-256\$4096:/);
+    expect(setPassword).toMatch(
+      /^CREATE ROLE "labradoodle_app" LOGIN PASSWORD 'SCRAM-SHA-256\$4096:/,
+    );
     expect(sent.join("\n")).not.toContain("app-password");
   });
 });

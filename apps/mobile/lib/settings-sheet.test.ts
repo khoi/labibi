@@ -93,7 +93,9 @@ describe("settings links", () => {
     const close = vi.fn();
     const unregister = registerSettingsSheet(close);
 
-    expect(redirectSystemPath({ path: "labradoodle:///voice", initial: false })).toBe("labradoodle:///voice");
+    expect(redirectSystemPath({ path: "labradoodle:///voice", initial: false })).toBe(
+      "labradoodle:///voice",
+    );
     expect(redirectSystemPath({ path: "labradoodle:///account?focus=usage", initial: false })).toBe(
       "labradoodle:///account?focus=usage",
     );
@@ -103,7 +105,9 @@ describe("settings links", () => {
       "labradoodle:///thread?botId=bot-1",
     );
     expect(close).toHaveBeenCalledTimes(1);
-    expect(redirectSystemPath({ path: "labradoodle://expo-sharing", initial: true })).toBe("/share");
+    expect(redirectSystemPath({ path: "labradoodle://expo-sharing", initial: true })).toBe(
+      "/share",
+    );
     expect(close).toHaveBeenCalledTimes(2);
     expect(redirectSystemPath({ path: "labradoodle:///artifacts", initial: false })).toBe(
       "labradoodle:///artifacts",

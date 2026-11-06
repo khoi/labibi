@@ -1955,7 +1955,10 @@ describe("BoatSandboxProvider", () => {
   it("accepts empty files and files exactly at the download limit", async () => {
     const { api, provider, computer } = await boat();
     const files = api.files(computer.id);
-    files.set("/home/user/labradoodle-home/empty.bin", { content: new Uint8Array(), executable: false });
+    files.set("/home/user/labradoodle-home/empty.bin", {
+      content: new Uint8Array(),
+      executable: false,
+    });
     files.set("/home/user/labradoodle-home/exact.bin", {
       content: Uint8Array.from([0, 255]),
       executable: false,

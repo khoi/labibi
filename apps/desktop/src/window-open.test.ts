@@ -43,14 +43,16 @@ it("keeps SSO popups sandboxed in the parent session without a privileged preloa
     sandbox: true,
   });
   expect(oauthPopupSessionPreferences(null)).not.toHaveProperty("partition");
-  expect(shouldOpenInAppPopup(appOrigin, "http://provider.example.com", "labradoodle-sso-oauth")).toBe(
-    false,
-  );
+  expect(
+    shouldOpenInAppPopup(appOrigin, "http://provider.example.com", "labradoodle-sso-oauth"),
+  ).toBe(false);
 });
 
 it("allows only the named SSO blank popup before provider navigation", () => {
   expect(shouldOpenInAppPopup(appOrigin, "about:blank", "labradoodle-sso-oauth")).toBe(true);
   for (const name of ["_blank", "labradoodle-mcp-oauth", ""])
     expect(shouldOpenInAppPopup(appOrigin, "about:blank", name)).toBe(false);
-  expect(shouldOpenInAppPopup(appOrigin, "about:blank#unsafe", "labradoodle-sso-oauth")).toBe(false);
+  expect(shouldOpenInAppPopup(appOrigin, "about:blank#unsafe", "labradoodle-sso-oauth")).toBe(
+    false,
+  );
 });

@@ -234,7 +234,11 @@ describeWithDatabase("Composio catalog reconciliation", () => {
   });
 
   it("returns the remote catalog when local reconciliation fails", async () => {
-    const cookie = await signup(app, `db-failure-connections-${stamp}@labradoodle.test`, "DB Failure");
+    const cookie = await signup(
+      app,
+      `db-failure-connections-${stamp}@labradoodle.test`,
+      "DB Failure",
+    );
     const actor = await rpc<Actor>(app, cookie, "me");
     await connectRemote(composio, actor, "SLACK");
     const pending = await createConnection(actor, "SLACK");
@@ -609,7 +613,11 @@ describeWithDatabase("Composio catalog reconciliation", () => {
   });
 
   it("imports a GraphQL connector, introspects operations, and routes calls", async () => {
-    const cookie = await signup(app, `graphql-connector-${stamp}@labradoodle.test`, "GraphQL Connector");
+    const cookie = await signup(
+      app,
+      `graphql-connector-${stamp}@labradoodle.test`,
+      "GraphQL Connector",
+    );
     const actor = await rpc<Actor>(app, cookie, "me");
     const install = await rpc<{
       id: string;

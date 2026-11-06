@@ -599,7 +599,9 @@ describe("OIDC callbacks", () => {
     await request(
       `/expo-authorization-proxy?${new URLSearchParams({ authorizationURL: authorize })}`,
     );
-    expect(new URL((await request(callback)).headers.get("location")!).protocol).toBe("labradoodle:");
+    expect(new URL((await request(callback)).headers.get("location")!).protocol).toBe(
+      "labradoodle:",
+    );
     expect(rows("account").filter((account) => account.providerId === "oidc")).toHaveLength(1);
   });
   it("drops an unverified account's SSO links when its mailbox owner resets the password", async () => {

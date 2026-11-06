@@ -75,7 +75,8 @@ async function main() {
       SANDBOX_PROVIDER: sandbox.provider,
       ...(sandbox.provider === "docker"
         ? {
-            LABRADOODLE_COMPUTER_IMAGE: process.env.LABRADOODLE_COMPUTER_IMAGE || "labradoodle/computer:local",
+            LABRADOODLE_COMPUTER_IMAGE:
+              process.env.LABRADOODLE_COMPUTER_IMAGE || "labradoodle/computer:local",
             SANDBOX_CONTROL_VIA_LOOPBACK: "true",
             SANDBOX_SCREEN_NETWORK: "published",
             SANDBOX_SCREEN_HOST: "127.0.0.1",

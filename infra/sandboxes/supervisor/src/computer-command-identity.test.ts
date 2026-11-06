@@ -26,7 +26,11 @@ beforeEach(() => {
   mock.failWhen = () => false;
   mock.inspect.mockResolvedValue({
     Config: {
-      Labels: { "labradoodle.managed": "true", "labradoodle.botId": "bot", "labradoodle.spaceId": "space" },
+      Labels: {
+        "labradoodle.managed": "true",
+        "labradoodle.botId": "bot",
+        "labradoodle.spaceId": "space",
+      },
     },
     State: { Running: true, StartedAt: "2026-01-01T00:00:00Z" },
     HostConfig: {},

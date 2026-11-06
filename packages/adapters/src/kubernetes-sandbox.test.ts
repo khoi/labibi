@@ -390,7 +390,9 @@ describe("KubernetesSandboxProvider", () => {
         },
         containers: [
           {
-            volumeMounts: [{ name: "home", mountPath: "/home/labradoodle", subPath: "homes/team-ab12" }],
+            volumeMounts: [
+              { name: "home", mountPath: "/home/labradoodle", subPath: "homes/team-ab12" },
+            ],
           },
         ],
       });
@@ -479,7 +481,9 @@ describe("KubernetesSandboxProvider", () => {
           containers: [
             {
               name: "computer",
-              volumeMounts: [{ name: "home", mountPath: "/home/labradoodle", subPath: "homes/bot-a" }],
+              volumeMounts: [
+                { name: "home", mountPath: "/home/labradoodle", subPath: "homes/bot-a" },
+              ],
             },
           ],
         },
@@ -501,7 +505,9 @@ describe("KubernetesSandboxProvider", () => {
           containers: [
             {
               name: "computer",
-              volumeMounts: [{ name: "home", mountPath: "/home/labradoodle", subPath: "homes/bot-a" }],
+              volumeMounts: [
+                { name: "home", mountPath: "/home/labradoodle", subPath: "homes/bot-a" },
+              ],
             },
           ],
         },
@@ -547,9 +553,10 @@ describe("KubernetesSandboxProvider", () => {
 
   it("rejects a pod carrying another bot's label", async () => {
     const provider = providerFor({
-      readNamespacedPod: vi
-        .fn()
-        .mockResolvedValue({ ...readyPod, metadata: { labels: { "labradoodle-bot-id": "bot-b" } } }),
+      readNamespacedPod: vi.fn().mockResolvedValue({
+        ...readyPod,
+        metadata: { labels: { "labradoodle-bot-id": "bot-b" } },
+      }),
     });
     await expect(
       provider.provision(

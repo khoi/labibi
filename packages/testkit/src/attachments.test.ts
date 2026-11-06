@@ -151,7 +151,11 @@ describeAttachments("chat attachments", () => {
   });
 
   it("attaches a workspace file into the thread", async () => {
-    const cookie = await signup(app, `attach-thread-${stamp}@labradoodle.test`, "Attach Thread User");
+    const cookie = await signup(
+      app,
+      `attach-thread-${stamp}@labradoodle.test`,
+      "Attach Thread User",
+    );
     const {
       chats: [botChat],
     } = await rpc<{

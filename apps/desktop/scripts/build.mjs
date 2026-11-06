@@ -14,8 +14,12 @@ await build({
   external: ["electron", "electron-updater", "koffi", "@sentry/electron"],
   // Only the release workflow's builds report errors; local and agent builds never do.
   define: {
-    "process.env.LABRADOODLE_DESKTOP_RELEASE": JSON.stringify(process.env.LABRADOODLE_DESKTOP_RELEASE ?? ""),
+    "process.env.LABRADOODLE_DESKTOP_RELEASE": JSON.stringify(
+      process.env.LABRADOODLE_DESKTOP_RELEASE ?? "",
+    ),
     // Self-hosted builds associated with their own passkey domain (see src/passkeys.ts).
-    "process.env.LABRADOODLE_PASSKEY_RP_ID": JSON.stringify(process.env.LABRADOODLE_PASSKEY_RP_ID ?? ""),
+    "process.env.LABRADOODLE_PASSKEY_RP_ID": JSON.stringify(
+      process.env.LABRADOODLE_PASSKEY_RP_ID ?? "",
+    ),
   },
 });

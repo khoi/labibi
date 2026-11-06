@@ -56,7 +56,11 @@ function fixture() {
     inspect: vi.fn().mockResolvedValue({
       Id: "computer",
       Config: {
-        Labels: { "labradoodle.managed": "true", "labradoodle.botId": "bot", "labradoodle.spaceId": "space" },
+        Labels: {
+          "labradoodle.managed": "true",
+          "labradoodle.botId": "bot",
+          "labradoodle.spaceId": "space",
+        },
       },
       HostConfig: { NetworkMode: "bot-network" },
       State: { Running: true },
