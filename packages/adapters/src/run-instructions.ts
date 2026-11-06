@@ -242,6 +242,7 @@ function toolUsageLine(parts: {
 // Ordering matters: stable blocks first, volatile ones last, so the prefix stays cacheable.
 export function userTurnInstructions(parts: {
   botInstructions: string;
+  chatName?: string | null;
   redactedMemoryContext: string | undefined;
   hasHistoricalContext: boolean;
   historyRetrievalEnabled?: boolean;
@@ -259,6 +260,7 @@ export function userTurnInstructions(parts: {
 }): (string | undefined)[] {
   return [
     parts.botInstructions,
+    parts.chatName ? `This chat is named ${JSON.stringify(parts.chatName)}.` : undefined,
     parts.historyRetrievalEnabled &&
     builtinOffered(parts.disabledBuiltinTools, "search_history") &&
     builtinOffered(parts.disabledBuiltinTools, "read_history")

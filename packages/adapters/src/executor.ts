@@ -1649,6 +1649,7 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
               contextStrategy: deps.contextStrategy,
               instructions: userTurnInstructions({
                 botInstructions: runIdentityInstruction(bot),
+                chatName: thread.name,
                 redactedMemoryContext: memoryContext
                   ? redactSecrets(memoryContext, runSecrets)
                   : undefined,
