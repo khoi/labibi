@@ -791,6 +791,10 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
           )
             ? pinnedModelCredentialError(modelChoice, overrideCredential)
             : undefined;
+        const hostedProvider = (await modelCreditBillingEnabled(deps))
+          ? resolveDeploymentModel().provider
+          : undefined;
+        const modelDefaults = { settings, deployment: runDeployment };
         const selected = pinnedComputerModels
           ? {
               provider: pinnedComputerModels.main.provider,
@@ -802,11 +806,20 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
               override: modelChoice,
               overrideCredential,
               main,
-              hostedProvider: (await modelCreditBillingEnabled(deps))
-                ? resolveDeploymentModel().provider
-                : undefined,
-              defaults: { settings, deployment: runDeployment },
+              hostedProvider,
+              defaults: modelDefaults,
             });
+        // The asker's own default, for when Doodle's model does not run on their connections.
+        const ownDefault =
+          !pinnedComputerModels && !run.modelPinned && hasModelOverride
+            ? selectConfiguredModel({
+                override: null,
+                overrideCredential: null,
+                main,
+                hostedProvider,
+                defaults: modelDefaults,
+              })
+            : null;
         const selectedProvider = selected.provider ?? runtimeFallback?.provider;
         const selectedModelId = selected.id ?? runtimeFallback?.id;
         // A missing or refused connection of the user's own fails every scheduled run alike.
@@ -946,6 +959,35 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
         } else if (await modelAccessDenied()) {
           await failRunBeforeModel(MISSING_MODEL_RUN_ERROR, true);
           return;
+        }
+        const ownProvider = ownDefault?.provider ?? runtimeFallback?.provider;
+        const ownModelId = ownDefault?.id ?? runtimeFallback?.id;
+        if (
+          !start &&
+          ownDefault &&
+          ownProvider &&
+          ownModelId &&
+          (ownProvider !== selectedProvider || ownModelId !== selectedModelId)
+        ) {
+          try {
+            start = {
+              provider: ownProvider,
+              id: ownModelId,
+              credential: ownDefault.credential,
+              thinkingLevel: ownDefault.thinkingLevel,
+              resolved: await resolveModelKey(
+                deps,
+                run.userId,
+                run.spaceId,
+                ownDefault.credential,
+                ownProvider,
+                ownModelId,
+                (values) => runSecrets.push(...values),
+              ),
+            };
+          } catch (error) {
+            if (!isTerminalModelSetupError(error) && !isModelCredentialRejected(error)) throw error;
+          }
         }
         start ??= await startOnBackup();
         if (!start) {
