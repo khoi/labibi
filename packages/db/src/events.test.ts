@@ -371,7 +371,7 @@ describe("thread lock transaction budget", () => {
 
   it("clears a thread with the explicit budget", async () => {
     const tx = {
-      threadMember: { updateMany: vi.fn() },
+      threadMember: { updateMany: vi.fn(), count: vi.fn(async () => 0) },
       thread: {
         update: vi
           .fn()
@@ -393,6 +393,7 @@ describe("thread lock transaction budget", () => {
     await clearThread({ $transaction } as unknown as PrismaClient, {
       spaceId: "workspace-1",
       threadId: "thread-1",
+      userId: "user-1",
     });
 
     expect($transaction).toHaveBeenCalledWith(expect.any(Function), budget);
@@ -4258,7 +4259,7 @@ describe("clearThread", () => {
   it("reports a committed clear even when the legacy binding sweep fails", async () => {
     const tx = {
       externalEffect: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-      threadMember: { updateMany: vi.fn() },
+      threadMember: { updateMany: vi.fn(), count: vi.fn(async () => 0) },
       thread: {
         update: vi
           .fn()
@@ -4293,7 +4294,11 @@ describe("clearThread", () => {
     } as unknown as PrismaClient;
 
     await expect(
-      clearThread(prisma, { spaceId: "workspace-1", threadId: "thread-1" }, new TestFanout()),
+      clearThread(
+        prisma,
+        { spaceId: "workspace-1", threadId: "thread-1", userId: "user-1" },
+        new TestFanout(),
+      ),
     ).resolves.toMatchObject({ event: { type: "thread.cleared" }, cancelledRunIds: ["run-1"] });
     expect(prisma.computer.updateMany).toHaveBeenCalled();
   });
@@ -4303,7 +4308,7 @@ describe("clearThread", () => {
     const publish = vi.spyOn(fanout, "publish");
     const tx = {
       externalEffect: { deleteMany: vi.fn(async () => ({ count: 0 })) },
-      threadMember: { updateMany: vi.fn() },
+      threadMember: { updateMany: vi.fn(), count: vi.fn(async () => 0) },
       thread: {
         update: vi
           .fn()
@@ -4341,7 +4346,11 @@ describe("clearThread", () => {
     } as unknown as PrismaClient;
 
     await expect(
-      clearThread(prisma, { spaceId: "workspace-1", threadId: "thread-1" }, fanout),
+      clearThread(
+        prisma,
+        { spaceId: "workspace-1", threadId: "thread-1", userId: "user-1" },
+        fanout,
+      ),
     ).resolves.toMatchObject({
       event: { type: "thread.cleared" },
       cancelledRunIds: ["run-1"],

@@ -59,6 +59,7 @@ import { runAsSystem } from "./row-security.js";
 import { deleteRunSecretsInTransaction } from "./run-secrets.js";
 import { isRunResponse, readRunTimingFields } from "./run-timing.js";
 import { RUN_TURN_CHECKPOINT_KIND } from "./run-turn-checkpoint.js";
+import { ChatHasOtherPeopleError } from "./scope.js";
 import { recordSecurityEvent } from "./security-events.js";
 import { withTransactionRetry } from "./transaction-retry.js";
 
@@ -126,6 +127,8 @@ export interface ThreadEvents {
 export interface ClearThreadInput {
   spaceId: string;
   threadId: string;
+  /** The person clearing it, who must be the only one in it. */
+  userId: string;
 }
 
 export interface ClearThreadResult {
@@ -386,6 +389,11 @@ export async function clearThread(
       data: { lastMessageAt: new Date() },
       select: { nextMessageSeq: true, historyCompactionGeneration: true },
     });
+    // The thread row lock is the one adding people takes, so no one joins between check and clear.
+    const others = await tx.threadMember.count({
+      where: { threadId: input.threadId, userId: { not: input.userId } },
+    });
+    if (others > 0) throw new ChatHasOtherPeopleError();
     await tx.threadMember.updateMany({
       where: { threadId: input.threadId },
       data: { unread: false },
@@ -426,7 +434,8 @@ export async function clearThread(
       });
     }
     const event = await appendEventInTransaction(tx, {
-      ...input,
+      spaceId: input.spaceId,
+      threadId: input.threadId,
       type: "thread.cleared",
       payload: {},
     });

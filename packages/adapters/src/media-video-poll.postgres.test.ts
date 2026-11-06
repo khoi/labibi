@@ -440,6 +440,7 @@ describePostgres("background video delivery (PostgreSQL)", () => {
       clearThread(prisma, {
         spaceId: h.user.id,
         threadId: h.user.thread.id,
+        userId: h.user.id,
       }),
     );
     h.media.remote = "completed";

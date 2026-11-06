@@ -349,16 +349,15 @@ export function threadsRoutes(ctx: RouterContext) {
       }),
       clear: authed.threads.clear.handler(async ({ context, input }) => {
         const target = await resolveChatTarget(deps.prisma, context.actor, input);
-        // Clearing removes everyone's history, so only a chat with no one else may be cleared.
-        if (target.people > 1) {
-          throw new ORPCError("FORBIDDEN", {
-            message: "Only a chat with no one else in it can be cleared",
+        const { cancelledRunIds, historyCompactionGeneration } = await deps.events
+          .clearThread({
+            spaceId: context.actor.spaceId,
+            threadId: target.threadId,
+            userId: context.actor.userId,
+          })
+          .catch((error) => {
+            throw mapChatError(error);
           });
-        }
-        const { cancelledRunIds, historyCompactionGeneration } = await deps.events.clearThread({
-          spaceId: context.actor.spaceId,
-          threadId: target.threadId,
-        });
         const [configuredMemory] = await Promise.all([
           deps.memoryProviders.resolve(context.actor.spaceId).catch((error) => {
             getLogger().error("semantic memory resolution after thread clear failed", error);

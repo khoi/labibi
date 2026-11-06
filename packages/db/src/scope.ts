@@ -9,6 +9,14 @@ export class IsolationError extends Error {
   }
 }
 
+/** Deleting or clearing a chat removes everyone's history, so only a chat with no one else. */
+export class ChatHasOtherPeopleError extends Error {
+  constructor() {
+    super("Only a chat with no one else in it can be deleted or cleared");
+    this.name = "ChatHasOtherPeopleError";
+  }
+}
+
 /**
  * The actor for a request. Without a chosen Space, a session opens the organization it was
  * first given, which is the one the user was last active in, so its requests never drift

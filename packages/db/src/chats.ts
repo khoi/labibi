@@ -14,7 +14,7 @@ import type { PageShareSecret } from "./page-shares.js";
 import { deletePageShareSecrets } from "./page-shares.js";
 import { threadMessagesByThread } from "./preview-messages.js";
 import { runAsSystem } from "./row-security.js";
-import { IsolationError } from "./scope.js";
+import { ChatHasOtherPeopleError, IsolationError } from "./scope.js";
 import { lockSpaceForContentCreation } from "./spaces.js";
 import {
   activeRunSelection,
@@ -31,13 +31,6 @@ export class NotWorkspaceMemberError extends IsolationError {
   constructor() {
     super("Only people in this workspace can be in its chats");
     this.name = "NotWorkspaceMemberError";
-  }
-}
-
-export class ChatHasOtherPeopleError extends Error {
-  constructor() {
-    super("Only a chat with no one else in it can be deleted");
-    this.name = "ChatHasOtherPeopleError";
   }
 }
 

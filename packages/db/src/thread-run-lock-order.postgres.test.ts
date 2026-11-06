@@ -272,7 +272,9 @@ describePostgres("thread row before run rows for clear and control release (Post
     try {
       const xactId = await holder.lockTaken;
       probe = await connectProbe();
-      work = runAsTenant({ spaceId, userId }, () => clearThread(prisma, { spaceId, threadId }));
+      work = runAsTenant({ spaceId, userId }, () =>
+        clearThread(prisma, { spaceId, threadId, userId }),
+      );
       work.catch(() => undefined);
 
       await untilBlocked(probe, xactId);
@@ -321,7 +323,9 @@ describePostgres("thread row before run rows for clear and control release (Post
     try {
       await holder.lockTaken;
       probe = await connectProbe();
-      work = runAsTenant({ spaceId, userId }, () => clearThread(prisma, { spaceId, threadId }));
+      work = runAsTenant({ spaceId, userId }, () =>
+        clearThread(prisma, { spaceId, threadId, userId }),
+      );
       work.catch(() => undefined);
 
       // The cancellation commits while the computer row is held elsewhere: the clear

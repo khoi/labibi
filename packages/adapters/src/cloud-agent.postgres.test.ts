@@ -142,7 +142,7 @@ describePostgres("cloud agent lifecycle and recovery (PostgreSQL + Cursor emulat
     // Clearing a chat is an API request by its owner.
     const clear = () =>
       runAsTenant({ spaceId: id, userId: id }, () =>
-        clearThread(prisma, { spaceId: id, threadId: thread.id }),
+        clearThread(prisma, { spaceId: id, threadId: thread.id, userId: id }),
       );
     const wakes = () =>
       asSystem(prisma).run.findMany({ where: { threadId: thread.id, trigger: "cloud_agent" } });
