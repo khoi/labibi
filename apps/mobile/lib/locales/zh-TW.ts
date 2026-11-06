@@ -1282,6 +1282,8 @@ export const ZH_TW_MESSAGES: Record<string, string> = {
   "This removes the connection from every workspace.": "這會從所有工作區移除此連線。",
   "Waiting for Doodle’s response.": "正在等待 Doodle 的回覆。",
   Workspace: "工作區",
+  "Doodle joined": "Doodle 已加入",
+  "Doodle left": "Doodle 已離開",
 };
 
 export const PEER_MESSAGE_FORMS = { other: "與{peer}的 {count} 則訊息" };

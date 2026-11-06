@@ -1272,6 +1272,8 @@ export const NL_MESSAGES: Record<string, string> = {
     "Hiermee wordt de verbinding uit elke werkruimte verwijderd.",
   "Waiting for Doodle’s response.": "Wachten op het antwoord van Doodle.",
   Workspace: "Werkruimte",
+  "Doodle joined": "Doodle doet mee",
+  "Doodle left": "Doodle is vertrokken",
 };
 
 export const PEER_MESSAGE_FORMS: Partial<Record<Intl.LDMLPluralRule, string>> = {

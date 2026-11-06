@@ -1266,6 +1266,8 @@ export const PL_MESSAGES: Record<string, string> = {
     "To usuwa połączenie ze wszystkich obszarów roboczych.",
   "Waiting for Doodle’s response.": "Czekam na odpowiedź Doodle.",
   Workspace: "Obszar roboczy",
+  "Doodle joined": "Doodle dołączył",
+  "Doodle left": "Doodle wyszedł",
 };
 
 export const PEER_MESSAGE_FORMS: Partial<Record<Intl.LDMLPluralRule, string>> = {

@@ -1,6 +1,4 @@
-import { plainTextLinkParts } from "@labradoodle/chat-ui/native";
-import type { MentionTextPart } from "@labradoodle/core";
-import { DOODLE_NAME, displayName, splitMentionText } from "@labradoodle/core";
+import { DOODLE_NAME, displayName } from "@labradoodle/core";
 import type { ReactNode } from "react";
 import { createContext } from "react";
 
@@ -35,19 +33,6 @@ export function userMentionTargets(chat: {
     .filter(({ name }) => name && counts.get(name.toLowerCase()) === 1)
     .map(({ member, name }) => ({ kind: "person", id: member.userId, name, image: member.image }));
   return chat.doodle ? [{ kind: "doodle", id: "doodle", name: DOODLE_NAME }, ...people] : people;
-}
-
-/**
- * A sent message cut into plain runs and mentions; a link, email address or page link is never
- * searched for names.
- */
-export function textWithMentions(
-  text: string,
-  targets: readonly UserMentionTarget[],
-): MentionTextPart<UserMentionTarget>[] {
-  return plainTextLinkParts(text).flatMap((piece) =>
-    piece.type === "text" ? splitMentionText(piece.value, targets) : [{ text: piece.value }],
-  );
 }
 
 /** Opens a page a reply links as `[title](page:<pageId>)`. */

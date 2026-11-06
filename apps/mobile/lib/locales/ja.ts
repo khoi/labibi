@@ -1304,6 +1304,8 @@ export const JA_MESSAGES: Record<string, string> = {
     "この接続はすべてのワークスペースから削除されます。",
   "Waiting for Doodle’s response.": "Doodle の応答を待っています。",
   Workspace: "ワークスペース",
+  "Doodle joined": "Doodle が参加しました",
+  "Doodle left": "Doodle が退出しました",
 };
 
 export const PEER_MESSAGE_FORMS = { other: "{peer}とのメッセージ{count}件" };

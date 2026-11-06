@@ -1312,6 +1312,8 @@ export const RU_MESSAGES: Record<string, string> = {
     "Подключение будет удалено из всех рабочих пространств.",
   "Waiting for Doodle’s response.": "Ожидание ответа Doodle.",
   Workspace: "Рабочее пространство",
+  "Doodle joined": "Doodle присоединился",
+  "Doodle left": "Doodle вышел",
 };
 
 export const PEER_MESSAGE_FORMS: Partial<Record<Intl.LDMLPluralRule, string>> = {

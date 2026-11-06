@@ -1284,6 +1284,8 @@ export const ZH_MESSAGES: Record<string, string> = {
   "This removes the connection from every workspace.": "这会从所有工作区移除该连接。",
   "Waiting for Doodle’s response.": "正在等待 Doodle 的回复。",
   Workspace: "工作区",
+  "Doodle joined": "Doodle 已加入",
+  "Doodle left": "Doodle 已离开",
 };
 
 export const PEER_MESSAGE_FORMS: Partial<Record<Intl.LDMLPluralRule, string>> = {

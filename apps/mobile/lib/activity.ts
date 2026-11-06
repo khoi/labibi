@@ -1,18 +1,6 @@
 import type { RoutineRun, RunActivityRow } from "@labradoodle/contracts";
 import { routineRunLateness } from "@labradoodle/core";
-import { rpc } from "../lib/api";
 import { dateLocaleForUi, t } from "./i18n";
-
-export async function fetchSpaceActivity(): Promise<{
-  active: RunActivityRow[];
-  recent: RunActivityRow[];
-}> {
-  const [active, recent] = await Promise.all([
-    rpc("runs/list", { filter: "active" }),
-    rpc("runs/list", { filter: "recent" }),
-  ]);
-  return { active: active.runs, recent: recent.runs };
-}
 
 export function formatActivityRelativeTime(iso: string, now = new Date()): string {
   const date = new Date(iso);

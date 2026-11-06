@@ -1279,6 +1279,8 @@ export const DE_MESSAGES: Record<string, string> = {
     "Dadurch wird die Verbindung aus allen Arbeitsbereichen entfernt.",
   "Waiting for Doodle’s response.": "Warte auf die Antwort von Doodle.",
   Workspace: "Arbeitsbereich",
+  "Doodle joined": "Doodle ist beigetreten",
+  "Doodle left": "Doodle hat den Chat verlassen",
 };
 
 export const PEER_MESSAGE_FORMS: Partial<Record<Intl.LDMLPluralRule, string>> = {

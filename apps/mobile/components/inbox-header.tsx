@@ -53,7 +53,7 @@ export function InboxHeader({
           accessibilityLabel={t("New chat")}
           onPress={newChat}
         >
-          <NativeSymbol ios="square.and.pencil" android="create-outline" size={18} />
+          <NativeSymbol ios="plus" android="add" size={18} />
         </HeaderButton>
       </View>
     </View>

@@ -2,10 +2,11 @@ import { markdownCodeBlocks } from "@labradoodle/chat-ui/native";
 import type { LoginFieldInput, MessageReaction } from "@labradoodle/contracts";
 import { canReactToThreadMessage, MESSAGE_REACTIONS } from "@labradoodle/contracts";
 import { canMarkMessageUnread, liveMessageComposing } from "@labradoodle/core";
+import { typeScale } from "@labradoodle/ui-tokens";
 import * as Clipboard from "expo-clipboard";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { GestureResponderEvent, LayoutChangeEvent } from "react-native";
-import { Platform, View } from "react-native";
+import { Platform, Text, View } from "react-native";
 import Animated, { useReducedMotion, ZoomIn } from "react-native-reanimated";
 import type { MobileMessage } from "../../lib/api";
 import { blockText, copyableMobileMessageText, selectableMobileMessageText } from "../../lib/api";
@@ -344,6 +345,32 @@ export const MessageRow = memo(function MessageRow({
     hasLike,
     optimisticLike,
   ]);
+  // A line about the chat itself, such as Doodle joining, sits centred between the messages.
+  if (message.role === "system") {
+    const note = blockText(message);
+    return (
+      <View
+        key={message.id}
+        onLayout={onLayout}
+        style={{ width: "100%", marginTop: headerAdjacent ? 0 : 12 }}
+      >
+        {separator ? <TimeSeparator createdAt={message.createdAt} /> : null}
+        <Text
+          style={{
+            color: tokens.faintForeground,
+            ...typeScale.caption,
+            textAlign: "center",
+          }}
+        >
+          {note === "Doodle joined"
+            ? t("Doodle joined")
+            : note === "Doodle left"
+              ? t("Doodle left")
+              : note}
+        </Text>
+      </View>
+    );
+  }
   const layout = messageRowLayout(message.blocks, {
     gutter: Boolean(activity),
     inGroup,

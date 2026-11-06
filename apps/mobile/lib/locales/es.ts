@@ -1231,6 +1231,8 @@ export const ES_MESSAGES: Record<string, string> = {
     "Esto elimina la conexión de todos los espacios de trabajo.",
   "Waiting for Doodle’s response.": "Esperando la respuesta de Doodle.",
   Workspace: "Espacio de trabajo",
+  "Doodle joined": "Doodle se unió",
+  "Doodle left": "Doodle salió",
 };
 
 export const PEER_MESSAGE_FORMS: Partial<Record<Intl.LDMLPluralRule, string>> = {

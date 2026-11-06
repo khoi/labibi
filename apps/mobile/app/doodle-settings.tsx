@@ -130,6 +130,11 @@ export default function DoodleSettingsScreen() {
     });
   }
 
+  // Only the workspace's owner sets Doodle up; anyone else who lands here goes back.
+  useEffect(() => {
+    if (doodle && !doodle.canCustomize) router.back();
+  }, [doodle?.canCustomize]);
+
   // The searchable model list hands its pick back as a one-shot route param.
   useEffect(() => {
     if (pickedModel === undefined || !doodle) return;
@@ -137,7 +142,7 @@ export default function DoodleSettingsScreen() {
     selectModel(pickedModel);
   }, [pickedModel, doodle]);
 
-  if (!doodle) {
+  if (!doodle?.canCustomize) {
     return (
       <View style={styles.center}>
         <Stack.Screen options={glassHeaderOptions(DOODLE_NAME)} />

@@ -52,7 +52,7 @@ export function useHomeHeader({
           label: t("New chat"),
           accessibilityLabel: t("New chat"),
           identifier: "home-new-chat-button",
-          icon: { type: "sfSymbol" as const, name: "square.and.pencil" },
+          icon: { type: "sfSymbol" as const, name: "plus" },
           onPress: newChat,
         },
       ],
