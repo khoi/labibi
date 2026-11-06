@@ -58,7 +58,7 @@ function LegacyPaywallPage({ status }: { status: BillingStatus }) {
 
   const trialDays = status.trialDays;
   const included = [
-    t`Bots with their own computer and browser`,
+    t`Doodle with its own computer and browser`,
     t`Routines that run while you're away`,
     t`Any model, with your own key`,
     t`Web, desktop and mobile apps`,

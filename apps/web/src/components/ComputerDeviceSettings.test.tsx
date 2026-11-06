@@ -99,7 +99,7 @@ it("turns this computer on and off through the desktop app only", async () => {
   desktopWith(device);
   await act(async () => root.render(<ComputerDeviceSettings />));
   const toggle = host.querySelector<HTMLInputElement>('[data-testid="this-computer-toggle"]')!;
-  expect(host.textContent).toContain("Let bots use this computer");
+  expect(host.textContent).toContain("Let Doodle use this computer");
   expect(toggle.checked).toBe(false);
 
   vi.mocked(listUserDevices).mockResolvedValue([laptop]);

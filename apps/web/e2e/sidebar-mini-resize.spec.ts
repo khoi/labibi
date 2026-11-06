@@ -17,7 +17,7 @@ test("sidebar rail keeps chats interactive and remembers a dragged width", async
   await rpc(page, "threads/markUnread", { threadId: bot.id });
   await page.reload();
   const sidebar = page.getByTestId("bots-sidebar");
-  const handle = page.getByRole("separator", { name: "Resize bots sidebar" });
+  const handle = page.getByRole("separator", { name: "Resize sidebar" });
   const row = page.locator(`[data-roster-bot-id="${bot.id}"]`);
   await expect(sidebar).toHaveCSS("width", "316px");
   await handle.hover({ position: { x: 4, y: 300 } });
@@ -103,7 +103,7 @@ test("sidebar resize follows RTL and reduced motion", async ({ page }, testInfo)
   // A viewport change renders the logical sidebar side after changing document direction.
   await page.setViewportSize({ width: 1300, height: 900 });
   const sidebar = page.getByTestId("bots-sidebar");
-  const handle = page.getByRole("separator", { name: "Resize bots sidebar" });
+  const handle = page.getByRole("separator", { name: "Resize sidebar" });
   await expect(sidebar).toHaveCSS("transition-property", "none");
   await handle.focus();
   await handle.press("ArrowLeft");
@@ -135,7 +135,7 @@ test("narrow desktop keeps the chat width when both panels are open", async ({
   await signup(page, `sidebar-panels-${Date.now()}@rakazo.test`, "password12", "Sidebar Sample");
   await completeOnboarding(page);
   const sidebar = page.getByTestId("bots-sidebar");
-  const handle = page.getByRole("separator", { name: "Resize bots sidebar" });
+  const handle = page.getByRole("separator", { name: "Resize sidebar" });
   await handle.focus();
   await handle.press("End");
   await expect(sidebar).toHaveCSS("width", "480px");
@@ -174,7 +174,7 @@ test("sidebar snaps its layout during a held drag in both directions", async ({
     await sidebar.screenshot({ path, animations: "disabled" });
     await testInfo.attach(name, { contentType: "image/png", path });
   };
-  const handle = page.getByRole("separator", { name: "Resize bots sidebar" });
+  const handle = page.getByRole("separator", { name: "Resize sidebar" });
   const minimize = page.getByTestId("minimize-bots-sidebar");
   await page.getByTestId("minimize-bots-sidebar").click();
   await expect(sidebar).toHaveCSS("width", "72px");

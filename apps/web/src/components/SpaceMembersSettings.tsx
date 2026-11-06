@@ -122,7 +122,7 @@ export function SpaceMembersSettings({
       setConfirmError(
         errorText(
           err,
-          confirm.kind === "remove" ? t`Could not remove member` : t`Could not leave space`,
+          confirm.kind === "remove" ? t`Could not remove member` : t`Could not leave workspace`,
         ),
       );
     } finally {
@@ -206,7 +206,7 @@ export function SpaceMembersSettings({
             setConfirm({ kind: "leave" });
           }}
         >
-          <Trans>Leave space</Trans>
+          <Trans>Leave workspace</Trans>
         </Button>
       ) : null}
       {confirm ? (

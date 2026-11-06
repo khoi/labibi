@@ -1251,7 +1251,7 @@ it("shows an image confirmation as a warning with file and model actions", () =>
     expect.arrayContaining(["Send as file", "Change model"]),
   );
   const note = Array.from(error.querySelectorAll("p")).find(
-    (element) => element.textContent === "The bot can use the file but won't see the picture.",
+    (element) => element.textContent === "Doodle can use the file but won't see the picture.",
   );
   expect(note).toBeDefined();
   const sendAsFile = buttons.find((button) => button.textContent === "Send as file")!;
@@ -1263,7 +1263,7 @@ it("shows an image confirmation as a warning with file and model actions", () =>
   rerenderComposer({ sendError: "Could not send the message.", imageConfirmation: false });
   expect(error.className).toContain("text-destructive");
   expect(error.className).not.toContain("text-warning");
-  expect(error.textContent).not.toContain("The bot can use the file but won't see the picture.");
+  expect(error.textContent).not.toContain("Doodle can use the file but won't see the picture.");
   expect(
     Array.from(error.querySelectorAll("button")).some(
       (button) => button.textContent === "Change model",

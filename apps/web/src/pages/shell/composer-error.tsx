@@ -163,7 +163,7 @@ export function ComposerError({
               {t`Change model`}
             </Button>
             <p id={fileNoteId} className="basis-full text-xs text-muted-foreground">
-              {t`The bot can use the file but won't see the picture.`}
+              {t`Doodle can use the file but won't see the picture.`}
             </p>
           </div>
         ) : null}

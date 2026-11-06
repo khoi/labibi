@@ -10,7 +10,6 @@ import {
   CommandList,
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogTitle,
   DoodleAvatar,
   Input,
@@ -18,7 +17,6 @@ import {
   Switch,
 } from "@labradoodle/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { Check } from "lucide-react";
 import { useId, useState } from "react";
 import { errorText } from "../../lib/user-error";
 
@@ -123,7 +121,7 @@ function NewChatForm({
         />
       </label>
       {members.length > 0 ? (
-        <Command className="mt-3 rounded-none! bg-transparent px-3">
+        <Command className="mt-3 h-auto rounded-none! bg-transparent px-3">
           <CommandInput placeholder={t`Search`} />
           <CommandList className="max-h-64">
             <CommandEmpty>{t`No results`}</CommandEmpty>
@@ -143,7 +141,6 @@ function NewChatForm({
                     <span className="min-w-0 flex-1 truncate" dir="auto">
                       {member.name}
                     </span>
-                    {selected ? <Check className="size-4" aria-hidden="true" /> : null}
                   </CommandItem>
                 );
               })}
@@ -163,11 +160,11 @@ function NewChatForm({
         </div>
       ) : null}
       {error ? <p className="px-5 pt-3 text-[13px] text-destructive">{error}</p> : null}
-      <DialogFooter className="mx-0 mb-0 mt-4 rounded-b-xl px-5 pb-5">
+      <div className="flex justify-end px-5 pt-4 pb-5">
         <Button type="submit" disabled={busy} data-testid="new-chat-start">
           <Trans>Start chat</Trans>
         </Button>
-      </DialogFooter>
+      </div>
     </form>
   );
 }

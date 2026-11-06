@@ -4,7 +4,6 @@ import { Trans } from "@lingui/react/macro";
 import { ORPCError } from "@orpc/client";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { SharedSpaceRules } from "../components/SharedSpaceRules";
 import { rpc, selectSpace } from "../lib/rpc";
 import { errorText } from "../lib/user-error";
 import { AuthFrame, submitClass } from "./Auth";
@@ -113,7 +112,6 @@ export function InvitePage() {
       <p className="-mt-5 text-center text-muted-foreground">
         <Trans>{inviterName} invited you</Trans>
       </p>
-      <SharedSpaceRules className="mx-auto mt-4 max-w-sm text-start text-sm" />
       {joinError ? (
         <p role="alert" className="mt-3 text-sm text-destructive">
           {joinError}

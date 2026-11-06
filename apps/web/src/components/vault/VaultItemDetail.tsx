@@ -335,7 +335,7 @@ export function VaultItemDetail({
       {confirmingRemove ? (
         <div className="flex flex-col gap-2">
           <p className="text-[13px] text-foreground">
-            <Trans>Remove {secretName}? Bots will no longer be able to use it.</Trans>
+            <Trans>Remove {secretName}? Doodle will no longer be able to use it.</Trans>
           </p>
           <div className="flex gap-2">
             <Button

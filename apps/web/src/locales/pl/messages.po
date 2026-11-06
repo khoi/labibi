@@ -380,10 +380,6 @@ msgstr "/ miesiąc"
 msgid "A bit of everything"
 msgstr "Po trochu wszystkiego"
 
-#: src/components/SharedSpaceRules.tsx
-msgid "A bot uses the accounts of whoever messages it, and anyone here can read its reply."
-msgstr "Bot korzysta z kont osoby, która do niego pisze, a każdy tutaj może przeczytać jego odpowiedź."
-
 #: src/pages/RoutineEditor.tsx
 msgid "A command's output"
 msgstr "Wynik polecenia"
@@ -399,8 +395,8 @@ msgid "A subscription credential is stored securely."
 msgstr "Dane logowania do subskrypcji są bezpiecznie zapisane."
 
 #: src/pages/KnowledgeSection.tsx
-msgid "About {kb} KB of memory no longer reaches the bot."
-msgstr "Około {kb} KB pamięci nie dociera już do bota."
+msgid "About {kb} KB of memory no longer reaches Doodle."
+msgstr "Około {kb} KB pamięci nie trafia już do Doodle."
 
 #: src/components/InfoTooltip.tsx
 msgid "About {label}"
@@ -632,8 +628,8 @@ msgid "Allow"
 msgstr "Zezwól"
 
 #: src/components/AskCard.tsx
-msgid "Allow in this space"
-msgstr "Zezwól w tej przestrzeni"
+msgid "Allow in this workspace"
+msgstr "Zezwól w tym obszarze roboczym"
 
 #: src/lib/dictation.ts
 msgid "Allow Labradoodle to use Speech Recognition and the microphone in System Settings."
@@ -648,8 +644,8 @@ msgid "Allow writing"
 msgstr "Zezwól na zapis"
 
 #: src/components/AskCard.tsx
-msgid "Allowed in this space"
-msgstr "Zezwolono w tej przestrzeni"
+msgid "Allowed in this workspace"
+msgstr "Dozwolone w tym obszarze roboczym"
 
 #: src/components/AskCard.tsx
 msgid "Allowed once"
@@ -935,29 +931,9 @@ msgstr "Zablokuj"
 msgid "Booting live desktop…"
 msgstr "Uruchamianie pulpitu na żywo…"
 
-#: src/lib/identity-display.ts
-msgid "Bot"
-msgstr "Bot"
-
-#: src/pages/RoutineEditor.tsx
-msgid "Bot's model"
-msgstr "Model bota"
-
 #: src/components/SignupSurvey.tsx
 msgid "Both"
 msgstr "Oba"
-
-#: src/pages/Artifacts.tsx
-msgid "Bots"
-msgstr "Boty"
-
-#: src/components/ModelCredits.tsx
-msgid "Bots and browser automation"
-msgstr "Boty i automatyzacja przeglądarki"
-
-#: src/pages/Paywall.tsx
-msgid "Bots with their own computer and browser"
-msgstr "Boty z własnym komputerem i przeglądarką"
 
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 msgid "Brain label"
@@ -1081,6 +1057,7 @@ msgstr "Zmienianie…"
 msgid "Chart failed to render: {error}"
 msgstr "Nie udało się wyświetlić wykresu: {error}"
 
+#: src/lib/identity-display.ts
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/SpaceSearch.tsx
 msgid "Chat"
@@ -1101,6 +1078,10 @@ msgstr "Ustawienia czatu"
 #: src/lib/localized-provider-hint.ts
 msgid "ChatGPT subscription"
 msgstr "Subskrypcja ChatGPT"
+
+#: src/pages/Artifacts.tsx
+msgid "Chats"
+msgstr "Czaty"
 
 #: src/components/ComputersUnavailableHint.tsx
 #: src/pages/HostComputerPrompt.tsx
@@ -1351,8 +1332,8 @@ msgid "Computers"
 msgstr "Komputery"
 
 #: src/components/ComputersUnavailableHint.tsx
-msgid "Computers are available. Reload or open a bot to continue."
-msgstr "Komputery są dostępne. Odśwież stronę lub otwórz bota, aby kontynuować."
+msgid "Computers are available. Reload to continue."
+msgstr "Komputery są dostępne. Odśwież, aby kontynuować."
 
 #: src/components/ComputersUnavailableHint.tsx
 msgid "Computers are off on this server."
@@ -1728,8 +1709,8 @@ msgid "Could not install plugin"
 msgstr "Nie udało się zainstalować wtyczki"
 
 #: src/components/SpaceMembersSettings.tsx
-msgid "Could not leave space"
-msgstr "Nie udało się opuścić przestrzeni"
+msgid "Could not leave workspace"
+msgstr "Nie udało się opuścić obszaru roboczego"
 
 #: src/components/ErrorBoundary.tsx
 #: src/components/PasskeySettings.tsx
@@ -2346,8 +2327,8 @@ msgid "Docker"
 msgstr "Docker"
 
 #: src/pages/HostComputerPrompt.tsx
-msgid "Docker limits access to your computer for added security. Using {hostLabel} lets bots work with your local files and tools."
-msgstr "Docker ogranicza dostęp do Twojego komputera dla większego bezpieczeństwa. Użycie {hostLabel} pozwala botom pracować na lokalnych plikach i narzędziach."
+msgid "Docker limits access to your computer for added security. Using {hostLabel} lets Doodle work with your local files and tools."
+msgstr "Docker ogranicza dostęp do Twojego komputera dla większego bezpieczeństwa. Użycie {hostLabel} pozwala Doodle pracować z Twoimi lokalnymi plikami i narzędziami."
 
 #: src/pages/KnowledgeSection.tsx
 msgid "Document changed. Reopen to edit the latest version."
@@ -2370,6 +2351,14 @@ msgstr "Gotowe"
 msgid "Doodle"
 msgstr "Doodle"
 
+#: src/components/ModelCredits.tsx
+msgid "Doodle and browser automation"
+msgstr "Doodle i automatyzacja przeglądarki"
+
+#: src/pages/shell/composer-error.tsx
+msgid "Doodle can use the file but won't see the picture."
+msgstr "Doodle może użyć pliku, ale nie zobaczy obrazu."
+
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Doodle is watching, not acting"
 msgstr "Doodle obserwuje, bez wykonywania działań"
@@ -2385,6 +2374,14 @@ msgstr "Doodle wyszedł"
 #: src/pages/shell/computer-view.tsx
 msgid "Doodle runs on this computer, not a Linux desktop. Shell and files use your home folder."
 msgstr "Doodle działa na tym komputerze, bez pulpitu Linuksa. Powłoka i pliki korzystają z Twojego folderu domowego."
+
+#: src/pages/Paywall.tsx
+msgid "Doodle with its own computer and browser"
+msgstr "Doodle z własnym komputerem i przeglądarką"
+
+#: src/pages/RoutineEditor.tsx
+msgid "Doodle's model"
+msgstr "Model Doodle"
 
 #: src/components/ModelCredits.tsx
 msgid "Downgrade at renewal"
@@ -2556,10 +2553,6 @@ msgstr "Co miesiąc"
 #: src/pages/RoutineSchedule.tsx
 msgid "Every week"
 msgstr "Co tydzień"
-
-#: src/components/SharedSpaceRules.tsx
-msgid "Everyone in this space sees all its chats, bots and memory."
-msgstr "Wszyscy w tej przestrzeni widzą wszystkie jej czaty, boty i pamięć."
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Executor token"
@@ -2781,8 +2774,8 @@ msgid "Go home"
 msgstr "Przejdź do strony głównej"
 
 #: src/pages/shell/keyboard-shortcuts-dialog.tsx
-msgid "Go to bot"
-msgstr "Przejdź do bota"
+msgid "Go to chat"
+msgstr "Przejdź do czatu"
 
 #: src/pages/AdminAccessPage.tsx
 msgid "Grant"
@@ -2791,10 +2784,6 @@ msgstr "Przyznaj"
 #: src/pages/AdminAccessPage.tsx
 msgid "Granting…"
 msgstr "Przyznawanie…"
-
-#: src/lib/identity-display.ts
-msgid "Group"
-msgstr "Grupa"
 
 #: src/pages/RoutineEditor.tsx
 msgid "header"
@@ -3097,12 +3086,12 @@ msgid "Leave chat"
 msgstr "Opuść czat"
 
 #: src/components/SpaceMembersSettings.tsx
-msgid "Leave space"
-msgstr "Opuść przestrzeń"
+msgid "Leave workspace"
+msgstr "Opuść obszar roboczy"
 
 #: src/components/ComputerDeviceSettings.tsx
-msgid "Let bots use this computer"
-msgstr "Pozwól botom używać tego komputera"
+msgid "Let Doodle use this computer"
+msgstr "Pozwól Doodle używać tego komputera"
 
 #: src/pages/MemorySettingsOverlay.tsx
 msgid "Lets Doodle save and recall facts by meaning, alongside MEMORY.md."
@@ -3189,8 +3178,8 @@ msgid "Loading…"
 msgstr "Wczytywanie…"
 
 #: src/pages/HostComputerPrompt.tsx
-msgid "Local access lets bots run commands without asking. Avoid it on shared or public servers."
-msgstr "Dostęp lokalny pozwala botom uruchamiać polecenia bez pytania. Unikaj go na współdzielonych i publicznych serwerach."
+msgid "Local access lets Doodle run commands without asking. Avoid it on shared or public servers."
+msgstr "Dostęp lokalny pozwala Doodle uruchamiać polecenia bez pytania. Unikaj go na współdzielonych lub publicznych serwerach."
 
 #: src/pages/HostComputerPrompt.tsx
 msgid "Local computer access requires the latest desktop app."
@@ -3555,10 +3544,6 @@ msgstr "Nowe komputery działają na"
 msgid "New contact"
 msgstr "Nowy kontakt"
 
-#: src/pages/shell/keyboard-shortcuts-dialog.tsx
-msgid "New group chat"
-msgstr "Nowy czat grupowy"
-
 #: src/components/VaultSettings.tsx
 msgid "New login"
 msgstr "Nowy login"
@@ -3585,8 +3570,8 @@ msgid "Next match"
 msgstr "Następne dopasowanie"
 
 #: src/pages/shell/keyboard-shortcuts-dialog.tsx
-msgid "Next or previous bot"
-msgstr "Następny lub poprzedni bot"
+msgid "Next or previous chat"
+msgstr "Następny lub poprzedni czat"
 
 #: src/components/markdown-copy.tsx
 msgid "Next page"
@@ -4322,8 +4307,8 @@ msgid "Remove {memberName}?"
 msgstr "Usunąć {memberName}?"
 
 #: src/components/vault/VaultItemDetail.tsx
-msgid "Remove {secretName}? Bots will no longer be able to use it."
-msgstr "Usunąć {secretName}? Boty nie będą już mogły z tego korzystać."
+msgid "Remove {secretName}? Doodle will no longer be able to use it."
+msgstr "Usunąć {secretName}? Doodle nie będzie już mógł z niego korzystać."
 
 #: src/components/TrustedLinkSitesSettings.tsx
 msgid "Remove {site}"
@@ -4440,13 +4425,13 @@ msgstr "Resetowanie"
 msgid "Resetting…"
 msgstr "Resetowanie…"
 
-#: src/pages/shell/sidebar-layout.tsx
-msgid "Resize bots sidebar"
-msgstr "Zmień szerokość panelu botów"
-
 #: src/pages/ResizableSidePanel.tsx
 msgid "Resize panel"
 msgstr "Zmień rozmiar panelu"
+
+#: src/pages/shell/sidebar-layout.tsx
+msgid "Resize sidebar"
+msgstr "Zmień rozmiar paska bocznego"
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 msgid "Responses"
@@ -4664,6 +4649,7 @@ msgstr "Ekran nie jest połączony"
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/shell/chat-model-picker.tsx
 #: src/pages/shell/command-palette.tsx
+#: src/pages/shell/keyboard-shortcuts-dialog.tsx
 #: src/pages/shell/new-chat-dialog.tsx
 #: src/pages/shell/shell-sidebar.tsx
 #: src/pages/shell/side-panel.tsx
@@ -4679,10 +4665,6 @@ msgstr "Szukaj aplikacji"
 #: src/pages/Artifacts.tsx
 msgid "Search artifacts…"
 msgstr "Szukaj artefaktów…"
-
-#: src/pages/shell/keyboard-shortcuts-dialog.tsx
-msgid "Search bots"
-msgstr "Szukaj botów"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Search by domain"
@@ -4987,10 +4969,6 @@ msgstr "Posortowano według {column}, rosnąco"
 msgid "Sorted by {column}, descending"
 msgstr "Posortowano według {column}, malejąco"
 
-#: src/lib/identity-display.ts
-msgid "Space"
-msgstr "Przestrzeń"
-
 #: src/pages/shell/message-view.tsx
 msgid "Speak"
 msgstr "Mów"
@@ -5227,14 +5205,6 @@ msgstr "Testowanie"
 msgid "Testing…"
 msgstr "Testowanie…"
 
-#: src/pages/shell/composer-error.tsx
-msgid "The bot can use the file but won't see the picture."
-msgstr "Bot może użyć pliku, ale nie zobaczy obrazu."
-
-#: src/components/SecretAskCard.tsx
-msgid "The bot's browser stays signed in for everyone in this space"
-msgstr "Przeglądarka bota pozostaje zalogowana dla wszystkich w tej przestrzeni"
-
 #: src/lib/model-connection-preflight.ts
 msgid "The connection timed out."
 msgstr "Upłynął czas połączenia."
@@ -5408,8 +5378,8 @@ msgid "This provider is not connected yet."
 msgstr "Ten dostawca nie jest jeszcze połączony."
 
 #: src/pages/ModelSettingsOverlay.tsx
-msgid "This removes the connection from every space."
-msgstr "Spowoduje to usunięcie połączenia ze wszystkich przestrzeni."
+msgid "This removes the connection from every workspace."
+msgstr "To usuwa połączenie ze wszystkich obszarów roboczych."
 
 #: src/pages/Auth.tsx
 msgid "This reset link is invalid or expired"
@@ -5829,8 +5799,8 @@ msgid "When to use"
 msgstr "Kiedy używać"
 
 #: src/pages/HostComputerPrompt.tsx
-msgid "Where should bots run?"
-msgstr "Gdzie mają działać boty?"
+msgid "Where should Doodle run?"
+msgstr "Gdzie ma działać Doodle?"
 
 #: src/components/pages/SharePopover.tsx
 msgid "Who can open this page"
@@ -5850,6 +5820,7 @@ msgstr "Praca w toku…"
 msgid "Works with your ChatGPT or Claude plan."
 msgstr "Działa z Twoim planem ChatGPT lub Claude."
 
+#: src/lib/identity-display.ts
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
 #: src/pages/settings-nav.ts
 #: src/pages/SettingsOverlay.tsx
@@ -5938,10 +5909,6 @@ msgstr "Twój OpenAI"
 #: src/lib/run-error.ts
 msgid "Your OpenRouter"
 msgstr "Twój OpenRouter"
-
-#: src/components/SharedSpaceRules.tsx
-msgid "Your other spaces stay private."
-msgstr "Twoje pozostałe przestrzenie pozostają prywatne."
 
 #: src/components/ModelCredits.tsx
 msgid "Your plan becomes {annualPrice} / year when your trial ends."

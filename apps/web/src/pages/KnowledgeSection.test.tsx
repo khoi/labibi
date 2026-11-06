@@ -433,7 +433,7 @@ it("opens skills from the composer's cached list and saves back into it", async 
   }
 });
 
-it("says how much memory no longer reaches the bot", async () => {
+it("says how much memory no longer reaches Doodle", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   const host = document.createElement("div");
   const root = createRoot(host);
@@ -476,7 +476,7 @@ it("says how much memory no longer reaches the bot", async () => {
 
     await show(root, <KnowledgeSection threadId="fixture" />);
 
-    expect(host.textContent).toContain("About 20 KB of memory no longer reaches the bot.");
+    expect(host.textContent).toContain("About 20 KB of memory no longer reaches Doodle.");
   } finally {
     memoryApi.budget.mockReset().mockResolvedValue({
       limitBytes: 32768,

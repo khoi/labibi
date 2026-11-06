@@ -31,7 +31,8 @@ function formatAnsweredState(
   if (!approval) return answer === "approved" ? t`Sent` : selectedAskActionLabel(answer, actions);
   if (outcome === "created") return t`Created`;
   if (outcome === "cancelled") return t`Cancelled`;
-  if (answer === "allow") return allowsSpace(actions) ? t`Allowed in this space` : t`Allowed once`;
+  if (answer === "allow")
+    return allowsSpace(actions) ? t`Allowed in this workspace` : t`Allowed once`;
   if (answer === "always") return t`Always allowed`;
   if (answer === "deny") return t`Denied`;
   return t`Answered: ${answer}`;
@@ -55,7 +56,8 @@ function approvalActionLabel(
 ): string {
   if (outcome === "created") return t`Create space`;
   if (outcome === "cancelled") return t`Cancel`;
-  if (id === "allow") return ALLOW_IN_SPACE.has(fallback) ? t`Allow in this space` : t`Allow once`;
+  if (id === "allow")
+    return ALLOW_IN_SPACE.has(fallback) ? t`Allow in this workspace` : t`Allow once`;
   if (id === "always") return site ? t`Always allow ${site}` : t`Always allow this tool`;
   if (id === "deny") return t`Deny`;
   return fallback;

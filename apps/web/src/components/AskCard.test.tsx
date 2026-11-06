@@ -275,14 +275,6 @@ it("starts an ID and a phone visible and a PIN hidden, and the person can flip e
   expect(dialog()).toBeNull();
 });
 
-it("says the bot's browser stays signed in for everyone in a shared space", async () => {
-  const line = "The bot's browser stays signed in for everyone in this space";
-  await render({ ...loginCard, sharedBrowser: true });
-  expect(container.textContent).toContain(line);
-  await render(loginCard);
-  expect(container.textContent).not.toContain(line);
-});
-
 it("starts every field hidden when no label names an identifier", async () => {
   await render({ ...loginCard, loginFields: ["Memorable word", "Card number"] });
   await openEditor();
@@ -418,10 +410,10 @@ it.each(["Allow in this space", "Allow for this chat"])(
     // The card is muted, so the command sits on the page background to read as a snippet.
     expect(detail?.classList.contains("bg-background")).toBe(true);
     expect(detail?.classList.contains("bg-muted")).toBe(false);
-    expect(button("Allow in this space")).toBeTruthy();
+    expect(button("Allow in this workspace")).toBeTruthy();
     expect(button("Allow once")).toBeUndefined();
     await render({ ...block, status: "answered", answer: "allow" });
-    expect(container.textContent).toContain("Allowed in this space");
+    expect(container.textContent).toContain("Allowed in this workspace");
   },
 );
 

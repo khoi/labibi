@@ -244,7 +244,7 @@ export function CreditChoice({
 }) {
   const { t, i18n } = useLingui();
   const features = [
-    t`Bots and browser automation`,
+    t`Doodle and browser automation`,
     t`Scheduled routines`,
     t`Web, desktop and mobile`,
   ];

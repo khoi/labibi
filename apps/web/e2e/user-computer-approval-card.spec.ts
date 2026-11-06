@@ -14,7 +14,7 @@ test("asks before running a command on the user's computer", async ({ page }, te
   await expect(transcript.getByText("Run on your computer?", { exact: true })).toBeVisible({
     timeout: 60_000,
   });
-  const allow = page.getByRole("button", { name: "Allow in this space", exact: true });
+  const allow = page.getByRole("button", { name: "Allow in this workspace", exact: true });
   await expect(allow).toBeVisible();
   await expect(page.getByRole("button", { name: "Deny", exact: true })).toBeVisible();
   await captureScreenshot(page, testInfo, "user-computer-approval-card");

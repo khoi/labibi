@@ -186,7 +186,7 @@ function MemoryDocumentList({
         {error ? <div className="pb-2 text-[13px] text-destructive">{error}</div> : null}
         {kb > 0 ? (
           <p className="pb-2 text-[13px] text-muted-foreground" data-testid="memory-budget-note">
-            {t`About ${kb} KB of memory no longer reaches the bot.`}
+            {t`About ${kb} KB of memory no longer reaches Doodle.`}
           </p>
         ) : null}
         {conflicted ? (

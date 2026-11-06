@@ -106,7 +106,7 @@ it("lets the owner invite and remove members but not leave", async () => {
     "BBob Stonebob@example.testRemove",
   ]);
   expect(buttonNamed("Invite")).toBeTruthy();
-  expect(buttonNamed("Leave space")).toBeUndefined();
+  expect(buttonNamed("Leave workspace")).toBeUndefined();
 });
 
 it("a member cannot invite or remove, and leaves after confirming", async () => {
@@ -119,7 +119,7 @@ it("a member cannot invite or remove, and leaves after confirming", async () => 
   expect(buttonNamed("Remove")).toBeUndefined();
 
   rpc.spaces.members.leave.mockResolvedValue({ ok: true, activeSpaceId: "space-own" });
-  await act(async () => buttonNamed("Leave space")?.click());
+  await act(async () => buttonNamed("Leave workspace")?.click());
   expect(host.querySelector("h2")?.textContent).toBe("Leave Home?");
   expect(rpc.spaces.members.leave).not.toHaveBeenCalled();
   await act(async () => buttonNamed("Leave")?.click());
