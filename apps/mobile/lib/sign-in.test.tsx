@@ -278,7 +278,9 @@ it.each(["in", "up"])("signs in with an emailed code by default in %s mode", asy
   vi.mocked(passwordResetCapabilities).mockResolvedValue({ ...capabilities, emailCode: true });
   vi.mocked(sendSignInCode).mockResolvedValue();
   vi.mocked(signInWithCode).mockResolvedValue();
-  vi.mocked(rpc).mockResolvedValue({ needsSetup: false } as never);
+  vi.mocked(rpc).mockImplementation(
+    async (proc) => (proc === "threads/list" ? [] : { needsSetup: false }) as never,
+  );
   await render();
   expect(button("Use password")).toBeUndefined();
   if (mode === "up") await type(input("Name")!, "Ada");

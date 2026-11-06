@@ -13,6 +13,7 @@ import {
   savedChatsScope,
   writeSavedThread,
 } from "./saved-chats";
+import { subscribeChatChanges } from "./search-inbox";
 import { currentSessionGeneration } from "./session";
 import type { ThreadHistory } from "./thread-history";
 import type { ThreadListScroll } from "./thread-list-scroll";
@@ -166,6 +167,15 @@ export function useThreadSync({
   }
 
   const onChatChanged = useCallback(() => void refresh().catch(() => undefined), [threadId]);
+
+  useEffect(
+    () =>
+      subscribeChatChanges((chat) => {
+        const current = snapRef.current;
+        if (current?.threadId === chat.id) commitSnap({ ...current, chat });
+      }),
+    [commitSnap, snapRef],
+  );
 
   const liveSubscribed = useThreadLiveSubscription({
     threadId,

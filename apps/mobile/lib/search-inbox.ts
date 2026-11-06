@@ -8,6 +8,7 @@ let snapshot = empty;
 let generation = -1;
 let apiBase = "";
 const listeners = new Set<() => void>();
+const changeListeners = new Set<(chat: MobileChat) => void>();
 // Chats added before the inbox lists them (one just created). They outlast the inbox's refreshes
 // so an open chat's title keeps them.
 let additions: MobileChat[] = [];
@@ -42,11 +43,22 @@ export function subscribeSearchInbox(listener: () => void): () => void {
   };
 }
 
-/** Puts a chat the inbox doesn't list yet first, so the screen it opens can draw its title at once. */
+/**
+ * Puts a chat this device just created or changed first, so the inbox and the screen it opens
+ * draw it at once.
+ */
 export function addToSearchInbox(chat: MobileChat): void {
   if (generation !== currentSessionGeneration() || apiBase !== currentApiBase()) return;
   additions = [chat, ...additions.filter((kept) => kept.id !== chat.id)];
   publish([chat, ...snapshot.filter((kept) => kept.id !== chat.id)]);
+  for (const listener of changeListeners) listener(chat);
+}
+
+export function subscribeChatChanges(listener: (chat: MobileChat) => void): () => void {
+  changeListeners.add(listener);
+  return () => {
+    changeListeners.delete(listener);
+  };
 }
 
 /** Takes a chat the person left or deleted out of the roster before the inbox reloads. */

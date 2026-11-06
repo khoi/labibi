@@ -218,7 +218,10 @@ export default function SignIn() {
   async function openApp() {
     if (hasIncomingShare()) return router.replace("/share");
     const me = await rpc("me").catch(() => null);
-    router.replace(me?.needsSignupSurvey ? "/signup-survey" : "/");
+    const [chat] = mode === "up" ? await rpc("threads/list").catch(() => []) : [];
+    if (chat) await rpc("onboarding/promptFocus", { threadId: chat.id }).catch(() => undefined);
+    if (me?.needsSignupSurvey) return router.replace("/signup-survey");
+    router.replace(chat ? { pathname: "/thread", params: { threadId: chat.id } } : "/");
   }
 
   async function externalSignIn(run: () => Promise<boolean>) {
