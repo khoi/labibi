@@ -194,6 +194,7 @@ describe("SpaceMemoryProviderResolver", () => {
         "supermemory",
         { mode: "local", baseUrl: "http://203.0.113.10:6767" },
         { apiKey: "sm_test_key" },
+        "user-1",
       ),
     ).toThrow(/private-network/);
 
@@ -208,6 +209,7 @@ describe("SpaceMemoryProviderResolver", () => {
       "supermemory",
       { mode: "cloud", baseUrl: "https://memory.example.com" },
       { apiKey: "sm_test_key" },
+      "user-1",
     );
 
     await provider.recall(

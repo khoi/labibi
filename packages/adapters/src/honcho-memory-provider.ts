@@ -182,9 +182,10 @@ export async function prepareHonchoConnection(
 export function createHonchoProvider(
   settings: Record<string, string>,
   credentials: Record<string, string>,
+  connectedByUserId: string,
 ): SemanticMemoryProvider {
   const { connection } = parseHonchoConnection(settings, credentials);
-  return new HonchoMemoryProvider(connection, settings);
+  return new HonchoMemoryProvider(connection, settings, connectedByUserId);
 }
 
 /** Every fact is about the shared peer, from this chat's or person's own view of it. */
@@ -213,6 +214,7 @@ export class HonchoMemoryProvider implements SemanticMemoryProvider {
   constructor(
     private readonly connection: HonchoConnectionConfig,
     private readonly settings: Record<string, string>,
+    private readonly connectedByUserId: string,
   ) {
     if (settings.mode === "local") {
       this.localHost = new LocalServiceHost(connection.baseUrl, connection.resolveHostname);
@@ -287,8 +289,10 @@ export class HonchoMemoryProvider implements SemanticMemoryProvider {
         query,
       }));
     // An existing user peer is read through Honcho's own representation and never written to.
+    // It is the person who connected Honcho, so only their own personal recall reads it.
     const userPeerId = this.settings.userPeerId?.trim();
-    if (userPeerId) {
+    const { scope } = request;
+    if (userPeerId && scope.kind === "person" && scope.userId === this.connectedByUserId) {
       perspectives.push({
         peerId: userPeerId,
         entity: userPeerId,

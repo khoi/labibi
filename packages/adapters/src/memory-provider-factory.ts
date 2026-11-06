@@ -62,6 +62,7 @@ interface MemoryProviderAdapter {
   create(
     settings: Record<string, string>,
     credentials: Record<string, string>,
+    connectedByUserId: string,
   ): SemanticMemoryProvider;
   decodeLegacyCredentials?(plaintext: string): Record<string, string> | null;
 }
@@ -142,8 +143,9 @@ export function createMemoryProvider(
   provider: string,
   settings: Record<string, string>,
   credentials: Record<string, string>,
+  connectedByUserId: string,
 ): SemanticMemoryProvider {
-  return memoryProviderAdapter(provider).create(settings, credentials);
+  return memoryProviderAdapter(provider).create(settings, credentials, connectedByUserId);
 }
 
 export function toStringRecord(value: unknown): Record<string, string> {
@@ -196,7 +198,7 @@ export class SpaceMemoryProviderResolver implements MemoryProviderResolver {
       await this.secrets.load(config.secret.ciphertext, config.secret.id),
     );
     return {
-      provider: createMemoryProvider(config.provider, settings, credentials),
+      provider: createMemoryProvider(config.provider, settings, credentials, config.userId),
     };
   }
 }
