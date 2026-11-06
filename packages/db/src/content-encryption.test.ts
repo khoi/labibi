@@ -66,7 +66,7 @@ describe("withContentEncryption", () => {
     await expect(
       prisma.memoryDocument.upsert({
         where: { id: "doc" },
-        create: { spaceId: "s", userId: "u", scope: "user", path: "p", content: "x" },
+        create: { spaceId: "s", userId: "u", path: "p", content: "x" },
         update: { content: "x" },
       }),
     ).rejects.toThrow(/Upserts/);
@@ -106,11 +106,11 @@ describe("withContentEncryption with encryption off", () => {
     const blocks = [{ kind: "text", text: "plain words" }];
     await plain.message.create({ data: { threadId: "t", seq: 0, role: "user", blocks } });
     await plain.memoryDocument.create({
-      data: { spaceId: "s", userId: "u", scope: "user", path: "p", content: "remember this" },
+      data: { spaceId: "s", userId: "u", path: "p", content: "remember this" },
     });
     expect(writes).toEqual([
       { threadId: "t", seq: 0, role: "user", blocks },
-      { spaceId: "s", userId: "u", scope: "user", path: "p", content: "remember this" },
+      { spaceId: "s", userId: "u", path: "p", content: "remember this" },
     ]);
   });
 

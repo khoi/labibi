@@ -185,9 +185,7 @@ async function runLoop(
       findUnique: vi.fn(async () => run),
       findUniqueOrThrow: vi.fn(async () => run),
       findFirst: vi.fn(async (args?: { where?: { status?: unknown } }) =>
-        args?.where?.status === "queued"
-          ? null
-          : { bot: { notifyOnFinish: false }, thread: { groupId: null } },
+        args?.where?.status === "queued" ? null : { thread: {} },
       ),
       updateMany: vi.fn(
         async ({

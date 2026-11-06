@@ -1942,7 +1942,6 @@ function idleHarness(
       }),
     },
     computerExecutionLease: { findMany: vi.fn().mockResolvedValue([]) },
-    agentHome: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
     computerRun: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
     $executeRaw: vi.fn().mockResolvedValue(1),
     bot: {

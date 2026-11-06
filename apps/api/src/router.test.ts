@@ -5911,11 +5911,7 @@ describe("routines.update", () => {
     createdAt: new Date("2026-09-01T00:00:00.000Z"),
   };
 
-  function fixture(
-    botArchived: boolean,
-    archivedBeforeWrite = false,
-    model: Record<string, unknown> = {},
-  ) {
+  function fixture(archivedBeforeWrite = false, model: Record<string, unknown> = {}) {
     const savedRoutine: Record<string, unknown> = { ...routine, ...model };
     const update = vi.fn(
       async (args: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
@@ -5948,18 +5944,12 @@ describe("routines.update", () => {
         ]),
       },
       routine: {
-        findFirst: vi.fn(async (args: { where: { bot?: { archivedAt: null } } }) =>
-          botArchived && args.where.bot?.archivedAt === null ? null : savedRoutine,
-        ),
+        findFirst: vi.fn(async () => savedRoutine),
         update,
         count: vi.fn(async () => 0),
       },
       run: { updateManyAndReturn: moveQueued },
-      bot: {
-        findFirst: vi.fn(async () =>
-          botArchived ? null : { id: "bot-1", thread: { id: "thread-1" }, computer: null },
-        ),
-      },
+      bot: { findFirst: vi.fn(async () => ({ id: "bot-1" })) },
     };
     const handler = new RPCHandler(
       createRouter({
@@ -5997,7 +5987,7 @@ describe("routines.update", () => {
 
   it("rejects a schedule change when an enable landed after the read", async () => {
     // The editor omits an unchanged on/off; the new schedule was computed for a paused routine.
-    const { call, update, enqueue } = fixture(false, false, { crons: ["0 9 * * *"] });
+    const { call, update, enqueue } = fixture(false, { crons: ["0 9 * * *"] });
     update.mockImplementationOnce(async (args) => {
       expect(args.where).toMatchObject({ active: false });
       throw Object.assign(new Error("not found"), { code: "P2025" });
@@ -6011,7 +6001,7 @@ describe("routines.update", () => {
   it("rejects an explicit on/off when a disable landed after the read", async () => {
     // The editor sends `active` with every save. A disable that commits between the read and
     // the write must not be undone by a rename that still says "on".
-    const { call, update, enqueue, cancel } = fixture(false, false, recurring);
+    const { call, update, enqueue, cancel } = fixture(false, recurring);
     update.mockImplementationOnce(async (args) => {
       expect(args.where).toMatchObject({ active: true });
       throw Object.assign(new Error("not found"), { code: "P2025" });
@@ -6022,7 +6012,7 @@ describe("routines.update", () => {
   });
 
   it("rejects a schedule change when the routine fired after the read", async () => {
-    const { call, update, enqueue } = fixture(false, false, recurring);
+    const { call, update, enqueue } = fixture(false, recurring);
     update.mockImplementationOnce(async (args) => {
       expect(args.where).toMatchObject({ nextRunAt: recurring.nextRunAt });
       throw Object.assign(new Error("not found"), { code: "P2025" });
