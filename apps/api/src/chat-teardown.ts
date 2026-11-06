@@ -1,4 +1,4 @@
-import { createAdapterContext } from "@labradoodle/adapter-kit";
+import { createAdapterContext, runContinueJob } from "@labradoodle/adapter-kit";
 import { forgetPageShareSecrets, stopCancelledRuns } from "@labradoodle/adapters";
 import type { Actor } from "@labradoodle/contracts";
 import type { ChatTeardown } from "@labradoodle/db";
@@ -6,8 +6,9 @@ import { getLogger } from "@labradoodle/logging";
 import type { RouterDeps } from "./router.js";
 
 /**
- * After a chat change commits: stop the work it cancelled, remove the files and page links of a
- * chat it deleted, and wake the chat's subscribers when it is still there.
+ * After a chat change commits: stop the work it cancelled, start the requests that waited behind
+ * it, remove the files and page links of a chat it deleted, and wake the chat's subscribers when
+ * it is still there.
  */
 export async function finishChatTeardown(
   deps: Pick<RouterDeps, "prisma" | "jobs" | "sandbox" | "artifacts" | "secrets" | "events">,
@@ -18,6 +19,13 @@ export async function finishChatTeardown(
   await stopCancelledRuns(deps, actor, teardown).catch((error) => {
     getLogger().error("chat run teardown", error);
   });
+  await Promise.all(
+    teardown.continuationRunIds.map((runId) =>
+      deps.jobs.enqueue(runContinueJob(runId)).catch((error) => {
+        getLogger().error("steering continuation enqueue", error);
+      }),
+    ),
+  );
   const removed = await Promise.allSettled(
     teardown.artifactStorageKeys.map((storageKey) =>
       deps.artifacts.remove(

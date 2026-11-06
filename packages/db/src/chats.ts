@@ -4,7 +4,11 @@ import { cancelRunsInTransaction } from "./cancel-runs.js";
 import type { Prisma, PrismaClient } from "./client.js";
 import type { RunTeardownTarget } from "./computers.js";
 import { snapshotRunTeardownTargets } from "./computers.js";
-import { appendEventInTransaction, transientRunEventsWhere } from "./events.js";
+import {
+  appendEventInTransaction,
+  createPendingSteeringRun,
+  transientRunEventsWhere,
+} from "./events.js";
 import { createThreadMessageInTransaction } from "./messages.js";
 import type { PageShareSecret } from "./page-shares.js";
 import { deletePageShareSecrets } from "./page-shares.js";
@@ -44,6 +48,8 @@ export type ChatTeardown = {
   /** Stored files of a deleted chat. */
   artifactStorageKeys: string[];
   pageShareSecrets: PageShareSecret[];
+  /** Runs for others' requests that waited behind a cancelled run, to start after commit. */
+  continuationRunIds: string[];
   /** Newest event seq to fan out, when the chat is still there. */
   seq: number | null;
 };
@@ -53,6 +59,7 @@ const noTeardown = (): ChatTeardown => ({
   computers: [],
   artifactStorageKeys: [],
   pageShareSecrets: [],
+  continuationRunIds: [],
   seq: null,
 });
 
@@ -324,7 +331,8 @@ async function cancelChatRuns(
       seq = event.seq;
     }
   }
-  return { cancelledRunIds: runIds, computers: targets, seq };
+  const botIds = [...new Set(cancelled.map((run) => run.botId))];
+  return { cancelledRunIds: runIds, computers: targets, seq, botIds };
 }
 
 /** A visible line in the chat, such as Doodle joining. */
@@ -382,7 +390,12 @@ export async function setChatDoodle(
         threadId: input.threadId,
         text: `${DOODLE_NAME} ${input.doodle ? "joined" : "left"}`,
       });
-      return { ...noTeardown(), ...stopped, seq };
+      return {
+        ...noTeardown(),
+        cancelledRunIds: stopped.cancelledRunIds,
+        computers: stopped.computers,
+        seq,
+      };
     }),
   );
   return { chat: await getChat(prisma, actor, input.threadId), teardown };
@@ -429,14 +442,15 @@ export async function deleteChatsInTransaction(
     computers: targets,
     artifactStorageKeys: artifacts.map((artifact) => artifact.storageKey),
     pageShareSecrets,
+    continuationRunIds: [],
     seq: null,
   };
 }
 
 /**
  * The caller leaves; their messages stay. What ran with their accounts here stops: their runs
- * are cancelled, their waiting follow-ups dropped, and their routines pause. The last person to
- * leave deletes the chat.
+ * are cancelled, their waiting follow-ups dropped, and their routines pause. Others' requests
+ * that waited behind those runs start now. The last person to leave deletes the chat.
  */
 export async function leaveChat(
   prisma: PrismaClient,
@@ -449,7 +463,7 @@ export async function leaveChat(
       if ((await tx.threadMember.count({ where: { threadId } })) === 1) {
         return deleteChatsInTransaction(tx, actor.spaceId, [threadId]);
       }
-      const stopped = await cancelChatRuns(
+      const { botIds, ...stopped } = await cancelChatRuns(
         tx,
         { spaceId: actor.spaceId, threadId },
         { userId: actor.userId },
@@ -457,6 +471,11 @@ export async function leaveChat(
       await tx.steeringMessage.deleteMany({
         where: { userId: actor.userId, message: { threadId } },
       });
+      const continuationRunIds: string[] = [];
+      for (const botId of botIds) {
+        const id = await createPendingSteeringRun(tx, { spaceId: actor.spaceId, threadId, botId });
+        if (id) continuationRunIds.push(id);
+      }
       await tx.routine.updateMany({
         where: { threadId, userId: actor.userId },
         data: { active: false, nextRunAt: null },
@@ -464,7 +483,7 @@ export async function leaveChat(
       await tx.threadMember.delete({
         where: { threadId_userId: { threadId, userId: actor.userId } },
       });
-      return { ...noTeardown(), ...stopped };
+      return { ...noTeardown(), ...stopped, continuationRunIds };
     }),
   );
 }
