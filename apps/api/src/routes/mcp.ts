@@ -43,7 +43,7 @@ import {
 } from "../plugin-submissions.js";
 import { resolveChatTarget } from "../thread-target.js";
 import type { RouterContext } from "./context.js";
-import { computerContext, isUniqueViolation } from "./shared.js";
+import { admitsDoodleTurn, computerContext, isUniqueViolation } from "./shared.js";
 
 export function mcpRoutes(ctx: RouterContext) {
   const {
@@ -782,14 +782,10 @@ export function mcpRoutes(ctx: RouterContext) {
         return { ok: true as const };
       }),
       appConnected: authed.onboarding.appConnected.handler(async ({ context, input }) => {
-        await markAppConnected(
-          onboardingDeps,
-          context.actor,
-          input.threadId,
-          input.provider,
-          input.connectorId,
-          input.messageId,
-        );
+        await markAppConnected({ ...onboardingDeps, jobs: deps.jobs }, context.actor, {
+          ...input,
+          admitDoodle: (doodleId) => admitsDoodleTurn(deps, context.actor, doodleId),
+        });
         return { ok: true as const };
       }),
     },

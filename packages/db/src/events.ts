@@ -302,6 +302,8 @@ export interface SendUserMessageInput {
   blocks: MessageBlock[];
   prompt: string;
   trigger: "user" | "follow_up" | "webhook";
+  /** A system line, such as an app being connected, is shown as a note about the chat. */
+  role?: "user" | "system";
   clientNonce?: string;
   linkMessageToRun?: boolean;
   /** Model every routine in an inbound delivery agreed on. */
@@ -513,7 +515,7 @@ export async function sendUserMessage(
       // message without its event.
       const message = await createThreadMessageInTransaction(tx, {
         threadId: input.threadId,
-        role: "user",
+        role: input.role ?? "user",
         blocks: input.blocks,
         authorUserId: input.authorUserId,
         clientNonce: input.clientNonce,
@@ -609,7 +611,7 @@ export async function sendUserMessage(
         runId: run?.id ?? busy?.id,
         payload: {
           messageId: message.id,
-          role: "user",
+          role: input.role ?? "user",
           blocks: input.blocks,
           author,
         },
@@ -622,11 +624,12 @@ export async function sendUserMessage(
     throw error;
   });
   if ("replay" in committed) return committed.replay;
-  analytics?.capture(
-    input.userId,
-    { name: "message_sent", trigger: input.trigger },
-    { id: committed.message.id, at: committed.message.createdAt },
-  );
+  if (input.role !== "system")
+    analytics?.capture(
+      input.userId,
+      { name: "message_sent", trigger: input.trigger },
+      { id: committed.message.id, at: committed.message.createdAt },
+    );
   await notifyRealtime(realtime, input.threadId, committed.event.seq).catch((error) => {
     // The event is durable; subscribers recover it from their persisted cursor.
     getLogger().error("user message realtime notification", error);

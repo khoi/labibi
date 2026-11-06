@@ -24,7 +24,6 @@ import { finishChatTeardown } from "../chat-teardown.js";
 import type { RouterDeps } from "../router.js";
 import { createRoutineTestRun, routineTestRunNonce, routineTestTarget } from "../routines.js";
 import { withSerializableRetry } from "../serializable-retry.js";
-import { assertTeachingSendAllowed } from "../taught-skills.js";
 import { loadMessagePage } from "../thread-message-pages.js";
 import type { ChatTarget } from "../thread-target.js";
 import {
@@ -39,7 +38,7 @@ import { releaseComputerControl } from "./computer.js";
 import type { RouterContext } from "./context.js";
 import { mapBotSecretInputError } from "./doodle.js";
 import {
-  botsRunOwnModels,
+  admitsDoodleTurn,
   computerContext,
   HEARTBEAT_MS,
   isUniqueViolation,
@@ -73,16 +72,10 @@ export function threadsRoutes(ctx: RouterContext) {
   /** Model setup is settled only once Doodle takes the turn; people-only chat needs none. */
   const doodleAdmission = (actor: Actor, target: ChatTarget) => {
     let setup: ReturnType<typeof modelSetup> | undefined;
+    const resolveSetup = () => (setup ??= modelSetup(deps, actor));
     return {
-      setup: () => (setup ??= modelSetup(deps, actor)),
-      admit: async () => {
-        setup ??= modelSetup(deps, actor);
-        const resolved = await setup;
-        if (resolved.needsModel && !(await botsRunOwnModels(deps, actor, [target.doodleId])))
-          return false;
-        await assertTeachingSendAllowed(deps.prisma, actor);
-        return true;
-      },
+      setup: resolveSetup,
+      admit: () => admitsDoodleTurn(deps, actor, target.doodleId, resolveSetup()),
     };
   };
   const send = async (

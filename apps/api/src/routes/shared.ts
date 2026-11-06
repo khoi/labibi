@@ -15,6 +15,7 @@ import {
 import { isAdmin } from "../admins.js";
 import { effectiveSandboxProvider } from "../computer-provider-config.js";
 import type { RouterDeps } from "../router.js";
+import { assertTeachingSendAllowed } from "../taught-skills.js";
 
 export { createAdapterContext as computerContext } from "@labradoodle/adapter-kit";
 
@@ -137,6 +138,18 @@ export async function botsRunOwnModels(deps: RouterDeps, actor: Actor, botIds: s
     }),
   );
   return credentials.every(Boolean);
+}
+
+/** Whether Doodle may take a turn for the member: a model it can run, and no teaching underway. */
+export async function admitsDoodleTurn(
+  deps: RouterDeps,
+  actor: Actor,
+  doodleId: string,
+  setup: ReturnType<typeof modelSetup> = modelSetup(deps, actor),
+) {
+  if ((await setup).needsModel && !(await botsRunOwnModels(deps, actor, [doodleId]))) return false;
+  await assertTeachingSendAllowed(deps.prisma, actor);
+  return true;
 }
 
 export const THREAD_MESSAGE_PAGE_SIZE = 100;
