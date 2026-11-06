@@ -53,6 +53,11 @@ export function personalWorkspaceName(account: { name?: string | null; email?: s
   return first ? `${first}'s workspace` : "Workspace";
 }
 
+export function onboardingChatName(account: { name?: string | null; email?: string | null }) {
+  const first = personName(account).split(/\s+/)[0];
+  return first ? `${first} x Doodle Onboarding` : "Doodle Onboarding";
+}
+
 /** Only identity metadata changes; message text, filenames and tool identifiers stay literal. */
 export function displayMessageBlock(
   block: MessageBlock,

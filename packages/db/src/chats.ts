@@ -1,5 +1,5 @@
 import type { Chat, ChatMember, MessageBlock } from "@labradoodle/contracts";
-import { chatTitle, DOODLE_NAME } from "@labradoodle/core";
+import { chatTitle, DOODLE_NAME, onboardingChatName } from "@labradoodle/core";
 import { cancelRunsInTransaction } from "./cancel-runs.js";
 import type { Prisma, PrismaClient } from "./client.js";
 import type { RunTeardownTarget } from "./computers.js";
@@ -237,6 +237,14 @@ export async function createChat(
   return getChat(prisma, actor, threadId);
 }
 
+async function onboardingChatNameFor(tx: Prisma.TransactionClient, userId: string) {
+  const user = await tx.user.findUnique({
+    where: { id: userId },
+    select: { name: true, email: true },
+  });
+  return onboardingChatName(user ?? {});
+}
+
 /**
  * A new person's first chat, with Doodle in it, unless they already have one in this workspace.
  * Returns its id, or null when they had one.
@@ -251,7 +259,11 @@ export async function ensureFirstChat(
         await lockSpaceForContentCreation(tx, actor);
         const mine = { spaceId: actor.spaceId, userId: actor.userId };
         if (await tx.threadMember.count({ where: mine, take: 1 })) return null;
-        return insertChat(tx, actor, { userIds: [], doodle: true });
+        return insertChat(tx, actor, {
+          name: await onboardingChatNameFor(tx, actor.userId),
+          userIds: [],
+          doodle: true,
+        });
       }),
     ),
   );
@@ -283,7 +295,14 @@ export async function ensureWelcomeChat(
           orderBy: { createdAt: "asc" },
           select: { id: true },
         });
-        return solo?.id ?? (await insertChat(tx, actor, { userIds: [], doodle: true }));
+        return (
+          solo?.id ??
+          (await insertChat(tx, actor, {
+            name: await onboardingChatNameFor(tx, actor.userId),
+            userIds: [],
+            doodle: true,
+          }))
+        );
       }),
     ),
   );
