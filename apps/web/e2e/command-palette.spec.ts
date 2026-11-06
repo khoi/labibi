@@ -9,11 +9,10 @@ test("command palette switches bots and runs actions", async ({ page }, testInfo
   await page.waitForURL(/\/app\/c\/[^/]+$/);
 
   const chiefId = activeThreadId(page);
-  const researcher = await rpc<{ id: string }>(page, "bots/create", {
+  const researcher = await rpc<{ id: string }>(page, "threads/create", {
     name: "Researcher",
-    instructions: "",
-    notifyOnFinish: true,
-    computerMode: "team",
+    userIds: [],
+    doodle: true,
   });
   await page.reload();
   await page.waitForURL(/\/app\/c\/[^/]+$/);
@@ -29,21 +28,21 @@ test("command palette switches bots and runs actions", async ({ page }, testInfo
   const dialog = page.getByRole("dialog", { name: "Command menu" });
   await expect(dialog).toBeVisible();
   await expect(palette).toBeVisible();
-  await expect(page.getByRole("option", { name: /Chief/ })).toBeVisible();
+  await expect(page.getByRole("option", { name: /New chat/ })).toBeVisible();
   await expect(page.getByRole("option", { name: /Researcher/ })).toBeVisible();
   await captureScreenshot(page, testInfo, "command-palette-bots");
 
   const search = page.getByTestId("command-palette-search");
   await search.fill("Research");
   await expect(page.getByRole("option", { name: /Researcher/ })).toBeVisible();
-  await expect(page.getByRole("option", { name: /Chief/ })).toHaveCount(0);
+  await expect(page.getByRole("option", { name: /New chat/ })).toHaveCount(0);
   await captureScreenshot(page, testInfo, "command-palette-filtered");
 
   await page.getByRole("option", { name: /Researcher/ }).click();
   await expect(dialog).toBeHidden();
   await page.waitForURL(new RegExp(`/app/c/${researcher.id}$`));
   expect(activeThreadId(page)).toBe(researcher.id);
-  await expect(page.getByRole("combobox", { name: "Message Researcher" })).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "Message Doodle" })).toBeVisible();
 
   await page.keyboard.press("ControlOrMeta+K");
   await expect(dialog).toBeVisible();
@@ -63,7 +62,7 @@ test("command palette switches bots and runs actions", async ({ page }, testInfo
   await page.keyboard.press("ControlOrMeta+K");
   await search.fill("models");
   await expect(page.getByRole("option", { name: "Settings: Models" })).toBeVisible();
-  await expect(page.getByRole("option", { name: /Chief/ })).toHaveCount(0);
+  await expect(page.getByRole("option", { name: /New chat/ })).toHaveCount(0);
   await page.getByRole("option", { name: "Settings: Models" }).click();
   await page.waitForURL(/[?&]settings=models/);
 });

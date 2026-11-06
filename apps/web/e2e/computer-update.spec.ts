@@ -1,6 +1,6 @@
 import type { ComputerUpdate } from "@labradoodle/contracts";
 import { expect, test } from "@playwright/test";
-import { captureScreenshot, completeOnboarding, openChatPanelTab, signup } from "./helpers";
+import { captureScreenshot, completeOnboarding, openUserSettings, signup } from "./helpers";
 
 test("computer maintenance shows durable background progress and failure recovery", async ({
   page,
@@ -33,10 +33,8 @@ test("computer maintenance shows durable background progress and failure recover
     updates = [{ ...updating, id: "recovery-example", action: "recover", stage: "preparing" }];
     return route.fulfill({ json: { json: updates[0] } });
   });
-  await openChatPanelTab(page, "Computer");
-  await expect(page.getByTestId("computer-preview")).toBeVisible();
-  await page.getByTestId("computer-preview").hover();
-  await page.getByTestId("computer-preview-open").click();
+  const settings = await openUserSettings(page, "computer");
+  await settings.getByTestId("open-my-computer").click();
   await page.getByTestId("computer-more-button").click();
   await expect(page.getByText("Recreate a computer that is not working.")).toBeVisible();
   await expect(page.getByText("Restore the last saved workspace.", { exact: true })).toBeVisible();

@@ -8,7 +8,7 @@ test("opens Artifacts from the account menu and lists created files", async ({
   await signup(page, `artifacts-tab-${stamp}@rakazo.test`, "password12", "Artifacts Tab");
   await completeOnboarding(page);
   await page.goto("/app");
-  await page.waitForURL(/\/app\/(?!artifacts(?:\/|$))[^/]+$/);
+  await page.waitForURL(/\/app\/c\/[^/]+$/);
   const chiefId = activeThreadId(page);
 
   const sidebar = page.getByTestId("bots-sidebar");

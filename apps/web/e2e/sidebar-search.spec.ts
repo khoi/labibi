@@ -18,7 +18,7 @@ test("sidebar search opens from its icon and closes without moving chats mid-cli
   await captureScreenshot(page, testInfo, "sidebar-search-open");
 
   // Leaving an empty field keeps the roster still, so a chat click lands.
-  const chief = sidebar.getByRole("button", { name: /^Chief/ }).first();
+  const chief = sidebar.locator("[data-chat-id]").last().first();
   const before = await chief.boundingBox();
   await chief.click();
   await expect(search).toBeVisible();

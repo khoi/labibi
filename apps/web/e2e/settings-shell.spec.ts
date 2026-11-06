@@ -35,9 +35,10 @@ test("narrow settings reveals the active section and offers scroll controls", as
   const stamp = Date.now();
   await signup(page, `settings-narrow-${stamp}@rakazo.test`, "password12", "Settings");
   await completeOnboarding(page);
-  const settings = await openUserSettings(page, "usage");
+  // My computer is the last section shown.
+  const settings = await openUserSettings(page, "computer");
   const nav = settings.getByTestId("settings-nav");
-  const usage = settings.getByTestId("settings-nav-usage");
+  const usage = settings.getByTestId("settings-nav-computer");
   const previous = settings.getByRole("button", { name: "Previous settings sections" });
   const next = settings.getByRole("button", { name: "Next settings sections" });
 
@@ -79,7 +80,7 @@ test("narrow settings reveals the active section and offers scroll controls", as
     await expect(settings.getByRole("button", { name: "Close user settings" })).toBeVisible();
     await captureScreenshot(page, testInfo, `settings-narrow-scrolled-${width}`);
     await usage.click();
-    await expect(settings).toHaveAttribute("data-settings-section", "usage");
+    await expect(settings).toHaveAttribute("data-settings-section", "computer");
   }
   await page.setViewportSize({ width: 1280, height: 900 });
   await expect(previous).toBeHidden();

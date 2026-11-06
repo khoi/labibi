@@ -8,10 +8,10 @@ test("sidebar list fades above the transparent footer and keeps the last row rea
   await signup(page, `footer-scroll-${Date.now()}@rakazo.test`, "password12", "Demo User");
   await completeOnboarding(page);
   for (let index = 0; index < 20; index++) {
-    await rpc(page, "bots/create", {
+    await rpc(page, "threads/create", {
       name: `Demo chat ${index}`,
-      notifyOnFinish: true,
-      computerMode: "team",
+      userIds: [],
+      doodle: true,
     });
   }
   await page.reload();

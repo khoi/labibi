@@ -90,7 +90,7 @@ test("choice refresh failures leave options available for retry", { tag: "@night
       body: JSON.stringify({ json: { ok: true } }),
     }),
   );
-  await page.route("**/rpc/spaces/list", (route) => route.abort());
-  await Promise.all([page.waitForRequest("**/rpc/spaces/list"), choice.click()]);
+  await page.route("**/rpc/threads/get", (route) => route.abort());
+  await Promise.all([page.waitForRequest("**/rpc/threads/get"), choice.click()]);
   await expect(choice).toBeEnabled();
 });

@@ -78,7 +78,7 @@ test("swiping inward from the mobile edge opens the bots sidebar", async ({ page
   await swipe(page, [16, 420], [92, 426]);
   await expect(closeNavigation).toBeVisible();
   await expect(edge).toHaveCount(0);
-  await expect(page.getByTestId("bots-sidebar")).toContainText("Chief");
+  await expect(page.getByTestId("bots-sidebar")).toContainText("New chat");
   await captureScreenshot(page, testInfo, "mobile-sidebar-edge-swipe-open");
 
   // Right-to-left layouts swipe in from the other edge.
@@ -89,5 +89,5 @@ test("swiping inward from the mobile edge opens the bots sidebar", async ({ page
   expect(edgeBox?.x).toBeGreaterThan(350);
   await swipe(page, [374, 420], [298, 426]);
   await expect(closeNavigation).toBeVisible();
-  await expect(page.getByTestId("bots-sidebar")).toContainText("Chief");
+  await expect(page.getByTestId("bots-sidebar")).toContainText("New chat");
 });

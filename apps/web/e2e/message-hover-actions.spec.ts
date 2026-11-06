@@ -478,7 +478,7 @@ test("a reaction receipt refreshes live work and exposes Stop", async ({ page },
   // No run events are emitted: the receipt alone must refresh the active state.
   await page.route("**/rpc/threads/react", async (route) => {
     reacted = true;
-    await route.fulfill({ json: { json: { ok: true, runIds: ["reaction-run"] } } });
+    await route.fulfill({ json: { json: { ok: true, runId: "reaction-run" } } });
   });
   await page.route("**/rpc/threads/get", async (route) => {
     const response = await route.fetch();

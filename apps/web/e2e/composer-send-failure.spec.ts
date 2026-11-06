@@ -118,7 +118,7 @@ test("an accepted send clears recovered text after returning to the thread", {
   await openComposer(page, "pending-return");
   await createChat(page, { name: "Other thread" });
   const sidebar = page.locator("aside").first();
-  await sidebar.getByRole("button", { name: /^Chief/ }).click();
+  await sidebar.locator("[data-chat-id]").last().click();
   const composer = page.getByRole("combobox", { name: "Message Doodle", exact: true });
   let releaseSend = () => {};
   const released = new Promise<void>((resolve) => {
@@ -134,7 +134,7 @@ test("an accepted send clears recovered text after returning to the thread", {
   await request;
   await expect(composer).toHaveValue("");
   await sidebar.getByRole("button", { name: /^Other thread/ }).click();
-  await sidebar.getByRole("button", { name: /^Chief/ }).click();
+  await sidebar.locator("[data-chat-id]").last().click();
   await expect(composer).toHaveValue("pending accepted message");
   releaseSend();
   await expect(composer).toHaveValue("");

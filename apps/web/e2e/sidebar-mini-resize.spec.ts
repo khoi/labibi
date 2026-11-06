@@ -8,11 +8,10 @@ test("sidebar rail keeps chats interactive and remembers a dragged width", async
   await page.setViewportSize({ width: 1400, height: 900 });
   await signup(page, `sidebar-rail-${Date.now()}@rakazo.test`, "password12", "Sidebar Sample");
   await completeOnboarding(page);
-  const bot = await rpc<{ id: string }>(page, "bots/create", {
+  const bot = await rpc<{ id: string }>(page, "threads/create", {
     name: "Research",
-    instructions: "",
-    notifyOnFinish: true,
-    computerMode: "team",
+    userIds: [],
+    doodle: true,
   });
   await rpc(page, "threads/markUnread", { threadId: bot.id });
   await page.reload();
@@ -110,7 +109,7 @@ test("sidebar resize follows RTL and reduced motion", async ({ page }, testInfo)
   await expect(sidebar).toHaveCSS("width", "348px");
   await handle.press("Home");
   await expect(sidebar).toHaveCSS("width", "72px");
-  const row = sidebar.locator("[data-roster-bot-id]").first();
+  const row = sidebar.locator("[data-chat-id]").first();
   await row.hover();
   const tooltip = page.locator('[data-slot="tooltip-content"]');
   await expect(tooltip).toBeVisible();
@@ -139,7 +138,7 @@ test("narrow desktop keeps the chat width when both panels are open", async ({
   await handle.focus();
   await handle.press("End");
   await expect(sidebar).toHaveCSS("width", "480px");
-  await openChatPanelTab(page, "Computer");
+  await openChatPanelTab(page, "Files");
   const panel = page.getByTestId("side-panel");
   await expect(panel).toHaveCSS("position", "absolute");
   const chat = page.locator('[data-space-switch="main"]');
@@ -160,11 +159,10 @@ test("sidebar snaps its layout during a held drag in both directions", async ({
   await signup(page, `sidebar-snaps-${Date.now()}@rakazo.test`, "password12", "Sidebar Sample");
   await completeOnboarding(page);
   for (const name of ["Research", "Notes", "Planner"]) {
-    await rpc(page, "bots/create", {
+    await rpc(page, "threads/create", {
       name,
-      instructions: "",
-      notifyOnFinish: true,
-      computerMode: "team",
+      userIds: [],
+      doodle: true,
     });
   }
   await page.reload();

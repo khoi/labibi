@@ -39,7 +39,7 @@ export function ChatHeader({
           className="app-no-drag h-auto min-w-0 gap-2 py-1 ps-1 pe-3.5"
         >
           <ChatMembers chat={chat} size={26} />
-          <span className="min-w-0">
+          <span className="min-w-0 max-w-[min(20rem,50vw)]">
             <span className="block truncate text-[15px] font-medium text-foreground" dir="auto">
               {chatLabel(chat)}
             </span>

@@ -5,7 +5,6 @@ import {
   activeThreadId,
   captureScreenshot,
   completeOnboarding,
-  createChat,
   openChatPanelTab,
   openUserSettings,
   rpc,
@@ -285,29 +284,4 @@ test("memory and skills are readable and editable in the app", async ({ page }, 
   expect(await rpc<Array<{ name: string }>>(page, "agentSkills/list", {})).not.toContainEqual(
     expect.objectContaining({ name: "greet-politely" }),
   );
-});
-
-test("a new bot hides its untouched memory index", async ({ page }, testInfo) => {
-  await signup(page, `empty-memory-${Date.now()}@example.test`, "password12", "Sample");
-  await completeOnboarding(page);
-  const botId = await createChat(page, { name: "Researcher" });
-  const docs = await rpc<MemoryDocument[]>(page, "memory/list", { threadId: botId, scope: "bot" });
-  expect(docs).toEqual([
-    expect.objectContaining({ path: "MEMORY.md", content: "# Researcher\n\n" }),
-  ]);
-  const memoryLoaded = page.waitForResponse(
-    (response) => response.url().includes("/rpc/memory/list") && response.ok(),
-  );
-  await openChatPanelTab(page, "Advanced");
-  await memoryLoaded;
-  await page.evaluate(
-    () =>
-      new Promise<void>((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-      ),
-  );
-  const settings = page.getByTestId("chat-panel");
-  await expect(settings.getByRole("button", { name: "Edit name" })).toHaveText("Researcher");
-  await expect(settings.getByTestId("bot-knowledge-memory")).toHaveCount(0);
-  await captureScreenshot(page, testInfo, "bot-settings-empty-memory");
 });
