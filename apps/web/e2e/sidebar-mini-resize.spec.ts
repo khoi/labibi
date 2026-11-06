@@ -17,7 +17,7 @@ test("sidebar rail keeps chats interactive and remembers a dragged width", async
   await page.reload();
   const sidebar = page.getByTestId("bots-sidebar");
   const handle = page.getByRole("separator", { name: "Resize sidebar" });
-  const row = page.locator(`[data-roster-bot-id="${bot.id}"]`);
+  const row = page.locator(`[data-chat-id="${bot.id}"]`);
   await expect(sidebar).toHaveCSS("width", "316px");
   await handle.hover({ position: { x: 4, y: 300 } });
   const edge = (await handle.boundingBox())!;

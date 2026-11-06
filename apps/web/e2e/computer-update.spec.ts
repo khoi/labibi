@@ -62,19 +62,19 @@ test("computer maintenance shows durable background progress and failure recover
   const recoveryProgress = page.getByTestId("computer-update-dialog");
   await recoveryProgress.getByRole("button", { name: "Continue in Background" }).click();
   updates = [];
-  await expect(page.getByRole("button", { name: /Recovering Team Computer/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /Recovering your computer/ })).toHaveCount(0);
   await page.getByTestId("computer-more-button").click();
   await page.getByRole("menuitem", { name: "Update computer", exact: true }).click();
   const dialog = page.getByTestId("computer-update-dialog");
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole("heading")).toHaveText("Updating Team Computer");
+  await expect(dialog.getByRole("heading")).toHaveText("Updating your computer");
   await expect(dialog.locator('[aria-current="step"]')).toHaveText("Restoring your workspace");
   await captureScreenshot(page, testInfo, "computer-update-progress");
   await dialog.getByRole("button", { name: "Continue in Background" }).click();
   await expect(dialog).not.toBeVisible();
   await captureScreenshot(page, testInfo, "computer-update-background");
   await page.reload();
-  await page.getByRole("button", { name: /Updating Team Computer/ }).click();
+  await page.getByRole("button", { name: /Updating your computer/ }).click();
   await expect(dialog).toBeVisible();
   updates = [{ ...updating, status: "interrupted" }];
   await expect(
@@ -90,9 +90,9 @@ test("computer maintenance shows durable background progress and failure recover
   await expect(dialog.getByRole("heading")).toHaveText("Update failed");
   await captureScreenshot(page, testInfo, "computer-update-failed");
   await dialog.getByRole("button", { name: "Recover computer" }).click();
-  await expect(dialog.getByRole("heading")).toHaveText("Recovering Team Computer");
+  await expect(dialog.getByRole("heading")).toHaveText("Recovering your computer");
   await captureScreenshot(page, testInfo, "computer-recovery-progress");
   updates = [];
   await expect(dialog).not.toBeVisible();
-  await expect(page.getByRole("button", { name: /Recovering Team Computer/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /Recovering your computer/ })).toHaveCount(0);
 });
