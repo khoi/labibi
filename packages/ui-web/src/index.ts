@@ -11,6 +11,7 @@ export {
 export type { BotAvatarActivitySource } from "./bot-avatar-activity.js";
 export { BotAvatarActivityProvider } from "./bot-avatar-activity.js";
 export * from "./components/ui/alert-dialog.js";
+export * from "./components/ui/avatar.js";
 export * from "./components/ui/badge.js";
 export * from "./components/ui/button.js";
 export * from "./components/ui/button-group.js";
@@ -48,8 +49,9 @@ export * from "./components/ui/textarea.js";
 export * from "./components/ui/toggle.js";
 export * from "./components/ui/toggle-group.js";
 export * from "./components/ui/tooltip.js";
+export { Dood } from "./dood/dood.js";
+export { DoodleAvatar, PersonAvatar } from "./doodle-avatar.js";
 export { GroupAvatar, type GroupAvatarMember, type GroupAvatarProps } from "./group-avatar.js";
 export { cn } from "./lib/utils.js";
-export { Dood } from "./dood/dood.js";
 export { ModelThinkingOptions } from "./model-thinking-options.js";
 export { SectionHeading } from "./section-heading.js";
