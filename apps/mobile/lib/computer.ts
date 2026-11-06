@@ -168,7 +168,7 @@ export function previewPlaceholder(state: string | undefined, booting: boolean):
 export function controlLabel(computer: ComputerStatus | null) {
   if (computer?.controlHolder === "user") return t("You have control");
   if (computer?.state === "suspended") return t("Asleep");
-  return t("My computer");
+  return null;
 }
 
 /**
