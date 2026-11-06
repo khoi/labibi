@@ -1,18 +1,17 @@
+import type { Workspace } from "@labradoodle/contracts";
 import { Input } from "@labradoodle/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useEffect, useId, useState } from "react";
 import { SettingsGroup, SettingsRow } from "../components/SettingsRows";
 import { SpaceMembersSettings } from "../components/SpaceMembersSettings";
-import type { SettingsSpace } from "./shell/dialogs";
-
-/** One space's page: its name and its members. */
+/** One workspace's page: its name and its people. */
 export function SpaceSettingsPanel({
   space,
   onRename,
   onLeft,
   onBusyChange,
 }: {
-  space: SettingsSpace;
+  space: Pick<Workspace, "id" | "name" | "isOwner">;
   onRename: (name: string) => Promise<void>;
   /** After leaving, with the space the server moved this person to. */
   onLeft: (activeSpaceId: string) => void;
@@ -44,7 +43,7 @@ export function SpaceSettingsPanel({
       setDraft(trimmed);
     } catch (err) {
       setError(
-        err instanceof Error && err.message.trim() ? err.message : t`Could not rename space`,
+        err instanceof Error && err.message.trim() ? err.message : t`Could not rename workspace`,
       );
     } finally {
       setPending(false);
@@ -53,7 +52,7 @@ export function SpaceSettingsPanel({
 
   return (
     <div className="space-y-8" data-testid="space-settings">
-      {space.canRename ? (
+      {space.isOwner ? (
         <SettingsGroup>
           <SettingsRow
             label={

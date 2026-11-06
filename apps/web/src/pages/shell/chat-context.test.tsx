@@ -143,7 +143,7 @@ it.each([
           author="You"
           text={text}
           attachment={attachment}
-          target={{ groupId: "group" }}
+          target={{ threadId: "thread" }}
           onDismiss={vi.fn()}
         />,
       ),
@@ -157,7 +157,7 @@ it.each([
         <ReplyLine
           message={{ ...message, replyPreview: { role: "user", text, attachment } }}
           author="You"
-          target={{ botId: "bot" }}
+          target={{ threadId: "thread" }}
         />,
       ),
     );
@@ -166,7 +166,7 @@ it.each([
       image ? "blob:photo" : null,
     );
     if (image)
-      expect(rpc.artifacts.get).toHaveBeenCalledWith({ botId: "bot", artifactId: "photo" });
+      expect(rpc.artifacts.get).toHaveBeenCalledWith({ threadId: "thread", artifactId: "photo" });
   },
 );
 it("keeps image labels when fetching fails", async () => {
@@ -176,7 +176,7 @@ it("keeps image labels when fetching fails", async () => {
       <ReplyLine
         message={{ ...message, replyPreview: { role: "user", text: "", attachment: photo } }}
         author="You"
-        target={{ botId: "bot" }}
+        target={{ threadId: "thread" }}
       />,
     ),
   );
@@ -225,7 +225,7 @@ it("defers transcript thumbnails until near the viewport while the composer load
       <ReplyLine
         message={{ ...message, replyPreview: { role: "user", text: "", attachment: photo } }}
         author="You"
-        target={{ botId: "bot" }}
+        target={{ threadId: "thread" }}
       />,
     ),
   );
@@ -256,7 +256,7 @@ it("defers transcript thumbnails until near the viewport while the composer load
         author="You"
         text=""
         attachment={photo}
-        target={{ groupId: "group" }}
+        target={{ threadId: "thread" }}
         onDismiss={vi.fn()}
       />,
     ),

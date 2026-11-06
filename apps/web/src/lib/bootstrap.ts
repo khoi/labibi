@@ -12,7 +12,7 @@ export function getMaxUploadSizeBytes() {
 }
 
 let primedBootstrap: {
-  botId?: string;
+  threadId?: string;
   spaceId?: string;
   promise: Promise<AppBootstrap>;
   /** What this space showed last time, painted while the fresh bootstrap loads. */
@@ -24,12 +24,12 @@ const initialTarget = initialBootstrapTarget(
   Boolean(window.rakazoDesktop),
 );
 if (initialTarget) {
-  const { botId } = initialTarget;
-  const promise = requestBootstrap(botId);
+  const { threadId } = initialTarget;
+  const promise = requestBootstrap(threadId);
   // Authentication can redirect before Shell consumes this speculative request.
   // Register a rejection handler immediately while preserving rejection for a consumer.
   void promise.catch(() => undefined);
-  primedBootstrap = { botId, promise };
+  primedBootstrap = { threadId, promise };
 }
 
 /** The speculative first-load bootstrap, left in place for the shell to take. */
@@ -38,22 +38,22 @@ export function peekInitialBootstrap(): Promise<AppBootstrap> | undefined {
   return primedBootstrap?.spaceId === undefined ? primedBootstrap?.promise : undefined;
 }
 
-function primedFor(botId: string | undefined) {
+function primedFor(threadId: string | undefined) {
   const primed = primedBootstrap;
   return primed &&
-    primed.botId === botId &&
+    primed.threadId === threadId &&
     (primed.spaceId === undefined || primed.spaceId === selectedSpaceId())
     ? primed
     : null;
 }
 
 /** The cached bootstrap a revisited space opens with, if the switch had one. */
-export function peekBootstrapSeed(botId?: string): AppBootstrap | undefined {
-  return primedFor(botId)?.seed;
+export function peekBootstrapSeed(threadId?: string): AppBootstrap | undefined {
+  return primedFor(threadId)?.seed;
 }
 
-export function takeInitialBootstrap(botId?: string) {
-  const primed = primedFor(botId);
+export function takeInitialBootstrap(threadId?: string) {
+  const primed = primedFor(threadId);
   primedBootstrap = null;
   if (primed) {
     if (primed.seed) applyCapabilities(primed.seed);
@@ -63,7 +63,7 @@ export function takeInitialBootstrap(botId?: string) {
       (value) => displayIdentityResult(["bootstrap"], value, identityLabels()) as AppBootstrap,
     );
   }
-  return requestBootstrap(botId);
+  return requestBootstrap(threadId);
 }
 
 /**
@@ -74,12 +74,12 @@ export function takeInitialBootstrap(botId?: string) {
  */
 export function primeSpaceBootstrap(
   spaceId: string,
-  botId?: string,
+  threadId?: string,
   seed?: AppBootstrap,
 ): Promise<AppBootstrap> {
-  const promise = requestBootstrap(botId, spaceId);
+  const promise = requestBootstrap(threadId, spaceId);
   void promise.catch(() => undefined);
-  primedBootstrap = { botId, spaceId, promise, seed };
+  primedBootstrap = { threadId, spaceId, promise, seed };
   return promise;
 }
 
@@ -88,9 +88,9 @@ export function discardPrimedBootstrap(promise: Promise<AppBootstrap>): void {
   if (primedBootstrap?.promise === promise) primedBootstrap = null;
 }
 
-function requestBootstrap(botId?: string, spaceId?: string) {
+function requestBootstrap(threadId?: string, spaceId?: string) {
   markOnce("rk:renderer:bootstrap-request-start");
-  const input = botId ? { botId } : {};
+  const input = threadId ? { threadId } : {};
   const request = spaceId ? rpc.bootstrap(input, { context: { spaceId } }) : rpc.bootstrap(input);
   return request.then((bootstrap) => {
     markOnce("rk:renderer:bootstrap-response");

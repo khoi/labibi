@@ -13,7 +13,6 @@ export type SpeechStatus = "idle" | "preparing" | "speaking";
 
 export interface SpeechSnapshot {
   status: SpeechStatus;
-  botId?: string;
   messageId?: string;
   error?: string;
 }
@@ -21,7 +20,6 @@ export interface SpeechSnapshot {
 interface SpeakOptions {
   spaceId?: string | null;
   voiceId?: string;
-  botId?: string;
   messageId?: string;
 }
 
@@ -83,7 +81,7 @@ export class Speaker {
     const live = () => this.token === mine && !controller.signal.aborted;
     const spaceId = opts.spaceId ?? selectedSpaceId();
 
-    this.set({ status: "preparing", botId: opts.botId, messageId: opts.messageId });
+    this.set({ status: "preparing", messageId: opts.messageId });
     let utterances: string[];
     try {
       utterances = await withAbort(
@@ -122,7 +120,7 @@ export class Speaker {
         return failure;
       }
       if (!live()) return;
-      this.set({ status: "speaking", botId: opts.botId, messageId: opts.messageId });
+      this.set({ status: "speaking", messageId: opts.messageId });
       const finished = await this.play(rendered.blob, live);
       if (!finished || !live()) {
         if (live()) this.set(IDLE);
@@ -141,7 +139,7 @@ export class Speaker {
     spaceId: string | null,
   ): Promise<string[]> {
     const body = await rpc.voice.prepare(
-      { text, voiceId: opts.voiceId, botId: opts.botId },
+      { text, voiceId: opts.voiceId },
       { signal, context: { spaceId } },
     );
     if (!body.ready) {
@@ -170,7 +168,6 @@ export class Speaker {
           body: JSON.stringify({
             text,
             voiceId: opts.voiceId,
-            botId: opts.botId,
           }),
           signal: deadline.signal,
         }),

@@ -193,7 +193,7 @@ it("deletes a bot memory document after confirmation but never MEMORY.md", async
   const doc = (id: string, path: string) => ({
     id,
     scope: "bot" as const,
-    botId: "bot-fixture",
+    threadId: "bot-fixture",
     path,
     content: `# ${path}`,
     revision: 1,
@@ -217,7 +217,7 @@ it("deletes a bot memory document after confirmation but never MEMORY.md", async
     return found;
   };
   try {
-    await show(root, <KnowledgeSection botId="bot-fixture" />);
+    await show(root, <KnowledgeSection threadId="bot-fixture" />);
     await act(async () => button("MEMORY.md").click());
     expect(container.textContent).not.toContain("Delete");
     await act(async () => button("projects/retired.md").click());
@@ -239,7 +239,7 @@ it("downloads only each row’s saved markdown with its own filename", async () 
   const doc = {
     id: "memory-fixture",
     scope: "bot",
-    botId: "bot-fixture",
+    threadId: "bot-fixture",
     path: "MEMORY.md",
     content: "Fixture memory",
     revision: 1,
@@ -256,7 +256,7 @@ it("downloads only each row’s saved markdown with its own filename", async () 
   document.body.append(container);
   const root = createRoot(container);
   try {
-    await show(root, <KnowledgeSection botId="bot-fixture" />);
+    await show(root, <KnowledgeSection threadId="bot-fixture" />);
     const download = container.querySelector<HTMLButtonElement>('[aria-label="Download"]')!;
     expect(download).not.toBeNull();
     expect(download.parentElement?.textContent).toContain("MEMORY.md");
@@ -293,7 +293,7 @@ it("hides empty bot memory and limits long lists to five documents", async () =>
   const root = createRoot(host);
   try {
     memoryApi.list.mockReset().mockResolvedValueOnce([]);
-    await show(root, <KnowledgeSection key="empty" botId="fixture" />);
+    await show(root, <KnowledgeSection key="empty" threadId="fixture" />);
     expect(host.textContent).toBe("");
     memoryApi.list.mockResolvedValueOnce(
       Array.from({ length: 7 }, (_, i) => ({
@@ -302,11 +302,11 @@ it("hides empty bot memory and limits long lists to five documents", async () =>
         content: "Fixture",
         revision: 1,
         scope: "bot",
-        botId: "fixture",
+        threadId: "fixture",
         updatedAt: "",
       })) as never,
     );
-    await show(root, <KnowledgeSection key="busy" botId="fixture" />);
+    await show(root, <KnowledgeSection key="busy" threadId="fixture" />);
     expect(host.textContent).not.toContain("notes/6.md");
     await act(async () =>
       [...host.querySelectorAll("button")]
@@ -326,7 +326,7 @@ it.each([" \n", "# Fixture\n\n"])("hides empty memory: %j", async (content) => {
   const host = document.createElement("div");
   const root = createRoot(host);
   try {
-    await show(root, <KnowledgeSection botId="fixture" />);
+    await show(root, <KnowledgeSection threadId="fixture" />);
     expect(host.textContent).not.toContain("Memory");
     expect(host.textContent).not.toContain("MEMORY.md");
   } finally {
@@ -345,7 +345,7 @@ it("keeps the last cleared memory document available to reopen in the session", 
   const button = (text: string) =>
     [...host.querySelectorAll("button")].find((node) => node.textContent === text)!;
   try {
-    await show(root, <KnowledgeSection botId="fixture" />);
+    await show(root, <KnowledgeSection threadId="fixture" />);
     await act(async () => button("MEMORY.md").click());
     await act(async () => {
       const field = host.querySelector("textarea")!;
@@ -377,7 +377,7 @@ it.each(["missing", "failed"])(
     const host = document.createElement("div");
     const root = createRoot(host);
     try {
-      await show(root, <KnowledgeSection botId="fixture" />);
+      await show(root, <KnowledgeSection threadId="fixture" />);
       if (result === "missing") memoryApi.list.mockResolvedValueOnce([]);
       else memoryApi.list.mockRejectedValueOnce(new Error("offline"));
       await act(async () =>
@@ -445,7 +445,7 @@ it("says how much memory no longer reaches the bot", async () => {
         content: "Fixture memory",
         revision: 1,
         scope: "bot",
-        botId: "fixture",
+        threadId: "fixture",
         updatedAt: "",
       },
     ] as never);
@@ -474,7 +474,7 @@ it("says how much memory no longer reaches the bot", async () => {
       ],
     } as never);
 
-    await show(root, <KnowledgeSection botId="fixture" />);
+    await show(root, <KnowledgeSection threadId="fixture" />);
 
     expect(host.textContent).toContain("About 20 KB of memory no longer reaches the bot.");
   } finally {

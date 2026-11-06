@@ -55,8 +55,6 @@ import { useThreadSync } from "./shell/use-thread-sync";
 
 const run: RoutineRun = {
   id: "run-1",
-  botId: "bot-1",
-  groupId: null,
   status: "completed",
   error: null,
   createdAt: "2026-01-02T12:00:00Z",
@@ -88,7 +86,7 @@ async function mounted({
     root.render(
       <QueryClientProvider client={client}>
         <MemoryRouter>
-          <RoutineRunHistory routineId="routine-1" />
+          <RoutineRunHistory routineId="routine-1" threadId="thread-1" />
           {beside}
         </MemoryRouter>
       </QueryClientProvider>,
@@ -128,7 +126,7 @@ it("shows loading, then the latest runs as rows that open their chat", async () 
     expect(view.container.textContent).not.toContain("View chat");
     const links = view.container.querySelectorAll("a");
     expect(links).toHaveLength(1);
-    expect(links[0]?.getAttribute("href")).toBe("/app/bot-1?m=reply-1");
+    expect(links[0]?.getAttribute("href")).toBe("/app/c/thread-1?m=reply-1");
     expect(view.rows()[0]?.textContent).not.toContain("No reply");
     expect(view.rows()[1]?.textContent).toContain("No reply");
     expect(view.button("Load older runs")).toBeUndefined();
@@ -246,19 +244,6 @@ it("says when a scheduled run started late, and only then", async () => {
   }
 });
 
-it("opens a group run in its group thread", async () => {
-  routines.history.mockResolvedValue(page([{ ...run, groupId: "group-1" }]));
-  const view = await mounted();
-  try {
-    await view.settled(() => expect(view.rows()).toHaveLength(1));
-    expect(view.container.querySelector("a")?.getAttribute("href")).toBe(
-      "/app/g/group-1?m=reply-1",
-    );
-  } finally {
-    await view.close();
-  }
-});
-
 it("shows a silent failed run summary with diagnostics behind Details", async () => {
   i18n.loadAndActivate({ locale: "en", messages: {} });
   const error = "504: request timed out";
@@ -306,15 +291,13 @@ function OpenChat() {
       messageScroll: ref(null),
       pinnedAroundRef: ref(null),
     },
-    computerState: { computerRef: ref(null), showCachedComputer: vi.fn() },
-    active: { id: "bot-1", name: "Bot" },
-    inGroup: false,
-    activeBotId: ref("bot-1"),
-    activeGroupId: ref(undefined),
-    botsRef: ref([]),
+    computerState: { computerRef: ref(null), commitComputer: vi.fn() },
+    active: { id: "thread-1", status: "idle", members: [] },
+    userId: "user-1",
+    activeThreadId: ref("thread-1"),
     searchParamsRef: ref(new URLSearchParams()),
-    refreshBots: async () => {},
-    notifyBrowserForEvent: vi.fn(),
+    refreshChats: async () => {},
+    markReadIfVisible: vi.fn(),
   } as unknown as Parameters<typeof useThreadSync>[0]);
   return null;
 }

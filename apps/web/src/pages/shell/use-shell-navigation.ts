@@ -1,7 +1,8 @@
-import type { Bot, Group } from "@labradoodle/contracts";
+import type { Chat } from "@labradoodle/contracts";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { NavigateFunction, NavigateOptions, To } from "react-router-dom";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { chatPath } from "../../lib/bootstrap-target";
 import { guardShellNavigate } from "../../lib/space-switch";
 import type { ShellOverlay } from "../shell-overlay";
 import {
@@ -43,7 +44,7 @@ export function useShellNavigation() {
   const [searchParams, setSearchParams] = useSearchParams();
   // Mirrors searchParams for effects that only need to read it once on run,
   // not re-run on every unrelated query-param change (e.g. the SSE subscribe
-  // effect, which should only restart when the active bot changes).
+  // effect, which should only restart when the open chat changes).
   const searchParamsRef = useRef(searchParams);
   searchParamsRef.current = searchParams;
   /** Automatic route repair preserves overlays without counting as newer user navigation. */
@@ -77,11 +78,6 @@ export function useShellNavigation() {
   };
 }
 
-export function firstThreadRoute(
-  bots: readonly Pick<Bot, "id">[],
-  groups: readonly Pick<Group, "id">[],
-): string {
-  if (bots[0]) return `/app/${bots[0].id}`;
-  if (groups[0]) return `/app/g/${groups[0].id}`;
-  return "/app";
+export function firstThreadRoute(chats: readonly Pick<Chat, "id">[]): string {
+  return chats[0] ? chatPath(chats[0].id) : "/app";
 }

@@ -8,21 +8,16 @@ import {
   Textarea,
 } from "@labradoodle/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { rpc } from "../../lib/rpc";
 import { errorText } from "../../lib/user-error";
 
-/**
- * Mount with key={botId} so a bot switch remounts clean state. Async completions still check
- * botIdRef so a late response from bot A cannot mutate bot B if the instance is reused.
- */
+/** Starts teaching Doodle a skill on the person's own computer. */
 export function TeachComputerOverlayControl({
-  botId,
   computer,
   busy: busyProp,
   onRefresh,
 }: {
-  botId: string;
   computer: ComputerStatus | null;
   busy?: boolean;
   onRefresh: () => Promise<void>;
@@ -32,8 +27,6 @@ export function TeachComputerOverlayControl({
   const [goal, setGoal] = useState("");
   const [localBusy, setLocalBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const botIdRef = useRef(botId);
-  botIdRef.current = botId;
   /**
    * Sticky once a recording is known active until Shell shows Stop teaching (this
    * control unmounts) or a probe for the current bot finds no recording. Dismiss
@@ -52,13 +45,12 @@ export function TeachComputerOverlayControl({
   // server, locked while the probe runs so a remount cannot start twice.
   useEffect(() => {
     let cancelled = false;
-    const probeBotId = botId;
     setSyncingRecording(true);
     setGoalOpen(false);
     async function syncRecordingLock() {
       try {
-        const skills = await rpc.skills.list({ botId: probeBotId });
-        if (cancelled || botIdRef.current !== probeBotId) return;
+        const skills = await rpc.skills.list();
+        if (cancelled) return;
         const recording = skills.some((skill) => skill.status === "recording");
         if (!recording) {
           setNeedsRefresh(false);
@@ -72,7 +64,7 @@ export function TeachComputerOverlayControl({
           await onRefresh();
           // Keep needsRefresh. Shell swaps to Stop teaching once skills land.
         } catch (refreshError) {
-          if (cancelled || botIdRef.current !== probeBotId) return;
+          if (cancelled) return;
           setError(
             errorText(refreshError, t`Recording may have started, but the view could not refresh`),
           );
@@ -80,33 +72,30 @@ export function TeachComputerOverlayControl({
       } catch {
         // Fail closed: a transient skills.list error must not unlock Start while
         // a recording may still be active.
-        if (cancelled || botIdRef.current !== probeBotId) return;
+        if (cancelled) return;
         setNeedsRefresh(true);
         setRecoveryOpen(true);
         setError(t`Could not check teaching status. Refresh the view to continue.`);
       } finally {
-        if (!cancelled && botIdRef.current === probeBotId) setSyncingRecording(false);
+        if (!cancelled) setSyncingRecording(false);
       }
     }
     void syncRecordingLock();
     return () => {
       cancelled = true;
     };
-  }, [botId, onRefresh]); // t omitted: identity churn must not re-lock Start
+  }, [onRefresh]); // t omitted: identity churn must not re-lock Start
 
-  // Hide only for desktop-host bots. Null computer still shows the control so teaching can boot.
+  // Hide only for a desktop-host computer. Null computer still shows the control so teaching can boot.
   if (computer?.kind === "desktop") return null;
 
   async function refreshView() {
-    const requestBotId = botId;
     setLocalBusy(true);
     setError(null);
     try {
       await onRefresh();
-      if (botIdRef.current !== requestBotId) return;
       // Confirm with skills.list. onRefresh can resolve before Shell applies skills.
-      const skills = await rpc.skills.list({ botId: requestBotId });
-      if (botIdRef.current !== requestBotId) return;
+      const skills = await rpc.skills.list();
       if (skills.some((skill) => skill.status === "recording")) {
         setNeedsRefresh(true);
         // Keep recovery open until Shell mounts Stop teaching (this control
@@ -119,45 +108,39 @@ export function TeachComputerOverlayControl({
       setRecoveryOpen(false);
       setGoal("");
     } catch (refreshError) {
-      if (botIdRef.current !== requestBotId) return;
       setNeedsRefresh(true);
       setRecoveryOpen(true);
       setError(
         errorText(refreshError, t`Recording may have started, but the view could not refresh`),
       );
     } finally {
-      if (botIdRef.current === requestBotId) setLocalBusy(false);
+      setLocalBusy(false);
     }
   }
 
   async function startTeaching() {
     if (!goal.trim() || busy || startLocked) return;
-    const requestBotId = botId;
     const requestGoal = goal.trim();
     setLocalBusy(true);
     setError(null);
     try {
-      await rpc.computer.boot({ botId: requestBotId });
-      await rpc.skills.start({ botId: requestBotId, goal: requestGoal });
-      if (botIdRef.current !== requestBotId) return;
+      await rpc.computer.boot();
+      await rpc.skills.start({ goal: requestGoal });
       setGoalOpen(false);
       setNeedsRefresh(true);
       try {
         await onRefresh();
-        if (botIdRef.current !== requestBotId) return;
         setGoal("");
         // Keep needsRefresh + recovery until Shell unmounts this control when
         // recordingSkill lands. Closing recovery early hides Stop if skills lag.
         setRecoveryOpen(true);
       } catch (refreshError) {
-        if (botIdRef.current !== requestBotId) return;
         setRecoveryOpen(true);
         setError(
           errorText(refreshError, t`Recording may have started, but the view could not refresh`),
         );
       }
     } catch (startError) {
-      if (botIdRef.current !== requestBotId) return;
       const message = errorText(startError, t`Could not start teaching`);
       setError(message);
       // Server already has a session (e.g. remount before the probe finished).
@@ -167,7 +150,7 @@ export function TeachComputerOverlayControl({
         setGoalOpen(false);
       }
     } finally {
-      if (botIdRef.current === requestBotId) setLocalBusy(false);
+      setLocalBusy(false);
     }
   }
 

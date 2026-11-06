@@ -45,12 +45,8 @@ export function ComputerUpdateProgress({ onCompleted }: { onCompleted: () => voi
         ? t`Recovery failed`
         : t`Update failed`
       : update.action === "recover"
-        ? update.mode === "team"
-          ? t`Recovering Team Computer`
-          : t`Recovering ${update.name}’s Computer`
-        : update.mode === "team"
-          ? t`Updating Team Computer`
-          : t`Updating ${update.name}’s Computer`;
+        ? t`Recovering your computer`
+        : t`Updating your computer`;
   const selected = updates.find((update) => update.id === openId);
   return (
     <>
@@ -172,7 +168,7 @@ export function ComputerUpdateProgress({ onCompleted }: { onCompleted: () => voi
                     setRecovering(true);
                     setError(false);
                     void computerUpdates
-                      .start(selected.botId, "recover")
+                      .start("own", "recover")
                       .catch(() => setError(true))
                       .finally(() => setRecovering(false));
                   }}

@@ -9,6 +9,7 @@ import {
   Monitor,
   Settings,
   ShieldCheck,
+  Users,
   Volume2,
   Wallet,
 } from "lucide-react";
@@ -21,7 +22,7 @@ export type SettingsNavItem = {
   icon: ComponentType<{ className?: string; strokeWidth?: number }>;
 };
 
-/** The settings sections this deployment offers, in nav order; Space opens from its own menu. */
+/** The settings sections this deployment offers, in nav order. */
 export function useSettingsNavItems(available: {
   wallet: boolean;
   computer: boolean;
@@ -31,6 +32,7 @@ export function useSettingsNavItems(available: {
   const { t } = useLingui();
   return [
     { id: "general", label: t`General`, icon: Settings },
+    { id: "space", label: t`Workspace`, icon: Users },
     { id: "models", label: t`Models`, icon: Cpu },
     { id: "voice", label: t`Voice`, icon: Volume2 },
     { id: "confirmations", label: t`Approvals`, icon: ShieldCheck },
@@ -38,7 +40,9 @@ export function useSettingsNavItems(available: {
     ...(available.wallet ? [{ id: "wallet" as const, label: t`Wallet`, icon: Wallet }] : []),
     { id: "memory", label: t`Memory`, icon: Brain },
     { id: "usage", label: t`Usage`, icon: Gauge },
-    ...(available.computer ? [{ id: "computer" as const, label: t`Computer`, icon: Monitor }] : []),
+    ...(available.computer
+      ? [{ id: "computer" as const, label: t`My computer`, icon: Monitor }]
+      : []),
     ...(available.billing ? [{ id: "billing" as const, label: t`Billing`, icon: CreditCard }] : []),
     ...(available.updates
       ? [{ id: "updates" as const, label: t`Updates`, icon: CloudDownload }]

@@ -9,7 +9,7 @@ import { readShellOverlay, searchString, withShellOverlay } from "../shell-overl
 import type { useShellNavigation } from "./use-shell-navigation";
 
 /**
- * Opens a chat in any of the user's spaces; another space loads
+ * Opens a chat in any of the person's workspaces; another workspace loads
  * first, then the shell remounts into it.
  */
 export function useOpenSpaceChat({
@@ -81,7 +81,7 @@ export function useOpenSpaceChat({
       const current = () => decision() !== "abandon";
       // A space visited before opens at once with what it showed then, refreshing behind it.
       const cached = queryClient.getQueryData(spaceSeedKey(userId ?? null, spaceId));
-      const primed = primeSpaceBootstrap(spaceId, target.botId, cached);
+      const primed = primeSpaceBootstrap(spaceId, target.threadId, cached);
       const remount = () =>
         remountShellForSpace(() => {
           if (!current()) {

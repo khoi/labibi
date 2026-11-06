@@ -1,8 +1,6 @@
 import type {
   AppBootstrap,
-  Bot,
-  ComputerStatus,
-  Group,
+  Chat,
   ProductEvent,
   RoutineHistory,
   ThreadSnapshot,
@@ -41,7 +39,6 @@ import {
   transcriptCanSnapAfterFrame,
   transcriptIsNearEnd,
 } from "../../lib/transcript-scroll";
-import type { useBrowserNotifications } from "./use-browser-notifications";
 import type { ComputerState } from "./use-computer";
 import type { ThreadState } from "./use-thread-state";
 
@@ -51,21 +48,15 @@ function threadSnapshotSignal(parent: AbortSignal): AbortSignal {
   return anySignal([parent, AbortSignal.timeout(THREAD_SNAPSHOT_TIMEOUT_MS)]);
 }
 
-function applyThreadEvent(
+/** A computer event in a chat is about the person whose run it is; only theirs changes this view. */
+function isOwnComputerEvent(
   event: ProductEvent,
-  commitSnapshot: (next: ThreadSnapshot | null) => void,
-  commitComputer: (next: ComputerStatus | null) => void,
-  snapshotRef: RefObject<ThreadSnapshot | null>,
-  computerRef: RefObject<ComputerStatus | null>,
+  snapshot: ThreadSnapshot | null,
+  userId: string | undefined,
 ) {
-  if (isThreadSnapshotEvent(event)) {
-    const next = reduceThreadSnapshot(snapshotRef.current, event);
-    commitSnapshot(next);
-  }
-  if (isComputerStatusEvent(event)) {
-    const next = reduceComputerStatus(computerRef.current, event);
-    commitComputer(next);
-  }
+  if (!event.runId || !userId) return false;
+  const run = activeThreadRuns(snapshot).find((candidate) => candidate.id === event.runId);
+  return run?.userId === userId;
 }
 
 /** Loads the open chat, keeps it live, and pages in its older history. */
@@ -76,35 +67,23 @@ export function useThreadSync({
   computerState,
   seed,
   active,
-  inGroup,
-  groupId,
-  activeGroup,
-  activeBotId,
-  activeGroupId,
-  botsRef,
+  userId,
+  activeThreadId,
   searchParamsRef,
-  refreshBots,
-  notifyBrowserForEvent,
-  markBotReadIfVisible,
-  markGroupReadOnReply,
+  refreshChats,
+  markReadIfVisible,
 }: {
   rpc: ReturnType<typeof createSpaceRpc>;
   queries: SpaceQueries;
   thread: ThreadState;
   computerState: ComputerState;
   seed: AppBootstrap | undefined;
-  active: Bot | undefined;
-  inGroup: boolean;
-  groupId: string | undefined;
-  activeGroup: Group | undefined;
-  activeBotId: RefObject<string | undefined>;
-  activeGroupId: RefObject<string | undefined>;
-  botsRef: RefObject<Bot[]>;
+  active: Chat | undefined;
+  userId: string | undefined;
+  activeThreadId: RefObject<string | undefined>;
   searchParamsRef: RefObject<URLSearchParams>;
-  refreshBots: (includeArchived?: boolean) => Promise<void>;
-  notifyBrowserForEvent: ReturnType<typeof useBrowserNotifications>["notifyBrowserForEvent"];
-  markBotReadIfVisible: (botId: string) => void;
-  markGroupReadOnReply: (groupId: string) => void;
+  refreshChats: () => Promise<void>;
+  markReadIfVisible: (threadId: string) => void;
 }) {
   const {
     snapshot,
@@ -112,9 +91,7 @@ export function useThreadSync({
     commitSnapshot,
     updateSnapshot,
     setRoutines,
-    setRoutinesBotId,
-    setTaughtSkills,
-    setTaughtSkillsBotId,
+    setRoutinesThreadId,
     bootstrappedThread,
     expandedHistoryThread,
     historyEpoch,
@@ -122,17 +99,8 @@ export function useThreadSync({
     pinnedAroundRef,
     resetHistory,
   } = thread;
-  const {
-    computerRef,
-    commitComputer,
-    cacheComputerFor,
-    showCachedComputer,
-    computerOpenRef,
-    computerBotIdRef,
-    refreshComputerScreen,
-  } = computerState;
+  const { computerRef, commitComputer, refreshComputerScreen } = computerState;
   const threadRefreshEpoch = useRef(0);
-  const groupRefreshEpoch = useRef(0);
   const [loadingOlder, setLoadingOlder] = useState(false);
   // A very fast run can finish over SSE while its threads.send response is still
   // returning. Do not let that late receipt resurrect terminal work as queued.
@@ -142,8 +110,8 @@ export function useThreadSync({
    * Each chat's last snapshot, so reopening it paints at once. The live load and
    * subscription still run and replace it, so it is only ever a first frame.
    */
-  function cachedThreadKey(target: { botId: string } | { groupId: string }) {
-    return queries.threads.get.queryKey({ input: target });
+  function cachedThreadKey(threadId: string) {
+    return queries.threads.get.queryKey({ input: { threadId } });
   }
 
   function snapTranscriptToEndAfterFrame() {
@@ -158,36 +126,6 @@ export function useThreadSync({
     });
   }
 
-  async function refreshGroupThread(id: string, signal?: AbortSignal) {
-    const scrollElement = messageScroll.current;
-    const stickToEnd = !scrollElement || transcriptIsNearEnd(scrollElement);
-    markOnce("rk:renderer:thread-request-start");
-    const request = ++groupRefreshEpoch.current;
-    const snap = await rpc.threads.get({ groupId: id }, signal ? { signal } : undefined);
-    markOnce("rk:renderer:thread-response");
-    if (activeGroupId.current !== id || request !== groupRefreshEpoch.current) return snap;
-    const reconciled = reconcileRefreshedThread(
-      snapshotRef.current,
-      snap,
-      computerRef.current,
-      expandedHistoryThread.current === snap.threadId,
-    );
-    webLogoAvatarActivity.reconcile(snap);
-    commitSnapshot(reconciled.snapshot);
-    if (!computerOpenRef.current) commitComputer(null);
-    setRoutines([]);
-    setRoutinesBotId(null);
-    // Keep the search-jump viewport; expandedHistoryThread merge still accepts live messages.
-    if (
-      stickToEnd &&
-      (!scrollElement || transcriptIsNearEnd(scrollElement)) &&
-      expandedHistoryThread.current !== snap.threadId
-    ) {
-      snapTranscriptToEndAfterFrame();
-    }
-    return snap;
-  }
-
   async function refreshThread(id: string, signal?: AbortSignal) {
     const scrollElement = messageScroll.current;
     const stickToEnd = !scrollElement || transcriptIsNearEnd(scrollElement);
@@ -195,11 +133,11 @@ export function useThreadSync({
     const epoch = historyEpoch.current;
     const request = ++threadRefreshEpoch.current;
     // Apply threads.get as soon as it returns so stop/takeover status is not held behind
-    // routines/skills/screen fetches (progress can advance the cursor meanwhile).
-    const snap = await rpc.threads.get({ botId: id }, signal ? { signal } : undefined);
+    // the routines and screen fetches (progress can advance the cursor meanwhile).
+    const snap = await rpc.threads.get({ threadId: id }, signal ? { signal } : undefined);
     markOnce("rk:renderer:thread-response");
     if (
-      activeBotId.current !== id ||
+      activeThreadId.current !== id ||
       epoch !== historyEpoch.current ||
       request !== threadRefreshEpoch.current
     ) {
@@ -214,7 +152,6 @@ export function useThreadSync({
     webLogoAvatarActivity.reconcile(snap);
     commitSnapshot(reconciled.snapshot);
     commitComputer(reconciled.computer);
-    cacheComputerFor(id, { computer: reconciled.computer });
     if (
       stickToEnd &&
       (!scrollElement || transcriptIsNearEnd(scrollElement)) &&
@@ -224,16 +161,14 @@ export function useThreadSync({
     }
     void Promise.all([
       // Runs after routine changes too, so an older read in flight is not reused.
-      fetchFresh(queryClient, queries.routines.list.queryOptions({ input: { botId: id } })).catch(
-        () => null,
-      ),
-      fetchFresh(queryClient, queries.skills.list.queryOptions({ input: { botId: id } })).catch(
-        () => null,
-      ),
+      fetchFresh(
+        queryClient,
+        queries.routines.list.queryOptions({ input: { threadId: id } }),
+      ).catch(() => null),
       refreshComputerScreen(id).catch(() => null),
-    ]).then(([routines, skills]) => {
+    ]).then(([routines]) => {
       if (
-        activeBotId.current !== id ||
+        activeThreadId.current !== id ||
         epoch !== historyEpoch.current ||
         request !== threadRefreshEpoch.current
       ) {
@@ -241,11 +176,7 @@ export function useThreadSync({
       }
       if (routines) {
         setRoutines(routines);
-        setRoutinesBotId(id);
-      }
-      if (skills) {
-        setTaughtSkills(skills);
-        setTaughtSkillsBotId(id);
+        setRoutinesThreadId(id);
       }
     });
     return snap;
@@ -264,15 +195,11 @@ export function useThreadSync({
   }
 
   async function loadOlderMessages() {
-    const targetBotId = inGroup ? undefined : active?.id;
-    const targetGroupId = inGroup ? groupId : undefined;
-    const snapshotMatchesTarget = targetGroupId
-      ? snapshot?.groupId === targetGroupId
-      : snapshot?.botId === targetBotId;
+    const threadId = active?.id;
     if (
-      (!targetBotId && !targetGroupId) ||
-      !snapshotMatchesTarget ||
-      snapshot?.olderCursor == null ||
+      !threadId ||
+      snapshot?.threadId !== threadId ||
+      snapshot.olderCursor == null ||
       loadingOlder
     )
       return;
@@ -287,16 +214,8 @@ export function useThreadSync({
     const before = snapshot.olderCursor;
     setLoadingOlder(true);
     try {
-      const page = await rpc.threads.messages({
-        ...(targetGroupId ? { groupId: targetGroupId } : { botId: targetBotId! }),
-        before,
-      });
-      if (
-        epoch !== historyEpoch.current ||
-        activeBotId.current !== targetBotId ||
-        activeGroupId.current !== targetGroupId
-      )
-        return;
+      const page = await rpc.threads.messages({ threadId, before });
+      if (epoch !== historyEpoch.current || activeThreadId.current !== threadId) return;
       expandedHistoryThread.current = page.threadId;
       updateSnapshot((prev) => prependThreadMessagePage(prev, page));
       window.requestAnimationFrame(() => {
@@ -314,28 +233,25 @@ export function useThreadSync({
 
   useEffect(() => {
     if (!active) return;
+    const threadId = active.id;
     const pendingJump = searchParamsRef.current.get("m");
-    if (!pendingJump) {
-      pinnedAroundRef.current = null;
-    }
-    showCachedComputer(active.id);
+    if (!pendingJump) pinnedAroundRef.current = null;
     expandedHistoryThread.current = null;
     historyEpoch.current += 1;
-    const threadKey = cachedThreadKey({ botId: active.id });
+    const threadKey = cachedThreadKey(threadId);
     const cachedThread = pendingJump
       ? undefined
       : (queryClient.getQueryData(threadKey) ??
-        (seed?.thread?.botId === active.id ? seed.thread : undefined));
+        (seed?.thread?.threadId === threadId ? seed.thread : undefined));
     if (
       cachedThread &&
-      snapshotRef.current?.botId !== active.id &&
-      (active.threadStatus === undefined ||
-        activeThreadRuns(cachedThread).some((run) => isRunWorking(run.status)) ===
-          isRunWorking(active.threadStatus))
+      snapshotRef.current?.threadId !== threadId &&
+      activeThreadRuns(cachedThread).some((run) => isRunWorking(run.status)) ===
+        isRunWorking(active.status)
     )
       commitSnapshot(cachedThread);
-    const sidebarRefresh = createRefreshCoalescer(() => refreshBots());
-    const snapshotRefresh = createRefreshCoalescer(() => refreshThread(active.id));
+    const listRefresh = createRefreshCoalescer(() => refreshChats());
+    const snapshotRefresh = createRefreshCoalescer(() => refreshThread(threadId));
     const abort = new AbortController();
     const avatarSource = newLogoAvatarActivitySource();
     void runThreadSubscription({
@@ -344,19 +260,19 @@ export function useThreadSync({
         const primed = bootstrappedThread.current;
         bootstrappedThread.current = null;
         // Pending search jumps load the around-page separately; avoid replacing it with latest.
-        return primed?.botId === active.id
+        return primed?.threadId === threadId
           ? primed
           : pendingJump
-            ? rpc.threads.get({ botId: active.id }, { signal: threadSnapshotSignal(abort.signal) })
-            : refreshThread(active.id, threadSnapshotSignal(abort.signal));
+            ? rpc.threads.get({ threadId }, { signal: threadSnapshotSignal(abort.signal) })
+            : refreshThread(threadId, threadSnapshotSignal(abort.signal));
       },
       loadHead: () =>
-        rpc.threads.head({ botId: active.id }, { signal: threadSnapshotSignal(abort.signal) }),
-      refresh: () => refreshThread(active.id, threadSnapshotSignal(abort.signal)),
+        rpc.threads.head({ threadId }, { signal: threadSnapshotSignal(abort.signal) }),
+      refresh: () => refreshThread(threadId, threadSnapshotSignal(abort.signal)),
       currentSnapshot: () => snapshotRef.current,
       subscribe: (cursor, signal) =>
         openLogoAvatarActivityFeed(avatarSource, snapshotRef.current, cursor, signal, () =>
-          rpc.threads.subscribe({ botId: active.id, cursor }, { signal }),
+          rpc.threads.subscribe({ threadId, cursor }, { signal }),
         ),
       beforeEvent: (event) => {
         webLogoAvatarActivity.apply(avatarSource, event);
@@ -368,39 +284,28 @@ export function useThreadSync({
           }
         }
       },
-      applyEvent: (event) =>
-        applyThreadEvent(event, commitSnapshot, commitComputer, snapshotRef, computerRef),
-      onEvent: (event, initial) => {
-        const currentBot = botsRef.current.find((bot) => bot.id === active.id);
-        notifyBrowserForEvent(
-          event,
-          initial.threadId,
-          initial.cursor,
-          true,
-          currentBot?.name ?? active.name,
-          currentBot?.notifyOnFinish ?? false,
-          false,
-        );
+      applyEvent: (event) => {
+        const ownComputer =
+          isComputerStatusEvent(event) && isOwnComputerEvent(event, snapshotRef.current, userId);
+        if (isThreadSnapshotEvent(event)) {
+          commitSnapshot(reduceThreadSnapshot(snapshotRef.current, event));
+        }
+        if (ownComputer) commitComputer(reduceComputerStatus(computerRef.current, event));
+      },
+      onEvent: (event) => {
         if (event.type === "thread.cleared") resetHistory();
-        if (event.type === "bot.archived") {
-          void refreshBots(true).catch(() => undefined);
-        } else if (
-          event.type === "bot.deleted" ||
-          event.type === "bot.updated" ||
-          event.type === "group.created" ||
+        if (
+          event.type === "thread.message.created" ||
           event.type === "run.started" ||
           isRunTerminalEvent(event) ||
           event.type === "thread.cleared"
         ) {
-          void sidebarRefresh.invalidate().catch(() => undefined);
+          void listRefresh.invalidate().catch(() => undefined);
         }
         if (event.type === "thread.message.created") {
           const blocks = (event.payload.blocks as Array<{ kind?: string }>) ?? [];
           relistPagesForBlocks(queries, queryClient, blocks);
-          if (blocks.some((block) => block.kind === "child_bot")) {
-            void sidebarRefresh.invalidate().catch(() => undefined);
-          }
-          if (event.payload.role === "bot") markBotReadIfVisible(active.id);
+          markReadIfVisible(threadId);
         }
         if (
           isRunTerminalEvent(event) ||
@@ -410,135 +315,36 @@ export function useThreadSync({
           // waiting_input: reconcile ask cards if a stale post-send refresh raced SSE.
           void snapshotRefresh.invalidate().catch(() => undefined);
         } else if (isComputerStatusEvent(event)) {
-          // In a shared Space the event does not say who took control; the snapshot does.
-          if (event.type === "computer.takeover.granted" && computerRef.current?.shared) {
-            void snapshotRefresh.invalidate().catch(() => undefined);
-          }
-          void refreshComputerScreen(active.id).catch(() => undefined);
+          void refreshComputerScreen(threadId).catch(() => undefined);
         }
         if (isRunTerminalEvent(event)) refreshRoutineHistory(event.runId);
       },
     });
     return () => {
-      sidebarRefresh.dispose();
+      listRefresh.dispose();
       snapshotRefresh.dispose();
       abort.abort();
       webLogoAvatarActivity.resetSource(avatarSource);
       const left = snapshotRef.current;
-      if (left?.botId === active.id && !left.groupId) queryClient.setQueryData(threadKey, left);
+      if (left?.threadId === threadId) queryClient.setQueryData(threadKey, left);
     };
-  }, [active?.id, markBotReadIfVisible, notifyBrowserForEvent]);
-
-  useEffect(() => {
-    if (!groupId || !activeGroup) return;
-    const pendingJump = searchParamsRef.current.get("m");
-    if (!pendingJump) {
-      pinnedAroundRef.current = null;
-      expandedHistoryThread.current = null;
-    }
-    historyEpoch.current += 1;
-    const threadKey = cachedThreadKey({ groupId });
-    const cachedThread = pendingJump ? undefined : queryClient.getQueryData(threadKey);
-    if (cachedThread && snapshotRef.current?.groupId !== groupId) commitSnapshot(cachedThread);
-    const sidebarRefresh = createRefreshCoalescer(() => refreshBots());
-    const snapshotRefresh = createRefreshCoalescer(() => refreshGroupThread(groupId));
-    const abort = new AbortController();
-    const avatarSource = newLogoAvatarActivitySource();
-    void runThreadSubscription({
-      signal: abort.signal,
-      loadInitial: () =>
-        pendingJump
-          ? rpc.threads.get({ groupId }, { signal: threadSnapshotSignal(abort.signal) })
-          : refreshGroupThread(groupId, threadSnapshotSignal(abort.signal)),
-      loadHead: () => rpc.threads.head({ groupId }, { signal: threadSnapshotSignal(abort.signal) }),
-      refresh: () => refreshGroupThread(groupId, threadSnapshotSignal(abort.signal)),
-      currentSnapshot: () => snapshotRef.current,
-      subscribe: (cursor, signal) =>
-        openLogoAvatarActivityFeed(avatarSource, snapshotRef.current, cursor, signal, () =>
-          rpc.threads.subscribe({ groupId, cursor }, { signal }),
-        ),
-      beforeEvent: (event) => webLogoAvatarActivity.apply(avatarSource, event),
-      applyEvent: (event) =>
-        applyThreadEvent(
-          event,
-          commitSnapshot,
-          (next) => {
-            if (isComputerStatusEvent(event) && event.botId !== computerBotIdRef.current) return;
-            commitComputer(next);
-          },
-          snapshotRef,
-          computerRef,
-        ),
-      onEvent: (event, initial) => {
-        const eventBot = botsRef.current.find((bot) => bot.id === event.botId);
-        notifyBrowserForEvent(
-          event,
-          initial.threadId,
-          initial.cursor,
-          true,
-          eventBot?.name ?? activeGroup.name,
-          true,
-          true,
-        );
-        if (event.type === "thread.message.created" && event.payload.role === "bot") {
-          markGroupReadOnReply(groupId);
-        }
-        if (event.type === "thread.message.created") {
-          relistPagesForBlocks(
-            queries,
-            queryClient,
-            (event.payload.blocks as Array<{ kind?: string }>) ?? [],
-          );
-        }
-        if (
-          event.type === "run.started" ||
-          event.type === "bot.updated" ||
-          event.type === "group.updated" ||
-          isRunTerminalEvent(event)
-        ) {
-          void sidebarRefresh.invalidate().catch(() => undefined);
-        }
-        if (isRunTerminalEvent(event) || event.type === "run.waiting_input") {
-          // waiting_input: reconcile ask cards if a stale post-send refresh raced SSE.
-          void snapshotRefresh.invalidate().catch(() => undefined);
-        }
-        if (isRunTerminalEvent(event)) refreshRoutineHistory(event.runId);
-      },
-    });
-    return () => {
-      sidebarRefresh.dispose();
-      snapshotRefresh.dispose();
-      abort.abort();
-      webLogoAvatarActivity.resetSource(avatarSource);
-      const left = snapshotRef.current;
-      if (left?.groupId === groupId) queryClient.setQueryData(threadKey, left);
-    };
-  }, [activeGroup?.id, groupId, notifyBrowserForEvent, markGroupReadOnReply]);
+  }, [active?.id, markReadIfVisible]);
 
   // Memoized children take these, so they stay referentially stable across renders.
   const refreshThreadRef = useRef(refreshThread);
   refreshThreadRef.current = refreshThread;
-  const refreshGroupThreadRef = useRef(refreshGroupThread);
-  refreshGroupThreadRef.current = refreshGroupThread;
   const loadOlderMessagesRef = useRef(loadOlderMessages);
   loadOlderMessagesRef.current = loadOlderMessages;
   const loadOlder = useCallback(() => loadOlderMessagesRef.current(), []);
   const refreshActiveThread = useCallback(async () => {
-    const groupId = activeGroupId.current;
-    if (groupId) {
-      await refreshGroupThreadRef.current(groupId);
-      return;
-    }
-    const id = activeBotId.current;
+    const id = activeThreadId.current;
     if (!id) return;
     await refreshThreadRef.current(id);
   }, []);
 
   return {
     refreshThread,
-    refreshGroupThread,
     refreshThreadRef,
-    refreshGroupThreadRef,
     refreshActiveThread,
     loadOlder,
     loadingOlder,

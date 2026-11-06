@@ -128,12 +128,12 @@ export function PluginsOverlay({
   onConnectedAppsChange,
   onClose,
   onOpenMcp,
-  activeBotId,
+  activeThreadId,
 }: {
   onConnectedAppsChange?: (apps: ReturnType<typeof connectedAppMarks>) => void;
   onClose: () => void;
   onOpenMcp?: () => void;
-  activeBotId?: string;
+  activeThreadId?: string;
 }) {
   const { t } = useLingui();
   const [query, setQuery] = useState("");
@@ -416,10 +416,10 @@ export function PluginsOverlay({
   }
 
   async function notifyAppConnected(item: ConnectionCatalogItem) {
-    if (!activeBotId) return;
+    if (!activeThreadId) return;
     await rpc.onboarding
       .appConnected({
-        botId: activeBotId,
+        threadId: activeThreadId,
         provider: item.slug,
         connectorId: item.connectorId,
       })

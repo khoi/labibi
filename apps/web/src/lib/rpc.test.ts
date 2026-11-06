@@ -52,7 +52,7 @@ describe("unavailable space", () => {
       if (!spaces)
         return Response.json({ json: { code: "UNAUTHORIZED", status: 401 } }, { status: 401 });
       expect(new Headers(init?.headers).has("x-rakazo-space-id")).toBe(false);
-      return Response.json({ json: { spaces: spaces.map((id) => ({ id, name: id })) } });
+      return Response.json({ json: spaces.map((id) => ({ id, name: id })) });
     });
     vi.stubGlobal("fetch", fetch);
     return { items, reload };
@@ -189,7 +189,7 @@ describe("shell RPC space isolation", () => {
       selected = "space-b";
       // For example, an upload continues after reading a file or awaiting another RPC.
       await shellRpc.artifacts.create({
-        botId: "bot-a",
+        threadId: "bot-a",
         name: "example.txt",
         mimeType: "text/plain",
         contentBase64: "ZXhhbXBsZQ==",

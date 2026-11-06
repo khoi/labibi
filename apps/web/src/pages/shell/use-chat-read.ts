@@ -1,4 +1,4 @@
-import type { Bot, Group } from "@labradoodle/contracts";
+import type { Chat } from "@labradoodle/contracts";
 import type { ReadBoundary } from "@labradoodle/core";
 import { createChatQueues, settleReadBoundary } from "@labradoodle/core";
 import type { Dispatch, SetStateAction } from "react";
@@ -8,35 +8,28 @@ import type { createSpaceRpc } from "../../lib/rpc";
 
 /**
  * Read state for the open chat: automatic reads while it is visible, Mark as Unread holds,
- * and the "New" divider that marks where the user had read up to.
+ * and the "New" divider that marks where the person had read up to.
  */
 export function useChatRead({
   rpc,
-  active,
-  groupId,
-  activeGroup,
-  setBots,
-  setGroups,
+  threadId,
+  setChats,
 }: {
   rpc: ReturnType<typeof createSpaceRpc>;
-  active: Bot | undefined;
-  groupId: string | undefined;
-  activeGroup: Group | undefined;
-  setBots: Dispatch<SetStateAction<Bot[]>>;
-  setGroups: Dispatch<SetStateAction<Group[]>>;
+  threadId: string | undefined;
+  setChats: Dispatch<SetStateAction<Chat[]>>;
 }) {
   const manuallyUnread = useRef(new Set<string>());
   const [markedUnread, setMarkedUnread] = useState<{ visit: number; messageId: string } | null>(
     null,
   );
-  const readVisibleGroups = useRef(new Set<string>());
-  // What the user had read up to when the open chat was opened; the "New" divider
+  // What the person had read up to when the open chat was opened; the "New" divider
   // follows it until they write in the chat or leave it. Each open of a chat is a new visit.
   const readVisit = useRef<{ chat: string | null; visit: number }>({ chat: null, visit: 0 });
   const [readBoundary, setReadBoundary] = useState<ReadBoundary | null>(null);
   // A chat's markRead calls run one at a time so the request that opened it answers first.
   const [readInOrder] = useState(createChatQueues);
-  const openChat = groupId ? `group:${groupId}` : active ? `bot:${active.id}` : null;
+  const openChat = threadId ?? null;
   if (readVisit.current.chat !== openChat) {
     readVisit.current = { chat: openChat, visit: readVisit.current.visit + 1 };
   }
@@ -45,63 +38,65 @@ export function useChatRead({
       settleReadBoundary(current, readVisit.current.visit, { visit, seq }),
     );
   }, []);
-  // Writing in the chat means the user has caught up, so the divider goes.
+  // Writing in the chat means the person has caught up, so the divider goes.
   const clearReadBoundary = useCallback(() => {
     setReadBoundary({ visit: readVisit.current.visit, seq: null });
   }, []);
-  const updateBotUnread = useCallback((id: string, unread: boolean) => {
-    setBots((current) => {
-      const bot = current.find((candidate) => candidate.id === id);
-      if (!bot || bot.unread === unread) return current;
+  const updateUnread = useCallback((id: string, unread: boolean) => {
+    setChats((current) => {
+      const chat = current.find((candidate) => candidate.id === id);
+      if (!chat || chat.unread === unread) return current;
       return current.map((candidate) =>
         candidate.id === id ? { ...candidate, unread } : candidate,
       );
     });
   }, []);
-  // `stillWanted` makes it an automatic read: one that waited in the queue skips once the user
+  // `stillWanted` makes it an automatic read: one that waited in the queue skips once the person
   // has left. Only an explicit read clears a Mark as Unread hold, and it does so up front, so an
-  // automatic read answering after the user marked the chat unread can't undo the hold.
-  const markBotRead = useCallback(
+  // automatic read answering after the person marked the chat unread can't undo the hold.
+  const markRead = useCallback(
     async (id: string, stillWanted?: () => boolean) => {
       if (!stillWanted) {
         manuallyUnread.current.delete(id);
-        if (readVisit.current.chat === `bot:${id}`) setMarkedUnread(null);
+        if (readVisit.current.chat === id) setMarkedUnread(null);
       }
-      const answer = await readInOrder(`bot:${id}`, () =>
-        !stillWanted || stillWanted() ? rpc.threads.markRead({ botId: id }) : Promise.resolve(null),
+      const answer = await readInOrder(id, () =>
+        !stillWanted || stillWanted()
+          ? rpc.threads.markRead({ threadId: id })
+          : Promise.resolve(null),
       );
       if (!answer) return undefined;
-      if (!manuallyUnread.current.has(id)) updateBotUnread(id, false);
+      if (!manuallyUnread.current.has(id)) updateUnread(id, false);
       return answer.unreadAfterSeq;
     },
-    [readInOrder, updateBotUnread],
+    [readInOrder, updateUnread],
   );
-  const markBotUnread = useCallback(
+  const markUnread = useCallback(
     async (id: string, messageId?: string) => {
       manuallyUnread.current.add(id);
       const visit = readVisit.current.visit;
       try {
         // Through the chat's read queue, so a read already sent lands first and this one wins.
-        await readInOrder(`bot:${id}`, () =>
-          rpc.threads.markUnread({ botId: id, ...(messageId ? { messageId } : {}) }),
+        await readInOrder(id, () =>
+          rpc.threads.markUnread({ threadId: id, ...(messageId ? { messageId } : {}) }),
         );
       } catch (err) {
         manuallyUnread.current.delete(id);
         throw err;
       }
       if (messageId && readVisit.current.visit === visit) setMarkedUnread({ visit, messageId });
-      updateBotUnread(id, true);
+      updateUnread(id, true);
     },
-    [readInOrder, updateBotUnread],
+    [readInOrder, updateUnread],
   );
-  // A bot the user marked unread by hand stays unread until they open it again,
+  // A chat the person marked unread by hand stays unread until they open it again,
   // otherwise the auto-read below would undo the action on the next window focus.
-  const markBotReadIfVisible = useCallback(
+  const markReadIfVisible = useCallback(
     (id: string) => {
       if (manuallyUnread.current.has(id)) return;
       if (document.visibilityState === "visible" && document.hasFocus()) {
         const visit = readVisit.current.visit;
-        void markBotRead(
+        void markRead(
           id,
           () =>
             !manuallyUnread.current.has(id) && autoReadStillWanted(readVisit.current.visit, visit),
@@ -112,140 +107,34 @@ export function useChatRead({
           .catch(() => undefined);
       }
     },
-    [markBotRead, captureReadBoundary],
-  );
-  const markGroupReadIfVisible = useCallback(
-    (groupId: string) => {
-      if (
-        document.visibilityState !== "visible" ||
-        !document.hasFocus() ||
-        readVisibleGroups.current.has(groupId) ||
-        // A group the user marked unread stays unread until they open it again.
-        manuallyUnread.current.has(groupId)
-      )
-        return;
-      readVisibleGroups.current.add(groupId);
-      const visit = readVisit.current.visit;
-      void readInOrder(`group:${groupId}`, () =>
-        !manuallyUnread.current.has(groupId) && autoReadStillWanted(readVisit.current.visit, visit)
-          ? rpc.threads.markRead({ groupId })
-          : Promise.resolve(null),
-      )
-        .then((answer) => {
-          if (!answer) {
-            readVisibleGroups.current.delete(groupId);
-            return;
-          }
-          captureReadBoundary(visit, answer.unreadAfterSeq);
-          setGroups((current) => {
-            const group = current.find((candidate) => candidate.id === groupId);
-            if (!group?.unread) return current;
-            return current.map((candidate) =>
-              candidate.id === groupId ? { ...candidate, unread: false } : candidate,
-            );
-          });
-        })
-        .catch(() => {
-          readVisibleGroups.current.delete(groupId);
-        });
-    },
-    [readInOrder, captureReadBoundary],
-  );
-  /** A new bot reply in an open group is read again, once per reply. */
-  const markGroupReadOnReply = useCallback(
-    (groupId: string) => {
-      readVisibleGroups.current.delete(groupId);
-      markGroupReadIfVisible(groupId);
-    },
-    [markGroupReadIfVisible],
+    [markRead, captureReadBoundary],
   );
 
   useEffect(() => {
-    if (!active) return;
-    // Opening a bot clears the manual unread flag so it can auto-read again.
-    manuallyUnread.current.delete(active.id);
-    const markVisibleBotRead = () => {
-      markBotReadIfVisible(active.id);
-    };
-    markVisibleBotRead();
-    window.addEventListener("focus", markVisibleBotRead);
-    document.addEventListener("visibilitychange", markVisibleBotRead);
+    if (!threadId) return;
+    // Opening a chat clears the manual unread flag so it can auto-read again.
+    manuallyUnread.current.delete(threadId);
+    const markVisibleRead = () => markReadIfVisible(threadId);
+    markVisibleRead();
+    window.addEventListener("focus", markVisibleRead);
+    document.addEventListener("visibilitychange", markVisibleRead);
     return () => {
-      window.removeEventListener("focus", markVisibleBotRead);
-      document.removeEventListener("visibilitychange", markVisibleBotRead);
+      window.removeEventListener("focus", markVisibleRead);
+      document.removeEventListener("visibilitychange", markVisibleRead);
     };
-  }, [active?.id, markBotReadIfVisible]);
-
-  useEffect(() => {
-    if (!groupId || !activeGroup) return;
-    manuallyUnread.current.delete(activeGroup.id);
-    readVisibleGroups.current.delete(groupId);
-    const markVisibleGroupRead = () => markGroupReadIfVisible(groupId);
-    markVisibleGroupRead();
-    window.addEventListener("focus", markVisibleGroupRead);
-    document.addEventListener("visibilitychange", markVisibleGroupRead);
-    return () => {
-      window.removeEventListener("focus", markVisibleGroupRead);
-      document.removeEventListener("visibilitychange", markVisibleGroupRead);
-    };
-  }, [activeGroup?.id, groupId, markGroupReadIfVisible]);
-
-  /** Mark as Unread from a group message: the next open starts the New divider there. */
-  const markGroupUnreadFrom = useCallback(
-    (groupId: string, messageId: string) => {
-      manuallyUnread.current.add(groupId);
-      const visit = readVisit.current.visit;
-      void readInOrder(`group:${groupId}`, () => rpc.threads.markUnread({ groupId, messageId }))
-        .then(() => {
-          if (readVisit.current.visit === visit) {
-            setMarkedUnread({ visit, messageId });
-          }
-          setGroups((current) =>
-            current.map((group) => (group.id === groupId ? { ...group, unread: true } : group)),
-          );
-        })
-        .catch(() => manuallyUnread.current.delete(groupId));
-    },
-    [readInOrder, rpc, setGroups],
-  );
-
-  /** Mark as Read or Unread from the chat list. */
-  function toggleGroupUnread(groupId: string, unread: boolean) {
-    if (unread) manuallyUnread.current.add(groupId);
-    else {
-      manuallyUnread.current.delete(groupId);
-      if (readVisit.current.chat === `group:${groupId}`) setMarkedUnread(null);
-    }
-    const request = readInOrder(`group:${groupId}`, () =>
-      unread ? rpc.threads.markUnread({ groupId }) : rpc.threads.markRead({ groupId }),
-    );
-    void request
-      .then(() =>
-        setGroups((current) =>
-          current.map((group) => (group.id === groupId ? { ...group, unread } : group)),
-        ),
-      )
-      .catch(() => {
-        // A failed Mark as Unread leaves the group as it was, readable again.
-        if (unread) manuallyUnread.current.delete(groupId);
-      });
-  }
+  }, [threadId, markReadIfVisible]);
 
   const markedUnreadMessageId =
-    markedUnread?.visit === readVisit.current.visit &&
-    manuallyUnread.current.has(groupId ?? active?.id ?? "")
+    markedUnread?.visit === readVisit.current.visit && manuallyUnread.current.has(threadId ?? "")
       ? markedUnread.messageId
       : undefined;
   const unreadAfterSeq = readBoundary?.visit === readVisit.current.visit ? readBoundary.seq : null;
 
   return {
     clearReadBoundary,
-    markBotRead,
-    markBotUnread,
-    markBotReadIfVisible,
-    markGroupReadOnReply,
-    markGroupUnreadFrom,
-    toggleGroupUnread,
+    markRead,
+    markUnread,
+    markReadIfVisible,
     markedUnreadMessageId,
     unreadAfterSeq,
   };

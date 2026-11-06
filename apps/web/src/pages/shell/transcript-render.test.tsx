@@ -62,11 +62,10 @@ function message(id: string, text: string): ThreadMessage {
 
 function Host({ messages }: { messages: ThreadMessage[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const artifactTarget = useMemo(() => ({ botId: "bot" }), []);
+  const artifactTarget = useMemo(() => ({ threadId: "thread" }), []);
   const none = useMemo(() => new Set<string>(), []);
   const reply = useCallback(() => undefined, []);
   const quote = useCallback(() => undefined, []);
-  const peer = useCallback(() => undefined, []);
   const refresh = useCallback(async () => undefined, []);
   const answer = useCallback(async () => undefined, []);
   const react = useCallback(async () => undefined, []);
@@ -86,7 +85,8 @@ function Host({ messages }: { messages: ThreadMessage[] }) {
       answerableAskIds={none}
       dismissableAskIds={none}
       running={false}
-      workingBots={[]}
+      members={[]}
+      showSpeakers={false}
       onLoadOlder={reply}
       onAnswer={answer}
       onReply={reply}
@@ -94,7 +94,6 @@ function Host({ messages }: { messages: ThreadMessage[] }) {
       onQuote={quote}
       onReact={react}
       onJumpToMessage={reply}
-      peerBot={peer}
       onRefresh={refresh}
       onBotChanged={refresh}
       onAddRoutine={quote}

@@ -1,5 +1,4 @@
-import type { Bot, ComputerStatus, Routine } from "@labradoodle/contracts";
-import { searchHitThreadTarget } from "@labradoodle/core";
+import type { ComputerStatus, Routine } from "@labradoodle/contracts";
 import { fetchFresh } from "@labradoodle/core/query";
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -10,7 +9,7 @@ import type { Panel } from "../../lib/right-panel-state";
 import type { createSpaceRpc } from "../../lib/rpc";
 import type { ThreadState } from "./use-thread-state";
 
-type JumpTarget = { botId?: string; groupId?: string; messageId: string };
+type JumpTarget = { threadId: string; messageId: string };
 
 /**
  * Opening a chat at a message: search hits and deep links (`?m=`, `?routine=`), reply quotes,
@@ -21,11 +20,8 @@ export function useMessageJump({
   queries,
   thread,
   commitComputer,
-  active,
-  inGroup,
-  groupId,
-  activeBotId,
-  activeGroupId,
+  threadId,
+  activeThreadId,
   searchParams,
   setSearchParams,
   setPanel,
@@ -37,11 +33,8 @@ export function useMessageJump({
   queries: SpaceQueries;
   thread: ThreadState;
   commitComputer: (next: ComputerStatus | null) => void;
-  active: Bot | undefined;
-  inGroup: boolean;
-  groupId: string | undefined;
-  activeBotId: RefObject<string | undefined>;
-  activeGroupId: RefObject<string | undefined>;
+  threadId: string | undefined;
+  activeThreadId: RefObject<string | undefined>;
   searchParams: URLSearchParams;
   setSearchParams: SetURLSearchParams;
   setPanel: (panel: Panel) => void;
@@ -54,8 +47,8 @@ export function useMessageJump({
     commitSnapshot,
     routines,
     setRoutines,
-    routinesBotId,
-    setRoutinesBotId,
+    routinesThreadId,
+    setRoutinesThreadId,
     expandedHistoryThread,
     historyEpoch,
     messageScroll,
@@ -70,7 +63,7 @@ export function useMessageJump({
   const initiallyScrolledThread = useRef<string | null>(null);
 
   async function jumpToMessage(target: JumpTarget) {
-    const threadTarget = searchHitThreadTarget(target);
+    const threadTarget = { threadId: target.threadId };
     const epoch = historyEpoch.current;
     jumpGeneration.current += 1;
     const jumpId = jumpGeneration.current;
@@ -78,18 +71,16 @@ export function useMessageJump({
       rpc.threads.get(threadTarget),
       rpc.threads.messages({ ...threadTarget, around: { messageId: target.messageId } }),
     ]);
-    // The epoch check drops a jump that raced a conversation clear (or a bot switch): applying
+    // The epoch check drops a jump that raced a conversation clear (or a chat switch): applying
     // the fetched page would pin deleted messages that every later refresh keeps restoring.
     // jumpId drops an older jump that finished after a newer click.
     if (epoch !== historyEpoch.current || jumpId !== jumpGeneration.current) return;
-    if (target.groupId && activeGroupId.current !== target.groupId) return;
-    if (target.botId && activeBotId.current !== target.botId) return;
+    if (activeThreadId.current !== target.threadId) return;
     const messageId = target.messageId;
     const targetInPage = page.messages.some((message) => message.id === messageId);
     expandedHistoryThread.current = targetInPage ? page.threadId : null;
     pinnedAroundRef.current = targetInPage
       ? {
-          ...threadTarget,
           messageId,
           threadId: page.threadId,
           messages: page.messages,
@@ -102,25 +93,16 @@ export function useMessageJump({
       messages: targetInPage ? page.messages : snap.messages,
       olderCursor: targetInPage ? page.olderCursor : snap.olderCursor,
     });
-    if (threadTarget.botId) {
-      commitComputer(snap.computer ?? null);
-      // Don't block parent-scroll on routines metadata; a list failure must not abort the jump.
-      void fetchFresh(
-        queryClient,
-        queries.routines.list.queryOptions({ input: { botId: threadTarget.botId } }),
-      )
-        .then((routines) => {
-          if (epoch !== historyEpoch.current || jumpId !== jumpGeneration.current) return;
-          if (activeBotId.current !== threadTarget.botId) return;
-          setRoutines(routines);
-          setRoutinesBotId(threadTarget.botId);
-        })
-        .catch(() => undefined);
-    } else {
-      commitComputer(null);
-      setRoutines([]);
-      setRoutinesBotId(null);
-    }
+    commitComputer(snap.computer ?? null);
+    // Don't block parent-scroll on routines metadata; a list failure must not abort the jump.
+    void fetchFresh(queryClient, queries.routines.list.queryOptions({ input: threadTarget }))
+      .then((routines) => {
+        if (epoch !== historyEpoch.current || jumpId !== jumpGeneration.current) return;
+        if (activeThreadId.current !== target.threadId) return;
+        setRoutines(routines);
+        setRoutinesThreadId(target.threadId);
+      })
+      .catch(() => undefined);
     if (targetInPage) {
       // The transcript owns the scroll: it retries until the pinned row is
       // mounted and unfollows the tail, so live commits cannot cancel it.
@@ -138,27 +120,18 @@ export function useMessageJump({
   }
 
   // The routine panel copies a routine's data into local draft state at click time
-  // rather than deriving it from `active`, so it goes stale across a bot switch —
-  // without this, Save on bot B could silently update bot A's routine.
+  // rather than deriving it from the open chat, so it goes stale across a chat switch —
+  // without this, Save in chat B could silently update chat A's routine.
   useEffect(() => {
     resetRoutineTarget();
     setPanelState((current) => (current === "routine" ? null : current));
-  }, [active?.id]);
+  }, [threadId]);
 
   useEffect(() => {
     const messageId = searchParams.get("m");
     const routineId = searchParams.get("routine");
-    if (inGroup && groupId && messageId) {
-      void jumpToMessage({ groupId, messageId }).finally(() => {
-        // Keep expandedHistoryThread; only strip the jump URL so refresh does not remount.
-        const next = new URLSearchParams(searchParams);
-        next.delete("m");
-        setSearchParams(next, { replace: true });
-      });
-      return;
-    }
-    if (!active) return;
-    if (routineId && routinesBotId === active.id) {
+    if (!threadId) return;
+    if (routineId && routinesThreadId === threadId) {
       const routine = routines.find((item) => item.id === routineId);
       if (routine) {
         editRoutine(routine);
@@ -171,32 +144,26 @@ export function useMessageJump({
       setSearchParams(next, { replace: true });
     }
     if (messageId) {
-      void jumpToMessage({ botId: active.id, messageId }).finally(() => {
+      // Keep expandedHistoryThread; only strip the jump URL so refresh does not remount.
+      void jumpToMessage({ threadId, messageId }).finally(() => {
         const next = new URLSearchParams(searchParams);
         next.delete("m");
         setSearchParams(next, { replace: true });
       });
     }
-  }, [active?.id, groupId, inGroup, routines, routinesBotId, searchParams, setSearchParams]);
+  }, [threadId, routines, routinesThreadId, searchParams, setSearchParams]);
 
   useLayoutEffect(() => {
     const pin = pinnedAroundRef.current;
-    if (inGroup) {
-      if (!groupId || !snapshot || snapshot.groupId !== groupId) return;
-      if (initiallyScrolledThread.current === snapshot.threadId) return;
-      if (expandedHistoryThread.current === snapshot.threadId) return;
-      if (pin?.groupId === groupId) return;
-    } else {
-      if (!active || !snapshot || snapshot.botId !== active.id) return;
-      if (initiallyScrolledThread.current === snapshot.threadId) return;
-      if (expandedHistoryThread.current === snapshot.threadId) return;
-      if (pin?.botId === active.id) return;
-    }
+    if (!threadId || !snapshot || snapshot.threadId !== threadId) return;
+    if (initiallyScrolledThread.current === snapshot.threadId) return;
+    if (expandedHistoryThread.current === snapshot.threadId) return;
+    if (pin?.threadId === threadId) return;
     const element = messageScroll.current;
     if (!element) return;
     element.scrollTop = element.scrollHeight;
     initiallyScrolledThread.current = snapshot.threadId;
-  }, [active, groupId, inGroup, snapshot?.botId, snapshot?.groupId, snapshot?.threadId]);
+  }, [threadId, snapshot?.threadId]);
 
   const jumpToMessageRef = useRef(jumpToMessage);
   jumpToMessageRef.current = jumpToMessage;
@@ -209,13 +176,8 @@ export function useMessageJump({
       setScrollRequest({ messageId, nonce: jumpGeneration.current });
       return;
     }
-    const groupId = activeGroupId.current;
-    if (groupId) {
-      void jumpToMessageRef.current({ groupId, messageId }).catch(() => undefined);
-      return;
-    }
-    const botId = activeBotId.current;
-    if (botId) void jumpToMessageRef.current({ botId, messageId }).catch(() => undefined);
+    const threadId = activeThreadId.current;
+    if (threadId) void jumpToMessageRef.current({ threadId, messageId }).catch(() => undefined);
   }, []);
 
   return { scrollRequest, clearScrollRequest, jumpToReplyMessage };

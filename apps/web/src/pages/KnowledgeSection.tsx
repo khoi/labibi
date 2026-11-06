@@ -8,7 +8,6 @@ import { ORPCError } from "@orpc/client";
 import { skipToken, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Download, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { SettingsSectionHeading } from "../components/SettingsSectionHeading";
 import { downloadArtifactBytes } from "../lib/artifact-open";
 import { useSpaceQueries } from "../lib/query";
 import { useSpaceRpc } from "../lib/space-rpc";
@@ -23,36 +22,21 @@ function rowClass(open: boolean): string {
 }
 
 /**
- * Bot memory. Skills belong to the person in a space, not to one bot, so they live in
- * the Skills dialog; memory shared across bots lives in the Memory settings overlay.
+ * A chat's memory, which everyone in it can read and edit. Skills belong to the person, so they
+ * live in the Skills dialog; the person's own memory lives in the Memory settings.
  */
-export function KnowledgeSection({ botId }: { botId: string }) {
-  return (
-    <MemoryDocumentList
-      key={botId}
-      input={{ botId, scope: "bot" }}
-      testId="bot-knowledge-memory"
-      compact
-    />
-  );
+export function KnowledgeSection({ threadId }: { threadId: string }) {
+  return <MemoryDocumentList key={threadId} input={{ threadId }} testId="chat-memory" compact />;
 }
 
-/** The space's shared memory documents, mounted in the Memory settings overlay. */
+/** The person's own memory, which Doodle reads in chats with only them. */
 export function SpaceMemorySection() {
   return (
     <section
       className="rounded-xl border border-border px-4 py-4"
       data-testid="space-memory-documents"
     >
-      <SettingsSectionHeading className="mb-0">
-        <Trans>Shared memory</Trans>
-      </SettingsSectionHeading>
-      <p className="mt-1 text-[13px] text-muted-foreground">
-        <Trans>Every bot in this space reads these notes and keeps them up to date.</Trans>
-      </p>
-      <div className="mt-3">
-        <MemoryDocumentList input={{ scope: "user" }} testId="space-memory-list" />
-      </div>
+      <MemoryDocumentList input={{}} testId="space-memory-list" />
     </section>
   );
 }
@@ -62,7 +46,7 @@ function MemoryDocumentList({
   testId,
   compact = false,
 }: {
-  input: { botId?: string; scope: "bot" | "user" };
+  input: { threadId?: string };
   testId: string;
   compact?: boolean;
 }) {
@@ -71,11 +55,11 @@ function MemoryDocumentList({
   const queries = useSpaceQueries();
   const queryClient = useQueryClient();
   const list = queries.memory.list.queryOptions({ input });
-  // Bots write memory as they run, so every open refreshes behind the cached list.
+  // Doodle writes memory as it runs, so every open refreshes behind the cached list.
   const listQuery = useQuery({ ...list, refetchOnMount: "always" });
   const docs = listQuery.data ?? NO_DOCS;
   const loading = listQuery.isPending;
-  const budgetInput = input.scope === "bot" && input.botId ? { botId: input.botId } : null;
+  const budgetInput = input.threadId ? { threadId: input.threadId } : null;
   const budgetOptions = budgetInput
     ? queries.memory.budget.queryOptions({ input: budgetInput })
     : null;

@@ -6,7 +6,7 @@ export function DesktopKindEmptyState({ className }: { className?: string }) {
   return (
     <div className={className}>
       <Trans>
-        This bot runs on this computer, not a Linux desktop. Shell and files use your home folder.
+        Doodle runs on this computer, not a Linux desktop. Shell and files use your home folder.
       </Trans>
     </div>
   );
@@ -24,6 +24,6 @@ export function computerPlaceholder(
   return t`Computer is stopped`;
 }
 
-export function computerLabel(mode: ComputerStatus["mode"] | undefined, botName: string) {
-  return mode === "dedicated" ? t`${botName}’s computer` : t`Team Computer`;
+export function computerLabel() {
+  return t`My computer`;
 }

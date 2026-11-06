@@ -62,7 +62,7 @@ export function SpaceSearchResults({
           </div>
           <div className="mt-0.5 flex min-w-0 gap-2 text-[13px] text-muted-foreground" dir="auto">
             <span className="max-w-[40%] shrink-0 truncate text-foreground/75">
-              {hit.groupName ?? hit.botName}
+              {hit.chatTitle || t`New chat`}
             </span>
             <span className="truncate">{hit.snippet}</span>
           </div>
@@ -75,7 +75,7 @@ export function SpaceSearchResults({
 function searchKindLabel(hit: SearchHit): string {
   switch (hit.kind) {
     case "conversation":
-      return hit.groupId ? t`Group` : t`Bot`;
+      return t`Chat`;
     case "message":
       return t`Message`;
     case "file":

@@ -11,7 +11,6 @@ vi.mock("../../lib/rpc", () => ({ rpc: { computer: { input: computerInput } } })
 
 const skill = {
   id: "skill-1",
-  botId: "bot-1",
   name: "Export",
   goal: "Export weekly CRM list",
   status: "recording",
@@ -44,13 +43,7 @@ it("sends a wheel scroll with the screen point it was made at", async () => {
   const root = createRoot(container);
   await act(async () => {
     root.render(
-      <TeachCaptureOverlay
-        botId="bot-1"
-        skill={skill}
-        enabled
-        screenWidth={1280}
-        screenHeight={800}
-      />,
+      <TeachCaptureOverlay skill={skill} enabled screenWidth={1280} screenHeight={800} />,
     );
   });
   const overlay = container.firstElementChild as HTMLElement;
@@ -64,7 +57,6 @@ it("sends a wheel scroll with the screen point it was made at", async () => {
   });
   await vi.waitFor(() => expect(computerInput).toHaveBeenCalled());
   expect(computerInput).toHaveBeenCalledWith({
-    botId: "bot-1",
     kind: "scroll",
     payload: { direction: "down", amount: 2, x: 600, y: 420 },
   });
@@ -83,7 +75,6 @@ it("sends a wheel scroll with the screen point it was made at", async () => {
   });
   await vi.waitFor(() => expect(computerInput).toHaveBeenCalled());
   expect(computerInput).toHaveBeenCalledWith({
-    botId: "bot-1",
     kind: "scroll",
     payload: { direction: "right", amount: 1, x: 200, y: 100 },
   });

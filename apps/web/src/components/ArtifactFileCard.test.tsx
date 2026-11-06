@@ -62,7 +62,7 @@ it.each(["audio/mpeg", "audio/wav", "audio/ogg", "audio/mp4"])(
     await act(async () =>
       root?.render(
         <ArtifactFileCard
-          target={{ botId: "bot-1" }}
+          target={{ threadId: "bot-1" }}
           artifactId="audio-1"
           name="clip"
           mimeType={mimeType}
@@ -82,13 +82,13 @@ it.each(["audio/mpeg", "audio/wav", "audio/ogg", "audio/mp4"])(
     expect(audio?.getAttribute("src")).toBe("blob:audio-preview");
     expect(HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(1);
     expect(mocks.create.mock.calls[0]?.[0].type).toBe(mimeType);
-    expect(mocks.fetch).toHaveBeenCalledWith({ botId: "bot-1" }, "audio-1");
+    expect(mocks.fetch).toHaveBeenCalledWith({ threadId: "bot-1" }, "audio-1");
     const download = container.querySelector<HTMLButtonElement>(
       'button[aria-label="Download clip"]',
     );
     expect(download).not.toBeNull();
     await act(async () => download?.click());
-    expect(mocks.download).toHaveBeenCalledWith({ botId: "bot-1" }, "audio-1", "clip", mimeType);
+    expect(mocks.download).toHaveBeenCalledWith({ threadId: "bot-1" }, "audio-1", "clip", mimeType);
     await act(async () => root?.unmount());
     root = undefined;
     expect(mocks.revoke).toHaveBeenCalledExactlyOnceWith("blob:audio-preview");
@@ -99,7 +99,7 @@ it("retains the download control when playback bytes fail to load", async () => 
   await act(async () =>
     root?.render(
       <ArtifactFileCard
-        target={{ groupId: "group-1" }}
+        target={{ threadId: "group-1" }}
         artifactId="audio-1"
         name="clip"
         mimeType="audio/mpeg"
@@ -118,7 +118,7 @@ it("retains the download control when playback bytes fail to load", async () => 
     container.querySelector<HTMLButtonElement>('button[aria-label="Download clip"]')?.click(),
   );
   expect(mocks.download).toHaveBeenCalledWith(
-    { groupId: "group-1" },
+    { threadId: "group-1" },
     "audio-1",
     "clip",
     "audio/mpeg",
@@ -128,7 +128,7 @@ it("retains the download control when playback bytes fail to load", async () => 
 function renderClip(artifactId = "audio-1") {
   root?.render(
     <ArtifactFileCard
-      target={{ groupId: "group-1" }}
+      target={{ threadId: "group-1" }}
       artifactId={artifactId}
       name="clip"
       mimeType="audio/mpeg"
@@ -162,7 +162,7 @@ it.each(["unmount", "change"])(
       play.click();
       play.click();
     });
-    expect(mocks.fetch).toHaveBeenCalledExactlyOnceWith({ groupId: "group-1" }, "audio-1");
+    expect(mocks.fetch).toHaveBeenCalledExactlyOnceWith({ threadId: "group-1" }, "audio-1");
     expect(container.querySelector('[role="status"]')).not.toBeNull();
     await act(async () => {
       if (cleanup === "change") renderClip("audio-2");
@@ -202,18 +202,16 @@ it("keeps controls when automatic playback is rejected", async () => {
 it("translates every size unit and rolls up instead of 1,024.0 KB or 1,536.0 MB", async () => {
   await act(async () =>
     root?.render(
-      <>
-        {[512, 1024, 1048575, 1610612736, 1.5 * 1024 ** 4].map((size) => (
-          <ArtifactFileCard
-            key={size}
-            target={{ botId: "b" }}
-            artifactId={`a${size}`}
-            name={`f${size}.zip`}
-            mimeType="application/zip"
-            size={size}
-          />
-        ))}
-      </>,
+      [512, 1024, 1048575, 1610612736, 1.5 * 1024 ** 4].map((size) => (
+        <ArtifactFileCard
+          key={size}
+          target={{ threadId: "b" }}
+          artifactId={`a${size}`}
+          name={`f${size}.zip`}
+          mimeType="application/zip"
+          size={size}
+        />
+      )),
     ),
   );
   const sizes = [...container.querySelectorAll("button span:last-child")].map(
@@ -227,7 +225,7 @@ it("previews plain text in the app instead of only offering a download", async (
   await act(async () =>
     root?.render(
       <ArtifactFileCard
-        target={{ botId: "bot-1" }}
+        target={{ threadId: "bot-1" }}
         artifactId="notes-1"
         name="notes.txt"
         mimeType="text/plain"

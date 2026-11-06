@@ -45,8 +45,8 @@ it("shares pending and completed downloads until the last consumer leaves", asyn
   act(() =>
     root.render(
       <>
-        <Image target={{ botId: "bot" }} />
-        <Image target={{ botId: "bot" }} />
+        <Image target={{ threadId: "bot" }} />
+        <Image target={{ threadId: "bot" }} />
       </>,
     ),
   );
@@ -57,32 +57,17 @@ it("shares pending and completed downloads until the last consumer leaves", asyn
   await act(async () =>
     root.render(
       <>
-        <Image target={{ botId: "bot" }} />
-        <Image target={{ botId: "bot" }} />
-        <Image target={{ botId: "bot" }} />
+        <Image target={{ threadId: "bot" }} />
+        <Image target={{ threadId: "bot" }} />
+        <Image target={{ threadId: "bot" }} />
       </>,
     ),
   );
   expect(rpc.artifacts.get).toHaveBeenCalledOnce();
-  act(() => root.render(<Image target={{ botId: "bot" }} />));
+  act(() => root.render(<Image target={{ threadId: "bot" }} />));
   expect(revokeObjectURL).not.toHaveBeenCalled();
   act(() => root.render(null));
   expect(revokeObjectURL).toHaveBeenCalledExactlyOnceWith("blob:photo");
-});
-
-it("separates bot and group scopes and skips disabled consumers", async () => {
-  await act(async () =>
-    root.render(
-      <>
-        <Image target={{ botId: "same" }} />
-        <Image target={{ groupId: "same" }} />
-        <Image target={{ botId: "other" }} enabled={false} />
-      </>,
-    ),
-  );
-  expect(rpc.artifacts.get).toHaveBeenCalledTimes(2);
-  expect(rpc.artifacts.get).toHaveBeenCalledWith({ botId: "same", artifactId: "photo" });
-  expect(rpc.artifacts.get).toHaveBeenCalledWith({ groupId: "same", artifactId: "photo" });
 });
 
 it("releases a download that finishes after all consumers unmount", async () => {
@@ -92,36 +77,36 @@ it("releases a download that finishes after all consumers unmount", async () => 
       finish = resolve;
     }),
   );
-  act(() => root.render(<Image target={{ botId: "bot" }} />));
+  act(() => root.render(<Image target={{ threadId: "bot" }} />));
   act(() => root.render(null));
   await act(async () => finish(artifact as never));
   expect(revokeObjectURL).toHaveBeenCalledExactlyOnceWith("blob:photo");
   vi.mocked(rpc.artifacts.get).mockResolvedValue(artifact as never);
-  await act(async () => root.render(<Image target={{ botId: "bot" }} />));
+  await act(async () => root.render(<Image target={{ threadId: "bot" }} />));
   expect(rpc.artifacts.get).toHaveBeenCalledTimes(2);
 });
 
 it("allows retrying a failed download after its consumers leave", async () => {
   vi.mocked(rpc.artifacts.get).mockRejectedValueOnce(new Error("unavailable"));
-  await act(async () => root.render(<Image target={{ botId: "bot" }} />));
+  await act(async () => root.render(<Image target={{ threadId: "bot" }} />));
   expect(container.querySelector("img")).toBeNull();
   act(() => root.render(null));
-  await act(async () => root.render(<Image target={{ botId: "bot" }} />));
+  await act(async () => root.render(<Image target={{ threadId: "bot" }} />));
   expect(container.querySelector("img")).not.toBeNull();
   expect(rpc.artifacts.get).toHaveBeenCalledTimes(2);
 });
 
 it("retries a failed download while its original consumer stays mounted", async () => {
   vi.mocked(rpc.artifacts.get).mockRejectedValueOnce(new Error("unavailable"));
-  await act(async () => root.render(<Image key="first" target={{ botId: "bot" }} />));
+  await act(async () => root.render(<Image key="first" target={{ threadId: "bot" }} />));
   expect(container.querySelector("img")).toBeNull();
   expect(rpc.artifacts.get).toHaveBeenCalledOnce();
 
   await act(async () =>
     root.render(
       <>
-        <Image key="first" target={{ botId: "bot" }} />
-        <Image key="second" target={{ botId: "bot" }} />
+        <Image key="first" target={{ threadId: "bot" }} />
+        <Image key="second" target={{ threadId: "bot" }} />
       </>,
     ),
   );

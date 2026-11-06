@@ -1,41 +1,31 @@
-import type { Bot, ChatAlert, ProductEvent } from "@labradoodle/contracts";
+import type { ChatAlert } from "@labradoodle/contracts";
 import { isRetryableError, retryDelayMs } from "@labradoodle/core";
 import type { RefObject } from "react";
-import { useCallback, useEffect, useRef } from "react";
-import {
-  deliverBrowserNotification as deliverNativeBrowserNotification,
-  shouldNotifyBrowser,
-} from "../../lib/browser-notifications";
-import { notificationIcon, prepareNotificationIcons } from "../../lib/notification-icon";
+import { useEffect, useRef } from "react";
+import { notificationIcon, prepareNotificationIcon } from "../../lib/notification-icon";
 import type { RpcClient } from "../../lib/rpc";
 
-type PendingBrowserNotification = {
-  event: Pick<ProductEvent, "id" | "type" | "threadId" | "botId" | "payload">;
-  botId: string;
-  botName: string;
-  groupNotification: boolean;
-};
-
-type ChatAlertOptions = {
-  rpc: Pick<RpcClient, "notifications">;
-  activeBotId: RefObject<string | undefined>;
-  activeGroupId: RefObject<string | undefined>;
-  openChat: (alert: ChatAlert) => void;
-};
-
 /**
- * Finished-run notifications for the open chat, held until the browser grants permission, and
- * the server's alerts for every other chat.
+ * The server's alerts for the person's chats in this workspace, shown as browser notifications,
+ * and the signal that the workspace's Doodle settings changed.
  */
-export function useBrowserNotifications(
-  bots: Bot[],
-  botsRef: RefObject<Bot[]>,
-  { rpc, activeBotId, activeGroupId, openChat }: ChatAlertOptions,
-) {
-  useEffect(() => prepareNotificationIcons(bots), [bots]);
+export function useBrowserNotifications({
+  rpc,
+  activeThreadId,
+  openChat,
+  onDoodleChanged,
+}: {
+  rpc: Pick<RpcClient, "notifications">;
+  activeThreadId: RefObject<string | undefined>;
+  openChat: (alert: ChatAlert) => void;
+  onDoodleChanged: () => void;
+}) {
   const openChatRef = useRef(openChat);
   openChatRef.current = openChat;
+  const onDoodleChangedRef = useRef(onDoodleChanged);
+  onDoodleChangedRef.current = onDoodleChanged;
   useEffect(() => {
+    prepareNotificationIcon();
     let active = true;
     let controller: AbortController | undefined;
     let cancelRetry: (() => void) | undefined;
@@ -43,19 +33,13 @@ export function useBrowserNotifications(
     const shown = new Set<Notification>();
     const show = (alert: ChatAlert) => {
       if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
-      const isOpen = alert.groupId
-        ? alert.groupId === activeGroupId.current
-        : !activeGroupId.current && alert.botId === activeBotId.current;
-      // The open chat's own stream alerts for its replies and failures; only a takeover is missed.
-      if (
-        isOpen &&
-        (alert.kind !== "takeover" ||
-          (document.visibilityState === "visible" && document.hasFocus()))
-      )
-        return;
+      const watching =
+        alert.threadId === activeThreadId.current &&
+        document.visibilityState === "visible" &&
+        document.hasFocus();
+      if (watching) return;
       try {
-        const bot = botsRef.current.find((candidate) => candidate.id === alert.botId);
-        const icon = bot ? notificationIcon(bot) : undefined;
+        const icon = notificationIcon();
         const notification = new Notification(alert.title, {
           body: alert.body,
           ...(icon ? { icon } : {}),
@@ -83,6 +67,7 @@ export function useBrowserNotifications(
           });
           for await (const frame of stream) {
             if (!active) return;
+            if (frame.type === "doodle") onDoodleChangedRef.current();
             if (frame.alert) show(frame.alert);
           }
         } catch (cause) {
@@ -108,75 +93,4 @@ export function useBrowserNotifications(
       for (const notification of shown) notification.close();
     };
   }, [rpc]);
-  const notifiedBrowserEvents = useRef(new Set<string>());
-  const pendingBrowserNotifications = useRef(new Map<string, PendingBrowserNotification>());
-  const deliverBrowserNotification = useCallback((pending: PendingBrowserNotification): boolean => {
-    const currentBot = botsRef.current.find((bot) => bot.id === pending.botId);
-    if (!currentBot || typeof Notification === "undefined") return true;
-    const result = deliverNativeBrowserNotification(
-      pending.event,
-      currentBot.name || pending.botName,
-      {
-        enabled: pending.groupNotification || currentBot.notifyOnFinish,
-        pageVisible: document.visibilityState === "visible",
-        windowFocused: document.hasFocus(),
-        permission: Notification.permission,
-        notifiedEventIds: notifiedBrowserEvents.current,
-        show: (title, body, tag) => {
-          const icon = notificationIcon(currentBot);
-          new Notification(title, { body, tag, ...(icon ? { icon } : {}) });
-        },
-      },
-    );
-    return result !== "pending";
-  }, []);
-  const flushPendingBrowserNotifications = useCallback(() => {
-    for (const [threadId, pending] of pendingBrowserNotifications.current) {
-      if (deliverBrowserNotification(pending)) {
-        pendingBrowserNotifications.current.delete(threadId);
-      }
-    }
-  }, [deliverBrowserNotification]);
-  const notifyBrowserForEvent = useCallback(
-    (
-      event: Pick<ProductEvent, "id" | "type" | "threadId" | "seq" | "botId" | "payload">,
-      subscribedThreadId: string | undefined,
-      initialCursor: number,
-      streamReady: boolean,
-      botName: string,
-      enabled: boolean,
-      groupNotification: boolean,
-    ) => {
-      const botId = event.botId;
-      if (typeof botId !== "string") return;
-      const eligible = shouldNotifyBrowser(event, {
-        subscribedThreadId: subscribedThreadId ?? "",
-        initialCursor,
-        streamReady,
-        pageVisible: document.visibilityState === "visible",
-        windowFocused: document.hasFocus(),
-        permission: "granted",
-        notifiedEventIds: notifiedBrowserEvents.current,
-      });
-      if (!eligible || !enabled) return;
-      const pending = {
-        event,
-        botId,
-        botName,
-        groupNotification,
-      } satisfies PendingBrowserNotification;
-      if (typeof Notification === "undefined" || Notification.permission === "denied") return;
-      if (Notification.permission === "default") {
-        pendingBrowserNotifications.current.set(event.threadId, pending);
-        return;
-      }
-      if (deliverBrowserNotification(pending)) {
-        pendingBrowserNotifications.current.delete(event.threadId);
-      } else {
-        pendingBrowserNotifications.current.set(event.threadId, pending);
-      }
-    },
-    [deliverBrowserNotification],
-  );
-  return { notifyBrowserForEvent, flushPendingBrowserNotifications };
 }

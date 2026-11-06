@@ -1,5 +1,5 @@
 import type {
-  Bot,
+  Chat,
   ComputerReleaseReason,
   ComputerStatus,
   Me,
@@ -32,10 +32,8 @@ import {
   screenFrameMessage,
   screenFrameStarted,
 } from "../../lib/computer-screen";
-import type { Panel } from "../../lib/right-panel-state";
 import type { createSpaceRpc } from "../../lib/rpc";
 import {
-  computerPanelNeedsScreen,
   computerTakeoverBlocked,
   screenMissing,
   screenReadLoaded,
@@ -43,34 +41,28 @@ import {
 } from "../../lib/thread-events";
 import { errorText } from "../../lib/user-error";
 
-// Caps the per-bot computer cache so a long session that opens many distinct bots
-// over time doesn't accumulate one entry per bot forever.
-const COMPUTER_CACHE_LIMIT = 20;
+/** The person's own computer in this workspace. */
+const OWN_COMPUTER = "own";
 
-type CachedComputer = { computer: ComputerStatus | null; screenUrl: string | null };
-
-/** The computer shown beside the chat or full screen, and its screen. */
+/**
+ * The person's computer, full screen, and its screen. Every chat shows the same computer; a chat
+ * id only marks which chat's view a read or boot was for.
+ */
 export function useComputerState({
   rpc,
-  panel,
   activeId,
-  activeBotId,
+  activeThreadId,
 }: {
   rpc: ReturnType<typeof createSpaceRpc>;
-  panel: Panel;
   activeId: string | undefined;
-  activeBotId: RefObject<string | undefined>;
+  activeThreadId: RefObject<string | undefined>;
 }) {
   const { t } = useLingui();
   const [computer, setComputer] = useState<ComputerStatus | null>(null);
   const computerRef = useRef<ComputerStatus | null>(null);
-  // Last-known computer/screen per bot, so switching back to an already-seen
-  // bot paints its computer pane instantly instead of blanking it while the
-  // thread + screen RPCs round-trip again (see refreshThread / refreshComputerScreen).
-  const computerCacheRef = useRef(new Map<string, CachedComputer>());
-  // The bot whose boot shows progress, and every bot whose boot request is still out.
+  // Whether a boot shows progress, and whether a boot request is still out.
   const [bootingBotId, setBootingBotId] = useState<string | null>(null);
-  const booting = bootingBotId !== null && bootingBotId === computer?.botId;
+  const booting = bootingBotId !== null;
   const bootsInFlight = useRef(new Map<string, symbol>());
   const [screenUrl, setScreenUrl] = useState<string | null>(null);
   const screenUrlRef = useRef(screenUrl);
@@ -106,7 +98,7 @@ export function useComputerState({
   const screenFrameReported = useRef(false);
   // A screen that drops after connecting loads again by itself now and then, through the proxy's
   // full check, by remounting its frame.
-  // Each bot's screen has its own allowance.
+  // The screen has its own allowance.
   const screenReconnects = useRef(createScreenReconnects());
   const screenReconnect = () => screenReconnects.current.for(computerBotIdRef.current ?? "");
   const [screenFrameKey, setScreenFrameKey] = useState(0);
@@ -300,7 +292,7 @@ export function useComputerState({
         screenAwaitsRetry.current = true;
         return;
       }
-      // Another frame may still show this computer, such as the panel once the overlay closes.
+      // Another frame may still show this computer.
       const botId = computerBotIdRef.current;
       if (botId && computerVisible.current) {
         setScreenUrlLoadedBotId(null);
@@ -328,22 +320,9 @@ export function useComputerState({
   }, [computerOpen]);
   const screenRequest = useRef(0);
   const computerVisible = useRef(false);
-  computerVisible.current = panel === "computer" || computerOpen;
+  computerVisible.current = computerOpen;
   computerOpenRef.current = computerOpen;
-  computerBotIdRef.current = computerBotId ?? activeId;
-
-  function cacheComputerFor(botId: string, patch: Partial<CachedComputer>) {
-    const cache = computerCacheRef.current;
-    const prev = cache.get(botId) ?? { computer: null, screenUrl: null };
-    // Re-inserting on every update keeps Map iteration order as least-recently-used first,
-    // so eviction drops the bot that's been out of view longest.
-    cache.delete(botId);
-    cache.set(botId, { ...prev, ...patch });
-    if (cache.size > COMPUTER_CACHE_LIMIT) {
-      const oldest = cache.keys().next().value;
-      if (oldest !== undefined) cache.delete(oldest);
-    }
-  }
+  computerBotIdRef.current = computerBotId ?? activeId ?? OWN_COMPUTER;
 
   function commitComputer(next: ComputerStatus | null) {
     // A finished screen read stays valid until the computer stops running; control events keep it.
@@ -352,38 +331,19 @@ export function useComputerState({
     setComputer(next);
   }
 
-  /** Opening a bot paints its last-known computer at once; fresh reads reconcile behind it. */
-  function showCachedComputer(botId: string) {
-    screenRequest.current += 1;
-    screenAwaitsRetry.current = false;
-    setScreenUrlLoadedBotId(null);
-    setComputerError(null);
-    setComputerErrorFromScreen(false);
-    const cached = computerCacheRef.current.get(botId);
-    if (cached) {
-      setScreenUrl(cached.screenUrl);
-      commitComputer(cached.computer);
-    } else {
-      setScreenUrl(null);
-    }
-  }
-
   async function refreshComputerScreen(id: string, request?: number) {
     if (!computerVisible.current) return null;
     const read = request ?? ++screenRequest.current;
-    const issuedState = computerRef.current?.botId === id ? computerRef.current.state : undefined;
+    const issuedState = computerRef.current?.state;
     return loadComputerScreen({
-      load: () => rpc.computer.screenUrl({ botId: id }),
+      load: () => rpc.computer.screenUrl(),
       isCurrent: () =>
         read === screenRequest.current &&
-        (activeBotId.current === id || computerBotIdRef.current === id) &&
+        (activeThreadId.current === id || computerBotIdRef.current === id) &&
         computerVisible.current,
       commit: (screen) => {
         setScreenUrlLoadedBotId(
-          computerRef.current?.botId === id &&
-            screenReadLoaded(issuedState, computerRef.current.state)
-            ? id
-            : null,
+          screenReadLoaded(issuedState, computerRef.current?.state) ? id : null,
         );
         setScreenUrl((current) => {
           if (
@@ -400,8 +360,6 @@ export function useComputerState({
           setComputerError(screen.error);
           setComputerErrorFromScreen(Boolean(screen.error));
         }
-        // A Wuying login code works once, so a cached one could only sign in as a spent code.
-        cacheComputerFor(id, { screenUrl: screen.url?.startsWith("wuying:") ? null : screen.url });
       },
       fallbackError: t`Could not connect to the computer screen`,
     });
@@ -416,9 +374,6 @@ export function useComputerState({
     computer,
     computerRef,
     commitComputer,
-    computerCacheRef,
-    cacheComputerFor,
-    showCachedComputer,
     bootingBotId,
     setBootingBotId,
     booting,
@@ -458,41 +413,28 @@ export type ComputerState = ReturnType<typeof useComputerState>;
 export function useComputerControls({
   rpc,
   state,
-  panel,
   active,
-  bots,
-  botsRef,
-  activeBotId,
-  activeGroupId,
+  activeThreadId,
   runStatus,
   sandboxProvider,
   refreshThread,
-  refreshGroupThread,
 }: {
   rpc: ReturnType<typeof createSpaceRpc>;
   state: ComputerState;
-  panel: Panel;
-  active: Bot | undefined;
-  bots: Bot[];
-  botsRef: RefObject<Bot[]>;
-  activeBotId: RefObject<string | undefined>;
-  activeGroupId: RefObject<string | undefined>;
+  active: Chat | undefined;
+  activeThreadId: RefObject<string | undefined>;
   runStatus: Run["status"] | undefined;
   sandboxProvider: Me["sandboxProvider"] | undefined;
-  refreshThread: (botId: string) => Promise<ThreadSnapshot>;
-  refreshGroupThread: (groupId: string) => Promise<ThreadSnapshot>;
+  refreshThread: (threadId: string) => Promise<ThreadSnapshot>;
 }) {
   const { t } = useLingui();
   const {
     computer,
     commitComputer,
-    computerCacheRef,
-    cacheComputerFor,
     setBootingBotId,
     booting,
     bootsInFlight,
     screenUrl,
-    setScreenUrl,
     screenUrlLoadedBotId,
     setScreenUrlLoadedBotId,
     computerOpen,
@@ -529,16 +471,14 @@ export function useComputerControls({
     }, 4000);
   }, []);
   useEffect(() => {
-    if (panel !== "computer") releaseComputerRecovery();
-  }, [panel, releaseComputerRecovery]);
+    if (!computerOpen) releaseComputerRecovery();
+  }, [computerOpen, releaseComputerRecovery]);
   useEffect(() => () => window.clearTimeout(recoveryHoldTimer.current), []);
-  const computerBot =
-    (computerBotId ? bots.find((bot) => bot.id === computerBotId) : undefined) ?? active;
+  const computerViewId = computerBotId ?? active?.id ?? OWN_COMPUTER;
   useEffect(() => {
     setScreenLoadError(null);
-  }, [computerBot?.id, screenUrl]);
+  }, [computerViewId, screenUrl]);
   const computerBootEpoch = useRef(0);
-  const autoBooted = useRef<string | null>(null);
 
   async function bootComputer({
     botId: targetBotId,
@@ -556,27 +496,23 @@ export function useComputerControls({
     const epoch = ++computerBootEpoch.current;
     const stillThisBoot = () => computerBootEpoch.current === epoch;
     const stillThisBot = () =>
-      computerBotIdRef.current === targetBotId || activeBotId.current === targetBotId;
-    const cached = computerCacheRef.current.get(targetBotId);
-    const targetComputer = computer?.botId === targetBotId ? computer : (cached?.computer ?? null);
-    const targetScreen = computer?.botId === targetBotId ? screenUrl : (cached?.screenUrl ?? null);
+      computerBotIdRef.current === targetBotId || activeThreadId.current === targetBotId;
+    const targetComputer = computer;
+    const targetScreen = screenUrl;
     const needsBoot = force || targetComputer?.state !== "running" || !targetScreen;
     if (showProgress && needsBoot) setBootingBotId(targetBotId);
     setComputerError(null);
     setComputerErrorFromScreen(false);
     try {
       if (needsBoot) {
-        const status = await bootComputerOnce(bootsInFlight.current, targetBotId, () =>
-          rpc.computer.boot({ botId: targetBotId }),
+        const status = await bootComputerOnce(bootsInFlight.current, OWN_COMPUTER, () =>
+          rpc.computer.boot(),
         );
         if (!stillThisBoot() || !stillThisBot()) return;
-        if (status) {
-          commitComputer(status);
-          cacheComputerFor(targetBotId, { computer: status });
-        }
+        if (status) commitComputer(status);
       }
       if (takeControl) {
-        await rpc.computer.takeover({ botId: targetBotId });
+        await rpc.computer.takeover();
         if (!stillThisBoot() || !stillThisBot()) return;
       }
       await refreshComputerFor(targetBotId);
@@ -593,49 +529,16 @@ export function useComputerControls({
   }
 
   async function refreshComputerFor(targetBotId: string) {
-    if (activeBotId.current === targetBotId) {
+    if (activeThreadId.current === targetBotId) {
       await refreshThread(targetBotId);
       return;
     }
     if (computerBotIdRef.current !== targetBotId) return;
-    const status = await rpc.computer.status({ botId: targetBotId });
+    const status = await rpc.computer.status();
     if (computerBotIdRef.current !== targetBotId) return;
     commitComputer(status);
-    cacheComputerFor(targetBotId, { computer: status });
     await refreshComputerScreen(targetBotId);
   }
-
-  useEffect(() => {
-    if (panel !== "computer") {
-      autoBooted.current = null;
-      return;
-    }
-    if (!active) return;
-    const botId = active.id;
-    // Opening the panel is a fresh try at a screen that failed.
-    screenAwaitsRetry.current = false;
-    let cancelled = false;
-    void (async () => {
-      // Refresh from the server first: a stale SSE "booting" snapshot would
-      // otherwise hide an RPC takeover.
-      const snap = await refreshThread(botId).catch(() => null);
-      if (cancelled || activeBotId.current !== botId) return;
-      const state = snap?.computer?.state;
-      const screen = state === "running" ? await refreshComputerScreen(botId) : null;
-      if (cancelled || activeBotId.current !== botId) return;
-      if (!computerPanelNeedsScreen(state, screen) || autoBooted.current === botId) return;
-      autoBooted.current = botId;
-      await bootComputer({
-        botId,
-        takeControl: false,
-        showProgress: false,
-        force: true,
-      }).catch(() => undefined);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [panel, active?.id]);
 
   useEffect(() => {
     setComputerOpen(false);
@@ -645,20 +548,19 @@ export function useComputerControls({
   }, [active?.id]);
 
   useEffect(() => {
-    if (!computer?.busyBotName) {
+    if (computer?.controlHolder !== "bot") {
       setComputerError(null);
       setComputerErrorFromScreen(false);
     }
-  }, [computer?.busyBotName]);
+  }, [computer?.controlHolder]);
 
-  // Opening the computer while its bot was running was refused as busy; boot it once the run
-  // ends, or the open window is left on a stopped computer with nothing to press.
+  // Opening the computer while Doodle was running on it was refused as busy; boot it once the
+  // run ends, or the open window is left on a stopped computer with nothing to press.
   const computerBlockedByRun = computerTakeoverBlocked(computer, runStatus);
   useEffect(() => {
     if (computerBlockedByRun) return;
-    const botId = computer?.botId;
-    if (!botId || !computerOpenRef.current || computerBotIdRef.current !== botId) return;
-    if (activeBotId.current !== botId) return;
+    const botId = computerBotIdRef.current;
+    if (!computer || !botId || !computerOpenRef.current) return;
     if (computer.state !== "stopped" && computer.state !== "suspended") return;
     void bootComputer({
       botId,
@@ -679,47 +581,37 @@ export function useComputerControls({
   }, [computerOpen]);
 
   useEffect(() => {
-    const heartbeatBotId = computerBot?.id ?? active?.id;
-    if ((panel !== "computer" && !computerOpen) || !heartbeatBotId || computer?.state !== "running")
-      return;
-    // A computer panel left open in a hidden window must not keep the computer awake.
+    if (!computerOpen || computer?.state !== "running") return;
+    // A computer view left open in a hidden window must not keep the computer awake.
     const ping = () => {
       if (document.visibilityState !== "visible") return;
-      void rpc.computer.heartbeat({ botId: heartbeatBotId }).catch((error) => {
+      void rpc.computer.heartbeat().catch((error) => {
         if (!isRetryableError(error)) window.clearInterval(timer);
       });
     };
     const timer = window.setInterval(ping, 60_000);
     ping();
     return () => window.clearInterval(timer);
-  }, [panel, computerOpen, computerBot?.id, active?.id, computer?.state]);
+  }, [computerOpen, computer?.state]);
 
   /** Open the computer view. Only an explicit Take control asks for the lease. */
-  async function openComputer(botId?: string, takeControl = false) {
-    const id = botId ?? active?.id;
-    if (!id) return false;
-    const bot = botsRef.current.find((candidate) => candidate.id === id);
-    if (!bot) return false;
+  async function openComputer(takeControl = false) {
+    const id = active?.id ?? OWN_COMPUTER;
     computerBotIdRef.current = id;
     setComputerBotId(id);
-    const cached = computerCacheRef.current.get(id);
-    const targetComputer = computer?.botId === id ? computer : (cached?.computer ?? null);
-    const targetScreen = computer?.botId === id ? screenUrl : (cached?.screenUrl ?? null);
-    if (computer?.botId !== id) {
-      setScreenUrlLoadedBotId(null);
-      commitComputer(targetComputer);
-      setScreenUrl(targetScreen);
-    }
+    const targetComputer = computer;
     // Reopening during a boot shows it; a second boot would be refused as busy.
-    const bootInFlight = bootsInFlight.current.has(id) || targetComputer?.state === "booting";
+    const bootInFlight =
+      bootsInFlight.current.has(OWN_COMPUTER) || targetComputer?.state === "booting";
     setComputerOpen(true);
     computerVisible.current = true;
     if (bootInFlight && !takeControl) {
-      // An external boot may have finished since this snapshot was cached.
-      if (!bootsInFlight.current.has(id)) await refreshComputerFor(id).catch(() => undefined);
+      // An external boot may have finished since this snapshot was read.
+      if (!bootsInFlight.current.has(OWN_COMPUTER))
+        await refreshComputerFor(id).catch(() => undefined);
       return true;
     }
-    const needsTakeover = takeControl && !userHoldsComputerControl(targetComputer, id);
+    const needsTakeover = takeControl && !userHoldsComputerControl(targetComputer);
     const blocked = computerTakeoverBlocked(targetComputer, runStatus);
     try {
       await bootComputer({
@@ -736,30 +628,25 @@ export function useComputerControls({
   }
   const openComputerRef = useRef(openComputer);
   openComputerRef.current = openComputer;
-  const onOpenComputer = useCallback((botId?: string) => {
-    void openComputerRef.current(botId);
+  const onOpenComputer = useCallback(() => {
+    void openComputerRef.current();
   }, []);
 
   async function releaseComputer(reason?: ComputerReleaseReason) {
-    const botId = computerBotIdRef.current ?? activeBotId.current;
-    if (!botId) return;
+    const botId = computerBotIdRef.current ?? activeThreadId.current ?? OWN_COMPUTER;
     try {
-      await rpc.computer.release({ botId, reason });
-      if (computerBotIdRef.current !== botId && activeBotId.current !== botId) return;
+      await rpc.computer.release({ reason });
+      if (computerBotIdRef.current !== botId && activeThreadId.current !== botId) return;
       await refreshComputerFor(botId).catch(() => undefined);
-      const groupId = activeGroupId.current;
-      if (groupId) {
-        await refreshGroupThread(groupId).catch(() => undefined);
-      }
     } catch {
-      if (computerBotIdRef.current !== botId && activeBotId.current !== botId) return;
+      if (computerBotIdRef.current !== botId && activeThreadId.current !== botId) return;
       setComputerError(t`Could not continue`);
       setComputerErrorFromScreen(false);
     }
   }
 
   const embeddedScreenUrl = embeddableScreenUrl(screenUrl);
-  const hasControl = userHoldsComputerControl(computer, computerBot?.id);
+  const hasControl = userHoldsComputerControl(computer);
   const hideScreenLoadError = computerErrorFromScreen && Boolean(embeddedScreenUrl);
   const screenFailure =
     Boolean(screenLoadError) ||
@@ -768,7 +655,7 @@ export function useComputerControls({
       state: computer?.state,
       kind: computer?.kind,
       booting,
-      screenUrlLoaded: Boolean(computerBot?.id && screenUrlLoadedBotId === computerBot.id),
+      screenUrlLoaded: screenUrlLoadedBotId === computerViewId,
       embeddedUrl: embeddedScreenUrl,
     });
   const computerFailure =
@@ -792,7 +679,6 @@ export function useComputerControls({
         variant="outline"
         size="sm"
         onClick={() => {
-          if (!computerBot) return;
           setScreenLoadError(null);
           setScreenUrlLoadedBotId(null);
           // An explicit retry clears any error and starts the screen's reconnects over;
@@ -802,10 +688,10 @@ export function useComputerControls({
           if (computer?.state === "running") {
             setComputerError(null);
             setComputerErrorFromScreen(false);
-            void refreshComputerScreen(computerBot.id);
+            void refreshComputerScreen(computerViewId);
           } else
             void bootComputer({
-              botId: computerBot.id,
+              botId: computerViewId,
               takeControl: false,
               showProgress: true,
               force: true,
@@ -814,13 +700,12 @@ export function useComputerControls({
       >
         <Trans>Retry screen</Trans>
       </Button>
-      {screenFailure && computer?.state === "running" && computerBot ? (
+      {screenFailure && computer?.state === "running" ? (
         <ComputerMaintenanceActions
           visibleRecover
-          botId={computerBot.id}
           computer={computer}
           onChanged={async () => {
-            await refreshComputerFor(computerBot.id);
+            await refreshComputerFor(computerViewId);
           }}
         />
       ) : null}
@@ -848,7 +733,7 @@ export function useComputerControls({
     showComputerRecoveryHint;
 
   return {
-    computerBot,
+    computerViewId,
     openComputer,
     onOpenComputer,
     releaseComputer,

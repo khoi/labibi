@@ -51,6 +51,7 @@ import {
 import { ModelHeadersEditor } from "../components/ModelHeadersEditor";
 import { PageLoading } from "../components/PageLoading";
 import { SignupSurvey } from "../components/SignupSurvey";
+import { chatPath } from "../lib/bootstrap-target";
 import { useCopyText } from "../lib/copy-text";
 import { providerDisplayName } from "../lib/localized-provider-hint";
 import type { ModelCatalogEntry } from "../lib/model-auth";
@@ -85,37 +86,12 @@ const MAIN_PROVIDER_OPTIONS: ReadonlyArray<{ provider: string; auth?: ProviderAu
 function providerOptionValue(provider: string, auth?: ProviderAuth): string {
   return auth ? `${provider}:${auth}` : provider;
 }
-const FIRST_BOT_NAME = "Chief";
-const FIRST_BOT_LOCK = "rakazo:onboarding-first-bot";
-
-/** Survives StrictMode remounts; concurrent first-bot creates share one in-flight attempt. */
-let firstBotEnsure: Promise<{ id: string }> | null = null;
-
-async function createOrReuseFirstBot(): Promise<{ id: string }> {
-  const [existing] = await rpc.bots.list();
-  if (existing) return { id: existing.id };
-  const created = await rpc.bots.create({
-    name: FIRST_BOT_NAME,
-    instructions: "",
-    notifyOnFinish: true,
-  });
-  return { id: created.id };
-}
-
-async function withFirstBotLock<T>(run: () => Promise<T>): Promise<T> {
-  const locks = globalThis.navigator?.locks;
-  if (!locks?.request) return run();
-  return locks.request(FIRST_BOT_LOCK, run);
-}
-
-async function ensureFirstBot(): Promise<{ id: string }> {
-  if (firstBotEnsure) return firstBotEnsure;
-  // Web Lock serializes cross-tab creates; module promise covers same-tab StrictMode.
-  // Clear after settle so a later empty-space visit re-lists instead of reusing a deleted id.
-  firstBotEnsure = withFirstBotLock(createOrReuseFirstBot).finally(() => {
-    firstBotEnsure = null;
-  });
-  return firstBotEnsure;
+/** The chat signup made, with the focus choice posted in it; invited people have none here. */
+async function firstChatPath(): Promise<string> {
+  const [chat] = await rpc.threads.list();
+  if (!chat) return "/app";
+  await rpc.onboarding.promptFocus({ threadId: chat.id }).catch(() => undefined);
+  return chatPath(chat.id);
 }
 
 export function OnboardingPage() {
@@ -506,27 +482,25 @@ export function OnboardingPage() {
     });
   }
 
-  async function createFirstBot() {
+  async function openFirstChat() {
     if (createStartedRef.current) return;
     createStartedRef.current = true;
     setError(null);
     try {
-      const bot = await ensureFirstBot();
-      // Onboarding continues conversationally in the thread with the focus choice.
-      await rpc.onboarding.promptFocus({ botId: bot.id }).catch(() => undefined);
-      navigate(`/app/${bot.id}`);
+      // Onboarding continues conversationally in the chat with the focus choice.
+      navigate(await firstChatPath());
     } catch (err) {
       createStartedRef.current = false;
-      setError(errorText(err, t`Could not create your bot`));
+      setError(errorText(err, t`Could not open your chat`));
     }
   }
 
   useEffect(() => {
     if (step !== "bot") return;
-    void createFirstBot();
+    void openFirstChat();
   }, [step]);
 
-  // Loading, and creating the first bot, both wait on one spinner until the chat opens.
+  // Loading, and opening the first chat, both wait on one spinner until the chat opens.
   if (step === "loading" || (step === "bot" && !error)) return <PageLoading />;
 
   return (
@@ -980,7 +954,7 @@ export function OnboardingPage() {
         {step === "bot" ? (
           <div>
             <p className="text-sm text-destructive">{error}</p>
-            <Button className="mt-4" onClick={() => void createFirstBot()}>
+            <Button className="mt-4" onClick={() => void openFirstChat()}>
               <Trans>Try again</Trans>
             </Button>
           </div>

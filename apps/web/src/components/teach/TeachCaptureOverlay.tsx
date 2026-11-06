@@ -5,13 +5,11 @@ import { rpc } from "../../lib/rpc";
 import { enqueueTeachComputerInput } from "./teach-computer-input-chain";
 
 export function TeachCaptureOverlay({
-  botId,
   skill,
   enabled,
   screenWidth,
   screenHeight,
 }: {
-  botId: string;
   skill: TaughtSkill | null;
   enabled: boolean;
   screenWidth?: number;
@@ -28,7 +26,7 @@ export function TeachCaptureOverlay({
     const target: HTMLDivElement = overlay;
 
     function enqueueInput(task: () => Promise<void>) {
-      void enqueueTeachComputerInput(botId, task);
+      void enqueueTeachComputerInput("own", task);
     }
 
     function pointerAt(event: MouseEvent) {
@@ -45,14 +43,13 @@ export function TeachCaptureOverlay({
       button: "left" | "right" = "left",
     ) {
       await rpc.computer.input({
-        botId,
         kind: "pointer",
         payload: { x, y, button, type },
       });
     }
 
     async function sendKey(key: string) {
-      await rpc.computer.input({ botId, kind: "key", payload: { key } });
+      await rpc.computer.input({ kind: "key", payload: { key } });
     }
 
     async function sendScroll(
@@ -62,7 +59,6 @@ export function TeachCaptureOverlay({
       y: number,
     ) {
       await rpc.computer.input({
-        botId,
         kind: "scroll",
         payload: { direction, amount, x, y },
       });
@@ -168,7 +164,7 @@ export function TeachCaptureOverlay({
       target.removeEventListener("contextmenu", onContextMenu);
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [botId, enabled, height, skill, width]);
+  }, [enabled, height, skill, width]);
 
   if (!enabled || !skill || skill.status !== "recording") return null;
 

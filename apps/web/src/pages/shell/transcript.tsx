@@ -1,17 +1,23 @@
-import type { LoginFieldInput, MessageReaction, ThreadMessage } from "@labradoodle/contracts";
+import type {
+  ChatMember,
+  LoginFieldInput,
+  MessageReaction,
+  ThreadMessage,
+} from "@labradoodle/contracts";
 import {
+  DOODLE_NAME,
   liveActivityLine,
   liveMessageComposing,
+  otherAuthor,
   projectMessageReactions,
   timeSeparatorIds,
   unreadDividerMessageId,
 } from "@labradoodle/core";
-import type { GroupAvatarMember } from "@labradoodle/ui-web";
 import { Button, cn, Spinner } from "@labradoodle/ui-web";
 import { i18n } from "@lingui/core";
 import { useLingui } from "@lingui/react/macro";
 import { ArrowDown } from "lucide-react";
-import type { CSSProperties, RefObject } from "react";
+import type { RefObject } from "react";
 import {
   Fragment,
   memo,
@@ -60,8 +66,8 @@ export const Transcript = memo(function Transcript({
   answerableAskIds,
   dismissableAskIds,
   running,
-  workingBots,
-  userBubble,
+  members,
+  showSpeakers,
   onLoadOlder,
   onAnswer,
   onReply,
@@ -70,8 +76,6 @@ export const Transcript = memo(function Transcript({
   onQuote,
   onReact,
   onJumpToMessage,
-  memberName,
-  peerBot,
   onRefresh,
   onBotChanged,
   onAddRoutine,
@@ -97,9 +101,10 @@ export const Transcript = memo(function Transcript({
   answerableAskIds: Set<string>;
   dismissableAskIds: Set<string>;
   running: boolean;
-  workingBots: GroupAvatarMember[];
-  /** Your bubbles take the bot's color in its own chat. */
-  userBubble?: { background: string; foreground: string };
+  /** The people in the chat, for their pictures beside what they wrote. */
+  members: readonly ChatMember[];
+  /** Name who wrote each message: the chat has other people in it. */
+  showSpeakers: boolean;
   onLoadOlder: () => void | Promise<void>;
   onAnswer: (
     message: ThreadMessage,
@@ -114,18 +119,20 @@ export const Transcript = memo(function Transcript({
   onQuote: (message: ThreadMessage, quote: string) => void;
   onReact: (message: ThreadMessage, reaction: MessageReaction) => Promise<void>;
   onJumpToMessage: (messageId: string) => void;
-  memberName?: (botId: string | undefined) => string | undefined;
-  peerBot: (botId: string) => { name?: string; color: string; status?: string } | undefined;
   onRefresh: () => Promise<void>;
   onBotChanged: () => Promise<void>;
   onAddRoutine: (name: string, prompt: string) => void;
   voiceReady: boolean;
   speakingMessageId: string | null;
   onSpeak: (message: ThreadMessage) => void;
-  onOpenComputer: (botId?: string) => void;
+  onOpenComputer: () => void;
   rpc: ReturnType<typeof createSpaceRpc>;
 }) {
   const { t } = useLingui();
+  const memberImages = useMemo(
+    () => new Map(members.map((member) => [member.userId, member.image])),
+    [members],
+  );
   const [atEnd, setAtEnd] = useState(true);
   const following = useRef(true);
   const jumpScrolling = useRef(false);
@@ -448,14 +455,6 @@ export const Transcript = memo(function Transcript({
           }
         }}
         className={`rk-scroll isolate flex min-h-0 flex-1 flex-col gap-2 overflow-x-hidden overflow-y-auto scroll-pt-16 scroll-pb-7 pt-20 pb-12 md:pt-[84px] md:pb-13 ${TRANSCRIPT_CONTENT_PADDING}`}
-        style={
-          userBubble
-            ? ({
-                "--chat-user": userBubble.background,
-                "--chat-user-foreground": userBubble.foreground,
-              } as CSSProperties)
-            : undefined
-        }
       >
         {olderCursor != null ? (
           <Button
@@ -472,6 +471,17 @@ export const Transcript = memo(function Transcript({
         ) : null}
         {reactionView.visibleMessages.map((message) => {
           if (!messageHasVisibleBlocks(message.blocks, showToolActivity)) return null;
+          if (message.role === "system") {
+            return (
+              <Fragment key={message.id}>
+                {separatorIds.has(message.id) ? (
+                  <TimeSeparator createdAt={message.createdAt} locale={i18n.locale || "en"} />
+                ) : null}
+                <SystemLine message={message} />
+              </Fragment>
+            );
+          }
+          const mine = message.role === "user" && !otherAuthor(message.author, meId);
           const messageReactions = reactionView.reactions.get(message.id);
           return (
             <Fragment key={message.id}>
@@ -482,9 +492,7 @@ export const Transcript = memo(function Transcript({
                 <UnreadDivider afterSeparator={separatorIds.has(message.id)} />
               ) : null}
               <div data-message-id={message.id} className="group/message relative hover:z-[1]">
-                <div
-                  className={`relative flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                >
+                <div className={`relative flex ${mine ? "justify-end" : "justify-start"}`}>
                   <div
                     data-testid="message-bubble-frame"
                     className={
@@ -505,9 +513,10 @@ export const Transcript = memo(function Transcript({
                       canAnswer={answerableAskIds.has(message.id)}
                       canDismiss={dismissableAskIds.has(message.id)}
                       onAnswer={onAnswer}
-                      speakerName={message.role === "bot" ? memberName?.(message.botId) : undefined}
-                      memberName={memberName}
-                      peerBot={peerBot}
+                      showSpeaker={showSpeakers}
+                      authorImage={
+                        message.author ? (memberImages.get(message.author.id) ?? null) : null
+                      }
                       replyParent={
                         message.replyToMessageId
                           ? messageById.get(message.replyToMessageId)
@@ -532,10 +541,7 @@ export const Transcript = memo(function Transcript({
                 {messageReactions ? (
                   <div
                     data-testid="message-reactions"
-                    className={cn(
-                      "mt-1 flex flex-wrap gap-1",
-                      message.role === "user" && "justify-end",
-                    )}
+                    className={cn("mt-1 flex flex-wrap gap-1", mine && "justify-end")}
                   >
                     {[...messageReactions].map(([emoji, count]) => (
                       <span
@@ -556,7 +562,7 @@ export const Transcript = memo(function Transcript({
         !messages.some(
           (message) => message.id.startsWith("progress:") && liveMessageComposing(message.blocks),
         ) ? (
-          <ActiveBotGlyph bots={workingBots} label={workingLabel} />
+          <ActiveBotGlyph label={workingLabel} />
         ) : null}
       </div>
       {quoteDraft ? (
@@ -592,3 +598,26 @@ export const Transcript = memo(function Transcript({
  * itself after mount so it can flip below the selection when there is no room
  * above and stay clamped inside the viewport; re-anchors on scroll/resize.
  */
+
+/** A line about the chat itself, such as Doodle joining or leaving it. */
+function SystemLine({ message }: { message: ThreadMessage }) {
+  const { t } = useLingui();
+  const text = message.blocks
+    .map((block) => (block.kind === "meta" || block.kind === "text" ? block.text : ""))
+    .filter(Boolean)
+    .join(" ");
+  const known: Record<string, string> = {
+    [`${DOODLE_NAME} joined`]: t`Doodle joined`,
+    [`${DOODLE_NAME} left`]: t`Doodle left`,
+  };
+  return (
+    <div
+      data-message-id={message.id}
+      data-testid="chat-system-line"
+      className="flex justify-center py-1 text-[13px] text-muted-foreground"
+      dir="auto"
+    >
+      {known[text] ?? text}
+    </div>
+  );
+}

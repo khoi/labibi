@@ -1,8 +1,6 @@
 import { PageIcon } from "@labradoodle/chat-ui/web";
-import type { Bot, PageSummary } from "@labradoodle/contracts";
+import type { Chat, PageSummary } from "@labradoodle/contracts";
 import {
-  Badge,
-  BotAvatar,
   Command,
   CommandDialog,
   CommandEmpty,
@@ -19,6 +17,8 @@ import { Check } from "lucide-react";
 import type { ComponentType } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { formatRelativeTime } from "../../lib/relative-time";
+import { ChatAvatar } from "./chat-avatar";
+import { chatLabel } from "./chat-list";
 import { isApplePlatform } from "./shell-shortcuts";
 
 /** Pages listed before anything is typed. */
@@ -32,11 +32,11 @@ export type CommandPaletteAction = {
   onSelect: () => void;
 };
 
-function botSearchText(bot: Bot) {
-  return `${bot.name} ${bot.preview}`.toLowerCase();
+function botSearchText(bot: Chat) {
+  return `${chatLabel(bot)} ${bot.preview}`.toLowerCase();
 }
 
-function botSubtitle(bot: Bot) {
+function botSubtitle(bot: Chat) {
   return bot.preview.trim();
 }
 
@@ -44,6 +44,7 @@ export function CommandPalette({
   open,
   onOpenChange,
   bots,
+  userId,
   onSelectBot,
   actions,
   pages = [],
@@ -52,10 +53,11 @@ export function CommandPalette({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  bots: Bot[];
-  onSelectBot: (botId: string) => void;
+  bots: readonly Chat[];
+  userId: string | undefined;
+  onSelectBot: (threadId: string) => void;
   actions: CommandPaletteAction[];
-  /** Pages bots built in this Space. */
+  /** Pages Doodle built in the person's chats. */
   pages?: PageSummary[];
   onSelectPage?: (page: PageSummary) => void;
   /** The typed search, so pages beyond the first loaded can be asked for. */
@@ -147,7 +149,7 @@ export function CommandPalette({
       open={open}
       onOpenChange={onOpenChange}
       title={t`Command menu`}
-      description={t`Search bots, actions, and settings`}
+      description={t`Search chats, actions, and settings`}
       className="sm:max-w-xl"
     >
       <Command
@@ -181,10 +183,10 @@ export function CommandPalette({
                   }}
                   className="items-center gap-3 rounded-xl! px-2.5 py-2.5"
                 >
-                  <BotAvatar color={bot.color} identity={bot.id} size={32} status={bot.status} />
+                  <ChatAvatar chat={bot} userId={userId} size={32} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium text-foreground" dir="auto">
-                      {bot.name}
+                      {chatLabel(bot)}
                     </div>
                     {subtitle ? (
                       <div className="mt-0.5 truncate text-[13px] text-muted-foreground" dir="auto">

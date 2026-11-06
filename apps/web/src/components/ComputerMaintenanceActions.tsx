@@ -24,12 +24,10 @@ import { errorText } from "../lib/user-error";
 type Action = "stop" | "recover" | "reset" | "update";
 
 export function ComputerMaintenanceActions({
-  botId,
   computer,
   onChanged,
   visibleRecover = false,
 }: {
-  botId: string;
   computer: ComputerStatus | null;
   onChanged: () => Promise<void>;
   visibleRecover?: boolean;
@@ -42,7 +40,7 @@ export function ComputerMaintenanceActions({
 
   if (!computer) return null;
 
-  const busy = Boolean(computer.busyBotName) || computer.state === "booting";
+  const busy = computer.controlHolder === "bot" || computer.state === "booting";
   const showReset =
     computer.state === "error" ||
     computer.state === "running" ||
@@ -59,10 +57,10 @@ export function ComputerMaintenanceActions({
     setPending(action);
     setError(null);
     try {
-      if (action === "stop") await rpc.computer.stop({ botId });
-      else if (action === "recover") await computerUpdates.start(botId, "recover");
-      else if (action === "reset") await rpc.computer.reset({ botId });
-      else await computerUpdates.start(botId);
+      if (action === "stop") await rpc.computer.stop();
+      else if (action === "recover") await computerUpdates.start("own", "recover");
+      else if (action === "reset") await rpc.computer.reset();
+      else await computerUpdates.start("own");
       setConfirmAction(null);
       setMenuOpen(false);
       await onChanged();

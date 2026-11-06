@@ -22,9 +22,10 @@ import {
   NativeSelect,
   NativeSelectOption,
   Spinner,
+  Switch,
 } from "@labradoodle/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { XIcon } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useSpaceQueries } from "../lib/query";
@@ -638,3 +639,36 @@ function selectedProvider(
 const NO_VOICES: VoiceInfo[] = [];
 
 type EditableField = "voiceId" | "speechModel" | "baseUrl" | "ttsModel" | "sttModel";
+
+/** Doodle's replies are read aloud as they arrive, for this person everywhere. */
+export function ReadAloudSetting() {
+  const rpc = useSpaceRpc();
+  const queries = useSpaceQueries();
+  const queryClient = useQueryClient();
+  const id = useId();
+  const me = useQuery(queries.me.queryOptions()).data;
+  const [pending, setPending] = useState(false);
+  if (!me) return null;
+  return (
+    <label
+      htmlFor={id}
+      className="mb-6 flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-xl bg-muted/50 px-4 text-sm text-foreground"
+    >
+      <Trans>Read replies aloud</Trans>
+      <Switch
+        id={id}
+        data-testid="read-aloud"
+        checked={me.readAloud}
+        disabled={pending}
+        onCheckedChange={(readAloud) => {
+          setPending(true);
+          void rpc.preferences
+            .update({ readAloud })
+            .then((next) => queryClient.setQueryData(queries.me.queryKey(), next))
+            .catch(() => undefined)
+            .finally(() => setPending(false));
+        }}
+      />
+    </label>
+  );
+}

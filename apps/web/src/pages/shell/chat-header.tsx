@@ -1,33 +1,22 @@
-import type { Bot, Group, ThreadSnapshot } from "@labradoodle/contracts";
-import { BotAvatar, Button, GroupAvatar } from "@labradoodle/ui-web";
+import type { Chat } from "@labradoodle/contracts";
+import { AvatarGroup, Button, DoodleAvatar, PersonAvatar } from "@labradoodle/ui-web";
 import { useLingui } from "@lingui/react/macro";
-import { Gift, Menu } from "lucide-react";
-import { useState } from "react";
-import { IconTooltip } from "../../components/IconTooltip";
-import { InviteDialog } from "../../components/InviteDialog";
-import { useBilling } from "../../components/SubscriptionGate";
+import { Menu } from "lucide-react";
+import { chatLabel } from "./chat-list";
 
-/** The floating header over the transcript: navigation, the chat's name and invite. */
+/** The floating header over the transcript: navigation, and the chat's name and people. */
 export function ChatHeader({
-  inGroup,
-  active,
-  activeGroup,
-  activeSnapshot,
+  chat,
   panelOpen,
   onOpenNavigation,
   onTogglePanel,
 }: {
-  inGroup: boolean;
-  active: Bot | undefined;
-  activeGroup: Group | undefined;
-  activeSnapshot: ThreadSnapshot | null;
+  chat: Chat | undefined;
   panelOpen: boolean;
   onOpenNavigation: () => void;
   onTogglePanel: () => void;
 }) {
   const { t } = useLingui();
-  const referral = useBilling().status?.referral;
-  const [inviteOpen, setInviteOpen] = useState(false);
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-10 grid grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-2 px-3 py-[13px] md:px-[22px] [&_button]:pointer-events-auto">
       <div className="flex items-center">
@@ -41,44 +30,48 @@ export function ChatHeader({
           <Menu strokeWidth={1.7} className="size-[19px]" />
         </Button>
       </div>
-      <Button
-        variant="floating"
-        data-testid="bot-settings-trigger"
-        aria-expanded={panelOpen}
-        onClick={onTogglePanel}
-        className="app-no-drag h-auto min-w-0 gap-2 py-1 ps-1 pe-3.5"
-      >
-        {inGroup ? (
-          <GroupAvatar members={activeSnapshot?.members ?? activeGroup?.members ?? []} size={26} />
-        ) : active ? (
-          <BotAvatar color={active.color} identity={active.id} size={26} status={active.status} />
-        ) : null}
-        <span className="min-w-0">
-          <span className="block truncate text-[15px] font-medium text-foreground" dir="auto">
-            {inGroup
-              ? (activeGroup?.name ?? activeSnapshot?.groupName ?? t`Group`)
-              : (active?.name ?? t`Select a bot`)}
+      {chat ? (
+        <Button
+          variant="floating"
+          data-testid="chat-panel-trigger"
+          aria-expanded={panelOpen}
+          onClick={onTogglePanel}
+          className="app-no-drag h-auto min-w-0 gap-2 py-1 ps-1 pe-3.5"
+        >
+          <ChatMembers chat={chat} size={26} />
+          <span className="min-w-0">
+            <span className="block truncate text-[15px] font-medium text-foreground" dir="auto">
+              {chatLabel(chat)}
+            </span>
           </span>
-        </span>
-      </Button>
-      <div className="flex items-center justify-self-end gap-2">
-        {referral && !inGroup && active ? (
-          <IconTooltip label={t`Invite a friend`}>
-            <Button
-              variant="floating"
-              size="icon-lg"
-              aria-label={t`Invite a friend`}
-              onClick={() => setInviteOpen(true)}
-              className="app-no-drag"
-            >
-              <Gift strokeWidth={1.6} className="size-[17px]" />
-            </Button>
-          </IconTooltip>
-        ) : null}
-      </div>
-      {referral ? (
-        <InviteDialog referral={referral} open={inviteOpen} onOpenChange={setInviteOpen} />
-      ) : null}
+        </Button>
+      ) : (
+        <span />
+      )}
+      <div />
     </div>
+  );
+}
+
+/** Everyone in a chat, Doodle first while it is in. */
+export function ChatMembers({ chat, size }: { chat: Chat; size: number }) {
+  const shown = chat.members.slice(0, chat.doodle ? 3 : 4);
+  return (
+    <AvatarGroup className="shrink-0 -space-x-1.5">
+      {chat.doodle ? (
+        <span className="relative z-10 grid place-items-center rounded-full bg-background">
+          <DoodleAvatar size={size} status={chat.status} />
+        </span>
+      ) : null}
+      {shown.map((member) => (
+        <PersonAvatar
+          key={member.userId}
+          name={member.name}
+          image={member.image}
+          size={size}
+          className="ring-2 ring-background"
+        />
+      ))}
+    </AvatarGroup>
   );
 }

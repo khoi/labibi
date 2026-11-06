@@ -1,6 +1,4 @@
 import type {
-  Bot,
-  ComputerStatus,
   LoginFieldInput,
   Me,
   MessageReaction,
@@ -41,7 +39,6 @@ import {
 } from "../../lib/thread-events";
 import { errorText } from "../../lib/user-error";
 import type { PendingAttachment } from "./chat-shared";
-import type { useShellNavigation } from "./use-shell-navigation";
 
 type ThreadRefresh = RefObject<(id: string) => Promise<ThreadSnapshot>>;
 
@@ -53,45 +50,32 @@ export function useComposerActions({
   rpc,
   pageSession,
   activeId,
-  inGroup,
-  groupId,
-  activeBotId,
-  activeGroupId,
-  botsRef,
+  activeThreadId,
+  doodleId,
+  userId,
   bootstrapMe,
   activeSnapshot,
-  navigate,
-  refreshBots,
+  refreshChats,
   refreshThreadRef,
-  refreshGroupThreadRef,
   updateSnapshot,
   terminalRunReceipts,
-  computerRef,
-  commitComputer,
   clearReadBoundary,
-  flushPendingBrowserNotifications,
 }: {
   rpc: ReturnType<typeof createSpaceRpc>;
   /** The chat's open page, whose card a message sent from it replies to. */
   pageSession: PageSession;
   activeId: string | undefined;
-  inGroup: boolean;
-  groupId: string | undefined;
-  activeBotId: RefObject<string | undefined>;
-  activeGroupId: RefObject<string | undefined>;
-  botsRef: RefObject<Bot[]>;
+  activeThreadId: RefObject<string | undefined>;
+  /** The workspace's Doodle, which a send's run belongs to. */
+  doodleId: string | undefined;
+  userId: string | undefined;
   bootstrapMe: Me | null | undefined;
   activeSnapshot: ThreadSnapshot | null;
-  navigate: ReturnType<typeof useShellNavigation>["navigate"];
-  refreshBots: () => Promise<void>;
+  refreshChats: () => Promise<void>;
   refreshThreadRef: ThreadRefresh;
-  refreshGroupThreadRef: ThreadRefresh;
   updateSnapshot: (update: (prev: ThreadSnapshot | null) => ThreadSnapshot | null) => void;
   terminalRunReceipts: RefObject<Set<string>>;
-  computerRef: RefObject<ComputerStatus | null>;
-  commitComputer: (next: ComputerStatus | null) => void;
   clearReadBoundary: () => void;
-  flushPendingBrowserNotifications: () => void;
 }) {
   const { t } = useLingui();
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
@@ -127,8 +111,8 @@ export function useComposerActions({
     useState<ReadonlySet<string>>(readSeenRunErrorIds);
 
   const activePendingAttachments = useMemo(
-    () => attachmentsForThread(pendingAttachments, inGroup ? groupId : activeId),
-    [activeId, groupId, inGroup, pendingAttachments],
+    () => attachmentsForThread(pendingAttachments, activeId),
+    [activeId, pendingAttachments],
   );
   // Keep the armed reply even when its parent leaves the loaded page: the
   // server resolves a paged-out target and degrades a deleted one to a plain
@@ -163,7 +147,7 @@ export function useComposerActions({
     clearReply();
     setAttachmentNotice(null);
     setSendError(null);
-  }, [activeId, clearReply, groupId, inGroup]);
+  }, [activeId, clearReply]);
 
   const answerMessage = useCallback(
     async (
@@ -173,12 +157,11 @@ export function useComposerActions({
       dismiss?: boolean,
       remember?: false,
     ) => {
-      const botId = activeBotId.current;
-      const groupId = activeGroupId.current;
-      if (!botId && !groupId) return;
+      const threadId = activeThreadId.current;
+      if (!threadId) return;
       clearReadBoundary();
       await rpc.threads.answer({
-        ...(groupId ? { groupId } : { botId: botId! }),
+        threadId,
         runId: message.runId ?? "",
         messageId: message.id,
         answer: text,
@@ -188,42 +171,30 @@ export function useComposerActions({
       });
       // The answer is saved; live events can reconcile a failed refresh.
       try {
-        if (groupId && activeGroupId.current === groupId) {
-          await refreshGroupThreadRef.current(groupId);
-        } else if (botId && activeBotId.current === botId) {
-          await refreshThreadRef.current(botId);
-        }
+        if (activeThreadId.current === threadId) await refreshThreadRef.current(threadId);
       } catch {}
     },
     [],
   );
   const reactToMessage = useCallback(
     async (message: ThreadMessage, reaction: MessageReaction) => {
-      const botId = activeBotId.current;
-      const groupId = activeGroupId.current;
-      if (!botId && !groupId) return;
+      const threadId = activeThreadId.current;
+      if (!threadId) return;
       try {
         const result = await rpc.threads.react({
-          ...(groupId ? { groupId } : { botId: botId! }),
+          threadId,
           messageId: message.id,
           reaction,
           clientNonce: newClientId(),
         });
-        if (result.runIds?.length) {
+        if (result.runId) {
           // The reaction is saved; a failed refresh is caught up by live events.
           try {
-            if (groupId && activeGroupId.current === groupId) {
-              await refreshGroupThreadRef.current(groupId);
-            } else if (botId && activeBotId.current === botId) {
-              await refreshThreadRef.current(botId);
-            }
+            if (activeThreadId.current === threadId) await refreshThreadRef.current(threadId);
           } catch {}
         }
       } catch (error) {
-        const stillHere = groupId
-          ? activeGroupId.current === groupId
-          : activeBotId.current === botId;
-        if (!stillHere) return;
+        if (activeThreadId.current !== threadId) return;
         setSendError(errorText(error, t`Could not update reaction`));
       }
     },
@@ -231,7 +202,7 @@ export function useComposerActions({
   );
   const onAttachmentPick = useCallback(
     (files: FileList | readonly File[] | null) => {
-      const threadKey = activeGroupId.current ?? activeBotId.current;
+      const threadKey = activeThreadId.current;
       if (!threadKey || !files?.length) return false;
       const ATTACHMENT_MAX_COUNT = attachmentMaxCount(bootstrapMe);
       const existing = attachmentsForThread(pendingAttachments, threadKey);
@@ -292,39 +263,28 @@ export function useComposerActions({
       clientNonce: string,
       imageHandling?: "file",
     ) => {
-      const initialBotTarget = activeBotId.current;
-      const initialGroupTarget = activeGroupId.current;
-      if ((!initialBotTarget && !initialGroupTarget) || sending) return false;
+      const threadId = activeThreadId.current;
+      if (!threadId || sending) return false;
       const editsAtSend = draftEdits.current;
       // The reply this send carries, read from the ref so a callback that outlived
       // a re-pick of the same message still carries the armed one; a reply picked
       // after this point is for the next message.
       const { target: replyAtSend, quote: replyQuoteAtSend } = armedReply.current;
-      const originThreadKey = initialGroupTarget ?? initialBotTarget;
-      const attachments = attachmentsForThread(pendingAttachments, originThreadKey);
+      const attachments = attachmentsForThread(pendingAttachments, threadId);
       const plan = resolveComposerSendPlan({
         text: draft,
         mentions,
         hasAttachments: attachments.length > 0,
       });
       if (plan.isNoOp) return false;
-      const reroutedToGroup = Boolean(
-        plan.rerouteGroupId && plan.rerouteGroupId !== initialGroupTarget,
-      );
-      const groupTarget = plan.rerouteGroupId ?? initialGroupTarget;
-      const botTarget = reroutedToGroup ? undefined : initialBotTarget;
-      if (
-        plan.shouldSend &&
-        (groupTarget || botsRef.current.find((bot) => bot.id === botTarget)?.notifyOnFinish)
-      ) {
+      if (plan.shouldSend) {
         const permissionRequest = requestBrowserNotificationPermission();
-        if (permissionRequest) void permissionRequest.then(flushPendingBrowserNotifications);
+        if (permissionRequest) void permissionRequest.catch(() => undefined);
       }
-      // The open page rides only on text this chat sends, never on a group or routine-only send.
-      const fromPage =
-        plan.shouldSend && !reroutedToGroup
-          ? pageSession.send(plan.trimmed, activeSnapshot?.messages ?? [], replyAtSend?.id)
-          : { text: plan.trimmed, replyToMessageId: undefined };
+      // The open page rides only on text this chat sends, never on a routine-only send.
+      const fromPage = plan.shouldSend
+        ? pageSession.send(plan.trimmed, activeSnapshot?.messages ?? [], replyAtSend?.id)
+        : { text: plan.trimmed, replyToMessageId: undefined };
       const trimmed = fromPage.text.trim();
       const replyToMessageId = fromPage.replyToMessageId;
       sendingRef.current = true;
@@ -338,7 +298,7 @@ export function useComposerActions({
         if (!plan.shouldSend) {
           if (plan.shouldRunRoutines) {
             await rpc.threads.sendWithRoutines({
-              ...(groupTarget ? { groupId: groupTarget } : { botId: botTarget! }),
+              threadId,
               clientNonce,
               routineIds: plan.routineIds,
             });
@@ -350,15 +310,9 @@ export function useComposerActions({
             current.filter((attachment) => !attachments.includes(attachment)),
           );
           setAttachmentNotice(null);
-          if (reroutedToGroup && groupTarget) {
-            navigate(`/app/g/${groupTarget}`);
-            return true;
-          }
           // The routine is saved; live events reconcile a failed refresh.
-          if (groupTarget && activeGroupId.current === groupTarget) {
-            void refreshGroupThreadRef.current(groupTarget).catch(() => undefined);
-          } else if (botTarget && activeBotId.current === botTarget) {
-            void refreshThreadRef.current(botTarget).catch(() => undefined);
+          if (activeThreadId.current === threadId) {
+            void refreshThreadRef.current(threadId).catch(() => undefined);
           }
           return true;
         }
@@ -380,55 +334,40 @@ export function useComposerActions({
           const contentBase64 = await readFileAsBase64(file);
           // Stable per pending attachment, so a retry under a new send nonce
           // (an edited draft) gets back the artifact this upload already made.
-          // Scoped to the target: a retry rerouted to a group uploads afresh
-          // rather than replaying another chat's artifact.
-          const uploadNonce = `attachment:${groupTarget ?? botTarget}:${pending.id}`;
-          const artifact = await rpc.artifacts.create(
-            groupTarget
-              ? {
-                  groupId: groupTarget,
-                  name: pending.file.name,
-                  mimeType,
-                  contentBase64,
-                  clientNonce: uploadNonce,
-                }
-              : {
-                  botId: botTarget!,
-                  name: pending.file.name,
-                  mimeType,
-                  contentBase64,
-                  clientNonce: uploadNonce,
-                },
-          );
+          const uploadNonce = `attachment:${threadId}:${pending.id}`;
+          const artifact = await rpc.artifacts.create({
+            threadId,
+            name: pending.file.name,
+            mimeType,
+            contentBase64,
+            clientNonce: uploadNonce,
+          });
           uploaded.set(pending.file, artifact.id);
           artifactIds.push(artifact.id);
         }
         const payload = {
-          ...(groupTarget ? { groupId: groupTarget } : { botId: botTarget! }),
+          threadId,
           clientNonce,
           imageHandling: imageHandling ?? "confirm",
           text: trimmed || undefined,
           mentions: plan.mentionPayload.length ? plan.mentionPayload : undefined,
           artifactIds: artifactIds.length ? artifactIds : undefined,
-          replyToMessageId: reroutedToGroup ? undefined : (replyToMessageId ?? replyAtSend?.id),
-          replyQuote:
-            reroutedToGroup || replyToMessageId ? undefined : (replyQuoteAtSend ?? undefined),
-          fromPage: !reroutedToGroup && replyToMessageId ? true : undefined,
+          replyToMessageId: replyToMessageId ?? replyAtSend?.id,
+          replyQuote: replyToMessageId ? undefined : (replyQuoteAtSend ?? undefined),
+          fromPage: replyToMessageId ? true : undefined,
         } as const;
         // The routines run in the same server operation as the message: both or neither.
         const sent = plan.shouldRunRoutines
           ? (await rpc.threads.sendWithRoutines({ ...payload, routineIds: plan.routineIds })).send
           : await rpc.threads.send(payload);
         accepted = true;
-        if (sent && botTarget && activeBotId.current === botTarget) {
+        if (sent?.runId && sent.taskId && doodleId && activeThreadId.current === threadId) {
+          const runId = sent.runId;
+          const taskId = sent.taskId;
           updateSnapshot((current) =>
             applyThreadSendReceipt(
               current,
-              {
-                botId: botTarget,
-                runId: sent.runId,
-                taskId: sent.taskId,
-              },
+              { threadId, botId: doodleId, userId, runId, taskId },
               terminalRunReceipts.current,
             ),
           );
@@ -440,36 +379,19 @@ export function useComposerActions({
         setPendingAttachments((current) =>
           current.filter((attachment) => !attachments.includes(attachment)),
         );
-        // Refresh sidebar status even when a bot→group reroute navigates away below.
-        void refreshBots().catch(() => undefined);
-        if (reroutedToGroup && groupTarget) {
-          navigate(`/app/g/${groupTarget}`);
-          return true;
-        }
-        if (groupTarget && activeGroupId.current === groupTarget) setAttachmentNotice(null);
-        if (botTarget && activeBotId.current === botTarget) setAttachmentNotice(null);
-        if (groupTarget) void refreshGroupThreadRef.current(groupTarget).catch(() => undefined);
-        else if (botTarget) void refreshThreadRef.current(botTarget).catch(() => undefined);
+        void refreshChats().catch(() => undefined);
+        if (activeThreadId.current === threadId) setAttachmentNotice(null);
+        void refreshThreadRef.current(threadId).catch(() => undefined);
         return true;
       } catch (error) {
         const isConfirmation = isImageInputConfirmation(error);
         // Offer the file resend only for the unchanged draft this send carried.
         const confirmation = isConfirmation && draftEdits.current === editsAtSend;
-        const failure = {
-          message: errorText(error, t`Failed to send message`),
-          imageConfirmation: confirmation,
-        };
-        if (
-          reroutedToGroup &&
-          groupTarget &&
-          activeBotId.current === initialBotTarget &&
-          activeGroupId.current === initialGroupTarget
-        ) {
-          setSendFailure(failure);
-        } else if (groupTarget && activeGroupId.current === groupTarget) {
-          setSendFailure(failure);
-        } else if (botTarget && activeBotId.current === botTarget) {
-          setSendFailure(failure);
+        if (activeThreadId.current === threadId) {
+          setSendFailure({
+            message: errorText(error, t`Failed to send message`),
+            imageConfirmation: confirmation,
+          });
         }
         return isConfirmation ? false : accepted;
       } finally {
@@ -481,11 +403,11 @@ export function useComposerActions({
       activeSnapshot?.messages,
       pageSession,
       clearSentReply,
-      flushPendingBrowserNotifications,
-      navigate,
+      doodleId,
       pendingAttachments,
       sending,
       t,
+      userId,
     ],
   );
   const stopRun = useCallback(async () => {
@@ -493,50 +415,24 @@ export function useComposerActions({
     sendingRef.current = true;
     setSending(true);
     try {
-      const botTarget = activeBotId.current;
-      const groupTarget = activeGroupId.current;
-      if (groupTarget) {
-        setSendError(null);
-        try {
-          await rpc.threads.stop({ groupId: groupTarget });
-        } catch (error) {
-          if (activeGroupId.current === groupTarget) {
-            setSendError(errorText(error, t`Failed to stop`));
-          }
-          return;
-        }
-        // Clear run UI ahead of the run.cancelled event so refresh races with in-flight gets.
-        if (activeGroupId.current === groupTarget) {
-          updateSnapshot((prev) =>
-            prev && prev.groupId === groupTarget ? clearActiveThreadRuns(prev) : prev,
-          );
-        }
-        await refreshGroupThreadRef.current(groupTarget).catch(() => undefined);
-        return;
-      }
-      if (!botTarget) return;
+      const threadId = activeThreadId.current;
+      if (!threadId) return;
       setSendError(null);
       try {
-        await rpc.threads.stop({ botId: botTarget });
+        await rpc.threads.stop({ threadId });
       } catch (error) {
-        if (activeBotId.current === botTarget) {
-          setSendError(errorText(error, t`Failed to stop`));
-        }
+        if (activeThreadId.current === threadId) setSendError(errorText(error, t`Failed to stop`));
         return;
       }
-      // Clear local run/busy immediately rather than waiting for run.cancelled so a
-      // superseded in-flight refresh (older cursor) cannot leave Stop enabled / Take control
-      // blocked while the API is already idle.
-      if (activeBotId.current === botTarget) {
+      // Clear local run state immediately rather than waiting for run.cancelled so a
+      // superseded in-flight refresh (older cursor) cannot leave Stop enabled while the
+      // API is already idle.
+      if (activeThreadId.current === threadId) {
         updateSnapshot((prev) =>
-          !prev || (prev.botId !== botTarget && prev.botId) ? prev : clearActiveThreadRuns(prev),
+          prev && prev.threadId === threadId ? clearActiveThreadRuns(prev) : prev,
         );
-        const currentComputer = computerRef.current;
-        if (currentComputer?.busyBotName) {
-          commitComputer({ ...currentComputer, busyBotName: null });
-        }
       }
-      await refreshThreadRef.current(botTarget).catch(() => undefined);
+      await refreshThreadRef.current(threadId).catch(() => undefined);
     } finally {
       sendingRef.current = false;
       setSending(false);

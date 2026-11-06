@@ -1,11 +1,8 @@
-import { notificationAvatarSource } from "@labradoodle/core";
-
-type AvatarBot = { id: string; color: string };
+import { DOODLE_NOTIFICATION_AVATAR } from "@labradoodle/core";
 
 const ICON_SIZE = 96;
-const icons = new Map<string, { key: string; icon?: string }>();
-
-const avatarKey = (bot: AvatarBot) => bot.color;
+let icon: string | undefined;
+let rasterizing = false;
 
 // Chromium and Electron do not reliably draw SVG notification icons.
 function rasterize(svgUrl: string): Promise<string | undefined> {
@@ -29,28 +26,16 @@ function rasterize(svgUrl: string): Promise<string | undefined> {
   });
 }
 
-/** Renders these bots' icons ahead of their notifications and forgets every other bot. */
-export function prepareNotificationIcons(bots: readonly AvatarBot[]) {
-  const ids = new Set(bots.map((bot) => bot.id));
-  for (const id of icons.keys()) if (!ids.has(id)) icons.delete(id);
-  for (const bot of bots) {
-    const key = avatarKey(bot);
-    if (icons.get(bot.id)?.key === key) continue;
-    const entry: { key: string; icon?: string } = { key };
-    icons.set(bot.id, entry);
-    const source = notificationAvatarSource(bot);
-    if (source.startsWith("data:image/svg+xml,")) {
-      void rasterize(source).then((icon) => {
-        entry.icon = icon;
-      });
-    } else {
-      entry.icon = source;
-    }
-  }
+/** Renders Doodle's icon ahead of the first notification. */
+export function prepareNotificationIcon() {
+  if (rasterizing) return;
+  rasterizing = true;
+  void rasterize(DOODLE_NOTIFICATION_AVATAR).then((value) => {
+    icon = value;
+  });
 }
 
-/** The bot's prepared avatar, or undefined to keep the browser default. */
-export function notificationIcon(bot: AvatarBot): string | undefined {
-  const entry = icons.get(bot.id);
-  return entry?.key === avatarKey(bot) ? entry.icon : undefined;
+/** Doodle's prepared icon, or undefined to keep the browser default. */
+export function notificationIcon(): string | undefined {
+  return icon;
 }

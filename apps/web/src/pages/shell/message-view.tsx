@@ -1,9 +1,9 @@
 import { ChatMarkdown, LinkifiedText } from "@labradoodle/chat-ui/web";
 import type { LoginFieldInput, MessageReaction, ThreadMessage } from "@labradoodle/contracts";
-import { isToolActivityBlock, otherAuthor } from "@labradoodle/core";
-import { BotAvatar, Button, cn, resolvePersonaColorDef } from "@labradoodle/ui-web";
+import { DOODLE_NAME, isToolActivityBlock, otherAuthor } from "@labradoodle/core";
+import { Button, cn, DoodleAvatar, PersonAvatar } from "@labradoodle/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { memo, useMemo } from "react";
+import { memo } from "react";
 import { ArtifactFileCard } from "../../components/ArtifactFileCard";
 import { AskCard } from "../../components/AskCard";
 import { CloudAgentCard } from "../../components/CloudAgentCard";
@@ -29,7 +29,7 @@ import {
   toolStepCount,
 } from "../../lib/tool-activity-view";
 import { ReplyLine } from "./chat-context";
-import { FALLBACK_BOT_COLOR, previewMessageText } from "./chat-shared";
+import { previewMessageText } from "./chat-shared";
 import {
   AppConnectCard,
   ArtifactImage,
@@ -48,9 +48,8 @@ export const MessageView = memo(function MessageView({
   pages,
   isPageSuperseded,
   onAnswer,
-  speakerName,
-  memberName,
-  peerBot,
+  showSpeaker,
+  authorImage,
   replyParent,
   onJumpToMessage,
   onRefresh,
@@ -84,9 +83,10 @@ export const MessageView = memo(function MessageView({
     dismiss?: boolean,
     remember?: false,
   ) => Promise<void>;
-  speakerName?: string;
-  memberName?: (botId: string | undefined) => string | undefined;
-  peerBot: (botId: string) => { name?: string; color: string; status?: string } | undefined;
+  /** Name Doodle above its replies: the chat has other people in it. */
+  showSpeaker: boolean;
+  /** The picture of the person who wrote it, when it was not the viewer. */
+  authorImage: string | null;
   replyParent?: ThreadMessage;
   onJumpToMessage?: (messageId: string) => void;
   onRefresh: () => Promise<void>;
@@ -95,7 +95,7 @@ export const MessageView = memo(function MessageView({
   voiceReady: boolean;
   speaking: boolean;
   onSpeak: (message: ThreadMessage) => void;
-  onOpenComputer: (botId?: string) => void;
+  onOpenComputer: () => void;
   /** Opens where an imported item's setup is finished. */
   rpc: ReturnType<typeof createSpaceRpc>;
   showToolActivity: boolean;
@@ -129,34 +129,25 @@ export const MessageView = memo(function MessageView({
   ) : null;
   const visibleNarrationBlocks = renderableMessageBlocks(blocks, showToolActivity);
   const speak = () => onSpeak(message);
-  const replyBotId = message.replyPreview?.botId ?? replyParent?.botId;
   const author = message.role === "user" ? otherAuthor(message.author, meId) : undefined;
+  const mine = message.role === "user" && !author;
   const replyAuthor = otherAuthor(message.replyPreview?.author ?? replyParent?.author, meId);
-  const speakerBot = message.botId ? peerBot?.(message.botId) : undefined;
-  const speakerColorDef = useMemo(
-    () => resolvePersonaColorDef(message.botId ?? "bot", speakerBot?.color),
-    [message.botId, speakerBot?.color],
-  );
   const messageContext = (
     <>
-      {speakerName ? (
+      {showSpeaker && message.role === "bot" ? (
         <div
-          className="mb-1.5 flex items-center gap-2 text-[13px] font-semibold tracking-tight"
+          className="mb-1.5 flex items-center gap-2 text-[13px] font-semibold tracking-tight text-foreground"
           dir="auto"
-          style={{ color: speakerColorDef.hex }}
         >
-          <BotAvatar
-            color={speakerBot?.color ?? FALLBACK_BOT_COLOR}
-            identity={message.botId}
-            size={22}
-          />
-          {speakerName}
+          <DoodleAvatar size={22} />
+          {DOODLE_NAME}
         </div>
       ) : author ? (
         <div
-          className="mb-1.5 text-end text-[13px] font-semibold tracking-tight text-muted-foreground"
+          className="mb-1.5 flex items-center gap-2 text-[13px] font-semibold tracking-tight text-foreground"
           dir="auto"
         >
+          <PersonAvatar name={author.name} image={authorImage} size={22} />
           {author.name}
         </div>
       ) : null}
@@ -167,9 +158,7 @@ export const MessageView = memo(function MessageView({
         author={
           (message.replyPreview?.role ?? replyParent?.role) === "user"
             ? (replyAuthor?.name ?? t`You`)
-            : ((replyBotId ? peerBot(replyBotId)?.name : undefined) ??
-              memberName?.(replyBotId) ??
-              t`Bot`)
+            : DOODLE_NAME
         }
         onJump={onJumpToMessage}
       />
@@ -185,7 +174,7 @@ export const MessageView = memo(function MessageView({
   const hoverActions = (
     <MessageHoverActions
       message={message}
-      side={message.role === "user" ? "start" : "end"}
+      side={mine ? "start" : "end"}
       onReply={onReply}
       onMarkUnread={onMarkUnread}
       markedUnread={markedUnread}
@@ -268,7 +257,7 @@ export const MessageView = memo(function MessageView({
   return (
     <>
       {messageContext}
-      <div className={cn("relative flex flex-col gap-2", message.role === "user" && "items-end")}>
+      <div className={cn("relative flex flex-col gap-2", mine && "items-end")}>
         {blocks.map((block, i) => {
           if (block.kind === "steps" && shouldRenderToolCard(block, showToolActivity)) {
             return (
@@ -315,21 +304,19 @@ export const MessageView = memo(function MessageView({
             return <SubagentCard key={i} block={block} />;
           }
           if (block.kind === "choice") {
-            const botId = "botId" in artifactTarget ? artifactTarget.botId : message.botId;
-            if (!botId) return null;
-            return <ChoiceCard key={i} botId={botId} block={block} onBotChanged={onBotChanged} />;
+            return (
+              <ChoiceCard
+                key={i}
+                threadId={message.threadId}
+                block={block}
+                onBotChanged={onBotChanged}
+              />
+            );
           }
           if (block.kind === "app_connect") {
-            const botId = "botId" in artifactTarget ? artifactTarget.botId : message.botId;
-            if (!botId) return null;
             return (
               <div key={i} className="flex justify-start">
-                <AppConnectCard
-                  botId={botId}
-                  threadId={message.threadId}
-                  messageId={message.id}
-                  block={block}
-                />
+                <AppConnectCard threadId={message.threadId} messageId={message.id} block={block} />
               </div>
             );
           }
@@ -361,16 +348,13 @@ export const MessageView = memo(function MessageView({
             if (!botId) return null;
             return (
               <div key={i} className="flex justify-start">
-                <McpApprovalCard botId={botId} threadId={message.threadId} block={block} />
+                <McpApprovalCard threadId={message.threadId} block={block} />
               </div>
             );
           }
           if (block.kind === "image") {
             return (
-              <div
-                key={i}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-              >
+              <div key={i} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                 <ArtifactImage
                   target={artifactTarget}
                   artifactId={block.artifactId}
@@ -381,10 +365,7 @@ export const MessageView = memo(function MessageView({
           }
           if (block.kind === "file") {
             return (
-              <div
-                key={i}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-              >
+              <div key={i} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                 <ArtifactFileCard
                   target={artifactTarget}
                   artifactId={block.artifactId}
@@ -402,7 +383,10 @@ export const MessageView = memo(function MessageView({
             return (
               <div
                 key={i}
-                className="relative flex w-fit max-w-full justify-end [@media(hover:none)]:w-full [@media(hover:none)]:flex-wrap"
+                className={cn(
+                  "relative flex w-fit max-w-full [@media(hover:none)]:w-full [@media(hover:none)]:flex-wrap",
+                  mine ? "justify-end" : "justify-start",
+                )}
               >
                 <div
                   data-testid="message-user-bubble"
@@ -528,7 +512,7 @@ export const MessageView = memo(function MessageView({
                   type="button"
                   size="sm"
                   data-testid="computer-card-open"
-                  onClick={() => onOpenComputer(message.botId)}
+                  onClick={() => onOpenComputer()}
                 >
                   <Trans>Open</Trans>
                 </Button>

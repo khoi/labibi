@@ -75,11 +75,9 @@ export function useRightPanelRestore({
   rightPanel,
   userId,
   spaceId,
-  inGroup,
-  panelTarget,
-  activeId,
+  threadId,
   routines,
-  routinesBotId,
+  routinesThreadId,
   searchParams,
   editingRoutineId,
   restoreRoutine,
@@ -88,11 +86,9 @@ export function useRightPanelRestore({
   rightPanel: RightPanel;
   userId: string | undefined;
   spaceId: string | undefined;
-  inGroup: boolean;
-  panelTarget: string | undefined;
-  activeId: string | undefined;
+  threadId: string | undefined;
   routines: Routine[];
-  routinesBotId: string | null;
+  routinesThreadId: string | null;
   searchParams: URLSearchParams;
   editingRoutineId: string | undefined;
   restoreRoutine: (routine: Routine | null) => void;
@@ -110,9 +106,7 @@ export function useRightPanelRestore({
     pendingExplicitPanel,
   } = rightPanel;
   const panelStorageKey =
-    userId && spaceId && panelTarget
-      ? rightPanelStorageKey(userId, spaceId, inGroup ? "group" : "bot", panelTarget)
-      : null;
+    userId && spaceId && threadId ? rightPanelStorageKey(userId, spaceId, threadId) : null;
   panelStorageKeyRef.current = panelStorageKey;
 
   useEffect(() => {
@@ -143,7 +137,7 @@ export function useRightPanelRestore({
       pendingPanelRestore.current = null;
       return;
     }
-    if (saved.panel === "routine" && saved.routineId && routinesBotId !== activeId) return;
+    if (saved.panel === "routine" && saved.routineId && routinesThreadId !== threadId) return;
     let next = saved.panel;
     if (next === "routine") {
       const routine = saved.routineId
@@ -155,12 +149,12 @@ export function useRightPanelRestore({
     pendingPanelRestore.current = null;
     setPanelState(next);
     setRestoredPanelKey(panelStorageKey);
-  }, [panelStorageKey, activeId, routinesBotId, routines, searchParams]);
+  }, [panelStorageKey, threadId, routinesThreadId, routines, searchParams]);
 
   useEffect(() => {
     // Do not gate writes on ?routine= staying in the URL — a stuck/failed routine
     // list would freeze layout prefs. Deep-link handling uses setPanelState for the
-    // bot-switch close so restoredPanelKey stays unset until an intentional setPanel.
+    // chat-switch close so restoredPanelKey stays unset until an intentional setPanel.
     if (!panelStorageKey || restoredPanelKey !== panelStorageKey || pendingPanelRestore.current)
       return;
     writeRightPanelState(panelStorageKey, panel, editingRoutineId);

@@ -18,13 +18,11 @@ export function formatRemaining(expiresAt: string | null): string {
 
 export function TeachRecordingChrome({
   recording,
-  botId,
   busy,
   onStop,
   variant = "panel",
 }: {
   recording: TaughtSkill;
-  botId: string;
   busy?: boolean;
   onStop: () => void | Promise<void>;
   variant?: "panel" | "overlay";
@@ -39,9 +37,7 @@ export function TeachRecordingChrome({
     return () => window.clearInterval(timer);
   }, [recording.expiresAt]);
 
-  const protectedInput = (
-    <ProtectedTeachInput key={recording.id} botId={botId} skillId={recording.id} />
-  );
+  const protectedInput = <ProtectedTeachInput key={recording.id} skillId={recording.id} />;
 
   if (variant === "overlay") {
     return (
@@ -57,7 +53,7 @@ export function TeachRecordingChrome({
             <Trans>{remaining} left</Trans>
           </span>
           <span>
-            <Trans>Bot is watching, not acting</Trans>
+            <Trans>Doodle is watching, not acting</Trans>
           </span>
         </div>
         <div className="text-[12px] text-muted-foreground">
@@ -81,7 +77,7 @@ export function TeachRecordingChrome({
           <Trans>{remaining} left</Trans>
         </span>
         <span>
-          <Trans>Bot is watching, not acting</Trans>
+          <Trans>Doodle is watching, not acting</Trans>
         </span>
       </div>
       <div className="mt-2 text-[13px] text-muted-foreground">
@@ -103,7 +99,7 @@ export function TeachRecordingChrome({
   );
 }
 
-function ProtectedTeachInput({ botId, skillId }: { botId: string; skillId: string }) {
+function ProtectedTeachInput({ skillId }: { skillId: string }) {
   const { t } = useLingui();
   const protectedInputRef = useRef<HTMLInputElement>(null);
   const activeSkillIdRef = useRef<string | null>(skillId);
@@ -125,11 +121,10 @@ function ProtectedTeachInput({ botId, skillId }: { botId: string; skillId: strin
     const queuedSkillId = skillId;
     pendingRef.current = true;
     setPending(true);
-    void enqueueTeachComputerInput(botId, async () => {
+    void enqueueTeachComputerInput("own", async () => {
       try {
         if (activeSkillIdRef.current !== queuedSkillId) return;
         await rpc.computer.input({
-          botId,
           kind: "clipboard",
           payload: { text, sensitive: true, skillId: queuedSkillId },
         });

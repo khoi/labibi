@@ -1,32 +1,12 @@
-export type Panel =
-  | "computer"
-  | "routines"
-  | "pages"
-  | "settings"
-  | "routine"
-  | "create-group"
-  | "group-settings"
-  | null;
+/** The chat panel opens on one of its tabs; a routine opens in its own editor. */
+export type Panel = "files" | "memory" | "routines" | "routine" | null;
 export type RightPanelState = { panel: Panel; routineId?: string };
 
 /** Panels that are safe to remember across reloads. */
-const durablePanels: readonly Panel[] = [
-  "computer",
-  "routines",
-  "pages",
-  "settings",
-  "routine",
-  "group-settings",
-  null,
-];
+const durablePanels: readonly Panel[] = ["files", "memory", "routines", "routine", null];
 
-export function rightPanelStorageKey(
-  userId: string,
-  spaceId: string,
-  kind: "bot" | "group",
-  targetId: string,
-): string {
-  return `rakazo:right-panel-state:${userId}:${spaceId}:${kind}:${targetId}`;
+export function rightPanelStorageKey(userId: string, spaceId: string, threadId: string): string {
+  return `rakazo:right-panel-state:${userId}:${spaceId}:chat:${threadId}`;
 }
 
 export function readRightPanelState(key: string): RightPanelState {
@@ -54,8 +34,6 @@ export function readRightPanelState(key: string): RightPanelState {
 }
 
 export function writeRightPanelState(key: string, panel: Panel, routineId?: string) {
-  // Keep the last durable preference while create-group is open.
-  if (panel === "create-group") return;
   try {
     localStorage.setItem(
       key,

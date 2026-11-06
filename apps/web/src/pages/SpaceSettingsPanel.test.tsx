@@ -57,7 +57,7 @@ async function render(props: Partial<Props>) {
   await act(async () => {
     root.render(
       <SpaceSettingsPanel
-        space={{ id: "space-a", name: "Support", canRename: true }}
+        space={{ id: "space-a", name: "Support", isOwner: true }}
         onRename={async () => undefined}
         onLeft={() => undefined}
         {...props}
@@ -180,12 +180,12 @@ describe("SpaceSettingsPanel", () => {
     });
     await type("Help desk");
     await commit();
-    expect(container.textContent).toContain("Could not rename space");
+    expect(container.textContent).toContain("Could not rename workspace");
   });
 
   it("shows no rename to a space it cannot change", async () => {
     await render({
-      space: { id: "space-a", name: "Personal", canRename: false },
+      space: { id: "space-a", name: "Personal", isOwner: false },
     });
     expect(container.querySelector("input")).toBeNull();
   });

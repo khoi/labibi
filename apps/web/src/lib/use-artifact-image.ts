@@ -20,11 +20,7 @@ function releaseUnusedDownload(key: string, download: ImageDownload) {
 }
 
 function acquireDownload(target: ArtifactTarget, artifactId: string) {
-  const key = JSON.stringify([
-    "botId" in target ? "bot" : "group",
-    "botId" in target ? target.botId : target.groupId,
-    artifactId,
-  ]);
+  const key = JSON.stringify([target.threadId, artifactId]);
   let download = downloads.get(key);
   if (!download) {
     const entry: ImageDownload = {
@@ -69,13 +65,12 @@ export function useArtifactImage(
   enabled = true,
 ) {
   const [src, setSrc] = useState<string | null>(null);
-  const botId = target && "botId" in target ? target.botId : undefined;
-  const groupId = target && "groupId" in target ? target.groupId : undefined;
+  const threadId = target?.threadId;
   useEffect(() => {
     setSrc(null);
-    if (!enabled || (!botId && !groupId)) return;
+    if (!enabled || !threadId) return;
     let cancelled = false;
-    const download = acquireDownload(botId ? { botId } : { groupId: groupId! }, artifactId);
+    const download = acquireDownload({ threadId }, artifactId);
     void download.promise
       .then((objectUrl) => {
         if (!cancelled) setSrc(objectUrl);
@@ -85,6 +80,6 @@ export function useArtifactImage(
       cancelled = true;
       download.release();
     };
-  }, [artifactId, botId, groupId, enabled]);
+  }, [artifactId, threadId, enabled]);
   return src;
 }

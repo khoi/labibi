@@ -7,8 +7,7 @@ import { spaceQueries } from "./query";
 const detail = (id: string, title: string): PageDetail => ({
   id,
   title,
-  botId: "b1",
-  groupId: null,
+  threadId: "t1",
   visibility: "private",
   currentVersion: 1,
   pinned: false,
@@ -64,7 +63,11 @@ describe("relistPagesForBlocks", () => {
     const client = new QueryClient();
     const palette = queries.pages.list.queryKey({ input: {} });
     const library = queries.pages.list.infiniteKey({
-      input: (cursor: string | null) => ({ botId: "b1", limit: 5, ...(cursor ? { cursor } : {}) }),
+      input: (cursor: string | null) => ({
+        threadId: "t1",
+        limit: 5,
+        ...(cursor ? { cursor } : {}),
+      }),
       initialPageParam: null,
     });
     client.setQueryData(palette, { items: [], nextCursor: null });

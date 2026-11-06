@@ -5,12 +5,9 @@ import {
   DialogClose,
   DialogContent,
   DialogTitle,
-  Field,
-  FieldLabel,
   NativeSelect,
   NativeSelectOption,
   Spinner,
-  Toggle,
 } from "@labradoodle/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { XIcon } from "lucide-react";
@@ -25,38 +22,6 @@ import {
   MEMORY_PROVIDER_SETTINGS,
   memoryProviderSettings,
 } from "./memory-providers/registry";
-
-function ScopePicker({
-  value,
-  disabled,
-  onChange,
-}: {
-  value: "isolated" | "shared";
-  disabled: boolean;
-  onChange: (scope: "isolated" | "shared") => void;
-}) {
-  const labelId = useId();
-  return (
-    <Field aria-labelledby={labelId}>
-      <FieldLabel id={labelId}>
-        <Trans>Default scope</Trans>
-      </FieldLabel>
-      <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
-        {(["isolated", "shared"] as const).map((option) => (
-          <Toggle
-            key={option}
-            pressed={value === option}
-            disabled={disabled}
-            onPressedChange={() => onChange(option)}
-            className="text-[13px] aria-pressed:bg-background aria-pressed:shadow-sm"
-          >
-            {option === "isolated" ? <Trans>Isolated</Trans> : <Trans>Shared</Trans>}
-          </Toggle>
-        ))}
-      </div>
-    </Field>
-  );
-}
 
 export function MemorySettingsOverlay({
   onClose,
@@ -79,17 +44,13 @@ export function MemorySettingsOverlay({
   const [selectedProvider, setSelectedProvider] = useState(
     config?.provider ?? defaultRegistration.id,
   );
-  const [defaultScope, setDefaultScope] = useState<"isolated" | "shared">(
-    config?.defaultMemoryScope ?? "isolated",
-  );
-  const [pending, setPending] = useState<"connect" | "disconnect" | "scope" | null>(null);
+  const [pending, setPending] = useState<"connect" | "disconnect" | null>(null);
   const [addingProvider, setAddingProvider] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (config) {
       setSelectedProvider(config.provider);
-      setDefaultScope(config.defaultMemoryScope);
       return;
     }
     if (config === null && !memoryProviderSettings(selectedProvider)) {
@@ -104,7 +65,7 @@ export function MemorySettingsOverlay({
     return () => onBusyChange?.(false);
   }, [onBusyChange]);
 
-  function markPending(next: "connect" | "disconnect" | "scope" | null) {
+  function markPending(next: "connect" | "disconnect" | null) {
     setPending(next);
     onBusyChange?.(next !== null);
   }
@@ -117,7 +78,6 @@ export function MemorySettingsOverlay({
       const next = await rpc.memory.connectProvider({
         provider: registration.id,
         ...draft,
-        defaultMemoryScope: defaultScope,
       });
       onConfigChange(next);
       return true;
@@ -138,20 +98,6 @@ export function MemorySettingsOverlay({
       onConfigChange(null);
     } catch (err) {
       setError(errorText(err, t`Could not disconnect memory provider`));
-    } finally {
-      markPending(null);
-    }
-  }
-
-  async function updateDefaultScope(scope: "isolated" | "shared") {
-    if (scope === defaultScope) return;
-    setError(null);
-    markPending("scope");
-    try {
-      const next = await rpc.memory.setDefaultScope({ defaultMemoryScope: scope });
-      onConfigChange(next);
-    } catch (err) {
-      setError(errorText(err, t`Could not update the default memory scope`));
     } finally {
       markPending(null);
     }
@@ -199,13 +145,6 @@ export function MemorySettingsOverlay({
               <p className="mt-1 text-[13px] text-muted-foreground">
                 {registration?.connectedLabel(config) ?? config.provider}
               </p>
-              <div className="mt-4">
-                <ScopePicker
-                  value={defaultScope}
-                  disabled={busy}
-                  onChange={(scope) => void updateDefaultScope(scope)}
-                />
-              </div>
               <Button
                 variant="outline"
                 type="button"
@@ -235,7 +174,7 @@ export function MemorySettingsOverlay({
                 <Trans>Provider</Trans>
               </h3>
               <p className="mt-1 text-[13px] text-muted-foreground">
-                <Trans>Lets bots save and recall facts by meaning, alongside MEMORY.md.</Trans>
+                <Trans>Lets Doodle save and recall facts by meaning, alongside MEMORY.md.</Trans>
               </p>
               {MEMORY_PROVIDER_SETTINGS.length > 1 ? (
                 <div className="mt-3">
@@ -256,10 +195,6 @@ export function MemorySettingsOverlay({
               ) : (
                 <p className="mt-3 text-[14px] text-foreground">{registration.name}</p>
               )}
-
-              <div className="mt-4">
-                <ScopePicker value={defaultScope} disabled={busy} onChange={setDefaultScope} />
-              </div>
 
               <registration.SettingsForm busy={busy} onConnect={connect} />
             </section>

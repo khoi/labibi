@@ -21,8 +21,8 @@ function storage(values = new Map<string, string>()) {
 
 function failedSnapshot(id: string): ThreadSnapshot {
   return {
-    botId: "bot-1",
     threadId: "thread-1",
+    chat: {} as ThreadSnapshot["chat"],
     cursor: 1,
     messages: [],
     olderCursor: null,

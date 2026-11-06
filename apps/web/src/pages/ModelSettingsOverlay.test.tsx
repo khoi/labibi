@@ -202,6 +202,7 @@ function account(provider: string, modelId: string) {
     name: "Ada",
     spaceId: "space-1",
     isDeploymentOwner: false,
+    readAloud: false,
     isAdmin: false,
     needsModel: false,
     defaultProvider: provider,

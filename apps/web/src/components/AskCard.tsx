@@ -134,8 +134,7 @@ function PromptAskCard({ block, canAnswer, onAnswer, rpc = selectedSpaceRpc }: A
     ? {
         label: t`Instructions updated`,
         run: () =>
-          rpc.bots.restoreInstructions({
-            botId: instructionUpdate.botId,
+          rpc.doodle.restoreInstructions({
             versionId: instructionUpdate.undoVersionId!,
             expectedInstructions: instructionUpdate.after,
             undo: true,
@@ -145,8 +144,7 @@ function PromptAskCard({ block, canAnswer, onAnswer, rpc = selectedSpaceRpc }: A
       ? {
           label: t`Settings updated`,
           run: () =>
-            rpc.bots.update({
-              botId: settingsUpdate.botId,
+            rpc.doodle.update({
               ...settingsUpdate.before,
               expectedSettings: settingsUpdate.after,
             }),

@@ -262,8 +262,7 @@ function SessionApp() {
                 }
               >
                 <Route path="/app" element={<ShellPage />} />
-                <Route path="/app/g/:groupId" element={<ShellPage />} />
-                <Route path="/app/:botId" element={<ShellPage />} />
+                <Route path="/app/c/:threadId" element={<ShellPage />} />
                 <Route path="/onboarding/:step?" element={<OnboardingPage />} />
                 <Route path="/app/artifacts" element={<ArtifactsPage />} />
                 <Route path="/app/artifacts/:artifactId" element={<ArtifactsPage />} />

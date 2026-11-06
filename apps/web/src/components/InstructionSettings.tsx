@@ -1,4 +1,4 @@
-import type { Bot } from "@labradoodle/contracts";
+import type { Doodle } from "@labradoodle/contracts";
 import { BOT_INSTRUCTIONS_MAX_LENGTH } from "@labradoodle/contracts";
 import { Button, Disclosure, Textarea } from "@labradoodle/ui-web";
 import { Popover, PopoverContent, PopoverTrigger } from "@labradoodle/ui-web/components/ui/popover";
@@ -6,11 +6,19 @@ import { Trans, useLingui } from "@lingui/react/macro";
 import { ORPCError } from "@orpc/client";
 import { History } from "lucide-react";
 import { useId, useState } from "react";
-import { rpc } from "../lib/rpc";
+import { useSpaceRpc } from "../lib/space-rpc";
 import { errorText } from "../lib/user-error";
 
-export function InstructionSettings({ bot }: { bot: Bot }) {
+/** Doodle's instructions, with earlier versions to look back at and restore. */
+export function InstructionSettings({
+  bot,
+  onSaved,
+}: {
+  bot: Doodle;
+  onSaved: (doodle: Doodle) => void;
+}) {
   const { t } = useLingui();
+  const rpc = useSpaceRpc();
   const id = useId();
   const [previousBot, setPreviousBot] = useState(bot);
   const [current, setCurrent] = useState(bot);
@@ -27,7 +35,7 @@ export function InstructionSettings({ bot }: { bot: Bot }) {
     }
     setCurrent(bot);
   }
-  async function save(action: () => Promise<Bot>) {
+  async function save(action: () => Promise<Doodle>) {
     setPending(true);
     setError("");
     try {
@@ -36,6 +44,7 @@ export function InstructionSettings({ bot }: { bot: Bot }) {
       setCurrent(updated);
       setInstructions(updated.instructions);
       setBaseline(updated.instructions);
+      onSaved(updated);
     } catch (err) {
       setError(errorText(err));
       setConflict((current) => current || (err instanceof ORPCError && err.code === "CONFLICT"));
@@ -81,8 +90,7 @@ export function InstructionSettings({ bot }: { bot: Bot }) {
                     disabled={pending}
                     onClick={() =>
                       void save(() =>
-                        rpc.bots.restoreInstructions({
-                          botId: bot.id,
+                        rpc.doodle.restoreInstructions({
                           versionId: version.id,
                           expectedInstructions: current.instructions,
                         }),
@@ -106,9 +114,7 @@ export function InstructionSettings({ bot }: { bot: Bot }) {
         onChange={(event) => setInstructions(event.target.value)}
         onBlur={() => {
           if (!conflict && instructions !== current.instructions)
-            void save(() =>
-              rpc.bots.update({ botId: bot.id, instructions, expectedInstructions: baseline }),
-            );
+            void save(() => rpc.doodle.update({ instructions, expectedInstructions: baseline }));
         }}
       />
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
@@ -116,7 +122,7 @@ export function InstructionSettings({ bot }: { bot: Bot }) {
         <Button
           variant="outline"
           disabled={pending}
-          onClick={() => void save(() => rpc.bots.get({ botId: bot.id }))}
+          onClick={() => void save(() => rpc.doodle.get())}
         >
           <Trans>Reload</Trans>
         </Button>

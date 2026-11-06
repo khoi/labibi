@@ -127,7 +127,7 @@ let leavingSpace: Promise<void> | null = null;
 export function leaveUnavailableSpace(spaceId: string): Promise<void> {
   leavingSpace ??= (async () => {
     try {
-      const { spaces } = await rpc.spaces.list(undefined, { context: { spaceId: null } });
+      const spaces = await rpc.spaces.list(undefined, { context: { spaceId: null } });
       if (spaces.some((space) => space.id === spaceId) || selectedSpaceId() !== spaceId) return;
       try {
         window.localStorage.removeItem(SPACE_STORAGE_KEY);

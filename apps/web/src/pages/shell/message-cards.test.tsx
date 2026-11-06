@@ -64,7 +64,6 @@ it("approves the bot after OAuth completes while a COOP popup keeps focus", asyn
     await act(async () =>
       root.render(
         <McpApprovalCard
-          botId="bot"
           threadId="thread"
           block={{
             kind: "mcp_approval",
@@ -85,7 +84,6 @@ it("approves the bot after OAuth completes while a COOP popup keeps focus", asyn
       channels[0]?.onmessage?.({ data: { type: "mcp-oauth-complete" } } as MessageEvent),
     );
     expect(calls.approve).toHaveBeenCalledExactlyOnceWith({
-      botId: "bot",
       serverId: "server",
       threadId: "thread",
     });
@@ -113,7 +111,6 @@ it("authorizes a card in a normal chat and marks its thread connected", async ()
     await act(async () =>
       root.render(
         <AppConnectCard
-          botId="bot"
           threadId="normal-chat"
           block={{
             kind: "app_connect",
@@ -130,7 +127,6 @@ it("authorizes a card in a normal chat and marks its thread connected", async ()
     expect(host.querySelector("button")?.textContent).toBe("Connect");
     await act(async () => host.querySelector("button")?.click());
     expect(calls.mark).toHaveBeenCalledWith({
-      botId: "bot",
       threadId: "normal-chat",
       connectorId: "fake",
       provider: "gmail",
@@ -156,7 +152,6 @@ it("links OAuth failures in chat to the shared recovery guide without approving 
     await act(async () =>
       root.render(
         <McpApprovalCard
-          botId="bot"
           threadId="thread"
           block={{
             kind: "mcp_approval",

@@ -1,6 +1,6 @@
-import type { SpaceMemoryConfig, UsageSummary } from "@labradoodle/contracts";
+import type { SpaceMemoryConfig, UsageSummary, Workspace } from "@labradoodle/contracts";
 import { Button, Dialog, DialogClose, DialogContent, DialogTitle } from "@labradoodle/ui-web";
-import { useLingui } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { ChevronLeft, ChevronRight, XIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApprovalRulesSettings } from "../components/ApprovalRulesSettings";
@@ -17,19 +17,17 @@ import {
   UsageSettingsPanel,
 } from "./AccountSettingsOverlay";
 import { BillingSettingsPanel } from "./BillingSettingsPanel";
+import { DoodleSettings } from "./DoodleSettings";
 import { MemorySettingsOverlay } from "./MemorySettingsOverlay";
 import { ModelSettingsOverlay } from "./ModelSettingsOverlay";
 import { PaymentWalletSettingsPanel } from "./PaymentWalletSettingsPanel";
 import { SpaceSettingsPanel } from "./SpaceSettingsPanel";
 import { useSettingsNavItems } from "./settings-nav";
-import type { SettingsSpace } from "./shell/dialogs";
 import type { SettingsSection } from "./shell-overlay";
-import { VoiceSettingsOverlay } from "./VoiceSettingsOverlay";
+import { ReadAloudSetting, VoiceSettingsOverlay } from "./VoiceSettingsOverlay";
 
 export function SettingsOverlay({
   space,
-  spaces = [],
-  onOpenSpace,
   onRenameSpace,
   email,
   name,
@@ -51,11 +49,10 @@ export function SettingsOverlay({
   onClose,
   onVoiceStatusMaybeChanged,
   onLeftSpace,
+  onOpenComputer,
 }: {
-  /** The space the Space page edits; it need not be the selected space. */
-  space?: SettingsSpace | null;
-  spaces?: { id: string; name: string }[];
-  onOpenSpace?: (spaceId: string) => void;
+  /** The workspace its page edits; it need not be the selected one. */
+  space?: Workspace | null;
   onRenameSpace?: (spaceId: string, name: string) => Promise<void>;
   email?: string | null;
   name: string;
@@ -78,8 +75,10 @@ export function SettingsOverlay({
   onMemoryConfigChange: (config: SpaceMemoryConfig | null) => void;
   onClose: () => void;
   onVoiceStatusMaybeChanged?: () => void | Promise<void>;
-  /** After leaving a space, with the space the server moved this person to. */
+  /** After leaving a workspace, with the one the server moved this person to. */
   onLeftSpace?: (spaceId: string, activeSpaceId: string) => void;
+  /** Shows the person's computer full screen. */
+  onOpenComputer?: () => void;
 }) {
   const { t, i18n } = useLingui();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -91,11 +90,12 @@ export function SettingsOverlay({
   const [voiceBusy, setVoiceBusy] = useState(false);
   const [keepComputerRecovery, setKeepComputerRecovery] = useState(false);
   const recoveryHoldTimer = useRef<number | undefined>(undefined);
-  const showComputer =
+  const showComputerSetup =
     canConfigureComputers ||
     keepComputerRecovery ||
     computersAreUnavailable(sandboxProvider) ||
     canChooseOwnComputer(sandboxProvider);
+  const showComputer = showComputerSetup || Boolean(onOpenComputer);
   const showUpdates = Boolean(desktopBridge()?.update);
   // A section that isn't available yet (billing before its flag loads) shows General until it is.
   const section =
@@ -179,7 +179,7 @@ export function SettingsOverlay({
 
   const sectionTitle =
     section === "space"
-      ? (space?.name ?? t`Space`)
+      ? (space?.name ?? t`Workspace`)
       : (navItems.find((item) => item.id === section)?.label ??
         (section === "general" ? t`General` : t`Settings`));
 
@@ -250,8 +250,7 @@ export function SettingsOverlay({
             >
               {navItems.map((item) => {
                 const Icon = item.icon;
-                // A space's page is reached from General, so General stays marked.
-                const active = item.id === (section === "space" ? "general" : section);
+                const active = item.id === section;
                 return (
                   <button
                     key={item.id}
@@ -290,18 +289,6 @@ export function SettingsOverlay({
               className="flex shrink-0 items-start justify-between gap-4 border-b border-border px-6 pb-5 pt-6 sm:px-8 sm:pt-7"
             >
               <div className="flex min-w-0 items-center gap-2">
-                {section === "space" ? (
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="-ms-2 shrink-0"
-                    aria-label={t`Back`}
-                    disabled={panelBusy}
-                    onClick={() => onSectionChange("general")}
-                  >
-                    <ChevronLeft className="rtl:rotate-180" />
-                  </Button>
-                ) : null}
                 <DialogTitle className="min-w-0 break-words text-heading2 font-medium text-foreground">
                   {sectionTitle}
                 </DialogTitle>
@@ -343,28 +330,6 @@ export function SettingsOverlay({
                         onTimezoneChange={onTimezoneChange}
                         onAccountImported={onAccountImported}
                       />
-                      {/* One space is just the app, so there is nothing to tell apart or manage. */}
-                      {spaces.length > 1 && onOpenSpace ? (
-                        <SettingsGroup title={t`Spaces`} data-testid="settings-spaces">
-                          {spaces.map((option) => (
-                            <SettingsRow
-                              key={option.id}
-                              label={<p className="break-words">{option.name}</p>}
-                              control={
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="rounded-full"
-                                  aria-label={t`Manage ${option.name}`}
-                                  onClick={() => onOpenSpace(option.id)}
-                                >
-                                  {t`Manage`}
-                                </Button>
-                              }
-                            />
-                          ))}
-                        </SettingsGroup>
-                      ) : null}
                     </div>
                   ) : null}
                   {section === "space" && space ? (
@@ -376,6 +341,9 @@ export function SettingsOverlay({
                         onLeft={(activeSpaceId) => onLeftSpace?.(space.id, activeSpaceId)}
                         onBusyChange={setVoiceBusy}
                       />
+                      <div className="mt-8">
+                        <DoodleSettings />
+                      </div>
                     </div>
                   ) : null}
                   {section === "confirmations" ? <ApprovalRulesSettings /> : null}
@@ -387,15 +355,36 @@ export function SettingsOverlay({
                     <UsageSettingsPanel usage={usage} panelRef={usageRef} />
                   ) : null}
                   {section === "computer" && showComputer ? (
-                    <ComputerSettingsPanel
-                      sandboxProvider={sandboxProvider}
-                      onSandboxProviderChange={(next) => {
-                        onSandboxProviderChange?.(next);
-                        holdComputerRecovery();
-                      }}
-                      onRecoveryDismissed={releaseComputerRecovery}
-                      canConfigureComputers={canConfigureComputers}
-                    />
+                    <div className="space-y-5">
+                      {onOpenComputer && !computersAreUnavailable(sandboxProvider) ? (
+                        <SettingsGroup>
+                          <SettingsRow
+                            label={<Trans>My computer</Trans>}
+                            control={
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                data-testid="open-my-computer"
+                                onClick={onOpenComputer}
+                              >
+                                <Trans>Open</Trans>
+                              </Button>
+                            }
+                          />
+                        </SettingsGroup>
+                      ) : null}
+                      {showComputerSetup ? (
+                        <ComputerSettingsPanel
+                          sandboxProvider={sandboxProvider}
+                          onSandboxProviderChange={(next) => {
+                            onSandboxProviderChange?.(next);
+                            holdComputerRecovery();
+                          }}
+                          onRecoveryDismissed={releaseComputerRecovery}
+                          canConfigureComputers={canConfigureComputers}
+                        />
+                      ) : null}
+                    </div>
                   ) : null}
                   {section === "billing" && billingEnabled ? <BillingSettingsPanel /> : null}
                   {section === "updates" && showUpdates ? <UpdatesSettingsPanel /> : null}
@@ -411,6 +400,7 @@ export function SettingsOverlay({
                       onBusyChange={setMemoryBusy}
                     />
                   ) : null}
+                  {section === "voice" ? <ReadAloudSetting /> : null}
                   {section === "voice" ? (
                     <VoiceSettingsOverlay
                       embedded

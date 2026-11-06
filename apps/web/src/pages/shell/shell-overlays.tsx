@@ -1,4 +1,4 @@
-import type { Me, Space, SpaceMemoryConfig, UsageSummary } from "@labradoodle/contracts";
+import type { Me, SpaceMemoryConfig, UsageSummary, Workspace } from "@labradoodle/contracts";
 import { writeSaved } from "@labradoodle/core/query";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback } from "react";
@@ -37,13 +37,13 @@ function voiceStatusRefreshTimeout(): Promise<never> {
 export function AppOverlays({
   overlay,
   setOverlay,
-  activeBotId,
+  activeThreadId,
   stdioEnabled,
   onConnectedAppsChange,
 }: {
   overlay: ShellOverlay;
   setOverlay: (next: ShellOverlay) => void;
-  activeBotId: string | undefined;
+  activeThreadId: string | undefined;
   stdioEnabled: boolean;
   onConnectedAppsChange: (apps: ReturnType<typeof connectedAppMarks>) => void;
 }) {
@@ -52,7 +52,7 @@ export function AppOverlays({
       {overlay?.kind === "integrations" ? (
         <PluginsOverlay
           onConnectedAppsChange={onConnectedAppsChange}
-          activeBotId={activeBotId}
+          activeThreadId={activeThreadId}
           onClose={() => setOverlay(null)}
           onOpenMcp={() => setOverlay({ kind: "mcp" })}
         />
@@ -69,7 +69,7 @@ export function AppOverlays({
   );
 }
 
-/** Settings, opened from the URL, and a bot's conversation with another bot. */
+/** Settings, opened from the URL. */
 export function SettingsOverlays({
   rpc,
   queries,
@@ -77,10 +77,10 @@ export function SettingsOverlays({
   setOverlay,
   settingsSpace,
   showSettings,
-  spaces,
   renameSpace,
   leftSpace,
   refreshSpaces,
+  onOpenComputer,
   user,
   refetchSession,
   bootstrapMe,
@@ -91,12 +91,12 @@ export function SettingsOverlays({
   queries: SpaceQueries;
   overlay: ShellOverlay;
   setOverlay: (next: ShellOverlay) => void;
-  settingsSpace: Space | null;
+  settingsSpace: Workspace | null;
   showSettings: boolean;
-  spaces: Space[];
   renameSpace: (spaceId: string, name: string) => Promise<void>;
   leftSpace: (spaceId: string, activeSpaceId: string) => Promise<void>;
   refreshSpaces: () => Promise<void>;
+  onOpenComputer: () => void;
   user: { name?: string | null; email?: string } | undefined;
   refetchSession: () => Promise<unknown>;
   bootstrapMe: Me | null | undefined;
@@ -114,13 +114,11 @@ export function SettingsOverlays({
       {overlay?.kind === "settings" && showSettings ? (
         <SettingsOverlay
           space={settingsSpace}
-          spaces={spaces}
           onRenameSpace={renameSpace}
           onLeftSpace={(spaceId, activeSpaceId) => {
             setOverlay(null);
             void leftSpace(spaceId, activeSpaceId);
           }}
-          onOpenSpace={(spaceId) => setOverlay({ ...overlay, section: "space", spaceId })}
           name={user?.name ?? ""}
           onNameSaved={async () => {
             await refetchSession();
@@ -156,6 +154,10 @@ export function SettingsOverlays({
             } catch {
               void queryClient.resetQueries({ queryKey: voiceStatusKey });
             }
+          }}
+          onOpenComputer={() => {
+            setOverlay(null);
+            onOpenComputer();
           }}
           onClose={() => setOverlay(null)}
         />

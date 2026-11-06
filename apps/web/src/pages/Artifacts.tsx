@@ -1,5 +1,5 @@
 import { ChatMarkdown } from "@labradoodle/chat-ui/web";
-import type { Artifact, Bot } from "@labradoodle/contracts";
+import type { Artifact, Chat } from "@labradoodle/contracts";
 import { artifactPreviewKind } from "@labradoodle/contracts";
 import { artifactTypeLabel } from "@labradoodle/core";
 import { writeSaved } from "@labradoodle/core/query";
@@ -12,12 +12,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  BotAvatar,
   Button,
   NativeSelect,
   NativeSelectOption,
-  parseBotAvatar,
-  resolvePersonaColorDef,
   Spinner,
   ToggleGroup,
   ToggleGroupItem,
@@ -46,11 +43,13 @@ import { SandboxedHtmlViewer } from "../components/SandboxedHtmlViewer";
 import { decodeArtifactBase64, downloadArtifactBytes } from "../lib/artifact-open";
 import { takeInitialBootstrap } from "../lib/bootstrap";
 import { desktopBridge } from "../lib/desktop";
-import { useSpaceQueries } from "../lib/query";
+import { useQueryUserId, useSpaceQueries } from "../lib/query";
 import { formatRelativeTime } from "../lib/relative-time";
 import { rpc } from "../lib/rpc";
 import { useObjectUrl } from "../lib/use-object-url";
 import { errorText } from "../lib/user-error";
+import { ChatAvatar } from "./shell/chat-avatar";
+import { chatLabel } from "./shell/chat-list";
 import { WindowChrome } from "./WindowChrome";
 
 type ViewMode = "grid" | "list";
@@ -60,7 +59,7 @@ const LIST_PAGE_SIZE = 60;
 
 type ArtifactSummary = Artifact & { versionCount: number };
 
-const NO_BOTS: Bot[] = [];
+const NO_BOTS: Chat[] = [];
 
 function readViewMode(): ViewMode {
   try {
@@ -107,16 +106,16 @@ export function ArtifactsPage() {
 
   const queries = useSpaceQueries();
   const queryClient = useQueryClient();
-  // The space's bootstrap is where the shell keeps what it last loaded, bots included.
+  // The workspace's bootstrap is where the shell keeps what it last loaded, chats included.
   const bots =
     useQuery({
       queryKey: queries.bootstrap.queryKey({ input: {} }),
       queryFn: () => takeInitialBootstrap(),
-      select: (bootstrap) => bootstrap.bots,
+      select: (bootstrap) => bootstrap.chats,
     }).data ?? NO_BOTS;
   const listingOptions = queries.artifacts.listSpace.infiniteOptions({
     input: (cursor: string | undefined) => ({
-      botId: activeBotId ?? undefined,
+      threadId: activeBotId ?? undefined,
       ...(cursor ? { cursor } : {}),
       limit: LIST_PAGE_SIZE,
     }),
@@ -197,7 +196,7 @@ export function ArtifactsPage() {
         })),
         pageParams: current?.pageParams ?? [],
       }));
-      // Listings for other bots may hold it too; they refresh when next shown.
+      // Listings for other chats may hold it too; they refresh when next shown.
       void queryClient.invalidateQueries({
         queryKey: queries.artifacts.listSpace.key(),
         refetchType: "none",
@@ -301,7 +300,7 @@ export function ArtifactsPage() {
               <NativeSelectOption value="month">{t`This month`}</NativeSelectOption>
             </NativeSelect>
             <FilterChip active={activeBotId === null} onClick={() => setActiveBotId(null)}>
-              <Trans>All bots</Trans>
+              <Trans>All chats</Trans>
             </FilterChip>
             {bots.map((bot) => (
               <BotFilterChip
@@ -412,7 +411,7 @@ function BrowsingPane({
   items: ArtifactSummary[] | null;
   loadError: string | null;
   viewMode: ViewMode;
-  botsById: Map<string, Bot>;
+  botsById: Map<string, Chat>;
   onRequestDelete: (artifact: ArtifactSummary) => void;
   nextCursor: string | null;
   loadingMore: boolean;
@@ -443,7 +442,7 @@ function BrowsingPane({
             <ArtifactCard
               key={item.id}
               artifact={item}
-              bot={item.botId ? botsById.get(item.botId) : undefined}
+              bot={botsById.get(item.threadId)}
               onRequestDelete={onRequestDelete}
             />
           ))}
@@ -454,7 +453,7 @@ function BrowsingPane({
             <ArtifactRow
               key={item.id}
               artifact={item}
-              bot={item.botId ? botsById.get(item.botId) : undefined}
+              bot={botsById.get(item.threadId)}
               onRequestDelete={onRequestDelete}
             />
           ))}
@@ -528,7 +527,7 @@ function IndexPane({
 }: {
   items: ArtifactSummary[] | null;
   loadError: string | null;
-  botsById: Map<string, Bot>;
+  botsById: Map<string, Chat>;
   selectedId: string;
   onRequestDelete: (artifact: ArtifactSummary) => void;
   nextCursor: string | null;
@@ -554,7 +553,7 @@ function IndexPane({
             <ArtifactRow
               key={item.id}
               artifact={item}
-              bot={item.botId ? botsById.get(item.botId) : undefined}
+              bot={botsById.get(item.threadId)}
               active={item.id === selectedId}
               onRequestDelete={onRequestDelete}
             />
@@ -591,40 +590,26 @@ function FilterChip({
   );
 }
 
-function useBotColorHex(bot: Bot): string {
-  return useMemo(() => {
-    const parsed = parseBotAvatar(bot.color);
-    const effectiveId = bot.id || parsed.color || "agent";
-    return resolvePersonaColorDef(effectiveId, parsed.color).hex;
-  }, [bot.color, bot.id]);
-}
-
 function BotFilterChip({
   bot,
   active,
   onClick,
 }: {
-  bot: Bot;
+  bot: Chat;
   active: boolean;
   onClick: () => void;
 }) {
-  const hex = useBotColorHex(bot);
+  const userId = useQueryUserId() ?? undefined;
   return (
     <Button
       variant="outline"
       size="sm"
       aria-pressed={active}
       onClick={onClick}
-      style={{ backgroundColor: active ? `${hex}26` : undefined, borderColor: `${hex}66` }}
-      className={active ? "text-foreground" : "text-muted-foreground"}
+      className={active ? "bg-accent text-foreground" : "text-muted-foreground"}
     >
-      <BotAvatar
-        color={bot.color}
-        identity={bot.id}
-        size={16}
-        status={bot.status}
-      />
-      <span className="max-w-[120px] truncate">{bot.name}</span>
+      <ChatAvatar chat={bot} userId={userId} size={16} />
+      <span className="max-w-[120px] truncate">{chatLabel(bot)}</span>
     </Button>
   );
 }
@@ -635,10 +620,11 @@ function ArtifactCard({
   onRequestDelete,
 }: {
   artifact: ArtifactSummary;
-  bot: Bot | undefined;
+  bot: Chat | undefined;
   onRequestDelete: (artifact: ArtifactSummary) => void;
 }) {
   const { t } = useLingui();
+  const userId = useQueryUserId() ?? undefined;
   return (
     <div className="group relative">
       <Link
@@ -671,13 +657,8 @@ function ArtifactCard({
         <div className="mt-auto flex items-center gap-2 text-[12px] text-muted-foreground">
           {bot ? (
             <>
-              <BotAvatar
-                color={bot.color}
-                identity={bot.id}
-                size={20}
-                status={bot.status}
-              />
-              <span className="min-w-0 flex-1 truncate">{bot.name}</span>
+              <ChatAvatar chat={bot} userId={userId} size={20} />
+              <span className="min-w-0 flex-1 truncate">{chatLabel(bot)}</span>
             </>
           ) : (
             <span className="flex-1" />
@@ -711,11 +692,12 @@ function ArtifactRow({
   onRequestDelete,
 }: {
   artifact: ArtifactSummary;
-  bot: Bot | undefined;
+  bot: Chat | undefined;
   active?: boolean;
   onRequestDelete: (artifact: ArtifactSummary) => void;
 }) {
   const { t } = useLingui();
+  const userId = useQueryUserId() ?? undefined;
   return (
     <div className={`group relative ${active ? "bg-accent/60" : "hover:bg-accent/40"}`}>
       <Link to={`/app/artifacts/${artifact.id}`} className="flex flex-col gap-1 px-4 py-3 pe-10">
@@ -738,13 +720,8 @@ function ArtifactRow({
         <div className="flex items-center gap-1.5 ps-8 text-[11.5px] text-muted-foreground">
           {bot ? (
             <>
-              <BotAvatar
-                color={bot.color}
-                identity={bot.id}
-                size={14}
-                status={bot.status}
-              />
-              <span className="me-1 max-w-[140px] truncate">{bot.name}</span>
+              <ChatAvatar chat={bot} userId={userId} size={14} />
+              <span className="me-1 max-w-[140px] truncate">{chatLabel(bot)}</span>
             </>
           ) : null}
           <span>{formatRelativeTime(artifact.createdAt)}</span>

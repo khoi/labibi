@@ -18,7 +18,7 @@ vi.mock("@labradoodle/chat-ui/web", () => ({
 }));
 const { rpc, spaceRpc } = vi.hoisted(() => {
   const client = () => ({
-    bots: { update: vi.fn(async () => ({})), restoreInstructions: vi.fn(async () => ({})) },
+    doodle: { update: vi.fn(async () => ({})), restoreInstructions: vi.fn(async () => ({})) },
   });
   return { rpc: client(), spaceRpc: client() };
 });
@@ -429,7 +429,7 @@ it("gives onboarding choices the same lettered rows as questions", async () => {
   await act(async () =>
     root.render(
       <ChoiceCard
-        botId="bot"
+        threadId="thread"
         block={{
           kind: "choice",
           question: "Which city?",
@@ -697,8 +697,7 @@ it("undoes a settings change from chat while it still holds", async () => {
   });
   expect(container.textContent).toContain("Settings updated");
   await act(async () => button("Undo")?.click());
-  expect(rpc.bots.update).toHaveBeenCalledWith({
-    botId: "bot-1",
+  expect(rpc.doodle.update).toHaveBeenCalledWith({
     modelProvider: null,
     modelId: null,
     thinkingLevel: null,
@@ -840,8 +839,8 @@ it("sends Undo to the chat's space, not the one selected in another tab", async 
     },
   });
   await act(async () => button("Undo")?.click());
-  expect(spaceRpc.bots.restoreInstructions).toHaveBeenCalledTimes(1);
-  expect(spaceRpc.bots.update).toHaveBeenCalledTimes(1);
-  expect(rpc.bots.restoreInstructions).not.toHaveBeenCalled();
-  expect(rpc.bots.update).not.toHaveBeenCalled();
+  expect(spaceRpc.doodle.restoreInstructions).toHaveBeenCalledTimes(1);
+  expect(spaceRpc.doodle.update).toHaveBeenCalledTimes(1);
+  expect(rpc.doodle.restoreInstructions).not.toHaveBeenCalled();
+  expect(rpc.doodle.update).not.toHaveBeenCalled();
 });

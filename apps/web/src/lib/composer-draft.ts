@@ -198,8 +198,8 @@ export function writeComposerDraft(
 }
 
 /** The composer key for a chat: one bot's chat or a group's. */
-export function composerDraftKey(target: { botId: string } | { groupId: string }): string {
-  return "botId" in target ? `bot:${target.botId}` : `group:${target.groupId}`;
+export function composerDraftKey(target: { threadId: string }): string {
+  return `chat:${target.threadId}`;
 }
 
 const composerOffers = createKeyedListeners<string>();

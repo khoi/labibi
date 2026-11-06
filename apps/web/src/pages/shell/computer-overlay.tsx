@@ -1,11 +1,10 @@
 import type {
-  Bot,
   ComputerReleaseReason,
   ComputerStatus,
   Run,
   TaughtSkill,
 } from "@labradoodle/contracts";
-import { BotAvatar, Button } from "@labradoodle/ui-web";
+import { Button } from "@labradoodle/ui-web";
 import { t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
 import { X } from "lucide-react";
@@ -20,7 +19,6 @@ import { ComputerReleaseActions } from "./computer-release-actions";
 import { computerLabel, DesktopKindEmptyState } from "./computer-view";
 
 type ComputerOverlayProps = {
-  bot: Bot;
   computer: ComputerStatus | null;
   computerViewport: { height: number; offsetTop: number } | null;
   recordingSkill: TaughtSkill | null;
@@ -48,7 +46,6 @@ type ComputerOverlayProps = {
 };
 
 export function ComputerOverlay({
-  bot,
   computer,
   computerViewport,
   recordingSkill,
@@ -88,18 +85,16 @@ export function ComputerOverlay({
           className="app-no-drag flex items-center justify-between gap-4 border-b border-sidebar-border px-[18px] py-3.5"
         >
           <div className="flex min-w-0 flex-1 items-center gap-3">
-            <BotAvatar color={bot.color} identity={bot.id} size={28} status={bot.status} />
             {recordingSkill ? (
               <TeachRecordingChrome
                 recording={recordingSkill}
-                botId={bot.id}
                 busy={teachBusy}
                 onStop={onStopTeaching}
                 variant="overlay"
               />
             ) : (
               <span className="truncate text-[15.5px] font-medium text-foreground" dir="auto">
-                {computerLabel(computer?.mode, bot.name)}
+                {computerLabel()}
               </span>
             )}
             {!recordingSkill && hasControl ? (
@@ -112,14 +107,6 @@ export function ComputerOverlay({
                   <Trans>You have control</Trans>
                 </span>
               )
-            ) : null}
-            {!recordingSkill && hasControl && computer?.shared ? (
-              <span
-                data-testid="computer-shared-browser"
-                className="min-w-0 truncate text-[13px] text-muted-foreground"
-              >
-                <Trans>Sites you sign in to stay signed in for everyone in this space</Trans>
-              </span>
             ) : null}
           </div>
           <div className="flex items-center gap-3">
@@ -156,8 +143,6 @@ export function ComputerOverlay({
             ) : null}
             {!recordingSkill ? (
               <TeachComputerOverlayControl
-                key={bot.id}
-                botId={bot.id}
                 computer={computer}
                 busy={teachBusy}
                 onRefresh={onRefreshTeaching}
@@ -165,7 +150,6 @@ export function ComputerOverlay({
             ) : null}
             {!recordingSkill ? (
               <ComputerMaintenanceActions
-                botId={bot.id}
                 computer={computer}
                 onChanged={async () => {
                   await onRefreshComputer();
@@ -198,7 +182,7 @@ export function ComputerOverlay({
             <>
               <iframe
                 key={screenFrameKey}
-                title={t`Bot screen`}
+                title={computerLabel()}
                 ref={screenFrameRef}
                 src={embeddedScreenUrl}
                 sandbox={screenIframeSandbox(embeddedScreenUrl)}
@@ -208,15 +192,12 @@ export function ComputerOverlay({
                   pointerEvents: recordingSkill || !hasControl ? "none" : "auto",
                 }}
               />
-              {bot ? (
-                <TeachCaptureOverlay
-                  botId={bot.id}
-                  skill={recordingSkill}
-                  enabled={Boolean(recordingSkill)}
-                  screenWidth={computer?.screenWidth}
-                  screenHeight={computer?.screenHeight}
-                />
-              ) : null}
+              <TeachCaptureOverlay
+                skill={recordingSkill}
+                enabled={Boolean(recordingSkill)}
+                screenWidth={computer?.screenWidth}
+                screenHeight={computer?.screenHeight}
+              />
             </>
           ) : (
             <div className="grid h-full place-items-center text-sm text-muted-foreground/80">
@@ -234,7 +215,7 @@ export function ComputerOverlay({
                     </Button>
                   </div>
                 ) : (
-                  computerLabel(computer?.mode, bot.name)
+                  computerLabel()
                 ))}
             </div>
           )}

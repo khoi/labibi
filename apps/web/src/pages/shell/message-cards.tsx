@@ -1,6 +1,6 @@
 import { useLinkPrompt } from "@labradoodle/chat-ui/web";
 import type { MessageBlock } from "@labradoodle/contracts";
-import { appConnectedInput, waitForConnection } from "@labradoodle/core";
+import { waitForConnection } from "@labradoodle/core";
 import { Button, Dialog, DialogClose, DialogContent, DialogTitle } from "@labradoodle/ui-web";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { X } from "lucide-react";
@@ -18,11 +18,11 @@ import type { ErrorDetails } from "../../lib/user-error";
 import { errorDetails, errorText } from "../../lib/user-error";
 
 export function ChoiceCard({
-  botId,
+  threadId,
   block,
   onBotChanged,
 }: {
-  botId: string;
+  threadId: string;
   block: Extract<MessageBlock, { kind: "choice" }>;
   onBotChanged: () => Promise<void>;
 }) {
@@ -36,7 +36,7 @@ export function ChoiceCard({
     setPending(true);
     setError(null);
     try {
-      await rpc.onboarding.choose({ botId, optionId });
+      await rpc.onboarding.choose({ threadId, optionId });
       await onBotChanged();
     } catch (err) {
       setError(errorText(err, t`Could not save this choice`));
@@ -48,7 +48,7 @@ export function ChoiceCard({
     setPending(true);
     setError(null);
     try {
-      await rpc.onboarding.dismissFocus({ botId });
+      await rpc.onboarding.dismissFocus({ threadId });
       setLocallyDismissed(true);
       void onBotChanged().catch(() => undefined);
     } catch (err) {
@@ -138,12 +138,10 @@ function OnboardingFocusOptionLabel({
 }
 
 export function AppConnectCard({
-  botId,
   threadId,
   messageId,
   block,
 }: {
-  botId: string;
   threadId: string;
   messageId?: string;
   block: Extract<MessageBlock, { kind: "app_connect" }>;
@@ -180,7 +178,12 @@ export function AppConnectCard({
       if (result.status === "connected") {
         setLocalStatus("connected");
         await rpc.onboarding
-          .appConnected(appConnectedInput(botId, threadId, block, messageId))
+          .appConnected({
+            threadId,
+            ...(messageId ? { messageId } : {}),
+            connectorId: block.connectorId,
+            provider: block.provider,
+          })
           .catch(() => undefined);
         return;
       }
@@ -326,12 +329,10 @@ type McpApprovalState = "pending" | "connecting" | "connected" | "dismissed";
  * The decision persists on the block, so the card keeps showing it after the
  * thread remounts. */
 export function McpApprovalCard({
-  botId,
   threadId,
   block,
 }: {
-  botId: string | undefined;
-  threadId: string | undefined;
+  threadId: string;
   block: Extract<MessageBlock, { kind: "mcp_approval" }>;
 }) {
   const { t } = useLingui();
@@ -352,10 +353,7 @@ export function McpApprovalCard({
     savedStatus === "connected" || savedStatus === "dismissed" ? savedStatus : localStatus;
 
   async function authorize() {
-    if (!botId || busy) {
-      if (!botId) setError(errorDetails(t`This server cannot be assigned without a bot.`));
-      return;
-    }
+    if (busy) return;
     setBusy(true);
     setLocalStatus("connecting");
     setError(null);
@@ -367,7 +365,7 @@ export function McpApprovalCard({
           return;
         }
       }
-      await rpc.mcp.approvals.approve({ botId, serverId, threadId });
+      await rpc.mcp.approvals.approve({ threadId, serverId });
       setLocalStatus("connected");
     } catch (err) {
       setError(errorDetails(err, t`Could not approve this server`));
@@ -382,9 +380,7 @@ export function McpApprovalCard({
     setBusy(true);
     setError(null);
     try {
-      if (botId) {
-        await rpc.mcp.approvals.dismiss({ botId, serverId, threadId });
-      }
+      await rpc.mcp.approvals.dismiss({ threadId, serverId });
       setLocalStatus("dismissed");
     } catch (err) {
       setLocalStatus("pending");

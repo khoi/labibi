@@ -67,7 +67,7 @@ function renderComposer(
   document.body.append(container);
   root = createRoot(container);
   composerProps = {
-    artifactTarget: { botId: "bot-1" },
+    artifactTarget: { threadId: "bot-1" },
     activeName: "Ada",
     running: false,
     pendingAttachments: [],
@@ -579,30 +579,6 @@ describe("Composer", () => {
     pressEnter(textarea);
     await act(async () => {});
     expect(onSend).toHaveBeenCalledWith("@Bob", [], expect.any(String));
-  });
-
-  it("sends only the bound group occurrence through cleanup after a skill prefix and whitespace trim", async () => {
-    const group: ComposerMention = { kind: "group", id: "group-bob", name: "Bob" };
-    const onSend = vi.fn().mockResolvedValue(true);
-    const textarea = renderComposer(onSend, { mentionTargets: [bob, group] });
-    type(textarea, "/sum");
-    act(() =>
-      container?.querySelector<HTMLButtonElement>('[aria-label="Skill summarize"]')?.click(),
-    );
-    type(textarea, "  ask @Bo");
-    pressEnter(textarea);
-    type(textarea, `${textarea.value}then @Bo`);
-    act(() => container?.querySelectorAll<HTMLButtonElement>('[role="option"]')[1]?.click());
-    type(textarea, `${textarea.value}please`);
-    pressEnter(textarea);
-    await act(async () => {});
-    const [text, mentions] = onSend.mock.calls[0]!;
-    expect(text).toBe("/summarize\nask @Bob then @Bob please");
-    expect(resolveComposerSendPlan({ text, mentions, hasAttachments: false })).toMatchObject({
-      trimmed: "/summarize\nask @Bob then please",
-      rerouteGroupId: group.id,
-      mentionPayload: [{ kind: "bot", id: bob.id }],
-    });
   });
 
   it.each([false, true])(

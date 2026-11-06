@@ -4,13 +4,13 @@ export function initialBootstrapTarget(path: string, desktop: boolean) {
   const pathname = path.split(/[?#]/)[0] ?? "";
   const appRoute = pathname === "/app" || pathname.startsWith("/app/");
   if (!appRoute && !(desktop && pathname === "/")) return null;
-  return { botId: appRoute ? botIdFromPath(pathname) : undefined };
+  return { threadId: appRoute ? threadIdFromPath(pathname) : undefined };
 }
 
-function botIdFromPath(pathname: string) {
+function threadIdFromPath(pathname: string) {
   const segments = pathname.split("/");
-  if (["g", "artifacts", "x"].includes(segments[2] ?? "")) return undefined;
-  const encoded = segments[2];
+  if (segments[2] !== "c") return undefined;
+  const encoded = segments[3];
   if (!encoded) return undefined;
   try {
     return decodeURIComponent(encoded);
@@ -20,16 +20,20 @@ function botIdFromPath(pathname: string) {
 }
 
 /**
- * Where to open a linked bot that is the user's but not in the Space just loaded. The link's
+ * Where to open a linked chat that is the user's but not in the workspace just loaded. The link's
  * query (a message to jump to, a routine) comes along.
  */
-export function linkedBotRoute(
-  bootstrap: Pick<AppBootstrap, "botSpaceId" | "bots" | "me">,
-  botId: string | undefined,
+export function linkedChatRoute(
+  bootstrap: Pick<AppBootstrap, "threadSpaceId" | "chats" | "me">,
+  threadId: string | undefined,
   search: string,
 ): { spaceId: string; path: string } | undefined {
-  if (!botId || !bootstrap.botSpaceId || bootstrap.botSpaceId === bootstrap.me.spaceId)
+  if (!threadId || !bootstrap.threadSpaceId || bootstrap.threadSpaceId === bootstrap.me.spaceId)
     return undefined;
-  if (bootstrap.bots.some((bot) => bot.id === botId)) return undefined;
-  return { spaceId: bootstrap.botSpaceId, path: `/app/${encodeURIComponent(botId)}${search}` };
+  if (bootstrap.chats.some((chat) => chat.id === threadId)) return undefined;
+  return { spaceId: bootstrap.threadSpaceId, path: `${chatPath(threadId)}${search}` };
+}
+
+export function chatPath(threadId: string) {
+  return `/app/c/${encodeURIComponent(threadId)}`;
 }

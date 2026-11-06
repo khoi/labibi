@@ -49,16 +49,14 @@ export function spaceQueries(userId: string | null, spaceId: string | null): Spa
 }
 
 /**
- * Where a space's last bootstrap is kept. It holds the whole space (bots, groups, account), so
- * it is not keyed by bot: a visited space opens at once through any of its chats.
+ * Where a space's last bootstrap is kept. It holds the whole space (chats, Doodle, account), so
+ * it is not keyed by chat: a visited space opens at once through any of its chats.
  */
 export function spaceSeedKey(userId: string | null, spaceId: string | null) {
   return spaceQueries(userId, spaceId).bootstrap.queryKey({ input: {} });
 }
 
-export type ChatTarget =
-  | { botId: string; groupId?: undefined }
-  | { groupId: string; botId?: undefined };
+export type ChatTarget = { threadId: string };
 
 /** Where a space keeps the chat it last had selected, apart from any snapshot that chat loaded. */
 export function lastChatKey(userId: string | null, spaceId: string | null) {
@@ -74,10 +72,7 @@ export function lastChatOf(
   chat: ChatTarget | undefined,
 ): ChatTarget | undefined {
   if (!seed || !chat) return undefined;
-  if (chat.groupId) {
-    return seed.groups.some((group) => group.id === chat.groupId) ? chat : undefined;
-  }
-  return seed.bots.some((bot) => bot.id === chat.botId) ? chat : undefined;
+  return seed.chats.some((item) => item.id === chat.threadId) ? chat : undefined;
 }
 
 /**
@@ -87,16 +82,11 @@ export function lastChatOf(
  */
 export function seedOnLeave(
   previous: AppBootstrap,
-  latest: Omit<AppBootstrap, "thread" | "routines">,
+  latest: Omit<AppBootstrap, "thread" | "threadSpaceId">,
   chat: ChatTarget | undefined,
   snapshot: AppBootstrap["thread"],
 ): AppBootstrap {
-  const selected =
-    snapshot &&
-    chat &&
-    (chat.groupId
-      ? snapshot.groupId === chat.groupId
-      : !snapshot.groupId && snapshot.botId === chat.botId);
+  const selected = snapshot && chat && snapshot.threadId === chat.threadId;
   return { ...previous, ...latest, thread: selected ? snapshot : previous.thread };
 }
 

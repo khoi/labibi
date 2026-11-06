@@ -35,7 +35,6 @@ import { CompatibleModelFields } from "./model-settings/compatible-model-fields"
 import { CompatibleKeyControls, ConnectionControls } from "./model-settings/connection-controls";
 import { ConnectionNameField, ProvidersSection } from "./model-settings/providers-section";
 import type { ConnectableProvider } from "./model-settings/role-model-picker";
-import { SpaceBotsModelNotice } from "./model-settings/space-bots-model";
 import { useModelSettings } from "./model-settings/use-model-settings";
 
 export function ModelSettingsOverlay({
@@ -299,11 +298,6 @@ export function ModelSettingsOverlay({
             thinking
             onChanged={() => void refresh()}
           />
-          {me.needsModel ? null : (
-            <SpaceBotsModelNotice
-              refreshKey={`${me.spaceId}:${me.defaultProvider ?? ""}:${me.defaultModel ?? ""}`}
-            />
-          )}
           <ModelRoleSettings
             userId={me.userId}
             spaceId={me.spaceId}

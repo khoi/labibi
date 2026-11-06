@@ -1,51 +1,48 @@
-import type { Bot, ThreadMessage, ThreadSnapshot } from "@labradoodle/contracts";
+import type { ThreadMessage, ThreadSnapshot } from "@labradoodle/contracts";
 import { speechFromBlocks } from "@labradoodle/core";
 import { toast } from "@labradoodle/ui-web";
-import type { RefObject } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { speaker } from "../../lib/tts";
 
 const READ_ALOUD_TOAST = "read-aloud-error";
 
 /** Chat read-aloud has no caption to carry a failure, so it surfaces as a toast. */
-function readAloud(text: string, opts: { botId: string; messageId: string }) {
+function readAloud(text: string, opts: { voiceId?: string; messageId: string }) {
   void speaker.speak(text, opts).then((error) => {
     if (error) toast.error(error, { id: READ_ALOUD_TOAST });
   });
 }
 
-/** Reads bot replies aloud: on request, and automatically for bots that speak their replies. */
+/** Reads Doodle's replies aloud: on request, and as they arrive when the person turned it on. */
 export function useReadAloud({
-  active,
+  threadId,
   snapshot,
-  activeBotId,
+  enabled,
+  voiceId,
 }: {
-  active: Bot | undefined;
+  threadId: string | undefined;
   snapshot: ThreadSnapshot | null;
-  activeBotId: RefObject<string | undefined>;
+  enabled: boolean;
+  voiceId: string | null | undefined;
 }) {
   const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
   const autoSpoken = useRef<string | null>(null);
-  const autoSpokenBotId = useRef<string | null>(null);
+  const autoSpokenThreadId = useRef<string | null>(null);
+  const voice = voiceId || undefined;
+
+  useEffect(
+    () =>
+      speaker.subscribe((state) => {
+        setSpeakingMessageId(state.status === "idle" ? null : (state.messageId ?? null));
+      }),
+    [],
+  );
 
   useEffect(() => {
-    const unsubSpeech = speaker.subscribe((state) => {
-      setSpeakingMessageId(state.status === "idle" ? null : (state.messageId ?? null));
-    });
-    return () => {
-      unsubSpeech();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!active || !snapshot || snapshot.botId !== active.id) return;
+    if (!threadId || !snapshot || snapshot.threadId !== threadId) return;
     const lastBot = [...snapshot.messages].reverse().find((message) => message.role === "bot");
-    if (autoSpokenBotId.current !== active.id) {
-      autoSpokenBotId.current = active.id;
-      autoSpoken.current = lastBot?.id ?? null;
-      return;
-    }
-    if (!active.autoSpeak) {
+    if (autoSpokenThreadId.current !== threadId || !enabled) {
+      autoSpokenThreadId.current = threadId;
       autoSpoken.current = lastBot?.id ?? null;
       return;
     }
@@ -54,19 +51,20 @@ export function useReadAloud({
     const text = speechFromBlocks(lastBot.blocks);
     if (!text) return;
     autoSpoken.current = lastBot.id;
-    readAloud(text, { botId: active.id, messageId: lastBot.id });
-  }, [snapshot?.messages, snapshot?.run?.status, snapshot?.botId, active?.autoSpeak, active?.id]);
+    readAloud(text, { voiceId: voice, messageId: lastBot.id });
+  }, [snapshot?.messages, snapshot?.run?.status, snapshot?.threadId, enabled, threadId, voice]);
 
   const speakingMessageIdRef = useRef(speakingMessageId);
   speakingMessageIdRef.current = speakingMessageId;
+  const voiceRef = useRef(voice);
+  voiceRef.current = voice;
   const speakMessage = useCallback((message: ThreadMessage) => {
     if (speakingMessageIdRef.current === message.id) {
       speaker.stop();
       return;
     }
     const text = speechFromBlocks(message.blocks);
-    const id = message.botId ?? activeBotId.current;
-    if (text && id) readAloud(text, { botId: id, messageId: message.id });
+    if (text) readAloud(text, { voiceId: voiceRef.current, messageId: message.id });
   }, []);
 
   return { speakingMessageId, speakMessage };

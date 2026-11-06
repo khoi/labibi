@@ -1,17 +1,7 @@
-import type {
-  Bot,
-  Connection,
-  ConnectionCatalogItem,
-  Group,
-  Routine,
-} from "@labradoodle/contracts";
-import {
-  buildComposerMentionOptions,
-  createRoutineMentionBatcher,
-  mentionConnectorsFrom,
-} from "@labradoodle/core";
+import type { Chat, Connection, ConnectionCatalogItem } from "@labradoodle/contracts";
+import { buildComposerMentionOptions, mentionConnectorsFrom } from "@labradoodle/core";
 import { useLingui } from "@lingui/react/macro";
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { connectedAppMarks } from "../../lib/connected-apps";
 import { cronLabels } from "../../lib/cron";
@@ -19,59 +9,37 @@ import type { SpaceQueries } from "../../lib/query";
 import { queryClient } from "../../lib/query";
 import type { createSpaceRpc } from "../../lib/rpc";
 
-function routineListData(results: Array<{ data?: Routine[] }>) {
-  return results.map((result) => result.data);
-}
-
 function connectedAppMarksOf(
   data: { catalog: ConnectionCatalogItem[] | null; connections: Connection[] | null } | undefined,
 ) {
   return data?.catalog && data.connections ? connectedAppMarks(data.catalog, data.connections) : [];
 }
 
-/** What the composer can @mention, and the connected apps the sidebar footer shows. */
+/**
+ * What the composer can @mention in the open chat: the people in it, and Doodle with its
+ * routines and the person's apps while Doodle is on. Also the apps the sidebar footer shows.
+ */
 export function useComposerMentions({
   rpc,
   queries,
-  bots,
-  groups,
-  inGroup,
-  groupId,
+  chat,
+  userId,
   integrationsOpen,
-  initialBotsLoaded,
+  ready,
 }: {
   rpc: ReturnType<typeof createSpaceRpc>;
   queries: SpaceQueries;
-  bots: Bot[];
-  groups: Group[];
-  inGroup: boolean;
-  groupId: string | undefined;
+  chat: Chat | undefined;
+  userId: string | undefined;
   integrationsOpen: boolean;
-  initialBotsLoaded: boolean;
+  ready: boolean;
 }) {
   const { i18n } = useLingui();
-  const loadRoutineMentions = useMemo(
-    () =>
-      createRoutineMentionBatcher(
-        (botIds, signal) => rpc.routines.listForMentions({ botIds }, { signal }),
-        (botId, signal) => rpc.routines.list({ botId }, { signal }),
-      ),
-    [rpc],
-  );
-  const routineLists = useQueries({
-    queries: bots.map((bot) => ({
-      ...queries.routines.list.queryOptions({ input: { botId: bot.id } }),
-      queryFn: ({ signal }: { signal: AbortSignal }) => loadRoutineMentions(bot.id, signal),
-    })),
-    combine: routineListData,
-  });
-  const mentionRoutines = useMemo(
-    () =>
-      bots.flatMap((bot, index) =>
-        (routineLists[index] ?? []).map((routine) => ({ ...routine, botName: bot.name })),
-      ),
-    [bots, routineLists],
-  );
+  const doodle = chat?.doodle === true;
+  const routines = useQuery({
+    ...queries.routines.list.queryOptions({ input: { threadId: chat?.id ?? "" } }),
+    enabled: Boolean(chat) && doodle,
+  }).data;
   const composerConnections = useQuery({
     queryKey: [...queries.connections.catalog.queryKey({ input: {} }), "with-connections"],
     // The catalog call reconciles connection rows, so list them after it.
@@ -80,7 +48,7 @@ export function useComposerMentions({
       const connections = await rpc.connections.list().catch(() => null);
       return { catalog, connections };
     },
-    enabled: initialBotsLoaded,
+    enabled: ready,
   });
   // Apps can change in the integrations overlay; leaving it refreshes what the composer offers.
   const wasIntegrationsOpen = useRef(integrationsOpen);
@@ -90,18 +58,6 @@ export function useComposerMentions({
     }
     wasIntegrationsOpen.current = integrationsOpen;
   }, [integrationsOpen, queries]);
-  // A changed roster refreshes connection data too.
-  const mentionBotsKey = useMemo(
-    () => bots.map((bot) => `${bot.id}:${bot.name}`).join(","),
-    [bots],
-  );
-  const connectionsRoster = useRef<string | null>(null);
-  useEffect(() => {
-    if (!initialBotsLoaded) return;
-    const previous = connectionsRoster.current;
-    connectionsRoster.current = mentionBotsKey;
-    if (previous !== null && previous !== mentionBotsKey) void composerConnections.refetch();
-  }, [initialBotsLoaded, mentionBotsKey]);
   const [footerLogos, setFooterLogos] = useState(() =>
     connectedAppMarksOf(composerConnections.data),
   );
@@ -112,31 +68,27 @@ export function useComposerMentions({
   }, [composerConnections.data]);
   const mentionConnectors = useMemo(() => {
     const { catalog, connections } = composerConnections.data ?? {};
-    return bots.length === 0 ? [] : mentionConnectorsFrom(connections ?? [], catalog ?? []);
-  }, [bots.length, composerConnections.data]);
+    return mentionConnectorsFrom(connections ?? [], catalog ?? []);
+  }, [composerConnections.data]);
   const composerMentionTargets = useMemo(
     () =>
       buildComposerMentionOptions({
         query: "",
-        includeEveryone: inGroup,
-        currentGroupId: groupId,
-        bots: bots.map((bot) => ({
-          id: bot.id,
-          name: bot.name,
-          color: bot.color,
-        })),
-        groups: groups.map((group) => ({ id: group.id, name: group.name })),
-        routines: mentionRoutines.map((routine) => ({
-          id: routine.id,
-          name: routine.name,
-          crons: routine.crons,
-          botId: routine.botId,
-          botName: routine.botName,
-        })),
-        connectors: mentionConnectors,
+        doodle,
+        people: (chat?.members ?? [])
+          .filter((member) => member.userId !== userId)
+          .map((member) => ({ id: member.userId, name: member.name })),
+        routines: doodle
+          ? (routines ?? []).map((routine) => ({
+              id: routine.id,
+              name: routine.name,
+              crons: routine.crons,
+            }))
+          : [],
+        connectors: doodle ? mentionConnectors : [],
         cronLabels: cronLabels(i18n.locale),
       }),
-    [bots, groupId, groups, i18n.locale, inGroup, mentionConnectors, mentionRoutines],
+    [chat?.members, doodle, i18n.locale, mentionConnectors, routines, userId],
   );
   return { composerMentionTargets, footerLogos, setFooterLogos };
 }

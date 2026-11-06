@@ -27,14 +27,14 @@ const PAGE_SIZE = 20;
 const SEARCH_FROM = 8;
 
 /**
- * The pages a bot or group built, pinned ones in their own group on top, then the newest. Each
- * bot or group gets its own list, so one's pages never stand in while another's load.
+ * The pages Doodle built in a chat, pinned ones in their own group on top, then the newest. Each
+ * chat gets its own list, so one's pages never stand in while another's load.
  */
-export function PagesList({ botId, groupId }: { botId?: string; groupId?: string }) {
-  return <OwnerPages key={botId ?? groupId} botId={botId} groupId={groupId} />;
+export function PagesList({ threadId }: { threadId: string }) {
+  return <OwnerPages key={threadId} threadId={threadId} />;
 }
 
-function OwnerPages({ botId, groupId }: { botId?: string; groupId?: string }) {
+function OwnerPages({ threadId }: { threadId: string }) {
   const { t } = useLingui();
   const queries = useSpaceQueries();
   const queryClient = useQueryClient();
@@ -44,7 +44,7 @@ function OwnerPages({ botId, groupId }: { botId?: string; groupId?: string }) {
   const pages = useInfiniteQuery(
     queries.pages.list.infiniteOptions({
       input: (cursor: string | null) => ({
-        ...(botId ? { botId } : { groupId }),
+        threadId,
         limit: PAGE_SIZE,
         ...(cursor ? { cursor } : {}),
         ...(query ? { query } : {}),
@@ -83,23 +83,7 @@ function OwnerPages({ botId, groupId }: { botId?: string; groupId?: string }) {
     );
   }
   const searchable = query !== "" || items.length >= SEARCH_FROM || pages.hasNextPage;
-  if (items.length === 0 && !searchable) {
-    return (
-      <p className="px-1 py-2 text-[13px] text-muted-foreground">
-        {groupId ? (
-          <Trans>
-            Pages this group builds for you appear here. Ask for a dashboard, tracker or plan to
-            make one.
-          </Trans>
-        ) : (
-          <Trans>
-            Pages this bot builds for you appear here. Ask for a dashboard, tracker or plan to make
-            one.
-          </Trans>
-        )}
-      </p>
-    );
-  }
+  if (items.length === 0 && !searchable) return null;
   const commitRename = () => {
     if (!renaming) return;
     const next = renaming.draft.trim();

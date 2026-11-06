@@ -1,4 +1,4 @@
-import type { RoutineRun, RoutineRunCursor } from "@labradoodle/contracts";
+import type { RoutineRun, RoutineRunCursor, RunStatus } from "@labradoodle/contracts";
 import {
   formatRoutineRunAt,
   isRetryableError,
@@ -9,15 +9,22 @@ import {
   routineRunLateness,
 } from "@labradoodle/core";
 import { Button, SectionHeading, Spinner } from "@labradoodle/ui-web";
+import { t } from "@lingui/core/macro";
 import { Trans, useLingui } from "@lingui/react/macro";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { chatPath } from "../lib/bootstrap-target";
 import { useSpaceQueries } from "../lib/query";
 import { translateRunError } from "../lib/run-error";
-import { statusLabel, statusTone } from "./ActivityList";
 
-export function RoutineRunHistory({ routineId }: { routineId: string }) {
+export function RoutineRunHistory({
+  routineId,
+  threadId,
+}: {
+  routineId: string;
+  threadId: string;
+}) {
   const { t } = useLingui();
   const queries = useSpaceQueries();
   const history = useInfiniteQuery(
@@ -55,7 +62,7 @@ export function RoutineRunHistory({ routineId }: { routineId: string }) {
       ) : (
         <ul className="mt-2 divide-y divide-border">
           {runs.map((run) => (
-            <RunRow key={run.id} run={run} />
+            <RunRow key={run.id} run={run} threadId={threadId} />
           ))}
         </ul>
       )}
@@ -73,7 +80,7 @@ export function RoutineRunHistory({ routineId }: { routineId: string }) {
   );
 }
 
-function RunRow({ run }: { run: RoutineRun }) {
+function RunRow({ run, threadId }: { run: RoutineRun; threadId: string }) {
   const { i18n, t } = useLingui();
   const locale = i18n.locale || "en";
   const at = routineRunAt(run);
@@ -87,9 +94,7 @@ function RunRow({ run }: { run: RoutineRun }) {
         ? t`Started ${count}h late`
         : t`Started ${count}d late`;
   const chatTo = run.messageId
-    ? run.groupId
-      ? `/app/g/${encodeURIComponent(run.groupId)}?m=${encodeURIComponent(run.messageId)}`
-      : `/app/${encodeURIComponent(run.botId)}?m=${encodeURIComponent(run.messageId)}`
+    ? `${chatPath(threadId)}?m=${encodeURIComponent(run.messageId)}`
     : null;
   const line = (
     <>
@@ -131,4 +136,35 @@ function RunRow({ run }: { run: RoutineRun }) {
       ) : null}
     </li>
   );
+}
+
+function statusTone(status: RunStatus): string {
+  if (status === "failed") return "text-destructive";
+  if (status === "cancelled") return "text-muted-foreground";
+  if (status === "completed") return "text-success";
+  if (status === "waiting_input" || status === "waiting_takeover") return "text-warning";
+  return "text-foreground";
+}
+
+function statusLabel(status: RunStatus): string {
+  switch (status) {
+    case "queued":
+      return t`Queued`;
+    case "leased":
+      return t`Starting`;
+    case "running":
+      return t`Running`;
+    case "waiting_input":
+      return t`Needs input`;
+    case "waiting_takeover":
+      return t`Needs takeover`;
+    case "completed":
+      return t`Done`;
+    case "failed":
+      return t`Failed`;
+    case "cancelled":
+      return t`Cancelled`;
+    default:
+      return status;
+  }
 }

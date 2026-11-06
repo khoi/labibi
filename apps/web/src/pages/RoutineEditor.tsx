@@ -362,7 +362,7 @@ export function RoutineEditor({
   const fieldId = useId();
   const queries = useSpaceQueries();
   const scheduleStatus = useQuery({
-    ...queries.routines.list.queryOptions({ input: { botId: editing?.botId ?? "" } }),
+    ...queries.routines.list.queryOptions({ input: { threadId: editing?.threadId ?? "" } }),
     enabled: editing !== null && draft.active,
     refetchInterval: 15_000,
     select: (routines) => routines.find((routine) => routine.id === editing?.id) ?? null,
@@ -721,7 +721,9 @@ export function RoutineEditor({
         </p>
       ) : null}
 
-      {editing ? <RoutineRunHistory key={editing.id} routineId={editing.id} /> : null}
+      {editing ? (
+        <RoutineRunHistory key={editing.id} routineId={editing.id} threadId={editing.threadId} />
+      ) : null}
     </div>
   );
 }

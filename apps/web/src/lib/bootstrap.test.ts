@@ -43,7 +43,7 @@ describe("switching spaces in place", () => {
     await primeSpaceBootstrap("space-b", "bot-b");
     vi.mocked(selectedSpaceId).mockReturnValue("space-b");
     expect(rpc.bootstrap).toHaveBeenCalledWith(
-      { botId: "bot-b" },
+      { threadId: "bot-b" },
       { context: { spaceId: "space-b" } },
     );
     await expect(takeInitialBootstrap("bot-b")).resolves.toBe(other);
@@ -61,7 +61,7 @@ describe("switching spaces in place", () => {
     const primed = primeSpaceBootstrap("space-b", "bot-b");
     discardPrimedBootstrap(primed);
     await takeInitialBootstrap("bot-b");
-    expect(rpc.bootstrap).toHaveBeenLastCalledWith({ botId: "bot-b" });
+    expect(rpc.bootstrap).toHaveBeenLastCalledWith({ threadId: "bot-b" });
     expect(rpc.bootstrap).toHaveBeenCalledTimes(2);
   });
 });
@@ -84,7 +84,7 @@ describe("revisiting a space", () => {
     expect(getMaxUploadSizeBytes()).toBe(4321);
     await expect(taken).resolves.toBe(fresh);
     expect(rpc.bootstrap).toHaveBeenCalledWith(
-      { botId: "bot-b" },
+      { threadId: "bot-b" },
       { context: { spaceId: "space-b" } },
     );
     expect(peekBootstrapSeed("bot-b")).toBeUndefined();
@@ -98,7 +98,7 @@ describe("revisiting a space", () => {
     const { queryClient, spaceSeedKey } = await import("./query");
     const { peekBootstrapSeed, primeSpaceBootstrap } = await import("./bootstrap");
     // Left while showing bot-b1; the switch back targets bot-b2.
-    const left = { me: { spaceId: "space-b" }, thread: { botId: "bot-b1" } } as Awaited<
+    const left = { me: { spaceId: "space-b" }, thread: { threadId: "bot-b1" } } as Awaited<
       ReturnType<typeof rpc.bootstrap>
     >;
     queryClient.setQueryData(spaceSeedKey("user-a", "space-b"), left);

@@ -35,8 +35,8 @@ afterEach(async () => {
 function file(artifactId: string): SearchHit {
   return {
     kind: "file",
-    botId: "bot-1",
-    botName: "Scout",
+    threadId: "thread-1",
+    chatTitle: "Scout",
     title: `${artifactId}.png`,
     snippet: "image/png, 10 bytes",
     messageId: "message-1",
