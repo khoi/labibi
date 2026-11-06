@@ -45,13 +45,13 @@ tags:
     optional: true
 
 - extendedWaitUntil:
-    visible: "Researcher"
+    visible: "Launch team"
     timeout: 30000
-- openLink: "rakazo:///thread?botId=${RAKAZO_SCREENSHOT_BOT_ID}&name=Researcher"
+- openLink: "rakazo:///thread?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
 - extendedWaitUntil:
-    visible: "Message Researcher"
+    visible: "Message Doodle"
     timeout: 15000
-- tapOn: "Message Researcher"
+- tapOn: "Message Doodle"
 - inputText: "Keyboard lifecycle check"
 - pressKey: Enter
 - inputText: "Second line"
@@ -61,21 +61,21 @@ tags:
 - pressKey: Home
 - launchApp:
     stopApp: false
-- tapOn: "Message Researcher"
+- tapOn: "Message Doodle"
 - assertVisible: 'Keyboard lifecycle check\nSecond line'
 - assertVisible: "Send"
 - takeScreenshot: "keyboard-resumed"
 - stopApp
 - launchApp
 - extendedWaitUntil:
-    visible: "Researcher"
+    visible: "Launch team"
     timeout: 30000
-- tapOn: "Researcher"
+- tapOn: "Summarize the fixture launch checklist."
 - extendedWaitUntil:
-    visible: "Message Researcher"
+    visible: "Message Doodle"
     timeout: 15000
 # The unsent draft survives a restart.
-- tapOn: "Message Researcher"
+- tapOn: "Message Doodle"
 - assertVisible: 'Keyboard lifecycle check\nSecond line'
 - assertVisible: "Send"
 - takeScreenshot: "keyboard-restarted"
@@ -95,13 +95,13 @@ tags:
 - hideKeyboard
 - tapOn: "Sign in"
 - extendedWaitUntil:
-    visible: "Researcher"
+    visible: "Launch team"
     timeout: 15000
-- openLink: "rakazo:///thread?botId=${RAKAZO_SCREENSHOT_BOT_ID}&name=Researcher"
+- openLink: "rakazo:///thread?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
 - extendedWaitUntil:
-    visible: "Message Researcher"
+    visible: "Message Doodle"
     timeout: 15000
-- tapOn: "Message Researcher"
+- tapOn: "Message Doodle"
 - eraseText: 100
 - inputText: "Keyboard lifecycle check"
 - pressKey: Enter

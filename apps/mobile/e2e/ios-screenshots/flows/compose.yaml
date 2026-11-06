@@ -5,18 +5,12 @@ name: Compose
     file: ../subflows/sign-in.yaml
     env:
       RAKAZO_ACTIVE_EMAIL: ${RAKAZO_SCREENSHOT_EMAIL}
-- openLink: "rakazo:///new-group"
+- openLink: "rakazo:///new-chat"
 - extendedWaitUntil:
-    visible: "Search bots"
+    visible: ".*Dana Teammate.*"
     timeout: 15000
-- tapOn: "Researcher"
-- tapOn: "Writer"
+- tapOn: "Dana Teammate"
 - waitForAnimationToEnd:
     timeout: 3000
-- takeScreenshot: 03-new-group
-- tapOn: "Next"
-- assertVisible: "Skip"
-- waitForAnimationToEnd:
-    timeout: 3000
-- takeScreenshot: 04-new-group-name
+- takeScreenshot: 03-new-chat
 - openLink: "rakazo:///"

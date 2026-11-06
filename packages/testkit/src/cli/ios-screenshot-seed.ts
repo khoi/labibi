@@ -9,6 +9,7 @@ import { sessionCookieHeader } from "../index.js";
 const MARKER = "marigold checklist";
 const READY = "The fixture workspace is ready.";
 const GROUP_READY = "The fixture launch plan is ready.";
+const TEAM_ASK = "@Doodle can you pull the launch plan together?";
 const FILE_NAME = "launch-notes.txt";
 const PAGE_TITLE = "Launch dashboard";
 const PAGE_SOURCE = [
@@ -29,8 +30,10 @@ const NOTES = [
 ].join("\n");
 
 export interface IosScreenshotFixture {
-  botId: string;
-  groupId: string;
+  /** A chat with only the user and Doodle, holding the fixture's files, page and routine. */
+  threadId: string;
+  /** A chat with a teammate and Doodle. */
+  teamThreadId: string;
   routineId: string;
   artifactId: string;
   markdownId: string;
@@ -39,20 +42,13 @@ export interface IosScreenshotFixture {
   archiveId: string;
   videoId: string;
   teamSpaceId: string;
-  /** A bot whose thread shows the cards a bot sends when it needs something. */
-  cardsBotId: string;
+  /** A chat that shows the cards Doodle sends when it needs something. */
+  cardsThreadId: string;
 }
 
-interface BotRow {
+interface ChatRow {
   id: string;
-  name: string;
-  threadId: string;
-}
-
-interface GroupRow {
-  id: string;
-  name: string;
-  threadId: string;
+  name: string | null;
 }
 
 interface RoutineRow {
@@ -89,42 +85,62 @@ export async function seedIosScreenshotFixture(input: {
   const empty = await ensureUser(input.apiUrl, input.emptyEmail, input.password, "Empty User");
   // Signs in without a plan or a survey answer, to show what a new account meets first.
   await ensureUser(input.apiUrl, input.freeEmail, input.password, "Free User");
-  for (const bot of await rpc<BotRow[]>(input.apiUrl, empty.headers, "bots/list")) {
-    await rpc(input.apiUrl, empty.headers, "bots/remove", { botId: bot.id, deleteMemories: false });
+  // Someone else in the screenshot user's workspace, so a chat can hold more than one person.
+  const teammate = await ensureUser(
+    input.apiUrl,
+    input.email.replace("@", "+teammate@"),
+    input.password,
+    "Dana Teammate",
+  );
+  // Signing up starts a chat with Doodle; the empty account shows the list without any.
+  for (const chat of await rpc<ChatRow[]>(input.apiUrl, empty.headers, "threads/list")) {
+    await rpc(input.apiUrl, empty.headers, "threads/delete", { threadId: chat.id });
   }
 
-  const bots = await rpc<BotRow[]>(input.apiUrl, populated.headers, "bots/list");
-  const researcher = await ensureBot(input.apiUrl, populated.headers, bots, {
-    name: "Researcher",
-    title: "Product research",
-    instructions: "Finds evidence and keeps fixture notes organized.",
-  });
-  const writer = await ensureBot(input.apiUrl, populated.headers, bots, {
-    name: "Writer",
-    title: "Clear writing",
-    instructions: "Turns research into concise drafts.",
-  });
-  const support = await ensureBot(input.apiUrl, populated.headers, bots, {
-    name: "Support",
-    title: "Customer support",
-    instructions: "Prepares friendly customer replies.",
-  });
+  const me = await rpc<MeRow>(input.apiUrl, populated.headers, "me");
+  const emptyMe = await rpc<MeRow>(input.apiUrl, empty.headers, "me");
+  const teammateMe = await rpc<MeRow>(input.apiUrl, teammate.headers, "me");
+  const doodle = await rpc<{ id: string }>(input.apiUrl, populated.headers, "doodle/get");
+  const workspace = await rpc<{ members: { userId: string }[] }>(
+    input.apiUrl,
+    populated.headers,
+    "spaces/members/list",
+    { spaceId: me.spaceId },
+  );
+  if (!workspace.members.some((member) => member.userId === teammateMe.userId)) {
+    const invite = await rpc<{ url: string }>(
+      input.apiUrl,
+      populated.headers,
+      "spaces/invites/create",
+      { spaceId: me.spaceId },
+    );
+    const token = new URL(invite.url).pathname.split("/").pop() ?? "";
+    await rpc(input.apiUrl, teammate.headers, "spaces/invites/accept", { token });
+  }
 
-  const groups = await rpc<GroupRow[]>(input.apiUrl, populated.headers, "groups/list");
-  let group = groups.find((item) => item.name === "Launch team");
-  if (!group) {
-    group = await rpc<GroupRow>(input.apiUrl, populated.headers, "groups/create", {
-      name: "Launch team",
-      botIds: [researcher.id, writer.id, support.id],
+  const chats = await rpc<ChatRow[]>(input.apiUrl, populated.headers, "threads/list");
+  const ensureChat = async (name: string, userIds: string[]) =>
+    chats.find((chat) => chat.name === name) ??
+    rpc<ChatRow>(input.apiUrl, populated.headers, "threads/create", {
+      name,
+      userIds,
+      doodle: true,
     });
+  const research = await ensureChat("Product research", []);
+  const team = await ensureChat("Launch team", [teammateMe.userId]);
+  const cards = await ensureChat("Support digest", []);
+  // The chat signup started has no name; the inbox shows only the fixture's own.
+  for (const chat of chats.filter((row) => row.name === null)) {
+    await rpc(input.apiUrl, populated.headers, "threads/delete", { threadId: chat.id });
   }
+
   const routines = await rpc<RoutineRow[]>(input.apiUrl, populated.headers, "routines/list", {
-    botId: researcher.id,
+    threadId: research.id,
   });
   let routine = routines.find((item) => item.name === "Weekly fixture review");
   if (!routine) {
     routine = await rpc<RoutineRow>(input.apiUrl, populated.headers, "routines/create", {
-      botId: researcher.id,
+      threadId: research.id,
       name: "Weekly fixture review",
       prompt: "Review the fixture launch notes and summarize the open questions.",
       crons: ["0 9 * * 1"],
@@ -237,12 +253,12 @@ export async function seedIosScreenshotFixture(input: {
   }
 
   const stored = await rpc<ArtifactRow[]>(input.apiUrl, populated.headers, "artifacts/list", {
-    botId: researcher.id,
+    threadId: research.id,
   });
   const upload = async (name: string, mimeType: string, bytes: Buffer) =>
     stored.find((artifact) => artifact.name === name) ??
     rpc<ArtifactRow>(input.apiUrl, populated.headers, "artifacts/create", {
-      botId: researcher.id,
+      threadId: research.id,
       name,
       mimeType,
       contentBase64: bytes.toString("base64"),
@@ -252,7 +268,7 @@ export async function seedIosScreenshotFixture(input: {
     "launch-plan.md",
     "text/markdown",
     Buffer.from(
-      "# Launch plan\n\n**Owner:** Researcher\n\n- [x] Draft the announcement\n- [ ] Collect customer quotes\n- [ ] Publish the changelog\n",
+      "# Launch plan\n\n**Owner:** Dana\n\n- [x] Draft the announcement\n- [ ] Collect customer quotes\n- [ ] Publish the changelog\n",
     ),
   );
   const image = await upload(IMAGE_NAME, "image/png", chartPng());
@@ -271,39 +287,48 @@ export async function seedIosScreenshotFixture(input: {
     await readFile(new URL("../../../../docs/screenshots/demo.mp4", import.meta.url)),
   );
 
-  const me = await rpc<MeRow>(input.apiUrl, populated.headers, "me");
-  const emptyMe = await rpc<MeRow>(input.apiUrl, empty.headers, "me");
   const db = createDb(input.databaseUrl, { applicationName: "ios-screenshots" });
   try {
     await ensureThreadCopy(db.prisma, {
-      threadId: researcher.threadId,
-      botId: researcher.id,
+      threadId: research.id,
+      botId: doodle.id,
+      userId: me.userId,
       artifact: notes,
     });
     await ensureActivity(db.prisma, {
-      threadId: researcher.threadId,
-      botId: researcher.id,
+      threadId: research.id,
+      botId: doodle.id,
       spaceId: me.spaceId,
       userId: me.userId,
     });
-    await ensureText(db.prisma, group.threadId, "bot", writer.id, GROUP_READY);
+    await ensureText(
+      db.prisma,
+      team.id,
+      { role: "user", authorUserId: teammateMe.userId },
+      TEAM_ASK,
+    );
+    await ensureText(db.prisma, team.id, { role: "bot", botId: doodle.id }, GROUP_READY);
     await ensurePage(db.prisma, {
-      threadId: researcher.threadId,
-      botId: researcher.id,
+      threadId: research.id,
+      botId: doodle.id,
       spaceId: me.spaceId,
       userId: me.userId,
     });
     await ensureMemoryNotes(db.prisma, {
       spaceId: me.spaceId,
       userId: me.userId,
-      botId: researcher.id,
+      threadId: research.id,
     });
-    await ensureRequestCards(db.prisma, { threadId: support.threadId, botId: support.id });
+    await ensureRequestCards(db.prisma, {
+      threadId: cards.id,
+      botId: doodle.id,
+      userId: me.userId,
+    });
     const billing = { apiUrl: input.apiUrl, prisma: db.prisma, complete: input.completeCheckout };
     await ensurePlan({ ...billing, headers: populated.headers, userId: me.userId, trial: false });
     await ensurePlan({ ...billing, headers: empty.headers, userId: emptyMe.userId, trial: true });
-    // After the plan, since a bot only runs for an account with billing access.
-    await ensureWaitingKeyRequest(input.apiUrl, populated.headers, support.id);
+    // After the plan, since Doodle only runs for an account with billing access.
+    await ensureWaitingKeyRequest(input.apiUrl, populated.headers, cards.id);
     for (const userId of [me.userId, emptyMe.userId]) {
       // Hosted sign-ups answer a survey first; the free user's flow shows it.
       await db.prisma.signupSurvey.upsert({
@@ -313,8 +338,8 @@ export async function seedIosScreenshotFixture(input: {
       });
     }
     return {
-      botId: researcher.id,
-      groupId: group.id,
+      threadId: research.id,
+      teamThreadId: team.id,
       routineId: routine.id,
       artifactId: notes.id,
       markdownId: plan.id,
@@ -323,7 +348,7 @@ export async function seedIosScreenshotFixture(input: {
       archiveId: archive.id,
       videoId: video.id,
       teamSpaceId: me.spaceId,
-      cardsBotId: support.id,
+      cardsThreadId: cards.id,
     };
   } finally {
     await db.prisma.$disconnect();
@@ -331,22 +356,20 @@ export async function seedIosScreenshotFixture(input: {
   }
 }
 
-/** A note the bot remembered and one every bot in the space shares, for the memory screens. */
+/** A note the chat's people share and one of the person's own, for the memory screens. */
 async function ensureMemoryNotes(
   prisma: ReturnType<typeof createDb>["prisma"],
-  input: { spaceId: string; userId: string; botId: string },
+  input: { spaceId: string; userId: string; threadId: string },
 ) {
   const notes = [
     {
-      scope: "bot",
-      botId: input.botId,
+      threadId: input.threadId,
       path: "preferences.md",
       content:
         "# Preferences\n\n- Cite a source for every claim.\n- Keep summaries under five bullets.\n",
     },
     {
-      scope: "user",
-      botId: null,
+      threadId: null,
       path: "team.md",
       content:
         "# Launch team\n\n- Dana owns the announcement.\n- Lee reviews every customer quote.\n",
@@ -354,7 +377,12 @@ async function ensureMemoryNotes(
   ];
   for (const note of notes) {
     const existing = await prisma.memoryDocument.findFirst({
-      where: { spaceId: input.spaceId, scope: note.scope, botId: note.botId, path: note.path },
+      where: {
+        spaceId: input.spaceId,
+        userId: input.userId,
+        threadId: note.threadId,
+        path: note.path,
+      },
       select: { id: true },
     });
     if (existing) continue;
@@ -364,7 +392,7 @@ async function ensureMemoryNotes(
   }
 }
 
-/** A page the bot built, named in its reply with the card under it, for the page screens. */
+/** A page Doodle built, named in its reply with the card under it, for the page screens. */
 async function ensurePage(
   prisma: ReturnType<typeof createDb>["prisma"],
   input: { threadId: string; botId: string; spaceId: string; userId: string },
@@ -401,20 +429,9 @@ async function ensurePage(
   });
 }
 
-async function ensureBot(
-  apiUrl: string,
-  headers: Record<string, string>,
-  bots: BotRow[],
-  profile: { name: string; title: string; instructions: string },
-) {
-  const existing = bots.find((bot) => bot.name === profile.name);
-  if (existing) return existing;
-  return rpc<BotRow>(apiUrl, headers, "bots/create", { ...profile, notifyOnFinish: true });
-}
-
 async function ensureThreadCopy(
   prisma: ReturnType<typeof createDb>["prisma"],
-  input: { threadId: string; botId: string; artifact: ArtifactRow },
+  input: { threadId: string; botId: string; userId: string; artifact: ArtifactRow },
 ) {
   const messages = await prisma.message.findMany({
     where: { threadId: input.threadId },
@@ -425,6 +442,7 @@ async function ensureThreadCopy(
     await createThreadMessage(prisma, {
       threadId: input.threadId,
       role: "user",
+      authorUserId: input.userId,
       blocks: [{ kind: "text", text: "Summarize the launch notes." }],
     });
     await createThreadMessage(prisma, {
@@ -571,10 +589,10 @@ async function ensurePlan(input: {
 
 const CARDS_READY = "Set up the weekly support digest.";
 
-/** The cards a bot shows when it needs something: a key, a sign-in, a site, an app, a choice. */
+/** The cards Doodle shows when it needs something: a key, a sign-in, a site, an app, a choice. */
 async function ensureRequestCards(
   prisma: ReturnType<typeof createDb>["prisma"],
-  input: { threadId: string; botId: string },
+  input: { threadId: string; botId: string; userId: string },
 ) {
   const messages = await prisma.message.findMany({
     where: { threadId: input.threadId },
@@ -591,6 +609,7 @@ async function ensureRequestCards(
   await createThreadMessage(prisma, {
     threadId: input.threadId,
     role: "user",
+    authorUserId: input.userId,
     blocks: [{ kind: "text", text: CARDS_READY }],
   });
   await bot([
@@ -644,23 +663,23 @@ async function ensureRequestCards(
 }
 
 /**
- * A live request for a key: its card only offers a field while the bot's run waits for the
- * answer, so the offline scripted bot asks for real, as the web tests have it do.
+ * A live request for a key: its card only offers a field while Doodle's run waits for the
+ * answer, so the offline scripted runtime asks for real, as the web tests have it do.
  */
 async function ensureWaitingKeyRequest(
   apiUrl: string,
   headers: Record<string, string>,
-  botId: string,
+  threadId: string,
 ) {
   type Snapshot = { run?: { status: string; error?: string | null } | null };
   let last: Snapshot["run"] = null;
   const waiting = async () => {
-    last = (await rpc<Snapshot>(apiUrl, headers, "threads/get", { botId })).run;
+    last = (await rpc<Snapshot>(apiUrl, headers, "threads/get", { threadId })).run;
     return last?.status === "waiting_input";
   };
   if (await waiting()) return;
   await rpc(apiUrl, headers, "threads/send", {
-    botId,
+    threadId,
     text: "Check the status API too, and request a masked api key if you need one.",
   });
   const deadline = Date.now() + 60_000;
@@ -668,14 +687,13 @@ async function ensureWaitingKeyRequest(
     if (await waiting()) return;
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
-  throw new Error(`The scripted bot never asked for a key; its run: ${JSON.stringify(last)}`);
+  throw new Error(`The scripted Doodle never asked for a key; its run: ${JSON.stringify(last)}`);
 }
 
 async function ensureText(
   prisma: ReturnType<typeof createDb>["prisma"],
   threadId: string,
-  role: "user" | "bot",
-  botId: string,
+  author: { role: "user"; authorUserId: string } | { role: "bot"; botId: string },
   text: string,
 ) {
   const messages = await prisma.message.findMany({
@@ -683,12 +701,7 @@ async function ensureText(
     select: { blocks: true },
   });
   if (messages.some((message) => JSON.stringify(message.blocks).includes(text))) return;
-  await createThreadMessage(prisma, {
-    threadId,
-    role,
-    botId,
-    blocks: [{ kind: "text", text }],
-  });
+  await createThreadMessage(prisma, { threadId, ...author, blocks: [{ kind: "text", text }] });
 }
 
 async function ensureUser(apiUrl: string, email: string, password: string, name: string) {

@@ -31,13 +31,12 @@ tags:
     text: "Don’t allow"
     optional: true
 - extendedWaitUntil:
-    visible: "Researcher"
+    visible: "Launch team"
     timeout: 30000
-# Writer and Support are pinned in the fixture, so the list starts with their tiles.
 - takeScreenshot: "30-split-inbox"
 
 - tapOn:
-    text: "Researcher"
+    text: "Summarize the fixture launch checklist."
     index: 0
 - extendedWaitUntil:
     visible: "The fixture workspace is ready."
@@ -47,7 +46,7 @@ tags:
 - takeScreenshot: "31-split-thread"
 
 - tapOn:
-    text: "Writer"
+    text: "Launch team"
     index: 0
 - waitForAnimationToEnd
 - assertVisible: "Hide chats"

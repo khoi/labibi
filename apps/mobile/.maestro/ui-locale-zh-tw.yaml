@@ -5,7 +5,7 @@ name: Traditional Chinese language selection persists
 - launchApp
 # A link sent during a cold start can arrive before the router; open it from the inbox.
 - extendedWaitUntil:
-    visible: "Researcher"
+    visible: "Launch team"
     timeout: 30000
 - openLink: "rakazo:///language"
 - extendedWaitUntil:
@@ -18,7 +18,7 @@ name: Traditional Chinese language selection persists
 - stopApp
 - launchApp
 - extendedWaitUntil:
-    visible: "Researcher"
+    visible: "Launch team"
     timeout: 30000
 - openLink: "rakazo:///language"
 - extendedWaitUntil:

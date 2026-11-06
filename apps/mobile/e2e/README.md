@@ -1,6 +1,6 @@
 # Mobile emulator smoke test
 
-This opt-in [Maestro](https://maestro.mobile.dev/) flow exercises sign-in, bot creation,
+This opt-in [Maestro](https://maestro.mobile.dev/) flow exercises sign-in, starting a chat with Doodle,
 thread messaging, and computer takeover/release on a real Android emulator or iOS simulator. It
 expects a running Labradoodle stack and deliberately stays out of ordinary pull-request CI.
 
@@ -30,7 +30,7 @@ pnpm --filter @labradoodle/mobile test:e2e -- \
   -e RAKAZO_E2E_MESSAGE=mobile-smoke-message
 ```
 
-`clearState` resets the app's local session and endpoint data; it does not delete server-side bots.
+`clearState` resets the app's local session and endpoint data; it does not delete server-side chats.
 
 ## Screenshot catalog
 

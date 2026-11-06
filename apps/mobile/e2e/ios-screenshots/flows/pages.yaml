@@ -5,7 +5,7 @@ name: Pages
     file: ../subflows/sign-in.yaml
     env:
       RAKAZO_ACTIVE_EMAIL: ${RAKAZO_SCREENSHOT_EMAIL}
-- openLink: "rakazo:///thread?botId=${RAKAZO_SCREENSHOT_BOT_ID}&name=Researcher"
+- openLink: "rakazo:///thread?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
 - extendedWaitUntil:
     visible: "Open Launch dashboard"
     timeout: 20000
@@ -26,7 +26,7 @@ name: Pages
     timeout: 10000
 - takeScreenshot: 04-share-link
 - tapOn: "Only you"
-- openLink: "rakazo:///pages?botId=${RAKAZO_SCREENSHOT_BOT_ID}"
+- openLink: "rakazo:///pages?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
 - extendedWaitUntil:
     visible: "Launch dashboard"
     timeout: 20000

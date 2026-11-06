@@ -22,5 +22,5 @@ appId: com.rakazo.app
 - hideKeyboard
 - tapOn: "Sign in"
 - extendedWaitUntil:
-    visible: "Researcher"
+    visible: "Launch team"
     timeout: 30000

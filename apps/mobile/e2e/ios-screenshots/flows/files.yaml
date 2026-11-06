@@ -33,7 +33,7 @@ name: Files
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 04-no-preview
-- openLink: "rakazo:///image?artifactId=${RAKAZO_SCREENSHOT_IMAGE_ID}&name=launch-chart.png&mimeType=image%2Fpng&botId=${RAKAZO_SCREENSHOT_BOT_ID}"
+- openLink: "rakazo:///image?artifactId=${RAKAZO_SCREENSHOT_IMAGE_ID}&name=launch-chart.png&mimeType=image%2Fpng&threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
 - extendedWaitUntil:
     visible: ".*launch-chart.*"
     timeout: 15000

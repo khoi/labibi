@@ -104,8 +104,8 @@ async function main() {
         RAKAZO_SCREENSHOT_EMPTY_EMAIL: emptyEmail,
         RAKAZO_SCREENSHOT_FREE_EMAIL: freeEmail,
         RAKAZO_SCREENSHOT_PASSWORD: password,
-        RAKAZO_SCREENSHOT_BOT_ID: fixture.botId,
-        RAKAZO_SCREENSHOT_GROUP_ID: fixture.groupId,
+        RAKAZO_SCREENSHOT_THREAD_ID: fixture.threadId,
+        RAKAZO_SCREENSHOT_TEAM_THREAD_ID: fixture.teamThreadId,
         RAKAZO_SCREENSHOT_ROUTINE_ID: fixture.routineId,
         RAKAZO_SCREENSHOT_ARTIFACT_ID: fixture.artifactId,
         RAKAZO_SCREENSHOT_MARKDOWN_ID: fixture.markdownId,
@@ -114,9 +114,9 @@ async function main() {
         RAKAZO_SCREENSHOT_ARCHIVE_ID: fixture.archiveId,
         RAKAZO_SCREENSHOT_VIDEO_ID: fixture.videoId,
         RAKAZO_SCREENSHOT_TEAM_SPACE_ID: fixture.teamSpaceId,
-        RAKAZO_SCREENSHOT_CARDS_BOT_ID: fixture.cardsBotId,
+        RAKAZO_SCREENSHOT_CARDS_THREAD_ID: fixture.cardsThreadId,
       },
-      botId: fixture.botId,
+      threadId: fixture.threadId,
     });
   } finally {
     screenRelay.stop();
@@ -132,9 +132,9 @@ async function captureSections(input: {
   outDir: string;
   databaseUrl: string;
   env: Record<string, string>;
-  botId: string;
+  threadId: string;
 }) {
-  const { sections, udid, outDir, databaseUrl, env, botId } = input;
+  const { sections, udid, outDir, databaseUrl, env, threadId } = input;
   const catalog = await loadIosScreenshotCatalog(CATALOG_DIR);
   const results: SectionResult[] = [];
   for (const section of sections) {
@@ -161,7 +161,7 @@ async function captureSections(input: {
       );
     try {
       if (section.id === "thread-errors") {
-        await captureIosProviderLimitError(databaseUrl, botId, capture);
+        await captureIosProviderLimitError(databaseUrl, threadId, capture);
       } else {
         await capture();
       }

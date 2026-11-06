@@ -13,7 +13,7 @@ tags:
 - runFlow: helpers/sign-in.yaml
 
 # Device speech (expo-speech): no voice provider is connected yet.
-- openLink: "rakazo:///thread?botId=${RAKAZO_SCREENSHOT_BOT_ID}&name=Researcher"
+- openLink: "rakazo:///thread?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
 - extendedWaitUntil:
     visible: "The fixture workspace is ready."
     timeout: 10000
@@ -26,17 +26,13 @@ tags:
 - takeScreenshot: "40-speak-message"
 - tapOn: "Stop"
 
-# Text shared in from another app opens the share sheet, then the chosen chat.
+# Text shared in from another app opens a new chat with Doodle, the text in its composer.
 - evalScript: ${output.share = http.get(RAKAZO_DEVICE_CONTROL_URL + '/share-text')}
 - assertTrue: ${output.share.ok}
 - extendedWaitUntil:
-    visible: "Share to"
-    timeout: 15000
-- takeScreenshot: "41-share-to"
-- tapOn: "Researcher"
-- extendedWaitUntil:
     visible: "Shared from another app"
-    timeout: 10000
+    timeout: 15000
+- takeScreenshot: "41-shared-to-new-chat"
 
 # Photo picker (expo-image-picker).
 - tapOn: "Attach file"
@@ -107,7 +103,7 @@ tags:
 - takeScreenshot: "46-pdf-viewer"
 - back
 - extendedWaitUntil:
-    visible: "Message Researcher|Shared from another app"
+    visible: "Message Doodle|Shared from another app"
     timeout: 10000
 
 # Vault's New item menu opens from a Compose-hosted trigger on Android.
@@ -122,7 +118,7 @@ tags:
 - takeScreenshot: "46b-vault-new-item"
 - back
 
-- openLink: "rakazo:///thread?botId=${RAKAZO_SCREENSHOT_BOT_ID}&name=Researcher"
+- openLink: "rakazo:///thread?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
 - extendedWaitUntil:
-    visible: "Message Researcher"
+    visible: "Message Doodle"
     timeout: 10000

@@ -91,51 +91,35 @@ name: Settings
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 10-ai-data-sharing
-- openLink: "rakazo:///routine?botId=${RAKAZO_SCREENSHOT_BOT_ID}&botName=Researcher&routineId=${RAKAZO_SCREENSHOT_ROUTINE_ID}"
+- openLink: "rakazo:///routine?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}&routineId=${RAKAZO_SCREENSHOT_ROUTINE_ID}"
 - extendedWaitUntil:
     visible: ".*Weekly fixture review.*"
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 11-routine
-- openLink: "rakazo:///routine-runs?routineId=${RAKAZO_SCREENSHOT_ROUTINE_ID}&botName=Researcher"
+- openLink: "rakazo:///routine-runs?routineId=${RAKAZO_SCREENSHOT_ROUTINE_ID}&threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
 - extendedWaitUntil:
     visible: ".*Run history.*"
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 11b-routine-runs
-- openLink: "rakazo:///bot-settings?botId=${RAKAZO_SCREENSHOT_BOT_ID}"
-- scrollUntilVisible:
-    element: "Advanced"
-    direction: DOWN
-    timeout: 15000
-- tapOn: "Advanced"
-- waitForAnimationToEnd:
-    timeout: 3000
-- takeScreenshot: 12-bot-settings
-- openLink: "rakazo:///bot-profile?botId=${RAKAZO_SCREENSHOT_BOT_ID}&name=Researcher"
+- openLink: "rakazo:///doodle-settings"
 - extendedWaitUntil:
-    visible: ".*Routines.*"
+    visible: ".*Instructions.*"
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 3000
-- takeScreenshot: 13-bot-profile
-- tapOn: "Bot actions"
+- takeScreenshot: 12-doodle-settings
+- openLink: "rakazo:///doodle-model"
 - extendedWaitUntil:
-    visible: "Clear conversation"
-    timeout: 10000
-- waitForAnimationToEnd:
-    timeout: 3000
-- takeScreenshot: 14-bot-profile-menu
-- openLink: "rakazo:///group-settings?groupId=${RAKAZO_SCREENSHOT_GROUP_ID}"
-- extendedWaitUntil:
-    visible: ".*Delete group.*"
+    visible: ".*Default.*"
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 3000
-- takeScreenshot: 15-group-settings
-- openLink: "rakazo:///computer?botId=${RAKAZO_SCREENSHOT_BOT_ID}&name=Researcher"
+- takeScreenshot: 13-doodle-model
+- openLink: "rakazo:///computer"
 - extendedWaitUntil:
     visible: ".*Take control.*|.*Open computer.*"
     timeout: 20000
@@ -179,15 +163,15 @@ name: Settings
 - takeScreenshot: 18-language
 - openLink: "rakazo:///account"
 - scrollUntilVisible:
-    element: "Artifacts"
+    element: "Files"
     direction: DOWN
     timeout: 15000
-- assertVisible: "Artifacts"
+- assertVisible: "Files"
 - waitForAnimationToEnd:
     timeout: 3000
-- takeScreenshot: 19-account-artifacts
-- tapOn: "Artifacts"
-# Only the Artifacts screen has the search field; the sheet must have closed.
+- takeScreenshot: 19-account-files
+- tapOn: "Files"
+# Only the Files screen has the search field; the sheet must have closed.
 - extendedWaitUntil:
     visible: "Search artifacts.*"
     timeout: 15000

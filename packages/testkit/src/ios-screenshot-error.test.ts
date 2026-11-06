@@ -34,7 +34,7 @@ describe("provider limit screenshot section", () => {
       expect(Date.parse(diagnostic.metadata.reset_at)).toBeGreaterThan(Date.now());
       if (fails) throw new Error("capture failed");
     });
-    const operation = captureIosProviderLimitError("postgres://fixture", "fixture-bot", capture);
+    const operation = captureIosProviderLimitError("postgres://fixture", "fixture-thread", capture);
     if (fails) await expect(operation).rejects.toThrow("capture failed");
     else await operation;
     expect(capture).toHaveBeenCalledOnce();

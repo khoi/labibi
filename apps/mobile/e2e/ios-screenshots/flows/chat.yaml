@@ -1,0 +1,47 @@
+appId: com.rakazo.app
+name: Chat settings
+---
+- runFlow:
+    file: ../subflows/sign-in.yaml
+    env:
+      RAKAZO_ACTIVE_EMAIL: ${RAKAZO_SCREENSHOT_EMAIL}
+- openLink: "rakazo:///chat-settings?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
+- extendedWaitUntil:
+    visible: ".*Delete chat.*"
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 01-chat-settings
+- tapOn: "Add people"
+- extendedWaitUntil:
+    visible: ".*Dana Teammate.*"
+    timeout: 10000
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 02-add-people
+- tapOn: "Cancel"
+- openLink: "rakazo:///chat-settings?threadId=${RAKAZO_SCREENSHOT_TEAM_THREAD_ID}"
+- extendedWaitUntil:
+    visible: ".*Leave chat.*"
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 03-team-chat-settings
+- openLink: "rakazo:///routines?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
+- extendedWaitUntil:
+    visible: ".*Weekly fixture review.*"
+    timeout: 15000
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 04-routines
+- openLink: "rakazo:///routine?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
+- extendedWaitUntil:
+    visible: "Add schedule"
+    timeout: 15000
+- tapOn: "Add schedule"
+- extendedWaitUntil:
+    visible: ".*How often.*"
+    timeout: 5000
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: 05-new-routine

@@ -178,9 +178,9 @@ async function runFlow(flow: string, fixture: Awaited<ReturnType<typeof seedFixt
       "-e",
       `RAKAZO_SCREENSHOT_PASSWORD=${PASSWORD}`,
       "-e",
-      `RAKAZO_SCREENSHOT_BOT_ID=${fixture.botId}`,
+      `RAKAZO_SCREENSHOT_THREAD_ID=${fixture.threadId}`,
       "-e",
-      `RAKAZO_SCREENSHOT_GROUP_ID=${fixture.groupId}`,
+      `RAKAZO_SCREENSHOT_TEAM_THREAD_ID=${fixture.teamThreadId}`,
       "-e",
       `RAKAZO_SCREENSHOT_ROUTINE_ID=${fixture.routineId}`,
       "-e",
@@ -393,8 +393,7 @@ async function seedFixture(app: App, prisma: PrismaClient) {
     },
   });
   return {
-    botId: doodle.id,
-    groupId: launch.id,
+    teamThreadId: launch.id,
     routineId: routine.id,
     threadId: chat.id,
     cookie,

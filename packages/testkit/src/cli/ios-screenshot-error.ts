@@ -3,13 +3,13 @@ import { createDb } from "@labradoodle/db";
 /** Keep the shared fixture healthy outside this section, including failed captures. */
 export async function captureIosProviderLimitError(
   databaseUrl: string,
-  botId: string,
+  threadId: string,
   capture: () => Promise<void>,
 ): Promise<void> {
   const db = createDb(databaseUrl, { applicationName: "ios-screenshots" });
   try {
     const run = await db.prisma.run.findFirstOrThrow({
-      where: { botId },
+      where: { threadId },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       select: { id: true, status: true, error: true, updatedAt: true },
     });

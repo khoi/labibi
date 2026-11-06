@@ -21,7 +21,7 @@
     "id": "thread",
     "title": "Thread",
     "flow": "flows/thread.yaml",
-    "screens": ["thread", "group-thread", "artifact", "invite"]
+    "screens": ["thread", "artifact", "invite"]
   },
   {
     "id": "thread-errors",
@@ -45,7 +45,7 @@
     "id": "compose",
     "title": "Compose",
     "flow": "flows/compose.yaml",
-    "screens": ["new-group"]
+    "screens": ["new-chat"]
   },
   {
     "id": "split-view",
@@ -66,8 +66,8 @@
       "ai-data-sharing",
       "routine",
       "routine-runs",
-      "bot-settings",
-      "group-settings",
+      "doodle-settings",
+      "doodle-model",
       "computer",
       "language",
       "artifacts"
@@ -80,10 +80,10 @@
     "screens": ["models", "model-picker", "model-connection"]
   },
   {
-    "id": "bots",
-    "title": "Bots",
-    "flow": "flows/bots.yaml",
-    "screens": ["bot-profile", "routines", "bot-model", "routine"]
+    "id": "chat",
+    "title": "Chat settings",
+    "flow": "flows/chat.yaml",
+    "screens": ["chat-settings", "add-people", "routines", "routine"]
   },
   {
     "id": "files",

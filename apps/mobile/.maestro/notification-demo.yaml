@@ -26,7 +26,7 @@ name: Android live working status demonstration
 - hideKeyboard
 - tapOn: "Sign in"
 - extendedWaitUntil:
-    visible: "Researcher"
+    visible: "Launch team"
     timeout: 30000
 
 # Only the public demo is recorded; sign-in uses disposable fixture credentials.
@@ -36,11 +36,11 @@ name: Android live working status demonstration
     element: "Live working status"
     direction: DOWN
 - tapOn: "Live working status"
-- openLink: "rakazo:///thread?botId=${RAKAZO_SCREENSHOT_BOT_ID}&name=Researcher"
+- openLink: "rakazo:///thread?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
 - extendedWaitUntil:
-    visible: "Message Researcher"
+    visible: "Message Doodle"
     timeout: 10000
-- tapOn: "Message Researcher"
+- tapOn: "Message Doodle"
 - inputText: "Review the launch checklist and keep working until I stop you."
 - hideKeyboard
 - tapOn: "Send"
@@ -52,17 +52,17 @@ name: Android live working status demonstration
 - repeat:
     times: 8
     while:
-      notVisible: "Researcher is working"
+      notVisible: "Doodle is working"
     commands:
       - evalScript: ${output.expandNotifications = http.get(RAKAZO_EXPAND_NOTIFICATIONS_URL)}
       - assertTrue: ${output.expandNotifications.ok}
       - waitForAnimationToEnd:
           timeout: 2000
 - extendedWaitUntil:
-    visible: "Researcher is working"
+    visible: "Doodle is working"
     timeout: 5000
 - takeScreenshot: "30-live-working-notification"
-- tapOn: "Researcher is working"
+- tapOn: "Doodle is working"
 - extendedWaitUntil:
     visible: "Stop"
     timeout: 10000
@@ -83,7 +83,7 @@ name: Android live working status demonstration
 - extendedWaitUntil:
     visible: "Internet"
     timeout: 5000
-- assertNotVisible: "Researcher is working"
+- assertNotVisible: "Doodle is working"
 - takeScreenshot: "31-live-working-stopped"
 - stopRecording
 # Leave the next flow an unobscured app window.
