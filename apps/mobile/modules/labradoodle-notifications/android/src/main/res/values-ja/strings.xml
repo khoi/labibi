@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="rakazo_channel_live">エージェントのライブ状況</string>
-  <string name="rakazo_channel_messages">エージェントのメッセージ</string>
+  <string name="rakazo_channel_live">Doodle のライブ状況</string>
+  <string name="rakazo_channel_messages">メッセージ</string>
   <string name="rakazo_channel_scheduled">スケジュール済みのタスク</string>
   <string name="rakazo_channel_attention">要対応</string>
 

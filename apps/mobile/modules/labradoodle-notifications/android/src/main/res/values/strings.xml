@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="rakazo_channel_live">Live agent status</string>
-  <string name="rakazo_channel_messages">Agent messages</string>
+  <string name="rakazo_channel_live">Doodle’s live status</string>
+  <string name="rakazo_channel_messages">Messages</string>
   <string name="rakazo_channel_scheduled">Scheduled tasks</string>
   <string name="rakazo_channel_attention">Needs attention</string>
 

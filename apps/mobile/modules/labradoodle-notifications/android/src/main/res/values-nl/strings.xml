@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="rakazo_channel_live">Live-agentstatus</string>
-  <string name="rakazo_channel_messages">Berichten van agents</string>
+  <string name="rakazo_channel_live">Live-status van Doodle</string>
+  <string name="rakazo_channel_messages">Berichten</string>
   <string name="rakazo_channel_scheduled">Geplande taken</string>
   <string name="rakazo_channel_attention">Vereist aandacht</string>
 

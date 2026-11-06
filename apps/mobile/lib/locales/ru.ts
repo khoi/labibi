@@ -1314,6 +1314,9 @@ export const RU_MESSAGES: Record<string, string> = {
   Workspace: "Рабочее пространство",
   "Doodle joined": "Doodle присоединился",
   "Doodle left": "Doodle вышел",
+  Messages: "Сообщения",
+  "Approve this server to let Doodle use its tools.":
+    "Одобрите этот сервер, чтобы Doodle мог пользоваться его инструментами.",
 };
 
 export const PEER_MESSAGE_FORMS: Partial<Record<Intl.LDMLPluralRule, string>> = {

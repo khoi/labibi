@@ -1286,6 +1286,8 @@ export const ZH_MESSAGES: Record<string, string> = {
   Workspace: "工作区",
   "Doodle joined": "Doodle 已加入",
   "Doodle left": "Doodle 已离开",
+  Messages: "消息",
+  "Approve this server to let Doodle use its tools.": "批准此服务器，让 Doodle 使用它的工具。",
 };
 
 export const PEER_MESSAGE_FORMS: Partial<Record<Intl.LDMLPluralRule, string>> = {

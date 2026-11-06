@@ -562,7 +562,7 @@ export default function Account() {
               }
             />
             <SettingsSwitch
-              label={t("Agent messages")}
+              label={t("Messages")}
               detail={t("Replies and completed work")}
               value={notifications.messages}
               disabled={!notificationsReady}

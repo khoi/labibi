@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="rakazo_channel_live">Статус агента</string>
-  <string name="rakazo_channel_messages">Сообщения агента</string>
+  <string name="rakazo_channel_live">Статус Doodle</string>
+  <string name="rakazo_channel_messages">Сообщения</string>
   <string name="rakazo_channel_scheduled">Запланированные задачи</string>
   <string name="rakazo_channel_attention">Требуется внимание</string>
 

@@ -1284,6 +1284,8 @@ export const ZH_TW_MESSAGES: Record<string, string> = {
   Workspace: "工作區",
   "Doodle joined": "Doodle 已加入",
   "Doodle left": "Doodle 已離開",
+  Messages: "訊息",
+  "Approve this server to let Doodle use its tools.": "核准此伺服器，讓 Doodle 使用它的工具。",
 };
 
 export const PEER_MESSAGE_FORMS = { other: "與{peer}的 {count} 則訊息" };

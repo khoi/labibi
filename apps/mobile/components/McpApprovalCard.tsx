@@ -111,7 +111,7 @@ export function McpApprovalCard({
           <Text style={[styles.description, { color: tokens.foreground }]}>
             {block.needsOAuth
               ? t("Finish MCP authorization in the web app.")
-              : t("Approve this server to let your agent use its tools.")}
+              : t("Approve this server to let Doodle use its tools.")}
           </Text>
           <View style={styles.actions}>
             {!block.needsOAuth ? (

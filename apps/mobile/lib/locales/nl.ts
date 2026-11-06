@@ -1274,6 +1274,9 @@ export const NL_MESSAGES: Record<string, string> = {
   Workspace: "Werkruimte",
   "Doodle joined": "Doodle doet mee",
   "Doodle left": "Doodle is vertrokken",
+  Messages: "Berichten",
+  "Approve this server to let Doodle use its tools.":
+    "Keur deze server goed zodat Doodle de tools ervan kan gebruiken.",
 };
 
 export const PEER_MESSAGE_FORMS: Partial<Record<Intl.LDMLPluralRule, string>> = {

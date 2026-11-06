@@ -1306,6 +1306,9 @@ export const JA_MESSAGES: Record<string, string> = {
   Workspace: "ワークスペース",
   "Doodle joined": "Doodle が参加しました",
   "Doodle left": "Doodle が退出しました",
+  Messages: "メッセージ",
+  "Approve this server to let Doodle use its tools.":
+    "このサーバーを承認すると、Doodle がそのツールを使えるようになります。",
 };
 
 export const PEER_MESSAGE_FORMS = { other: "{peer}とのメッセージ{count}件" };

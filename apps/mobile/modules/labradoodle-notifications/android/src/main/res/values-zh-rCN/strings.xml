@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="rakazo_channel_live">智能体实时状态</string>
-  <string name="rakazo_channel_messages">智能体消息</string>
+  <string name="rakazo_channel_live">Doodle 实时状态</string>
+  <string name="rakazo_channel_messages">消息</string>
   <string name="rakazo_channel_scheduled">计划任务</string>
   <string name="rakazo_channel_attention">需要关注</string>
 

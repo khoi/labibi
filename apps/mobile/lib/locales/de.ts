@@ -1281,6 +1281,9 @@ export const DE_MESSAGES: Record<string, string> = {
   Workspace: "Arbeitsbereich",
   "Doodle joined": "Doodle ist beigetreten",
   "Doodle left": "Doodle hat den Chat verlassen",
+  Messages: "Nachrichten",
+  "Approve this server to let Doodle use its tools.":
+    "Gib diesen Server frei, damit Doodle seine Werkzeuge nutzen kann.",
 };
 
 export const PEER_MESSAGE_FORMS: Partial<Record<Intl.LDMLPluralRule, string>> = {
