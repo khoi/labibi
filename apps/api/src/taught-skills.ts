@@ -18,11 +18,10 @@ import {
   captureTeachingSnapshot,
   completeTeachingSession,
   emptyRecording,
+  ensurePersonComputer,
   expireTaughtSkillTeaching,
   extendActiveComputerControl,
   getActiveTeachingSession,
-  hasActiveComputerControl,
-  holdsUserControl,
   mapTaughtSkill,
   observeStopSnapshot,
   parsePlaybook,
@@ -30,12 +29,13 @@ import {
   provisionComputer,
   recordTeachingInputEvent,
   releaseComputerExecutionLease,
-  releaseTeachingComputerControlForBot,
+  releaseTeachingComputerControl,
   scheduleComputerControlExpiry,
   screenLeaseIdForRun,
   teachingControlLeaseExpiresAt,
+  teachingTarget,
 } from "@labradoodle/adapters";
-import type { Actor, MessageBlock, TaughtSkill } from "@labradoodle/contracts";
+import type { Actor, TaughtSkill } from "@labradoodle/contracts";
 import type { SkillPlaybook, TeachRecordingEvent } from "@labradoodle/core";
 import {
   ACTIVE_RUN_STATUSES,
@@ -43,8 +43,13 @@ import {
   formatSkillRunPrompt,
   teachRecordingTtlMs,
 } from "@labradoodle/core";
-import type { createRepos, PrismaClient, ThreadEvents } from "@labradoodle/db";
-import { clearEndedRunState, expireComputerExecutionLeases, IsolationError } from "@labradoodle/db";
+import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
+import {
+  clearEndedRunState,
+  createChat,
+  IsolationError,
+  releaseCancelledRunLeases,
+} from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { ORPCError } from "@orpc/server";
 
@@ -57,82 +62,68 @@ export interface TaughtSkillsDeps {
   dataDir: string;
 }
 
-/**
- * Taught skills are the space's. A live recording is driven by the member who
- * holds the computer takeover, so only that member feeds it (`recorder`).
- */
+/** A recorded demo is the person's who recorded it, in every workspace. */
 async function getOwnedSkill(
   deps: TaughtSkillsDeps,
   actor: Actor,
   skillId: string,
-  options: { recorder?: boolean } = {},
 ): Promise<TaughtSkillRow> {
   const skill = await deps.prisma.taughtSkill.findFirst({
-    where: {
-      id: skillId,
-      spaceId: actor.spaceId,
-      ...(options.recorder ? { userId: actor.userId } : {}),
-    },
+    where: { id: skillId, userId: actor.userId },
   });
   if (!skill) throw new IsolationError();
   return skill;
 }
 
-export async function assertTeachingSendAllowed(
-  prisma: PrismaClient,
-  spaceId: string,
-  botId: string,
-): Promise<void> {
-  const active = await getActiveTeachingSession(prisma, spaceId, botId);
+type TeachingTarget = Awaited<ReturnType<typeof teachingTarget>>;
+
+/** While the person records a demo on their computer, Doodle does not run for them. */
+export async function assertTeachingSendAllowed(prisma: PrismaClient, actor: Actor): Promise<void> {
+  const active = await getActiveTeachingSession(prisma, actor.userId);
   if (active) {
     throw new ORPCError("CONFLICT", { message: "Stop teaching first" });
   }
 }
 
-async function cancelActiveRuns(
-  deps: TaughtSkillsDeps,
-  _actor: Actor,
-  botId: string,
-): Promise<void> {
+/** The person's own runs in this workspace, which use the computer the demo needs. */
+async function cancelActiveRuns(deps: TaughtSkillsDeps, actor: Actor): Promise<void> {
   const activeRuns = await deps.prisma.run.updateManyAndReturn({
-    where: { botId, status: { in: [...ACTIVE_RUN_STATUSES] } },
+    where: {
+      spaceId: actor.spaceId,
+      userId: actor.userId,
+      status: { in: [...ACTIVE_RUN_STATUSES] },
+    },
     data: { status: "cancelled", completedAt: new Date() },
     select: { id: true },
   });
-  await clearEndedRunState(
-    deps.prisma,
-    activeRuns.map((run) => run.id),
-  );
-  await expireComputerExecutionLeases(deps.prisma, { botId });
-  await deps.prisma.computer.updateMany({
-    where: { executionBotId: botId },
-    data: { executionRunId: null, executionBotId: null, executionLeaseExpiresAt: null },
-  });
+  const runIds = activeRuns.map((run) => run.id);
+  await clearEndedRunState(deps.prisma, runIds);
+  await releaseCancelledRunLeases(deps.prisma, runIds);
   await deps.prisma.event.deleteMany({
-    where: { type: "thread.progress", runId: { in: activeRuns.map((run) => run.id) } },
+    where: { type: "thread.progress", runId: { in: runIds } },
   });
 }
 
 async function ensureGraphicalComputer(
   deps: TaughtSkillsDeps,
   actor: Actor,
-  bot: Awaited<ReturnType<ReturnType<typeof createRepos>["getBot"]>>,
-) {
+  bot: TeachingTarget,
+): Promise<TeachingTarget> {
   if (bot.computer?.kind === "desktop") {
     throw new ORPCError("BAD_REQUEST", {
       message: "Teaching needs a graphical sandbox computer, not a desktop host",
     });
   }
+  bot = bot.computer ? bot : { ...bot, computer: await ensurePersonComputer(deps.prisma, actor) };
   if (!bot.computer) throw new IsolationError();
   if (bot.computer.state !== "running" || !bot.computer.providerRef) {
-    const ctx = createAdapterContext(actor, bot.id, "skills.start");
+    const ctx = createAdapterContext(actor, bot.botId, "skills.start");
     const manualRunId = `teach:${randomUUID()}`;
     let lease: ComputerExecutionLease | null;
     try {
       lease = await acquireComputerExecutionLease(deps.prisma, {
         computerId: bot.computer.id,
         runId: manualRunId,
-        botId: bot.id,
       });
     } catch (error) {
       if (error instanceof ComputerBusyError) {
@@ -156,10 +147,7 @@ async function ensureGraphicalComputer(
     } finally {
       await releaseComputerExecutionLease(deps.prisma, lease);
     }
-    bot = await deps.prisma.bot.findUniqueOrThrow({
-      where: { id: bot.id },
-      include: { thread: true, computer: true },
-    });
+    bot = await teachingTarget(deps.prisma, actor);
   }
   if (!bot.computer?.providerRef || bot.computer.state !== "running") {
     throw new ORPCError("BAD_REQUEST", { message: "Computer must be running to teach" });
@@ -172,43 +160,14 @@ async function ensureGraphicalComputer(
   return bot;
 }
 
-/** Someone else's run on this bot, or on any bot sharing its computer, keeps the screen. */
-async function refuseOthersWork(
-  deps: TaughtSkillsDeps,
-  actor: Actor,
-  bot: { id: string; computerId: string | null },
-): Promise<void> {
-  const othersWork = await deps.prisma.run.findFirst({
-    where: {
-      status: { in: [...ACTIVE_RUN_STATUSES] },
-      userId: { not: actor.userId },
-      ...(bot.computerId ? { bot: { computerId: bot.computerId } } : { botId: bot.id }),
-    },
-    select: { id: true },
-  });
-  if (othersWork) {
-    throw new ORPCError("CONFLICT", { message: "The computer is working for someone else" });
-  }
-}
-
 async function grantTakeover(
   deps: TaughtSkillsDeps,
   actor: Actor,
-  bot: Awaited<ReturnType<ReturnType<typeof createRepos>["getBot"]>>,
+  bot: TeachingTarget,
   until: Date,
-): Promise<{ bot: typeof bot; leaseId: string }> {
+): Promise<{ bot: TeachingTarget; leaseId: string }> {
   if (!bot.computer) throw new IsolationError();
-  // The computer was read again after start's check, so someone may have taken it since.
-  if (
-    bot.computer.controlHolder === "user" &&
-    hasActiveComputerControl(bot.computer) &&
-    !holdsUserControl(bot.computer, actor.userId)
-  ) {
-    throw new ORPCError("CONFLICT", { message: "Someone else is using this computer" });
-  }
-  // The computer may be new since start's check, so look again for work that shares it.
-  await refuseOthersWork(deps, actor, bot);
-  if (await extendActiveComputerControl(deps.prisma, deps.jobs, bot.computer, bot.id, until)) {
+  if (await extendActiveComputerControl(deps.prisma, deps.jobs, bot.computer, until)) {
     const leaseId = bot.computer.controlLeaseId;
     if (!leaseId) throw new IsolationError();
     return { bot, leaseId };
@@ -223,17 +182,14 @@ async function grantTakeover(
       OR: [
         { controlHolder: { not: "user" } },
         { controlLeaseExpiresAt: { lte: new Date() } },
-        {
-          controlBotId: bot.id,
-          OR: [{ controlUserId: actor.userId }, { controlUserId: null, userId: actor.userId }],
-        },
+        { controlUserId: actor.userId },
+        { controlUserId: null, userId: actor.userId },
       ],
     },
     data: {
       controlHolder: "user",
       controlLeaseId: leaseId,
       controlLeaseExpiresAt: expiresAt,
-      controlBotId: bot.id,
       controlUserId: actor.userId,
       state: "running",
     },
@@ -242,72 +198,7 @@ async function grantTakeover(
     throw new ORPCError("CONFLICT", { message: "Could not take control of the computer" });
   }
   await scheduleComputerControlExpiry(deps.jobs, bot.computer.id, leaseId, expiresAt);
-  if (bot.thread) {
-    await deps.events.append({
-      spaceId: actor.spaceId,
-      threadId: bot.thread.id,
-      botId: bot.id,
-      type: "computer.takeover.granted",
-      payload: { holder: "user", reason: "teaching" },
-    });
-  }
   return { bot, leaseId };
-}
-
-async function updateSkillDraftMessage(
-  deps: TaughtSkillsDeps,
-  actor: Actor,
-  skill: TaughtSkillRow,
-  input: {
-    name?: string;
-    playbook?: SkillPlaybook;
-    status?: "draft" | "saved";
-  },
-): Promise<void> {
-  const bot = await deps.prisma.bot.findUnique({
-    where: { id: skill.botId },
-    include: { thread: true },
-  });
-  if (!bot?.thread) return;
-
-  const messages = await deps.prisma.message.findMany({
-    where: { threadId: bot.thread.id, role: "bot" },
-    orderBy: { seq: "desc" },
-    take: 100,
-  });
-
-  for (const message of messages) {
-    const parsed = message.blocks as MessageBlock[];
-    if (!Array.isArray(parsed)) continue;
-    const index = parsed.findIndex(
-      (block) => block.kind === "skill_draft" && block.skillId === skill.id,
-    );
-    if (index === -1) continue;
-    const existing = parsed[index];
-    if (existing?.kind !== "skill_draft") continue;
-    const playbook = input.playbook ?? parsePlaybook(skill.playbook);
-    const nextBlocks: MessageBlock[] = [...parsed];
-    nextBlocks[index] = {
-      kind: "skill_draft",
-      skillId: skill.id,
-      name: input.name ?? existing.name,
-      goal: skill.goal,
-      playbook,
-      status: input.status ?? existing.status,
-    };
-    await deps.prisma.message.update({
-      where: { id: message.id },
-      data: { blocks: nextBlocks as never },
-    });
-    await deps.events.append({
-      spaceId: actor.spaceId,
-      threadId: bot.thread.id,
-      botId: bot.id,
-      type: "thread.message.updated",
-      payload: { messageId: message.id, role: "bot", blocks: nextBlocks },
-    });
-    return;
-  }
 }
 
 export async function expireTeachingSessionIfNeeded(deps: TaughtSkillsDeps, skillId: string) {
@@ -319,15 +210,13 @@ export async function stopTeachingSession(
   actor: Actor,
   skillId: string,
 ): Promise<TaughtSkill> {
-  // Stopping releases the recorder's control of the computer, so it is theirs to do.
-  await getOwnedSkill(deps, actor, skillId, { recorder: true });
+  await getOwnedSkill(deps, actor, skillId);
   await expireTeachingSessionIfNeeded(deps, skillId);
   const current = await deps.prisma.taughtSkill.findUniqueOrThrow({ where: { id: skillId } });
   if (current.status === "draft" || current.status === "saved") {
-    await releaseTeachingComputerControlForBot(
+    await releaseTeachingComputerControl(
       deps,
-      actor,
-      current.botId,
+      { spaceId: current.spaceId, userId: current.userId } as Actor,
       parseRecording(current.recording).controlLeaseId,
     );
     return mapTaughtSkill(current);
@@ -335,25 +224,22 @@ export async function stopTeachingSession(
   if (current.status !== "recording" && current.status !== "drafting") {
     throw new ORPCError("BAD_REQUEST", { message: "Teaching session is not active" });
   }
-  const bot = await deps.prisma.bot.findUnique({
-    where: { id: current.botId },
-    include: { thread: true, computer: true },
-  });
-  if (!bot) throw new IsolationError();
+  // A recording runs in the workspace it started in.
+  const owner = { ...actor, spaceId: current.spaceId };
   const stopSnapshot =
-    current.status === "recording" && bot.computer?.providerRef
-      ? await observeStopSnapshot(deps, actor, bot)
+    current.status === "recording"
+      ? await observeStopSnapshot(deps, owner, await teachingTarget(deps.prisma, owner))
       : undefined;
-  const finalized = await completeTeachingSession(deps, actor, skillId, "stopped", stopSnapshot);
+  const finalized = await completeTeachingSession(deps, owner, skillId, stopSnapshot);
   await deps.jobs.cancel(skillTeachingExpireJobKey(current.id));
   return mapTaughtSkill(finalized);
 }
 
 export function createTaughtSkillsService(deps: TaughtSkillsDeps) {
   return {
-    async list(actor: Actor, botId: string): Promise<TaughtSkill[]> {
+    async list(actor: Actor): Promise<TaughtSkill[]> {
       const rows = await deps.prisma.taughtSkill.findMany({
-        where: { spaceId: actor.spaceId, botId },
+        where: { userId: actor.userId },
         orderBy: { updatedAt: "desc" },
       });
       return rows.map(mapTaughtSkill);
@@ -366,48 +252,23 @@ export function createTaughtSkillsService(deps: TaughtSkillsDeps) {
       return mapTaughtSkill(current);
     },
 
-    async start(actor: Actor, botId: string, goal: string): Promise<TaughtSkill> {
-      let bot = await deps.prisma.bot.findFirst({
-        where: { id: botId, spaceId: actor.spaceId },
-        include: { thread: true, computer: true },
-      });
-      if (!bot) throw new IsolationError();
-      const alreadyRecording = await deps.prisma.taughtSkill.findFirst({
-        where: { botId, status: "recording" },
-        select: { id: true },
-      });
-      if (alreadyRecording) {
+    async start(actor: Actor, goal: string): Promise<TaughtSkill> {
+      let bot = await teachingTarget(deps.prisma, actor);
+      if (await getActiveTeachingSession(deps.prisma, actor.userId)) {
         throw new ORPCError("CONFLICT", { message: "A teaching session is already active" });
       }
-      // In a shared Space, teaching never takes another person's screen or stops their work.
-      const computer = bot.computer;
-      if (
-        computer?.controlHolder === "user" &&
-        hasActiveComputerControl(computer) &&
-        !holdsUserControl(computer, actor.userId)
-      ) {
-        throw new ORPCError("CONFLICT", { message: "Someone else is using this computer" });
-      }
-      await refuseOthersWork(deps, actor, bot);
-      await cancelActiveRuns(deps, actor, botId);
+      await cancelActiveRuns(deps, actor);
       bot = await ensureGraphicalComputer(deps, actor, bot);
       const startedAt = new Date();
       const expiresAt = new Date(startedAt.getTime() + teachRecordingTtlMs());
       const { leaseId } = await grantTakeover(deps, actor, bot, expiresAt);
       let row: TaughtSkillRow;
       try {
+        // One recording per person: the partial unique index refuses a second.
         row = await deps.prisma.$transaction(async (tx) => {
-          await tx.$executeRaw`SELECT id FROM bots WHERE id = ${botId} FOR UPDATE`;
-          const existing = await tx.taughtSkill.findFirst({
-            where: { botId, status: "recording" },
-          });
-          if (existing) {
-            throw new ORPCError("CONFLICT", { message: "A teaching session is already active" });
-          }
           return tx.taughtSkill.create({
             data: {
               spaceId: actor.spaceId,
-              botId,
               userId: actor.userId,
               goal,
               status: "recording",
@@ -430,16 +291,7 @@ export function createTaughtSkillsService(deps: TaughtSkillsDeps) {
         throw error;
       }
       await deps.jobs.enqueue(skillTeachingExpireJob(row.id, expiresAt));
-      const withSnapshot = await captureTeachingSnapshot(deps, actor, bot, row);
-      if (bot.thread) {
-        await deps.events.append({
-          spaceId: actor.spaceId,
-          threadId: bot.thread.id,
-          botId: bot.id,
-          type: "skill.teaching.started",
-          payload: { skillId: row.id, goal },
-        });
-      }
+      const withSnapshot = await captureTeachingSnapshot(deps, actor, row);
       return mapTaughtSkill(withSnapshot);
     },
 
@@ -448,7 +300,7 @@ export function createTaughtSkillsService(deps: TaughtSkillsDeps) {
       skillId: string,
       event: TeachRecordingEvent,
     ): Promise<TaughtSkill> {
-      await getOwnedSkill(deps, actor, skillId, { recorder: true });
+      await getOwnedSkill(deps, actor, skillId);
       await expireTeachingSessionIfNeeded(deps, skillId);
       const current = await deps.prisma.taughtSkill.findUniqueOrThrow({ where: { id: skillId } });
       if (current.status !== "recording") {
@@ -462,18 +314,17 @@ export function createTaughtSkillsService(deps: TaughtSkillsDeps) {
     },
 
     async snapshot(actor: Actor, skillId: string): Promise<TaughtSkill> {
-      await getOwnedSkill(deps, actor, skillId, { recorder: true });
+      await getOwnedSkill(deps, actor, skillId);
       await expireTeachingSessionIfNeeded(deps, skillId);
       const current = await deps.prisma.taughtSkill.findUniqueOrThrow({ where: { id: skillId } });
       if (current.status !== "recording") {
         throw new ORPCError("BAD_REQUEST", { message: "Teaching session is not recording" });
       }
-      const bot = await deps.prisma.bot.findUnique({
-        where: { id: current.botId },
-        include: { computer: true },
-      });
-      if (!bot) throw new IsolationError();
-      const updated = await captureTeachingSnapshot(deps, actor, bot, current);
+      const updated = await captureTeachingSnapshot(
+        deps,
+        { ...actor, spaceId: current.spaceId },
+        current,
+      );
       return mapTaughtSkill(updated);
     },
 
@@ -490,18 +341,11 @@ export function createTaughtSkillsService(deps: TaughtSkillsDeps) {
       }
       const row = await deps.prisma.taughtSkill.update({
         where: { id: skill.id },
-        // The editor owns the playbook now, so routines run it only on the editor's accounts.
         data: {
-          userId: actor.userId,
           name: input.name ?? skill.name,
           playbook: input.playbook as never,
           status: skill.status === "saved" ? "saved" : "draft",
         },
-      });
-      await updateSkillDraftMessage(deps, actor, row, {
-        name: row.name,
-        playbook: parsePlaybook(row.playbook),
-        status: row.status === "saved" ? "saved" : "draft",
       });
       return mapTaughtSkill(row);
     },
@@ -514,29 +358,10 @@ export function createTaughtSkillsService(deps: TaughtSkillsDeps) {
       const row = await deps.prisma.taughtSkill.update({
         where: { id: skill.id },
         data: {
-          userId: actor.userId,
           status: "saved",
           name: name ?? (skill.name || skill.goal.slice(0, 80)),
         },
       });
-      const bot = await deps.prisma.bot.findUnique({
-        where: { id: row.botId },
-        include: { thread: true },
-      });
-      await updateSkillDraftMessage(deps, actor, row, {
-        name: row.name,
-        playbook: parsePlaybook(row.playbook),
-        status: "saved",
-      });
-      if (bot?.thread) {
-        await deps.events.append({
-          spaceId: actor.spaceId,
-          threadId: bot.thread.id,
-          botId: bot.id,
-          type: "skill.saved",
-          payload: { skillId: row.id, name: row.name },
-        });
-      }
       return mapTaughtSkill(row);
     },
 
@@ -545,11 +370,24 @@ export function createTaughtSkillsService(deps: TaughtSkillsDeps) {
       if (skill.status !== "saved" && skill.status !== "draft") {
         throw new ORPCError("BAD_REQUEST", { message: "Skill must be saved or drafted first" });
       }
-      const bot = await deps.prisma.bot.findUnique({
-        where: { id: skill.botId },
-        include: { thread: true },
+      // A test run goes to the person's own chat with Doodle in this workspace.
+      const doodle = await deps.prisma.bot.findUnique({
+        where: { spaceId: actor.spaceId },
+        select: { id: true },
       });
-      if (!bot?.thread) throw new IsolationError();
+      if (!doodle) throw new IsolationError();
+      const ownChat = await deps.prisma.thread.findFirst({
+        where: {
+          spaceId: actor.spaceId,
+          doodle: true,
+          members: { every: { userId: actor.userId }, some: { userId: actor.userId } },
+        },
+        orderBy: [{ lastMessageAt: "desc" }, { id: "desc" }],
+        select: { id: true },
+      });
+      const threadId =
+        ownChat?.id ?? (await createChat(deps.prisma, actor, { userIds: [], doodle: true })).id;
+      const bot = { id: doodle.id };
       const playbook = parsePlaybook(skill.playbook);
       const taskPrompt =
         prompt ?? formatSkillRunPrompt(skill.name || skill.goal.slice(0, 80), playbook, true);
@@ -557,7 +395,7 @@ export function createTaughtSkillsService(deps: TaughtSkillsDeps) {
         data: {
           spaceId: actor.spaceId,
           botId: bot.id,
-          threadId: bot.thread.id,
+          threadId,
           userId: actor.userId,
           prompt: taskPrompt,
           status: "queued",
@@ -567,7 +405,7 @@ export function createTaughtSkillsService(deps: TaughtSkillsDeps) {
         data: {
           spaceId: actor.spaceId,
           botId: bot.id,
-          threadId: bot.thread.id,
+          threadId,
           taskId: task.id,
           userId: actor.userId,
           status: "queued",
@@ -580,16 +418,11 @@ export function createTaughtSkillsService(deps: TaughtSkillsDeps) {
 
     async remove(actor: Actor, skillId: string): Promise<{ ok: true }> {
       const skill = await getOwnedSkill(deps, actor, skillId);
-      // A saved skill is the space's; a live recording belongs to whoever is teaching it.
-      if (skill.status === "recording" && skill.userId !== actor.userId) {
-        throw new ORPCError("CONFLICT", { message: "Someone else is teaching this skill" });
-      }
       if (skill.status === "recording") {
         await deps.jobs.cancel(skillTeachingExpireJobKey(skill.id));
-        await releaseTeachingComputerControlForBot(
+        await releaseTeachingComputerControl(
           deps,
-          actor,
-          skill.botId,
+          { ...actor, spaceId: skill.spaceId },
           parseRecording(skill.recording).controlLeaseId,
         );
       }
@@ -602,10 +435,9 @@ export function createTaughtSkillsService(deps: TaughtSkillsDeps) {
 
     async recordInput(
       actor: Actor,
-      botId: string,
       mapped: TeachComputerInput,
     ): Promise<"recorded" | "idle" | "stale"> {
-      return recordTeachingInputEvent(deps, actor, botId, mapped);
+      return recordTeachingInputEvent(deps, actor, mapped);
     },
   };
 }

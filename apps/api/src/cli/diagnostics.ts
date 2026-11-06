@@ -71,7 +71,7 @@ async function collect(env: AppEnv, prisma: PrismaClient): Promise<DiagnosticsIn
     return { ...base, database: { reachable: false } };
   }
   const [bots, mcpServers, runs, migrations] = await Promise.all([
-    prisma.bot.findMany({ select: { id: true, spaceId: true, userId: true, archivedAt: true } }),
+    prisma.bot.findMany({ select: { id: true, spaceId: true } }),
     prisma.mcpServer.findMany({ select: serverFields, orderBy: { createdAt: "asc" } }),
     prisma.run.findMany({
       select: { id: true, botId: true, status: true, trigger: true, createdAt: true },
@@ -93,7 +93,7 @@ async function collect(env: AppEnv, prisma: PrismaClient): Promise<DiagnosticsIn
         .sort(),
       ...migrations,
     },
-    bots: bots.map(({ archivedAt, ...bot }) => ({ ...bot, archived: archivedAt !== null })),
+    bots,
     mcpServers,
     runs,
   };

@@ -41,6 +41,7 @@ import {
   listPluginSubmissions,
   reviewPluginSubmission,
 } from "../plugin-submissions.js";
+import { resolveChatTarget } from "../thread-target.js";
 import type { RouterContext } from "./context.js";
 import { computerContext, isUniqueViolation } from "./shared.js";
 
@@ -59,6 +60,9 @@ export function mcpRoutes(ctx: RouterContext) {
     authed,
   } = ctx;
   const pluginMarketplace = createPluginMarketplace(deps.pluginMarketplaceRead);
+  /** The Doodle of a chat the caller is in, which posted its approval cards. */
+  const chatDoodle = async (actor: Actor, threadId: string) =>
+    (await resolveChatTarget(deps.prisma, actor, { threadId })).doodleId;
   /** Removes an install and, for a plugin, the servers, secrets and skills it added. */
   const removeInstall = async (actor: Actor, id: string) => {
     const notify: Array<{ threadId: string; seq: number }> = [];
@@ -615,11 +619,12 @@ export function mcpRoutes(ctx: RouterContext) {
       },
       approvals: {
         approve: authed.mcp.approvals.approve.handler(async ({ context, input }) => {
+          const doodle = await chatDoodle(context.actor, input.threadId);
           const row = await resolveMcpApprovalCards(
             onboardingDeps,
             context.actor,
             {
-              botId: input.botId,
+              botId: doodle,
               serverId: input.serverId,
               status: "connected",
               threadId: input.threadId,
@@ -628,7 +633,7 @@ export function mcpRoutes(ctx: RouterContext) {
               if (!decision.connect) throw new IsolationError();
               const [bot, server] = await Promise.all([
                 tx.bot.findFirst({
-                  where: { id: input.botId, spaceId: context.actor.spaceId },
+                  where: { id: doodle, spaceId: context.actor.spaceId },
                   select: { id: true },
                 }),
                 tx.mcpServer.findFirst({
@@ -638,14 +643,13 @@ export function mcpRoutes(ctx: RouterContext) {
               ]);
               if (!bot || !server) throw new IsolationError();
               await tx.mcpServer.update({ where: { id: server.id }, data: { enabled: true } });
-              const runId =
-                input.threadId && decision.resolved
-                  ? await queueMcpConnectedRun(tx, context.actor, {
-                      botId: bot.id,
-                      serverId: server.id,
-                      threadId: input.threadId,
-                    })
-                  : null;
+              const runId = decision.resolved
+                ? await queueMcpConnectedRun(tx, context.actor, {
+                    botId: bot.id,
+                    serverId: server.id,
+                    threadId: input.threadId,
+                  })
+                : null;
               return { runId };
             },
           );
@@ -662,7 +666,7 @@ export function mcpRoutes(ctx: RouterContext) {
           // Not now resolves the card only: a stale card must not turn off a server the
           // person uses, and removing one belongs to the MCP settings surface.
           await resolveMcpApprovalCards(onboardingDeps, context.actor, {
-            botId: input.botId,
+            botId: await chatDoodle(context.actor, input.threadId),
             serverId: input.serverId,
             status: "dismissed",
             threadId: input.threadId,
@@ -799,25 +803,24 @@ export function mcpRoutes(ctx: RouterContext) {
         return { ok: true as const };
       }),
       promptFocus: authed.onboarding.promptFocus.handler(async ({ context, input }) => {
-        await promptFocus(onboardingDeps, context.actor, input.botId);
+        await promptFocus(onboardingDeps, context.actor, input.threadId);
         return { ok: true as const };
       }),
       choose: authed.onboarding.choose.handler(async ({ context, input }) => {
-        await chooseFocus(onboardingDeps, context.actor, input.botId, input.optionId);
+        await chooseFocus(onboardingDeps, context.actor, input.threadId, input.optionId);
         return { ok: true as const };
       }),
       dismissFocus: authed.onboarding.dismissFocus.handler(async ({ context, input }) => {
-        await dismissFocus(onboardingDeps, context.actor, input.botId);
+        await dismissFocus(onboardingDeps, context.actor, input.threadId);
         return { ok: true as const };
       }),
       appConnected: authed.onboarding.appConnected.handler(async ({ context, input }) => {
         await markAppConnected(
           onboardingDeps,
           context.actor,
-          input.botId,
+          input.threadId,
           input.provider,
           input.connectorId,
-          input.threadId,
           input.messageId,
         );
         return { ok: true as const };

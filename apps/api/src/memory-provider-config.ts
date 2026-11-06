@@ -34,7 +34,6 @@ export async function persistMemoryProviderConfig(
     provider: string;
     settings: Record<string, string>;
     credentials: Record<string, string>;
-    defaultMemoryScope: "isolated" | "shared";
   },
 ) {
   await requireSpaceOwner(deps.prisma, actor);
@@ -105,14 +104,12 @@ export async function persistMemoryProviderConfig(
             provider: prepared.provider,
             settings: prepared.settings,
             secretId: secret.id,
-            defaultMemoryScope: input.defaultMemoryScope,
           },
           update: {
             userId: actor.userId,
             provider: prepared.provider,
             settings: prepared.settings,
             secretId: secret.id,
-            defaultMemoryScope: input.defaultMemoryScope,
           },
         });
         if (existing && existing.secretId !== secret.id) {
@@ -126,31 +123,14 @@ export async function persistMemoryProviderConfig(
   return serializeSpaceMemoryConfig(config);
 }
 
-export async function updateMemoryProviderDefaultScope(
-  deps: MemoryProviderConfigDeps,
-  actor: Actor,
-  defaultMemoryScope: "isolated" | "shared",
-) {
-  await requireSpaceOwner(deps.prisma, actor);
-  const existing = await findSpaceMemoryConfig(deps.prisma, actor.spaceId);
-  if (!existing) throw new ORPCError("NOT_FOUND");
-  const updated = await deps.prisma.spaceMemoryConfig.update({
-    where: { id: existing.id },
-    data: { defaultMemoryScope },
-  });
-  return serializeSpaceMemoryConfig(updated);
-}
-
 export function serializeSpaceMemoryConfig(config: {
   provider: string;
   settings: unknown;
-  defaultMemoryScope: string;
   updatedAt: Date;
 }) {
   return {
     provider: config.provider,
     settings: toStringRecord(config.settings),
-    defaultMemoryScope: config.defaultMemoryScope as "isolated" | "shared",
     updatedAt: config.updatedAt.toISOString(),
   };
 }

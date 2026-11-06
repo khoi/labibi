@@ -1,5 +1,5 @@
-import type { Actor, SpaceNavigation } from "@labradoodle/contracts";
-import type { createGroupRepos, createRepos, PrismaClient } from "@labradoodle/db";
+import type { Actor } from "@labradoodle/contracts";
+import type { PrismaClient } from "@labradoodle/db";
 import {
   acceptSpaceInvite,
   CannotRemoveSpaceOwnerError,
@@ -7,13 +7,12 @@ import {
   cancelSpaceInvites,
   createSpaceInvite,
   fallbackSpaceForMember,
-  GUEST_ROLE,
-  homeOrganizationId,
+  getSpaceDoodle,
   InvalidSpaceNameError,
-  IsolationError,
-  isOwnerRole,
   leaveSpace,
+  listChats,
   listSpaceMembers,
+  listWorkspacesForMember,
   previewSpaceInvite,
   recordAuditEvent,
   removeSpaceMember,
@@ -28,11 +27,9 @@ import {
   SpaceOwnerCannotLeaveError,
 } from "@labradoodle/db";
 import { ORPCError } from "@orpc/server";
-import { otherSpaceOfBot } from "../bot-space.js";
-import type { RouterDeps } from "../router.js";
-import { listRoutinesDto } from "../routines.js";
+import { otherSpaceOfChat } from "../chat-space.js";
 import { afterSpaceDeparture } from "../space-departure.js";
-import { resolveThreadTarget, threadSnapshot } from "../thread-target.js";
+import { resolveChatTarget, threadSnapshot } from "../thread-target.js";
 import type { RouterContext } from "./context.js";
 import { meDto } from "./shared.js";
 
@@ -76,12 +73,15 @@ async function asMemberOf<T>(
 }
 
 export function spacesRoutes(ctx: RouterContext) {
-  const { deps, repos, groupRepos, authed } = ctx;
+  const { deps, authed } = ctx;
+  // Reads across the person's workspaces; every query is limited to their own memberships.
+  const workspaces = (actor: Actor) =>
+    runAsSystem("list the member's workspaces", () =>
+      listWorkspacesForMember(deps.prisma, actor.userId),
+    );
   return {
     spaces: {
-      list: authed.spaces.list.handler(async ({ context }) =>
-        spaceNavigationDto(deps, context.actor, repos, groupRepos),
-      ),
+      list: authed.spaces.list.handler(({ context }) => workspaces(context.actor)),
       // Renames another of the member's Spaces; membership is checked inside.
       rename: authed.spaces.rename.handler(({ context, input }) =>
         asMemberOf(deps.prisma, context.actor, input.spaceId, async () => {
@@ -228,164 +228,34 @@ export function spacesRoutes(ctx: RouterContext) {
     },
     bootstrap: authed.bootstrap.handler(async ({ context, input }) => {
       const actor = context.actor;
-      const [me, navigation] = await Promise.all([
+      const [me, spaces, doodle, chats] = await Promise.all([
         meDto(deps, actor),
-        spaceNavigationDto(deps, actor, repos, groupRepos),
+        workspaces(actor),
+        getSpaceDoodle(deps.prisma, actor),
+        listChats(deps.prisma, actor),
       ]);
-      const { bots, groups } = navigation.current;
-      const requested = bots.find((bot) => bot.id === input.botId);
-      const botSpaceId =
-        input.botId && !requested
-          ? await otherSpaceOfBot(deps.prisma, actor, input.botId)
+      const requested = input.threadId
+        ? chats.find((chat) => chat.id === input.threadId)
+        : undefined;
+      const threadSpaceId =
+        input.threadId && !requested
+          ? await otherSpaceOfChat(deps.prisma, actor, input.threadId)
           : undefined;
-      const active = requested ?? bots[0];
-      const [thread, routines] = active
-        ? await Promise.all([
-            resolveThreadTarget(deps.prisma, actor, { botId: active.id }).then((target) =>
-              threadSnapshot(deps, target, actor.userId),
-            ),
-            listRoutinesDto(deps, actor, active.id),
-          ])
-        : [null, []];
+      const thread = requested
+        ? await threadSnapshot(
+            deps,
+            await resolveChatTarget(deps.prisma, actor, { threadId: requested.id }),
+            actor,
+          )
+        : null;
       return {
         me,
-        bots,
-        groups,
+        workspaces: spaces,
+        doodle,
+        chats,
         thread,
-        routines,
-        spaces: navigation.spaces,
-        ...(botSpaceId ? { botSpaceId } : {}),
+        ...(threadSpaceId ? { threadSpaceId } : {}),
       };
     }),
   };
-}
-
-// Lists every Space the member belongs to, with each one's bots and threads, so it
-// reads across Spaces. Every query below is limited to the member's Spaces.
-function spaceNavigationDto(
-  deps: RouterDeps,
-  actor: Actor,
-  repos: ReturnType<typeof createRepos>,
-  groupRepos: ReturnType<typeof createGroupRepos>,
-): Promise<SpaceNavigation> {
-  return runAsSystem("space navigation across the member's Spaces", () =>
-    memberSpaceNavigation(deps, actor, repos, groupRepos),
-  );
-}
-
-async function memberSpaceNavigation(
-  deps: RouterDeps,
-  actor: Actor,
-  repos: ReturnType<typeof createRepos>,
-  groupRepos: ReturnType<typeof createGroupRepos>,
-): Promise<SpaceNavigation> {
-  // The member's own organization, plus every Space shared with them from someone else's.
-  const organizationId = await homeOrganizationId(deps.prisma, actor);
-  const memberships = await deps.prisma.spaceMember.findMany({
-    where: {
-      userId: actor.userId,
-      OR: [{ organizationId }, { member: { role: GUEST_ROLE } }],
-    },
-    select: {
-      spaceId: true,
-      role: true,
-      space: {
-        select: {
-          name: true,
-          isDefault: true,
-          deletingAt: true,
-          _count: { select: { memberships: true } },
-        },
-      },
-    },
-    orderBy: { createdAt: "asc" },
-  });
-  const spaceIds = memberships.map((membership) => membership.spaceId);
-  const inactiveSpaceIds = spaceIds.filter((spaceId) => spaceId !== actor.spaceId);
-  const [currentBots, currentGroups, inactiveBots, inactiveGroups, contentBots, contentGroups] =
-    await Promise.all([
-      repos.listBots(actor),
-      groupRepos.listGroups(actor),
-      repos.listSpaceBotsForSpaces(inactiveSpaceIds),
-      groupRepos.listSpaceGroupsForSpaces(inactiveSpaceIds),
-      // Active-only navigation lists miss archived content in other spaces; count any
-      // bot/group in the actor's spaces (including another member's) so a shared
-      // non-empty space cannot look empty for onboarding redirects.
-      deps.prisma.bot.groupBy({
-        by: ["spaceId"],
-        where: { spaceId: { in: spaceIds } },
-        _count: { _all: true },
-      }),
-      deps.prisma.chatGroup.findMany({
-        where: { spaceId: { in: spaceIds } },
-        select: { spaceId: true },
-        distinct: ["spaceId"],
-      }),
-    ]);
-  const spacesWithContent = new Set([
-    ...contentBots.map((row) => row.spaceId),
-    ...contentGroups.map((row) => row.spaceId),
-  ]);
-  const currentMembership = memberships.find((membership) => membership.spaceId === actor.spaceId);
-  if (!currentMembership) throw new IsolationError();
-  const botsBySpace = partitionBySpace([...currentBots, ...inactiveBots]);
-  const groupsBySpace = partitionBySpace([...currentGroups, ...inactiveGroups]);
-  const botsFor = (spaceId: string) => botsBySpace.get(spaceId) ?? [];
-  const groupsFor = (spaceId: string) => groupsBySpace.get(spaceId) ?? [];
-
-  return {
-    current: {
-      id: actor.spaceId,
-      name: currentMembership.space.name,
-      bots: currentBots,
-      groups: currentGroups,
-    },
-    spaces: memberships.map((membership) => {
-      const spaceBots = botsFor(membership.spaceId);
-      const spaceGroups = groupsFor(membership.spaceId);
-      const owner = isOwnerRole(membership.role);
-      return {
-        id: membership.spaceId,
-        name: membership.space.name,
-        // Another person's default Space is not this member's default.
-        isDefault: membership.space.isDefault && owner,
-        hasContent: spacesWithContent.has(membership.spaceId),
-        shared: membership.space._count.memberships > 1,
-        canRename: owner && membership.space.deletingAt === null,
-        bots: spaceBots.map((bot) => ({
-          id: bot.id,
-          spaceId: bot.spaceId,
-          name: bot.name,
-          title: "",
-          color: bot.color,
-          notifyOnFinish: bot.notifyOnFinish,
-          unread: bot.unread,
-          preview: bot.preview,
-          status: bot.status,
-          threadStatus: bot.threadStatus,
-          runErrorId: bot.runErrorId,
-          updatedAt: bot.updatedAt,
-        })),
-        groups: spaceGroups.map((group) => ({
-          id: group.id,
-          spaceId: group.spaceId,
-          name: group.name,
-          members: group.members,
-          preview: group.preview,
-          unread: group.unread,
-          updatedAt: group.updatedAt,
-        })),
-      };
-    }),
-  };
-}
-
-function partitionBySpace<T extends { spaceId: string }>(rows: T[]): Map<string, T[]> {
-  const partitioned = new Map<string, T[]>();
-  for (const row of rows) {
-    const spaceRows = partitioned.get(row.spaceId) ?? [];
-    spaceRows.push(row);
-    partitioned.set(row.spaceId, spaceRows);
-  }
-  return partitioned;
 }

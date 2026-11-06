@@ -1,14 +1,26 @@
-import { runContinueJob, runJobKey } from "@labradoodle/adapter-kit";
+import { routineJobKey, runContinueJob, runJobKey } from "@labradoodle/adapter-kit";
 import type { Actor, ProductEvent } from "@labradoodle/contracts";
-import {
-  AttachmentValidationError,
-  expandSkillReferencesInPrompt,
-  MODEL_REQUIRED_SEND_ERROR,
-} from "@labradoodle/core";
+import { AttachmentValidationError, expandSkillReferencesInPrompt } from "@labradoodle/core";
 import type { Prisma } from "@labradoodle/db";
-import { AnswerTooLongError, IsolationError } from "@labradoodle/db";
+import {
+  AnswerTooLongError,
+  addChatMembers,
+  ChatHasOtherPeopleError,
+  createChat,
+  deleteChat,
+  leaveChat,
+  listChatMembers,
+  listChats,
+  markChatRead,
+  markChatUnread,
+  NotWorkspaceMemberError,
+  renameChat,
+  setChatDoodle,
+  setChatMuted,
+} from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { ORPCError } from "@orpc/server";
+import { finishChatTeardown } from "../chat-teardown.js";
 import type { RouterDeps } from "../router.js";
 import { createRoutineTestRun, routineTestRunNonce, routineTestTarget } from "../routines.js";
 import { withSerializableRetry } from "../serializable-retry.js";
@@ -18,24 +30,18 @@ import {
   loadMessagePage,
   shouldForwardBackgroundThreadEvent,
 } from "../thread-message-pages.js";
-import type { ThreadTarget } from "../thread-target.js";
+import type { ChatTarget } from "../thread-target.js";
 import {
-  isStopMessage,
-  markThreadRead,
-  markThreadUnreadFrom,
   reactToThreadMessage,
-  replyParentBotId,
-  resolveThreadTarget,
-  sendTargetBotIds,
+  resolveChatTarget,
   sendThreadMessage,
-  setThreadUnreadState,
   stopThreadRuns,
   threadHead,
   threadSnapshot,
 } from "../thread-target.js";
-import { mapBotSecretInputError } from "./bots.js";
 import { releaseComputerControl } from "./computer.js";
 import type { RouterContext } from "./context.js";
+import { mapBotSecretInputError } from "./doodle.js";
 import {
   botsRunOwnModels,
   computerContext,
@@ -49,64 +55,59 @@ import {
 /** A send with routines that already has runs saved under its nonce. */
 class SavedSubmission extends Error {}
 
-/** A chat reply hands the screen back to the bot whose run it steers, in a group as in a DM. */
-export function takeoverReleaser(deps: RouterDeps, actor: Actor, target: ThreadTarget) {
+/** A chat reply hands the asker's own screen back to the run it steers. */
+export function takeoverReleaser(deps: RouterDeps, actor: Actor) {
   return async (runId: string) => {
-    const botId =
-      target.kind === "bot"
-        ? target.botId
-        : (
-            await deps.prisma.run.findUnique({
-              where: { id: runId, spaceId: actor.spaceId },
-              select: { botId: true },
-            })
-          )?.botId;
-    if (botId) await releaseComputerControl(deps, actor, botId, "done", runId);
+    await releaseComputerControl(deps, actor, "done", runId);
   };
 }
 
+function mapChatError(error: unknown): unknown {
+  if (error instanceof NotWorkspaceMemberError) {
+    return new ORPCError("BAD_REQUEST", { message: error.message });
+  }
+  if (error instanceof ChatHasOtherPeopleError) {
+    return new ORPCError("FORBIDDEN", { message: error.message });
+  }
+  return error;
+}
+
 export function threadsRoutes(ctx: RouterContext) {
-  const { deps, authed, codexCatalog, repos, agentSkills } = ctx;
-  /** The bot a reaction can wake: the thread's bot, or in a group the bot that wrote the message. */
-  const reactedBotId = async (target: ThreadTarget, messageId: string) =>
-    target.kind === "bot"
-      ? target.botId
-      : ((
-          await deps.prisma.message.findFirst({
-            where: { id: messageId, threadId: target.threadId },
-            select: { botId: true },
-          })
-        )?.botId ?? target.memberBotIds[0]!);
+  const { deps, authed, codexCatalog, agentSkills } = ctx;
+  /** Model setup is settled only once Doodle takes the turn; people-only chat needs none. */
+  const doodleAdmission = (actor: Actor, target: ChatTarget) => {
+    let setup: ReturnType<typeof modelSetup> | undefined;
+    return {
+      setup: () => (setup ??= modelSetup(deps, actor)),
+      admit: async () => {
+        setup ??= modelSetup(deps, actor);
+        const resolved = await setup;
+        if (resolved.needsModel && !(await botsRunOwnModels(deps, actor, [target.doodleId])))
+          return false;
+        await assertTeachingSendAllowed(deps.prisma, actor);
+        return true;
+      },
+    };
+  };
   const send = async (
     actor: Actor,
-    input: Parameters<typeof sendThreadMessage>[3] & { botId?: string; groupId?: string },
-    startRoutines?: Parameters<typeof sendThreadMessage>[5],
+    input: Parameters<typeof sendThreadMessage>[3] & { threadId: string },
+    startRoutines?: NonNullable<Parameters<typeof sendThreadMessage>[4]>["startRoutines"],
   ) => {
-    const setup = await modelSetup(deps, actor);
-    const target = await resolveThreadTarget(deps.prisma, actor, input);
-    // A bot with its own runnable model needs no main model, and stopping work needs none.
-    const replied =
-      target.kind === "group" ? await replyParentBotId(deps.prisma, target, input) : undefined;
-    const noModel =
-      setup.needsModel &&
-      !(await botsRunOwnModels(deps, actor, sendTargetBotIds(target, input, replied)));
-    if (noModel && (target.kind !== "bot" || !isStopMessage(input))) {
-      throw new ORPCError("BAD_REQUEST", { message: MODEL_REQUIRED_SEND_ERROR });
-    }
-    if (target.kind === "bot") {
-      await assertTeachingSendAllowed(deps.prisma, actor.spaceId, target.botId);
-    }
+    const target = await resolveChatTarget(deps.prisma, actor, input);
+    const admission = doodleAdmission(actor, target);
     const confirmingImages =
       input.imageHandling === "confirm" && Boolean(input.artifactIds?.length);
     // Reuse the funding modelSetup resolved; a send never asks billing twice.
-    const deployment = setup.hasDeployment
+    const setup = confirmingImages ? await admission.setup() : null;
+    const deployment = setup?.hasDeployment
       ? { provider: deps.env.defaultProvider, model: deps.env.defaultModel }
       : null;
     return sendThreadMessage(
       {
         ...deps,
         maxAttachmentsPerMessage: deps.env.maxAttachmentsPerMessage,
-        imageAdmission: confirmingImages
+        imageAdmission: setup
           ? {
               secrets: deps.secrets,
               deployment,
@@ -117,9 +118,12 @@ export function threadsRoutes(ctx: RouterContext) {
       },
       actor,
       target,
-      { ...input, noModel },
-      takeoverReleaser(deps, actor, target),
-      startRoutines,
+      input,
+      {
+        admitDoodle: admission.admit,
+        releaseTakeover: takeoverReleaser(deps, actor),
+        startRoutines,
+      },
     ).catch((error: unknown) => {
       if (error instanceof AttachmentValidationError) {
         throw new ORPCError("BAD_REQUEST", { message: error.message });
@@ -129,20 +133,67 @@ export function threadsRoutes(ctx: RouterContext) {
   };
   return {
     threads: {
+      list: authed.threads.list.handler(({ context }) => listChats(deps.prisma, context.actor)),
+      create: authed.threads.create.handler(({ context, input }) =>
+        createChat(deps.prisma, context.actor, input).catch((error) => {
+          throw mapChatError(error);
+        }),
+      ),
+      members: authed.threads.members.handler(({ context, input }) =>
+        listChatMembers(deps.prisma, context.actor, input.threadId),
+      ),
+      addMembers: authed.threads.addMembers.handler(({ context, input }) =>
+        addChatMembers(deps.prisma, context.actor, input).catch((error) => {
+          throw mapChatError(error);
+        }),
+      ),
+      setDoodle: authed.threads.setDoodle.handler(async ({ context, input }) => {
+        const { chat, teardown } = await setChatDoodle(deps.prisma, context.actor, input);
+        await finishChatTeardown(deps, context.actor, teardown, input.threadId);
+        const routines = await deps.prisma.routine.findMany({
+          where: { threadId: input.threadId },
+          select: { id: true },
+        });
+        if (!input.doodle) {
+          await Promise.all(
+            routines.map((routine) =>
+              deps.jobs.cancel(routineJobKey(routine.id)).catch(() => undefined),
+            ),
+          );
+        }
+        return chat;
+      }),
+      rename: authed.threads.rename.handler(({ context, input }) =>
+        renameChat(deps.prisma, context.actor, input),
+      ),
+      leave: authed.threads.leave.handler(async ({ context, input }) => {
+        const teardown = await leaveChat(deps.prisma, context.actor, input.threadId);
+        await finishChatTeardown(deps, context.actor, teardown, input.threadId);
+        return { ok: true as const };
+      }),
+      delete: authed.threads.delete.handler(async ({ context, input }) => {
+        const teardown = await deleteChat(deps.prisma, context.actor, input.threadId).catch(
+          (error) => {
+            throw mapChatError(error);
+          },
+        );
+        await finishChatTeardown(deps, context.actor, teardown, null);
+        return { ok: true as const };
+      }),
+      setMuted: authed.threads.setMuted.handler(async ({ context, input }) => {
+        await setChatMuted(deps.prisma, context.actor, input);
+        return { ok: true as const };
+      }),
       head: authed.threads.head.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
+        const target = await resolveChatTarget(deps.prisma, context.actor, input);
         return threadHead(deps.prisma, target);
       }),
       get: authed.threads.get.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input, {
-          includeArchived: true,
-        });
-        return threadSnapshot(deps, target, context.actor.userId);
+        const target = await resolveChatTarget(deps.prisma, context.actor, input);
+        return threadSnapshot(deps, target, context.actor);
       }),
       messages: authed.threads.messages.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input, {
-          includeArchived: true,
-        });
+        const target = await resolveChatTarget(deps.prisma, context.actor, input);
         return loadMessagePage(
           deps.prisma,
           target.threadId,
@@ -152,7 +203,7 @@ export function threadsRoutes(ctx: RouterContext) {
         );
       }),
       subscribe: authed.threads.subscribe.handler(async function* ({ context, input }) {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
+        const target = await resolveChatTarget(deps.prisma, context.actor, input);
         const backgroundRunCache = new Map<string, Promise<boolean>>();
         const follow = deps.events.follow(target.threadId, input.cursor, context.signal);
         // A half-open stream looks identical to an idle one, so punctuate silence:
@@ -183,8 +234,6 @@ export function threadsRoutes(ctx: RouterContext) {
                 id: "heartbeat",
                 spaceId: context.actor.spaceId,
                 threadId: target.threadId,
-                // A bot thread's id is not the bot. Groups have no single bot, so the thread id stands in.
-                botId: target.kind === "bot" ? target.botId : target.threadId,
                 seq: 0,
                 type: "heartbeat",
                 createdAt: new Date().toISOString(),
@@ -215,7 +264,7 @@ export function threadsRoutes(ctx: RouterContext) {
         // The same checks as routines/testRun, all before anything is written.
         const targets = await Promise.all(
           [...new Set(input.routineIds)].map((routineId) =>
-            routineTestTarget(deps.prisma, repos, actor, routineId),
+            routineTestTarget(deps.prisma, actor, routineId),
           ),
         );
         const skillRecords = await agentSkills.listWithContent(actor);
@@ -275,24 +324,15 @@ export function threadsRoutes(ctx: RouterContext) {
         };
       }),
       react: authed.threads.react.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
+        const target = await resolveChatTarget(deps.prisma, context.actor, input);
+        const admission = doodleAdmission(context.actor, target);
         // Without a model or while teaching, the reaction is still saved; it just starts no turn.
-        const mayStartTurn =
-          (!(await modelSetup(deps, context.actor)).needsModel ||
-            (await botsRunOwnModels(deps, context.actor, [
-              await reactedBotId(target, input.messageId),
-            ]))) &&
-          (target.kind !== "bot" ||
-            (await assertTeachingSendAllowed(deps.prisma, context.actor.spaceId, target.botId).then(
-              () => true,
-              () => false,
-            )));
         const result = await reactToThreadMessage(
           deps,
           context.actor,
           target,
-          { ...input, mayStartTurn },
-          takeoverReleaser(deps, context.actor, target),
+          { ...input, admitDoodle: () => admission.admit().catch(() => false) },
+          takeoverReleaser(deps, context.actor),
         );
         if (result.eventSeq != null) {
           await deps.events.notify(target.threadId, result.eventSeq).catch((error) => {
@@ -302,27 +342,27 @@ export function threadsRoutes(ctx: RouterContext) {
         return { ok: true as const, runIds: result.runIds };
       }),
       stop: authed.threads.stop.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
+        const target = await resolveChatTarget(deps.prisma, context.actor, input);
         await stopThreadRuns(deps, context.actor, target);
         return { ok: true as const };
       }),
       clear: authed.threads.clear.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
-        const contextBotId = target.kind === "bot" ? target.botId : target.memberBotIds[0];
-        if (!contextBotId) throw new IsolationError();
+        const target = await resolveChatTarget(deps.prisma, context.actor, input);
+        // Clearing removes everyone's history, so only a chat with no one else may be cleared.
+        if (target.people > 1) {
+          throw new ORPCError("FORBIDDEN", {
+            message: "Only a chat with no one else in it can be cleared",
+          });
+        }
         const { cancelledRunIds, historyCompactionGeneration } = await deps.events.clearThread({
           spaceId: context.actor.spaceId,
           threadId: target.threadId,
-          botId: contextBotId,
-          ...(target.kind === "group" ? { groupId: target.groupId } : {}),
         });
         const [configuredMemory] = await Promise.all([
-          target.kind === "bot"
-            ? deps.memoryProviders.resolve(context.actor.spaceId).catch((error) => {
-                getLogger().error("semantic memory resolution after thread clear failed", error);
-                return null;
-              })
-            : Promise.resolve(null),
+          deps.memoryProviders.resolve(context.actor.spaceId).catch((error) => {
+            getLogger().error("semantic memory resolution after thread clear failed", error);
+            return null;
+          }),
           Promise.all(
             cancelledRunIds.map((runId) =>
               deps.jobs.cancel(runJobKey(runId)).catch(() => undefined),
@@ -332,19 +372,19 @@ export function threadsRoutes(ctx: RouterContext) {
         // Durable memories remain in their Space-private containers. Clear only removes
         // conversation-derived summaries from the previous generation; including the new
         // generation also covers a compaction job that began just after the clear committed.
-        if (configuredMemory && target.kind === "bot") {
+        if (configuredMemory) {
           // Best effort: the conversation rows are already deleted, so failing the clear here
           // would help nothing — a failed purge only leaves stale summaries recallable.
           try {
             const purged = await configuredMemory.provider.purgeHistory(
               {
-                botId: target.botId,
+                threadId: target.threadId,
                 generations: [
                   Math.max(0, historyCompactionGeneration - 1),
                   historyCompactionGeneration,
                 ],
               },
-              computerContext(context.actor, target.botId, `thread-clear:${target.threadId}`),
+              computerContext(context.actor, target.doodleId, `thread-clear:${target.threadId}`),
             );
             if (!purged.ok) {
               getLogger().error("semantic memory purge after thread clear failed", purged.error);
@@ -356,7 +396,7 @@ export function threadsRoutes(ctx: RouterContext) {
         return { ok: true as const };
       }),
       answer: authed.threads.answer.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
+        const target = await resolveChatTarget(deps.prisma, context.actor, input);
         const answered = await deps.events
           .answerRunInput({
             spaceId: context.actor.spaceId,
@@ -388,17 +428,11 @@ export function threadsRoutes(ctx: RouterContext) {
         return { ok: true as const };
       }),
       markRead: authed.threads.markRead.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
-        const unreadAfterSeq = await markThreadRead(deps.prisma, context.actor, target);
+        const { unreadAfterSeq } = await markChatRead(deps.prisma, context.actor, input.threadId);
         return { ok: true as const, unreadAfterSeq };
       }),
       markUnread: authed.threads.markUnread.handler(async ({ context, input }) => {
-        const target = await resolveThreadTarget(deps.prisma, context.actor, input);
-        if (input.messageId) {
-          await markThreadUnreadFrom(deps.prisma, context.actor, target, input.messageId);
-        } else {
-          await setThreadUnreadState(deps.prisma, context.actor, target, true);
-        }
+        await markChatUnread(deps.prisma, context.actor, input);
         return { ok: true as const };
       }),
     },

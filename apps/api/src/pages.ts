@@ -21,8 +21,7 @@ type PageDeps = { prisma: PrismaClient; secrets: SecretStore; webOrigin: string 
 const summarySelect = {
   id: true,
   title: true,
-  botId: true,
-  groupId: true,
+  threadId: true,
   visibility: true,
   currentVersion: true,
   pinnedAt: true,
@@ -36,8 +35,7 @@ function pageSummary(row: SummaryRow): PageSummary {
   return {
     id: row.id,
     title: row.title,
-    botId: row.botId,
-    groupId: row.groupId,
+    threadId: row.threadId,
     visibility: row.visibility === "link" ? "link" : "private",
     currentVersion: row.currentVersion,
     pinned: row.pinnedAt !== null,

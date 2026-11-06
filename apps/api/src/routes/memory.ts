@@ -1,75 +1,102 @@
+import type { MemoryScope } from "@labradoodle/adapter-kit";
 import { MEMORY_REVISION_CONFLICT_ERROR } from "@labradoodle/adapter-kit";
 import { buildAgentMemoryPrompt, readAgentMemory } from "@labradoodle/adapters";
+import type { Actor } from "@labradoodle/contracts";
 import { isDeletableMemoryDocument } from "@labradoodle/contracts";
-import { findSpaceMemoryConfig, IsolationError } from "@labradoodle/db";
+import { findSpaceMemoryConfig, IsolationError, requireChatMember } from "@labradoodle/db";
 import { ORPCError } from "@orpc/server";
 import {
   disconnectMemoryProvider,
   persistMemoryProviderConfig,
   serializeSpaceMemoryConfig,
-  updateMemoryProviderDefaultScope,
 } from "../memory-provider-config.js";
+import { resolveChatTarget } from "../thread-target.js";
 import type { RouterContext } from "./context.js";
 
+/** A chat's memory with `threadId`, else the caller's own in this workspace. */
+function memoryWhere(actor: Actor, threadId?: string) {
+  return threadId
+    ? { spaceId: actor.spaceId, threadId }
+    : { spaceId: actor.spaceId, threadId: null, userId: actor.userId };
+}
+
+function memoryScopeOf(doc: { threadId: string | null; userId: string }): MemoryScope {
+  return doc.threadId
+    ? { kind: "chat", threadId: doc.threadId }
+    : { kind: "person", userId: doc.userId };
+}
+
+function memoryDocumentDto(doc: {
+  id: string;
+  threadId: string | null;
+  path: string;
+  content: string;
+  revision: number;
+  updatedAt: Date;
+}) {
+  return {
+    id: doc.id,
+    threadId: doc.threadId,
+    path: doc.path,
+    content: doc.content,
+    revision: doc.revision,
+    updatedAt: doc.updatedAt.toISOString(),
+  };
+}
+
+function memoryContext(actor: Actor, botId: string, signal?: AbortSignal) {
+  return {
+    operationId: "mem",
+    traceId: "mem",
+    spaceId: actor.spaceId,
+    userId: actor.userId,
+    botId,
+    signal: signal ?? new AbortController().signal,
+  };
+}
+
 export function memoryRoutes(ctx: RouterContext) {
-  const { deps, repos, taughtSkills, agentSkills, authed } = ctx;
+  const { deps, taughtSkills, agentSkills, authed } = ctx;
   return {
     memory: {
       list: authed.memory.list.handler(async ({ context, input }) => {
+        if (input.threadId) {
+          await requireChatMember(deps.prisma, context.actor, input.threadId);
+        }
         const docs = await deps.prisma.memoryDocument.findMany({
-          where: {
-            spaceId: context.actor.spaceId,
-            ...(input.botId ? { botId: input.botId } : {}),
-            ...(input.scope ? { scope: input.scope } : {}),
-          },
+          where: memoryWhere(context.actor, input.threadId),
+          orderBy: [{ updatedAt: "desc" }, { path: "asc" }],
         });
-        return docs.map((doc) => ({
-          id: doc.id,
-          scope: doc.scope as "bot" | "user",
-          botId: doc.botId,
-          path: doc.path,
-          content: doc.content,
-          revision: doc.revision,
-          updatedAt: doc.updatedAt.toISOString(),
-        }));
+        return docs.map(memoryDocumentDto);
       }),
       budget: authed.memory.budget.handler(async ({ context, input }) => {
-        await repos.getBot(context.actor, input.botId);
-        // Read through the store a run uses, so the numbers match what the bot receives.
-        const documents = await readAgentMemory(deps.memory, input.botId, {
-          operationId: "mem",
-          traceId: "mem",
-          spaceId: context.actor.spaceId,
-          userId: context.actor.userId,
-          botId: input.botId,
-          signal: context.signal ?? new AbortController().signal,
-        });
+        const target = await resolveChatTarget(deps.prisma, context.actor, input);
+        // Read through the store a run uses, so the numbers match what Doodle receives.
+        const documents = await readAgentMemory(
+          deps.memory,
+          {
+            threadId: target.threadId,
+            ...(target.people <= 1 ? { personUserId: context.actor.userId } : {}),
+          },
+          memoryContext(context.actor, target.doodleId, context.signal),
+        );
         return buildAgentMemoryPrompt(documents).plan;
       }),
       update: authed.memory.update.handler(async ({ context, input }) => {
+        // Row-level security shows only the caller's chats' memory and their own.
         const doc = await deps.prisma.memoryDocument.findFirst({
-          where: {
-            id: input.documentId,
-            spaceId: context.actor.spaceId,
-          },
+          where: { id: input.documentId, spaceId: context.actor.spaceId },
         });
         if (!doc) throw new IsolationError();
         const updated = await deps.memory
           .commit(
             {
-              scope: doc.scope as "bot" | "user",
-              botId: doc.botId ?? undefined,
+              scope: memoryScopeOf(doc),
               path: doc.path,
               content: input.content,
               expectedRevision: input.expectedRevision,
             },
-            {
-              operationId: "mem",
-              traceId: "mem",
-              spaceId: context.actor.spaceId,
-              userId: context.actor.userId,
-              signal: new AbortController().signal,
-            },
+            memoryContext(context.actor, doc.threadId ?? "person"),
           )
           .catch((error: unknown) => {
             if (error instanceof Error && error.message === MEMORY_REVISION_CONFLICT_ERROR) {
@@ -79,8 +106,7 @@ export function memoryRoutes(ctx: RouterContext) {
           });
         return {
           id: updated.id,
-          scope: doc.scope as "bot" | "user",
-          botId: doc.botId,
+          threadId: doc.threadId,
           path: updated.path,
           content: updated.content,
           revision: updated.revision,
@@ -89,10 +115,7 @@ export function memoryRoutes(ctx: RouterContext) {
       }),
       remove: authed.memory.remove.handler(async ({ context, input }) => {
         const doc = await deps.prisma.memoryDocument.findFirst({
-          where: {
-            id: input.documentId,
-            spaceId: context.actor.spaceId,
-          },
+          where: { id: input.documentId, spaceId: context.actor.spaceId },
         });
         if (!doc) throw new IsolationError();
         if (!isDeletableMemoryDocument(doc.path)) {
@@ -101,28 +124,18 @@ export function memoryRoutes(ctx: RouterContext) {
           });
         }
         await deps.memory.remove(
-          {
-            id: doc.id,
-            scope: doc.scope as "bot" | "user",
-            botId: doc.botId ?? undefined,
-            path: doc.path,
-          },
-          {
-            operationId: "mem",
-            traceId: "mem",
-            spaceId: context.actor.spaceId,
-            userId: context.actor.userId,
-            signal: new AbortController().signal,
-          },
+          { id: doc.id, scope: memoryScopeOf(doc), path: doc.path },
+          memoryContext(context.actor, doc.threadId ?? "person"),
         );
         return { ok: true as const };
       }),
       exportMarkdown: authed.memory.exportMarkdown.handler(async ({ context, input }) => {
+        if (input.threadId) {
+          await requireChatMember(deps.prisma, context.actor, input.threadId);
+        }
         const docs = await deps.prisma.memoryDocument.findMany({
-          where: {
-            spaceId: context.actor.spaceId,
-            ...(input.botId ? { botId: input.botId } : {}),
-          },
+          where: memoryWhere(context.actor, input.threadId),
+          orderBy: { path: "asc" },
         });
         return docs.map((d) => `# ${d.path}\n\n${d.content}`).join("\n\n");
       }),
@@ -133,25 +146,18 @@ export function memoryRoutes(ctx: RouterContext) {
       connectProvider: authed.memory.connectProvider.handler(async ({ context, input }) =>
         persistMemoryProviderConfig(deps, context.actor, input),
       ),
-      setDefaultScope: authed.memory.setDefaultScope.handler(async ({ context, input }) =>
-        updateMemoryProviderDefaultScope(deps, context.actor, input.defaultMemoryScope),
-      ),
       disconnectProvider: authed.memory.disconnectProvider.handler(async ({ context }) =>
         disconnectMemoryProvider(deps, context.actor),
       ),
     },
     skills: {
-      list: authed.skills.list.handler(async ({ context, input }) => {
-        await repos.getBot(context.actor, input.botId);
-        return taughtSkills.list(context.actor, input.botId);
-      }),
+      list: authed.skills.list.handler(async ({ context }) => taughtSkills.list(context.actor)),
       get: authed.skills.get.handler(async ({ context, input }) =>
         taughtSkills.get(context.actor, input.skillId),
       ),
-      start: authed.skills.start.handler(async ({ context, input }) => {
-        await repos.getBot(context.actor, input.botId);
-        return taughtSkills.start(context.actor, input.botId, input.goal);
-      }),
+      start: authed.skills.start.handler(async ({ context, input }) =>
+        taughtSkills.start(context.actor, input.goal),
+      ),
       appendEvent: authed.skills.appendEvent.handler(async ({ context, input }) =>
         taughtSkills.appendEvent(context.actor, input.skillId, input.event),
       ),

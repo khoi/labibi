@@ -1,19 +1,17 @@
 import type { Actor, MessageBlock } from "@labradoodle/contracts";
 import type { Prisma, PrismaClient, ThreadEvents } from "@labradoodle/db";
-import { appendEventInTransaction, IsolationError } from "@labradoodle/db";
+import { appendEventInTransaction } from "@labradoodle/db";
+import { resolveChatTarget } from "./thread-target.js";
 
 export type BotThreadDeps = {
   prisma: PrismaClient;
   events: ThreadEvents;
 };
 
-export async function requireBotThread(deps: BotThreadDeps, actor: Actor, botId: string) {
-  const bot = await deps.prisma.bot.findFirst({
-    where: { id: botId, spaceId: actor.spaceId },
-    include: { thread: true },
-  });
-  if (!bot?.thread) throw new IsolationError();
-  return { bot, thread: bot.thread };
+/** A chat the caller is in, with the workspace's Doodle that posts there. */
+export async function requireChatDoodle(deps: BotThreadDeps, actor: Actor, threadId: string) {
+  const target = await resolveChatTarget(deps.prisma, actor, { threadId });
+  return { bot: { id: target.doodleId }, thread: { id: target.threadId } };
 }
 
 export async function updateBlocks(

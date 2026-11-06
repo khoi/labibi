@@ -1,16 +1,13 @@
 import type { UsageOperationKind } from "@labradoodle/adapter-kit";
-import { resolveBotWorkspacePath } from "@labradoodle/adapters";
-import type { ExportManifest } from "@labradoodle/contracts";
 import { attachmentMaxBytes } from "@labradoodle/contracts";
 import { AttachmentValidationError } from "@labradoodle/core";
-import { IsolationError, LISTED_ARTIFACT, parseComputerMode } from "@labradoodle/db";
+import { LISTED_ARTIFACT, requireChatMember } from "@labradoodle/db";
 import { ORPCError } from "@orpc/server";
 import {
   ArtifactListCursorError,
   createOwnedArtifact,
   deleteArtifactFamily,
   getOwnedArtifact,
-  getSpaceArtifact,
   getSpaceArtifactById,
   listArtifactVersions,
   listSpaceArtifacts,
@@ -18,29 +15,24 @@ import {
 import { requireIdentityConfirmation } from "../identity-confirmation.js";
 import { listSpaceRuns } from "../runs.js";
 import { querySpaceSearch } from "../search.js";
-import { loadAllMessages } from "../thread-message-pages.js";
 import type { RouterContext } from "./context.js";
 
-const EXPORT_MESSAGE_PAGE_SIZE = 500;
-
 export function contentRoutes(ctx: RouterContext) {
-  const { deps, repos, favicons, groupRepos, authed } = ctx;
+  const { deps, favicons, authed } = ctx;
   return {
     artifacts: {
       list: authed.artifacts.list.handler(async ({ context, input }) => {
-        await repos.getBot(context.actor, input.botId);
+        await requireChatMember(deps.prisma, context.actor, input.threadId);
         const rows = await deps.prisma.artifact.findMany({
           where: {
-            botId: input.botId,
-            groupId: null,
+            threadId: input.threadId,
             spaceId: context.actor.spaceId,
             ...LISTED_ARTIFACT,
           },
         });
         return rows.map((row) => ({
           id: row.id,
-          botId: row.botId,
-          groupId: row.groupId,
+          threadId: row.threadId,
           runId: row.runId,
           name: row.name,
           description: row.description,
@@ -51,7 +43,7 @@ export function contentRoutes(ctx: RouterContext) {
         }));
       }),
       listSpace: authed.artifacts.listSpace.handler(async ({ context, input }) => {
-        if (input.botId) await repos.getBot(context.actor, input.botId);
+        if (input.threadId) await requireChatMember(deps.prisma, context.actor, input.threadId);
         try {
           return await listSpaceArtifacts(deps, context.actor, input);
         } catch (error) {
@@ -65,15 +57,12 @@ export function contentRoutes(ctx: RouterContext) {
         return listArtifactVersions(deps, context.actor, input);
       }),
       create: authed.artifacts.create.handler(async ({ context, input }) => {
-        const botId = input.botId
-          ? (await repos.getBot(context.actor, input.botId)).id
-          : (await groupRepos.getGroupTarget(context.actor, input.groupId!)).members[0]?.bot.id;
-        if (!botId) throw new IsolationError();
+        await requireChatMember(deps.prisma, context.actor, input.threadId);
         try {
           return await createOwnedArtifact(
             { ...deps, maxUploadSizeBytes: attachmentMaxBytes(deps.env) },
             context.actor,
-            { ...input, botId },
+            input,
           );
         } catch (error) {
           if (error instanceof AttachmentValidationError) {
@@ -83,26 +72,8 @@ export function contentRoutes(ctx: RouterContext) {
         }
       }),
       get: authed.artifacts.get.handler(async ({ context, input }) => {
-        if (input.groupId) {
-          const group = await groupRepos.getGroupTarget(context.actor, input.groupId);
-          const contextBotId = group.members[0]?.bot.id;
-          if (!contextBotId) throw new IsolationError();
-          return getSpaceArtifact(deps, context.actor, {
-            artifactId: input.artifactId,
-            groupId: input.groupId,
-            contextBotId,
-          });
-        }
-        await repos.getBot(context.actor, input.botId!);
-        try {
-          return await getOwnedArtifact(deps, context.actor, {
-            botId: input.botId!,
-            artifactId: input.artifactId,
-          });
-        } catch (error) {
-          if (error instanceof IsolationError) throw error;
-          throw error;
-        }
+        await requireChatMember(deps.prisma, context.actor, input.threadId);
+        return getOwnedArtifact(deps, context.actor, input);
       }),
       getById: authed.artifacts.getById.handler(async ({ context, input }) => {
         return getSpaceArtifactById(deps, context.actor, input);
@@ -195,58 +166,6 @@ export function contentRoutes(ctx: RouterContext) {
       }),
     },
     export: {
-      bot: authed.export.bot.handler(async ({ context, input }) => {
-        const bot = await repos.getBot(context.actor, input.botId);
-        if (!bot.thread || !bot.computer) throw new IsolationError();
-        const homeKey = bot.computer.homeKey;
-        const computerMode = parseComputerMode(bot.computer.scope);
-        const exportContext = {
-          operationId: "export",
-          traceId: "export",
-          spaceId: context.actor.spaceId,
-          userId: context.actor.userId,
-          signal: new AbortController().signal,
-        };
-        const [memory, routines, files, history] = await Promise.all([
-          deps.prisma.memoryDocument.findMany({
-            where: { botId: input.botId, spaceId: context.actor.spaceId },
-          }),
-          deps.prisma.routine.findMany({
-            where: { botId: input.botId, spaceId: context.actor.spaceId },
-          }),
-          (async () => {
-            const exported: ExportManifest["files"] = [];
-            const directory = resolveBotWorkspacePath(computerMode, bot.id, "");
-            // Root dotfiles contain computer state rather than portable bot files.
-            for await (const file of deps.home.exportHome(homeKey, exportContext, {
-              directory,
-              skipHidden: true,
-            })) {
-              exported.push(exportFile(file.path, file.content));
-            }
-            return exported;
-          })(),
-          loadAllMessages(deps.prisma, bot.thread.id, EXPORT_MESSAGE_PAGE_SIZE),
-        ]);
-        return {
-          version: 1 as const,
-          exportedAt: new Date().toISOString(),
-          bot: {
-            name: bot.name,
-            instructions: bot.instructions,
-            color: bot.color,
-          },
-          memory: memory.map((m) => ({ path: m.path, content: m.content })),
-          routines: routines.map((r) => ({
-            name: r.name,
-            prompt: r.prompt,
-            crons: r.crons,
-            timezone: r.timezone,
-          })),
-          files,
-          history,
-        };
-      }),
       accountToken: authed.export.accountToken.handler(async ({ context }) => {
         await requireIdentityConfirmation(deps.auth, context);
         return { token: await deps.auth.issueAccountExportToken(context.actor.userId) };
@@ -266,16 +185,4 @@ export function contentRoutes(ctx: RouterContext) {
       })),
     },
   };
-}
-
-/** Valid UTF-8 stays readable text; anything else is base64 so the bytes survive the JSON. */
-function exportFile(path: string, content: Uint8Array): ExportManifest["files"][number] {
-  try {
-    return {
-      path,
-      content: new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(content),
-    };
-  } catch {
-    return { path, content: Buffer.from(content).toString("base64"), encoding: "base64" };
-  }
 }

@@ -28,17 +28,17 @@ export {
   type WebhookTarget,
 } from "./webhook-inbound.js";
 
-export function webhookPath(botId: string): string {
-  return `/api/v1/bots/${botId}/webhook`;
+export function webhookPath(routineId: string): string {
+  return `/api/v1/routines/${routineId}/webhook`;
 }
 
 export function mountWebhookHttpRoutes(app: Hono, deps: WebhookDeps) {
   const secretCache: WebhookSecretCache = new Map();
 
-  app.post("/api/v1/bots/:botId/webhook", async (c) => {
+  app.post("/api/v1/routines/:routineId/webhook", async (c) => {
     const unauthorized = () => c.json({ error: "Unauthorized" }, 401);
 
-    // Reject oversized bodies before target lookup so size limits do not reveal active bots.
+    // Reject oversized bodies before target lookup so size limits do not reveal active routines.
     const raw = await readBoundedBody(c.req.raw, WEBHOOK_MAX_BODY_BYTES);
     if (raw === null) {
       return c.json({ error: "Payload too large" }, 413);
@@ -46,7 +46,7 @@ export function mountWebhookHttpRoutes(app: Hono, deps: WebhookDeps) {
 
     let target: Awaited<ReturnType<typeof loadWebhookTarget>>;
     try {
-      target = await loadWebhookTarget(deps, secretCache, c.req.param("botId"));
+      target = await loadWebhookTarget(deps, secretCache, c.req.param("routineId"));
     } catch (error) {
       if (error instanceof SecretStoreUnavailableError) {
         return c.json({ error: "Service unavailable" }, 503);
@@ -54,20 +54,13 @@ export function mountWebhookHttpRoutes(app: Hono, deps: WebhookDeps) {
       throw error;
     }
 
-    // Same 401 for missing bot, missing secret, and bad bearer so bot ids are not enumerable.
+    // Same 401 for a missing routine, missing secret, and bad bearer so ids are not enumerable.
     if (!target || !hasValidBearerToken(c.req.header("authorization"), target.expected)) {
       return unauthorized();
     }
 
     const webhookRoutines = await deps.prisma.routine.findMany({
-      where: {
-        botId: target.bot.id,
-        spaceId: target.bot.spaceId,
-        // The delivery runs as the bot's creator, so only their own routines may ride on it.
-        userId: target.bot.userId,
-        active: true,
-        webhookEnabled: true,
-      },
+      where: { id: target.routineId, active: true, webhookEnabled: true },
       select: {
         id: true,
         name: true,

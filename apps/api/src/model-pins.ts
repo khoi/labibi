@@ -2,6 +2,7 @@ import type { CodexLiveCatalog, parseModelSecret } from "@labradoodle/adapters";
 import { findConnectedModelCredential, validateConnectedModelChoice } from "@labradoodle/adapters";
 import type { Actor } from "@labradoodle/contracts";
 import { OPENAI_COMPATIBLE_PROVIDER_ID, usableModelId } from "@labradoodle/contracts";
+import { DOODLE_NAME } from "@labradoodle/core";
 import { runAsSystem } from "@labradoodle/db";
 import { ORPCError } from "@orpc/server";
 import type { RouterDeps } from "./router.js";
@@ -19,12 +20,19 @@ async function compatibleModelPins(
   // A connection is the account's, so its pins are checked in every Space it is used in.
   const [bots, routines, roles] = await runAsSystem("model pins across the account's Spaces", () =>
     Promise.all([
-      deps.prisma.bot.findMany({
-        where: { ...where, archivedAt: null, modelProvider: provider },
-        select: { ...pin, name: true },
-      }),
+      // Doodle runs on the owner's choice in each workspace they own.
+      deps.prisma.bot
+        .findMany({
+          where: {
+            modelId,
+            modelProvider: provider,
+            space: { memberships: { some: { userId: actor.userId, role: { contains: "owner" } } } },
+          },
+          select: pin,
+        })
+        .then((rows) => rows.map((row) => ({ ...row, name: DOODLE_NAME }))),
       deps.prisma.routine.findMany({
-        where: { ...where, modelProvider: provider, bot: { archivedAt: null } },
+        where: { ...where, modelProvider: provider },
         select: { ...pin, name: true },
       }),
       deps.prisma.userModelRoleChoice.findMany({ where: { ...where, provider }, select: role }),

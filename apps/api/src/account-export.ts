@@ -1,5 +1,4 @@
 import type { AdapterContext, AgentHomeStore, ArtifactStore } from "@labradoodle/adapter-kit";
-import { resolveBotWorkspacePath } from "@labradoodle/adapters";
 import type { Auth } from "@labradoodle/auth";
 import type {
   AccountExportExecutables,
@@ -16,7 +15,6 @@ import {
 import type { AccountExportSource, PrismaClient } from "@labradoodle/db";
 import {
   accountDeactivated,
-  parseComputerMode,
   readAccountExport,
   runAsTenant,
   runGeneratorAsTenant,
@@ -160,30 +158,22 @@ export async function* accountArchiveFiles(
       yield { path: accountExportPaths.artifact(space.id, artifact.id), data: [bytes] };
     }
     const executables: AccountExportExecutables = [];
-    for (const home of await space.homes()) {
-      const directory = resolveBotWorkspacePath(
-        parseComputerMode(home.computerScope),
-        home.botId,
-        "",
-      );
-      const files = stores.home.exportHome(home.homeKey, context(home.botId), {
-        directory,
+    const home = await space.home();
+    if (home) {
+      const files = stores.home.exportHome(home.homeKey, context(), {
+        directory: "",
         skipHidden: true,
       });
       for await (const file of runGeneratorAsTenant(tenant, iterate(files))) {
         if (file.content.length > ACCOUNT_EXPORT_MAX_HOME_FILE_BYTES) {
           getLogger().warn("account.export.home_file_too_large", {
-            "bot.id": home.botId,
             "space.id": space.id,
             size: file.content.length,
           });
           continue;
         }
-        if (file.executable) executables.push({ botId: home.botId, path: file.path });
-        yield {
-          path: accountExportPaths.homeFile(space.id, home.botId, file.path),
-          data: [file.content],
-        };
+        if (file.executable) executables.push({ path: file.path });
+        yield { path: accountExportPaths.homeFile(space.id, file.path), data: [file.content] };
       }
     }
     if (executables.length)

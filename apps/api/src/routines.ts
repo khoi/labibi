@@ -13,10 +13,9 @@ import {
   routineScheduleDelayed,
 } from "@labradoodle/core";
 import type { Prisma, PrismaClient } from "@labradoodle/db";
-import { IsolationError } from "@labradoodle/db";
+import { IsolationError, requireChatMember } from "@labradoodle/db";
 import { ORPCError } from "@orpc/server";
 import type { RouterDeps } from "./router.js";
-import type { RouterContext } from "./routes/context.js";
 
 export function assertRoutineSchedule(input: CreateRoutineInput): void {
   if (hasMixedOneShotSchedule(input.crons)) {
@@ -43,10 +42,16 @@ export function routineNextRunAt(input: CreateRoutineInput): Date | null {
   return nextRunAt;
 }
 
-export function routineRowData(actor: Actor, input: CreateRoutineInput, nextRunAt: Date | null) {
+export function routineRowData(
+  actor: Actor,
+  input: CreateRoutineInput,
+  nextRunAt: Date | null,
+  doodleId: string,
+) {
   return {
     spaceId: actor.spaceId,
-    botId: input.botId,
+    botId: doodleId,
+    threadId: input.threadId,
     userId: actor.userId,
     name: input.name,
     prompt: input.prompt,
@@ -82,7 +87,8 @@ export function firstWatchCheck(): Date {
 
 export function mapRoutine(row: {
   id: string;
-  botId: string;
+  threadId: string;
+  webhookSecretId: string | null;
   name: string;
   prompt: string;
   crons: string[];
@@ -102,7 +108,7 @@ export function mapRoutine(row: {
 }): Routine {
   return {
     id: row.id,
-    botId: row.botId,
+    threadId: row.threadId,
     name: row.name,
     prompt: row.prompt,
     crons: row.crons,
@@ -110,6 +116,7 @@ export function mapRoutine(row: {
     active: row.active,
     notify: row.notify,
     webhookEnabled: row.webhookEnabled,
+    webhookConfigured: Boolean(row.webhookSecretId),
     githubEnabled: row.githubEnabled,
     modelProvider: row.modelProvider ? canonicalPiProviderId(row.modelProvider) : null,
     modelId: row.modelId ?? null,
@@ -126,29 +133,41 @@ export function mapRoutine(row: {
   };
 }
 
-/** Any member may change a routine; editing it hands it to them (see routines.update). */
-export async function listRoutinesDto(deps: RouterDeps, actor: Actor, botId: string) {
+/** A chat's routines; anyone in it may change one (see routines.update). */
+export async function listRoutinesDto(deps: RouterDeps, actor: Actor, threadId: string) {
   const rows = await deps.prisma.routine.findMany({
-    where: { botId, spaceId: actor.spaceId },
+    where: { threadId, spaceId: actor.spaceId },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
   });
   return rows.map(mapRoutine);
+}
+
+/** Routines belong to a chat Doodle is in, which the caller is in too. */
+export async function requireRoutineChat(prisma: PrismaClient, actor: Actor, threadId: string) {
+  const chat = await requireChatMember(prisma, actor, threadId);
+  if (!chat.doodle) {
+    throw new ORPCError("BAD_REQUEST", { message: "Add Doodle to this chat first." });
+  }
+  const doodle = await prisma.bot.findUnique({
+    where: { spaceId: actor.spaceId },
+    select: { id: true },
+  });
+  if (!doodle) throw new IsolationError();
+  return { threadId: chat.id, doodleId: doodle.id };
 }
 
 export function createRoutineAnnouncer(deps: RouterDeps) {
   const announceRoutine = async (
     actor: Actor,
-    bot: { id: string; thread: { id: string } | null },
     row: Awaited<ReturnType<typeof deps.prisma.routine.create>>,
   ) => {
-    if (bot.thread) {
-      await deps.events.append({
-        spaceId: actor.spaceId,
-        threadId: bot.thread.id,
-        botId: bot.id,
-        type: "routine.created",
-        payload: { name: row.name },
-      });
-    }
+    await deps.events.append({
+      spaceId: actor.spaceId,
+      threadId: row.threadId,
+      botId: row.botId,
+      type: "routine.created",
+      payload: { name: row.name },
+    });
     if (row.active && row.nextRunAt) {
       await deps.jobs.enqueue(routineWakeupJob(row.id, row.nextRunAt));
     }
@@ -156,20 +175,14 @@ export function createRoutineAnnouncer(deps: RouterDeps) {
   return announceRoutine;
 }
 
-/** A routine in the caller's Space on a bot they may use, the check behind every routine test run. */
-export async function routineTestTarget(
-  prisma: PrismaClient,
-  repos: RouterContext["repos"],
-  actor: Actor,
-  routineId: string,
-) {
+/** A routine of a chat the caller is in, with Doodle there: the check behind every test run. */
+export async function routineTestTarget(prisma: PrismaClient, actor: Actor, routineId: string) {
   const routine = await prisma.routine.findFirst({
     where: { id: routineId, spaceId: actor.spaceId },
   });
   if (!routine) throw new IsolationError();
-  const bot = await repos.getBot(actor, routine.botId);
-  if (!bot.thread) throw new IsolationError();
-  return { routine, botId: bot.id, threadId: bot.thread.id };
+  const chat = await requireRoutineChat(prisma, actor, routine.threadId);
+  return { routine, botId: chat.doodleId, threadId: chat.threadId };
 }
 
 /**

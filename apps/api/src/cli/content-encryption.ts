@@ -37,11 +37,11 @@ const USAGE = `Usage: content-encryption <command> [--dry-run]
   reencrypt            Re-encrypt content still under an older data key
   decrypt              Write plaintext back, after CONTENT_ENCRYPTION=off or
                        before rolling back to an older release
-  export [--space <id>] [--thread <id>] [--bot <id>] [--output <file>]
+  export [--space <id>] [--thread <id>] [--output <file>]
                        Write decrypted threads, messages and memory as JSON lines`;
 
 const COMMANDS = ["status", "migrate", "rotate", "reencrypt", "decrypt", "export"];
-const EXPORT_OPTIONS = ["space", "thread", "bot", "output"] as const;
+const EXPORT_OPTIONS = ["space", "thread", "output"] as const;
 
 function parseCommand() {
   try {
@@ -52,7 +52,6 @@ function parseCommand() {
         reencrypt: { type: "boolean" },
         space: { type: "string" },
         thread: { type: "string" },
-        bot: { type: "string" },
         output: { type: "string" },
       },
     });
@@ -103,7 +102,7 @@ async function exportJsonLines() {
   async function* lines() {
     for await (const record of exportContent(
       prisma,
-      { spaceId: flags.space, threadId: flags.thread, botId: flags.bot },
+      { spaceId: flags.space, threadId: flags.thread },
       { signal: controller.signal },
     )) {
       records += 1;

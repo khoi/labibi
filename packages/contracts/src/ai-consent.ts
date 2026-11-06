@@ -6,16 +6,16 @@ export const AiDataUseSchema = z.enum(["model", "voice", "memory"]);
 export type AiDataUse = z.infer<typeof AiDataUseSchema>;
 export const AI_DATA_DISCLOSURES: Record<AiDataUse, string> = {
   model:
-    "Messages, chat history, bot instructions, memories, attachments, screenshots and connected-app content are sent to run your bots, including routines.",
+    "Messages, chat history, Doodle's instructions, memories, attachments, screenshots and connected-app content are sent to run Doodle, including routines.",
   voice:
     "Your recordings are sent for transcription, and text you play is sent to generate speech.",
   memory:
-    "Conversation summaries, memories, searches and bot and Space IDs are sent to store and recall context.",
+    "Conversation summaries, memories, searches and chat and person IDs are sent to store and recall context.",
 };
 export const AiConsentQuerySchema = z
   .object({
-    botId: z.string().optional(),
-    groupId: z.string().optional(),
+    /** A chat: only its routines count beside Doodle. */
+    threadId: z.string().optional(),
     routineId: z.string().optional(),
     uses: z.array(AiDataUseSchema).optional(),
   })

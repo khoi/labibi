@@ -6,18 +6,12 @@ import type {
   SandboxProvider,
   SecretStore,
 } from "@labradoodle/adapter-kit";
-import {
-  destroyBot,
-  forgetPageShareSecrets,
-  removeAgentHome,
-  toComputerRef,
-} from "@labradoodle/adapters";
+import { forgetPageShareSecrets, removeAgentHome, toComputerRef } from "@labradoodle/adapters";
 import type { Actor } from "@labradoodle/contracts";
 import type { PrismaClient } from "@labradoodle/db";
 import {
   claimSpaceDeletionForMember,
   deleteClaimedSpaceForMember,
-  listClaimedSpaceBots,
   listClaimedSpaceComputers,
   recordComputerRunEnd,
   releaseSpaceDeletionClaim,
@@ -27,7 +21,7 @@ import {
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 
-/** Bound for one bot or sandbox teardown. Providers may ignore the abort signal,
+/** Bound for one sandbox teardown. Providers may ignore the abort signal,
  * so without a deadline a hung destroy would keep the deletion claim renewed
  * forever and block stale-claim recovery. */
 const SPACE_TEARDOWN_TIMEOUT_MS = 120_000;
@@ -71,8 +65,8 @@ export async function deleteSpaceWithContent(
     signal: new AbortController().signal,
   });
   try {
-    // Claim before teardown. Bot and group creation take the same lifecycle lock
-    // and reject the Space until deletion finishes or this claim is released.
+    // Claim before teardown. Chat creation takes the same lifecycle lock and rejects the
+    // workspace until deletion finishes or this claim is released.
     const claim = await claimSpaceDeletionForMember(deps.prisma, deleteInput);
     claimId = claim.claimId;
     claimActive = true;
@@ -126,26 +120,6 @@ export async function deleteSpaceWithContent(
       await assertClaim();
     };
 
-    for (const bot of await listClaimedSpaceBots(deps.prisma, claimedInput)) {
-      try {
-        await teardown(
-          () =>
-            destroyBot({ ...deps, secretStore: deps.secrets }, bot, context(bot.id), {
-              deleteMemories: true,
-              strictTeardown: true,
-            }),
-          "Space bot teardown timed out",
-        );
-      } catch (error) {
-        // A takeover worker may have finished this bot first.
-        if (!claimHealthy) throw error;
-        const remaining = await deps.prisma.bot.findUnique({
-          where: { id: bot.id },
-          select: { id: true },
-        });
-        if (remaining) throw error;
-      }
-    }
     for (const computer of await listClaimedSpaceComputers(deps.prisma, claimedInput)) {
       await teardown(
         () => deps.sandbox.destroy(toComputerRef(computer), context(computer.homeKey)),

@@ -13,13 +13,12 @@ import {
   IsolationError,
   THREAD_LOCK_TRANSACTION_OPTIONS,
 } from "@labradoodle/db";
-import { requireBotThread } from "./bot-thread.js";
-import { resolveThreadTarget } from "./thread-target.js";
+import { requireChatDoodle } from "./bot-thread.js";
 
 /**
- * First-run conversational onboarding, seeded deterministically into the bot's
- * thread: greeting, a focus choice, and available app cards the user authorizes
- * inline. Focus must not rename the bot. No model tokens are spent.
+ * First-run conversational onboarding, seeded deterministically into the person's first chat
+ * with Doodle: a focus choice and available app cards they authorize inline. No model tokens
+ * are spent.
  */
 
 type OnboardingDeps = {
@@ -108,9 +107,9 @@ function messageHasPendingChoice(blocks: MessageBlock[]): boolean {
 export async function promptFocus(
   deps: OnboardingDeps,
   actor: Actor,
-  botId: string,
+  threadId: string,
 ): Promise<void> {
-  const { bot, thread } = await requireBotThread(deps, actor, botId);
+  const { bot, thread } = await requireChatDoodle(deps, actor, threadId);
   const target = { spaceId: actor.spaceId, botId: bot.id, threadId: thread.id };
   const blocks: MessageBlock[] = [
     {
@@ -153,9 +152,9 @@ export async function promptFocus(
 export async function dismissFocus(
   deps: OnboardingDeps,
   actor: Actor,
-  botId: string,
+  threadId: string,
 ): Promise<void> {
-  const { bot, thread } = await requireBotThread(deps, actor, botId);
+  const { bot, thread } = await requireChatDoodle(deps, actor, threadId);
   const target = { spaceId: actor.spaceId, botId: bot.id, threadId: thread.id };
   const claimed = await deps.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.$executeRaw`SELECT id FROM threads WHERE id = ${thread.id} FOR UPDATE`;
@@ -189,12 +188,12 @@ export async function dismissFocus(
 export async function chooseFocus(
   deps: OnboardingDeps,
   actor: Actor,
-  botId: string,
+  threadId: string,
   optionId: string,
 ): Promise<void> {
   const option = FOCUS_OPTIONS.find((entry) => entry.id === optionId);
   if (!option) throw new IsolationError();
-  const { bot, thread } = await requireBotThread(deps, actor, botId);
+  const { bot, thread } = await requireChatDoodle(deps, actor, threadId);
   const target = { spaceId: actor.spaceId, botId: bot.id, threadId: thread.id };
 
   const claimed = await deps.prisma.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -223,8 +222,6 @@ export async function chooseFocus(
   if (!claimed) return;
   await deps.events.notify(target.threadId, claimed.event.seq);
 
-  // Keep the name and title the user chose when creating the bot; the focus
-  // step only suggests apps, it must not rename the bot.
   await post(
     deps,
     target,
@@ -284,23 +281,13 @@ export async function chooseFocus(
 export async function markAppConnected(
   deps: OnboardingDeps,
   actor: Actor,
-  botId: string,
+  threadId: string,
   provider: string,
   connectorId = "composio",
-  threadId?: string,
   messageId?: string,
 ): Promise<void> {
-  const { bot, thread: ownThread } = await requireBotThread(deps, actor, botId);
-  let thread = ownThread;
-  if (threadId && threadId !== ownThread.id) {
-    const candidate = await deps.prisma.thread.findFirst({
-      where: { id: threadId, spaceId: actor.spaceId },
-    });
-    if (!candidate?.groupId) throw new IsolationError();
-    const target = await resolveThreadTarget(deps.prisma, actor, { groupId: candidate.groupId });
-    if (target.kind !== "group" || !target.memberBotIds.includes(botId)) throw new IsolationError();
-    thread = { ...ownThread, id: target.threadId };
-  }
+  const { bot, thread } = await requireChatDoodle(deps, actor, threadId);
+  const botId = bot.id;
   const providerAdapter = deps.connectors.managed(connectorId);
   if (!providerAdapter) return;
   const catalog = await providerAdapter.catalog(

@@ -5,7 +5,7 @@ import { inboundRoutineModelPin } from "@labradoodle/adapters";
 import type { MessageBlock } from "@labradoodle/contracts";
 import { escapePromptData, inboundRoutineBlock, messageBlockForArtifact } from "@labradoodle/core";
 import type { PrismaClient } from "@labradoodle/db";
-import { accountDeactivated } from "@labradoodle/db";
+import { accountDeactivated, routineCreatorInChat } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 
 export const WEBHOOK_MAX_BODY_BYTES = 64 * 1024;
@@ -36,21 +36,15 @@ export type WebhookDeps = {
   jobs: Pick<JobPublisher, "enqueue">;
 };
 
+/** A routine's webhook: it runs as the routine's creator, in its chat. */
 export type WebhookTarget = {
-  bot: {
-    id: string;
-    spaceId: string;
-    userId: string;
-    webhookSecretId: string;
-  };
+  routineId: string;
+  bot: { id: string; spaceId: string; userId: string };
   threadId: string;
   expected: string;
 };
 
-export type InboundTarget = {
-  bot: Pick<WebhookTarget["bot"], "id" | "spaceId" | "userId">;
-  threadId: string;
-};
+export type InboundTarget = Pick<WebhookTarget, "routineId" | "bot" | "threadId">;
 
 /** Fence inbound delivery JSON as untrusted data so agents do not treat it as instructions. */
 export function formatUntrustedDeliveryPayload(label: string, payload: unknown): string {
@@ -103,7 +97,7 @@ type WebhookSecretCacheEntry = {
   expires: number;
 };
 
-/** Webhook secrets by bot id; the decrypt promise is shared so concurrent misses decrypt once. */
+/** Webhook secrets by routine id; the decrypt promise is shared so concurrent misses decrypt once. */
 export type WebhookSecretCache = Map<string, WebhookSecretCacheEntry>;
 
 const subscribedWebhookCaches = new WeakMap<SecretStore, WeakSet<WebhookSecretCache>>();
@@ -187,71 +181,74 @@ function loadWebhookSecret(
 export async function loadWebhookTarget(
   deps: Pick<WebhookDeps, "prisma" | "secrets">,
   cache: WebhookSecretCache,
-  botId: string,
+  routineId: string,
 ): Promise<WebhookTarget | null> {
-  const bot = await deps.prisma.bot.findUnique({
-    where: { id: botId, archivedAt: null },
+  const routine = await deps.prisma.routine.findUnique({
+    where: { id: routineId },
     select: {
       id: true,
+      botId: true,
       spaceId: true,
       userId: true,
+      threadId: true,
       webhookSecretId: true,
-      thread: { select: { id: true } },
+      thread: { select: { doodle: true } },
     },
   });
-
-  // A deactivated owner's bot takes no deliveries; callers see the usual unauthorized reply.
-  if (!bot?.thread || !bot.webhookSecretId || (await accountDeactivated(deps.prisma, bot.userId))) {
-    cache.delete(botId);
+  // A paused chat, a creator who left it or whose account is deactivated takes no deliveries;
+  // callers see the usual unauthorized reply.
+  if (
+    !routine?.webhookSecretId ||
+    !routine.thread.doodle ||
+    !(await routineCreatorInChat(deps.prisma, routine)) ||
+    (await accountDeactivated(deps.prisma, routine.userId))
+  ) {
+    cache.delete(routineId);
     return null;
   }
 
   const secret = await deps.prisma.secret.findUnique({
-    where: { id: bot.webhookSecretId },
+    where: { id: routine.webhookSecretId },
     select: { id: true, ciphertext: true, kind: true, userId: true, spaceId: true },
   });
   if (
     !secret ||
     secret.kind !== WEBHOOK_SECRET_KIND ||
-    secret.userId !== bot.userId ||
-    secret.spaceId !== bot.spaceId
+    secret.userId !== routine.userId ||
+    secret.spaceId !== routine.spaceId
   ) {
-    cache.delete(botId);
+    cache.delete(routineId);
     return null;
   }
 
-  const expected = await loadWebhookSecret(deps.secrets, cache, botId, secret);
+  const expected = await loadWebhookSecret(deps.secrets, cache, routineId, secret);
   if (expected === null) return null;
 
-  const current = await deps.prisma.bot.findUnique({
-    where: { id: botId, archivedAt: null },
+  const current = await deps.prisma.routine.findUnique({
+    where: { id: routineId },
     select: { webhookSecretId: true },
   });
   // Rotation can commit during decrypt; the row read above may already be revoked.
   if (current?.webhookSecretId !== secret.id) {
-    const cached = cache.get(botId);
-    if (cached?.secretId === secret.id) cache.delete(botId);
+    const cached = cache.get(routineId);
+    if (cached?.secretId === secret.id) cache.delete(routineId);
     return null;
   }
 
   return {
-    bot: {
-      id: bot.id,
-      spaceId: bot.spaceId,
-      userId: bot.userId,
-      webhookSecretId: bot.webhookSecretId,
-    },
-    threadId: bot.thread.id,
+    routineId: routine.id,
+    bot: { id: routine.botId, spaceId: routine.spaceId, userId: routine.userId },
+    threadId: routine.threadId,
     expected,
   };
 }
 
 export function inboundDeliveryClientNonce(
   source: "webhook" | "github",
-  botId: string,
+  routineId: string,
   idempotencyKey: string,
 ): string {
-  return `${source}:${botId}:${createHash("sha256").update(idempotencyKey).digest("base64url")}`;
+  return `${source}:${routineId}:${createHash("sha256").update(idempotencyKey).digest("base64url")}`;
 }
 
 export async function deliverWebhookEvent(
@@ -282,7 +279,7 @@ export async function deliverWebhookEvent(
       : input.prompt;
 
   const clientNonce = input.idempotencyKey
-    ? inboundDeliveryClientNonce(input.source, target.bot.id, input.idempotencyKey)
+    ? inboundDeliveryClientNonce(input.source, target.routineId, input.idempotencyKey)
     : undefined;
   const pin = inboundRoutineModelPin(input.routines);
 

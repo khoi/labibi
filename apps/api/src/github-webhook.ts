@@ -162,8 +162,8 @@ export function formatGithubEventPrompt(event: string, payload: Record<string, u
   ].join("\n");
 }
 
-export function githubWebhookPath(botId: string): string {
-  return `/api/v1/bots/${botId}/github`;
+export function githubWebhookPath(routineId: string): string {
+  return `/api/v1/routines/${routineId}/github`;
 }
 
 export function mountGithubWebhookRoute(
@@ -171,10 +171,10 @@ export function mountGithubWebhookRoute(
   deps: WebhookDeps,
   secretCache: WebhookSecretCache,
 ) {
-  app.post("/api/v1/bots/:botId/github", async (c) => {
+  app.post("/api/v1/routines/:routineId/github", async (c) => {
     const unauthorized = () => c.json({ error: "Unauthorized" }, 401);
 
-    // Reject oversized bodies before target lookup so size limits do not reveal active bots.
+    // Reject oversized bodies before target lookup so size limits do not reveal active routines.
     const raw = await readBoundedBody(c.req.raw, WEBHOOK_MAX_BODY_BYTES);
     if (raw === null) {
       return c.json({ error: "Payload too large" }, 413);
@@ -182,7 +182,7 @@ export function mountGithubWebhookRoute(
 
     let target: Awaited<ReturnType<typeof loadWebhookTarget>>;
     try {
-      target = await loadWebhookTarget(deps, secretCache, c.req.param("botId"));
+      target = await loadWebhookTarget(deps, secretCache, c.req.param("routineId"));
     } catch (error) {
       if (error instanceof SecretStoreUnavailableError) {
         return c.json({ error: "Service unavailable" }, 503);
@@ -195,14 +195,7 @@ export function mountGithubWebhookRoute(
     }
 
     const githubRoutines = await deps.prisma.routine.findMany({
-      where: {
-        botId: target.bot.id,
-        spaceId: target.bot.spaceId,
-        // The delivery runs as the bot's creator, so only their own routines may ride on it.
-        userId: target.bot.userId,
-        active: true,
-        githubEnabled: true,
-      },
+      where: { id: target.routineId, active: true, githubEnabled: true },
       select: {
         id: true,
         name: true,

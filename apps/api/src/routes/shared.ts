@@ -34,6 +34,7 @@ export async function meDto(deps: RouterDeps, actor: Actor): Promise<Me> {
         name: true,
         timezone: true,
         locale: true,
+        readAloud: true,
         signupSurvey: { select: { userId: true } },
       },
     }),
@@ -76,6 +77,7 @@ export async function meDto(deps: RouterDeps, actor: Actor): Promise<Me> {
     avatarStyle: "organic",
     timezone: user.timezone ?? null,
     locale: user.locale ?? null,
+    readAloud: user.readAloud,
     billingEnabled: Boolean(deps.billing),
     // Only billing deployments ask; self-hosted installs never see the survey.
     needsSignupSurvey: Boolean(deps.billing) && !user.signupSurvey,

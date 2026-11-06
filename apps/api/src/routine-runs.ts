@@ -38,9 +38,6 @@ export async function listRoutineRuns(
     },
     select: {
       id: true,
-      botId: true,
-      threadId: true,
-      thread: { select: { groupId: true } },
       status: true,
       error: true,
       lateSince: true,
@@ -74,8 +71,6 @@ export async function listRoutineRuns(
     nextCursor,
     runs: runs.map((run) => ({
       id: run.id,
-      botId: run.botId,
-      groupId: run.thread.groupId,
       status: run.status as RoutineRun["status"],
       error: runFailureError({ type: `run.${run.status}`, payload: { error: run.error } }),
       createdAt: run.createdAt.toISOString(),

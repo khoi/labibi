@@ -101,7 +101,10 @@ export async function endDeactivatedAccess(deps: AccountStatusDeps, userId: stri
     () => deps.pushTokens.remove(userId),
     // Screen links issued before now stop working; people still allowed get new ones.
     () =>
-      prisma.bot.updateMany({ where: { userId }, data: { screenGeneration: { increment: 1 } } }),
+      prisma.computer.updateMany({
+        where: { userId },
+        data: { screenGeneration: { increment: 1 } },
+      }),
     () => cancelDeactivatedAccountRuns(prisma, deps.events, userId),
   ];
   const failures: unknown[] = [];

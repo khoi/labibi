@@ -15,10 +15,10 @@ import {
   findModelCredentialById,
   listModelRoleChoices,
   listVoicePreferences,
+  requireChatMember,
 } from "@labradoodle/db";
 import { ORPCError } from "@orpc/server";
 import type { RouterDeps } from "./router.js";
-import { resolveThreadTarget } from "./thread-target.js";
 import { voiceCredentialServer } from "./voice.js";
 
 export async function aiConsentStatus(
@@ -28,13 +28,9 @@ export async function aiConsentStatus(
 ): Promise<AiConsentStatus> {
   const uses = query.uses ?? ["model", "memory", "voice"];
   const modelsEnabled = uses.includes("model") && deps.env.agentRuntime !== "scripted";
-  const target =
-    query.botId || query.groupId ? await resolveThreadTarget(deps.prisma, actor, query) : null;
-  const botIds = target
-    ? target.kind === "bot"
-      ? [target.botId]
-      : target.memberBotIds
-    : undefined;
+  const target = query.threadId
+    ? await requireChatMember(deps.prisma, actor, query.threadId)
+    : null;
   const [preferences, roleChoices, main, bots, routines, voices, memory, settings, consents] =
     await Promise.all([
       modelsEnabled
@@ -48,13 +44,9 @@ export async function aiConsentStatus(
         ? resolveMemberMainModel({ prisma: deps.prisma, secretStore: deps.secrets }, actor)
         : null,
       modelsEnabled
-        ? // Any bot in the space runs on this member's credentials when they message it.
+        ? // The workspace's Doodle runs on this person's credentials when they ask it.
           deps.prisma.bot.findMany({
-            where: {
-              spaceId: actor.spaceId,
-              archivedAt: null,
-              ...(botIds ? { id: { in: botIds } } : {}),
-            },
+            where: { spaceId: actor.spaceId },
             select: { modelProvider: true, modelId: true, thinkingLevel: true },
           })
         : [],
@@ -68,8 +60,7 @@ export async function aiConsentStatus(
               spaceId: actor.spaceId,
               modelProvider: { not: null },
               modelId: { not: null },
-              bot: { archivedAt: null },
-              ...(botIds ? { botId: { in: botIds } } : {}),
+              ...(target ? { threadId: target.id } : {}),
               OR: query.routineId
                 ? [{ active: true }, { id: query.routineId }]
                 : [{ active: true }],

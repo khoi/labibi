@@ -7,7 +7,7 @@ import type { AppEnv } from "./env.js";
  * Names, endpoints, commands, env values and message content are never read into it.
  */
 
-export type DiagnosticsBot = { id: string; spaceId: string; userId: string; archived: boolean };
+export type DiagnosticsBot = { id: string; spaceId: string };
 
 export type DiagnosticsServer = {
   id: string;
@@ -86,8 +86,7 @@ export function renderDiagnostics(input: DiagnosticsInput): string {
   ];
   if (!input.database.reachable) return `${lines.join("\n")}\n`;
 
-  const archived = input.bots.filter((bot) => bot.archived).length;
-  lines.push("", `### Bots`, "", `- Bots: ${input.bots.length} (${archived} archived)`);
+  lines.push("", `### Doodles`, "", `- Workspaces with Doodle: ${input.bots.length}`);
   if (input.mcpServers.length) {
     lines.push(
       "",

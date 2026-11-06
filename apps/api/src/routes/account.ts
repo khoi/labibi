@@ -5,9 +5,10 @@ import {
   isAutoReviewCheckerConfigured,
   PushSessionEndedError,
 } from "@labradoodle/adapters";
-import type { ActionApprovalRule, Actor, ChatAlert, Me } from "@labradoodle/contracts";
+import type { ActionApprovalRule, Actor, Me } from "@labradoodle/contracts";
 import { approvalModeFromPreference, approvalPreferenceFromMode } from "@labradoodle/core";
 import { urlSite } from "@labradoodle/core/egress";
+import type { ChatAlertSignal } from "@labradoodle/db";
 import {
   auditLogOrganization,
   findAutoReviewPreference,
@@ -275,7 +276,7 @@ export function accountRoutes(ctx: RouterContext) {
           ? AbortSignal.any([context.signal, controller.signal])
           : controller.signal;
         const alerts = deps.events.followChatAlerts(userId, spaceId, signal);
-        let pending: Promise<IteratorResult<ChatAlert>> | undefined;
+        let pending: Promise<IteratorResult<ChatAlertSignal>> | undefined;
         let authorizedAt = Date.now();
         try {
           while (!context.signal?.aborted) {
@@ -297,8 +298,12 @@ export function accountRoutes(ctx: RouterContext) {
             }
             pending = undefined;
             if (next.done) return;
-            if (next.value.spaceId !== spaceId) continue;
-            yield { type: "alert" as const, alert: next.value };
+            if (next.value.type === "doodle") {
+              yield { type: "doodle" as const };
+              continue;
+            }
+            if (next.value.alert.spaceId !== spaceId) continue;
+            yield { type: "alert" as const, alert: next.value.alert };
           }
         } finally {
           controller.abort();

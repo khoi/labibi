@@ -36,10 +36,9 @@ import {
   modelSupportsRole,
   OPENAI_COMPATIBLE_PROVIDER_ID,
 } from "@labradoodle/contracts";
-import { createGroupRepos, createRepos, recordSecurityEvent, runAsTenant } from "@labradoodle/db";
+import { recordSecurityEvent, runAsTenant } from "@labradoodle/db";
 import { implement, ORPCError } from "@orpc/server";
 import { createAgentSkillsService } from "../agent-skills.js";
-import { createBotRemoval } from "../bot-removal.js";
 import { createMcpServers } from "../mcp-servers.js";
 import { createModelConnector, prepareAllowedThinkingLevels } from "../model-credentials.js";
 import type { RouterDeps } from "../router.js";
@@ -83,7 +82,6 @@ export function createRouterContext(deps: RouterDeps) {
     /** Re-runs the request's auth so a long-lived stream notices sign-out and revocation. */
     stillAuthorized?: () => Promise<boolean>;
   }>();
-  const repos = createRepos(deps.prisma);
   const onboardingDeps = { prisma: deps.prisma, events: deps.events, connectors: deps.connectors };
   const mcpOAuth = deps.mcpOAuth ?? new McpOAuthBroker(deps.prisma, deps.secrets);
   const {
@@ -114,7 +112,6 @@ export function createRouterContext(deps: RouterDeps) {
       return { provider: me.defaultProvider, model: me.defaultModel };
     },
   });
-  const removeBot = createBotRemoval(deps, repos);
   // The scripted fixture only exists to drive the scripted runtime; a real runtime
   // cannot execute it, so it stays out of the user-facing catalog otherwise.
   const chatCatalog = async (actor: Actor) => {
@@ -331,7 +328,6 @@ export function createRouterContext(deps: RouterDeps) {
         });
     }
   };
-  const groupRepos = createGroupRepos(deps.prisma);
   const taughtSkills = createTaughtSkillsService({
     prisma: deps.prisma,
     events: deps.events,
@@ -358,7 +354,6 @@ export function createRouterContext(deps: RouterDeps) {
   return {
     deps,
     os,
-    repos,
     onboardingDeps,
     mcpOAuth,
     mcpAwaitsOAuth,
@@ -374,12 +369,10 @@ export function createRouterContext(deps: RouterDeps) {
     favicons,
     refreshExpiredCredential,
     botModelValidation,
-    removeBot,
     chatCatalog,
     withDeploymentDefault,
     modelRoleCatalog,
     validateRoleChoices,
-    groupRepos,
     taughtSkills,
     agentSkills,
     authed,

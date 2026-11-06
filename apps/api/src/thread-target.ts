@@ -1,26 +1,34 @@
 import type { JobPublisher, ProductAnalytics, SandboxProvider } from "@labradoodle/adapter-kit";
 import { runContinueJob } from "@labradoodle/adapter-kit";
-import { cancelComputerRunWork, screenLeaseIdForRun, toComputerRef } from "@labradoodle/adapters";
+import {
+  cancelComputerRunWork,
+  completionNotificationPreview,
+  findPersonComputer,
+  newComputerKind,
+  notifyChat,
+  screenLeaseIdForRun,
+  toComputerRef,
+} from "@labradoodle/adapters";
 import type {
   Actor,
-  GroupMember,
+  ChatMentionTarget,
   MessageBlock,
   MessageReaction,
   ReplyPreview,
   ThreadSnapshot,
 } from "@labradoodle/contracts";
-import { GROUP_MEMBER_MIN, MessageBlock as MessageBlockSchema } from "@labradoodle/contracts";
+import { MessageBlock as MessageBlockSchema } from "@labradoodle/contracts";
+import type { ChatAuthor } from "@labradoodle/core";
 import {
   ACTIVE_RUN_STATUSES,
   BACKGROUND_RUN_TRIGGERS,
+  doodleReplies,
   isConversationalRun,
   MODEL_REQUIRED_SEND_ERROR,
-  mentionedGroupBotIds,
   messageBypassesTakeoverWait,
   messageReaction,
   projectMessages,
   QUEUE_HOLDING_RUN_STATUSES,
-  resolveGroupTargetBotIds,
   runFailureError,
   runReadsThreadHistory,
 } from "@labradoodle/core";
@@ -30,50 +38,36 @@ import {
   answerWaitingRunWithTextInTransaction,
   appendEventInTransaction,
   clearEndedRunState,
-  createGroupRepos,
-  createRepos,
   createThreadMessageInTransaction,
   eligibleWaitingTextAnswer,
   expireComputerExecutionLeases,
+  getChat,
   IsolationError,
   loadMessageAuthor,
-  lockSpaceGroup,
-  primaryActiveRun,
+  requireChatMember,
   retireWaitingQuestionInTransaction,
-  spaceIsShared,
   THREAD_LOCK_TRANSACTION_OPTIONS,
-  touchGroupUpdatedAt,
   transientRunEventsWhere,
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { ORPCError } from "@orpc/server";
-import {
-  buildSendPrompt,
-  buildUserMessageBlocks,
-  resolveGroupSendAttachments,
-  resolveSendAttachments,
-} from "./artifacts.js";
-import { resolveBusyBotName, toComputerStatus } from "./computer-status.js";
-import { withSerializableRetry } from "./serializable-retry.js";
+import { buildSendPrompt, buildUserMessageBlocks, resolveSendAttachments } from "./artifacts.js";
+import { toComputerStatus } from "./computer-status.js";
 import type { ImageAdmissionRun } from "./thread-image-admission.js";
 import { assertThreadImageInput } from "./thread-image-admission.js";
 import { loadMessagePage } from "./thread-message-pages.js";
 
-export type ThreadTarget =
-  | {
-      kind: "bot";
-      botId: string;
-      threadId: string;
-      bot: Awaited<ReturnType<ReturnType<typeof createRepos>["getBot"]>>;
-    }
-  | {
-      kind: "group";
-      groupId: string;
-      threadId: string;
-      groupName: string;
-      members: GroupMember[];
-      memberBotIds: string[];
-    };
+/** A chat the caller is in, with what decides whether Doodle answers there. */
+export type ChatTarget = {
+  threadId: string;
+  spaceId: string;
+  /** The workspace's Doodle. */
+  doodleId: string;
+  /** Doodle is on in this chat. */
+  doodle: boolean;
+  /** People in the chat, the caller included. */
+  people: number;
+};
 
 const THREAD_MESSAGE_PAGE_SIZE = 100;
 const RUNS_NEEDING_CONTINUE = new Set(["queued", "waiting_takeover"]);
@@ -107,28 +101,237 @@ function steersMessageFrom(
   return steersUserMessage(run) && run.userId === actor.userId;
 }
 
-type MentionTargetInput = string | { kind: "bot" | "group" | "routine" | "connector"; id: string };
+/** Mention chips from the composer. Only Doodle, connectors and routines change a send. */
+type MentionTargetInput = ChatMentionTarget;
 
-function splitMentionTargets(mentions: MentionTargetInput[] | undefined) {
-  const botMentionIds = new Set<string>();
-  const groupMentionIds = new Set<string>();
-  const routineMentionIds = new Set<string>();
+function splitMentionTargets(mentions: readonly MentionTargetInput[] | undefined) {
   const connectorMentionIds = new Set<string>();
   for (const mention of mentions ?? []) {
-    if (typeof mention === "string") {
-      botMentionIds.add(mention);
-      continue;
-    }
-    if (mention.kind === "bot") botMentionIds.add(mention.id);
-    if (mention.kind === "group") groupMentionIds.add(mention.id);
-    if (mention.kind === "routine") routineMentionIds.add(mention.id);
     if (mention.kind === "connector") connectorMentionIds.add(mention.id);
   }
+  return { connectorMentionIds: [...connectorMentionIds] };
+}
+
+function sendRunClientNonce(clientNonce: string | undefined, messageId: string) {
+  return clientNonce ? `send:${messageId}` : undefined;
+}
+
+/** The chat when the caller is in it; anyone else gets not-found, the workspace owner included. */
+export async function resolveChatTarget(
+  prisma: PrismaClient,
+  actor: Actor,
+  input: { threadId: string },
+): Promise<ChatTarget> {
+  const thread = await requireChatMember(prisma, actor, input.threadId);
+  const [people, doodle] = await Promise.all([
+    prisma.threadMember.count({ where: { threadId: thread.id } }),
+    prisma.bot.findUnique({ where: { spaceId: actor.spaceId }, select: { id: true } }),
+  ]);
+  if (!doodle) throw new IsolationError();
   return {
-    botMentionIds: [...botMentionIds],
-    groupMentionIds: [...groupMentionIds],
-    routineMentionIds: [...routineMentionIds],
-    connectorMentionIds: [...connectorMentionIds],
+    threadId: thread.id,
+    spaceId: thread.spaceId,
+    doodleId: doodle.id,
+    doodle: thread.doodle,
+    people,
+  };
+}
+
+/** Who wrote a message, as the reply policy reads it. */
+function messageAuthor(message: {
+  role: string;
+  authorUserId: string | null;
+}): ChatAuthor | undefined {
+  if (message.role === "bot") return { kind: "doodle" };
+  if (message.role === "user" && message.authorUserId)
+    return { kind: "person", userId: message.authorUserId };
+  return undefined;
+}
+
+/**
+ * Whether Doodle takes this message: its reply policy, or a run of the sender's own it steers
+ * or a question of theirs it answers.
+ */
+async function doodleTakesMessage(
+  db: Pick<Prisma.TransactionClient, "message" | "run">,
+  actor: Actor,
+  target: ChatTarget,
+  input: { mentions?: readonly MentionTargetInput[]; replyToMessageId?: string },
+) {
+  if (!target.doodle) return false;
+  const [reply, ownRuns, waiting] = await Promise.all([
+    input.replyToMessageId
+      ? db.message.findFirst({
+          where: { id: input.replyToMessageId, threadId: target.threadId },
+          select: { role: true, authorUserId: true },
+        })
+      : null,
+    db.run.findMany({
+      where: {
+        threadId: target.threadId,
+        userId: actor.userId,
+        status: { in: [...QUEUE_HOLDING_RUN_STATUSES] },
+      },
+      select: { status: true, trigger: true, userId: true },
+    }),
+    db.run.findMany({
+      where: { threadId: target.threadId, status: "waiting_input" },
+      select: { id: true, status: true, updatedAt: true, userId: true },
+    }),
+  ]);
+  if (ownRuns.some((run) => steersMessageFrom(run, actor))) return true;
+  return doodleReplies({
+    kind: "message",
+    doodle: target.doodle,
+    people: target.people,
+    senderUserId: actor.userId,
+    mentions: input.mentions ?? [],
+    replyTo: reply ? messageAuthor(reply) : undefined,
+    openQuestionFor: latestWaitingRun(waiting)?.userId,
+  });
+}
+
+/** Tells the chat's other people about a message someone wrote. */
+async function notifyPeopleOfMessage(
+  deps: Parameters<typeof notifyChat>[0],
+  actor: Actor,
+  target: ChatTarget,
+  blocks: MessageBlock[],
+) {
+  const sender = await deps.prisma.user.findUnique({
+    where: { id: actor.userId },
+    select: { name: true },
+  });
+  const text = blocks
+    .map((block) =>
+      block.kind === "text"
+        ? block.text
+        : block.kind === "file" || block.kind === "image"
+          ? block.name
+          : "",
+    )
+    .filter(Boolean)
+    .join(" ");
+  await notifyChat(deps, {
+    spaceId: target.spaceId,
+    threadId: target.threadId,
+    except: actor.userId,
+    message: {
+      kind: "message",
+      title: sender?.name.trim() || "New message",
+      body: completionNotificationPreview(text),
+      threadId: target.threadId,
+      sender: { name: sender?.name.trim() || "" },
+    },
+  });
+}
+
+export async function threadHead(prisma: PrismaClient, target: ChatTarget) {
+  const latest = await prisma.event.findFirst({
+    where: { threadId: target.threadId },
+    orderBy: { seq: "desc" },
+    select: { seq: true },
+  });
+  return { threadId: target.threadId, cursor: latest?.seq ?? -1 };
+}
+
+export async function threadSnapshot(
+  deps: { prisma: PrismaClient },
+  target: ChatTarget,
+  actor: Actor,
+): Promise<ThreadSnapshot> {
+  // Lock the thread row so messages, the event cursor, active runs, and live
+  // progress are read from one consistent commit. A torn Promise.all can
+  // otherwise advance the client cursor past thread.message.created while the
+  // ask message page still omits it — leaving waiting_input with no AskCard.
+  const [chat, computer, core] = await Promise.all([
+    getChat(deps.prisma, actor, target.threadId),
+    findPersonComputer(deps.prisma, actor),
+    deps.prisma.$transaction(
+      async (tx) => {
+        await tx.$queryRaw`SELECT id FROM threads WHERE id = ${target.threadId} FOR SHARE`;
+        const [messagePage, last, activeRuns, busyOrFailed] = await Promise.all([
+          loadMessagePage(tx, target.threadId, undefined, THREAD_MESSAGE_PAGE_SIZE),
+          tx.event.findFirst({
+            where: { threadId: target.threadId },
+            orderBy: { seq: "desc" },
+            select: { seq: true },
+          }),
+          tx.run.findMany({
+            where: {
+              threadId: target.threadId,
+              status: { in: [...ACTIVE_RUN_STATUSES] },
+              OR: [
+                { trigger: { notIn: [...BACKGROUND_RUN_TRIGGERS] } },
+                { status: { in: ["waiting_input", "waiting_takeover"] } },
+              ],
+            },
+            orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          }),
+          tx.run.findFirst({
+            where: {
+              threadId: target.threadId,
+              // Background work stays silent; waiting is handled above.
+              trigger: { notIn: [...BACKGROUND_RUN_TRIGGERS] },
+              status: { in: [...ACTIVE_RUN_STATUSES, "failed"] },
+            },
+            // The id tiebreak keeps ordering deterministic under equal timestamps.
+            orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          }),
+        ]);
+        const run = pickPrimaryPrivateActiveRun(activeRuns) ?? busyOrFailed;
+        // A failure only surfaces while it is still the newest terminal run, or a stale
+        // failure would reappear on every load. Compare by ordering, not timestamps:
+        // equal createdAt values reverse under gt/gte.
+        const newestTerminal =
+          run?.status === "failed"
+            ? await tx.run.findFirst({
+                where: {
+                  threadId: target.threadId,
+                  // Background failures must not bury a user-visible failure.
+                  trigger: { notIn: [...BACKGROUND_RUN_TRIGGERS] },
+                  status: { in: ["failed", "completed", "cancelled"] },
+                },
+                orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+                select: { id: true },
+              })
+            : null;
+        const currentRun = run?.status === "failed" && newestTerminal?.id !== run.id ? null : run;
+        const liveEvents =
+          activeRuns.length > 0
+            ? await tx.event.findMany({
+                where: {
+                  threadId: target.threadId,
+                  runId: { in: activeRuns.map((run) => run.id) },
+                  type: {
+                    in: [
+                      "thread.progress",
+                      "thread.subagent",
+                      "run.waiting_input",
+                      "computer.takeover.requested",
+                      "agent.tool.called",
+                      "agent.tool.completed",
+                    ],
+                  },
+                },
+                orderBy: { seq: "asc" },
+              })
+            : [];
+        return { messagePage, last, run: currentRun, activeRuns, liveEvents };
+      },
+      { timeout: 15_000, maxWait: 5_000 },
+    ),
+  ]);
+  return {
+    threadId: target.threadId,
+    cursor: core.last?.seq ?? -1,
+    messages: messagesWithLiveEvents(core.messagePage.messages, core.liveEvents, core.activeRuns),
+    olderCursor: core.messagePage.olderCursor,
+    chat,
+    run: core.run ? mapRun(core.run) : null,
+    activeRuns: core.activeRuns.map(mapRun),
+    // The viewer's own computer: nobody sees another person's.
+    computer: toComputerStatus(computer, computer ? undefined : await newComputerKind(deps.prisma)),
   };
 }
 
@@ -150,15 +353,6 @@ async function resolveOwnedConnectorDisplayNames(
   if (rows.length !== connectionIds.length) throw new IsolationError();
   const byId = new Map(rows.map((row) => [row.id, row.displayName]));
   return connectionIds.map((id) => byId.get(id) ?? "connector");
-}
-
-function sendRunClientNonce(
-  clientNonce: string | undefined,
-  messageId: string,
-  botId?: string,
-): string | undefined {
-  if (!clientNonce) return undefined;
-  return botId ? `send:${messageId}:${botId}` : `send:${messageId}`;
 }
 
 async function enqueueRunsNeedingContinue(
@@ -261,12 +455,11 @@ function sendResult(message: { seq: number }, runs: Array<{ id: string; taskId: 
 
 export async function cancelSupersededQueuedRuns(
   tx: Prisma.TransactionClient,
-  input: { threadId: string; botIds: string[]; keepRunIds: string[] },
+  input: { threadId: string; keepRunIds: string[] },
 ) {
   const superseded = await tx.run.findMany({
     where: {
       threadId: input.threadId,
-      botId: { in: input.botIds },
       status: "queued",
       OR: [{ trigger: "user", sourceMessage: { role: "user" } }, { trigger: "reaction" }],
       id: { notIn: input.keepRunIds },
@@ -289,57 +482,6 @@ export async function cancelSupersededQueuedRuns(
   });
 }
 
-async function lockAndLoadGroupMembers(
-  tx: Prisma.TransactionClient,
-  actor: Actor,
-  target: Extract<ThreadTarget, { kind: "group" }>,
-) {
-  await lockSpaceGroup(tx, actor, target.groupId);
-  const group = await tx.chatGroup.findFirst({
-    where: {
-      id: target.groupId,
-      spaceId: actor.spaceId,
-      archivedAt: null,
-      thread: { id: target.threadId },
-    },
-    include: {
-      members: {
-        where: { bot: { archivedAt: null } },
-        include: { bot: { select: { id: true, name: true, color: true } } },
-        orderBy: [{ createdAt: "asc" }, { botId: "asc" }],
-      },
-    },
-  });
-  if (!group || group.members.length < GROUP_MEMBER_MIN) throw new IsolationError();
-  return group.members.map((member) => ({
-    botId: member.bot.id,
-    name: member.bot.name,
-    color: member.bot.color,
-  }));
-}
-
-/**
- * The members a group send wakes. A message that names nobody and replies to a member's message
- * goes to that member alone; one that names nobody and replies to no member reaches everyone,
- * and `namesNobody` then lets each member stay silent.
- */
-function groupSendTargets(
-  members: Array<{ botId: string; name: string }>,
-  input: { text?: string; mentions?: MentionTargetInput[] },
-  replied: string | undefined,
-) {
-  const targeting = {
-    text: input.text ?? "",
-    members: members.map((member) => ({ id: member.botId, name: member.name })),
-    explicitMentions: splitMentionTargets(input.mentions).botMentionIds,
-  };
-  const named = mentionedGroupBotIds(targeting).length > 0;
-  if (!named && replied && members.some((member) => member.botId === replied)) {
-    return { botIds: [replied], namesNobody: false };
-  }
-  return { botIds: resolveGroupTargetBotIds(targeting), namesNobody: !named };
-}
-
 export function latestWaitingRun<T extends { id: string; status: string; updatedAt: Date }>(
   runs: T[],
 ) {
@@ -353,289 +495,6 @@ export function latestWaitingRun<T extends { id: string; status: string; updated
     );
 }
 
-/** The bot whose message a send replies to, if any. */
-export async function replyParentBotId(
-  prisma: Pick<PrismaClient, "message">,
-  target: { threadId: string },
-  input: { replyToMessageId?: string },
-): Promise<string | undefined> {
-  if (!input.replyToMessageId) return undefined;
-  const reply = await prisma.message.findFirst({
-    where: { id: input.replyToMessageId, threadId: target.threadId, role: "bot" },
-    select: { botId: true },
-  });
-  return reply?.botId ?? undefined;
-}
-
-/** The bots a send wakes: the bot itself, or the group members it names (else every member). */
-export function sendTargetBotIds(
-  target:
-    | { kind: "bot"; botId: string }
-    | { kind: "group"; members: Array<{ botId: string; name: string }> },
-  input: { text?: string; mentions?: MentionTargetInput[] },
-  replied?: string,
-): string[] {
-  if (target.kind === "bot") return [target.botId];
-  return groupSendTargets(target.members, input, replied).botIds;
-}
-
-export async function resolveThreadTarget(
-  prisma: PrismaClient,
-  actor: Actor,
-  input: { botId?: string; groupId?: string },
-  options: { includeArchived?: boolean } = {},
-): Promise<ThreadTarget> {
-  const repos = createRepos(prisma);
-  const groupRepos = createGroupRepos(prisma);
-  if (input.botId) {
-    const bot = await repos.getBot(actor, input.botId, options);
-    if (!bot.thread) throw new IsolationError();
-    return {
-      kind: "bot",
-      botId: bot.id,
-      threadId: bot.thread.id,
-      bot,
-    };
-  }
-  if (input.groupId) {
-    const group = await groupRepos.getGroupTarget(actor, input.groupId);
-    if (!group.thread) throw new IsolationError();
-    const members = group.members.map((member) => ({
-      botId: member.bot.id,
-      name: member.bot.name,
-      color: member.bot.color,
-      status: primaryActiveRun(member.bot.runs)?.status ?? "idle",
-    }));
-    return {
-      kind: "group",
-      groupId: group.id,
-      threadId: group.thread.id,
-      groupName: group.name,
-      members,
-      memberBotIds: members.map((member) => member.botId),
-    };
-  }
-  throw new IsolationError();
-}
-
-export async function threadHead(prisma: PrismaClient, target: ThreadTarget) {
-  const latest = await prisma.event.findFirst({
-    where: { threadId: target.threadId },
-    orderBy: { seq: "desc" },
-    select: { seq: true },
-  });
-  return { threadId: target.threadId, cursor: latest?.seq ?? -1 };
-}
-
-export async function threadSnapshot(
-  deps: { prisma: PrismaClient },
-  target: ThreadTarget,
-  viewerId?: string,
-): Promise<ThreadSnapshot> {
-  // Lock the thread row so messages, the event cursor, active runs, and live
-  // progress are read from one consistent commit. A torn Promise.all can
-  // otherwise advance the client cursor past thread.message.created while the
-  // ask message page still omits it — leaving waiting_input with no AskCard.
-  if (target.kind === "bot") {
-    const [busyBotName, core] = await Promise.all([
-      resolveBusyBotName(deps.prisma, {
-        computerId: target.bot.computer?.id,
-        botId: target.botId,
-        botName: target.bot.name,
-      }),
-      deps.prisma.$transaction(
-        async (tx) => {
-          await tx.$queryRaw`SELECT id FROM threads WHERE id = ${target.threadId} FOR SHARE`;
-          const [messagePage, last, activeRuns, busyOrFailed, shared] = await Promise.all([
-            loadMessagePage(tx, target.threadId, undefined, THREAD_MESSAGE_PAGE_SIZE),
-            tx.event.findFirst({
-              where: { threadId: target.threadId },
-              orderBy: { seq: "desc" },
-              select: { seq: true },
-            }),
-            tx.run.findMany({
-              where: {
-                botId: target.botId,
-                threadId: target.threadId,
-                status: { in: [...ACTIVE_RUN_STATUSES] },
-                OR: [
-                  { trigger: { notIn: [...BACKGROUND_RUN_TRIGGERS] } },
-                  { status: { in: ["waiting_input", "waiting_takeover"] } },
-                ],
-              },
-              orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-            }),
-            tx.run.findFirst({
-              where: {
-                botId: target.botId,
-                threadId: target.threadId,
-                // Background ticket work stays silent; waiting is handled above.
-                trigger: { notIn: [...BACKGROUND_RUN_TRIGGERS] },
-                status: { in: [...ACTIVE_RUN_STATUSES, "failed"] },
-              },
-              // The id tiebreak keeps ordering deterministic under equal
-              // timestamps, matching the supersession probe below.
-              orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-            }),
-            spaceIsShared(tx, target.bot.spaceId),
-          ]);
-          const run = pickPrimaryPrivateActiveRun(activeRuns) ?? busyOrFailed;
-          // A failure only surfaces while it is still the newest terminal run, or a stale
-          // failure would reappear on every load. Compare by ordering, not timestamps:
-          // equal createdAt values reverse under gt/gte.
-          const newestTerminal =
-            run?.status === "failed"
-              ? await tx.run.findFirst({
-                  where: {
-                    botId: target.botId,
-                    threadId: target.threadId,
-                    // Background failures must not bury a user-visible failure.
-                    trigger: { notIn: [...BACKGROUND_RUN_TRIGGERS] },
-                    status: { in: ["failed", "completed", "cancelled"] },
-                  },
-                  orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-                  select: { id: true },
-                })
-              : null;
-          const currentRun = run?.status === "failed" && newestTerminal?.id !== run.id ? null : run;
-          const liveRuns = activeRuns;
-          const liveEvents =
-            liveRuns.length > 0
-              ? await tx.event.findMany({
-                  where: {
-                    threadId: target.threadId,
-                    runId: { in: liveRuns.map((run) => run.id) },
-                    type: {
-                      in: [
-                        "thread.progress",
-                        "thread.subagent",
-                        "run.waiting_input",
-                        "computer.takeover.requested",
-                        "agent.tool.called",
-                        "agent.tool.completed",
-                      ],
-                    },
-                  },
-                  orderBy: { seq: "asc" },
-                })
-              : [];
-          return { messagePage, last, run: currentRun, activeRuns, liveEvents, shared };
-        },
-        { timeout: 15_000, maxWait: 5_000 },
-      ),
-    ]);
-    return {
-      botId: target.botId,
-      threadId: target.threadId,
-      cursor: core.last?.seq ?? -1,
-      messages: messagesWithLiveEvents(core.messagePage.messages, core.liveEvents, core.activeRuns),
-      olderCursor: core.messagePage.olderCursor,
-      run: core.run ? mapRun(core.run) : null,
-      activeRuns: core.activeRuns.map(mapRun),
-      computer: toComputerStatus(
-        target.botId,
-        target.bot.computer,
-        busyBotName,
-        core.shared,
-        viewerId,
-      ),
-    };
-  }
-
-  const core = await deps.prisma.$transaction(
-    async (tx) => {
-      await tx.$queryRaw`SELECT id FROM threads WHERE id = ${target.threadId} FOR SHARE`;
-      const [messagePage, last, activeRuns, recentTerminals] = await Promise.all([
-        loadMessagePage(tx, target.threadId, undefined, THREAD_MESSAGE_PAGE_SIZE),
-        tx.event.findFirst({
-          where: { threadId: target.threadId },
-          orderBy: { seq: "desc" },
-          select: { seq: true },
-        }),
-        tx.run.findMany({
-          where: {
-            threadId: target.threadId,
-            status: { in: [...ACTIVE_RUN_STATUSES] },
-            // Waiting ticket asks stay answerable. Busy ticket runs stay off
-            // the transcript; only their waiting_input / waiting_takeover states surface.
-            OR: [
-              { trigger: { notIn: [...BACKGROUND_RUN_TRIGGERS] } },
-              { status: { in: ["waiting_input", "waiting_takeover"] } },
-            ],
-          },
-          orderBy: { createdAt: "desc" },
-        }),
-        // Recently updated terminals (completion bumps updatedAt). pickLatestTerminalRun then
-        // ranks by completedAt ?? createdAt so null timestamps cannot revive a stale failure.
-        tx.run.findMany({
-          where: {
-            threadId: target.threadId,
-            trigger: { notIn: [...BACKGROUND_RUN_TRIGGERS] },
-            status: { in: ["failed", "completed", "cancelled"] },
-          },
-          orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
-          take: 50,
-        }),
-      ]);
-      const liveEvents =
-        activeRuns.length > 0
-          ? await tx.event.findMany({
-              where: {
-                threadId: target.threadId,
-                runId: { in: activeRuns.map((run) => run.id) },
-                type: {
-                  in: [
-                    "thread.progress",
-                    "thread.subagent",
-                    "run.waiting_input",
-                    "computer.takeover.requested",
-                    "agent.tool.called",
-                    "agent.tool.completed",
-                  ],
-                },
-              },
-              orderBy: { seq: "asc" },
-            })
-          : [];
-      return {
-        messagePage,
-        last,
-        activeRuns,
-        terminalRun: pickLatestTerminalRun(recentTerminals),
-        liveEvents,
-      };
-    },
-    { timeout: 15_000, maxWait: 5_000 },
-  );
-  const primaryActiveRun = pickPrimaryActiveRun(core.activeRuns);
-  return {
-    groupId: target.groupId,
-    groupName: target.groupName,
-    members: target.members,
-    threadId: target.threadId,
-    cursor: core.last?.seq ?? -1,
-    messages: messagesWithLiveEvents(core.messagePage.messages, core.liveEvents, core.activeRuns),
-    olderCursor: core.messagePage.olderCursor,
-    // Match the live reducer: a failed latest terminal stays in run even while siblings are
-    // still active or start late. A newer completed/cancelled terminal clears it.
-    run:
-      core.terminalRun?.status === "failed"
-        ? mapRun(core.terminalRun)
-        : primaryActiveRun
-          ? mapRun(primaryActiveRun)
-          : null,
-    activeRuns: core.activeRuns.map(mapRun),
-  };
-}
-
-/** Keep waiting asks and takeovers in the group headline ahead of newer busy runs. */
-function pickPrimaryActiveRun<T extends { status: string }>(runs: readonly T[]): T | undefined {
-  return (
-    runs.find((run) => run.status === "waiting_input" || run.status === "waiting_takeover") ??
-    runs[0]
-  );
-}
-
 /** Private threads prioritize takeover, then live work, while pending cards stay active. */
 function pickPrimaryPrivateActiveRun<T extends { status: string }>(
   runs: readonly T[],
@@ -646,21 +505,6 @@ function pickPrimaryPrivateActiveRun<T extends { status: string }>(
     runs.find((run) => run.status === "leased") ??
     runs[0]
   );
-}
-
-function pickLatestTerminalRun<T extends { id: string; createdAt: Date; completedAt: Date | null }>(
-  runs: T[],
-): T | null {
-  if (runs.length === 0) return null;
-  return runs.reduce((best, run) => {
-    const bestEnd = (best.completedAt ?? best.createdAt).getTime();
-    const runEnd = (run.completedAt ?? run.createdAt).getTime();
-    if (runEnd !== bestEnd) return runEnd > bestEnd ? run : best;
-    if (run.createdAt.getTime() !== best.createdAt.getTime()) {
-      return run.createdAt > best.createdAt ? run : best;
-    }
-    return run.id > best.id ? run : best;
-  });
 }
 
 function messagesWithLiveEvents(
@@ -722,7 +566,7 @@ function mapRun(run: {
 
 /**
  * Admit a confirmed image against the model each recipient run will use: the waiting runs this
- * text answers, otherwise the run that would take it as steering, otherwise the bot's default.
+ * text answers, otherwise the run that would take it as steering, otherwise Doodle's default.
  */
 async function assertImageRecipients(
   tx: Prisma.TransactionClient,
@@ -795,9 +639,10 @@ export async function sendThreadMessage(
     maxAttachmentsPerMessage?: number;
     analytics?: ProductAnalytics;
     sandbox: SandboxProvider;
+    notifications?: Parameters<typeof notifyChat>[0]["notifications"];
   },
   actor: Actor,
-  target: ThreadTarget,
+  target: ChatTarget,
   input: {
     text?: string;
     artifactIds?: string[];
@@ -807,13 +652,18 @@ export async function sendThreadMessage(
     replyQuote?: string;
     fromPage?: true;
     clientNonce?: string;
-    /** No model to start a turn: the send may only stop active work. */
-    noModel?: boolean;
   },
-  releaseTakeover?: (runId: string) => Promise<void>,
-  /** Runs saved with the message, after the thread lock and before the message is routed. */
-  startRoutines?: (tx: Prisma.TransactionClient) => Promise<Array<{ id: string; status: string }>>,
+  options: {
+    /** Settles model setup once Doodle takes the message; false refuses the send. */
+    admitDoodle?: () => Promise<boolean>;
+    releaseTakeover?: (runId: string) => Promise<void>;
+    /** Runs saved with the message, after the thread lock and before the message is routed. */
+    startRoutines?: (
+      tx: Prisma.TransactionClient,
+    ) => Promise<Array<{ id: string; status: string }>>;
+  } = {},
 ) {
+  const { releaseTakeover, startRoutines } = options;
   const existing = await replayExistingSend(
     deps,
     target.threadId,
@@ -825,15 +675,19 @@ export async function sendThreadMessage(
   if (requestedReplyQuote && !input.replyToMessageId) {
     throw new ORPCError("BAD_REQUEST", { message: "replyQuote requires replyToMessageId." });
   }
+  // People-only messages never reach a model, so only one Doodle takes settles model setup.
+  // A bare stop needs no model either.
+  const takes = await doodleTakesMessage(deps.prisma, actor, target, input);
+  if (takes && !isStopMessage(input) && options.admitDoodle && !(await options.admitDoodle())) {
+    throw new ORPCError("BAD_REQUEST", { message: MODEL_REQUIRED_SEND_ERROR });
+  }
 
   const commit = () =>
     deps.prisma.$transaction(async (tx) => {
       const author = await loadMessageAuthor(tx, actor.userId);
-      let routineRuns: Array<{ id: string; status: string }> = [];
       let replyToMessageId: string | undefined;
       let replyQuote: string | undefined;
       let replyPreview: ReplyPreview | null | undefined;
-      let repliedBotId: string | undefined;
       if (input.replyToMessageId) {
         const reply = await tx.message.findFirst({
           where: { id: input.replyToMessageId, threadId: target.threadId },
@@ -846,7 +700,6 @@ export async function sendThreadMessage(
           replyPreview = null;
         } else {
           replyToMessageId = input.replyToMessageId;
-          if (reply.role === "bot" && reply.botId) repliedBotId = reply.botId;
           const parsed = MessageBlockSchema.array().safeParse(reply.blocks);
           replyPreview = null;
           if (parsed.success) {
@@ -883,235 +736,11 @@ export async function sendThreadMessage(
         }
       }
 
-      if (target.kind === "bot") {
-        const mentionTargets = splitMentionTargets(input.mentions);
-        const { blocks: attachmentBlocks, artifacts } = await resolveSendAttachments(
-          { prisma: tx, maxAttachmentsPerMessage: deps.maxAttachmentsPerMessage },
-          actor,
-          target.botId,
-          input.artifactIds,
-        );
-        const connectorNames = await resolveOwnedConnectorDisplayNames(
-          tx,
-          actor,
-          mentionTargets.connectorMentionIds,
-        );
-        // Match message counter locking before inspecting runs, without changing counters on rejection.
-        await tx.$queryRaw`SELECT id FROM threads WHERE id = ${target.threadId} FOR UPDATE`;
-        routineRuns = (await startRoutines?.(tx)) ?? [];
-        const activeRuns = await tx.run.findMany({
-          where: {
-            threadId: target.threadId,
-            botId: target.botId,
-            status: { in: [...ACTIVE_RUN_STATUSES] },
-          },
-          select: {
-            id: true,
-            taskId: true,
-            status: true,
-            trigger: true,
-            userId: true,
-            modelProvider: true,
-            modelId: true,
-            modelPinned: true,
-            thinkingLevel: true,
-          },
-        });
-        if (input.imageHandling === "confirm") {
-          await assertImageRecipients(tx, actor, target, input.text, attachmentBlocks, {
-            botId: target.botId,
-            runs: activeRuns,
-            imageAdmission: deps.imageAdmission,
-          });
-        }
-        const blocks = buildUserMessageBlocks(
-          input.text,
-          sendAttachmentBlocks(attachmentBlocks, artifacts, input.imageHandling),
-        );
-        const message = await createThreadMessageInTransaction(tx, {
-          threadId: target.threadId,
-          role: "user",
-          authorUserId: actor.userId,
-          blocks,
-          replyToMessageId,
-          replyQuote,
-          clientNonce: input.clientNonce,
-        });
-        // A bare "stop" from the owner while work is active is the Stop button, not a reply.
-        const stopping = activeRuns.length > 0 && !routineRuns.length && isStopMessage(input);
-        if (input.noModel && !stopping) {
-          throw new ORPCError("BAD_REQUEST", { message: MODEL_REQUIRED_SEND_ERROR });
-        }
-        const answered: typeof activeRuns = [];
-        // Someone else's question stays on its card; this message starts the sender's own run.
-        for (const run of activeRuns.filter(
-          (run) => !stopping && run.status === "waiting_input" && run.userId === actor.userId,
-        )) {
-          if (
-            await answerWaitingRunWithTextInTransaction(tx, {
-              spaceId: actor.spaceId,
-              threadId: target.threadId,
-              runId: run.id,
-              answeredByUserId: actor.userId,
-              answer: input.text ?? "",
-              beforeMessageSeq: message.seq,
-            })
-          )
-            answered.push({ ...run, status: "queued" });
-          else
-            await retireWaitingQuestionInTransaction(tx, {
-              spaceId: actor.spaceId,
-              threadId: target.threadId,
-              botId: target.botId,
-              runId: run.id,
-              answer: input.text ?? "",
-            });
-        }
-        if (answered.length) {
-          const primary = answered[0];
-          if (!primary) throw new IsolationError();
-          await tx.message.update({ where: { id: message.id }, data: { runId: primary.id } });
-          const steered = answered.filter((run) =>
-            answerSteersRun(run, attachmentBlocks, input.imageHandling),
-          );
-          for (const run of steered) {
-            await tx.steeringMessage.create({
-              data: {
-                messageId: message.id,
-                botId: target.botId,
-                userId: actor.userId,
-                runId: run.id,
-              },
-            });
-          }
-          const event = await appendEventInTransaction(tx, {
-            spaceId: actor.spaceId,
-            threadId: target.threadId,
-            botId: target.botId,
-            type: "thread.message.created",
-            runId: primary.id,
-            payload: {
-              messageId: message.id,
-              seq: message.seq,
-              role: "user",
-              blocks,
-              author,
-              runIds: answered.map((run) => run.id),
-              replyToMessageId,
-              replyQuote,
-              replyPreview,
-            },
-          });
-          return { message, runs: answered, routineRuns, eventSeq: event.seq };
-        }
-        const holdingRuns = stopping
-          ? activeRuns
-          : activeRuns.filter(
-              (run) =>
-                QUEUE_HOLDING_RUN_STATUSES.some((status) => status === run.status) &&
-                !messageBypassesTakeoverWait(run),
-            );
-        const active =
-          holdingRuns.find((run) => steersMessageFrom(run, actor)) ??
-          holdingRuns.find(steersUserMessage) ??
-          holdingRuns[0];
-        if (active) {
-          // Another person's message waits for a run of its own, which acts with their accounts,
-          // and is never shown as part of theirs.
-          const ownRunId = active.userId === actor.userId ? active.id : null;
-          await tx.steeringMessage.create({
-            data: {
-              messageId: message.id,
-              botId: target.botId,
-              userId: actor.userId,
-              runId: steersMessageFrom(active, actor) ? active.id : null,
-            },
-          });
-          if (ownRunId) {
-            await tx.message.update({ where: { id: message.id }, data: { runId: ownRunId } });
-          }
-          const event = await appendEventInTransaction(tx, {
-            spaceId: actor.spaceId,
-            threadId: target.threadId,
-            botId: target.botId,
-            type: "thread.message.created",
-            runId: ownRunId ?? undefined,
-            payload: {
-              messageId: message.id,
-              seq: message.seq,
-              role: "user",
-              blocks,
-              author,
-              replyToMessageId,
-              replyQuote,
-              replyPreview,
-            },
-          });
-          if (stopping) {
-            const stop = await cancelThreadRuns(actor, target, { botId: target.botId })(tx);
-            return { message, runs: [active], routineRuns, eventSeq: event.seq, stop };
-          }
-          return { message, runs: [active], routineRuns, eventSeq: event.seq };
-        }
-        const task = await tx.task.create({
-          data: {
-            spaceId: actor.spaceId,
-            botId: target.botId,
-            threadId: target.threadId,
-            userId: actor.userId,
-            prompt: buildSendPrompt(input.text, artifacts, connectorNames),
-            status: "queued",
-          },
-        });
-        const run = await tx.run.create({
-          data: {
-            spaceId: actor.spaceId,
-            botId: target.botId,
-            threadId: target.threadId,
-            taskId: task.id,
-            userId: actor.userId,
-            status: "queued",
-            trigger: "user",
-            clientNonce: sendRunClientNonce(input.clientNonce, message.id),
-            sourceMessageId: message.id,
-          },
-        });
-        await tx.message.update({ where: { id: message.id }, data: { runId: run.id } });
-        await cancelSupersededQueuedRuns(tx, {
-          threadId: target.threadId,
-          botIds: [target.botId],
-          keepRunIds: [run.id],
-        });
-        const event = await appendEventInTransaction(tx, {
-          spaceId: actor.spaceId,
-          threadId: target.threadId,
-          botId: target.botId,
-          type: "thread.message.created",
-          runId: run.id,
-          payload: {
-            messageId: message.id,
-            seq: message.seq,
-            role: "user",
-            blocks,
-            author,
-            runIds: [run.id],
-            replyToMessageId,
-            replyQuote,
-            replyPreview,
-          },
-        });
-        return { message, runs: [run], routineRuns, eventSeq: event.seq };
-      }
-
-      const members = await lockAndLoadGroupMembers(tx, actor, target);
-      const memberBotIds = members.map((member) => member.botId);
       const mentionTargets = splitMentionTargets(input.mentions);
-      let { botIds: targetBotIds, namesNobody } = groupSendTargets(members, input, repliedBotId);
-      const { blocks: attachmentBlocks, artifacts } = await resolveGroupSendAttachments(
+      const { blocks: attachmentBlocks, artifacts } = await resolveSendAttachments(
         { prisma: tx, maxAttachmentsPerMessage: deps.maxAttachmentsPerMessage },
         actor,
-        target.groupId,
-        memberBotIds,
+        target.threadId,
         input.artifactIds,
       );
       const connectorNames = await resolveOwnedConnectorDisplayNames(
@@ -1119,44 +748,33 @@ export async function sendThreadMessage(
         actor,
         mentionTargets.connectorMentionIds,
       );
-      // Group ownership is locked first, then the thread, as in the normal write path.
+      // Match message counter locking before inspecting runs, without changing counters on rejection.
       await tx.$queryRaw`SELECT id FROM threads WHERE id = ${target.threadId} FOR UPDATE`;
-      routineRuns = (await startRoutines?.(tx)) ?? [];
-      let activeRuns = await tx.run.findMany({
-        where: {
-          threadId: target.threadId,
-          botId: { in: targetBotIds },
-          status: { in: [...ACTIVE_RUN_STATUSES] },
-        },
-        select: {
-          id: true,
-          taskId: true,
-          botId: true,
-          status: true,
-          trigger: true,
-          userId: true,
-          modelProvider: true,
-          modelId: true,
-          modelPinned: true,
-          thinkingLevel: true,
-          updatedAt: true,
-        },
-      });
-      // A plain message while members wait on the user answers the latest question only.
-      const asking = namesNobody ? latestWaitingRun(activeRuns) : undefined;
-      if (asking) {
-        targetBotIds = [asking.botId];
-        namesNobody = false;
-        activeRuns = activeRuns.filter((run) => run.botId === asking.botId);
-      }
-      if (input.imageHandling === "confirm") {
-        for (const botId of targetBotIds) {
-          await assertImageRecipients(tx, actor, target, input.text, attachmentBlocks, {
-            botId,
-            runs: activeRuns.filter((run) => run.botId === botId),
-            imageAdmission: deps.imageAdmission,
-          });
-        }
+      const routineRuns = (await startRoutines?.(tx)) ?? [];
+      // Decided again under the lock: a question asked or a run started meanwhile counts.
+      const doodleTakes = takes || (await doodleTakesMessage(tx, actor, target, input));
+      const activeRuns = doodleTakes
+        ? await tx.run.findMany({
+            where: { threadId: target.threadId, status: { in: [...ACTIVE_RUN_STATUSES] } },
+            select: {
+              id: true,
+              taskId: true,
+              status: true,
+              trigger: true,
+              userId: true,
+              modelProvider: true,
+              modelId: true,
+              modelPinned: true,
+              thinkingLevel: true,
+            },
+          })
+        : [];
+      if (input.imageHandling === "confirm" && doodleTakes) {
+        await assertImageRecipients(tx, actor, target, input.text, attachmentBlocks, {
+          botId: target.doodleId,
+          runs: activeRuns,
+          imageAdmission: deps.imageAdmission,
+        });
       }
       const blocks = buildUserMessageBlocks(
         input.text,
@@ -1171,157 +789,157 @@ export async function sendThreadMessage(
         replyQuote,
         clientNonce: input.clientNonce,
       });
-      const activeByBotId = new Map<string, (typeof activeRuns)[number]>();
-      const answeredByBotId = new Map<string, Array<(typeof activeRuns)[number]>>();
-      for (const run of activeRuns) {
-        if (run.status === "waiting_input") {
-          // Someone else's question stays on its card; this message starts the sender's own run.
-          if (run.userId !== actor.userId) continue;
-          const answered = await answerWaitingRunWithTextInTransaction(tx, {
+      const messagePayload = {
+        messageId: message.id,
+        seq: message.seq,
+        role: "user",
+        blocks,
+        author,
+        replyToMessageId,
+        replyQuote,
+        replyPreview,
+      };
+      if (!doodleTakes) {
+        // Between people: the message and its event, nothing for Doodle.
+        const event = await appendEventInTransaction(tx, {
+          spaceId: actor.spaceId,
+          threadId: target.threadId,
+          type: "thread.message.created",
+          payload: messagePayload,
+        });
+        return { message, blocks, runs: [], routineRuns, eventSeq: event.seq };
+      }
+      // A bare "stop" from the asker while work is active is the Stop button, not a reply.
+      const stopping = activeRuns.length > 0 && !routineRuns.length && isStopMessage(input);
+      const answered: typeof activeRuns = [];
+      // Someone else's question stays on its card; this message starts the sender's own run.
+      for (const run of activeRuns.filter(
+        (run) => !stopping && run.status === "waiting_input" && run.userId === actor.userId,
+      )) {
+        if (
+          await answerWaitingRunWithTextInTransaction(tx, {
             spaceId: actor.spaceId,
             threadId: target.threadId,
             runId: run.id,
             answeredByUserId: actor.userId,
             answer: input.text ?? "",
             beforeMessageSeq: message.seq,
+          })
+        )
+          answered.push({ ...run, status: "queued" });
+        else
+          await retireWaitingQuestionInTransaction(tx, {
+            spaceId: actor.spaceId,
+            threadId: target.threadId,
+            botId: target.doodleId,
+            runId: run.id,
+            answer: input.text ?? "",
           });
-          if (answered) {
-            const queuedForBot = answeredByBotId.get(run.botId) ?? [];
-            queuedForBot.push({ ...run, status: "queued" });
-            answeredByBotId.set(run.botId, queuedForBot);
-          } else {
-            await retireWaitingQuestionInTransaction(tx, {
-              spaceId: actor.spaceId,
-              threadId: target.threadId,
-              botId: run.botId,
-              runId: run.id,
-              answer: input.text ?? "",
-            });
-          }
-          continue;
-        }
-        if (!STEERABLE_RUN_STATUSES.has(run.status) || messageBypassesTakeoverWait(run)) continue;
-        const current = activeByBotId.get(run.botId);
-        const rank = (candidate: typeof run) =>
-          steersMessageFrom(candidate, actor) ? 2 : steersUserMessage(candidate) ? 1 : 0;
-        if (!current || rank(run) > rank(current)) activeByBotId.set(run.botId, run);
       }
-      const runs: Array<{
-        id: string;
-        taskId: string;
-        botId: string;
-        status: string;
-        userId: string;
-        trigger?: string | null;
-      }> = [];
-      const othersRunIds = new Set<string>();
-      for (const botId of targetBotIds) {
-        const answered = answeredByBotId.get(botId);
-        if (answered) {
-          const steered = answered.filter((run) =>
-            answerSteersRun(run, attachmentBlocks, input.imageHandling),
-          );
-          for (const run of steered) {
-            await tx.steeringMessage.create({
-              data: { messageId: message.id, botId, userId: actor.userId, runId: run.id },
-            });
-          }
-          // A person who answered the member's question is talking to it.
-          await tx.run.updateMany({
-            where: { id: { in: answered.map((run) => run.id) } },
-            data: { groupReplyOptional: false },
-          });
-          runs.push(...answered);
-          continue;
-        }
-        const active = activeByBotId.get(botId);
-        if (active) {
-          // Naming a member that is still working on an unnamed message makes its reply required.
-          if (!namesNobody && steersUserMessage(active)) {
-            await tx.run.update({ where: { id: active.id }, data: { groupReplyOptional: false } });
-          }
+      if (answered.length) {
+        const primary = answered[0];
+        if (!primary) throw new IsolationError();
+        await tx.message.update({ where: { id: message.id }, data: { runId: primary.id } });
+        const steered = answered.filter((run) =>
+          answerSteersRun(run, attachmentBlocks, input.imageHandling),
+        );
+        for (const run of steered) {
           await tx.steeringMessage.create({
             data: {
               messageId: message.id,
-              botId,
+              botId: target.doodleId,
               userId: actor.userId,
-              runId: steersMessageFrom(active, actor) ? active.id : null,
+              runId: run.id,
             },
           });
-          runs.push(active);
-          if (active.userId !== actor.userId) othersRunIds.add(active.id);
-          continue;
         }
-        const task = await tx.task.create({
+        const event = await appendEventInTransaction(tx, {
+          spaceId: actor.spaceId,
+          threadId: target.threadId,
+          botId: target.doodleId,
+          type: "thread.message.created",
+          runId: primary.id,
+          payload: { ...messagePayload, runIds: answered.map((run) => run.id) },
+        });
+        return { message, blocks, runs: answered, routineRuns, eventSeq: event.seq };
+      }
+      const holdingRuns = stopping
+        ? activeRuns
+        : activeRuns.filter(
+            (run) =>
+              QUEUE_HOLDING_RUN_STATUSES.some((status) => status === run.status) &&
+              !messageBypassesTakeoverWait(run),
+          );
+      const active =
+        holdingRuns.find((run) => steersMessageFrom(run, actor)) ??
+        holdingRuns.find(steersUserMessage) ??
+        holdingRuns[0];
+      if (active) {
+        // Another person's message waits for a run of its own, which acts with their accounts,
+        // and is never shown as part of theirs.
+        const ownRunId = active.userId === actor.userId ? active.id : null;
+        await tx.steeringMessage.create({
           data: {
-            spaceId: actor.spaceId,
-            botId,
-            threadId: target.threadId,
+            messageId: message.id,
+            botId: target.doodleId,
             userId: actor.userId,
-            prompt: buildSendPrompt(input.text, artifacts, connectorNames),
-            status: "queued",
+            runId: steersMessageFrom(active, actor) ? active.id : null,
           },
         });
-        const run = await tx.run.create({
-          data: {
-            spaceId: actor.spaceId,
-            botId,
-            threadId: target.threadId,
-            taskId: task.id,
-            userId: actor.userId,
-            status: "queued",
-            trigger: "user",
-            groupReplyOptional: namesNobody,
-            clientNonce: sendRunClientNonce(input.clientNonce, message.id, botId),
-            sourceMessageId: message.id,
-          },
+        if (ownRunId) {
+          await tx.message.update({ where: { id: message.id }, data: { runId: ownRunId } });
+        }
+        const event = await appendEventInTransaction(tx, {
+          spaceId: actor.spaceId,
+          threadId: target.threadId,
+          botId: target.doodleId,
+          type: "thread.message.created",
+          runId: ownRunId ?? undefined,
+          payload: messagePayload,
         });
-        runs.push(run);
-      }
-      const firstRun = runs[0];
-      // The message belongs to a run of the sender's, never to one another member started.
-      const ownRun = runs.find((run) => !othersRunIds.has(run.id));
-      // The event names the bot of the run it carries, so clients pair them correctly.
-      const eventBotId = ownRun?.botId ?? firstRun?.botId ?? targetBotIds[0];
-      if (!eventBotId) throw new IsolationError("Group send did not resolve a target");
-      if (firstRun) {
-        if (ownRun) {
-          await tx.message.update({ where: { id: message.id }, data: { runId: ownRun.id } });
+        if (stopping) {
+          const stop = await cancelThreadRuns(actor, target, { botId: target.doodleId })(tx);
+          return { message, blocks, runs: [active], routineRuns, eventSeq: event.seq, stop };
         }
-        const createdRuns = runs.filter(
-          (run) => !activeByBotId.has(run.botId) && !answeredByBotId.has(run.botId),
-        );
-        if (createdRuns.length) {
-          await cancelSupersededQueuedRuns(tx, {
-            threadId: target.threadId,
-            botIds: createdRuns.map((run) => run.botId),
-            keepRunIds: createdRuns.map((run) => run.id),
-          });
-        }
+        return { message, blocks, runs: [active], routineRuns, eventSeq: event.seq };
       }
-      await touchGroupUpdatedAt(tx, target.groupId);
+      const task = await tx.task.create({
+        data: {
+          spaceId: actor.spaceId,
+          botId: target.doodleId,
+          threadId: target.threadId,
+          userId: actor.userId,
+          prompt: buildSendPrompt(input.text, artifacts, connectorNames),
+          status: "queued",
+        },
+      });
+      const run = await tx.run.create({
+        data: {
+          spaceId: actor.spaceId,
+          botId: target.doodleId,
+          threadId: target.threadId,
+          taskId: task.id,
+          userId: actor.userId,
+          status: "queued",
+          trigger: "user",
+          clientNonce: sendRunClientNonce(input.clientNonce, message.id),
+          sourceMessageId: message.id,
+        },
+      });
+      await tx.message.update({ where: { id: message.id }, data: { runId: run.id } });
+      await cancelSupersededQueuedRuns(tx, { threadId: target.threadId, keepRunIds: [run.id] });
       const event = await appendEventInTransaction(tx, {
         spaceId: actor.spaceId,
         threadId: target.threadId,
-        botId: eventBotId,
+        botId: target.doodleId,
         type: "thread.message.created",
-        runId: firstRun ? ownRun?.id : activeRuns[0]?.id,
-        payload: {
-          messageId: message.id,
-          seq: message.seq,
-          role: "user",
-          blocks,
-          author,
-          runIds: runs.map((run) => run.id),
-          replyToMessageId,
-          replyQuote,
-          replyPreview,
-        },
+        runId: run.id,
+        payload: { ...messagePayload, runIds: [run.id] },
       });
-      return { message, runs, routineRuns, eventSeq: event.seq };
+      return { message, blocks, runs: [run], routineRuns, eventSeq: event.seq };
     }, THREAD_LOCK_TRANSACTION_OPTIONS);
 
-  const committed = await withSerializableRetry(commit).catch(async (error) => {
+  const committed = await commit().catch(async (error) => {
     const winner = await replayExistingSend(
       deps,
       target.threadId,
@@ -1337,6 +955,9 @@ export async function sendThreadMessage(
     { name: "message_sent", trigger: "user" },
     { id: committed.message.id, at: committed.message.createdAt },
   );
+  await notifyPeopleOfMessage(deps, actor, target, committed.blocks).catch((error) => {
+    getLogger().error("chat message notification", error);
+  });
   if ("stop" in committed && committed.stop) {
     await finishThreadStop(deps, actor, target, committed.stop);
     return sendResult(committed.message, committed.runs);
@@ -1357,25 +978,41 @@ export async function sendThreadMessage(
 const REACTION_TURN_COOLDOWN_MS = 30_000;
 
 /**
- * Append a human emoji reply with its target. Any reaction to the bot's latest
- * message may wake it, with silence allowed. Only thumbs answer an ordinary pending
- * ask; busy bots, recent reaction turns, and older targets stay quiet context.
- * A 👍 on a pending takeover counts as done and hands computer control back.
- * Approval and secret asks remain on their cards. Reactions are append-only.
+ * Append a person's emoji reply with its target. A reaction to Doodle's latest message may
+ * wake it, with silence allowed. Only thumbs answer an ordinary pending ask; busy runs, recent
+ * reaction turns, and older targets stay quiet context. A 👍 on a pending takeover counts as
+ * done and hands computer control back. Approval and secret asks remain on their cards.
+ * Reactions are append-only.
  */
 export async function reactToThreadMessage(
   deps: { prisma: PrismaClient; jobs: JobPublisher },
   actor: Actor,
-  target: ThreadTarget,
+  target: ChatTarget,
   input: {
     messageId: string;
     reaction: MessageReaction;
     clientNonce: string;
-    /** False when a send to the reacted-to bot could not start a run either (no model, teaching). */
-    mayStartTurn: boolean;
+    /** Settles model setup once the reaction could wake Doodle; false starts no turn. */
+    admitDoodle?: () => Promise<boolean>;
   },
   releaseTakeover?: (runId: string) => Promise<void>,
 ) {
+  const parentAuthor = await deps.prisma.message.findFirst({
+    where: { id: input.messageId, threadId: target.threadId },
+    select: { role: true, authorUserId: true },
+  });
+  if (!parentAuthor) throw new IsolationError();
+  const author = messageAuthor(parentAuthor);
+  const mayStartTurn =
+    Boolean(author) &&
+    doodleReplies({
+      kind: "reaction",
+      doodle: target.doodle,
+      people: target.people,
+      senderUserId: actor.userId,
+      target: author!,
+    }) &&
+    (!input.admitDoodle || (await input.admitDoodle()));
   const committed = await deps.prisma.$transaction(async (tx) => {
     await tx.$queryRaw`SELECT id FROM threads WHERE id = ${target.threadId} FOR UPDATE`;
     const parent = await tx.message.findFirst({
@@ -1400,20 +1037,9 @@ export async function reactToThreadMessage(
       const run = steering?.run;
       return { eventSeq: null, runs: run?.status === "waiting_takeover" ? [run] : [] };
     }
-    const members =
-      target.kind === "group" ? await lockAndLoadGroupMembers(tx, actor, target) : undefined;
-    const currentTarget = members
-      ? { ...target, memberBotIds: members.map((member) => member.botId) }
-      : target;
-    const replyBotId = input.mayStartTurn
-      ? await reactionReplyBotId(tx, currentTarget, parent)
-      : undefined;
-    const botId =
-      replyBotId ??
-      (currentTarget.kind === "bot" ? currentTarget.botId : currentTarget.memberBotIds[0]);
-    if (!botId) throw new IsolationError();
+    const wakes = mayStartTurn && (await reactionWakesDoodle(tx, target, parent));
     const blocks: MessageBlock[] = [{ kind: "text", text: input.reaction }];
-    const author = await loadMessageAuthor(tx, actor.userId);
+    const authorDto = await loadMessageAuthor(tx, actor.userId);
     const message = await createThreadMessageInTransaction(tx, {
       threadId: target.threadId,
       role: "user",
@@ -1422,24 +1048,22 @@ export async function reactToThreadMessage(
       replyToMessageId: parent.id,
       clientNonce: input.clientNonce,
     });
-    const runs = replyBotId
-      ? await startReactionTurn(tx, actor, target.threadId, replyBotId, parent, message, {
+    const runs = wakes
+      ? await startReactionTurn(tx, actor, target.threadId, target.doodleId, parent, message, {
           ...input,
           canReleaseTakeover: Boolean(releaseTakeover),
         })
       : [];
-    if (target.kind === "group") await touchGroupUpdatedAt(tx, target.groupId);
     const event = await appendEventInTransaction(tx, {
       spaceId: actor.spaceId,
       threadId: target.threadId,
-      botId,
+      ...(runs[0] ? { botId: target.doodleId, runId: runs[0].id } : {}),
       type: "thread.message.created",
-      ...(runs[0] ? { runId: runs[0].id } : {}),
       payload: {
         messageId: message.id,
         role: "user",
         blocks,
-        author,
+        author: authorDto,
         replyToMessageId: parent.id,
         ...(runs.length ? { runIds: runs.map((run) => run.id) } : {}),
       },
@@ -1455,16 +1079,14 @@ export async function reactToThreadMessage(
   return { eventSeq: committed.eventSeq, runIds: committed.runs.map((run) => run.id) };
 }
 
-/** The bot that wrote the thread's newest message, when the reaction targets that message. */
-async function reactionReplyBotId(
+/** Whether the reaction targets Doodle's newest message; only reactions may follow it. */
+async function reactionWakesDoodle(
   tx: Prisma.TransactionClient,
-  target: ThreadTarget,
-  parent: { seq: number; role: string; botId: string | null },
+  target: ChatTarget,
+  parent: { seq: number; role: string },
 ) {
-  // Only the authenticated human reaction route calls this path; bots cannot wake each other.
-  if (parent.role !== "bot" || !parent.botId) return undefined;
-  const memberBotIds = target.kind === "bot" ? [target.botId] : target.memberBotIds;
-  if (!memberBotIds.includes(parent.botId)) return undefined;
+  // Only the authenticated human reaction route calls this path.
+  if (parent.role !== "bot") return false;
   // Earlier reactions may follow it; any other message means the conversation moved on.
   const newer = await tx.message.findMany({
     where: { threadId: target.threadId, seq: { gt: parent.seq } },
@@ -1472,14 +1094,13 @@ async function reactionReplyBotId(
     take: 51,
     select: { role: true, blocks: true, replyToMessageId: true },
   });
-  if (newer.length > 50) return undefined;
-  const onlyReactions = newer.every((message) =>
+  if (newer.length > 50) return false;
+  return newer.every((message) =>
     messageReaction({
       ...message,
       blocks: Array.isArray(message.blocks) ? (message.blocks as MessageBlock[]) : [],
     }),
   );
-  return onlyReactions ? parent.botId : undefined;
 }
 
 async function startReactionTurn(
@@ -1503,7 +1124,6 @@ async function startReactionTurn(
   if (active) {
     // A 👍 while this run waits for the user to finish on the computer means "done", the
     // same as a typed reply: it steers the run and the caller hands control back.
-    // Only when the caller can hand control back (bot threads), as with a typed reply.
     if (
       input.canReleaseTakeover &&
       input.reaction === "👍" &&
@@ -1578,7 +1198,7 @@ async function startReactionTurn(
     },
   });
   await tx.message.update({ where: { id: message.id }, data: { runId: run.id } });
-  await cancelSupersededQueuedRuns(tx, { threadId, botIds: [botId], keepRunIds: [run.id] });
+  await cancelSupersededQueuedRuns(tx, { threadId, keepRunIds: [run.id] });
   return [run];
 }
 
@@ -1597,7 +1217,7 @@ export async function stopThreadRuns(
     events: ThreadEvents;
   },
   actor: Actor,
-  target: ThreadTarget,
+  target: ChatTarget,
 ) {
   const stop = await deps.prisma.$transaction(
     cancelThreadRuns(actor, target),
@@ -1613,9 +1233,7 @@ export async function stopThreadRuns(
  */
 export function cancelThreadRuns(
   actor: Pick<Actor, "spaceId">,
-  target:
-    | { kind: "bot"; botId: string; threadId: string }
-    | { kind: "group"; memberBotIds: string[]; threadId: string },
+  target: { threadId: string },
   note?: { botId: string },
 ) {
   return async (tx: Prisma.TransactionClient) => {
@@ -1630,12 +1248,7 @@ export function cancelThreadRuns(
     });
     const ids = cancelled.map((run) => run.id);
     await clearEndedRunState(tx, ids);
-    await tx.steeringMessage.deleteMany({
-      where: {
-        botId: { in: target.kind === "bot" ? [target.botId] : target.memberBotIds },
-        message: { threadId: target.threadId },
-      },
-    });
+    await tx.steeringMessage.deleteMany({ where: { message: { threadId: target.threadId } } });
     // Snapshot teardown coordinates before commit. Once cancellation becomes
     // visible, a worker can release its lease / execution columns immediately; a
     // later lookup would then miss the sandbox work this request must stop.
@@ -1644,7 +1257,7 @@ export function cancelThreadRuns(
     const leases = ids.length
       ? await tx.computerExecutionLease.findMany({
           where: { runId: { in: ids } },
-          select: { computerId: true, botId: true, runId: true, fence: true },
+          select: { computerId: true, runId: true, fence: true },
         })
       : [];
     const leaseComputerIds = [...new Set(leases.map((lease) => lease.computerId))];
@@ -1661,7 +1274,6 @@ export function cancelThreadRuns(
             homeKey: true,
             kind: true,
             providerRef: true,
-            executionBotId: true,
             executionRunId: true,
           },
         })
@@ -1715,7 +1327,7 @@ export function cancelThreadRuns(
 export async function finishThreadStop(
   deps: { prisma: PrismaClient; sandbox: SandboxProvider; events: Pick<ThreadEvents, "notify"> },
   actor: Pick<Actor, "spaceId" | "userId">,
-  target: { threadId: string },
+  target: { threadId: string; doodleId: string },
   { runIds, computers, leases, eventSeq }: Awaited<ReturnType<ReturnType<typeof cancelThreadRuns>>>,
 ) {
   if (eventSeq !== null) {
@@ -1729,7 +1341,6 @@ export async function finishThreadStop(
   const computerById = new Map(computers.map((computer) => [computer.id, computer]));
   const teardownTargets: Array<{
     computer: (typeof computers)[number];
-    botId: string;
     runId: string;
     lease: (typeof leases)[number] | null;
   }> = [];
@@ -1740,16 +1351,11 @@ export async function finishThreadStop(
     const key = `${computer.id}:${lease.runId}`;
     if (seenTargets.has(key)) continue;
     seenTargets.add(key);
-    teardownTargets.push({
-      computer,
-      botId: lease.botId,
-      runId: lease.runId,
-      lease,
-    });
+    teardownTargets.push({ computer, runId: lease.runId, lease });
   }
   const cancelledRunIds = new Set(runIds);
   for (const computer of computers) {
-    if (!computer.executionBotId || !computer.executionRunId) continue;
+    if (!computer.executionRunId) continue;
     // Computers may enter the snapshot via a cancelled lease while
     // Computer.executionRunId still points at an unrelated live run. Only treat
     // the legacy columns as a teardown target when they belong to a run we
@@ -1758,22 +1364,17 @@ export async function finishThreadStop(
     const key = `${computer.id}:${computer.executionRunId}`;
     if (seenTargets.has(key)) continue;
     seenTargets.add(key);
-    teardownTargets.push({
-      computer,
-      botId: computer.executionBotId,
-      runId: computer.executionRunId,
-      lease: null,
-    });
+    teardownTargets.push({ computer, runId: computer.executionRunId, lease: null });
   }
   await Promise.all(
-    teardownTargets.map(async ({ computer, botId, runId, lease }) => {
+    teardownTargets.map(async ({ computer, runId, lease }) => {
       if (!computer.providerRef) return;
       const context = {
         operationId: "stop",
         traceId: "stop",
         spaceId: actor.spaceId,
         userId: actor.userId,
-        botId,
+        botId: target.doodleId,
         runId,
         screenLeaseId: screenLeaseIdForRun(lease, runId),
         cancelRunWork: true,
@@ -1789,99 +1390,7 @@ export async function finishThreadStop(
     where: { executionRunId: { in: runIds } },
     data: {
       executionRunId: null,
-      executionBotId: null,
       executionLeaseExpiresAt: null,
     },
   });
-}
-
-/**
- * Marks the thread read up to its latest message. Returns the seq the user had read up
- * to before, or null when the chat wasn't unread or nothing new arrived; the first
- * answer of a visit places the "New" divider. A message landing mid-update makes the
- * conditional write miss, so it retries rather than marking that message read; a chat
- * that stays that busy is read under the thread's row lock instead.
- */
-export async function markThreadRead(
-  prisma: PrismaClient,
-  actor: Actor,
-  target: ThreadTarget,
-): Promise<number | null> {
-  const where = { id: target.threadId, spaceId: actor.spaceId };
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    const thread = await prisma.thread.findFirst({
-      where,
-      select: { unread: true, lastReadSeq: true, nextMessageSeq: true },
-    });
-    if (!thread) return null;
-    const latestSeq = thread.nextMessageSeq - 1;
-    if (!thread.unread && thread.lastReadSeq >= latestSeq) return null;
-    const result = await prisma.thread.updateMany({
-      where: { ...where, lastReadSeq: thread.lastReadSeq, nextMessageSeq: thread.nextMessageSeq },
-      data: { unread: false, lastReadSeq: latestSeq },
-    });
-    if (result.count > 1) throw new IsolationError();
-    if (result.count === 1) return dividerSeq(thread, latestSeq);
-  }
-  // New messages take the same row lock, so none can land between this read and write.
-  return prisma.$transaction(async (tx) => {
-    await tx.$queryRaw`SELECT id FROM threads WHERE id = ${target.threadId} FOR UPDATE`;
-    const thread = await tx.thread.findFirst({
-      where,
-      select: { unread: true, lastReadSeq: true, nextMessageSeq: true },
-    });
-    if (!thread) return null;
-    const latestSeq = thread.nextMessageSeq - 1;
-    if (!thread.unread && thread.lastReadSeq >= latestSeq) return null;
-    const result = await tx.thread.updateMany({
-      where,
-      data: { unread: false, lastReadSeq: latestSeq },
-    });
-    if (result.count > 1) throw new IsolationError();
-    return dividerSeq(thread, latestSeq);
-  }, THREAD_LOCK_TRANSACTION_OPTIONS);
-}
-
-/** A chat only gets a divider when its unread dot was on, so replies seen live never do. */
-function dividerSeq(thread: { unread: boolean; lastReadSeq: number }, latestSeq: number) {
-  return thread.unread && thread.lastReadSeq < latestSeq ? thread.lastReadSeq : null;
-}
-
-/**
- * Marks the thread unread from one of its messages: the read cursor moves to just before it,
- * so the next open puts the New divider above that message.
- */
-export async function markThreadUnreadFrom(
-  prisma: PrismaClient,
-  actor: Actor,
-  target: ThreadTarget,
-  messageId: string,
-) {
-  const message = await prisma.message.findFirst({
-    where: { id: messageId, threadId: target.threadId },
-    select: { seq: true },
-  });
-  if (!message) throw new ORPCError("NOT_FOUND");
-  const result = await prisma.thread.updateMany({
-    where: { id: target.threadId, spaceId: actor.spaceId },
-    data: { unread: true, lastReadSeq: message.seq - 1 },
-  });
-  if (result.count > 1) throw new IsolationError();
-}
-
-export async function setThreadUnreadState(
-  prisma: PrismaClient,
-  actor: Actor,
-  target: ThreadTarget,
-  unread: boolean,
-) {
-  const result = await prisma.thread.updateMany({
-    where: {
-      id: target.threadId,
-      spaceId: actor.spaceId,
-      unread: { not: unread },
-    },
-    data: { unread },
-  });
-  if (result.count > 1) throw new IsolationError();
 }

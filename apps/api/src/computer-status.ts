@@ -3,11 +3,9 @@ import {
   computerSupportsUpdate,
   DISK_WARNING_PERCENT,
   diskUsedPercent,
-  holdsUserControl,
 } from "@labradoodle/adapters";
 import type { ComputerStatus } from "@labradoodle/contracts";
 import { ACTIVE_RUN_STATUSES, computerScreenSize } from "@labradoodle/core";
-import type { PrismaClient } from "@labradoodle/db";
 
 /** Mirrors computer.takeover: an execution lease blocks user control unless a takeover is pending. */
 export function executionBlocksUserTakeover(input: {
@@ -27,59 +25,22 @@ export function executionBlocksUserTakeover(input: {
   return leaseActive || runActive;
 }
 
-export async function resolveBusyBotName(
-  prisma: PrismaClient,
-  input: {
-    computerId: string | null | undefined;
-    botId: string;
-    botName: string;
-  },
-): Promise<string | null> {
-  if (!input.computerId) return null;
-  const lease = await prisma.computerExecutionLease.findUnique({
-    where: { computerId_botId: { computerId: input.computerId, botId: input.botId } },
-    select: { expiresAt: true, runId: true, computer: { select: { controlRunId: true } } },
-  });
-  if (!lease) return null;
-  const run = await prisma.run.findUnique({
-    where: { id: lease.runId },
-    select: { status: true },
-  });
-  return executionBlocksUserTakeover({
-    hasLease: true,
-    leaseExpiresAt: lease.expiresAt,
-    runStatus: run?.status,
-    takeoverRequested: lease.computer.controlRunId === lease.runId,
-  })
-    ? input.botName
-    : null;
-}
-
+/** The person's own computer as they see it, or what one would start as before they have one. */
 export function toComputerStatus(
-  botId: string,
   computer: {
     kind: string;
     state: string;
-    scope: string;
     controlHolder: string;
-    controlBotId?: string | null;
     controlRunId?: string | null;
     homeRevision: string;
     maintenanceId?: string | null;
     diskUsedBytes?: bigint | null;
     diskFreeBytes?: bigint | null;
     diskDismissedPercent?: number | null;
-    controlUserId?: string | null;
-    userId?: string | null;
   } | null,
-  busyBotName: string | null = null,
-  shared = false,
-  viewerId?: string,
+  plannedKind = "fake",
 ): ComputerStatus {
-  const controlledByOther = Boolean(
-    viewerId && computer?.controlHolder === "user" && !holdsUserControl(computer, viewerId),
-  );
-  const kind = (computer?.kind ?? "fake") as ComputerStatus["kind"];
+  const kind = (computer?.kind ?? plannedKind) as ComputerStatus["kind"];
   const state =
     kind === "none"
       ? "stopped"
@@ -96,27 +57,21 @@ export function toComputerStatus(
                 computer?.state === "error"
               ? computer.state
               : "stopped";
-  const screen = computerScreenSize(computer?.kind);
+  const screen = computerScreenSize(kind);
   const diskPercent = computer ? diskUsedPercent(computer) : null;
   const diskFull =
     diskPercent !== null &&
     diskPercent >= DISK_WARNING_PERCENT &&
     diskPercent > (computer?.diskDismissedPercent ?? 0);
   return {
-    botId,
-    ...(shared ? { shared } : {}),
-    ...(controlledByOther ? { controlledByOther } : {}),
-    mode: computer?.scope === "dedicated" ? "dedicated" : "team",
     kind,
     state,
     controlHolder: (computer?.controlHolder ?? "none") as ComputerStatus["controlHolder"],
-    controlBotId: computer?.controlBotId ?? null,
     takeoverRequested: Boolean(computer?.controlRunId),
     screenAvailable: !computer?.maintenanceId && (state === "running" || state === "booting"),
     screenWidth: screen.width,
     screenHeight: screen.height,
     homeRevision: computer?.homeRevision ?? null,
-    busyBotName,
     canUpdate: computerSupportsUpdate(kind),
     terminalAvailable: computerSupportsTerminal(kind),
     ...(diskFull ? { diskFullPercent: diskPercent } : {}),

@@ -3,6 +3,7 @@ import type {
   ArtifactStore,
   JobPublisher,
   MemoryStore,
+  NotificationProvider,
   PaymentWalletProvider,
   ProductAnalytics,
   SandboxProvider,
@@ -32,12 +33,12 @@ import type { NavLink } from "@labradoodle/contracts";
 import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
 import type { BillingService } from "./billing.js";
 import { accountRoutes } from "./routes/account.js";
-import { botsRoutes } from "./routes/bots.js";
 import { computerRoutes } from "./routes/computer.js";
 import { computerProviderRoutes } from "./routes/computer-provider.js";
 import { connectionsRoutes } from "./routes/connections.js";
 import { contentRoutes } from "./routes/content.js";
 import { createRouterContext } from "./routes/context.js";
+import { doodleRoutes } from "./routes/doodle.js";
 import { mcpRoutes } from "./routes/mcp.js";
 import { memoryRoutes } from "./routes/memory.js";
 import { modelsRoutes } from "./routes/models.js";
@@ -54,6 +55,8 @@ export { HEARTBEAT_MS, SESSION_RECHECK_MS } from "./routes/shared.js";
 
 export interface RouterDeps {
   pushTokens: PushTokenStore;
+  /** Push to phones; open apps hear the same alerts through `events`. */
+  notifications?: NotificationProvider;
   analytics?: ProductAnalytics;
   cloudAgent?: CloudAgentConnection | null;
   /** The deployment's wallet provider; absent hides purchases. */
@@ -130,7 +133,7 @@ export function createRouter(deps: RouterDeps) {
     ...accountRoutes(ctx),
     ...spacesRoutes(ctx),
     ...modelsRoutes(ctx),
-    ...botsRoutes(ctx),
+    ...doodleRoutes(ctx),
     ...threadsRoutes(ctx),
     ...computerRoutes(ctx),
     ...computerProviderRoutes(ctx),

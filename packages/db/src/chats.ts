@@ -409,7 +409,20 @@ export async function deleteChatsInTransaction(
   const { targets } = await snapshotRunTeardownTargets(tx, cancelledRunIds);
   const artifacts = await tx.artifact.findMany({ where, select: { storageKey: true } });
   const pageShareSecrets = await deletePageShareSecrets(tx, where);
+  // Routines cascade with their chat; their webhook secrets would not.
+  const webhookSecrets = await tx.routine.findMany({
+    where: { ...where, webhookSecretId: { not: null } },
+    select: { webhookSecretId: true },
+  });
   await tx.thread.deleteMany({ where: { id: { in: [...threadIds] }, spaceId } });
+  if (webhookSecrets.length) {
+    await tx.secret.deleteMany({
+      where: {
+        id: { in: webhookSecrets.flatMap((row) => row.webhookSecretId ?? []) },
+        kind: "webhook",
+      },
+    });
+  }
   return {
     cancelledRunIds,
     computers: targets,

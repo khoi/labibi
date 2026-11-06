@@ -142,7 +142,6 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { deleteAccountContent } from "./account-deletion.js";
 import { mountAccountExportRoute } from "./account-export.js";
-import { mountAccountImportRoute } from "./account-import.js";
 import { settleDirectoryChange } from "./account-status.js";
 import { mountAppAssociation, nativePasskeys } from "./app-association.js";
 import { mountAuditExportRoute } from "./audit-export.js";
@@ -764,6 +763,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     codexCatalog,
     prisma,
     pushTokens,
+    notifications,
     events,
     auth,
     jobs,
@@ -1018,19 +1018,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     if (actor) enrichLogContext({ "user.id": actor.userId, "space.id": actor.spaceId });
     return actor;
   });
-  mountAccountImportRoute(
-    app,
-    {
-      prisma,
-      sandbox,
-      home,
-      jobs,
-      artifacts,
-      dataDir: env.dataDir,
-      maxArtifactBytes: env.maxUploadSizeBytes,
-    },
-    sessionActor,
-  );
   mountWebhookHttpRoutes(app, { prisma, secrets, events, jobs });
   if (billing && billingProvider) {
     mountBillingRoutes(app, {
