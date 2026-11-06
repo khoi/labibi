@@ -392,16 +392,20 @@ function Home({ embedded, onSelectSpace }: InboxPaneProps & { embedded: boolean 
     router.push("/new-chat");
   }, [router]);
 
-  const title = useCallback(
-    () => (
-      <WorkspaceTitle
-        workspaces={workspaces}
-        currentId={me?.spaceId}
-        disabled={spaceBusy}
-        onSelect={(spaceId) => void chooseWorkspace(spaceId)}
-      />
-    ),
-    [workspaces, me?.spaceId, spaceBusy, chooseWorkspace],
+  const current = workspaces.find((workspace) => workspace.id === me?.spaceId);
+  const title = useMemo(
+    () =>
+      current
+        ? () => (
+            <WorkspaceTitle
+              workspaces={workspaces}
+              current={current}
+              disabled={spaceBusy}
+              onSelect={(spaceId) => void chooseWorkspace(spaceId)}
+            />
+          )
+        : undefined,
+    [workspaces, current, spaceBusy, chooseWorkspace],
   );
 
   useHomeHeader({ nativeHeader, ready, hasSession, newChat, headerTitle: title });
@@ -438,7 +442,7 @@ function Home({ embedded, onSelectSpace }: InboxPaneProps & { embedded: boolean 
           initials={initials}
           newChat={newChat}
           columnInsets={columnInsets}
-          title={title()}
+          title={title?.()}
         />
       )}
 

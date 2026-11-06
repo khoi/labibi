@@ -13,19 +13,18 @@ import { NativeSymbol } from "./native-symbol";
  */
 export function WorkspaceTitle({
   workspaces,
-  currentId,
+  current,
   disabled,
   onSelect,
 }: {
   workspaces: readonly MobileWorkspace[];
-  currentId: string | undefined;
+  current: MobileWorkspace;
   disabled?: boolean;
   onSelect: (spaceId: string) => void;
 }) {
   const styles = useThemedStyles(createHomeStyles);
   const { t } = useI18n();
-  const current = workspaces.find((workspace) => workspace.id === currentId);
-  const name = current?.name ?? "";
+  const { id: currentId, name } = current;
   if (workspaces.length < 2)
     return (
       <Text accessibilityRole="header" numberOfLines={1} style={styles.workspaceName}>
