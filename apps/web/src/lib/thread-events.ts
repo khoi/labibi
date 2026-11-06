@@ -556,25 +556,6 @@ export function computerTakeoverBlocked(
   return isActive(runStatus as RunStatus);
 }
 
-/**
- * The panel only reconnects a computer that is already running; starting a stopped one waits
- * for the user to open it, so showing the panel or switching chats never boots a sandbox.
- * Reconnect must use computer.boot — never computer.recover (that destroys the sandbox).
- */
-export function computerPanelNeedsScreen(
-  state: ComputerStatus["state"] | undefined,
-  screenUrl?: string | null,
-): boolean {
-  return state === "running" && !screenUrl;
-}
-
-export function computerPanelNeedsMaintenance(
-  state: ComputerStatus["state"] | undefined,
-  booting: boolean,
-): boolean {
-  return !booting && state === "error";
-}
-
 export function reduceComputerStatus(
   prev: ComputerStatus | null,
   event: ProductEvent,

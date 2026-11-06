@@ -41,21 +41,10 @@ export function useRightPanel({
     }
   }, []);
 
-  /** Opens `next` in another chat, saved under that chat's `destKey` rather than this one's. */
-  function openPanelInChat(destKey: string | null, next: Panel, navigateToChat: () => void) {
-    explicitPanelTarget.current = destKey;
-    pendingPanelRestore.current = null;
-    navigateToChat();
-    // Mark the destination key restored so we do not write settings onto the source chat.
-    setPanelState(next);
-    setRestoredPanelKey(destKey);
-  }
-
   return {
     panel,
     setPanel,
     setPanelState,
-    openPanelInChat,
     modelFocusRequest,
     setModelFocusRequest,
     restoredPanelKey,

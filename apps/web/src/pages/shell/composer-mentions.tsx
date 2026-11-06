@@ -1,11 +1,10 @@
 import type { ComposerMention, ComposerMentionBinding, SlashActionId } from "@labradoodle/core";
 import { composerMentionSegments, mentionChipKey } from "@labradoodle/core";
-import { BotAvatar, resolvePersonaColorDef } from "@labradoodle/ui-web";
+import { DoodleAvatar, PersonAvatar } from "@labradoodle/ui-web";
 import { t } from "@lingui/core/macro";
 import { Clock, Puzzle, X } from "lucide-react";
 import type { ComponentProps, ReactNode, Ref } from "react";
 import { Fragment } from "react";
-import { FALLBACK_BOT_COLOR } from "./chat-shared";
 
 export function slashActionLabel(id: SlashActionId) {
   switch (id) {
@@ -19,56 +18,22 @@ export function slashActionLabel(id: SlashActionId) {
 }
 
 export function MentionOptionIcon({ mention }: { mention: ComposerMention }) {
-  if (mention.kind === "routine") {
-    return <Clock size={16} strokeWidth={1.7} className="shrink-0 text-muted-foreground" />;
-  }
-  if (mention.kind === "connector") {
-    return <Puzzle size={16} strokeWidth={1.7} className="shrink-0 text-muted-foreground" />;
-  }
-  if (mention.kind === "group") {
-    return (
-      <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-accent text-[9px] text-foreground/75">
-        G
-      </span>
-    );
-  }
-  if (mention.kind === "everyone") {
-    return (
-      <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-accent text-[9px] text-foreground/75">
-        @
-      </span>
-    );
-  }
-  return (
-    <BotAvatar
-      color={mention.color ?? FALLBACK_BOT_COLOR}
-      identity={mention.id}
-      size={16}
-    />
-  );
+  return <MentionIcon mention={mention} size={16} />;
 }
 
 function MentionCardIcon({ mention }: { mention: ComposerMention }) {
+  return <MentionIcon mention={mention} size={12} />;
+}
+
+function MentionIcon({ mention, size }: { mention: ComposerMention; size: number }) {
   if (mention.kind === "routine") {
-    return <Clock size={12} strokeWidth={1.7} className="text-muted-foreground/70" />;
+    return <Clock size={size} strokeWidth={1.7} className="shrink-0 text-muted-foreground" />;
   }
   if (mention.kind === "connector") {
-    return <Puzzle size={12} strokeWidth={1.7} className="text-muted-foreground/70" />;
+    return <Puzzle size={size} strokeWidth={1.7} className="shrink-0 text-muted-foreground" />;
   }
-  if (mention.kind === "group" || mention.kind === "everyone") {
-    return (
-      <span className="grid size-3 place-items-center rounded-full bg-accent text-[9px] leading-none text-foreground/75">
-        {mention.kind === "group" ? "G" : "@"}
-      </span>
-    );
-  }
-  return (
-    <BotAvatar
-      color={mention.color ?? FALLBACK_BOT_COLOR}
-      identity={mention.id}
-      size={12}
-    />
-  );
+  if (mention.kind === "person") return <PersonAvatar name={mention.name} size={size} />;
+  return <DoodleAvatar size={size} />;
 }
 
 export function ComposerMentionHighlights({
@@ -97,11 +62,6 @@ export function ComposerMentionHighlights({
             data-testid="mention-chip"
             data-mention-kind={mention.kind}
             className="rounded-full bg-accent ring-1 ring-accent box-decoration-clone"
-            style={
-              mention.kind === "bot" && mention.color
-                ? { color: resolvePersonaColorDef(mention.id, mention.color).hex }
-                : undefined
-            }
           >
             <span className="relative text-transparent">
               @

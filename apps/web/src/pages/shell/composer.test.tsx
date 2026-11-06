@@ -278,28 +278,6 @@ describe("Composer", () => {
     expect(onSend).toHaveBeenCalledWith("ask @Bobby later", [], expect.any(String));
   });
 
-  it("draws each completed mention inline in the field instead of beside it", () => {
-    const textarea = renderComposer(vi.fn(), {
-      mentionTargets: [{ ...bob, color: "#1E98F5" }],
-    });
-    type(textarea, "ask @Bo");
-    pressEnter(textarea);
-    type(textarea, `${textarea.value}now`);
-    const field = container?.querySelector('[data-testid="composer-field"]');
-    const card = field?.querySelector('[data-testid="mention-chip"]');
-    expect(card?.textContent).toBe("@Bob");
-    expect((card as HTMLElement | null)?.style.color).toBe("rgb(30, 152, 245)");
-    expect(card?.closest("[inert]")?.textContent).toBe("ask @Bob now");
-    expect(container?.querySelector('[aria-label="Remove mention Bob"]')).toBeNull();
-    expect(textarea.className).toContain("text-transparent");
-
-    const uploaded = "data:image/png;base64,bmV3";
-    rerenderComposer({ mentionTargets: [{ ...bob, color: uploaded }] });
-    expect(container?.querySelector('[data-testid="mention-chip"] img')?.getAttribute("src")).toBe(
-      uploaded,
-    );
-  });
-
   it.each([
     ["Backspace at its end", [9, 9], [8, 9], "Backspace", "ask   ", 5],
     ["Delete at its start", [5, 5], [5, 6], "Delete", "ask   ", 5],
