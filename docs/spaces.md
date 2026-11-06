@@ -21,9 +21,9 @@ available in all your spaces too.
 
 ## Share a space
 
-Open the space's **Settings**, then **Members**, and choose **Invite** to copy a link. It works once
-and expires after 7 days. Whoever opens it joins that space only; it shows up in their space list
-next to their own spaces, and your other spaces stay private.
+Open the workspace menu and choose **Invite people** to copy a link. Anyone with it can join until it
+expires after 7 days. Whoever opens it joins that workspace only; it shows up in their workspace list
+next to their own, and your other workspaces stay private.
 
 Everyone in a shared space sees and can change its bots, chats, memory and routines, and uses one
 Team Computer and browser, so a site someone signs in to there stays signed in for everyone.

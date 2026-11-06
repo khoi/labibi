@@ -522,8 +522,6 @@ model SpaceInvite {
   createdByUserId  String
   createdBy        User      @relation("SpaceInviteCreator", fields: [createdByUserId], references: [id], onDelete: Cascade)
   expiresAt        DateTime
-  acceptedAt       DateTime?
-  acceptedByUserId String?
   createdAt        DateTime  @default(now())
 
   @@index([spaceId, createdAt])

@@ -152,13 +152,13 @@ export async function listSpaceMembers(
   const canManage = isOwnerRole(self.role);
   const openInvites = canManage
     ? await prisma.spaceInvite.count({
-        where: { spaceId: input.spaceId, acceptedAt: null, expiresAt: { gt: new Date() } },
+        where: { spaceId: input.spaceId, expiresAt: { gt: new Date() } },
       })
     : 0;
   return { spaceName: self.space.name, members, canManage, openInvites };
 }
 
-/** A new single-use link. Only its SHA-256 is stored; the token is returned once. */
+/** A new link anyone can join with until it expires. Only its SHA-256 is stored; the token is returned once. */
 export async function createSpaceInvite(
   prisma: PrismaClient,
   input: SpaceRef,
@@ -177,7 +177,7 @@ export async function createSpaceInvite(
     });
     if (!space || space.deletingAt) throw new SpaceNotFoundError();
     const open = await tx.spaceInvite.count({
-      where: { spaceId: input.spaceId, acceptedAt: null, expiresAt: { gt: new Date() } },
+      where: { spaceId: input.spaceId, expiresAt: { gt: new Date() } },
     });
     if (open >= MAX_OPEN_SPACE_INVITES) throw new SpaceInviteLimitError();
     await tx.spaceInvite.create({
@@ -192,12 +192,12 @@ export async function createSpaceInvite(
   return { token, expiresAt };
 }
 
-/** Every link not yet used stops working. */
+/** Every link stops working. */
 export async function cancelSpaceInvites(prisma: PrismaClient, input: SpaceRef): Promise<void> {
   await prisma.$transaction(async (tx) => {
     await lockSpaceDeletion(tx, input.spaceId);
     await requireSpaceOwner(tx, input);
-    await tx.spaceInvite.deleteMany({ where: { spaceId: input.spaceId, acceptedAt: null } });
+    await tx.spaceInvite.deleteMany({ where: { spaceId: input.spaceId } });
   });
 }
 
@@ -205,8 +205,6 @@ type InviteRow = {
   id: string;
   spaceId: string;
   expiresAt: Date;
-  acceptedAt: Date | null;
-  acceptedByUserId: string | null;
   createdBy: { name: string };
   space: { name: string; organizationId: string; isDefault: boolean; deletingAt: Date | null };
 };
@@ -222,8 +220,6 @@ async function findInvite(
       id: true,
       spaceId: true,
       expiresAt: true,
-      acceptedAt: true,
-      acceptedByUserId: true,
       createdBy: { select: { name: true } },
       space: {
         select: { name: true, organizationId: true, isDefault: true, deletingAt: true },
@@ -236,10 +232,7 @@ async function findInvite(
     select: { id: true },
   });
   const alreadyMember = membership !== null;
-  const open = invite.acceptedAt === null && invite.expiresAt > new Date();
-  // The person who used a link can reopen it while they still belong to the space.
-  const usedBySelf = invite.acceptedByUserId === userId && alreadyMember;
-  if (!open && !usedBySelf) throw new SpaceInviteNotFoundError();
+  if (invite.expiresAt <= new Date() && !alreadyMember) throw new SpaceInviteNotFoundError();
   return { invite, alreadyMember };
 }
 
@@ -256,11 +249,7 @@ export async function previewSpaceInvite(
   };
 }
 
-/**
- * Join the space a link points at. Claiming the link and adding the member
- * commit together, so a link is used at most once. Opening a link to a space
- * the person already belongs to leaves the link unused.
- */
+/** Join the space a link points at. Any number of people can join with one link until it expires. */
 export async function acceptSpaceInvite(
   prisma: PrismaClient,
   input: { token: string; userId: string },
@@ -273,15 +262,14 @@ export async function acceptSpaceInvite(
         if (alreadyMember) return { ...result, joined: false };
         await lockSpaceDeletion(tx, invite.spaceId);
         const now = new Date();
-        const claimed = await tx.spaceInvite.updateMany({
-          where: { id: invite.id, acceptedAt: null, expiresAt: { gt: now } },
-          data: { acceptedAt: now, acceptedByUserId: input.userId },
+        const live = await tx.spaceInvite.count({
+          where: { id: invite.id, expiresAt: { gt: now } },
         });
         const space = await tx.space.findUnique({
           where: { id: invite.spaceId },
           select: { deletingAt: true },
         });
-        if (claimed.count !== 1 || !space || space.deletingAt) throw new SpaceInviteNotFoundError();
+        if (live !== 1 || !space || space.deletingAt) throw new SpaceInviteNotFoundError();
 
         const organizationId = invite.space.organizationId;
         const existing = await tx.member.findUnique({
