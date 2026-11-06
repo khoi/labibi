@@ -12,7 +12,6 @@ export * from "./avatar-life.js";
 export * from "./avatar-motion.js";
 export * from "./avatar-shape.js";
 export * from "./bot-avatar-colors.js";
-export * from "./bot-messages.js";
 export * from "./bot-sender-name.js";
 export * from "./chats.js";
 export * from "./client-id.js";
