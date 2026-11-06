@@ -8,6 +8,7 @@ export function signInNext(next: string | null): string | null {
   // A connector sign-in started on another device lands here signed out; finish it after sign-in.
   if (
     next === "/integrations/setup" ||
+    next === "/onboarding" ||
     next === "/admin/plugins" ||
     next.startsWith(`${MCP_OAUTH_CALLBACK_PATH}?`) ||
     INVITE_PATH.test(next)

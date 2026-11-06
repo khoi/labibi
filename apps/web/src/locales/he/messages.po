@@ -915,6 +915,7 @@ msgstr "לא ניתן לקרוא תמונות"
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/shell/shell-sidebar.tsx
 #: src/pages/shell/side-panel.tsx
 msgid "Cancel"
 msgstr "ביטול"
@@ -1843,6 +1844,10 @@ msgstr ""
 msgid "Could not start OAuth"
 msgstr "לא ניתן להתחיל OAuth"
 
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Could not start over. Try again."
+msgstr ""
+
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Could not start teaching"
 msgstr "לא ניתן להתחיל לימוד"
@@ -2039,6 +2044,10 @@ msgstr "מחיקת החשבון"
 #: src/pages/shell/side-panel.tsx
 msgid "Delete chat"
 msgstr "מחיקת צ׳אט"
+
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Delete everything and start over?"
+msgstr ""
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -4693,6 +4702,11 @@ msgstr ""
 msgid "Start chat"
 msgstr "התחלת צ׳אט"
 
+#: src/components/SidebarFooter.tsx
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Start over"
+msgstr ""
+
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Start recording"
 msgstr "התחלת הקלטה"
@@ -4712,6 +4726,10 @@ msgstr "התחיל באיחור של {count} דק׳"
 #: src/pages/RoutineRunHistory.tsx
 msgid "Starting"
 msgstr "מתחיל"
+
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Starting over…"
+msgstr ""
 
 #: src/components/teach/TeachComputerOverlay.tsx
 #: src/pages/model-settings/connection-controls.tsx

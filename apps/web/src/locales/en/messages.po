@@ -915,6 +915,7 @@ msgstr "Can't read images"
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/shell/shell-sidebar.tsx
 #: src/pages/shell/side-panel.tsx
 msgid "Cancel"
 msgstr "Cancel"
@@ -1843,6 +1844,10 @@ msgstr "Could not sign in"
 msgid "Could not start OAuth"
 msgstr "Could not start OAuth"
 
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Could not start over. Try again."
+msgstr "Could not start over. Try again."
+
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Could not start teaching"
 msgstr "Could not start teaching"
@@ -2039,6 +2044,10 @@ msgstr "Delete account"
 #: src/pages/shell/side-panel.tsx
 msgid "Delete chat"
 msgstr "Delete chat"
+
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Delete everything and start over?"
+msgstr "Delete everything and start over?"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -4693,6 +4702,11 @@ msgstr "Start"
 msgid "Start chat"
 msgstr "Start chat"
 
+#: src/components/SidebarFooter.tsx
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Start over"
+msgstr "Start over"
+
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Start recording"
 msgstr "Start recording"
@@ -4712,6 +4726,10 @@ msgstr "Started {count}m late"
 #: src/pages/RoutineRunHistory.tsx
 msgid "Starting"
 msgstr "Starting"
+
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Starting over…"
+msgstr "Starting over…"
 
 #: src/components/teach/TeachComputerOverlay.tsx
 #: src/pages/model-settings/connection-controls.tsx

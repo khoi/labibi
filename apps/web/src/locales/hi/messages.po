@@ -915,6 +915,7 @@ msgstr "तस्वीरें नहीं पढ़ सकता"
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/shell/shell-sidebar.tsx
 #: src/pages/shell/side-panel.tsx
 msgid "Cancel"
 msgstr "रद्द करें"
@@ -1843,6 +1844,10 @@ msgstr ""
 msgid "Could not start OAuth"
 msgstr "OAuth शुरू नहीं हो सका"
 
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Could not start over. Try again."
+msgstr ""
+
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Could not start teaching"
 msgstr ""
@@ -2039,6 +2044,10 @@ msgstr "खाता हटाएँ"
 #: src/pages/shell/side-panel.tsx
 msgid "Delete chat"
 msgstr "चैट हटाएँ"
+
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Delete everything and start over?"
+msgstr ""
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -4693,6 +4702,11 @@ msgstr ""
 msgid "Start chat"
 msgstr "चैट शुरू करें"
 
+#: src/components/SidebarFooter.tsx
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Start over"
+msgstr ""
+
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Start recording"
 msgstr "रिकॉर्डिंग शुरू करें"
@@ -4712,6 +4726,10 @@ msgstr "{count} मिनट देर से शुरू हुआ"
 #: src/pages/RoutineRunHistory.tsx
 msgid "Starting"
 msgstr "शुरू हो रहा है"
+
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Starting over…"
+msgstr ""
 
 #: src/components/teach/TeachComputerOverlay.tsx
 #: src/pages/model-settings/connection-controls.tsx

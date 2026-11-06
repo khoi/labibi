@@ -916,6 +916,7 @@ msgstr "無法讀取影像"
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/shell/shell-sidebar.tsx
 #: src/pages/shell/side-panel.tsx
 msgid "Cancel"
 msgstr "取消"
@@ -1844,6 +1845,10 @@ msgstr ""
 msgid "Could not start OAuth"
 msgstr "無法開始 OAuth"
 
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Could not start over. Try again."
+msgstr ""
+
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Could not start teaching"
 msgstr "無法開始教學"
@@ -2040,6 +2045,10 @@ msgstr "刪除帳號"
 #: src/pages/shell/side-panel.tsx
 msgid "Delete chat"
 msgstr "刪除聊天"
+
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Delete everything and start over?"
+msgstr ""
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -4694,6 +4703,11 @@ msgstr "啟動"
 msgid "Start chat"
 msgstr "開始聊天"
 
+#: src/components/SidebarFooter.tsx
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Start over"
+msgstr ""
+
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Start recording"
 msgstr "開始錄製"
@@ -4713,6 +4727,10 @@ msgstr "延遲 {count} 分鐘開始"
 #: src/pages/RoutineRunHistory.tsx
 msgid "Starting"
 msgstr "正在開始"
+
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Starting over…"
+msgstr ""
 
 #: src/components/teach/TeachComputerOverlay.tsx
 #: src/pages/model-settings/connection-controls.tsx

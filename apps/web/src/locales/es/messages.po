@@ -915,6 +915,7 @@ msgstr "No puede leer imágenes"
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/shell/shell-sidebar.tsx
 #: src/pages/shell/side-panel.tsx
 msgid "Cancel"
 msgstr "Cancelar"
@@ -1843,6 +1844,10 @@ msgstr "No se pudo iniciar sesión"
 msgid "Could not start OAuth"
 msgstr "No se pudo iniciar OAuth"
 
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Could not start over. Try again."
+msgstr ""
+
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Could not start teaching"
 msgstr "No se pudo iniciar la enseñanza"
@@ -2039,6 +2044,10 @@ msgstr "Eliminar cuenta"
 #: src/pages/shell/side-panel.tsx
 msgid "Delete chat"
 msgstr "Eliminar chat"
+
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Delete everything and start over?"
+msgstr ""
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -4693,6 +4702,11 @@ msgstr "Iniciar"
 msgid "Start chat"
 msgstr "Iniciar chat"
 
+#: src/components/SidebarFooter.tsx
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Start over"
+msgstr ""
+
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Start recording"
 msgstr "Iniciar grabación"
@@ -4712,6 +4726,10 @@ msgstr "Empezó con {count} min de retraso"
 #: src/pages/RoutineRunHistory.tsx
 msgid "Starting"
 msgstr "Iniciando"
+
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Starting over…"
+msgstr ""
 
 #: src/components/teach/TeachComputerOverlay.tsx
 #: src/pages/model-settings/connection-controls.tsx

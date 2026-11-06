@@ -719,6 +719,7 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     dataDir: env.dataDir,
     env: {
       navLinks: env.navLinks,
+      startOver: env.nodeEnv === "development",
       adminEmails: env.adminEmails,
       maxUploadSizeBytes: env.maxUploadSizeBytes,
       maxAttachmentsPerMessage: env.maxAttachmentsPerMessage,
@@ -940,6 +941,15 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     await next();
   });
   mountAccountExportRoute(app, { prisma, auth, artifacts, home });
+  if (env.nodeEnv === "development") {
+    app.post("/api/dev/start-over", async (c) => {
+      if (c.req.header("content-type") !== "application/json") return c.text("Bad request", 400);
+      const session = await auth.api.getSession({ headers: c.req.raw.headers });
+      if (!session?.user) return c.text("Unauthorized", 401);
+      await auth.startOver(session.user.id);
+      return c.json({ ok: true });
+    });
+  }
   mountAuditExportRoute(app, { prisma, sessionActor });
   mountVoiceHttpRoutes(app, { prisma, secrets, env }, async (c) => {
     const actor = await sessionActor(c.req.raw);

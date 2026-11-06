@@ -915,6 +915,7 @@ msgstr "画像を読み取れません"
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/shell/shell-sidebar.tsx
 #: src/pages/shell/side-panel.tsx
 msgid "Cancel"
 msgstr "キャンセル"
@@ -1843,6 +1844,10 @@ msgstr ""
 msgid "Could not start OAuth"
 msgstr "OAuthを開始できませんでした"
 
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Could not start over. Try again."
+msgstr ""
+
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Could not start teaching"
 msgstr "ティーチングを開始できませんでした"
@@ -2039,6 +2044,10 @@ msgstr "アカウントを削除"
 #: src/pages/shell/side-panel.tsx
 msgid "Delete chat"
 msgstr "チャットを削除"
+
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Delete everything and start over?"
+msgstr ""
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -4693,6 +4702,11 @@ msgstr ""
 msgid "Start chat"
 msgstr "チャットを開始"
 
+#: src/components/SidebarFooter.tsx
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Start over"
+msgstr ""
+
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Start recording"
 msgstr "録画を開始"
@@ -4712,6 +4726,10 @@ msgstr "{count}分遅れて開始"
 #: src/pages/RoutineRunHistory.tsx
 msgid "Starting"
 msgstr "開始中"
+
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Starting over…"
+msgstr ""
 
 #: src/components/teach/TeachComputerOverlay.tsx
 #: src/pages/model-settings/connection-controls.tsx

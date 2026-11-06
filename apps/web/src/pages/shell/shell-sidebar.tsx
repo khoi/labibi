@@ -1,13 +1,27 @@
 import type { NavLink } from "@labradoodle/contracts";
 import { accountDisplay } from "@labradoodle/core";
-import { InputGroup, InputGroupAddon, InputGroupInput, Sidebar } from "@labradoodle/ui-web";
-import { useLingui } from "@lingui/react/macro";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  Sidebar,
+} from "@labradoodle/ui-web";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Search } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { PasskeyOffer } from "../../components/PasskeyOffer";
 import { SidebarFooter } from "../../components/SidebarFooter";
 import type { BotsSidebarDensity } from "../../lib/bots-sidebar-density-pref";
+import { clearComposerDrafts } from "../../lib/composer-draft";
+import { clearSpaceSelection } from "../../lib/rpc";
 import { useSignOut } from "../../lib/sign-out";
 import { SpaceSearchResults } from "../SpaceSearch";
 import type { SettingsSection } from "../shell-overlay";
@@ -41,6 +55,7 @@ export function ShellSidebar({
   footerLogos,
   user,
   navLinks,
+  startOver,
   navigate,
   openSettings,
   openIntegrations,
@@ -60,6 +75,7 @@ export function ShellSidebar({
   footerLogos: Array<{ name: string; logo?: string | null }>;
   user: User | undefined;
   navLinks: NavLink[];
+  startOver: boolean;
   navigate: (path: string) => void;
   openSettings: (section: SettingsSection) => void;
   openIntegrations: () => void;
@@ -175,6 +191,7 @@ export function ShellSidebar({
           logos={footerLogos}
           user={user}
           navLinks={navLinks}
+          startOver={startOver}
           closeMobileSidebar={() => setMobileOpen(false)}
           navigate={navigate}
           openSettings={openSettings}
@@ -191,6 +208,7 @@ function ShellSidebarFooter({
   logos,
   user,
   navLinks,
+  startOver,
   closeMobileSidebar,
   navigate,
   openSettings,
@@ -201,6 +219,7 @@ function ShellSidebarFooter({
   logos: Array<{ name: string; logo?: string | null }>;
   user: User | undefined;
   navLinks: NavLink[];
+  startOver: boolean;
   closeMobileSidebar: () => void;
   navigate: (path: string) => void;
   openSettings: (section: SettingsSection) => void;
@@ -215,49 +234,112 @@ function ShellSidebarFooter({
     setMenuOpen(true);
     setLogOutError(message);
   });
+  const [confirmStartOver, setConfirmStartOver] = useState(false);
+  const [startingOver, setStartingOver] = useState(false);
+  const [startOverError, setStartOverError] = useState<string | null>(null);
   const { label: userName, initial: initials } = accountDisplay(user ?? {}, t`You`);
+  const runStartOver = async () => {
+    setStartingOver(true);
+    setStartOverError(null);
+    const response = await fetch("/api/dev/start-over", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: "{}",
+    }).catch(() => null);
+    if (response?.ok) {
+      clearSpaceSelection();
+      clearComposerDrafts();
+      window.location.assign("/sign-in?next=/onboarding");
+      return;
+    }
+    setStartingOver(false);
+    setStartOverError(t`Could not start over. Try again.`);
+  };
   return (
-    <SidebarFooter
-      mini={mini}
-      logos={logos}
-      name={userName}
-      initials={initials}
-      image={user?.image}
-      email={user?.email}
-      open={menuOpen}
-      onOpenChange={(open) => {
-        setMenuOpen(open);
-        if (!open) setLogOutError(null);
-      }}
-      onIntegrations={() => {
-        setMenuOpen(false);
-        openIntegrations();
-      }}
-      onSkills={() => {
-        setMenuOpen(false);
-        openSkills();
-      }}
-      links={navLinks}
-      onLink={(link) => {
-        setMenuOpen(false);
-        closeMobileSidebar();
-        navigate(`/app/x/${link.id}`);
-      }}
-      onArtifacts={() => {
-        setMenuOpen(false);
-        closeMobileSidebar();
-        navigate("/app/artifacts");
-      }}
-      onSettings={() => {
-        setMenuOpen(false);
-        openSettings("general");
-      }}
-      onLogOut={() => {
-        setLogOutError(null);
-        void logOut();
-      }}
-      signingOut={signingOut}
-      logOutError={logOutError}
-    />
+    <>
+      <SidebarFooter
+        mini={mini}
+        logos={logos}
+        name={userName}
+        initials={initials}
+        image={user?.image}
+        email={user?.email}
+        open={menuOpen}
+        onOpenChange={(open) => {
+          setMenuOpen(open);
+          if (!open) setLogOutError(null);
+        }}
+        onIntegrations={() => {
+          setMenuOpen(false);
+          openIntegrations();
+        }}
+        onSkills={() => {
+          setMenuOpen(false);
+          openSkills();
+        }}
+        links={navLinks}
+        onLink={(link) => {
+          setMenuOpen(false);
+          closeMobileSidebar();
+          navigate(`/app/x/${link.id}`);
+        }}
+        onArtifacts={() => {
+          setMenuOpen(false);
+          closeMobileSidebar();
+          navigate("/app/artifacts");
+        }}
+        onSettings={() => {
+          setMenuOpen(false);
+          openSettings("general");
+        }}
+        onLogOut={() => {
+          setLogOutError(null);
+          void logOut();
+        }}
+        signingOut={signingOut}
+        logOutError={logOutError}
+        onStartOver={
+          startOver
+            ? () => {
+                setMenuOpen(false);
+                setConfirmStartOver(true);
+              }
+            : undefined
+        }
+      />
+      <AlertDialog
+        open={confirmStartOver}
+        onOpenChange={(open) => {
+          if (startingOver) return;
+          setConfirmStartOver(open);
+          if (!open) setStartOverError(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              <Trans>Delete everything and start over?</Trans>
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+          {startOverError ? (
+            <p role="alert" className="text-[13px] text-destructive">
+              {startOverError}
+            </p>
+          ) : null}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={startingOver}>
+              <Trans>Cancel</Trans>
+            </AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={startingOver}
+              onClick={() => void runStartOver()}
+            >
+              {startingOver ? <Trans>Starting over…</Trans> : <Trans>Start over</Trans>}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

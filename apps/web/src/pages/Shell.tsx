@@ -729,6 +729,7 @@ function SpaceShell() {
         footerLogos={footerLogos}
         user={session.data?.user}
         navLinks={desktopBridge() ? [] : (bootstrapMe?.navLinks ?? [])}
+        startOver={Boolean(bootstrapMe?.startOver)}
         navigate={navigate}
         openSettings={openSettings}
         openIntegrations={() => setOverlay({ kind: "integrations" })}

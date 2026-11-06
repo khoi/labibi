@@ -43,6 +43,7 @@ export async function meDto(deps: RouterDeps, actor: Actor): Promise<Me> {
   const sandboxProvider = effectiveSandboxProvider(setup.settings, deps.env.sandboxProvider);
   return {
     navLinks: deps.env.navLinks ?? [],
+    startOver: Boolean(deps.env.startOver),
     maxUploadSizeBytes: attachmentMaxBytes(deps.env),
     maxAttachmentsPerMessage: attachmentMaxCount(deps.env),
     userId: actor.userId,

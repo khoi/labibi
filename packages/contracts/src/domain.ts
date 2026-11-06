@@ -1488,6 +1488,7 @@ export const MeSchema = z.object({
   maxAttachmentsPerMessage: z.number().int().positive().optional(),
   /** Operator-configured menu links. Absent from older servers. */
   navLinks: z.array(NavLinkSchema).default([]),
+  startOver: z.boolean().optional(),
   userId: Id,
   email: z.string().email(),
   name: z.string(),

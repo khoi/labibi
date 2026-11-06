@@ -236,6 +236,14 @@ export function createAuth(prisma: PrismaClient, env: AuthEnv) {
   // Better Auth's own token key, so every stored token shares one cipher and key.
   let authContext: Promise<{ secretConfig: TokenKey }> | undefined;
   const tokenKey = async () => (await authContext!).secretConfig;
+  const deleteUserContent = async (userId: string) => {
+    await env.beforeDeleteUser?.(userId);
+    const organizationIds = await personalOrganizationIds(prisma, userId);
+    await prisma.$transaction(async (tx) => {
+      await tx.passkey.deleteMany({ where: { userId } });
+      await tx.organization.deleteMany({ where: { id: { in: organizationIds } } });
+    });
+  };
   const auth = betterAuth({
     appName: "Labradoodle",
     logger: env.logger,
@@ -363,17 +371,7 @@ export function createAuth(prisma: PrismaClient, env: AuthEnv) {
       },
       deleteUser: {
         enabled: true,
-        beforeDelete: async (user) => {
-          await env.beforeDeleteUser?.(user.id);
-          const organizationIds = await personalOrganizationIds(prisma, user.id);
-
-          await prisma.$transaction(async (tx) => {
-            await tx.passkey.deleteMany({ where: { userId: user.id } });
-            await tx.organization.deleteMany({
-              where: { id: { in: organizationIds } },
-            });
-          });
-        },
+        beforeDelete: (user) => deleteUserContent(user.id),
         afterDelete: async (user) => {
           await recordSecurityEvent({ type: "auth.account.deleted", userId: user.id });
         },
@@ -797,6 +795,28 @@ export function createAuth(prisma: PrismaClient, env: AuthEnv) {
     consumeAccountExportToken: async (token: string) =>
       consumeAccountExportToken((await auth.$context).internalAdapter, token),
     disposeOidcDiscovery: () => discovery?.dispose(),
+    startOver: async (userId: string) => {
+      const [user, accounts, passkeys] = await Promise.all([
+        prisma.user.findUniqueOrThrow({ where: { id: userId } }),
+        prisma.account.findMany({ where: { userId } }),
+        prisma.passkey.findMany({ where: { userId } }),
+      ]);
+      await deleteUserContent(userId);
+      await prisma.$transaction(async (tx) => {
+        await tx.user.delete({ where: { id: userId } });
+        await tx.user.create({
+          data: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            emailVerified: user.emailVerified,
+            image: user.image,
+          },
+        });
+        await tx.account.createMany({ data: accounts });
+        await tx.passkey.createMany({ data: passkeys });
+      });
+    },
   });
 }
 

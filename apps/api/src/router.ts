@@ -101,6 +101,7 @@ export interface RouterDeps {
   speechSummary?: VoiceDeps["speechSummary"];
   env: {
     navLinks?: NavLink[];
+    startOver?: boolean;
     adminEmails?: string[];
     maxUploadSizeBytes?: number;
     maxAttachmentsPerMessage?: number;

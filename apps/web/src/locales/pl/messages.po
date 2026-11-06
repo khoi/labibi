@@ -915,6 +915,7 @@ msgstr "Nie odczytuje obrazów"
 #: src/pages/PaymentWalletSettingsPanel.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 #: src/pages/shell/dialogs.tsx
+#: src/pages/shell/shell-sidebar.tsx
 #: src/pages/shell/side-panel.tsx
 msgid "Cancel"
 msgstr "Anuluj"
@@ -1843,6 +1844,10 @@ msgstr "Nie udało się zalogować"
 msgid "Could not start OAuth"
 msgstr "Nie udało się rozpocząć OAuth"
 
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Could not start over. Try again."
+msgstr ""
+
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Could not start teaching"
 msgstr "Nie udało się rozpocząć nauki"
@@ -2039,6 +2044,10 @@ msgstr "Usuń konto"
 #: src/pages/shell/side-panel.tsx
 msgid "Delete chat"
 msgstr "Usuń czat"
+
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Delete everything and start over?"
+msgstr ""
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -4693,6 +4702,11 @@ msgstr "Rozpocznij"
 msgid "Start chat"
 msgstr "Rozpocznij czat"
 
+#: src/components/SidebarFooter.tsx
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Start over"
+msgstr ""
+
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Start recording"
 msgstr "Rozpocznij nagrywanie"
@@ -4712,6 +4726,10 @@ msgstr "Uruchomiono {count} min później"
 #: src/pages/RoutineRunHistory.tsx
 msgid "Starting"
 msgstr "Uruchamianie"
+
+#: src/pages/shell/shell-sidebar.tsx
+msgid "Starting over…"
+msgstr ""
 
 #: src/components/teach/TeachComputerOverlay.tsx
 #: src/pages/model-settings/connection-controls.tsx

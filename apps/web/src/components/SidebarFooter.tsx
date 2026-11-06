@@ -15,6 +15,7 @@ import {
   Link2,
   LogOut,
   Plug,
+  RotateCcw,
   ScrollText,
   Settings,
   Smartphone,
@@ -40,6 +41,7 @@ type Props = {
   onArtifacts: () => void;
   onSettings: () => void;
   onLogOut: () => void;
+  onStartOver?: () => void;
   signingOut: boolean;
   logOutError: string | null;
 };
@@ -65,6 +67,7 @@ export function SidebarFooter({
   onArtifacts,
   onSettings,
   onLogOut,
+  onStartOver,
   signingOut,
   logOutError,
 }: Props) {
@@ -193,6 +196,16 @@ export function SidebarFooter({
               <Trans>Get the mobile app</Trans>
             </a>
             <div className="my-1 border-t border-border" />
+            {onStartOver ? (
+              <Button
+                variant="ghost"
+                className="h-9 w-full justify-start gap-2.5 font-normal text-destructive hover:text-destructive"
+                onClick={onStartOver}
+              >
+                <RotateCcw strokeWidth={1.75} />
+                <Trans>Start over</Trans>
+              </Button>
+            ) : null}
             <Button
               variant="ghost"
               className="h-9 w-full justify-start gap-2.5 font-normal"
