@@ -3,10 +3,7 @@ import type { Prisma, PrismaClient } from "./generated/prisma/client.js";
 import { recordUsage } from "./usage.js";
 
 function client(createMany: ReturnType<typeof vi.fn>) {
-  const tx = { usageRecord: { createMany }, modelCreditEntry: { findUnique: async () => null } };
-  return {
-    $transaction: async (work: (tx: unknown) => Promise<unknown>) => work(tx),
-  } as unknown as Pick<PrismaClient, "$transaction">;
+  return { usageRecord: { createMany } } as unknown as Pick<PrismaClient, "usageRecord">;
 }
 
 describe("usage ledger", () => {
@@ -108,17 +105,5 @@ describe("usage ledger", () => {
       costUsd: null,
     });
     expect(data?.runId).toBeUndefined();
-  });
-  it("records usage whose first transaction lost a deadlock", async () => {
-    const createMany = vi
-      .fn()
-      .mockRejectedValueOnce(Object.assign(new Error("deadlock"), { code: "P2034" }))
-      .mockResolvedValueOnce({ count: 1 });
-    await recordUsage(
-      client(createMany),
-      { type: "usage", provider: "fixture", model: "test", inputTokens: 1, outputTokens: 1 },
-      { spaceId: "space-fixture", userId: "user-fixture", runId: "run-fixture" },
-    );
-    expect(createMany).toHaveBeenCalledTimes(2);
   });
 });

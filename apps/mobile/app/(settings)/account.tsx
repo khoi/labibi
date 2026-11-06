@@ -602,13 +602,6 @@ export default function Account() {
         ) : null}
 
         <SettingsGroup>
-          {me?.billingEnabled ? (
-            <SettingsRow
-              title={t("Billing")}
-              chevron="right"
-              onPress={() => router.push("/billing")}
-            />
-          ) : null}
           {doodle?.canCustomize
             ? settingsLink({ title: DOODLE_NAME, href: "/doodle-settings" })
             : null}

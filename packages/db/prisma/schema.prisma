@@ -22,67 +22,56 @@ model AiDataConsent {
 }
 
 model User {
-  aiDataConsents                  AiDataConsent[]
-  pages                           Page[]
-  id                              String                          @id
-  name                            String
-  email                           String
-  emailVerified                   Boolean                         @default(false)
-  image                           String?
-  createdAt                       DateTime                        @default(now())
-  updatedAt                       DateTime                        @updatedAt
-  avatarStyle                     String                          @default("organic")
+  aiDataConsents         AiDataConsent[]
+  pages                  Page[]
+  id                     String                          @id
+  name                   String
+  email                  String
+  emailVerified          Boolean                         @default(false)
+  image                  String?
+  createdAt              DateTime                        @default(now())
+  updatedAt              DateTime                        @updatedAt
+  avatarStyle            String                          @default("organic")
   /// IANA timezone such as "Pacific/Auckland". Null until set; bots then get UTC only.
-  timezone                        String?
+  timezone               String?
   /// The app language last chosen, such as "es" or "pt-BR". Null until an app reports it;
   /// emails then follow the language of the browser that asked for them.
-  locale                          String?
+  locale                 String?
   /// Reads Doodle's replies aloud as they arrive, in every workspace.
-  readAloud                       Boolean                         @default(false)
-  marketingEmailOptOutAt          DateTime?
-  /// When an organization this person owns first subscribed; uses up every trial kind.
-  billingTrialUsedAt              DateTime?
-  /// When an organization this person owns was given free own-key days; uses up only that
-  /// trial, and survives the organization the days belonged to.
-  byokTrialUsedAt                 DateTime?
-  /// The organization whose open checkout session holds this owner's one own-key trial,
-  /// and until when that hold lasts. Null once the session is paid, expired, or cancelled.
-  byokTrialCheckoutOrganizationId String?
-  byokTrialCheckoutExpiresAt      DateTime?
+  readAloud              Boolean                         @default(false)
+  marketingEmailOptOutAt DateTime?
   /// Set while the account may not sign in or run work; its content stays. Cleared to reactivate.
-  deactivatedAt                   DateTime?
-  sessions                        Session[]
-  accounts                        Account[]
-  scimSubject                     ScimSubject?
-  scimUsers                       ScimUser[]
-  scimIdentityTombstones          ScimIdentityTombstone[]
-  scimProjectionGrants            ScimProjectionGrant[]
-  passkeys                        Passkey[]
-  members                         Member[]
-  accessGrants                    AccessGrant[]
-  invitations                     Invitation[]
-  modelCredentials                UserModelCredential[]
-  voiceCredentials                UserVoiceCredential[]
-  paymentWallet                   PaymentWallet?
-  spendingLimit                   SpendingLimit?
-  payments                        Payment[]
-  secrets                         Secret[]
-  mcpServers                      McpServer[]
-  modelRoleChoices                UserModelRoleChoice[]
-  modelPreferences                UserModelPreference[]
-  voicePreferences                UserVoicePreference[]
-  approvalRules                   UserActionApprovalRule[]
-  autoReviewPreference            UserActionAutoReviewPreference?
-  createdSpaces                   Space[]                         @relation("SpaceCreator")
-  spaceInvites                    SpaceInvite[]                   @relation("SpaceInviteCreator")
-  vaultCredentials                VaultCredential[]
-  pushToken                       PushToken?
-  trustedLinkSites                TrustedLinkSite[]
-  feedbackReports                 FeedbackReport[]
-  emailSends                      EmailSend[]
-  signupSurvey                    SignupSurvey?
-  computerRuns                    ComputerRun[]
-  devices                         UserDevice[]
+  deactivatedAt          DateTime?
+  sessions               Session[]
+  accounts               Account[]
+  scimSubject            ScimSubject?
+  scimUsers              ScimUser[]
+  scimIdentityTombstones ScimIdentityTombstone[]
+  scimProjectionGrants   ScimProjectionGrant[]
+  passkeys               Passkey[]
+  members                Member[]
+  invitations            Invitation[]
+  modelCredentials       UserModelCredential[]
+  voiceCredentials       UserVoiceCredential[]
+  paymentWallet          PaymentWallet?
+  spendingLimit          SpendingLimit?
+  payments               Payment[]
+  secrets                Secret[]
+  mcpServers             McpServer[]
+  modelRoleChoices       UserModelRoleChoice[]
+  modelPreferences       UserModelPreference[]
+  voicePreferences       UserVoicePreference[]
+  approvalRules          UserActionApprovalRule[]
+  autoReviewPreference   UserActionAutoReviewPreference?
+  createdSpaces          Space[]                         @relation("SpaceCreator")
+  spaceInvites           SpaceInvite[]                   @relation("SpaceInviteCreator")
+  vaultCredentials       VaultCredential[]
+  pushToken              PushToken?
+  trustedLinkSites       TrustedLinkSite[]
+  feedbackReports        FeedbackReport[]
+  emailSends             EmailSend[]
+  signupSurvey           SignupSurvey?
+  devices                UserDevice[]
 
   @@unique([email])
   @@map("user")
@@ -382,96 +371,18 @@ model RateLimit {
 }
 
 model Organization {
-  id           String              @id
-  name         String
-  slug         String
-  logo         String?
-  createdAt    DateTime
-  metadata     String?
-  members      Member[]
-  invitations  Invitation[]
-  spaces       Space[]
-  billing      BillingAccount?
-  modelCredits ModelCreditAccount?
-  referralCode ReferralCode?
-  referredBy   Referral?           @relation("ReferredOrganization")
-  referrals    Referral[]          @relation("ReferrerOrganization")
+  id          String       @id
+  name        String
+  slug        String
+  logo        String?
+  createdAt   DateTime
+  metadata    String?
+  members     Member[]
+  invitations Invitation[]
+  spaces      Space[]
 
   @@unique([slug])
   @@map("organization")
-}
-
-model BillingAccount {
-  organizationId         String       @id
-  organization           Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  customerId             String       @unique
-  creditAmountCents      Int?
-  byokPriceCents         Int?
-  /// "month" or "year": how often byokPriceCents bills.
-  byokInterval           String?
-  /// "standard", "pro" or "max": the own-key plan's tier; null reads as standard.
-  byokTier               String?
-  subscriptionId         String?
-  subscriptionItemId     String?
-  priceId                String?
-  status                 String?
-  seats                  Int?
-  trialEndsAt            DateTime?
-  currentPeriodStartsAt  DateTime?
-  currentPeriodEndsAt    DateTime?
-  cancelAtPeriodEnd      Boolean      @default(false)
-  endedAt                DateTime?
-  cancellationReason     String?
-  cancellationComment    String?
-  subscribedAt           DateTime?
-  /// When a subscription was first seen active, so a trial that never paid is not a paid plan.
-  paidAt                 DateTime?
-  syncedAt               DateTime?
-  checkoutLeaseId        String?
-  checkoutLeaseExpiresAt DateTime?
-  createdAt              DateTime     @default(now())
-  updatedAt              DateTime     @updatedAt
-
-  @@map("billing_accounts")
-}
-
-model ReferralCode {
-  code           String       @id
-  organizationId String       @unique
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  createdAt      DateTime     @default(now())
-
-  @@map("referral_codes")
-}
-
-model Referral {
-  organizationId         String       @id
-  organization           Organization @relation("ReferredOrganization", fields: [organizationId], references: [id], onDelete: Cascade)
-  referrerOrganizationId String
-  referrer               Organization @relation("ReferrerOrganization", fields: [referrerOrganizationId], references: [id], onDelete: Cascade)
-  cardFingerprint        String?      @unique
-  outcome                String?
-  rewardedAt             DateTime?
-
-  @@index([referrerOrganizationId])
-  @@map("referrals")
-}
-
-model AccessGrant {
-  id             String    @id @default(cuid())
-  email          String
-  creditCents    Int       @default(0)
-  freeMonths     Int       @default(0)
-  createdById    String?
-  createdBy      User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
-  organizationId String?
-  appliedAt      DateTime?
-  revokedAt      DateTime?
-  createdAt      DateTime  @default(now())
-
-  @@index([email])
-  @@index([createdAt])
-  @@map("access_grants")
 }
 
 model PluginSubmission {
@@ -549,7 +460,6 @@ model Space {
   pages                   Page[]
   notificationPreferences NotificationPreference[]
   computers               Computer[]
-  computerRuns            ComputerRun[]
   externalEffects         ExternalEffect[]
   mcpServers              McpServer[]
   mcpOAuthSessions        McpOAuthSession[]
@@ -635,7 +545,6 @@ model SpaceInvite {
 }
 
 model DeploymentSettings {
-  modelCreditsEnabled             Boolean  @default(false)
   id                              String   @id @default("default")
   /// Deprecated: retained for rolling-release compatibility; never authorizes app users.
   ownerUserId                     String?
@@ -1423,55 +1332,9 @@ model Computer {
   executionLeases         ComputerExecutionLease[]
   maintenanceId           String?
   updates                 ComputerUpdate[]
-  homeDeletionNotice      HomeDeletionNotice?
 
   @@unique([spaceId, userId])
   @@map("computers")
-}
-
-/// Hosted billing only: a stopped computer whose saved home is due for deletion after its plan
-/// ended or it went unused. `claimId` leases the row to one process while it emails.
-model HomeDeletionNotice {
-  computerId     String    @id
-  computer       Computer  @relation(fields: [computerId], references: [id], onDelete: Cascade)
-  claimId        String?
-  claimExpiresAt DateTime?
-  /// When the owner was emailed; null until then, and nothing is deleted before it.
-  warnedAt       DateTime?
-  /// The deletion date the email gave.
-  deleteAfter    DateTime?
-  createdAt      DateTime  @default(now())
-
-  @@map("home_deletion_notices")
-}
-
-/// One stretch a computer ran at its provider, from `computers.runningSince` until it stopped,
-/// attributed to the computer's owning user and space. Run time is what sandbox providers bill.
-///
-/// `computerId` is deliberately not a relation, so the row outlives a deleted computer. Deleting
-/// the user or space anonymises the row instead of erasing the run time it records.
-model ComputerRun {
-  id          String    @id @default(cuid())
-  computerId  String
-  spaceId     String?
-  space       Space?    @relation(fields: [spaceId], references: [id], onDelete: SetNull)
-  userId      String?
-  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  kind        String
-  /// The provider's id for the sandbox, to match runs with the provider's own usage and billing.
-  providerRef String?
-  startedAt   DateTime
-  /// Null while running. When the end was not seen as it happened, this is when it was detected.
-  endedAt     DateTime?
-  /// How it ended; see `ComputerRunEnd` in packages/db/src/computer-runs.ts.
-  endReason   String?
-  /// When Labradoodle last saw this stretch running: at its start and at each idle check.
-  lastSeenAt  DateTime?
-
-  @@unique([computerId, startedAt])
-  @@index([spaceId, userId, startedAt])
-  // computer_runs_open_idx (open runs by computer) is raw SQL: Prisma cannot express partial indexes.
-  @@map("computer_runs")
 }
 
 model ComputerExecutionLease {
@@ -1586,7 +1449,6 @@ model UsageRecord {
   costUsd            Float?
   providerRequestId  String?
   currency           String   @default("usd")
-  auditRevision      Int      @default(0)
   costSource         String?
   pricingVersion     String?
   pricingSnapshot    Json?
@@ -1754,92 +1616,6 @@ model IntegrationProviderConfig {
   updatedAt  DateTime @updatedAt
 
   @@map("integration_provider_configs")
-}
-
-/// Wallet projection; financial deltas live in the append-only billing journal.
-model ModelCreditAccount {
-  organizationId        String             @id
-  organization          Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  mode                  String?
-  balanceMicros         BigInt             @default(0)
-  pendingCreditCheckout Boolean            @default(false)
-  byokFreeUntil         DateTime?
-  entries               ModelCreditEntry[]
-  lots                  ModelCreditLot[]
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
-
-  @@map("model_credit_accounts")
-}
-
-/// Current purchase, reservation, or expiry projection. Database triggers journal every change.
-model ModelCreditEntry {
-  id                     String             @id @default(cuid())
-  organizationId         String
-  account                ModelCreditAccount @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade)
-  source                 String             @unique
-  amountMicros           BigInt
-  pending                Boolean            @default(false)
-  callId                 String?            @unique
-  userId                 String?
-  spaceId                String?
-  runId                  String?
-  provider               String?
-  model                  String?
-  providerRequestId      String?
-  usage                  Json?
-  reconciliationState    String?
-  reconciliationAttempts Int                @default(0)
-  nextReconcileAt        DateTime?
-  auditRevision          Int                @default(0)
-  allocations            Json?
-  /// Sum of allocations; detects settlements by older writers without inferring credit provenance.
-  fundedMicros           BigInt?
-  createdAt              DateTime           @default(now())
-
-  @@index([reconciliationState, nextReconcileAt])
-  @@index([organizationId, createdAt])
-  @@map("model_credit_entries")
-}
-
-/// Immutable financial journal. Deliberately no lifecycle foreign keys.
-model BillingAuditEvent {
-  id                String   @id @default(cuid())
-  source            String   @unique
-  kind              String
-  organizationId    String?
-  callId            String?
-  userId            String?
-  spaceId           String?
-  provider          String?
-  model             String?
-  providerRequestId String?
-  amountMicros      BigInt   @default(0)
-  currency          String   @default("usd")
-  details           Json
-  createdAt         DateTime @default(now())
-
-  @@index([organizationId, createdAt])
-  @@index([callId, createdAt])
-  @@map("billing_audit_events")
-}
-
-/// Grant allocation projection. Used funds include reservations; null expiry means non-expiring.
-model ModelCreditLot {
-  id              String             @id
-  organizationId  String
-  account         ModelCreditAccount @relation(fields: [organizationId], references: [organizationId], onDelete: Cascade)
-  amountMicros    BigInt
-  availableMicros BigInt
-  usedMicros      BigInt             @default(0)
-  expiredMicros   BigInt             @default(0)
-  expiresAt       DateTime?
-  auditRevision   Int                @default(0)
-  createdAt       DateTime           @default(now())
-
-  @@index([organizationId, expiresAt])
-  // Partial indexes for outstanding grants are managed in SQL migrations.
-  @@map("model_credit_lots")
 }
 
 /// The member's account-wide models per purpose; position 0 runs, the rest take over in order.

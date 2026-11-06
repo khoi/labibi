@@ -36,15 +36,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "Self-host Labradoodle": "Разверните Labradoodle у себя",
   "Have any questions? Reply to this email.": "Есть вопросы? Ответьте на это письмо.",
   Unsubscribe: "Отписаться",
-  "Invite a friend": "Пригласите друга",
-  "Invite a friend to Labradoodle: they get {weeks} weeks free, and you earn a free month when they start a qualifying subscription with a new card.":
-    "Пригласите друга в Labradoodle: он получит {weeks} недели бесплатно, а вы — бесплатный месяц, когда он оформит подходящую подписку с новой картой.",
-  "Open Labradoodle": "Откройте Labradoodle",
-  "and choose Invite friends for your link.":
-    "и выберите «Пригласить друзей», чтобы получить ссылку.",
-  "Have any questions? Just reply to this email.": "Есть вопросы? Просто ответьте на это письмо.",
-  "If you're enjoying Labradoodle,": "Если вам нравится Labradoodle,",
-  "give us a star on GitHub": "поставьте нам звезду на GitHub",
   "We received your Labradoodle plugin": "Мы получили ваш плагин для Labradoodle",
   "Thanks for submitting a plugin to the Labradoodle marketplace.":
     "Спасибо, что отправили плагин в маркетплейс Labradoodle.",
@@ -68,9 +59,4 @@ export const RU_MESSAGES: Record<string, string> = {
   "Your changes to the {name} page are approved.": "Ваши изменения на странице {name} одобрены.",
   "We couldn't approve your changes to the {name} page.":
     "Нам не удалось одобрить ваши изменения на странице {name}.",
-  "Your saved computer files will be deleted": "Сохранённые файлы вашего компьютера будут удалены",
-  "Your saved computer files will be deleted on {date} unless you resubscribe.":
-    "Сохранённые файлы вашего компьютера будут удалены {date}, если вы не продлите подписку.",
-  "Your saved computer files will be deleted on {date} unless you choose a plan.":
-    "Сохранённые файлы вашего компьютера будут удалены {date}, если вы не выберете тариф.",
 };

@@ -25,9 +25,6 @@ export function selectedSpaceId(): string | null {
   }
 }
 
-/** Fired after the selected Space changes, so per-organization state (billing) can reload. */
-export const SPACE_SELECTED_EVENT = "labradoodle:space-selected";
-
 export function selectSpace(id: string): boolean {
   let selected: boolean;
   try {
@@ -41,7 +38,6 @@ export function selectSpace(id: string): boolean {
       selected = false;
     }
   }
-  if (selected) window.dispatchEvent(new Event(SPACE_SELECTED_EVENT));
   return selected;
 }
 

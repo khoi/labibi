@@ -27,16 +27,6 @@ msgstr ""
 msgid "{0, plural, one {# file} other {# files}}"
 msgstr ""
 
-#. placeholder {0}: referral.rewards
-#: src/components/InviteDialog.tsx
-msgid "{0, plural, one {# free month earned} other {# free months earned}}"
-msgstr "{0, plural, one {무료 #개월 획득} other {무료 #개월 획득}}"
-
-#. placeholder {0}: item.freeMonths
-#: src/pages/AdminAccessPage.tsx
-msgid "{0, plural, one {# free month} other {# free months}}"
-msgstr ""
-
 #. placeholder {0}: skills.length - shownSkills.length
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "{0, plural, one {# more} other {# more}}"
@@ -115,10 +105,6 @@ msgstr "{0} MB"
 msgid "{0} TB"
 msgstr "{0} TB"
 
-#: src/lib/billing.ts
-msgid "{amount} / {period}"
-msgstr ""
-
 #: src/components/vault/VaultItemEditor.tsx
 msgid "{commandVariable} is reserved and cannot be used as a command variable. Choose another name."
 msgstr "{commandVariable}은(는) 예약되어 있어 명령 변수로 사용할 수 없습니다. 다른 이름을 선택하세요."
@@ -130,22 +116,6 @@ msgstr ""
 #: src/components/markdown-copy.tsx
 msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# 행} other {# 행}}"
-
-#: src/lib/billing.ts
-msgid "{count} days"
-msgstr ""
-
-#: src/lib/billing.ts
-msgid "{count} months"
-msgstr ""
-
-#: src/lib/billing.ts
-msgid "{count} weeks"
-msgstr ""
-
-#: src/lib/billing.ts
-msgid "{count} years"
-msgstr ""
 
 #: src/lib/relative-time.ts
 msgid "{days}d ago"
@@ -294,10 +264,6 @@ msgstr "{provider}의 응답 시간이 초과되었습니다. 다시 시도하�
 msgid "{remaining} left"
 msgstr "남은 시간 {remaining}"
 
-#: src/pages/BillingSettingsPanel.tsx
-msgid "{seats, plural, one {# seat} other {# seats}}"
-msgstr ""
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "{shown} a day"
 msgstr "하루 {shown}"
@@ -363,18 +329,10 @@ msgstr "{summary} 백업 모델도 실패했습니다."
 msgid "{toolCount, plural, one {# tool} other {# tools}}"
 msgstr "{toolCount, plural, other {도구 #개}}"
 
-#: src/components/ModelCredits.tsx
-msgid "{vcpus} vCPU, {memoryGb} GB, {hours} computer hours a month"
-msgstr "{vcpus} vCPU, {memoryGb} GB, 월 {hours}시간 컴퓨터"
-
 #. placeholder {0}: mention.name
 #: src/pages/shell/composer.tsx
 msgid "@{0}"
 msgstr "@{0}"
-
-#: src/components/ModelCredits.tsx
-msgid "/ month"
-msgstr "/ 월"
 
 #: src/pages/shell/message-cards.tsx
 msgid "A bit of everything"
@@ -451,7 +409,6 @@ msgstr "{label} 작업"
 msgid "Actions for {name}"
 msgstr ""
 
-#: src/pages/BillingSettingsPanel.tsx
 #: src/pages/RoutineEditor.tsx
 msgid "Active"
 msgstr "활성"
@@ -510,10 +467,6 @@ msgstr "HTTPS 서버 URL을 입력하세요."
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Add another"
-msgstr ""
-
-#: src/components/ModelCredits.tsx
-msgid "Add credits"
 msgstr ""
 
 #: src/pages/PluginsOverlay.tsx
@@ -611,10 +564,6 @@ msgstr "고급..."
 msgid "All"
 msgstr ""
 
-#: src/components/ModelCredits.tsx
-msgid "All {credit} goes to model usage."
-msgstr "{credit} 전액이 모델 사용에 쓰입니다."
-
 #: src/pages/Artifacts.tsx
 msgid "All chats"
 msgstr "모든 채팅"
@@ -705,10 +654,6 @@ msgstr ""
 
 #: src/pages/model-settings/compatible-model-fields.tsx
 msgid "Anthropic Messages"
-msgstr ""
-
-#: src/pages/Paywall.tsx
-msgid "Any model, with your own key"
 msgstr ""
 
 #: src/components/pages/SharePopover.tsx
@@ -857,10 +802,6 @@ msgstr "자동"
 msgid "Available after the routine is saved"
 msgstr "루틴을 저장한 후 사용할 수 있습니다"
 
-#: src/components/ModelCredits.tsx
-msgid "Available credits"
-msgstr ""
-
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Available to shell commands as {commandVariable}"
 msgstr "셸 명령에서 {commandVariable}(으)로 사용 가능"
@@ -868,7 +809,6 @@ msgstr "셸 명령에서 {commandVariable}(으)로 사용 가능"
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/vault/VaultPageHeader.tsx
-#: src/pages/AdminAccessPage.tsx
 #: src/pages/AdminPluginsPage.tsx
 #: src/pages/Auth.tsx
 #: src/pages/McpServersOverlay.tsx
@@ -909,18 +849,10 @@ msgstr ""
 msgid "Bearer token"
 msgstr "Bearer 토큰"
 
-#: src/pages/settings-nav.ts
-msgid "Billing"
-msgstr ""
-
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Billing address"
 msgstr ""
-
-#: src/components/ModelCredits.tsx
-msgid "Billing period"
-msgstr "결제 주기"
 
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Block"
@@ -972,7 +904,6 @@ msgstr "이미지를 읽을 수 없음"
 #: src/components/ComputerMaintenanceActions.tsx
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/markdown-link-prompt.tsx
-#: src/components/ModelCredits.tsx
 #: src/components/PasskeySettings.tsx
 #: src/components/SpaceMembersSettings.tsx
 #: src/components/SpendingLimitSettings.tsx
@@ -999,10 +930,6 @@ msgstr ""
 #: src/pages/shell/chat-context.tsx
 msgid "Cancel reply"
 msgstr "답장 취소"
-
-#: src/pages/BillingSettingsPanel.tsx
-msgid "Canceled"
-msgstr ""
 
 #: src/components/CloudAgentCard.tsx
 msgid "cancelled"
@@ -1145,11 +1072,6 @@ msgstr "새 비밀번호 선택"
 
 #: src/pages/Onboarding.tsx
 msgid "Choose a provider"
-msgstr ""
-
-#: src/components/ModelCredits.tsx
-#: src/components/SubscriptionGate.tsx
-msgid "Choose how to use Labradoodle"
 msgstr ""
 
 #: src/components/vault/VaultItemEditor.tsx
@@ -1303,10 +1225,6 @@ msgstr "컴퓨터"
 msgid "Computer failed to boot"
 msgstr "컴퓨터를 시작하지 못했습니다"
 
-#: src/components/ModelCredits.tsx
-msgid "Computer hours left"
-msgstr "남은 컴퓨터 시간"
-
 #: src/pages/shell/computer-overlay.tsx
 msgid "Computer is asleep"
 msgstr "컴퓨터가 절전 상태입니다"
@@ -1406,18 +1324,9 @@ msgstr "MCP 서버 ‘{name}’ 연결"
 msgid "Connect memory provider"
 msgstr "기억 서비스 연결"
 
-#: src/components/ModelCredits.tsx
-msgid "Connect my own"
-msgstr ""
-
 #: src/pages/McpServersOverlay.tsx
 msgid "Connect OAuth"
 msgstr "OAuth 연결"
-
-#. js-lingui-explicit-id
-#: src/lib/run-error.ts
-msgid "Connect your own API key in Models or choose Labradoodle credits in Billing."
-msgstr "AI 모델에서 자체 API 키를 연결하거나 결제에서 Labradoodle 크레딧을 선택하세요."
 
 #: src/components/ComputerDeviceSettings.tsx
 #: src/components/integrations/IntegrationSetup.tsx
@@ -1489,16 +1398,11 @@ msgstr "계속"
 msgid "Continue in Background"
 msgstr ""
 
-#: src/components/ModelCredits.tsx
-msgid "Continue to checkout"
-msgstr ""
-
 #. placeholder {0}: reset.sso.name
 #: src/pages/Auth.tsx
 msgid "Continue with {0}"
 msgstr "{0}(으)로 계속"
 
-#: src/components/InviteDialog.tsx
 #: src/components/markdown-copy.tsx
 #: src/components/pages/PublicPageShell.tsx
 #: src/components/pages/SharePopover.tsx
@@ -1527,7 +1431,6 @@ msgstr "다이어그램 소스 복사"
 msgid "Copy invite link"
 msgstr ""
 
-#: src/components/InviteDialog.tsx
 #: src/components/pages/PublicPageShell.tsx
 #: src/components/pages/SharePopover.tsx
 msgid "Copy link"
@@ -1694,10 +1597,6 @@ msgstr "{0}을 다운로드하지 못했습니다. 다시 시도해 주세요."
 msgid "Could not download {name}. Try again."
 msgstr "{name}을 다운로드하지 못했습니다. 다시 시도해 주세요."
 
-#: src/pages/AdminAccessPage.tsx
-msgid "Could not grant access"
-msgstr ""
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not install connector"
 msgstr "도구 연결을 추가하지 못했습니다."
@@ -1723,10 +1622,6 @@ msgstr "확인 규칙을 불러오지 못했습니다."
 
 #: src/pages/Artifacts.tsx
 msgid "Could not load artifacts."
-msgstr ""
-
-#: src/pages/BillingSettingsPanel.tsx
-msgid "Could not load billing"
 msgstr ""
 
 #: src/components/ComputerProviderSettings.tsx
@@ -1783,13 +1678,6 @@ msgstr "음성 설정을 불러오지 못했습니다."
 #: src/lib/sign-out.ts
 msgid "Could not log out. Try again."
 msgstr "로그아웃하지 못했습니다. 다시 시도해 주세요."
-
-#: src/components/ModelCredits.tsx
-#: src/pages/BillingSettingsPanel.tsx
-#: src/pages/Onboarding.tsx
-#: src/pages/Paywall.tsx
-msgid "Could not open billing"
-msgstr ""
 
 #: src/pages/Onboarding.tsx
 msgid "Could not open your chat"
@@ -1879,10 +1767,6 @@ msgstr "비밀번호를 재설정할 수 없습니다"
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not revoke connection"
 msgstr "연결을 해제하지 못했습니다."
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Could not revoke grant"
-msgstr ""
 
 #: src/pages/shell/use-routine-editor.ts
 msgid "Could not run routine"
@@ -1989,10 +1873,6 @@ msgstr "MCP 서버를 테스트하지 못했습니다."
 msgid "Could not transcribe that recording."
 msgstr ""
 
-#: src/components/ModelCredits.tsx
-msgid "Could not update billing"
-msgstr ""
-
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Could not update computer"
 msgstr "컴퓨터를 업데이트할 수 없습니다"
@@ -2012,10 +1892,6 @@ msgstr "컴퓨터 설정을 확인할 수 없습니다 ({failureMessage}). 연�
 #: src/components/pages/SharePopover.tsx
 msgid "Couldn't copy. Select the link and copy it."
 msgstr "복사하지 못했습니다. 링크를 선택해 복사하세요."
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Couldn't load grants"
-msgstr ""
 
 #: src/components/pages/PagesList.tsx
 msgid "Couldn't load pages."
@@ -2069,18 +1945,6 @@ msgstr "인증 정보 저장됨"
 msgid "Credentials are encrypted and never sent to the model."
 msgstr "인증 정보는 암호화되며 모델에 전송되지 않습니다."
 
-#: src/components/ModelCredits.tsx
-msgid "Credit amount"
-msgstr ""
-
-#: src/components/ModelCredits.tsx
-msgid "Credits"
-msgstr "크레딧"
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Credits ($)"
-msgstr ""
-
 #: src/lib/cron.ts
 msgid "Cron"
 msgstr "Cron"
@@ -2116,7 +1980,6 @@ msgstr "다크"
 msgid "Data"
 msgstr ""
 
-#: src/lib/billing.ts
 #: src/lib/cron.ts
 msgid "day"
 msgstr "일"
@@ -2339,10 +2202,6 @@ msgstr "완료"
 msgid "Doodle"
 msgstr "Doodle"
 
-#: src/components/ModelCredits.tsx
-msgid "Doodle and browser automation"
-msgstr ""
-
 #: src/pages/shell/composer-error.tsx
 msgid "Doodle can use the file but won't see the picture."
 msgstr ""
@@ -2363,16 +2222,8 @@ msgstr "Doodle이 나갔습니다"
 msgid "Doodle runs on this computer, not a Linux desktop. Shell and files use your home folder."
 msgstr ""
 
-#: src/pages/Paywall.tsx
-msgid "Doodle with its own computer and browser"
-msgstr ""
-
 #: src/pages/RoutineEditor.tsx
 msgid "Doodle's model"
-msgstr ""
-
-#: src/components/ModelCredits.tsx
-msgid "Downgrade at renewal"
 msgstr ""
 
 #: src/pages/Artifacts.tsx
@@ -2423,7 +2274,6 @@ msgstr "수정 후 보내기"
 
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/vault/VaultItemEditor.tsx
-#: src/pages/AdminAccessPage.tsx
 #: src/pages/Auth.tsx
 msgid "Email"
 msgstr "이메일"
@@ -2447,10 +2297,6 @@ msgstr "{0} 활성화"
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "End user ID"
-msgstr ""
-
-#: src/lib/billing.ts
-msgid "Ends {day}"
 msgstr ""
 
 #: src/lib/user-error.ts
@@ -2689,22 +2535,6 @@ msgstr "메시지 입력란으로 이동"
 msgid "Forgot password?"
 msgstr "비밀번호를 잊으셨나요?"
 
-#: src/components/ModelCredits.tsx
-msgid "Free"
-msgstr "무료"
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Free access"
-msgstr ""
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Free months"
-msgstr ""
-
-#: src/pages/shell/shell-sidebar.tsx
-msgid "Free plan ends {day}"
-msgstr "무료 플랜이 {day}에 종료됩니다"
-
 #: src/lib/cron.ts
 msgid "Friday"
 msgstr "금요일"
@@ -2753,24 +2583,12 @@ msgstr ""
 msgid "Git event"
 msgstr "Git 이벤트"
 
-#: src/components/InviteDialog.tsx
-msgid "Give a friend {weeks} weeks free"
-msgstr "친구에게 {weeks}주 무료 선물하기"
-
 #: src/pages/NotFound.tsx
 msgid "Go home"
 msgstr "홈으로"
 
 #: src/pages/shell/keyboard-shortcuts-dialog.tsx
 msgid "Go to chat"
-msgstr ""
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Grant"
-msgstr ""
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Granting…"
 msgstr ""
 
 #: src/pages/RoutineEditor.tsx
@@ -2884,10 +2702,6 @@ msgstr "이 모델에는 이미지 입력이 설정되어 있지 않습니다."
 msgid "Image input is not configured for this model."
 msgstr "이 모델에는 이미지 입력이 설정되어 있지 않습니다."
 
-#: src/pages/BillingSettingsPanel.tsx
-msgid "Inactive"
-msgstr ""
-
 #: src/pages/shell/message-cards.tsx
 msgid "Inbox & email"
 msgstr ""
@@ -2958,11 +2772,6 @@ msgstr "잘못된 코드"
 msgid "Invite"
 msgstr ""
 
-#: src/components/SidebarFooter.tsx
-msgid "Invite friends"
-msgstr "친구 초대"
-
-#: src/components/InviteDialog.tsx
 #: src/components/SpaceMembersSettings.tsx
 msgid "Invite link"
 msgstr "초대 링크"
@@ -3028,10 +2837,6 @@ msgstr ""
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Label"
 msgstr "레이블"
-
-#: src/pages/Onboarding.tsx
-msgid "Labradoodle credits"
-msgstr ""
 
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
 msgid "labradoodle-shared and IDs starting with bot- are reserved for Labradoodle."
@@ -3152,7 +2957,6 @@ msgstr "음성 서비스를 불러오는 중…"
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/PageLoading.tsx
 #: src/components/SpaceMembersSettings.tsx
-#: src/pages/AdminAccessPage.tsx
 #: src/pages/Artifacts.tsx
 #: src/pages/Invite.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
@@ -3196,19 +3000,10 @@ msgstr "낮음"
 msgid "Main model"
 msgstr "기본 모델"
 
-#: src/pages/BillingSettingsPanel.tsx
-msgid "Manage"
-msgstr "관리"
-
 #. placeholder {0}: providerName(choice)
 #: src/pages/ModelRoleSettings.tsx
 msgid "Manage {0}"
 msgstr "{0} 관리"
-
-#: src/components/ModelCredits.tsx
-#: src/pages/Paywall.tsx
-msgid "Manage billing"
-msgstr ""
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Manage MCP servers"
@@ -3388,10 +3183,6 @@ msgstr "모델 선택지"
 msgid "Models"
 msgstr "AI 모델"
 
-#: src/components/ModelCredits.tsx
-msgid "Models at provider cost"
-msgstr ""
-
 #: src/components/FoundModelPicker.tsx
 #: src/pages/model-settings/compatible-model-fields.tsx
 msgid "Models from server"
@@ -3405,23 +3196,10 @@ msgstr "모델 목록이 정상입니다. {modelCount, plural, one {모델 #개}
 msgid "Monday"
 msgstr "월요일"
 
-#: src/lib/billing.ts
-msgid "month"
-msgstr ""
-
-#: src/components/ModelCredits.tsx
 #: src/components/SpendingLimitSettings.tsx
 #: src/lib/cron.ts
 msgid "Monthly"
 msgstr "매월"
-
-#: src/components/ModelCredits.tsx
-msgid "Monthly credits"
-msgstr ""
-
-#: src/components/ModelCredits.tsx
-msgid "Monthly credits expire at renewal. Top-ups do not expire."
-msgstr ""
 
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/shell/message-hover-actions.tsx
@@ -3746,10 +3524,6 @@ msgstr "1일 {0}에"
 msgid "One-time"
 msgstr "한 번"
 
-#: src/components/ModelCredits.tsx
-msgid "One-time purchase. Credits do not expire."
-msgstr ""
-
 #: src/components/SecretAskCard.tsx
 msgid "Only enter a code {codeHost} sent you."
 msgstr ""
@@ -3938,10 +3712,6 @@ msgstr "비밀번호가 업데이트되었습니다"
 msgid "Passwords do not match"
 msgstr "비밀번호가 일치하지 않습니다"
 
-#: src/pages/BillingSettingsPanel.tsx
-msgid "Past due"
-msgstr ""
-
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Paste a replacement key"
@@ -3963,7 +3733,6 @@ msgstr "API 키를 붙여넣은 뒤 다시 테스트하세요."
 msgid "Paused"
 msgstr "일시 중지됨"
 
-#: src/pages/AdminAccessPage.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
 msgstr ""
@@ -4001,10 +3770,6 @@ msgstr "고정"
 #: src/components/pages/PagesList.tsx
 msgid "Pinned"
 msgstr "고정됨"
-
-#: src/components/ModelCredits.tsx
-msgid "Plan"
-msgstr "요금제"
 
 #: src/components/ArtifactFileCard.tsx
 msgid "Play {name}"
@@ -4128,10 +3893,6 @@ msgstr ""
 msgid "Recall only"
 msgstr ""
 
-#: src/pages/AdminAccessPage.tsx
-msgid "Received"
-msgstr ""
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Recommended"
 msgstr ""
@@ -4211,13 +3972,8 @@ msgstr "리디렉션 URI"
 
 #: src/App.tsx
 #: src/components/ErrorBoundary.tsx
-#: src/components/ModelCredits.tsx
 msgid "Refresh"
 msgstr "새로고침"
-
-#: src/components/ModelCredits.tsx
-msgid "Refresh credits"
-msgstr ""
 
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Refresh view"
@@ -4334,10 +4090,6 @@ msgstr "삭제 중…"
 msgid "Rename"
 msgstr "이름 변경"
 
-#: src/lib/billing.ts
-msgid "Renews {day}"
-msgstr ""
-
 #: src/pages/model-settings/connection-controls.tsx
 msgid "Replace API key"
 msgstr "API 키 교체"
@@ -4444,7 +4196,6 @@ msgstr ""
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/PasskeySettings.tsx
-#: src/pages/AdminAccessPage.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Invite.tsx
 #: src/pages/ModelRoleSettings.tsx
@@ -4469,14 +4220,6 @@ msgstr "Labradoodle로 돌아가기"
 msgid "Review provider settings and test again."
 msgstr "서비스 설정을 확인한 뒤 다시 테스트하세요."
 
-#: src/pages/AdminAccessPage.tsx
-msgid "Revoke"
-msgstr "연결 해제"
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Revoked"
-msgstr ""
-
 #: src/components/ComputerProviderSettings.tsx
 msgid "Root filesystem"
 msgstr ""
@@ -4495,10 +4238,6 @@ msgstr "자동 실행"
 #: src/pages/shell/side-panel.tsx
 msgid "Routines"
 msgstr "자동 실행"
-
-#: src/pages/Paywall.tsx
-msgid "Routines that run while you're away"
-msgstr ""
 
 #: src/components/markdown-copy.tsx
 msgid "Row"
@@ -4607,10 +4346,6 @@ msgstr "저장 중…"
 #: src/pages/RoutineEditor.tsx
 msgid "Schedule delayed"
 msgstr "예약 실행 지연"
-
-#: src/components/ModelCredits.tsx
-msgid "Scheduled routines"
-msgstr ""
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Scopes (optional)"
@@ -4976,30 +4711,13 @@ msgstr "SSO를 일시적으로 사용할 수 없습니다. 다시 시도하세�
 msgid "Start"
 msgstr ""
 
-#: src/components/ModelCredits.tsx
-#: src/pages/Paywall.tsx
-msgid "Start {trialDays}-day free trial"
-msgstr "{trialDays}일 무료 체험 시작"
-
 #: src/pages/shell/new-chat-dialog.tsx
 msgid "Start chat"
 msgstr "채팅 시작"
 
-#: src/components/ModelCredits.tsx
-msgid "Start plan"
-msgstr "요금제 시작"
-
-#: src/components/ModelCredits.tsx
-msgid "Start plan now"
-msgstr "지금 요금제 시작"
-
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Start recording"
 msgstr "작업 녹화 시작"
-
-#: src/components/ModelCredits.tsx
-msgid "Start your plan now?"
-msgstr "지금 요금제를 시작할까요?"
 
 #: src/pages/RoutineRunHistory.tsx
 msgid "Started {count}d late"
@@ -5075,31 +4793,6 @@ msgstr "확인"
 msgid "Submit a plugin"
 msgstr ""
 
-#: src/components/ModelCredits.tsx
-#: src/pages/Paywall.tsx
-msgid "Subscribe"
-msgstr "구독"
-
-#: src/components/ModelCredits.tsx
-msgid "Subscribe for {annualPrice} / year"
-msgstr "연 {annualPrice}에 구독"
-
-#: src/components/ModelCredits.tsx
-msgid "Subscribe for {price} / month"
-msgstr "월 {price}에 구독"
-
-#: src/components/ModelCredits.tsx
-msgid "Subscribe to credits"
-msgstr "크레딧 구독"
-
-#: src/components/ModelCredits.tsx
-msgid "Subscribe with your own AI"
-msgstr "내 AI로 구독"
-
-#: src/pages/Paywall.tsx
-msgid "Subscription required"
-msgstr ""
-
 #: src/lib/cron.ts
 msgid "Sunday"
 msgstr "일요일"
@@ -5113,22 +4806,6 @@ msgstr "이미지 지원"
 #: src/pages/Onboarding.tsx
 msgid "Supports thinking"
 msgstr "사고 모드 지원"
-
-#: src/components/ModelCredits.tsx
-msgid "Switch"
-msgstr "전환"
-
-#: src/components/ModelCredits.tsx
-msgid "Switch to {tierTargetName}?"
-msgstr "{tierTargetName}(으)로 변경할까요?"
-
-#: src/components/ModelCredits.tsx
-msgid "Switch to yearly"
-msgstr "연간 결제로 전환"
-
-#: src/components/ModelCredits.tsx
-msgid "Switch to yearly?"
-msgstr "연간 결제로 전환할까요?"
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -5231,18 +4908,10 @@ msgstr "선택한 기억 서비스는 현재 빌드에서 사용할 수 없습�
 msgid "The shared link stops working"
 msgstr "공유 링크가 더 이상 작동하지 않음"
 
-#: src/components/ModelCredits.tsx
-msgid "The unused difference is credited to your next invoice."
-msgstr "사용하지 않은 차액은 다음 청구서에 적립됩니다."
-
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/VaultSettings.tsx
 msgid "These saved settings can't be read. Remove it and add it again."
 msgstr ""
-
-#: src/components/InviteDialog.tsx
-msgid "They get {weeks} weeks free."
-msgstr "친구는 {weeks}주 동안 무료로 사용해요."
 
 #: src/pages/DoodleSettings.tsx
 #: src/pages/ModelRoleSettings.tsx
@@ -5452,18 +5121,6 @@ msgstr ""
 msgid "Treg token"
 msgstr "Treg 토큰"
 
-#: src/pages/BillingSettingsPanel.tsx
-msgid "Trial"
-msgstr ""
-
-#: src/lib/billing.ts
-msgid "Trial ends {day}"
-msgstr ""
-
-#: src/components/ModelCredits.tsx
-msgid "Trials get fewer hours to prevent abuse."
-msgstr "악용을 막기 위해 체험 기간에는 시간이 더 적게 제공됩니다."
-
 #: src/components/ErrorNotice.tsx
 msgid "Troubleshoot"
 msgstr ""
@@ -5522,10 +5179,6 @@ msgstr "지원하지 않는 파일 형식: {0}"
 msgid "Up to date"
 msgstr "최신 상태"
 
-#: src/components/ModelCredits.tsx
-msgid "Update"
-msgstr "업데이트"
-
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Update computer"
 msgstr "컴퓨터 업데이트"
@@ -5558,14 +5211,6 @@ msgstr "컴퓨터 업데이트 중"
 msgid "Updating…"
 msgstr "업데이트 중…"
 
-#: src/pages/shell/shell-sidebar.tsx
-msgid "Upgrade"
-msgstr "업그레이드"
-
-#: src/components/ModelCredits.tsx
-msgid "Upgrade now"
-msgstr ""
-
 #: src/pages/settings-nav.ts
 msgid "Usage"
 msgstr "사용량"
@@ -5593,14 +5238,6 @@ msgstr "찾은 모델 중에서 선택"
 msgid "Use Connect to verify the key."
 msgstr "키를 확인하려면 연결을 사용하세요."
 
-#: src/components/ModelCredits.tsx
-msgid "Use Labradoodle credits"
-msgstr ""
-
-#: src/components/ModelCredits.tsx
-msgid "Use my subscription or API key"
-msgstr ""
-
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Use Protected input for passwords."
 msgstr ""
@@ -5622,14 +5259,6 @@ msgstr ""
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Uses this server's own {hostCredentialSource} credentials to access {selectedProviderName}."
 msgstr "이 서버의 자체 {hostCredentialSource} 자격 증명으로 {selectedProviderName}에 액세스합니다."
-
-#: src/components/ModelCredits.tsx
-msgid "Using your API key"
-msgstr ""
-
-#: src/components/ModelCredits.tsx
-msgid "Using your API key. Free plan ends {freeUntil}."
-msgstr "내 API 키를 사용 중입니다. 무료 플랜이 {freeUntil}에 종료됩니다."
 
 #: src/components/vault/LoginFieldsInput.tsx
 #: src/components/vault/VaultItemDetail.tsx
@@ -5697,14 +5326,6 @@ msgstr "기다리는 중…"
 msgid "Wallet"
 msgstr ""
 
-#: src/components/ModelCredits.tsx
-msgid "Web, desktop and mobile"
-msgstr ""
-
-#: src/pages/Paywall.tsx
-msgid "Web, desktop and mobile apps"
-msgstr ""
-
 #: src/pages/RoutineEditor.tsx
 msgid "Webhook"
 msgstr "웹훅"
@@ -5712,10 +5333,6 @@ msgstr "웹훅"
 #: src/lib/cron.ts
 msgid "Wednesday"
 msgstr "수요일"
-
-#: src/lib/billing.ts
-msgid "week"
-msgstr ""
 
 #: src/lib/cron.ts
 #: src/pages/RoutineEditor.tsx
@@ -5795,10 +5412,6 @@ msgstr ""
 msgid "Working…"
 msgstr "처리 중…"
 
-#: src/components/ModelCredits.tsx
-msgid "Works with your ChatGPT or Claude plan."
-msgstr "ChatGPT 또는 Claude 요금제로 사용할 수 있습니다."
-
 #: src/lib/identity-display.ts
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
 #: src/pages/settings-nav.ts
@@ -5809,14 +5422,6 @@ msgstr "워크스페이스"
 #: src/pages/shell/sidebar-header.tsx
 msgid "Workspace settings"
 msgstr "워크스페이스 설정"
-
-#: src/lib/billing.ts
-msgid "year"
-msgstr ""
-
-#: src/components/ModelCredits.tsx
-msgid "Yearly"
-msgstr "연간"
 
 #: src/pages/shell/chat-context.tsx
 #: src/pages/shell/chat-list.tsx
@@ -5841,10 +5446,6 @@ msgstr "자동으로 이동하지 않으면 이 탭을 닫아도 됩니다."
 msgid "You can close this window."
 msgstr "이 창을 닫아도 됩니다."
 
-#: src/components/InviteDialog.tsx
-msgid "You get a free month when they start their trial with a new card."
-msgstr "친구가 새 카드로 체험을 시작하면 나는 한 달 무료를 받아요."
-
 #: src/pages/shell/computer-overlay.tsx
 msgid "You have control"
 msgstr "직접 조작 중"
@@ -5853,14 +5454,6 @@ msgstr "직접 조작 중"
 #: src/lib/run-error.ts
 msgid "Your Anthropic"
 msgstr "사용 중인 Anthropic"
-
-#: src/components/ModelCredits.tsx
-msgid "Your card is charged {annualPrice} today, less the unused part of this month."
-msgstr "오늘 카드에서 {annualPrice}이 결제되며, 이번 달 사용하지 않은 금액은 차감됩니다."
-
-#: src/components/ModelCredits.tsx
-msgid "Your card is charged the prorated difference today."
-msgstr "오늘 일할 계산된 차액이 카드로 청구됩니다."
 
 #: src/components/AccountDataSettings.tsx
 msgid "Your data"
@@ -5889,29 +5482,9 @@ msgstr "사용 중인 OpenAI"
 msgid "Your OpenRouter"
 msgstr "사용 중인 OpenRouter"
 
-#: src/components/ModelCredits.tsx
-msgid "Your plan becomes {annualPrice} / year when your trial ends."
-msgstr "체험 기간이 끝나면 요금제가 연 {annualPrice}로 바뀝니다."
-
-#: src/components/ModelCredits.tsx
-msgid "Your plan becomes {tierTargetLabel} when your trial ends."
-msgstr "체험이 끝나면 요금제가 {tierTargetLabel}(으)로 바뀝니다."
-
 #: src/components/integrations/skills-dialog.tsx
 msgid "Your skills"
 msgstr ""
-
-#: src/components/ModelCredits.tsx
-msgid "Your subscription or API key"
-msgstr ""
-
-#: src/components/ModelCredits.tsx
-msgid "Your trial ends and your card is charged {price} today."
-msgstr "체험이 종료되고 오늘 카드로 {price}이(가) 결제됩니다."
-
-#: src/components/ModelCredits.tsx
-msgid "Your trial ends and your card is charged today."
-msgstr "체험이 종료되고 오늘 카드로 결제됩니다."
 
 #: src/lib/user-error.ts
 msgid "Your voice provider is out of credit."

@@ -606,7 +606,6 @@ function SpaceShell() {
   const settingsNavItems = useSettingsNavItems({
     wallet: Boolean(bootstrapMe?.paymentWalletProvider),
     computer: true,
-    billing: bootstrapMe?.billingEnabled === true,
     updates: Boolean(desktopBridge()?.update),
   });
   const paletteActions: CommandPaletteAction[] = [

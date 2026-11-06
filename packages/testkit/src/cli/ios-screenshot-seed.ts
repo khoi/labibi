@@ -68,9 +68,6 @@ interface MeRow {
   spaceId: string;
 }
 
-/** Finishes a plan checkout in the billing provider, as paying does in production. */
-export type CompleteCheckout = (customerId: string) => void;
-
 export async function seedIosScreenshotFixture(input: {
   apiUrl: string;
   databaseUrl: string;
@@ -78,12 +75,10 @@ export async function seedIosScreenshotFixture(input: {
   emptyEmail: string;
   freeEmail: string;
   password: string;
-  /** Present when the API bills: the main user then pays for Pro, the empty one is on a trial. */
-  completeCheckout: CompleteCheckout;
 }): Promise<IosScreenshotFixture> {
   const populated = await ensureUser(input.apiUrl, input.email, input.password, "Screenshot User");
   const empty = await ensureUser(input.apiUrl, input.emptyEmail, input.password, "Empty User");
-  // Signs in without a plan or a survey answer, to show what a new account meets first.
+  // Signs in without a survey answer, to show what a new account meets first.
   await ensureUser(input.apiUrl, input.freeEmail, input.password, "Free User");
   // Someone else in the screenshot user's workspace, so a chat can hold more than one person.
   const teammate = await ensureUser(
@@ -324,10 +319,6 @@ export async function seedIosScreenshotFixture(input: {
       botId: doodle.id,
       userId: me.userId,
     });
-    const billing = { apiUrl: input.apiUrl, prisma: db.prisma, complete: input.completeCheckout };
-    await ensurePlan({ ...billing, headers: populated.headers, userId: me.userId, trial: false });
-    await ensurePlan({ ...billing, headers: empty.headers, userId: emptyMe.userId, trial: true });
-    // After the plan, since Doodle only runs for an account with billing access.
     await ensureWaitingKeyRequest(input.apiUrl, populated.headers, cards.id);
     for (const userId of [me.userId, emptyMe.userId]) {
       // Hosted sign-ups answer a survey first; the free user's flow shows it.
@@ -560,31 +551,6 @@ function briefPdf() {
   for (const offset of offsets) body += `${String(offset).padStart(10, "0")} 00000 n \n`;
   body += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
   return Buffer.from(body, "latin1");
-}
-
-/** Subscribes through the API and the billing provider, so every billing screen reads it back. */
-async function ensurePlan(input: {
-  apiUrl: string;
-  headers: Record<string, string>;
-  prisma: ReturnType<typeof createDb>["prisma"];
-  complete: CompleteCheckout;
-  userId: string;
-  trial: boolean;
-}) {
-  const status = await rpc<{ access: boolean }>(input.apiUrl, input.headers, "billing/status");
-  if (status.access) return;
-  await rpc(input.apiUrl, input.headers, "billing/checkout", { client: "mobile" });
-  const member = await input.prisma.member.findFirstOrThrow({
-    where: { userId: input.userId },
-    select: { organizationId: true },
-  });
-  const account = await input.prisma.billingAccount.findUniqueOrThrow({
-    where: { organizationId: member.organizationId },
-    select: { customerId: true },
-  });
-  input.complete(account.customerId);
-  await rpc(input.apiUrl, input.headers, "billing/refresh");
-  if (!input.trial) await rpc(input.apiUrl, input.headers, "billing/endTrial");
 }
 
 const CARDS_READY = "Set up the weekly support digest.";

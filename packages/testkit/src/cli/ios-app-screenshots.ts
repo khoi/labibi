@@ -92,7 +92,6 @@ async function main() {
       emptyEmail,
       freeEmail,
       password,
-      completeCheckout: backend.completeCheckout,
     });
     await captureSections({
       sections,

@@ -162,8 +162,6 @@ export const NL_MESSAGES: Record<string, string> = {
   "Your model provider": "Jouw modelaanbieder",
   "Connect a model in Settings to use Doodle.":
     "Verbind een model in Instellingen om Doodle te gebruiken.",
-  "Connect your own API key in Models or choose Labradoodle credits in Billing.":
-    "Verbind je eigen API-sleutel bij Modellen of kies Labradoodle-tegoed bij Facturatie.",
   "The model provider returned an error.": "De modelaanbieder heeft een fout teruggegeven.",
   "{provider} is rate limiting requests. Try again shortly.":
     "{provider} beperkt het aantal verzoeken. Probeer het zo nog eens.",
@@ -961,89 +959,18 @@ export const NL_MESSAGES: Record<string, string> = {
   "This app needs its own sign-in setup to connect.":
     "Deze app heeft een eigen aanmeldconfiguratie nodig om te verbinden.",
   Billing: "Facturering",
-  "Could not load billing": "Kan facturering niet laden",
   "Could not update billing": "Kan facturering niet bijwerken",
-  Credits: "Tegoed",
-  "Available credits": "Beschikbaar tegoed",
-  "Computer hours left": "Resterende computeruren",
-  "Trials get fewer hours to prevent abuse.":
-    "Proefperiodes krijgen minder uren om misbruik te voorkomen.",
-  "Start plan now": "Abonnement nu starten",
-  "Start your plan now?": "Je abonnement nu starten?",
-  "Your trial ends and your card is charged {price} today.":
-    "Je proefperiode eindigt en je kaart wordt vandaag met {price} belast.",
-  "Your trial ends and your card is charged today.":
-    "Je proefperiode eindigt en je kaart wordt vandaag belast.",
-  "Start plan": "Abonnement starten",
-  "Switch to yearly": "Overstappen op jaarlijks",
-  "Switch to yearly?": "Overstappen op jaarlijks?",
-  "{vcpus} vCPU, {memoryGb} GB, {hours} computer hours a month":
-    "{vcpus} vCPU, {memoryGb} GB, {hours} computeruren per maand",
-  "Switch to {name}?": "Overstappen naar {name}?",
   "The unused difference is credited to your next invoice.":
     "Het ongebruikte verschil wordt verrekend met je volgende factuur.",
   "Your card is charged the prorated difference today.":
     "Je kaart wordt vandaag belast met het naar rato berekende verschil.",
   "Your plan becomes {price} when your trial ends.":
     "Je abonnement wordt {price} wanneer je proefperiode eindigt.",
-  "Your card is charged {price} today, less the unused part of this month.":
-    "Je kaart wordt vandaag belast met {price}, min het ongebruikte deel van deze maand.",
-  "Your plan becomes {price} / year when your trial ends.":
-    "Na je proefperiode kost je plan {price} per jaar.",
-  "Monthly credits": "Maandelijks tegoed",
-  "Upgrade now": "Nu upgraden",
-  "Downgrade at renewal": "Downgraden bij verlenging",
   "Continue with credits": "Doorgaan met tegoed",
-  "Add credits": "Tegoed toevoegen",
-  "Manage billing": "Facturering beheren",
-  "Your subscription or API key": "Je abonnement of API-sleutel",
-  Subscribe: "Abonneren",
-  "Monthly credits expire at renewal. Top-ups do not expire.":
-    "Maandelijks tegoed vervalt bij verlenging. Los gekocht tegoed verloopt niet.",
-  "Use Labradoodle credits": "Labradoodle-tegoed gebruiken",
-  "Choose a plan": "Kies een abonnement",
-  "Change plan": "Abonnement wijzigen",
-  "Current plan": "Huidig abonnement",
   Plan: "Abonnement",
   None: "Geen",
-  "Free trial": "Gratis proefperiode",
-  "Labradoodle credits": "Labradoodle-tegoed",
-  "Free until": "Gratis tot",
-  Ends: "Eindigt op",
-  Renews: "Verlengt op",
-  "Could not open billing": "Kan facturering niet openen",
   "Put your bots to work": "Zet je bots aan het werk",
   "Bots with their own computer": "Bots met een eigen computer",
-  "Routines that run while you're away": "Routines die draaien terwijl je weg bent",
-  "Web, desktop and mobile apps": "Web-, desktop- en mobiele apps",
-  "Start free trial": "Start gratis proefperiode",
-  Free: "Gratis",
-  "{price} / month": "{price} per maand",
-  "{price} / month. Cancel anytime.": "{price} per maand. Altijd opzegbaar.",
-  "{days} days free, then {price} / month. Cancel anytime.":
-    "{days} dagen gratis, daarna {price} per maand. Altijd opzegbaar.",
-  "{days} days free": "{days} dagen gratis",
-  "Works with your ChatGPT or Claude plan.": "Werkt met je ChatGPT- of Claude-abonnement.",
-  "All {price} goes to model usage.": "De volledige {price} gaat naar modelgebruik.",
-  "Full access, nothing to pay": "Volledige toegang, niets te betalen",
-  "Day {days}": "Dag {days}",
-  "{price} / month begins": "Vanaf dan {price} per maand",
-  "Billing period": "Factuurperiode",
-  "Yearly −{percent}%": "Jaarlijks −{percent}%",
-  "{days} days free, then {price} / year. Cancel anytime.":
-    "{days} dagen gratis, daarna {price} per jaar. Altijd opzegbaar.",
-  "{price} / year": "{price} per jaar",
-  "{price} / year begins": "Vanaf dan {price} per jaar",
-  "{price} / year. Cancel anytime.": "{price} per jaar. Altijd opzegbaar.",
-  "Only the owner of this account can choose a plan.":
-    "Alleen de eigenaar van dit account kan een abonnement kiezen.",
-  Terms: "Voorwaarden",
-  Privacy: "Privacy",
-  "You're all set": "Alles staat klaar",
-  "Your free trial has started": "Je gratis proefperiode is begonnen",
-  "Free until {date}": "Gratis tot {date}",
-  "Connect your AI": "Verbind je AI",
-  "Start using Labradoodle": "Aan de slag met Labradoodle",
   "1 unread": "1 ongelezen",
   "{count} unread": "{count} ongelezen",
   "{count} need attention": "{count} vragen aandacht",
@@ -1182,17 +1109,6 @@ export const NL_MESSAGES: Record<string, string> = {
   "Could not load skill": "Kan skill niet laden",
   "Could not save skill": "Kan skill niet opslaan",
   "Could not delete skill": "Kan skill niet verwijderen",
-  "Invite friends": "Vrienden uitnodigen",
-  "Get a free month for each friend who starts a trial.":
-    "Krijg een gratis maand voor elke vriend die een proefperiode start.",
-  "Invite a friend": "Nodig een vriend uit",
-  "Give a friend {weeks} weeks free": "Geef een vriend {weeks} weken gratis",
-  "They get {weeks} weeks free.": "Zij krijgen {weeks} weken gratis.",
-  "You get a free month when they start their trial with a new card.":
-    "Jij krijgt een gratis maand zodra zij hun proefperiode met een nieuwe kaart starten.",
-  "Share link": "Link delen",
-  "1 free month earned": "1 gratis maand verdiend",
-  "{count} free months earned": "{count} gratis maanden verdiend",
   "Submit a plugin": "Plugin indienen",
   "Switching…": "Bezig met wisselen…",
   Switch: "Overzetten",
@@ -1244,8 +1160,6 @@ export const NL_MESSAGES: Record<string, string> = {
   "Updating your computer": "Je computer wordt bijgewerkt",
   "Ask Doodle in this chat to set up a routine.":
     "Vraag Doodle in deze chat om een routine in te stellen.",
-  "Doodle with your own computer": "Doodle met je eigen computer",
-  "Put Doodle to work": "Zet Doodle aan het werk",
   "Could not leave workspace": "Kon de werkruimte niet verlaten",
   "Leave workspace": "Werkruimte verlaten",
   "Doodle can use the file but won't see the picture.":

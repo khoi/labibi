@@ -31,7 +31,6 @@ import type {
 import type { Auth } from "@labradoodle/auth";
 import type { NavLink } from "@labradoodle/contracts";
 import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
-import type { BillingService } from "./billing.js";
 import { accountRoutes } from "./routes/account.js";
 import { computerRoutes } from "./routes/computer.js";
 import { computerProviderRoutes } from "./routes/computer-provider.js";
@@ -97,8 +96,6 @@ export interface RouterDeps {
   pluginMarketplaceRead?: PluginTextReader;
   artifacts: ArtifactStore;
   dataDir: string;
-  /** Present only when the deployment bills; self-hosted installs leave it unset. */
-  billing?: BillingService;
   email?: TransactionalEmailProvider;
   onEmailError?: (error: unknown) => void;
   speechSummary?: VoiceDeps["speechSummary"];

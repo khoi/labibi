@@ -1,7 +1,6 @@
 import type { AdapterContext, JobPublisher, SandboxProvider } from "@labradoodle/adapter-kit";
 import { computerControlExpireJob, runContinueJob } from "@labradoodle/adapter-kit";
 import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
-import { recordComputerRunEnd } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { toComputerRef } from "./computer-support.js";
 import { isSandboxGoneError } from "./sandbox-errors.js";
@@ -156,7 +155,7 @@ export async function revokeScreenControl(
     getLogger().warn(`computer ${computer.id} sandbox ${computer.providerRef} is gone`, { error });
     // Fence by lease + skip booting/suspending so a stale gone-cleanup cannot clobber an
     // in-flight replace/boot that still names this providerRef.
-    const cleared = await deps.prisma.computer.updateMany({
+    await deps.prisma.computer.updateMany({
       where: {
         id: computer.id,
         providerRef: computer.providerRef,
@@ -165,7 +164,6 @@ export async function revokeScreenControl(
       },
       data: { state: "stopped", providerRef: null },
     });
-    if (cleared.count === 1) await recordComputerRunEnd(deps.prisma, computer, "gone");
   }
 }
 

@@ -459,7 +459,7 @@ export class PiAgentRuntime implements AgentRuntime {
                     ctx,
                     preparedOptions,
                     (event) => queue.push(event),
-                    target.config.callObserver ?? this.modelCallObserver,
+                    this.modelCallObserver,
                     {
                       operationKind: request.usageOperationKind ?? "answer",
                       userId: context?.userId,

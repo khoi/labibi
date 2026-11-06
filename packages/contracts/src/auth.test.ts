@@ -30,8 +30,14 @@ it("treats email code sign-in as an optional boolean capability", () => {
 
 it("only accepts complete legacy capabilities without partial SSO fields", () => {
   expect(
-    legacyAuthCapabilitiesSchema.parse({ passwordReset: false, resetUrl: null, billing: true }),
-  ).toEqual({ passwordAuth: true, sso: null, passwordReset: false, resetUrl: null, billing: true });
+    legacyAuthCapabilitiesSchema.parse({ passwordReset: false, resetUrl: null, emailCode: true }),
+  ).toEqual({
+    passwordAuth: true,
+    sso: null,
+    passwordReset: false,
+    resetUrl: null,
+    emailCode: true,
+  });
   for (const value of [
     {},
     { passwordReset: false },

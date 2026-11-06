@@ -21,7 +21,7 @@
     "id": "thread",
     "title": "Thread",
     "flow": "flows/thread.yaml",
-    "screens": ["thread", "artifact", "invite"]
+    "screens": ["thread", "artifact"]
   },
   {
     "id": "thread-errors",
@@ -110,16 +110,16 @@
     "screens": ["approvals", "vault", "space-members"]
   },
   {
-    "id": "billing",
-    "title": "Billing",
-    "flow": "flows/billing.yaml",
-    "screens": ["billing", "wallet", "spending-limit"]
+    "id": "wallet",
+    "title": "Wallet",
+    "flow": "flows/wallet.yaml",
+    "screens": ["wallet", "spending-limit"]
   },
   {
     "id": "new-account",
     "title": "New account",
     "flow": "flows/new-account.yaml",
-    "screens": ["signup-survey", "paywall"]
+    "screens": ["signup-survey"]
   },
   {
     "id": "pages",

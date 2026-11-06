@@ -1,7 +1,6 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { INVITED_TRIAL_WEEKS } from "@labradoodle/contracts";
 import { describe, expect, it } from "vitest";
 import {
   accountDeletionEmail,
@@ -12,14 +11,12 @@ import {
   signInCodeEmail,
   verificationEmail,
 } from "./email.js";
-import { homeDeletionEmail } from "./home-deletion-email.js";
 import {
   integrationClaimConfirmEmail,
   pluginSubmissionAdminEmail,
   pluginSubmissionReceivedEmail,
   pluginSubmissionReviewedEmail,
 } from "./plugin-submission-email.js";
-import { referralEmail } from "./referral-email.js";
 import { welcomeEmail } from "./welcome-email.js";
 
 describe("account email templates", () => {
@@ -61,9 +58,6 @@ it("shares the layout across account, product and marketplace emails", async () 
     accountDeletionEmail(user.email, "123456"),
     identityCodeEmail(user.email, "123456"),
     welcomeEmail(user, url),
-    homeDeletionEmail(user, new Date(), "plan-ended", url),
-    homeDeletionEmail(user, new Date(), "unused", url),
-    referralEmail(user, url, url),
     pluginSubmissionReceivedEmail(user.email),
     integrationClaimConfirmEmail(user.email, url),
     pluginSubmissionAdminEmail(
@@ -142,38 +136,27 @@ describe("email languages", () => {
     expect(messages[2]?.html).toContain("Żaneta &lt;Account&gt;");
   });
 
-  it("interpolates Polish product emails without changing dates, names or unsubscribe links", async () => {
+  it("interpolates Polish product emails without changing names or unsubscribe links", async () => {
     const user = { id: "user-1", email: "user@example.test", name: "Żaneta" };
     const url = "https://app.example.test";
     const unsubscribeUrl = `${url}/unsubscribe?token=fake-token`;
-    const deletionDate = new Date("2030-01-15T00:00:00Z");
-    const deletion = await homeDeletionEmail(user, deletionDate, "plan-ended", url, "pl");
     const welcome = await welcomeEmail(user, unsubscribeUrl, "pl");
-    const referral = await referralEmail(user, url, unsubscribeUrl, "pl");
     const name = "Example <Plugin>";
     const plugin = await pluginSubmissionReviewedEmail(
       { email: user.email, name, status: "approved", reason: null },
       "pl",
     );
-    for (const message of [deletion, welcome, referral, plugin]) {
+    for (const message of [welcome, plugin]) {
       expect(message.html).toContain('lang="pl"');
       expect(message.html).toContain('dir="ltr"');
       expect(message.text).not.toMatch(/\{\w+\}/);
     }
-    const formattedDate = new Intl.DateTimeFormat("pl", {
-      dateStyle: "long",
-      timeZone: "UTC",
-    }).format(deletionDate);
-    expect(deletion.text).toContain(formattedDate);
-    expect(referral.text).toContain(String(INVITED_TRIAL_WEEKS));
     expect(plugin.subject).toContain(name);
     expect(plugin.text).toContain(name);
     expect(plugin.html).toContain("Example &lt;Plugin&gt;");
-    for (const message of [welcome, referral]) {
-      expect(message.text).toContain(user.name);
-      expect(message.text).toContain(unsubscribeUrl);
-      expect(message.headers?.["List-Unsubscribe"]).toBe(`<${unsubscribeUrl}>`);
-    }
+    expect(welcome.text).toContain(user.name);
+    expect(welcome.text).toContain(unsubscribeUrl);
+    expect(welcome.headers?.["List-Unsubscribe"]).toBe(`<${unsubscribeUrl}>`);
   });
 
   it("writes a code email in Spanish", async () => {

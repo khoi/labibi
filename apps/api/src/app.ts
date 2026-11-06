@@ -3,7 +3,6 @@ import { hostname } from "node:os";
 import type {
   AgentContextStrategy,
   AgentRuntime,
-  BillingProvider,
   ConnectorProvider,
   JobPublisher,
   ManagedConnectorProvider,
@@ -13,7 +12,6 @@ import type {
   TransactionalEmailProvider,
 } from "@labradoodle/adapter-kit";
 import {
-  SandboxAllowanceUsedError,
   SandboxDamagedError,
   SandboxRateLimitError,
   SandboxUnavailableError,
@@ -42,7 +40,6 @@ import {
   createIdleComputerSweeper,
   createJobReconciler,
   createMediaGenerationProvider,
-  createModelCreditReconciler,
   createPaymentWalletProvider,
   createProductAnalytics,
   createRunExecutor,
@@ -50,7 +47,6 @@ import {
   createRunSecretWriter,
   createSecretStore,
   createWebProvider,
-  deploymentModelUsageLookup,
   EmailEmulator,
   ExpoPushProvider,
   GraphileJobPublisher,
@@ -62,7 +58,6 @@ import {
   isPipedreamEnabled,
   McpConnector,
   McpOAuthBroker,
-  ObjectAgentHomeStore,
   PiAgentRuntime,
   PiOAuthLogins,
   PipedreamConnector,
@@ -77,12 +72,9 @@ import {
   reconcileMediaVideos,
   reconcilePurchases,
   removePiUserSessions,
-  resolveDeploymentModel,
   ScriptedAgentRuntime,
   SpaceMemoryProviderResolver,
-  StripeBillingProvider,
   sandboxProviderOptionsFromEnv,
-  stripeBillingConfigFromEnv,
   UserDeviceHub,
   UserDevices,
   userDeviceForwardSecret,
@@ -145,8 +137,6 @@ import { mountAccountExportRoute } from "./account-export.js";
 import { settleDirectoryChange } from "./account-status.js";
 import { mountAppAssociation, nativePasskeys } from "./app-association.js";
 import { mountAuditExportRoute } from "./audit-export.js";
-import { createBillingService } from "./billing.js";
-import { mountBillingRoutes } from "./billing-webhook.js";
 import { clientBuildMiddleware, readDeployedWebBuild } from "./client-build.js";
 import {
   clientIpMiddleware,
@@ -160,15 +150,12 @@ import { configuredEmailProvider } from "./email.js";
 import type { AppEnv } from "./env.js";
 import { loadEnv } from "./env.js";
 import { healthRoutes } from "./health.js";
-import { homeRetentionSweep } from "./home-retention.js";
-import { startHourlySweep } from "./hourly-sweep.js";
 import { trackInFlightRequests } from "./in-flight-requests.js";
 import { mountLocalComputerHost } from "./local-settings.js";
 import { marketingEmailRoutes, sendWelcomeEmail } from "./marketing-email.js";
 import { moveMcpArgsIntoSecrets } from "./mcp-args-migration.js";
 import { monitoringRoutes } from "./monitoring.js";
 import { pluginSubmissionRoutes } from "./plugin-submissions.js";
-import { sendReferralEmails } from "./referral-email.js";
 import { mountApiRequestBodyLimits, rpcBodyLimit } from "./request-body-limit.js";
 import { createRouter } from "./router.js";
 import { mountScreenTarget } from "./screen-proxy.js";
@@ -231,7 +218,6 @@ type CreateAppOverrides = Partial<AppEnv> & {
   pipedream?: ManagedConnectorProvider;
   email?: TransactionalEmailProvider;
   notifications?: NotificationProvider;
-  billing?: BillingProvider;
   remoteConnectors?: RemoteConnectorDependencies;
   pluginRepoFetcher?: PluginRepoFetcher;
   pluginMarketplaceRead?: PluginTextReader;
@@ -255,7 +241,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     pipedream: pipedreamOverride,
     email: emailOverride,
     notifications: notificationsOverride,
-    billing: billingOverride,
     remoteConnectors,
     modelConnectionFetch,
     pluginRepoFetcher,
@@ -423,27 +408,10 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
   const email: TransactionalEmailProvider | undefined = configuredEmail ?? localEmailEmulator;
   const onEmailError = (error: unknown) =>
     getLogger().error("transactional email delivery failed", error);
-  const stripeBilling = stripeBillingConfigFromEnv(env);
-  const billingProvider: BillingProvider | undefined =
-    billingOverride ?? (stripeBilling ? new StripeBillingProvider(stripeBilling) : undefined);
-  const billing = billingProvider
-    ? createBillingService({
-        prisma,
-        provider: billingProvider,
-        sandbox,
-        webOrigin: env.webOrigin,
-        managedModelsAvailable: resolveDeploymentModel().configured,
-        analytics,
-      })
-    : undefined;
-  const modelCreditsEnabled = billing?.modelCreditsEnabled ?? false;
   await prisma.deploymentSettings.upsert({
     where: { id: "default" },
-    create: {
-      id: "default",
-      modelCreditsEnabled,
-    },
-    update: { modelCreditsEnabled },
+    create: { id: "default" },
+    update: {},
   });
   const installed = new InstalledConnectorProvider(
     prisma,
@@ -553,8 +521,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     extraOrigins: MOBILE_AUTH_ORIGINS,
     androidAppCertFingerprints: env.passkeyAndroidCertFingerprints,
     beforeDeleteUser: async (userId) => {
-      // Billing cancels inside, after the account's spaces are claimed and before anything is
-      // destroyed, so a provider failure aborts deletion with the account as it was.
       await deleteAccountContent(
         {
           prisma,
@@ -565,7 +531,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
           dataDir: env.dataDir,
           secrets,
           events,
-          billing,
         },
         userId,
       );
@@ -618,7 +583,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
   // One instance: chat runs submit videos and, in single-process mode, background polls finish them.
   const mediaGeneration = createMediaGenerationProvider();
   const executor = createRunExecutor({
-    billingEnabled: modelCreditsEnabled,
     maxUploadSizeBytes: env.maxUploadSizeBytes,
     mediaGeneration,
     contextStrategy,
@@ -697,10 +661,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
         jobs,
         events,
         notifications,
-        reconcileModelCredits: createModelCreditReconciler({
-          prisma,
-          lookup: deploymentModelUsageLookup(),
-        }),
         reconcileCloudAgents: () => reconcileCloudAgents({ prisma, jobs, cloudAgent }),
         reconcilePurchases: () => reconcilePurchases({ prisma, jobs, paymentWallet }),
         reconcileMediaVideos: () => reconcileMediaVideos({ prisma, jobs, mediaGeneration }),
@@ -714,35 +674,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
       })
     : undefined;
   reconciler?.start();
-  const stopReferralEmails =
-    email && env.welcomeEmailEnabled && billing?.referralsEnabled
-      ? startHourlySweep(
-          sendReferralEmails({
-            prisma,
-            email,
-            appUrl: new URL("/app", env.webOrigin).href,
-            origin: env.authUrl,
-            secret: env.authSecret,
-            onError: onEmailError,
-          }),
-          onEmailError,
-        )
-      : undefined;
-
-  // Self-hosted deployments without billing keep every saved home.
-  const stopHomeRetention =
-    email && billingProvider && home instanceof ObjectAgentHomeStore
-      ? startHourlySweep(
-          homeRetentionSweep({
-            prisma,
-            email,
-            appUrl: new URL("/app", env.webOrigin).href,
-            onError: (error) => getLogger().error("saved home retention failed", error),
-          }),
-          (error) => getLogger().error("saved home retention failed", error),
-        )
-      : undefined;
-
   const router = createRouter({
     speechSummary:
       env.voiceSummaryMinChars === undefined
@@ -786,7 +717,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     email,
     onEmailError,
     dataDir: env.dataDir,
-    billing,
     env: {
       navLinks: env.navLinks,
       adminEmails: env.adminEmails,
@@ -847,10 +777,8 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
       resetUrl:
         env.passwordAuth !== false && email ? new URL("/reset-password", env.webOrigin).href : null,
       emailCode: auth.emailCodeSignIn,
-      billing: Boolean(billing),
       passkeyRpId: auth.passkeyRpId,
       nativePasskeys: nativePasskeys(env, auth.passkeyRpId),
-      crispWebsiteId: billing ? (env.crispWebsiteId ?? null) : null,
     } satisfies AuthCapabilities);
   });
   mountAppAssociation(app, env);
@@ -1019,14 +947,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
     return actor;
   });
   mountWebhookHttpRoutes(app, { prisma, secrets, events, jobs });
-  if (billing && billingProvider) {
-    mountBillingRoutes(app, {
-      billing,
-      provider: billingProvider,
-      webOrigin: env.webOrigin,
-      authenticate: sessionActor,
-    });
-  }
   app.route(
     "/",
     healthRoutes(
@@ -1036,7 +956,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
         composio: Boolean(stack.composio),
         pipedream: Boolean(pipedream),
         email: email?.describe().id ?? null,
-        billing: billingProvider?.describe().id ?? null,
         jobs: jobKind,
         realtime: realtime.describe().id,
         secrets: secrets.describe(),
@@ -1077,8 +996,6 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
       const runsStopped = runs?.stop();
       await userDeviceHub?.close();
       oauthLogins.abortAll();
-      await stopReferralEmails?.();
-      await stopHomeRetention?.();
       await reconciler?.stop();
       await oauthTokenUpgrade;
       await mcpArgsMove;
@@ -1216,11 +1133,6 @@ export function handleRpcError(
       reason: error.cause instanceof Error ? error.cause.message : undefined,
     });
     throw new ORPCError("TOO_MANY_REQUESTS", { message: error.message, cause: error });
-  }
-  // The organization spent this period's computer allowance; its message says so.
-  if (error instanceof SandboxAllowanceUsedError) {
-    getLogger().warn(`rpc ${path.join("/")} computer allowance used up`);
-    throw new ORPCError("FORBIDDEN", { message: error.message, cause: error });
   }
   // A retry cannot fix a damaged computer; its message tells the user to Recover it.
   if (error instanceof SandboxDamagedError) {

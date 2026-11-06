@@ -3,14 +3,12 @@ import { beforeEach, expect, it, vi } from "vitest";
 import type { ChatSplit } from "../components/chat-route-header";
 import { chatRouteHeader } from "../components/chat-route-header";
 
-const push = vi.hoisted(() => vi.fn());
 const setInboxHidden = vi.hoisted(() => vi.fn());
 vi.mock("react-native", () => ({
   Platform: { OS: "ios" },
   Pressable: () => null,
   View: () => null,
 }));
-vi.mock("expo-router", () => ({ router: { push } }));
 vi.mock("./appearance", () => ({ mobileTokens: () => ({ foreground: "#000" }) }));
 vi.mock("./native-controls", () => ({ iosAtLeast: () => true }));
 vi.mock("./split-view", () => ({ setInboxHidden }));
@@ -24,33 +22,23 @@ vi.mock("../components/sheet-header", () => ({
 }));
 
 beforeEach(() => {
-  push.mockClear();
   setInboxHidden.mockClear();
 });
 const t = (text: string) => text;
 const alone: ChatSplit = { split: false, inboxHidden: false };
-const header = (params: object, split = alone, canInvite = false) =>
-  chatRouteHeader({ key: "thread-1", params }, t, split, canInvite);
+const header = (params: object, split = alone) =>
+  chatRouteHeader({ key: "thread-1", params }, t, split);
 const rightItems = (options: ReturnType<typeof chatRouteHeader>) =>
   options.unstable_headerRightItems?.({ tintColor: undefined } as never) ?? [];
 const leftItems = (options: ReturnType<typeof chatRouteHeader>) =>
   options.unstable_headerLeftItems?.({ tintColor: undefined } as never) ?? [];
 
-it("declares a bot chat's title and its invite gift when the screen is created", () => {
-  const options = header({ botId: "bot-1", name: "Helper" }, alone, true);
+it("declares a chat's title when the screen is created and leaves its right side empty", () => {
+  const options = header({ botId: "bot-1", name: "Helper" });
   expect(options.headerTitle).toBeTypeOf("function");
   expect(options.headerTitleAlign).toBe("center");
   expect(options.headerTransparent).toBe(true);
-  const [item] = rightItems(options);
-  expect(item).toMatchObject({ type: "button", icon: { type: "sfSymbol", name: "gift" } });
-  (item as { onPress: () => void }).onPress();
-  expect(push).toHaveBeenCalledWith("/invite");
-  expect(options.headerRight).toBeTypeOf("function");
   expect(options.headerBackVisible).toBe(true);
-});
-
-it("leaves a bot chat's right side empty when the account cannot invite", () => {
-  const options = header({ botId: "bot-1", name: "Helper" });
   expect(rightItems(options)).toEqual([]);
   expect(options.headerRight).toBeUndefined();
 });

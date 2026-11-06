@@ -105,7 +105,6 @@ function executorFixture(
     userActionAutoReviewPreference: { findUnique: async () => ({ enabled: false }) },
     externalEffect: { findMany: async () => [] },
     usageRecord: { createMany: async () => ({ count: 1 }) },
-    modelCreditEntry: { findUnique: async () => null },
     $transaction: async (work: (tx: unknown) => Promise<unknown>) => work(prisma),
   };
   const finalizeRun = vi.fn(async () => ({ continuationRunId: null }));

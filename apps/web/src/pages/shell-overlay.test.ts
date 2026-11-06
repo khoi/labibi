@@ -70,7 +70,7 @@ describe("withShellOverlay", () => {
   });
 
   it("round-trips through readShellOverlay", () => {
-    const overlay = { kind: "settings", section: "billing", spaceId: "sp_2" } as const;
+    const overlay = { kind: "settings", section: "usage", spaceId: "sp_2" } as const;
     expect(readShellOverlay(withShellOverlay(new URLSearchParams(), overlay))).toEqual(overlay);
   });
 });

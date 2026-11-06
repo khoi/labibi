@@ -53,14 +53,14 @@ it("rejects HTTP errors", async () => {
 it("accepts old capabilities for the bundled desktop client", async () => {
   vi.stubGlobal(
     "fetch",
-    vi.fn(async () => Response.json({ passwordReset: false, resetUrl: null, billing: false })),
+    vi.fn(async () => Response.json({ passwordReset: false, resetUrl: null, emailCode: false })),
   );
   await expect(fetchAuthCapabilities()).resolves.toEqual({
     passwordAuth: true,
     sso: null,
     passwordReset: false,
     resetUrl: null,
-    billing: false,
+    emailCode: false,
   });
 });
 

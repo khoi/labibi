@@ -10,7 +10,6 @@ import {
 import type { OidcConfig } from "@labradoodle/auth";
 import type { MinimumClientBuilds, NavLink } from "@labradoodle/contracts";
 import { parseMinimumClientBuilds, parseNavLinks } from "@labradoodle/contracts";
-import { parseCrispWebsiteId } from "@labradoodle/contracts/content-security-policy";
 import {
   attachmentCountFromEnv,
   resolveAuthSecret,
@@ -107,10 +106,6 @@ export interface AppEnv {
   emailApiKey?: string;
   emailFrom: string | undefined;
   emailReplyTo?: string;
-  /** Billing turns on only when all three are set; self-hosted installs leave them unset. */
-  stripeSecretKey: string | undefined;
-  stripeWebhookSecret: string | undefined;
-  stripePriceId: string | undefined;
   emailEmulator: boolean;
   defaultProvider: string;
   defaultModel: string;
@@ -128,8 +123,6 @@ export interface AppEnv {
   browserMonitoring:
     | { dsn: string; environment?: string; release?: string; pseudonymSecret?: string }
     | undefined;
-  /** Crisp chat on the paywall, for the hosted service; self-hosted installs leave it unset. */
-  crispWebsiteId?: string | null;
 }
 
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
@@ -256,9 +249,6 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
     emailFrom: optional(source.EMAIL_FROM),
     emailReplyTo: optional(source.EMAIL_REPLY_TO),
     welcomeEmailEnabled: source.WELCOME_EMAIL_ENABLED === "true",
-    stripeSecretKey: optional(source.STRIPE_SECRET_KEY),
-    stripeWebhookSecret: optional(source.STRIPE_WEBHOOK_SECRET),
-    stripePriceId: optional(source.STRIPE_PRICE_ID),
     emailEmulator: source.EMAIL_EMULATOR === "true" && source.NODE_ENV !== "production",
     defaultProvider: deploymentModel.provider,
     defaultModel: deploymentModel.model,
@@ -274,7 +264,6 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
     gitSha: optional(source.GIT_SHA) ?? optional(source.LABRADOODLE_GIT_SHA),
     minimumClientBuilds: parseMinimumClientBuilds(source.LABRADOODLE_MIN_CLIENT_BUILD),
     browserMonitoring: browserMonitoringFromEnv(source),
-    crispWebsiteId: parseCrispWebsiteId(source.CRISP_WEBSITE_ID),
   };
 }
 

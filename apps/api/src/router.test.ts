@@ -543,13 +543,12 @@ describe("account preferences", () => {
   );
 });
 
-describe("billing", () => {
+describe("signup survey", () => {
   const surveyCreatedAt = new Date("2026-10-23T12:00:00Z");
   const upsertSignupSurvey = vi.fn().mockResolvedValue({ createdAt: surveyCreatedAt });
 
-  function billingDeps(
+  function surveyDeps(
     isDeploymentOwner: boolean,
-    billing?: RouterDeps["billing"],
     signupSurvey: { userId: string } | null = null,
     analytics?: RouterDeps["analytics"],
   ) {
@@ -569,7 +568,6 @@ describe("billing", () => {
     } as unknown as PrismaClient;
     const deps = {
       prisma,
-      billing,
       analytics,
       env: {
         defaultProvider: "fake",
@@ -591,7 +589,7 @@ describe("billing", () => {
 
   it("sends only the fixed survey choices to analytics", async () => {
     const capture = vi.fn();
-    const client = billingDeps(false, undefined, null, { capture, flush: async () => undefined });
+    const client = surveyDeps(false, null, { capture, flush: async () => undefined });
     await client.onboarding.signupSurvey({
       use: "work",
       teamSize: "2-10",
@@ -610,7 +608,7 @@ describe("billing", () => {
   });
 
   it("records a blank survey as skipped", async () => {
-    await billingDeps(false).onboarding.signupSurvey({});
+    await surveyDeps(false).onboarding.signupSurvey({});
     expect(upsertSignupSurvey).toHaveBeenLastCalledWith({
       where: { userId: "user-1" },
       create: { userId: "user-1", reason: null, use: null, teamSize: null, source: null },
@@ -619,7 +617,7 @@ describe("billing", () => {
   });
 
   it("keeps team size only for work or both", async () => {
-    const client = billingDeps(false);
+    const client = surveyDeps(false);
     await client.onboarding.signupSurvey({
       reason: "  Run my inbox  ",
       use: "personal",

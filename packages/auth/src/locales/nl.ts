@@ -36,14 +36,6 @@ export const NL_MESSAGES: Record<string, string> = {
   "Self-host Labradoodle": "Labradoodle zelf hosten",
   "Have any questions? Reply to this email.": "Vragen? Beantwoord deze e-mail.",
   Unsubscribe: "Afmelden",
-  "Invite a friend": "Nodig een vriend uit",
-  "Invite a friend to Labradoodle: they get {weeks} weeks free, and you earn a free month when they start a qualifying subscription with a new card.":
-    "Nodig een vriend uit voor Labradoodle: die krijgt {weeks} weken gratis, en jij verdient een gratis maand zodra die met een nieuwe kaart een geldig abonnement start.",
-  "Open Labradoodle": "Open Labradoodle",
-  "and choose Invite friends for your link.": "en kies Vrienden uitnodigen voor je link.",
-  "Have any questions? Just reply to this email.": "Vragen? Beantwoord gewoon deze e-mail.",
-  "If you're enjoying Labradoodle,": "Vind je Labradoodle fijn?",
-  "give us a star on GitHub": "Geef ons een ster op GitHub",
   "We received your Labradoodle plugin": "We hebben je Labradoodle-plug-in ontvangen",
   "Thanks for submitting a plugin to the Labradoodle marketplace.":
     "Bedankt voor het insturen van een plug-in voor de Labradoodle-marketplace.",
@@ -68,9 +60,4 @@ export const NL_MESSAGES: Record<string, string> = {
     "Je wijzigingen aan de pagina {name} zijn goedgekeurd.",
   "We couldn't approve your changes to the {name} page.":
     "We konden je wijzigingen aan de pagina {name} niet goedkeuren.",
-  "Your saved computer files will be deleted": "Je opgeslagen computerbestanden worden verwijderd",
-  "Your saved computer files will be deleted on {date} unless you resubscribe.":
-    "Je opgeslagen computerbestanden worden op {date} verwijderd, tenzij je opnieuw een abonnement neemt.",
-  "Your saved computer files will be deleted on {date} unless you choose a plan.":
-    "Je opgeslagen computerbestanden worden op {date} verwijderd, tenzij je een abonnement kiest.",
 };

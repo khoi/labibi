@@ -8,13 +8,11 @@ import type {
 } from "@labradoodle/adapter-kit";
 import {
   computerControlExpireJobKey,
-  SandboxAllowanceUsedError,
   SandboxRateLimitError,
-  SandboxSizeUnavailableError,
   SandboxUnavailableError,
   SandboxUnresponsiveError,
 } from "@labradoodle/adapter-kit";
-import type { ComputerSize, ComputerUpdate } from "@labradoodle/contracts";
+import type { ComputerUpdate } from "@labradoodle/contracts";
 import {
   abortableDelay,
   isRetryableError,
@@ -22,12 +20,7 @@ import {
   screenLeaseId,
 } from "@labradoodle/core";
 import type { Prisma, PrismaClient, ThreadEvents } from "@labradoodle/db";
-import {
-  expireComputerExecutionLeases,
-  planComputerSize,
-  recordComputerRunEnd,
-  recordComputerRunStart,
-} from "@labradoodle/db";
+import { expireComputerExecutionLeases } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import {
   clearInactiveUserComputerControl,
@@ -44,7 +37,6 @@ import {
 } from "./computer-workspace.js";
 import { resolveAgentHomePath } from "./home.js";
 import { ObjectAgentHomeStore } from "./home-object-store.js";
-import { sandboxAllowanceUsedUp } from "./sandbox-allowance.js";
 import {
   isSandboxDamagedError,
   isSandboxGoneError,
@@ -212,7 +204,6 @@ export async function provisionComputer(
         data: { updatedAt: new Date(), runningSince },
       });
       if (retained.count !== 1) throw new ComputerBusyError();
-      await recordComputerRunStart(deps.prisma, existing, runningSince);
       const damaged = await deps.sandbox.prepare(ref, context).then(
         () => false,
         (error: unknown) => {
@@ -232,12 +223,6 @@ export async function provisionComputer(
       context.signal.throwIfAborted();
     }
   }
-
-  // A computer that bills starts only while its organization has allowance left this period.
-  const startKind = (await deps.sandbox.provisionKind?.(existing.homeKey)) ?? existing.kind;
-  if (await sandboxAllowanceUsedUp(deps, { spaceId: existing.spaceId, kind: startKind }))
-    throw new SandboxAllowanceUsedError();
-  const size = await planComputerSize(deps.prisma, existing.spaceId);
 
   // If we first observe abandoned "booting", remember that stamp before waiting. A concurrent
   // reclaim bumps updatedAt while state stays "booting"; fencing the claim on the pre-wait
@@ -376,7 +361,7 @@ export async function provisionComputer(
       });
     await mkdir(homePath, { recursive: true });
     await onProgress?.("recreating");
-    const provisionAt = (startSize: ComputerSize | undefined) =>
+    const provision = () =>
       getLogger().withContext(
         { "computer.id": computerId, "run.id": context.runId, previousState: existing.state },
         () =>
@@ -391,21 +376,10 @@ export async function provisionComputer(
                 existing.homeRevision === "empty"
                   ? undefined
                   : (existing.homeRevisionAt ?? undefined),
-              size: startSize,
             },
             context,
           ),
       );
-    // A provider that cannot move the computer to the plan's size starts it at the size it has.
-    const provision = async () => {
-      try {
-        return await provisionAt(size);
-      } catch (error) {
-        if (!(error instanceof SandboxSizeUnavailableError)) throw error;
-        log.warn("computer.size_unavailable", { size, reason: error.reason });
-        return provisionAt(undefined);
-      }
-    };
     // A new machine under the stored name, or any machine of a reclaimed boot, is incomplete until
     // restored. Mark it as soon as the provider returns it, so a start that fails or dies after that
     // point leaves the row marked; a failed start records the mark even if this write did not land.
@@ -511,14 +485,6 @@ export async function provisionComputer(
     if (activated.count !== 1) {
       throw new ComputerBusyError();
     }
-    // A computer we believed running that the provider had to resume or replace was stopped
-    // or lost at the provider without us.
-    await recordComputerRunStart(
-      deps.prisma,
-      { ...existing, kind: ref.kind, providerRef: ref.providerRef },
-      runningSince,
-      existing.state === "running" ? "gone" : "reconciled",
-    );
     log.info("computer.provisioned", {
       provider: ref.kind,
       operation: replacement ? "create" : ref.started ? "resume" : "reuse",
@@ -1125,7 +1091,6 @@ export async function replaceComputer(
       },
     });
     if (stopped.count !== 1) throw new ComputerBusyError();
-    await recordComputerRunEnd(deps.prisma, existing, "replaced");
     return provisionComputer(deps, computerId, context, controlHolder, onProgress);
   } catch (error) {
     const failedState =

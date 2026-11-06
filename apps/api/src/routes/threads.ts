@@ -94,7 +94,6 @@ export function threadsRoutes(ctx: RouterContext) {
     const admission = doodleAdmission(actor, target);
     const confirmingImages =
       input.imageHandling === "confirm" && Boolean(input.artifactIds?.length);
-    // Reuse the funding modelSetup resolved; a send never asks billing twice.
     const setup = confirmingImages ? await admission.setup() : null;
     const deployment = setup?.hasDeployment
       ? { provider: deps.env.defaultProvider, model: deps.env.defaultModel }
@@ -107,7 +106,6 @@ export function threadsRoutes(ctx: RouterContext) {
           ? {
               secrets: deps.secrets,
               deployment,
-              hostedProvider: setup.creditsAvailable ? deployment?.provider : undefined,
               codexCatalog,
             }
           : undefined,

@@ -22,10 +22,6 @@ import { NavLinkSchema } from "./nav-links.js";
 import { RoutineWatchSchema, RoutineWatchStateSchema } from "./routine-watch.js";
 import { RunTriggerSchema } from "./runs.js";
 
-/** How big a machine a cloud computer runs on. Providers without sizes ignore it. */
-export const ComputerSizeSchema = z.enum(["standard", "large", "xlarge"]);
-export type ComputerSize = z.infer<typeof ComputerSizeSchema>;
-
 /**
  * Deprecated account-level setting kept for older app versions; the legacy settings endpoint
  * still always reports "organic".
@@ -698,29 +694,6 @@ export const PluginSubmissionReviewSchema = z.discriminatedUnion("decision", [
 ]);
 export type PluginSubmissionReview = z.infer<typeof PluginSubmissionReviewSchema>;
 
-export const AccessGrantInputSchema = z
-  .object({
-    email: z.string().trim().toLowerCase().max(254).email(),
-    creditCents: z.number().int().min(0).max(100_000).default(0),
-    freeMonths: z.number().int().min(0).max(12).default(0),
-  })
-  .refine((grant) => grant.creditCents > 0 || grant.freeMonths > 0, {
-    message: "Grant credits, free months, or both",
-  });
-export type AccessGrantInput = z.input<typeof AccessGrantInputSchema>;
-
-export const AccessGrantSchema = z.object({
-  id: Id,
-  email: z.string(),
-  creditCents: z.number().int(),
-  freeMonths: z.number().int(),
-  createdBy: z.string().nullable(),
-  status: z.enum(["pending", "applied", "revoked"]),
-  createdAt: z.string(),
-  appliedAt: z.string().nullable(),
-});
-export type AccessGrant = z.infer<typeof AccessGrantSchema>;
-
 export const IntegrationCatalogSurfaceSchema = z.object({
   kind: z.enum(["mcp", "openapi", "graphql", "cli"]),
   slug: z.string(),
@@ -1301,8 +1274,6 @@ export const ModelCatalogEntrySchema = z.object({
   recommended: z.boolean().optional(),
   /** The provider's connections that can run it, when not all of them can. */
   credentialIds: z.array(z.string()).optional(),
-  /** Available through the deployment without a personal credential. */
-  managed: z.boolean().optional(),
   provider: z.string(),
   providerName: z.string().optional(),
   id: z.string(),
@@ -1550,100 +1521,12 @@ export const MeSchema = z.object({
   locale: z.string().nullable().optional(),
   /** Doodle's replies are read aloud as they arrive. */
   readAloud: z.boolean(),
-  billingEnabled: z.boolean(),
   /** True until a user of a billing deployment answers or skips the signup survey. Absent from older servers. */
   needsSignupSurvey: z.boolean().optional(),
   /** The wallet bots can spend from, when this deployment offers one. Absent from older servers. */
   paymentWalletProvider: z.object({ id: z.string(), name: z.string() }).nullable().optional(),
 });
 export type Me = z.infer<typeof MeSchema>;
-
-export const MODEL_CREDIT_AMOUNTS = [1000, 2000, 3000, 5000, 10000, 20000, 50000] as const;
-
-/** The vCPUs and memory each computer size provides. */
-export const COMPUTER_SIZE_SPECS: Record<ComputerSize, { vcpus: number; memoryGb: number }> = {
-  standard: { vcpus: 4, memoryGb: 8 },
-  large: { vcpus: 8, memoryGb: 16 },
-  xlarge: { vcpus: 16, memoryGb: 32 },
-};
-
-/**
- * What an hour of a billed computer counts against the allowance, $0.20, whatever its size: above
- * a small cloud machine's raw price, so the allowance also covers storage and saves.
- */
-export const SANDBOX_HOURLY_COST_MICROS = 200_000;
-/** What a trial may spend on computers, in cents; ending the trial early starts the full allowance. */
-export const TRIAL_SANDBOX_ALLOWANCE_CENTS = 200;
-/** The share of a monthly credit plan an organization may also spend on computers. */
-export const CREDITS_SANDBOX_ALLOWANCE_PERCENT = 20;
-
-/** Computer hours an allowance in cents buys. */
-export function sandboxAllowanceHours(allowanceCents: number): number {
-  return (allowanceCents * 10_000) / SANDBOX_HOURLY_COST_MICROS;
-}
-
-export const ByokTierSchema = z.enum(["standard", "pro", "max"]);
-export type ByokTier = z.infer<typeof ByokTierSchema>;
-
-export interface ByokTierTerms {
-  name: string;
-  /** Monthly price in cents; `null` on Standard makes the own-model plan free, and hides any other tier. */
-  monthlyPriceCents: number | null;
-  /** Yearly price in cents; `null` offers the tier monthly only. */
-  annualPriceCents: number | null;
-  /** What the organization may spend on computers each month, in cents. */
-  computerAllowanceCents: number;
-  computerSize: ComputerSize;
-}
-
-/**
- * The own-model plan's tiers, in order. Standard is the plan new organizations start on; the
- * others add bigger computers and more computer hours.
- */
-export const BYOK_TIERS: Record<ByokTier, ByokTierTerms> = {
-  standard: {
-    name: "Standard",
-    monthlyPriceCents: 1500,
-    annualPriceCents: 14400,
-    computerAllowanceCents: 500,
-    computerSize: "standard",
-  },
-  pro: {
-    name: "Pro",
-    monthlyPriceCents: 4900,
-    annualPriceCents: 46800,
-    computerAllowanceCents: 2000,
-    computerSize: "large",
-  },
-  max: {
-    name: "Max",
-    monthlyPriceCents: 14900,
-    annualPriceCents: 142800,
-    computerAllowanceCents: 4000,
-    computerSize: "xlarge",
-  },
-};
-
-/** The tier's price for new subscriptions billed every `interval`; null when it is not offered. */
-export function byokTierPriceCents(tier: ByokTier, interval: ByokInterval): number | null {
-  if (BYOK_TIERS.standard.monthlyPriceCents === null) return null;
-  const terms = BYOK_TIERS[tier];
-  if (terms.monthlyPriceCents === null) return null;
-  return interval === "year" ? terms.annualPriceCents : terms.monthlyPriceCents;
-}
-/**
- * An invited friend's first trial, in weeks; the invite copy and the trial both read it. The copy
- * is written for a plural number of weeks, so check its wording in every language if this changes.
- */
-export const INVITED_TRIAL_WEEKS = 2;
-/** Length of a new organization's free trial of the own-model plan, in days. */
-export const TRIAL_DAYS = 7;
-export const ByokIntervalSchema = z.enum(["month", "year"]);
-export type ByokInterval = z.infer<typeof ByokIntervalSchema>;
-export const DEFAULT_MONTHLY_CREDIT_AMOUNT = 3000;
-export const ModelCreditAmountSchema = z.union(
-  MODEL_CREDIT_AMOUNTS.map((amount) => z.literal(amount)),
-);
 
 export const SIGNUP_SURVEY_USES = ["personal", "work", "both"] as const;
 export const SIGNUP_SURVEY_TEAM_SIZES = ["1", "2-10", "11-50", "51-200", "201+"] as const;
@@ -1665,132 +1548,6 @@ export type SignupSurvey = z.infer<typeof SignupSurveySchema>;
 
 export function signupSurveyAsksTeamSize(use: SignupSurvey["use"]): boolean {
   return use === "work" || use === "both";
-}
-
-/** Where checkout returns: the mobile app's in-app browser instead of the web app. */
-export const BillingClientSchema = z.literal("mobile").optional();
-/** The deep link the API sends a mobile checkout back to; it closes the in-app browser. */
-export const MOBILE_BILLING_CALLBACK_URL = "labradoodle://billing";
-
-export const BILLING_CANCELLATION_REASONS = [
-  "too_expensive",
-  "missing_features",
-  "switched_service",
-  "unused",
-  "customer_service",
-  "too_complex",
-  "low_quality",
-  "other",
-] as const;
-export type BillingCancellationReason = (typeof BILLING_CANCELLATION_REASONS)[number];
-
-export const BillingStatusSchema = z.object({
-  funding: z.enum(["byok", "credits"]).nullable().optional(),
-  balanceUsd: z.number().optional(),
-  monthlyAmountCents: z.number().int().positive().nullable().optional(),
-  creditPurchasesEnabled: z.boolean().optional(),
-  /** Monthly price of the own-key plan, as subscribed when the organization has it; `null` when free. */
-  byokPriceCents: z.number().int().positive().nullable().optional(),
-  /** How often `byokPriceCents` bills. Absent from older servers, which bill monthly. */
-  byokInterval: ByokIntervalSchema.optional(),
-  /** Yearly price of the own-key plan's tier for new subscriptions, when offered. */
-  byokAnnualPriceCents: z.number().int().positive().nullable().optional(),
-  /** The own-key plan's tier: the subscribed one, else Standard. Absent from older servers. */
-  byokTier: ByokTierSchema.optional(),
-  /** The tiers on offer, in order; absent when the own-key plan is free. */
-  byokTiers: z
-    .array(
-      z.object({
-        tier: ByokTierSchema,
-        name: z.string(),
-        monthlyPriceCents: z.number().int().positive(),
-        annualPriceCents: z.number().int().positive().nullable(),
-        computerSize: ComputerSizeSchema,
-        computerHours: z.number().nonnegative(),
-      }),
-    )
-    .optional(),
-  /** End of an unpaid own-key organization's free period. */
-  byokFreeUntil: z.string().nullable().optional(),
-  access: z.boolean(),
-  /** Only organization owners start checkout or open the billing portal. */
-  canManage: z.boolean(),
-  trialAvailable: z.boolean(),
-  trialDays: z.number().int().nonnegative(),
-  state: z.enum([
-    "none",
-    "trialing",
-    "active",
-    "past_due",
-    "incomplete",
-    "unpaid",
-    "paused",
-    "canceled",
-  ]),
-  price: z
-    .object({
-      amount: z.number().int().nonnegative(),
-      currency: z.string(),
-      interval: z.enum(["day", "week", "month", "year"]),
-      intervalCount: z.number().int().positive(),
-    })
-    .nullable(),
-  seats: z.number().int().nonnegative(),
-  trialEndsAt: z.string().nullable(),
-  currentPeriodEndsAt: z.string().nullable(),
-  cancelAtPeriodEnd: z.boolean(),
-  hasCustomer: z.boolean(),
-  /** Computer hours left this calendar month; absent when computers have no limit. */
-  computerHoursLeft: z.number().nonnegative().nullable().optional(),
-  /** Present once the organization has subscribed: its invite link and free months earned. */
-  referral: z
-    .object({ url: z.string().url(), rewards: z.number().int().nonnegative() })
-    .nullable()
-    .optional(),
-});
-export type BillingStatus = z.infer<typeof BillingStatusSchema>;
-
-/** The percent a yearly own-key price saves over twelve months at `monthlyCents`. */
-export function byokYearlySavingsPercent(monthlyCents: number, annualCents: number): number {
-  return Math.round((1 - annualCents / (monthlyCents * 12)) * 100);
-}
-
-/**
- * What switching a paid monthly own-key plan to yearly saves, in percent, or null when the switch
- * is not offered: not the owner, no live monthly plan, or a yearly price that saves nothing.
- */
-export function byokYearlySwitchSavings(status: BillingStatus): number | null {
-  if (
-    !status.canManage ||
-    status.funding !== "byok" ||
-    status.byokInterval === "year" ||
-    status.byokFreeUntil ||
-    status.monthlyAmountCents ||
-    status.cancelAtPeriodEnd ||
-    (status.state !== "active" && status.state !== "trialing") ||
-    !status.byokPriceCents ||
-    !status.byokAnnualPriceCents
-  )
-    return null;
-  const savings = byokYearlySavingsPercent(status.byokPriceCents, status.byokAnnualPriceCents);
-  return savings > 0 ? savings : null;
-}
-
-/**
- * Whether an owner can move the own-key plan to another tier: a paid-up plan with no monthly
- * credits that is not cancelling, and another tier to move to.
- */
-export function byokTierChangeOffered(status: BillingStatus): boolean {
-  return Boolean(
-    status.canManage &&
-      status.funding === "byok" &&
-      !status.byokFreeUntil &&
-      !status.monthlyAmountCents &&
-      !status.cancelAtPeriodEnd &&
-      (status.state === "active" || status.state === "trialing") &&
-      status.byokPriceCents &&
-      (status.byokTiers?.length ?? 0) > 1,
-  );
 }
 
 export const AppBootstrapSchema = z.object({

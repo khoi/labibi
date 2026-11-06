@@ -15,10 +15,6 @@ Open **Settings → Models**. Under **Add provider**, pick a provider and connec
 
 Connected providers are listed under **Providers** and are available in every [space](./spaces.md).
 
-> [!NOTE]
-> On labradoodle.com you can skip this and choose **Use Labradoodle credits**, which includes monthly model
-> credits. See [Account and billing](./account.md).
-
 ## Main model and fallbacks
 
 **Main model** is what every bot uses unless you choose otherwise. Choose **Add fallback** to list

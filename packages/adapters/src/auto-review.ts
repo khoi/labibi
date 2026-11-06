@@ -326,7 +326,6 @@ export async function runAutoReviewJudge(
             reasoning: input.reasoning,
             thinkingLevel: input.checker.thinkingLevel ?? null,
             oauth: input.oauth,
-            callObserver: input.callObserver,
           },
         },
         {
@@ -411,7 +410,6 @@ export type LlmAutoReviewOptions = {
   maxTokens?: number;
   reasoning?: boolean;
   oauth?: AgentRunModel["oauth"];
-  callObserver?: AgentRunModel["callObserver"];
   runId: string;
   spaceId: string;
   userId: string;

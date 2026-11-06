@@ -4,8 +4,8 @@ import {
   disabledBuiltinToolSet,
   InstructionVersionSchema,
 } from "@labradoodle/contracts";
-import { isOwnerRole } from "./billing.js";
 import type { Bot, Prisma, PrismaClient } from "./client.js";
+import { isOwnerRole } from "./organization-roles.js";
 import { IsolationError } from "./scope.js";
 
 /** The workspace's one Doodle, made with the workspace and kept until it goes. */

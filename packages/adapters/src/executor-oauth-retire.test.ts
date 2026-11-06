@@ -170,7 +170,6 @@ function oauthExecutor(
     delete: vi.fn(async () => undefined),
   };
   const executor = createRunExecutor({
-    billingEnabled: false,
     prisma,
     secretStore,
   } as unknown as Parameters<typeof createRunExecutor>[0]);

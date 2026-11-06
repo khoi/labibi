@@ -161,8 +161,6 @@ export const PL_MESSAGES: Record<string, string> = {
   "Your model provider": "Twój dostawca modelu",
   "Connect a model in Settings to use Doodle.":
     "Połącz model w Ustawieniach, aby korzystać z Doodle.",
-  "Connect your own API key in Models or choose Labradoodle credits in Billing.":
-    "Połącz własny klucz API w Modelach lub wybierz środki Labradoodle w Rozliczeniach.",
   "The model provider returned an error.": "Dostawca modelu zwrócił błąd.",
   "{provider} is rate limiting requests. Try again shortly.":
     "{provider} ogranicza liczbę żądań. Spróbuj ponownie za chwilę.",
@@ -963,90 +961,18 @@ export const PL_MESSAGES: Record<string, string> = {
   "This app needs its own sign-in setup to connect.":
     "Ta aplikacja wymaga własnej konfiguracji logowania do połączenia.",
   Billing: "Rozliczenia",
-  "Could not load billing": "Nie udało się wczytać rozliczeń",
   "Could not update billing": "Nie udało się zaktualizować rozliczeń",
-  Credits: "Środki",
-  "Available credits": "Dostępne środki",
-  "Computer hours left": "Pozostałe godziny pracy komputera",
-  "Trials get fewer hours to prevent abuse.":
-    "Okres próbny ma mniej godzin, aby zapobiegać nadużyciom.",
-  "Start plan now": "Uruchom plan teraz",
-  "Start your plan now?": "Uruchomić plan teraz?",
-  "Your trial ends and your card is charged {price} today.":
-    "Twój okres próbny kończy się dzisiaj. Pobierzemy z karty {price}.",
-  "Your trial ends and your card is charged today.":
-    "Twój okres próbny kończy się dzisiaj i obciążymy kartę.",
-  "Start plan": "Uruchom plan",
-  "Switch to yearly": "Przejdź na plan roczny",
-  "Switch to yearly?": "Przejść na plan roczny?",
-  "{vcpus} vCPU, {memoryGb} GB, {hours} computer hours a month":
-    "{vcpus} vCPU, {memoryGb} GB, {hours} godz. pracy komputera miesięcznie",
-  "Switch to {name}?": "Zmienić na {name}?",
   "The unused difference is credited to your next invoice.":
     "Niewykorzystana różnica pomniejszy kolejną fakturę.",
   "Your card is charged the prorated difference today.":
     "Dzisiaj pobierzemy z karty proporcjonalnie wyliczoną różnicę.",
   "Your plan becomes {price} when your trial ends.":
     "Po zakończeniu okresu próbnego Twój plan będzie kosztować {price}.",
-  "Your card is charged {price} today, less the unused part of this month.":
-    "Dziś pobierzemy z Twojej karty {price}, pomniejszone o niewykorzystaną część tego miesiąca.",
-  "Your plan becomes {price} / year when your trial ends.":
-    "Po zakończeniu okresu próbnego Twój plan będzie kosztować {price} rocznie.",
-  "Monthly credits": "Miesięczne środki",
-  "Upgrade now": "Przejdź na wyższy plan teraz",
-  "Downgrade at renewal": "Niższy plan od odnowienia",
   "Continue with credits": "Kontynuuj ze środkami",
-  "Add credits": "Doładuj środki",
-  "Manage billing": "Zarządzaj rozliczeniami",
-  "Your subscription or API key": "Twoja subskrypcja lub klucz API",
-  Subscribe: "Subskrybuj",
-  "Monthly credits expire at renewal. Top-ups do not expire.":
-    "Miesięczne środki wygasają przy odnowieniu. Doładowania nie wygasają.",
-  "Use Labradoodle credits": "Użyj środków Labradoodle",
-  "Choose a plan": "Wybierz plan",
-  "Change plan": "Zmień plan",
-  "Current plan": "Obecny plan",
   Plan: "Plan",
   None: "Brak",
-  "Free trial": "Bezpłatny okres próbny",
-  "Labradoodle credits": "Środki Labradoodle",
-  "Free until": "Bezpłatnie do",
-  Ends: "Kończy się",
-  Renews: "Odnawia się",
-  "Could not open billing": "Nie udało się otworzyć rozliczeń",
   "Put your bots to work": "Zleć pracę swoim botom",
   "Bots with their own computer": "Boty z własnym komputerem",
-  "Routines that run while you're away": "Rutyny działające podczas Twojej nieobecności",
-  "Web, desktop and mobile apps": "Aplikacje webowa, komputerowa i mobilna",
-  "Start free trial": "Rozpocznij bezpłatny okres próbny",
-  Free: "Bezpłatne",
-  "{price} / month": "{price} / miesiąc",
-  "{price} / month. Cancel anytime.": "{price} / miesiąc. Anuluj w dowolnym momencie.",
-  "{days} days free, then {price} / month. Cancel anytime.":
-    "{days} dni bezpłatnie, potem {price} / miesiąc. Anuluj w dowolnym momencie.",
-  "{days} days free": "{days} dni bezpłatnie",
-  "Works with your ChatGPT or Claude plan.": "Działa z Twoim planem ChatGPT lub Claude.",
-  "All {price} goes to model usage.":
-    "Cała kwota {price} jest przeznaczona na korzystanie z modeli.",
-  "Full access, nothing to pay": "Pełny dostęp bez opłat",
-  "Day {days}": "Dzień {days}",
-  "{price} / month begins": "Od tego dnia {price} / miesiąc",
-  "Billing period": "Okres rozliczeniowy",
-  "Yearly −{percent}%": "Rocznie -{percent}%",
-  "{days} days free, then {price} / year. Cancel anytime.":
-    "{days} dni bezpłatnie, potem {price} / rok. Anuluj w dowolnym momencie.",
-  "{price} / year": "{price} / rok",
-  "{price} / year begins": "Od tego dnia {price} / rok",
-  "{price} / year. Cancel anytime.": "{price} / rok. Anuluj w dowolnym momencie.",
-  "Only the owner of this account can choose a plan.":
-    "Tylko właściciel tego konta może wybrać plan.",
-  Terms: "Regulamin",
-  Privacy: "Prywatność",
-  "You're all set": "Wszystko gotowe",
-  "Your free trial has started": "Twój bezpłatny okres próbny się rozpoczął",
-  "Free until {date}": "Bezpłatnie do {date}",
-  "Connect your AI": "Połącz swoje AI",
-  "Start using Labradoodle": "Zacznij korzystać z Labradoodle",
   "1 unread": "1 nieprzeczytana",
   "{count} unread": "Nieprzeczytane: {count}",
   "{count} need attention": "Wymagają uwagi: {count}",
@@ -1176,17 +1102,6 @@ export const PL_MESSAGES: Record<string, string> = {
   "Could not load skill": "Nie udało się wczytać umiejętności",
   "Could not save skill": "Nie udało się zapisać umiejętności",
   "Could not delete skill": "Nie udało się usunąć umiejętności",
-  "Invite friends": "Zaproś znajomych",
-  "Get a free month for each friend who starts a trial.":
-    "Otrzymaj bezpłatny miesiąc za każdą zaproszoną osobę, która rozpocznie okres próbny.",
-  "Invite a friend": "Zaproś znajomego",
-  "Give a friend {weeks} weeks free": "Podaruj znajomemu {weeks} tyg. za darmo",
-  "They get {weeks} weeks free.": "Otrzymają {weeks} tyg. za darmo.",
-  "You get a free month when they start their trial with a new card.":
-    "Otrzymasz bezpłatny miesiąc, gdy rozpoczną okres próbny z nową kartą.",
-  "Share link": "Udostępnij link",
-  "1 free month earned": "Zdobyto 1 bezpłatny miesiąc",
-  "{count} free months earned": "Zdobyte bezpłatne miesiące: {count}",
   "Submit a plugin": "Zgłoś wtyczkę",
   "Switching…": "Przełączanie…",
   Switch: "Przełącz",
@@ -1238,8 +1153,6 @@ export const PL_MESSAGES: Record<string, string> = {
   "Updating your computer": "Aktualizowanie Twojego komputera",
   "Ask Doodle in this chat to set up a routine.":
     "Poproś Doodle w tym czacie o skonfigurowanie rutyny.",
-  "Doodle with your own computer": "Doodle z własnym komputerem",
-  "Put Doodle to work": "Zleć pracę Doodle",
   "Could not leave workspace": "Nie udało się opuścić obszaru roboczego",
   "Leave workspace": "Opuść obszar roboczy",
   "Doodle can use the file but won't see the picture.":

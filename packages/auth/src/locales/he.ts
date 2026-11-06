@@ -35,14 +35,6 @@ export const HE_MESSAGES: Record<string, string> = {
   "Self-host Labradoodle": "אירוח עצמי של Labradoodle",
   "Have any questions? Reply to this email.": "יש שאלות? אפשר להשיב לאימייל הזה.",
   Unsubscribe: "ביטול המינוי",
-  "Invite a friend": "הזמנת חבר",
-  "Invite a friend to Labradoodle: they get {weeks} weeks free, and you earn a free month when they start a qualifying subscription with a new card.":
-    "אפשר להזמין חבר ל-Labradoodle: הוא מקבל {weeks} שבועות בחינם, ואתם מקבלים חודש חינם כשהוא מתחיל מינוי מתאים עם כרטיס חדש.",
-  "Open Labradoodle": "פתיחת Labradoodle",
-  "and choose Invite friends for your link.": "ובחירה ב״הזמנת חברים״ כדי לקבל את הקישור שלך.",
-  "Have any questions? Just reply to this email.": "יש שאלות? פשוט משיבים לאימייל הזה.",
-  "If you're enjoying Labradoodle,": "אם Labradoodle מוצא חן בעיניך,",
-  "give us a star on GitHub": "נשמח לכוכב ב-GitHub",
   "We received your Labradoodle plugin": "קיבלנו את הפלאגין שלך ל-Labradoodle",
   "Thanks for submitting a plugin to the Labradoodle marketplace.":
     "תודה ששלחת פלאגין לחנות של Labradoodle.",
@@ -66,9 +58,4 @@ export const HE_MESSAGES: Record<string, string> = {
   "Your changes to the {name} page are approved.": "השינויים שלך בדף {name} אושרו.",
   "We couldn't approve your changes to the {name} page.":
     "לא הצלחנו לאשר את השינויים שלך בדף {name}.",
-  "Your saved computer files will be deleted": "קבצי המחשב השמורים שלך יימחקו",
-  "Your saved computer files will be deleted on {date} unless you resubscribe.":
-    "קבצי המחשב השמורים שלך יימחקו ב-{date} אלא אם תחדש את המינוי.",
-  "Your saved computer files will be deleted on {date} unless you choose a plan.":
-    "קבצי המחשב השמורים שלך יימחקו ב-{date} אלא אם תבחר תוכנית.",
 };

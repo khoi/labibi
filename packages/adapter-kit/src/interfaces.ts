@@ -1,4 +1,3 @@
-import type { ComputerSize } from "@labradoodle/contracts";
 import type {
   AdapterContext,
   AdapterDescriptor,
@@ -11,13 +10,6 @@ import type {
   AutoReviewResult,
   BackgroundJob,
   BackgroundJobHandlers,
-  BillingByokCheckoutRequest,
-  BillingByokPlan,
-  BillingCheckoutRequest,
-  BillingCreditCheckoutRequest,
-  BillingCreditPurchase,
-  BillingPrice,
-  BillingSubscriptionSnapshot,
   BrowserActRequest,
   BrowserActResult,
   BrowserCapabilities,
@@ -131,12 +123,6 @@ export interface SandboxProvider {
        * reports it gone instead, so the newer save wins.
        */
       savedAt?: Date;
-      /**
-       * The size to start at. A computer already running keeps its size; without one, a stopped
-       * computer resumes at its current size and a new one starts at the standard size. A size
-       * the provider cannot move to throws `SandboxSizeUnavailableError`.
-       */
-      size?: ComputerSize;
     },
     context: AdapterContext,
   ): Promise<ComputerRef>;
@@ -473,52 +459,6 @@ export interface TransactionalEmailProvider {
   send(message: TransactionalEmail): Promise<void>;
   /** Wait for accepted in-flight deliveries before a graceful shutdown completes. */
   drain?(): Promise<void>;
-}
-
-/**
- * Seat-based subscription billing. Product code owns access rules; adapters own the
- * vendor API. Sync is pull-based: webhooks only say which customer changed.
- */
-export interface BillingProvider {
-  /** Optional prepaid model usage capabilities; product code owns the balance ledger. */
-  createCreditCheckout?(input: BillingCreditCheckoutRequest): Promise<{ url: string }>;
-  listCreditPurchases?(customerId: string): Promise<BillingCreditPurchase[]>;
-  setMonthlyCredits?(customerId: string, amountCents: number): Promise<void>;
-  /** Flat monthly own-key plan: access without credits. */
-  createByokCheckout?(input: BillingByokCheckoutRequest): Promise<{ url: string }>;
-  /** Ends the customer's running trial now and bills the first period; a no-op without one. */
-  endTrial?(customerId: string): Promise<void>;
-  /**
-   * Moves the customer's own-key subscription `subscriptionId` from plan `from` to plan `to`,
-   * billing the prorated difference now: a change of interval restarts the period today, crediting
-   * its unused part. A failed payment leaves the plan unchanged. Returns false without charging
-   * when that subscription is no longer an active or trialing `from` plan, is set to cancel, or
-   * monthly credits have started.
-   */
-  changeByokPlan?(
-    customerId: string,
-    subscriptionId: string,
-    change: { from: BillingByokPlan; to: BillingByokPlan },
-  ): Promise<boolean>;
-  /** Ends every live own-key plan at its period end. */
-  endByokPlans?(customerId: string): Promise<void>;
-  /**
-   * Credits the customer's account; future invoices draw it down before charging. Idempotent per
-   * `referenceId`, so a retry after an unknown outcome never credits twice.
-   */
-  grantBalanceCredit?(customerId: string, amountCents: number, referenceId: string): Promise<void>;
-  describe(): AdapterDescriptor<{ trials: boolean; portal: boolean; modelCredits?: boolean }>;
-  getPrice(): Promise<BillingPrice>;
-  createCustomer(input: { email: string; organizationId: string }): Promise<{ customerId: string }>;
-  createCheckout(input: BillingCheckoutRequest): Promise<{ url: string }>;
-  createPortal(input: { customerId: string; returnUrl: string }): Promise<{ url: string }>;
-  /** Current subscription for the customer, preferring one that grants access. */
-  getCustomerSubscription(customerId: string): Promise<BillingSubscriptionSnapshot | null>;
-  /** Sets seats on the customer's subscription; a no-op when none can still take updates. */
-  updateSeats(customerId: string, seats: number): Promise<void>;
-  cancelCustomerSubscriptions(customerId: string): Promise<void>;
-  /** Verifies the signature. `null` means the request is not authentic. */
-  parseWebhook(rawBody: string, headers: Headers): { customerId: string } | "ignored" | null;
 }
 
 export interface ExecutionRunner {

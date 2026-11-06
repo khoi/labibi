@@ -43,7 +43,6 @@ export interface ExecutorDeps {
   };
   secrets: string[];
   secretStore: SecretStore;
-  billingEnabled?: boolean;
   deploymentModelKey?: string;
   /** The deployment default model can run; see resolveDeploymentModel. */
   deploymentModelConfigured?: boolean;

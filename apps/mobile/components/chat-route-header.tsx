@@ -7,7 +7,6 @@ import { threadEdgeOptions } from "../lib/thread-edges";
 import type { ChatTitleParams } from "./chat-header-title";
 import { ChatHeaderTitle } from "./chat-header-title";
 import { NativeSymbol } from "./native-symbol";
-import { openInvite, threadHeaderRight } from "./thread-header-right";
 
 /**
  * Whether the chat sits beside the chat list, whether that list is hidden, and whether a
@@ -17,8 +16,7 @@ export type ChatSplit = { split: boolean; inboxHidden: boolean; foldActive?: boo
 
 /**
  * A chat's whole header as its route declares it when the screen is created, before the chat
- * has rendered: the title capsule, the right-side button and, beside the chat list, the
- * sidebar button. Everything is in the first native header, so the title sits at its final
+ * has rendered: the title capsule and, beside the chat list, the sidebar button. Everything is in the first native header, so the title sits at its final
  * place from the first frame of the push and is never re-laid out. The open chat feeds the
  * title its data without changing the buttons' shape.
  */
@@ -26,7 +24,6 @@ export function chatRouteHeader(
   route: { key: string; params?: object },
   t: (text: string) => string,
   { split, inboxHidden, foldActive }: ChatSplit,
-  canInvite = false,
 ): NativeStackNavigationOptions {
   const params = (route.params ?? {}) as ChatTitleParams;
   const color = mobileTokens().foreground;
@@ -34,7 +31,6 @@ export function chatRouteHeader(
     headerTitleAlign: "center",
     ...threadEdgeOptions(),
     headerTitle: () => <ChatHeaderTitle routeKey={route.key} params={params} />,
-    ...threadHeaderRight({ t, color, onInvite: canInvite ? openInvite : undefined }),
     ...threadHeaderLeft({ split, inboxHidden, foldActive, t, color }),
   };
 }

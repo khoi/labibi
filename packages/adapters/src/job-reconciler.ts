@@ -2,7 +2,6 @@ import { setImmediate } from "node:timers/promises";
 import type { JobPublisher, NotificationProvider } from "@labradoodle/adapter-kit";
 import { routineWakeupJob, runContinueJob } from "@labradoodle/adapter-kit";
 import type { Pool, PrismaClient, ThreadEvents } from "@labradoodle/db";
-import { reconcileComputerRuns } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import type { PoolClient } from "pg";
 import { scheduleComputerControlExpiry } from "./computer-control.js";
@@ -111,7 +110,6 @@ export function createJobReconciler(
     reconcileCloudAgents?: () => Promise<void>;
     reconcilePurchases?: () => Promise<void>;
     reconcileMediaVideos?: () => Promise<void>;
-    reconcileModelCredits?: () => Promise<void>;
     reconcileRoutineRetryNotices?: () => Promise<void>;
     reconcileSecurityEventRetention?: () => Promise<void>;
     reconcileAuditLog?: () => Promise<void>;
@@ -146,11 +144,9 @@ export function createJobReconciler(
 
       const auxiliary = await Promise.allSettled(
         [
-          () => reconcileComputerRuns(deps.prisma),
           deps.reconcileCloudAgents,
           deps.reconcilePurchases,
           deps.reconcileMediaVideos,
-          deps.reconcileModelCredits,
           deps.reconcileComputerUpdates,
           deps.reconcileRoutineRetryNotices,
           deps.reconcileSecurityEventRetention,

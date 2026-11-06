@@ -21,7 +21,7 @@ import { withChatCompletionsCompatibility } from "./chat-completions-compat.js";
 import type { ContextBudget } from "./context-selection.js";
 import { withGoogleToolHistory } from "./google-tool-history.js";
 import { estimateModelContextTokens } from "./model-context.js";
-import { openRouterInferenceFetch } from "./openrouter-usage.js";
+import { openRouterInferenceFetch } from "./openrouter-fetch.js";
 import { requestedPiCacheWriteRetention, resolvePiCacheRetention } from "./pi-cache-retention.js";
 import { recordPiTelemetryContent, withPiTelemetrySpan } from "./pi-telemetry.js";
 import { fetchPairedWithDispatcher } from "./undici-fetch.js";

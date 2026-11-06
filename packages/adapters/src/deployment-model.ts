@@ -1,6 +1,4 @@
 import { getEnvApiKey } from "@earendil-works/pi-ai/compat";
-import type { ModelUsageLookup } from "@labradoodle/adapter-kit";
-import { OpenRouterUsageLookup } from "./openrouter-usage.js";
 import { LOCAL_PROVIDER_ID, localModelIds } from "./pi-local-provider-id.js";
 
 export const DEFAULT_OPENROUTER_MODEL_ID = "anthropic/claude-haiku-5.5";
@@ -63,11 +61,4 @@ export function resolveDeploymentModel(env: NodeJS.ProcessEnv = process.env) {
     configured: Boolean(key) || hostCredentials,
     hostCredentials,
   };
-}
-
-export function deploymentModelUsageLookup(): ModelUsageLookup | undefined {
-  const model = resolveDeploymentModel();
-  return model.provider === "openrouter" && model.key
-    ? new OpenRouterUsageLookup(model.key)
-    : undefined;
 }

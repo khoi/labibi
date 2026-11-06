@@ -23,8 +23,6 @@ import {
   VaultRevealInput,
 } from "./bot-secrets.js";
 import {
-  AccessGrantInputSchema,
-  AccessGrantSchema,
   ActionApprovalRuleSchema,
   ActionAutoReviewSettingsSchema,
   AgentSkillCatalogEntrySchema,
@@ -36,10 +34,6 @@ import {
   ArtifactVersionSchema,
   ArtifactWithContentSchema,
   AvatarStyleSchema,
-  BillingClientSchema,
-  BillingStatusSchema,
-  ByokIntervalSchema,
-  ByokTierSchema,
   CapabilityInstallSchema,
   ChatAlertSchema,
   ChatMemberSchema,
@@ -71,7 +65,6 @@ import {
   ModelConnectionLabelSchema,
   ModelConnectionTargetSchema,
   ModelCredentialSchema,
-  ModelCreditAmountSchema,
   ModelOAuthBeginSchema,
   OPENAI_COMPATIBLE_PROVIDER_ID,
   PluginMarketplaceCatalogSchema,
@@ -212,68 +205,6 @@ export const appContract = {
   },
   health: oc.output(z.object({ ok: z.literal(true), version: z.string() })),
   me: oc.output(MeSchema),
-  billing: {
-    /** Claims an invite code first when one is sent, so the status already reflects it. */
-    status: oc
-      .input(z.object({ referralCode: z.string().min(1).max(64).optional() }).optional())
-      .output(BillingStatusSchema),
-    /** Re-reads the subscription from the provider, e.g. right after a mobile checkout. */
-    refresh: oc.output(BillingStatusSchema),
-    selectFunding: oc
-      .input(
-        z.object({
-          funding: z.enum(["byok", "credits"]),
-          client: BillingClientSchema,
-          /** Billing period of the own-key plan's checkout; monthly when omitted. */
-          interval: ByokIntervalSchema.optional(),
-        }),
-      )
-      /** `url` is the checkout to pay for the own-key plan before it has access. */
-      .output(z.object({ ok: z.literal(true), url: z.string().url().optional() })),
-    purchaseCredits: oc
-      .input(
-        z.object({
-          amountCents: ModelCreditAmountSchema,
-          monthly: z.boolean(),
-          client: BillingClientSchema,
-        }),
-      )
-      .output(z.object({ url: z.string().url() })),
-    setMonthlyCredits: oc
-      .input(z.object({ amountCents: ModelCreditAmountSchema }))
-      .output(z.object({ ok: z.literal(true) })),
-    checkout: oc
-      .input(
-        z
-          .object({
-            client: BillingClientSchema,
-            interval: ByokIntervalSchema.optional(),
-            /** The own-key plan's tier; Standard when omitted. */
-            tier: ByokTierSchema.optional(),
-          })
-          .optional(),
-      )
-      .output(z.object({ url: z.string().url() })),
-    portal: oc
-      .input(z.object({ client: BillingClientSchema }).optional())
-      .output(z.object({ url: z.string().url() })),
-    /** Owners only: ends the running trial and bills the first period now. */
-    endTrial: oc.output(BillingStatusSchema),
-    /** Owners only: moves a monthly own-key plan to yearly, charging the difference now. */
-    switchToYearly: oc.output(BillingStatusSchema),
-    /** Owners only: moves the own-key plan to another tier at the same interval, billing the difference now. */
-    changeTier: oc.input(z.object({ tier: ByokTierSchema })).output(BillingStatusSchema),
-    /** Records who invited this organization; ignored once it has subscribed. */
-    claimReferral: oc
-      .input(z.object({ code: z.string().min(1).max(64) }))
-      .output(z.object({ ok: z.literal(true) })),
-  },
-  /** Admins only, on deployments that sell model credits. */
-  accessGrants: {
-    list: oc.output(z.array(AccessGrantSchema)),
-    create: oc.input(AccessGrantInputSchema).output(AccessGrantSchema),
-    revoke: oc.input(z.object({ id: Id })).output(AccessGrantSchema),
-  },
   preferences: {
     update: oc
       .input(

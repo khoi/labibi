@@ -1,15 +1,12 @@
 import type { NavLink } from "@labradoodle/contracts";
 import { accountDisplay } from "@labradoodle/core";
-import { Button, InputGroup, InputGroupAddon, InputGroupInput, Sidebar } from "@labradoodle/ui-web";
-import { Trans, useLingui } from "@lingui/react/macro";
+import { InputGroup, InputGroupAddon, InputGroupInput, Sidebar } from "@labradoodle/ui-web";
+import { useLingui } from "@lingui/react/macro";
 import { Search } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { InviteDialog } from "../../components/InviteDialog";
 import { PasskeyOffer } from "../../components/PasskeyOffer";
 import { SidebarFooter } from "../../components/SidebarFooter";
-import { useBilling } from "../../components/SubscriptionGate";
-import { formatBillingDate } from "../../lib/billing";
 import type { BotsSidebarDensity } from "../../lib/bots-sidebar-density-pref";
 import { useSignOut } from "../../lib/sign-out";
 import { SpaceSearchResults } from "../SpaceSearch";
@@ -210,17 +207,8 @@ function ShellSidebarFooter({
   openIntegrations: () => void;
   openSkills: () => void;
 }) {
-  const { t, i18n } = useLingui();
-  const { status: billing, showPlans } = useBilling();
-  const freeUntil =
-    billing?.funding === "byok" &&
-    billing.byokFreeUntil &&
-    new Date(billing.byokFreeUntil) > new Date()
-      ? billing.byokFreeUntil
-      : null;
+  const { t } = useLingui();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [inviteOpen, setInviteOpen] = useState(false);
-  const referral = billing?.referral;
   const [logOutError, setLogOutError] = useState<string | null>(null);
   const { signingOut, logOut } = useSignOut("/sign-in", (message) => {
     // A failed sign-out reloads the page: reopen the menu so its error shows.
@@ -228,74 +216,48 @@ function ShellSidebarFooter({
     setLogOutError(message);
   });
   const { label: userName, initial: initials } = accountDisplay(user ?? {}, t`You`);
-  const day = freeUntil ? formatBillingDate(freeUntil, i18n.locale || "en") : "";
   return (
-    <>
-      {freeUntil && !mini ? (
-        <div className="mx-2.5 flex items-center justify-between gap-2 ps-2.5 text-sm text-muted-foreground">
-          <span className="min-w-0 truncate">
-            <Trans>Free plan ends {day}</Trans>
-          </span>
-          {billing?.canManage ? (
-            <Button variant="outline" size="sm" onClick={showPlans}>
-              <Trans>Upgrade</Trans>
-            </Button>
-          ) : null}
-        </div>
-      ) : null}
-      <SidebarFooter
-        mini={mini}
-        logos={logos}
-        name={userName}
-        initials={initials}
-        image={user?.image}
-        email={user?.email}
-        open={menuOpen}
-        onOpenChange={(open) => {
-          setMenuOpen(open);
-          if (!open) setLogOutError(null);
-        }}
-        onIntegrations={() => {
-          setMenuOpen(false);
-          openIntegrations();
-        }}
-        onSkills={() => {
-          setMenuOpen(false);
-          openSkills();
-        }}
-        links={navLinks}
-        onLink={(link) => {
-          setMenuOpen(false);
-          closeMobileSidebar();
-          navigate(`/app/x/${link.id}`);
-        }}
-        onArtifacts={() => {
-          setMenuOpen(false);
-          closeMobileSidebar();
-          navigate("/app/artifacts");
-        }}
-        onSettings={() => {
-          setMenuOpen(false);
-          openSettings("general");
-        }}
-        onInvite={
-          referral
-            ? () => {
-                setMenuOpen(false);
-                setInviteOpen(true);
-              }
-            : undefined
-        }
-        onLogOut={() => {
-          setLogOutError(null);
-          void logOut();
-        }}
-        signingOut={signingOut}
-        logOutError={logOutError}
-      />
-      {referral ? (
-        <InviteDialog referral={referral} open={inviteOpen} onOpenChange={setInviteOpen} />
-      ) : null}
-    </>
+    <SidebarFooter
+      mini={mini}
+      logos={logos}
+      name={userName}
+      initials={initials}
+      image={user?.image}
+      email={user?.email}
+      open={menuOpen}
+      onOpenChange={(open) => {
+        setMenuOpen(open);
+        if (!open) setLogOutError(null);
+      }}
+      onIntegrations={() => {
+        setMenuOpen(false);
+        openIntegrations();
+      }}
+      onSkills={() => {
+        setMenuOpen(false);
+        openSkills();
+      }}
+      links={navLinks}
+      onLink={(link) => {
+        setMenuOpen(false);
+        closeMobileSidebar();
+        navigate(`/app/x/${link.id}`);
+      }}
+      onArtifacts={() => {
+        setMenuOpen(false);
+        closeMobileSidebar();
+        navigate("/app/artifacts");
+      }}
+      onSettings={() => {
+        setMenuOpen(false);
+        openSettings("general");
+      }}
+      onLogOut={() => {
+        setLogOutError(null);
+        void logOut();
+      }}
+      signingOut={signingOut}
+      logOutError={logOutError}
+    />
   );
 }

@@ -1,4 +1,4 @@
-import { COMPUTER_ALLOWANCE_USED_ERROR, COMPUTER_RATE_LIMIT_ERROR } from "@labradoodle/contracts";
+import { COMPUTER_RATE_LIMIT_ERROR } from "@labradoodle/contracts";
 
 /** The sandbox provider refused the request because an account rate limit or quota was hit. */
 export class SandboxRateLimitError extends Error {
@@ -22,15 +22,6 @@ export class SandboxRequestRejectedError extends Error {
   constructor() {
     super("The page browser could not accept this request, so nothing was done.");
     this.name = "SandboxRequestRejectedError";
-  }
-}
-
-/** The organization spent this month's computer allowance, so no computer that bills starts. */
-export class SandboxAllowanceUsedError extends Error {
-  readonly code = "SANDBOX_ALLOWANCE_USED";
-  constructor() {
-    super(COMPUTER_ALLOWANCE_USED_ERROR);
-    this.name = "SandboxAllowanceUsedError";
   }
 }
 
@@ -76,25 +67,5 @@ export class SandboxDamagedError extends Error {
   constructor(options?: { cause?: unknown }) {
     super("This computer's system is damaged. Recover the computer to rebuild it.", options);
     this.name = "SandboxDamagedError";
-  }
-}
-
-/**
- * The provider would not start the computer at the size asked for: the operator's account does
- * not offer it, or the computer's files would not fit a smaller one. The computer is unchanged.
- */
-export class SandboxSizeUnavailableError extends Error {
-  readonly code = "SANDBOX_SIZE_UNAVAILABLE";
-  constructor(
-    readonly reason: "not_offered" | "too_small",
-    options?: { cause?: unknown },
-  ) {
-    super(
-      reason === "too_small"
-        ? "The computer's files do not fit a smaller size"
-        : "This computer size is not available",
-      options,
-    );
-    this.name = "SandboxSizeUnavailableError";
   }
 }

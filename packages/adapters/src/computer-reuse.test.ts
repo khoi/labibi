@@ -13,7 +13,6 @@ import { HostAwareSandbox } from "./host-aware-sandbox.js";
 // The plan's size is read from billing, which these Prisma doubles do not model.
 vi.mock("@labradoodle/db", async (importOriginal) => ({
   ...(await importOriginal<typeof Db>()),
-  planComputerSize: vi.fn(async () => "standard"),
 }));
 
 const context = {

@@ -14,7 +14,6 @@ import {
   toComputerRef,
 } from "@labradoodle/adapters";
 import type { PrismaClient, SpaceDeparture, ThreadEvents } from "@labradoodle/db";
-import { recordComputerRunEnd } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 
 /**
@@ -68,7 +67,6 @@ export async function afterSpaceDeparture(
       try {
         if (computer.providerRef) await deps.sandbox.destroy(toComputerRef(computer), context);
         await deps.prisma.computer.deleteMany({ where: { id: computer.id } });
-        await recordComputerRunEnd(deps.prisma, computer, "deleted");
         await removeAgentHome(deps.home, computer.homeKey, deps.dataDir);
       } catch (error) {
         // The row stays for a later departure or space deletion to retry.

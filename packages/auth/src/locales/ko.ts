@@ -35,15 +35,6 @@ export const KO_MESSAGES: Record<string, string> = {
   "Self-host Labradoodle": "Labradoodle 셀프 호스팅",
   "Have any questions? Reply to this email.": "궁금한 점이 있으신가요? 이 이메일에 답장하세요.",
   Unsubscribe: "수신 거부",
-  "Invite a friend": "친구 초대",
-  "Invite a friend to Labradoodle: they get {weeks} weeks free, and you earn a free month when they start a qualifying subscription with a new card.":
-    "친구를 Labradoodle에 초대하세요. 친구는 {weeks}주 동안 무료로 사용하고, 친구가 새 카드로 대상 구독을 시작하면 나는 한 달 무료를 받아요.",
-  "Open Labradoodle": "Labradoodle를 열고",
-  "and choose Invite friends for your link.": "친구 초대를 선택해 링크를 받으세요.",
-  "Have any questions? Just reply to this email.":
-    "궁금한 점이 있으신가요? 이 이메일에 답장만 하시면 됩니다.",
-  "If you're enjoying Labradoodle,": "Labradoodle가 마음에 드신다면",
-  "give us a star on GitHub": "GitHub에서 스타를 눌러 주세요",
   "We received your Labradoodle plugin": "Labradoodle 플러그인을 받았습니다",
   "Thanks for submitting a plugin to the Labradoodle marketplace.":
     "Labradoodle 마켓플레이스에 플러그인을 제출해 주셔서 감사합니다.",
@@ -68,9 +59,4 @@ export const KO_MESSAGES: Record<string, string> = {
   "Your changes to the {name} page are approved.": "{name} 페이지 변경 사항이 승인되었습니다.",
   "We couldn't approve your changes to the {name} page.":
     "{name} 페이지 변경 사항을 승인하지 못했습니다.",
-  "Your saved computer files will be deleted": "저장된 컴퓨터 파일이 삭제됩니다",
-  "Your saved computer files will be deleted on {date} unless you resubscribe.":
-    "다시 구독하지 않으면 저장된 컴퓨터 파일이 {date}에 삭제됩니다.",
-  "Your saved computer files will be deleted on {date} unless you choose a plan.":
-    "플랜을 선택하지 않으면 저장된 컴퓨터 파일이 {date}에 삭제됩니다.",
 };

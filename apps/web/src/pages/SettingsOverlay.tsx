@@ -16,7 +16,6 @@ import {
   UpdatesSettingsPanel,
   UsageSettingsPanel,
 } from "./AccountSettingsOverlay";
-import { BillingSettingsPanel } from "./BillingSettingsPanel";
 import { DoodleSettings } from "./DoodleSettings";
 import { MemorySettingsOverlay } from "./MemorySettingsOverlay";
 import { ModelSettingsOverlay } from "./ModelSettingsOverlay";
@@ -38,7 +37,6 @@ export function SettingsOverlay({
   onNameSaved,
   timezone,
   onTimezoneChange,
-  billingEnabled = false,
   sandboxProvider,
   onSandboxProviderChange,
   canConfigureComputers = false,
@@ -62,7 +60,6 @@ export function SettingsOverlay({
   onNameSaved?: () => Promise<void>;
   timezone: string | null;
   onTimezoneChange: (timezone: string) => Promise<void>;
-  billingEnabled?: boolean;
   sandboxProvider?: string | null;
   onSandboxProviderChange?: (sandboxProvider: string) => void;
   /** Admins choose where new computers run. */
@@ -95,10 +92,9 @@ export function SettingsOverlay({
     canChooseOwnComputer(sandboxProvider);
   const showComputer = showComputerSetup || Boolean(onOpenComputer);
   const showUpdates = Boolean(desktopBridge()?.update);
-  // A section that isn't available yet (billing before its flag loads) shows General until it is.
+  // A section that isn't available yet shows General until it is.
   const section =
     (requestedSection === "computer" && !showComputer) ||
-    (requestedSection === "billing" && !billingEnabled) ||
     (requestedSection === "wallet" && !paymentWalletProvider) ||
     (requestedSection === "updates" && !showUpdates)
       ? "general"
@@ -136,7 +132,6 @@ export function SettingsOverlay({
   const navItems = useSettingsNavItems({
     wallet: Boolean(paymentWalletProvider),
     computer: showComputer,
-    billing: billingEnabled,
     updates: showUpdates,
   });
 
@@ -167,7 +162,7 @@ export function SettingsOverlay({
       nav.removeEventListener("scroll", measure);
       observer?.disconnect();
     };
-  }, [nav, section, showComputer, billingEnabled, paymentWalletProvider, showUpdates, i18n.locale]);
+  }, [nav, section, showComputer, paymentWalletProvider, showUpdates, i18n.locale]);
 
   function scrollSections(direction: number) {
     if (!nav) return;
@@ -383,7 +378,6 @@ export function SettingsOverlay({
                       ) : null}
                     </div>
                   ) : null}
-                  {section === "billing" && billingEnabled ? <BillingSettingsPanel /> : null}
                   {section === "updates" && showUpdates ? <UpdatesSettingsPanel /> : null}
                   {section === "models" ? (
                     <ModelSettingsOverlay embedded onClose={requestClose} />

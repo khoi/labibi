@@ -79,27 +79,18 @@ describe("connected backup model choices", () => {
     );
   });
   it("offers computer use only seeing models on the member's own connections", () => {
-    const managed: ModelCatalogEntry = {
-      provider: "openrouter",
-      providerName: "OpenRouter",
-      id: "hosted-vision",
-      label: "Hosted vision",
-      billing: "",
-      managed: true,
-    };
     const local = {
       ...credentials[1]!,
       enabledModelIds: ["custom-model", "custom-vision"],
       visionModelIds: ["custom-vision"],
     };
     const offered = (computerUse: boolean) =>
-      connectedBackupOptions([...catalog, managed], [credentials[0]!, local], computerUse).map(
+      connectedBackupOptions(catalog, [credentials[0]!, local], computerUse).map(
         (option) => option.modelId,
       );
-    expect(offered(false)).toEqual(expect.arrayContaining(["hosted-vision", "custom-model"]));
+    expect(offered(false)).toEqual(expect.arrayContaining(["custom-model"]));
     expect(offered(true)).toContain("custom-vision");
     expect(offered(true)).not.toContain("custom-model");
-    expect(offered(true)).not.toContain("hosted-vision");
   });
   it("offers only non-placeholder catalog models for connected providers", () => {
     expect(connectedBackupOptions(catalog, credentials)).toEqual([
@@ -266,19 +257,6 @@ describe("connected backup model choices", () => {
       ["cred-anthropic", "claude-sonnet"],
       ["cred-anthropic-work", "claude-sonnet"],
       ["cred-anthropic-work", "claude-haiku"],
-    ]);
-  });
-
-  it("offers deployment-managed models only while the provider has no connection", () => {
-    const managed: ModelCatalogEntry = { ...catalog[2]!, managed: true };
-    expect(connectedBackupOptions([managed], [])).toEqual([
-      {
-        provider: "unconnected",
-        modelId: "model-1",
-        label: "Model 1",
-        providerName: "Unconnected",
-        connectionName: "Unconnected",
-      },
     ]);
   });
 

@@ -15,7 +15,6 @@ import {
   CSP_REPORTING_ENDPOINTS,
   contentSecurityPolicyFor,
   parseContentSecuritySources,
-  parseCrispWebsiteId,
 } from "@labradoodle/contracts/content-security-policy";
 import {
   safeScreenProxyResponseHeaders,
@@ -514,7 +513,6 @@ export default defineConfig(({ command, mode }) => {
       "LABRADOODLE_CSP_CONNECT_SRC",
       process.env.LABRADOODLE_CSP_CONNECT_SRC ?? rootEnv.LABRADOODLE_CSP_CONNECT_SRC,
     ),
-    crisp: parseCrispWebsiteId(process.env.CRISP_WEBSITE_ID ?? rootEnv.CRISP_WEBSITE_ID) !== null,
   });
   return {
     build: {

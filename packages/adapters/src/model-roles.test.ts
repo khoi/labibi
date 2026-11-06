@@ -143,19 +143,6 @@ describe("configured model selection", () => {
       },
     },
     {
-      name: "runs a deployment-managed main model on the funded provider",
-      input: {
-        main: { provider: "deployment-provider", modelId: "managed-model", credential: null },
-        hostedProvider: "deployment-provider",
-      },
-      expected: {
-        provider: "deployment-provider",
-        id: "managed-model",
-        credential: null,
-        thinkingLevel: null,
-      },
-    },
-    {
       name: "applies the main model's own thinking level",
       input: { main: { ...main, thinkingLevel: "low" } },
       expected: {

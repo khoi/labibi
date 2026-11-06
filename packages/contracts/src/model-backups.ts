@@ -98,11 +98,7 @@ export function connectedBackupOptions(
         connectionName: connection ? connectionDisplayName(connection, providerName) : providerName,
       };
     };
-    if (owners.length === 0) {
-      if (!computerUse)
-        options.push(...models.filter((entry) => entry.managed).map((entry) => option(entry)));
-      continue;
-    }
+    if (owners.length === 0) continue;
     for (const connection of owners)
       options.push(
         ...models

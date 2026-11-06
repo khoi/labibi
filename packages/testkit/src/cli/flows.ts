@@ -101,9 +101,6 @@ async function main() {
       // Flow MCP servers, such as connect-mcp's task tracker, listen on loopback in this process.
       MCP_ALLOW_PRIVATE_ENDPOINT: "true",
       // Billing would require a funded credits account; flows pay the model directly.
-      STRIPE_SECRET_KEY: "",
-      STRIPE_WEBHOOK_SECRET: "",
-      STRIPE_PRICE_ID: "",
     });
     // Parallel runs share one generated client: generate it once per schema, under a lock, since
     // generating it from several runs at once collides on its folder.

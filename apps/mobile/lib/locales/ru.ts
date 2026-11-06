@@ -162,8 +162,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "Your model provider": "Ваш поставщик моделей",
   "Connect a model in Settings to use Doodle.":
     "Подключите модель в настройках, чтобы пользоваться Doodle.",
-  "Connect your own API key in Models or choose Labradoodle credits in Billing.":
-    "Подключите свой API-ключ в разделе «Модели» или выберите кредиты Labradoodle в разделе «Оплата».",
   "The model provider returned an error.": "Поставщик моделей вернул ошибку.",
   "{provider} is rate limiting requests. Try again shortly.":
     "{provider} ограничивает частоту запросов. Повторите попытку чуть позже.",
@@ -1001,89 +999,18 @@ export const RU_MESSAGES: Record<string, string> = {
   "This app needs its own sign-in setup to connect.":
     "Для подключения этому приложению нужна собственная настройка входа.",
   Billing: "Оплата",
-  "Could not load billing": "Не удалось загрузить данные об оплате",
   "Could not update billing": "Не удалось обновить оплату",
-  Credits: "Кредиты",
-  "Available credits": "Доступные кредиты",
-  "Computer hours left": "Осталось часов компьютера",
-  "Trials get fewer hours to prevent abuse.":
-    "В пробном периоде меньше часов, чтобы предотвратить злоупотребления.",
-  "Start plan now": "Начать тариф сейчас",
-  "Start your plan now?": "Начать тариф сейчас?",
-  "Your trial ends and your card is charged {price} today.":
-    "Пробный период закончится, и сегодня с вашей карты спишется {price}.",
-  "Your trial ends and your card is charged today.":
-    "Пробный период закончится, и сегодня с вашей карты будет списана оплата.",
-  "Start plan": "Начать тариф",
-  "Switch to yearly": "Перейти на годовой план",
-  "Switch to yearly?": "Перейти на годовой план?",
-  "{vcpus} vCPU, {memoryGb} GB, {hours} computer hours a month":
-    "{vcpus} vCPU, {memoryGb} ГБ, {hours} часов компьютера в месяц",
-  "Switch to {name}?": "Перейти на {name}?",
   "The unused difference is credited to your next invoice.":
     "Неиспользованная разница будет зачтена в следующий счёт.",
   "Your card is charged the prorated difference today.":
     "Сегодня с вашей карты спишут пропорциональную разницу.",
   "Your plan becomes {price} when your trial ends.":
     "После пробного периода тариф будет стоить {price}.",
-  "Your card is charged {price} today, less the unused part of this month.":
-    "Сегодня с карты спишется {price} за вычетом неиспользованной части месяца.",
-  "Your plan becomes {price} / year when your trial ends.":
-    "После пробного периода план будет стоить {price} в год.",
-  "Monthly credits": "Ежемесячные кредиты",
-  "Upgrade now": "Повысить тариф сейчас",
-  "Downgrade at renewal": "Понизить тариф при продлении",
   "Continue with credits": "Продолжить с кредитами",
-  "Add credits": "Пополнить кредиты",
-  "Manage billing": "Управление оплатой",
-  "Your subscription or API key": "Ваша подписка или API-ключ",
-  Subscribe: "Оформить подписку",
-  "Monthly credits expire at renewal. Top-ups do not expire.":
-    "Ежемесячные кредиты истекают при продлении. Разовые пополнения не сгорают.",
-  "Use Labradoodle credits": "Использовать кредиты Labradoodle",
-  "Choose a plan": "Выбрать тариф",
-  "Change plan": "Сменить тариф",
-  "Current plan": "Текущий тариф",
   Plan: "Тариф",
   None: "Нет",
-  "Free trial": "Бесплатный пробный период",
-  "Labradoodle credits": "Кредиты Labradoodle",
-  "Free until": "Бесплатно до",
-  Ends: "Заканчивается",
-  Renews: "Продление",
-  "Could not open billing": "Не удалось открыть оплату",
   "Put your bots to work": "Пусть боты работают на вас",
   "Bots with their own computer": "Боты со своим компьютером",
-  "Routines that run while you're away": "Задачи, которые выполняются, пока вас нет",
-  "Web, desktop and mobile apps": "Приложения для веба, компьютера и телефона",
-  "Start free trial": "Начать бесплатный период",
-  Free: "Бесплатно",
-  "{price} / month": "{price} в месяц",
-  "{price} / month. Cancel anytime.": "{price} в месяц. Отмена в любой момент.",
-  "{days} days free, then {price} / month. Cancel anytime.":
-    "{days} дн. бесплатно, затем {price} в месяц. Отмена в любой момент.",
-  "{days} days free": "{days} дн. бесплатно",
-  "Works with your ChatGPT or Claude plan.": "Работает с вашей подпиской ChatGPT или Claude.",
-  "All {price} goes to model usage.": "Все {price} идут на использование моделей.",
-  "Full access, nothing to pay": "Полный доступ без оплаты",
-  "Day {days}": "День {days}",
-  "{price} / month begins": "Далее {price} в месяц",
-  "Billing period": "Период оплаты",
-  "Yearly −{percent}%": "Год −{percent}%",
-  "{days} days free, then {price} / year. Cancel anytime.":
-    "{days} дн. бесплатно, затем {price} в год. Отмена в любой момент.",
-  "{price} / year": "{price} в год",
-  "{price} / year begins": "Далее {price} в год",
-  "{price} / year. Cancel anytime.": "{price} в год. Отмена в любой момент.",
-  "Only the owner of this account can choose a plan.":
-    "Только владелец этого аккаунта может выбрать тариф.",
-  Terms: "Условия",
-  Privacy: "Конфиденциальность",
-  "You're all set": "Всё готово",
-  "Your free trial has started": "Бесплатный пробный период начался",
-  "Free until {date}": "Бесплатно до {date}",
-  "Connect your AI": "Подключить ИИ",
-  "Start using Labradoodle": "Начать работу с Labradoodle",
   "1 unread": "1 непрочитанный",
   "{count} unread": "Непрочитанных: {count}",
   "{count} need attention": "Требуют внимания: {count}",
@@ -1222,17 +1149,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "Could not load skill": "Не удалось загрузить навык",
   "Could not save skill": "Не удалось сохранить навык",
   "Could not delete skill": "Не удалось удалить навык",
-  "Invite friends": "Пригласить друзей",
-  "Get a free month for each friend who starts a trial.":
-    "Получайте бесплатный месяц за каждого друга, который начнёт пробный период.",
-  "Invite a friend": "Пригласить друга",
-  "Give a friend {weeks} weeks free": "Подарите другу {weeks} недели бесплатно",
-  "They get {weeks} weeks free.": "Друг получает {weeks} недели бесплатно.",
-  "You get a free month when they start their trial with a new card.":
-    "Вы получите бесплатный месяц, когда друг начнёт пробный период с новой картой.",
-  "Share link": "Поделиться ссылкой",
-  "1 free month earned": "Получен 1 бесплатный месяц",
-  "{count} free months earned": "Бесплатных месяцев получено: {count}",
   "Submit a plugin": "Предложить плагин",
   "Switching…": "Переключение…",
   Switch: "Переключить",
@@ -1284,8 +1200,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "Updating your computer": "Обновление вашего компьютера",
   "Ask Doodle in this chat to set up a routine.":
     "Попросите Doodle в этом чате настроить регулярную задачу.",
-  "Doodle with your own computer": "Doodle с вашим собственным компьютером",
-  "Put Doodle to work": "Поручите работу Doodle",
   "Could not leave workspace": "Не удалось покинуть рабочее пространство",
   "Leave workspace": "Покинуть рабочее пространство",
   "Doodle can use the file but won't see the picture.":

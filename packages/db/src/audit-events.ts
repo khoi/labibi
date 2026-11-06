@@ -8,9 +8,9 @@ import type {
 } from "@labradoodle/contracts";
 import { AuditActorTypeSchema, AuditOutcomeSchema } from "@labradoodle/contracts";
 import { getLogger } from "@labradoodle/logging";
-import { GUEST_ROLE } from "./billing.js";
 import type { Prisma, PrismaClient } from "./client.js";
 import { parsePositiveInteger } from "./client.js";
+import { GUEST_ROLE } from "./organization-roles.js";
 import { runAsSystem } from "./row-security.js";
 import { securityEventMetadata, securityRequestCaller } from "./security-events.js";
 

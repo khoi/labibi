@@ -352,10 +352,6 @@ describe("runAutoReviewJudge instructions", () => {
   it("anchors the present moment in the judge system instructions", async () => {
     vi.resetModules();
     const { runAutoReviewJudge } = await import("./auto-review.js");
-    const callObserver = {
-      beforeCall: vi.fn(async () => "reservation"),
-      afterCall: vi.fn(async () => {}),
-    };
     let captured: { instructions?: string; model?: AgentRunModel } | undefined;
     const runtime = {
       describe: () => ({ capabilities: { scripted: false } }),
@@ -373,7 +369,6 @@ describe("runAutoReviewJudge instructions", () => {
     await runAutoReviewJudge({
       runtime: runtime as never,
       checker: { provider: "openrouter", model: "x" },
-      callObserver,
       prompt: "test",
       runId: "run",
       spaceId: "ws",
@@ -383,7 +378,6 @@ describe("runAutoReviewJudge instructions", () => {
     });
     expect(captured?.instructions).toContain("Current date and time");
     expect(captured?.instructions).toContain("fast safety checker");
-    expect(captured?.model?.callObserver).toBe(callObserver);
     expect(captured?.model?.thinkingLevel).toBeNull();
 
     await runAutoReviewJudge({

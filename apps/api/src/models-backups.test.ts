@@ -17,7 +17,6 @@ const owner: Actor = {
 function setup(
   options: {
     actor?: Actor;
-    credits?: boolean;
     existing?: Array<Record<string, unknown>>;
     /** An openai-compatible connection with this stored list and own model. */
     compatible?: { enabledModelIds: string[]; defaultModel: string };
@@ -68,20 +67,15 @@ function setup(
     // Saved choices that keep a model listed after new users stop being offered it.
     bot: { findMany: vi.fn(async () => []) },
     routine: { findMany: vi.fn(async () => []) },
-    space: {
-      findFirst: vi.fn(async () => ({ organization: { modelCredits: { mode: "credits" } } })),
-    },
     userModelRoleChoice,
     userModelCredential: {
       findMany: vi.fn(async ({ where }: { where: { userId: string; provider?: string } }) =>
-        !options.credits &&
-        where.userId === owner.userId &&
-        (!where.provider || where.provider === credential.provider)
+        where.userId === owner.userId && (!where.provider || where.provider === credential.provider)
           ? [credential]
           : [],
       ),
       findFirst: vi.fn(async ({ where }: { where: { id?: string; userId: string } }) =>
-        !options.credits && where.userId === owner.userId && where.id === credential.id
+        where.userId === owner.userId && where.id === credential.id
           ? { ...credential, userPreferences: [] }
           : null,
       ),
@@ -114,7 +108,6 @@ function setup(
     userModelCredential: prisma.userModelCredential,
   });
   const deps = {
-    billing: options.credits ? { modelCreditsEnabled: true } : undefined,
     prisma,
     secrets: {
       // A fixture ciphertext that is already a stored secret decrypts to itself.
@@ -625,30 +618,4 @@ describe("role-based model settings API", () => {
     const legacy = await call("models/backups", {});
     expect((await legacy.response.json()).json).toEqual(backups);
   });
-});
-
-it("lets a deployment-managed model lead the main model like any other purpose", async () => {
-  vi.stubEnv("PI_DEFAULT_PROVIDER", "openrouter");
-  vi.stubEnv("OPENROUTER_API_KEY", "fake-hosted-key");
-  try {
-    const { call, prisma, roles } = setup({ credits: true });
-    const primary = { provider: availableModel.provider, modelId: availableModel.id };
-    const catalog = await call("models/forRole", { role: "main" });
-    expect((await catalog.response.json()).json).toContainEqual(
-      expect.objectContaining({ id: primary.modelId, managed: true }),
-    );
-    const main = await call("models/setRole", { role: "main", primary });
-    expect(main.response.status).toBe(200);
-    expect(roles()).toEqual([expect.objectContaining({ role: "main", position: 0 })]);
-    const preferences = prisma.userModelPreference as unknown as {
-      upsert: ReturnType<typeof vi.fn>;
-      updateMany: ReturnType<typeof vi.fn>;
-    };
-    expect(preferences.upsert).not.toHaveBeenCalled();
-    expect(preferences.updateMany).not.toHaveBeenCalled();
-    const approval = await call("models/setRole", { role: "approval", primary });
-    expect(approval.response.status).toBe(200);
-  } finally {
-    vi.unstubAllEnvs();
-  }
 });

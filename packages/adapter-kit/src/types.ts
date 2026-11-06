@@ -1,6 +1,4 @@
 import type {
-  BillingCancellationReason,
-  ByokTier,
   CacheCapabilities as ConnectionCacheCapabilities,
   ConnectionCatalogItem,
   ModelApiProtocol,
@@ -493,8 +491,6 @@ export interface AgentSteeringMessage {
 export type CacheCapabilities = ConnectionCacheCapabilities;
 
 export interface AgentRunModel {
-  /** Server-side spending authorization, carried with the resolved credential. */
-  callObserver?: ModelCallObserver;
   cacheCapabilities?: CacheCapabilities;
   provider: string;
   id: string;
@@ -1236,98 +1232,4 @@ export interface AutoReviewResult {
   decision: AutoReviewDecision;
   reason?: string;
   model: string;
-}
-
-/** Provider-neutral subscription state. Vendor-specific states map onto these. */
-export type BillingSubscriptionStatus =
-  | "trialing"
-  | "active"
-  | "past_due"
-  | "incomplete"
-  /** No access; the subscription resumes from the billing portal, so a new checkout would double-bill. */
-  | "unpaid"
-  | "paused"
-  | "canceled";
-
-export interface BillingPrice {
-  /** Minor currency units, e.g. cents. */
-  amount: number;
-  currency: string;
-  interval: "day" | "week" | "month" | "year";
-  intervalCount: number;
-}
-
-export interface BillingCreditPurchase {
-  /** Stable provider payment identity, including any subsequent refund adjustment. */
-  id: string;
-  amountCents: number;
-  /** Subscription service-period end; absent for non-expiring top-ups. */
-  expiresAt?: string;
-}
-
-export interface BillingCreditCheckoutRequest {
-  customerId: string;
-  amountCents: number;
-  monthly: boolean;
-  successUrl: string;
-  cancelUrl: string;
-}
-
-export interface BillingByokCheckoutRequest extends Omit<BillingCreditCheckoutRequest, "monthly"> {
-  /** How often `amountCents` bills; monthly when omitted. */
-  interval?: "month" | "year";
-  /** Standard when omitted. */
-  tier?: ByokTier;
-  /** Omitted when the customer has already used its trial. */
-  trialDays?: number;
-}
-
-/** Full subscription state for one billing customer, re-fetched from the provider on every sync. */
-export interface BillingSubscriptionSnapshot {
-  creditAmountCents?: number;
-  subscriptionId: string;
-  subscriptionItemId: string;
-  priceId: string;
-  status: BillingSubscriptionStatus;
-  seats: number;
-  trialEndsAt: Date | null;
-  /** Start of the period being billed, or of the trial while one runs. */
-  currentPeriodStartsAt: Date | null;
-  currentPeriodEndsAt: Date | null;
-  cancelAtPeriodEnd: boolean;
-  endedAt: Date | null;
-  /** The flat own-key plan, which grants access without credits. */
-  byokPlan?: boolean;
-  /** What the own-key plan bills each period, which stays at the price it was bought at. */
-  byokPriceCents?: number;
-  /** The own-key plan's billing period. */
-  byokInterval?: "month" | "year";
-  /** The own-key plan's tier, which the provider reports with the plan. */
-  byokTier?: ByokTier;
-  /** Stable identity of the subscription's card across customers, when the provider has one. */
-  cardFingerprint?: string;
-  cancellationReason?: BillingCancellationReason;
-  cancellationComment?: string;
-}
-
-/** One own-key plan: its tier, how often it bills, and what it bills each period. */
-export interface BillingByokPlan {
-  tier: ByokTier;
-  interval: "month" | "year";
-  amountCents: number;
-}
-
-export interface BillingCheckoutRequest {
-  customerId: string;
-  seats: number;
-  /** Omitted when the customer has already used its trial. */
-  trialDays?: number;
-  successUrl: string;
-  cancelUrl: string;
-}
-
-/** Optional provider adapter for recovering authoritative cost after an interrupted call. */
-export interface ModelUsageLookup {
-  provider: string;
-  lookupUsage(providerRequestId: string): Promise<AgentUsage | null>;
 }

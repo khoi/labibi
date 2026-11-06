@@ -85,19 +85,15 @@ export async function resolveMemberMainModel(
 export function selectConfiguredModel(input: {
   /** The bot's or the run's own model; null follows the main model. */
   override: ModelChoice | null;
-  hostedProvider?: string;
   overrideCredential: ModelCredential;
   main: MemberMainModel | null;
   defaults: DeploymentModelDefaults;
 }) {
   const { override: bot, overrideCredential, main } = input;
   const hasOverride = Boolean(bot?.modelProvider && usableModelId(bot.modelId));
-  // A model runs on its own connection, or on the deployment's for its funded provider.
-  const runnable = (provider: string | null | undefined, credential: ModelCredential) =>
-    Boolean(credential || (provider && provider === input.hostedProvider));
-  // The override provider, model and credential must win together.
-  const useOverride = hasOverride && runnable(bot?.modelProvider, overrideCredential);
-  const useMain = !useOverride && main !== null && runnable(main.provider, main.credential);
+  // A model runs on its own connection. The override provider, model and credential win together.
+  const useOverride = hasOverride && Boolean(overrideCredential);
+  const useMain = !useOverride && main !== null && Boolean(main.credential);
   const fallback = deploymentModelRole("main", input.defaults).primary;
   const selected = useOverride
     ? {

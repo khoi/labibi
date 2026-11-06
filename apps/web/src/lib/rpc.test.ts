@@ -5,7 +5,6 @@ import {
   leaveUnavailableSpace,
   rpc,
   rpcForSpace,
-  SPACE_SELECTED_EVENT,
   selectedSpaceId,
   selectSpace,
 } from "./rpc.js";
@@ -106,24 +105,6 @@ describe("space selection storage", () => {
     expect(selectSpace("space-support")).toBe(false);
     expect(() => clearSpaceSelection()).not.toThrow();
     expect(selectedSpaceId()).toBeNull();
-  });
-
-  it("announces a new selection so per-organization state reloads", () => {
-    const items = new Map<string, string>();
-    const dispatchEvent = vi.fn(() => true);
-    vi.stubGlobal("window", {
-      localStorage: {
-        getItem: (key: string) => items.get(key) ?? null,
-        setItem: (key: string, value: string) => items.set(key, value),
-        removeItem: (key: string) => items.delete(key),
-      },
-      dispatchEvent,
-    });
-
-    expect(selectSpace("space-support")).toBe(true);
-    expect(dispatchEvent).toHaveBeenCalledWith(
-      expect.objectContaining({ type: SPACE_SELECTED_EVENT }),
-    );
   });
 
   it("treats an already-persisted selection as success when writes fail", () => {

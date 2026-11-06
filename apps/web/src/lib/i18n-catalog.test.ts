@@ -71,7 +71,6 @@ describe("lingui catalogs", () => {
       "Your model provider",
       "The model provider returned an error.",
       "Connect a model in Settings to use Doodle.",
-      "Connect your own API key in Models or choose Labradoodle credits in Billing.",
       "{provider} is rate limiting requests. Try again shortly.",
       "{summary} Resets {date}.",
       "{provider} rejected the API key. Check your connection settings.",
@@ -305,7 +304,7 @@ it("renders Polish plural categories and interpolated values in every counted me
   const counted = Object.entries(catalog).filter(([, entry]) =>
     entry.message?.includes(", plural,"),
   );
-  expect(counted.length).toBeGreaterThan(15);
+  expect(counted.length).toBeGreaterThan(10);
   const local = setupI18n({ locale: "pl" });
   const number = new Intl.NumberFormat("pl");
   for (const [id, entry] of counted) {

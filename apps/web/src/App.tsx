@@ -17,7 +17,6 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { MarkdownLinkPrompt } from "./components/markdown-link-prompt";
 import { PageLoading } from "./components/PageLoading";
 import { SignInEntrance } from "./components/SignInEntrance";
-import { SubscriptionGate } from "./components/SubscriptionGate";
 import { authClient } from "./lib/auth";
 import { desktopBridge } from "./lib/desktop";
 import { syncWebLogoAvatarIdentity } from "./lib/logo-avatar-activity";
@@ -59,9 +58,6 @@ const ArtifactsPage = lazyComponent(() =>
 );
 const AdminPluginsPage = lazyComponent(() =>
   import("./pages/AdminPluginsPage").then((module) => module.AdminPluginsPage),
-);
-const AdminAccessPage = lazyComponent(() =>
-  import("./pages/AdminAccessPage").then((module) => module.AdminAccessPage),
 );
 const NavLinkPage = lazyComponent(() =>
   import("./pages/NavLinkPage").then((module) => module.NavLinkPage),
@@ -244,23 +240,7 @@ function SessionApp() {
                   )
                 }
               />
-              <Route
-                path="/admin/access"
-                element={
-                  user ? <AdminAccessPage /> : <Navigate to="/sign-in?next=/admin/access" replace />
-                }
-              />
-              <Route
-                element={
-                  user ? (
-                    <SubscriptionGate fallback={<PageLoading />}>
-                      <Outlet />
-                    </SubscriptionGate>
-                  ) : (
-                    <Navigate to="/sign-in" replace />
-                  )
-                }
-              >
+              <Route element={user ? <Outlet /> : <Navigate to="/sign-in" replace />}>
                 <Route path="/app" element={<ShellPage />} />
                 <Route path="/app/c/:threadId" element={<ShellPage />} />
                 <Route path="/onboarding/:step?" element={<OnboardingPage />} />

@@ -60,7 +60,6 @@ import { setMobileMonitoringScreen } from "../lib/monitoring";
 import { native, useMobileTokens, useResolvedAppearance } from "../lib/native";
 import { useNotificationResponses } from "../lib/open-notification";
 import { clearQueries } from "../lib/query";
-import { useReferral } from "../lib/referral";
 import {
   getCachedRemoteImagesEnabled,
   loadRemoteImagesPreference,
@@ -271,7 +270,6 @@ function LayoutContent() {
   const insets = useSafeAreaInsets();
   // Beside the list a chat swaps in place, the way it does when picked from a sidebar.
   const { split, inboxHidden, foldActive } = useSplitView();
-  const canInvite = Boolean(useReferral());
   const chatAnimation = split ? "none" : undefined;
   const [ready, setReady] = useState(false);
   useNotificationResponses(ready);
@@ -410,14 +408,6 @@ function LayoutContent() {
                     <Stack.Screen name="share" options={{ headerShown: false }} />
                     <Stack.Screen name="sign-in" options={{ headerShown: false }} />
                     <Stack.Screen
-                      name="paywall"
-                      options={{
-                        headerShown: false,
-                        presentation: "fullScreenModal",
-                        gestureEnabled: false,
-                      }}
-                    />
-                    <Stack.Screen
                       name="(settings)"
                       options={{
                         headerShown: false,
@@ -436,15 +426,6 @@ function LayoutContent() {
                         title: t("Server"),
                         presentation: "formSheet",
                         sheetAllowedDetents: [0.6, 1],
-                        sheetGrabberVisible: true,
-                      }}
-                    />
-                    <Stack.Screen
-                      name="invite"
-                      options={{
-                        headerShown: false,
-                        presentation: "formSheet",
-                        sheetAllowedDetents: "fitToContents",
                         sheetGrabberVisible: true,
                       }}
                     />
@@ -509,7 +490,7 @@ function LayoutContent() {
                       options={({ route }) => ({
                         title: t("Chat"),
                         animation: chatAnimation,
-                        ...chatRouteHeader(route, t, { split, inboxHidden, foldActive }, canInvite),
+                        ...chatRouteHeader(route, t, { split, inboxHidden, foldActive }),
                       })}
                     />
                     <Stack.Screen name="routines" options={glassHeaderOptions(t("Routines"))} />

@@ -34,7 +34,7 @@ export const DOCS_NAV = [
       { slug: "models", label: "Models" },
       { slug: "spaces", label: "Spaces" },
       { slug: "bot-secrets", label: "Reusable credentials" },
-      { slug: "account", label: "Account and billing" },
+      { slug: "account", label: "Account" },
     ],
   },
   {
@@ -72,7 +72,6 @@ export const DOCS_NAV = [
       { slug: "computer-runtime", label: "Computer runtime" },
       { slug: "self-host-storage", label: "Storage and encryption" },
       { slug: "self-host-clients", label: "Apps and clients" },
-      { slug: "self-host-billing", label: "Billing" },
       { slug: "self-host-observability", label: "Logs and monitoring" },
       { slug: "self-host-restricted-network", label: "Restricted networks" },
     ],

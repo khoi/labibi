@@ -379,7 +379,7 @@ describe("mobile API authentication", () => {
         jsonResponse({
           passwordReset: true,
           resetUrl: "https://labradoodle.test/reset-password",
-          billing: false,
+          emailCode: false,
         }),
       ),
     );
@@ -388,7 +388,7 @@ describe("mobile API authentication", () => {
       sso: null,
       passwordReset: true,
       resetUrl: "https://labradoodle.test/reset-password",
-      billing: false,
+      emailCode: false,
     });
   });
 
@@ -487,7 +487,7 @@ describe("mobile API authentication", () => {
     { passwordReset: false, resetUrl: null, sso: null },
     { passwordReset: "false", resetUrl: null },
     { passwordReset: false, resetUrl: "invalid" },
-    { passwordReset: false, resetUrl: null, billing: "false" },
+    { passwordReset: false, resetUrl: null, emailCode: "false" },
     { passwordAuth: "false", sso: null, passwordReset: false, resetUrl: null },
     { passwordAuth: true, passwordReset: false, resetUrl: null, sso: {} },
   ])("rejects malformed successful capability shapes", async (body) => {

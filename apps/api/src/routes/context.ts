@@ -106,7 +106,6 @@ export function createRouterContext(deps: RouterDeps) {
     secretStore: deps.secrets,
     codexCatalog,
     refreshExpiredCredential,
-    hostedProvider: deps.billing?.modelCreditsEnabled ? deps.env.defaultProvider : undefined,
     defaultModel: async () => {
       const me = await meDto(deps, actor);
       return { provider: me.defaultProvider, model: me.defaultModel };
@@ -119,12 +118,7 @@ export function createRouterContext(deps: RouterDeps) {
     return deps.env.agentRuntime === "scripted" ? [...catalog, scriptedCatalogEntry] : catalog;
   };
   const catalogForSpace = async (actor: Actor) => {
-    const auth = await modelCredentialAuthKindsForSpace(
-      deps.prisma,
-      deps.secrets,
-      actor,
-      deps.billing?.modelCreditsEnabled ? deps.env.defaultProvider : undefined,
-    );
+    const auth = await modelCredentialAuthKindsForSpace(deps.prisma, deps.secrets, actor);
     const available = listAvailablePiCatalog(auth.byProvider, auth.byModel);
     const [live, providerLive] = await Promise.all([
       codexLiveCatalogsForSpace(deps.prisma, deps.secrets, actor, auth, codexCatalog, {
@@ -151,26 +145,12 @@ export function createRouterContext(deps: RouterDeps) {
       !selected &&
       merged.some(
         (entry) =>
-          (auth.byProvider[entry.provider] ||
-            auth.byModel[entry.provider] ||
-            entry.provider === auth.managedProvider) &&
+          (auth.byProvider[entry.provider] || auth.byModel[entry.provider]) &&
           hiddenCatalogModel(entry),
       )
     )
       selected = await savedCatalogSelections(deps.prisma, actor.userId);
-    return offeredCatalog(merged, selected).map((entry) =>
-      entry.provider === auth.managedProvider
-        ? {
-            ...entry,
-            managed: true,
-            billing:
-              auth.secretIdByModel[entry.provider]?.[entry.id] ||
-              auth.secretIdByProvider[entry.provider]
-                ? entry.billing
-                : "Uses Labradoodle credits",
-          }
-        : entry,
-    );
+    return offeredCatalog(merged, selected);
   };
 
   // Shown where a member chose no model, so the list names what actually runs.
@@ -193,15 +173,9 @@ export function createRouterContext(deps: RouterDeps) {
   const modelRoleCatalog = async (actor: Actor, role: ModelRole): Promise<ModelCatalogEntry[]> => {
     const catalog = await chatCatalog(actor);
     const decisions = role === "approval" ? decisionModelCatalog() : [];
-    const managedProviders = new Set(
-      catalog.filter((entry) => "managed" in entry && entry.managed).map((entry) => entry.provider),
-    );
     return withServingConnections(
       actor,
-      [
-        ...catalog,
-        ...decisions.map((entry) => ({ ...entry, managed: managedProviders.has(entry.provider) })),
-      ].filter((entry) => modelSupportsRole(entry, role)),
+      [...catalog, ...decisions].filter((entry) => modelSupportsRole(entry, role)),
     );
   };
   /**
@@ -225,15 +199,8 @@ export function createRouterContext(deps: RouterDeps) {
     return Promise.all(
       catalog.map(async (entry) => {
         const owners = byProvider.get(canonicalPiProviderId(entry.provider)) ?? [];
-        // Funded models run on the deployment's key, whichever connection is chosen, and
-        // decision models run through the provider's decisions API on any of its keys.
-        if (
-          owners.length < 2 ||
-          entry.placeholder ||
-          entry.protocol === "decisions" ||
-          ("managed" in entry && entry.managed)
-        )
-          return entry;
+        // Decision models run through the provider's decisions API on any of its keys.
+        if (owners.length < 2 || entry.placeholder || entry.protocol === "decisions") return entry;
         const serving: string[] = [];
         for (const owner of owners)
           if (
@@ -245,7 +212,7 @@ export function createRouterContext(deps: RouterDeps) {
     );
   };
   const servingDeps = { prisma: deps.prisma, secretStore: deps.secrets, codexCatalog };
-  /** The connection serving each choice (null when deployment-managed), the one runs use. */
+  /** The connection serving each choice, the one runs use. */
   const validateRoleChoices = async (
     actor: Actor,
     role: ModelRole,
@@ -258,7 +225,7 @@ export function createRouterContext(deps: RouterDeps) {
         (entry) =>
           entry.provider === canonicalPiProviderId(choice.provider) && entry.id === choice.modelId,
       );
-      // A row pinned to a connection runs only there, never on the deployment's.
+      // A row pinned to a connection runs only there.
       const resolution = { credentialId: choice.credentialId };
       const credential = await findConnectedModelCredential(
         deps.prisma,
@@ -268,13 +235,7 @@ export function createRouterContext(deps: RouterDeps) {
         choice.modelId,
         resolution,
       );
-      // Computer mode runs only on the member's own connections.
-      if (
-        !credential &&
-        (role === "computer" ||
-          choice.credentialId ||
-          !(entry && "managed" in entry && entry.managed))
-      )
+      if (!credential)
         throw new ORPCError("BAD_REQUEST", { message: "Connect that model provider first" });
       // Another account of the provider listing the model does not make it run on this one;
       // the catalog names the connections that can, as the picker shows.

@@ -3,7 +3,6 @@ import { rm } from "node:fs/promises";
 import type { Server } from "node:http";
 import { serve } from "@hono/node-server";
 import {
-  BillingEmulator,
   ComposioConnector,
   EmailEmulator,
   FakeComposioClient,
@@ -15,8 +14,8 @@ import { createModelConnectionFixtureFetch } from "../model-connection-fixture.j
 import { PluginMarketplaceFixture } from "../plugin-marketplace-fixture.js";
 
 /**
- * An isolated API for the iOS catalog: scripted models, a fake sandbox, and offline billing
- * and wallet, so every screen renders without a hosted provider.
+ * An isolated API for the iOS catalog: scripted models, a fake sandbox, and an offline wallet,
+ * so every screen renders without a hosted provider.
  */
 export async function startIosScreenshotBackend(input: {
   root: string;
@@ -56,7 +55,6 @@ export async function startIosScreenshotBackend(input: {
   // The same offline marketplace, app catalog, and model list the web end-to-end tests use.
   const thirdParties = new ThirdPartyConnectorEmulator();
   const marketplace = new PluginMarketplaceFixture(thirdParties.fetch);
-  const billing = new BillingEmulator({ modelCredits: true });
   const handles = await createApp({
     databaseUrl,
     dataDir: input.dataDir,
@@ -64,7 +62,6 @@ export async function startIosScreenshotBackend(input: {
     apiUrl,
     composio: new ComposioConnector({ client: new FakeComposioClient() }),
     email: new EmailEmulator(),
-    billing,
     modelConnectionFetch: createModelConnectionFixtureFetch(listPiCatalog()),
     remoteConnectors: { fetch: marketplace.fetch, resolveHostname: thirdParties.resolveHostname },
     pluginRepoFetcher: marketplace.repo,
@@ -81,9 +78,6 @@ export async function startIosScreenshotBackend(input: {
   return {
     apiUrl,
     databaseUrl,
-    completeCheckout: (customerId: string) => {
-      billing.completeByokCheckout(customerId);
-    },
     async stop() {
       await new Promise<void>((resolve) => {
         server.close(() => resolve());

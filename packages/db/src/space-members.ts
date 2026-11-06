@@ -1,5 +1,4 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-import { GUEST_ROLE, isOwnerRole } from "./billing.js";
 import { cancelRunsInTransaction } from "./cancel-runs.js";
 import { deleteChatsInTransaction } from "./chats.js";
 import type { PrismaClient } from "./client.js";
@@ -7,6 +6,7 @@ import { Prisma } from "./client.js";
 import type { RunTeardownTarget } from "./computers.js";
 import { snapshotRunTeardownTargets } from "./computers.js";
 import { appendEventInTransaction, createPendingSteeringRun } from "./events.js";
+import { GUEST_ROLE, isOwnerRole } from "./organization-roles.js";
 import type { PageShareSecret } from "./page-shares.js";
 import { runAsSystem } from "./row-security.js";
 import {

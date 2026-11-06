@@ -284,7 +284,6 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for the development workflow and test m
 - [Upgrading](./docs/self-host-upgrading.md)
 - [Logs and monitoring](./docs/self-host-observability.md)
 - [Apps and clients](./docs/self-host-clients.md)
-- [Billing](./docs/self-host-billing.md)
 - [Computer runtime and isolation](./docs/computer-runtime.md)
 - [Desktop releases](./docs/desktop-release.md)
 - [Mobile releases](./docs/mobile-release.md)

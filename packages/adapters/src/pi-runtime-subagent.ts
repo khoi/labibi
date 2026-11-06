@@ -205,7 +205,7 @@ export async function executeSubagent(
             ctx,
             preparedOptions,
             (event) => host.queue.push(event),
-            target.config.callObserver ?? host.modelCallObserver,
+            host.modelCallObserver,
             {
               operationKind: "subagent",
               agentId,

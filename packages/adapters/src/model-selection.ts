@@ -11,10 +11,7 @@ import {
   chooseModelCredential,
   findModelCredential,
   findModelCredentialById,
-  GUEST_ROLE,
-  organizationForMember,
 } from "@labradoodle/db";
-import { resolveDeploymentModel } from "./deployment-model.js";
 import { modelCredentialDto } from "./model-connect.js";
 import { compatibleModelSeesImages, modelAcceptsImageInput } from "./model-vision.js";
 import type { ModelCredentialAuthKind } from "./pi-catalog-availability.js";
@@ -122,7 +119,6 @@ export class UnavailableModelForAuthError extends Error {
 }
 
 export type SpaceCatalogAuth = {
-  managedProvider?: string;
   byProvider: Partial<Record<string, ModelCredentialAuthKind>>;
   /** Model-specific kinds. `"disconnected"` blocks the provider fallback. */
   byModel: Partial<
@@ -147,9 +143,7 @@ export async function modelCredentialAuthKindsForSpace(
   prisma: PrismaClient,
   secretStore: Pick<SecretStore, "load">,
   scope: Pick<Actor, "userId" | "spaceId">,
-  hostedProvider?: string,
 ): Promise<SpaceCatalogAuth> {
-  const hosted = hostedProvider && (await hasHostedModelCredits(prisma, scope, hostedProvider));
   const [credentials, preferences] = await Promise.all([
     prisma.userModelCredential.findMany({
       where: { userId: scope.userId },
@@ -203,8 +197,7 @@ export async function modelCredentialAuthKindsForSpace(
     ),
   ];
   for (const entry of slots) {
-    if (!connectedProviders.has(entry.provider) || (hosted && entry.provider === hostedProvider))
-      continue;
+    if (!connectedProviders.has(entry.provider)) continue;
     const choice = chooseModelCredential({
       provider: entry.provider,
       modelId: entry.id,
@@ -228,13 +221,11 @@ export async function modelCredentialAuthKindsForSpace(
     });
   }
   const empty: SpaceCatalogAuth = {
-    managedProvider: hosted ? hostedProvider : undefined,
     byProvider: {},
     byModel: {},
     secretIdByProvider: {},
     secretIdByModel: {},
   };
-  if (hosted && hostedProvider) empty.byProvider[hostedProvider] = "api_key";
   if (selections.length === 0) return empty;
 
   const secrets = await prisma.secret.findMany({
@@ -278,8 +269,6 @@ export async function modelCredentialAuthKindsForSpace(
     if (kind) auth.byProvider[selection.provider] = kind;
     auth.secretIdByProvider[selection.provider] = selection.secretId;
   }
-  if (hosted && hostedProvider && !auth.byProvider[hostedProvider])
-    auth.byProvider[hostedProvider] = "api_key";
   return auth;
 }
 
@@ -495,7 +484,6 @@ async function loadModelSecret(
 export type ConnectedModelResolution = {
   /** The connection a role row is pinned to; nothing else may serve it. */
   credentialId?: string | null;
-  hostedProvider?: string;
   codexCatalog?: CodexLiveCatalog;
   /** Preview a connection save using the same runtime selection. */
   replacement?: { credentialId: string; secret: StoredModelSecret; defaultModel?: string | null };
@@ -553,7 +541,6 @@ export async function findConnectedModelCredential(
 }
 
 export type BotModelChangeDeps = {
-  hostedProvider?: string;
   prisma: PrismaClient;
   secretStore: Pick<SecretStore, "load">;
   codexCatalog?: CodexLiveCatalog;
@@ -590,27 +577,14 @@ export async function validateBotModelChange(
   const { provider, model } = input;
   const changing = provider !== input.current?.provider || model !== input.current?.model;
   if (changing && provider && model) {
-    const hosted =
-      deps.hostedProvider === provider &&
-      (await hasHostedModelCredits(deps.prisma, scope, provider));
-    const credential = hosted
-      ? null
-      : await findConnectedModelCredential(deps.prisma, deps.secretStore, scope, provider, model);
-    if (!credential) {
-      if (hosted && isCatalogModelChoice(provider, model)) {
-        const allowed = listPiCatalog().find(
-          (entry) => entry.provider === provider && entry.id === model,
-        )?.thinkingLevels;
-        if (
-          input.thinkingLevel &&
-          allowed &&
-          !allowed.some((level) => level === input.thinkingLevel)
-        )
-          return { ok: false, error: "Unsupported thinking level" };
-        return { ok: true, provider, model, thinkingLevel: input.thinkingLevel ?? null };
-      }
-      return { ok: false, error: PINNED_PROVIDER_NOT_CONNECTED };
-    }
+    const credential = await findConnectedModelCredential(
+      deps.prisma,
+      deps.secretStore,
+      scope,
+      provider,
+      model,
+    );
+    if (!credential) return { ok: false, error: PINNED_PROVIDER_NOT_CONNECTED };
     const inCatalog =
       isCatalogModelChoice(provider, model) ||
       (await credentialLiveListsModel(
@@ -762,12 +736,6 @@ export async function validateConnectedModelChoice(
   modelId: string,
   resolution: ConnectedModelResolution = {},
 ) {
-  if (
-    resolution.hostedProvider === provider &&
-    (await hasHostedModelCredits(prisma, actor, provider))
-  ) {
-    return isCatalogModelChoice(provider, modelId) ? undefined : "Unknown model for that provider";
-  }
   const credential = await findConnectedModelCredential(
     prisma,
     secretStore,
@@ -893,42 +861,4 @@ export function pinnedModelCredentialError(
     return "Unknown model for that provider";
   }
   return undefined;
-}
-
-/**
- * A server key is available only to a funded organization and only for its configured provider.
- * Outside credits mode a balance still pays until the member connects that provider themselves.
- */
-export async function hasHostedModelCredits(
-  prisma: PrismaClient,
-  scope: { userId: string; spaceId: string },
-  provider: string,
-): Promise<boolean> {
-  const deployment = resolveDeploymentModel();
-  if (!deployment.configured || deployment.provider !== provider) return false;
-  const space = await prisma.space.findFirst({
-    where: {
-      id: scope.spaceId,
-      organization: { members: { some: { userId: scope.userId, role: { not: GUEST_ROLE } } } },
-    },
-    select: {
-      organization: { select: { modelCredits: { select: { mode: true, balanceMicros: true } } } },
-    },
-  });
-  // A guest in someone's shared Space is paid for by their own organization.
-  const guestPayer = space ? null : await organizationForMember(prisma, scope);
-  const credits = space
-    ? space.organization.modelCredits
-    : guestPayer
-      ? await prisma.modelCreditAccount.findUnique({
-          where: { organizationId: guestPayer.organizationId },
-          select: { mode: true, balanceMicros: true },
-        })
-      : null;
-  if (credits?.mode === "credits") return true;
-  if (!credits || credits.balanceMicros <= 0n) return false;
-  return !(await prisma.userModelCredential.findFirst({
-    where: { userId: scope.userId, provider },
-    select: { id: true },
-  }));
 }

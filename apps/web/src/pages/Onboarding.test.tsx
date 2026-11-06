@@ -79,7 +79,7 @@ it("marks onboarding as usable for the desktop only once a step shows", async ()
   expect(marked()).toBeNull();
 
   await act(async () =>
-    account.load({ needsModel: true, needsSignupSurvey: false, billingEnabled: false }),
+    account.load({ needsModel: true, needsSignupSurvey: false }),
   );
   expect(host.querySelector("h1")?.textContent).toBe("Connect a model");
   expect(marked()).not.toBeNull();
@@ -98,7 +98,7 @@ it("finds and searches a long custom endpoint list during onboarding", async () 
     ),
   );
   await act(async () =>
-    account.load({ needsModel: true, needsSignupSurvey: false, billingEnabled: false }),
+    account.load({ needsModel: true, needsSignupSurvey: false }),
   );
   await act(async () => document.querySelector<HTMLElement>('[aria-label="Provider"]')!.click());
   await act(async () =>

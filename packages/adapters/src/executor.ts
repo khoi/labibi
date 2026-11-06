@@ -21,7 +21,6 @@ import {
   isPersonStartedRun,
   isTerminal,
   MISSING_MODEL_RUN_ERROR,
-  MODEL_ACCESS_REQUIRED_RUN_ERROR,
   nextFence,
   promptInvokesSkill,
   redactSecrets,
@@ -40,7 +39,6 @@ import {
   isTooManyDatabaseConnections,
   loadRunHistoryMessages,
   loadRunTurnCheckpoint,
-  memberHasModelAccess,
   RunHistoryWriteError,
   readRunTimingFields,
   recordUsage,
@@ -107,12 +105,12 @@ import {
 } from "./history-speakers.js";
 import { createMediaGenerationProvider } from "./media-generation-factory.js";
 import { loadAgentMemoryContext } from "./memory-context.js";
-import { HostedModelCreditsRequiredError } from "./model-credit-observer.js";
 import {
   effectiveModelRole,
   resolveMemberMainModel,
   selectConfiguredModel,
 } from "./model-roles.js";
+import type { ModelCredential } from "./model-selection.js";
 import {
   findConnectedModelCredential,
   PINNED_PROVIDER_NOT_CONNECTED,
@@ -162,7 +160,6 @@ import {
 import { withRunLease } from "./run-messages.js";
 import {
   isTerminalModelSetupError,
-  modelCreditBillingEnabled,
   resolveConnectedModelKey,
   resolveConnectedRunModel,
   resolvedModelRunFields,
@@ -783,17 +780,9 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
         const runDeployment = deps.deploymentModelConfigured ? resolveDeploymentModel() : null;
         const runtimeFallback = runtimeFallbackModel(deps.runtime);
         const pinError =
-          !pinnedComputerModels &&
-          run.modelPinned &&
-          !(
-            (await modelCreditBillingEnabled(deps)) &&
-            modelChoice.modelProvider === runDeployment?.provider
-          )
+          !pinnedComputerModels && run.modelPinned
             ? pinnedModelCredentialError(modelChoice, overrideCredential)
             : undefined;
-        const hostedProvider = (await modelCreditBillingEnabled(deps))
-          ? resolveDeploymentModel().provider
-          : undefined;
         const modelDefaults = { settings, deployment: runDeployment };
         const selected = pinnedComputerModels
           ? {
@@ -806,7 +795,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
               override: modelChoice,
               overrideCredential,
               main,
-              hostedProvider,
               defaults: modelDefaults,
             });
         // The asker's own default, for when Doodle's model does not run on their connections.
@@ -816,7 +804,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
                 override: null,
                 overrideCredential: null,
                 main,
-                hostedProvider,
                 defaults: modelDefaults,
               })
             : null;
@@ -853,9 +840,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
           await failRunBeforeModel(PINNED_PROVIDER_NOT_CONNECTED, true);
           return;
         }
-        const modelAccessDenied = async () =>
-          (await modelCreditBillingEnabled(deps)) &&
-          !(await memberHasModelAccess(deps.prisma, run));
         const scripted = deps.runtime.describe().capabilities.scripted;
         let backupChoices: Promise<ModelRoleChoice[]> | undefined;
         const loadBackups = () =>
@@ -875,7 +859,16 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
         const backupsUnavailable = new Set<ModelRoleChoice>();
         // A main model with no connection, or whose provider refused its sign-in, runs on the
         // first backup that starts. A pinned run asked for its model and keeps it.
-        const startOnBackup = async () => {
+        const startOnBackup = async (): Promise<
+          | {
+              provider: string;
+              id: string;
+              credential: ModelCredential;
+              thinkingLevel: AgentRunRequest["model"]["thinkingLevel"];
+              resolved: Awaited<ReturnType<typeof resolveModelKey>>;
+            }
+          | undefined
+        > => {
           if (run.modelPinned) return undefined;
           for (const choice of await loadBackups()) {
             try {
@@ -912,10 +905,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
         let primaryFailure = { message: MISSING_MODEL_RUN_ERROR, accountFailure: true };
         let retryPrimary: unknown;
         if (selectedProvider && selectedModelId) {
-          if (await modelAccessDenied()) {
-            await failRunBeforeModel(MODEL_ACCESS_REQUIRED_RUN_ERROR, true);
-            return;
-          }
           try {
             start = {
               provider: selectedProvider,
@@ -926,7 +915,6 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
                 ? {
                     ...pinnedComputerModels.main,
                     apiKey: pinnedComputerModels.main.apiKey,
-                    callObserver: pinnedComputerModels.main.callObserver,
                     oauth: pinnedComputerModels.main.oauth?.credential,
                     persistOAuth: pinnedComputerModels.main.oauth?.persist,
                     refreshOAuth: pinnedComputerModels.main.oauth?.refresh,
@@ -950,15 +938,10 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
             if (!terminal && !isModelCredentialRejected(error)) throw error;
             primaryFailure = {
               message: error instanceof Error ? error.message : "Connect the provider again.",
-              accountFailure:
-                error instanceof HostedModelCreditsRequiredError ||
-                isRetiredModelCredentialError(error),
+              accountFailure: isRetiredModelCredentialError(error),
             };
             if (!terminal) retryPrimary = error;
           }
-        } else if (await modelAccessDenied()) {
-          await failRunBeforeModel(MISSING_MODEL_RUN_ERROR, true);
-          return;
         }
         const ownProvider = ownDefault?.provider ?? runtimeFallback?.provider;
         const ownModelId = ownDefault?.id ?? runtimeFallback?.id;

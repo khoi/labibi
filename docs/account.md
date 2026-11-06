@@ -1,6 +1,6 @@
-# Account and billing
+# Account
 
-Manage your sign-in, preferences, data and plan.
+Manage your sign-in, preferences and data.
 
 Open **Settings** from the account menu (your avatar at the bottom of the sidebar).
 
@@ -40,21 +40,3 @@ In **Settings → General**:
 - **Export data** downloads a zip of your account: every space's chats, files and bot workspaces.
 - **Import data** loads an export, for example to move between labradoodle.com and your own server.
 - **Delete account** emails you a code, then permanently deletes your account and data.
-
-## Billing on labradoodle.com
-
-labradoodle.com is free to try; the sidebar shows when your free period ends. To keep going, choose a
-plan:
-
-- **Use my subscription or API key**: works with your ChatGPT or Claude plan, or any
-  [model provider](./models.md) key. You pay the provider for model usage.
-- **Use Labradoodle credits**: model usage is paid from **Monthly credits** included in the plan. Choose
-  **Add credits** for more. Monthly credits expire at renewal; credits you add don't.
-
-**Settings → Billing** shows your plan and when it renews. Choose **Manage** to change it.
-
-**Invite friends** in the account menu gives you a link. You get a free month for each friend who
-starts a trial.
-
-> [!NOTE]
-> A self-hosted server has no billing. See [Self-hosting](./self-host.md).

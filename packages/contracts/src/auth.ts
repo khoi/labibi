@@ -12,13 +12,10 @@ export const authCapabilitiesSchema = z.object({
   resetUrl: z.string().url().nullable(),
   // Older servers omit this field; clients treat omission as unavailable.
   emailCode: z.boolean().optional(),
-  billing: z.boolean().optional(),
   /** WebAuthn relying party ID; null or omitted when this server does not offer passkeys. */
   passkeyRpId: z.string().min(1).nullable().optional(),
   /** Native apps this domain vouches for; omitted by older servers, which means none. */
   nativePasskeys: z.object({ ios: z.boolean(), android: z.boolean() }).optional(),
-  /** Crisp chat on the paywall; null or omitted when the deployment offers none. */
-  crispWebsiteId: z.string().min(1).nullable().optional(),
 });
 export type AuthCapabilities = z.infer<typeof authCapabilitiesSchema>;
 

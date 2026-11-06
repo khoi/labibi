@@ -237,7 +237,6 @@ async function runTurn({
   const finalizeRun = vi.fn(async () => ({ continuationRunId: null }));
   const executor = createRunExecutor({
     prisma,
-    billingEnabled: false,
     secretStore: {
       load: vi.fn(async (_ciphertext: string, secretId: string) => plaintexts[secretId]),
       put: vi.fn(async () => ({ ciphertext: "sealed-marker" })),

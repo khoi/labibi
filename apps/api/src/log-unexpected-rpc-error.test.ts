@@ -1,5 +1,4 @@
 import {
-  SandboxAllowanceUsedError,
   SandboxDamagedError,
   SandboxRateLimitError,
   SandboxUnavailableError,
@@ -211,24 +210,6 @@ describe("logUnexpectedRpcError", () => {
         message: "rpc computer/screenUrl computer unavailable",
         reason: "Boat API request failed (HTTP 502)",
       }),
-    ]);
-  });
-
-  it("returns a spent computer allowance with its message and no error report", () => {
-    const sink = createTestSink();
-    installLogger(createLogger({ service: "labradoodle-api", sinks: [sink] }));
-    const error = new SandboxAllowanceUsedError();
-
-    let thrown: unknown;
-    try {
-      handleRpcError(error, ["computer", "boot"]);
-    } catch (failure) {
-      thrown = failure;
-    }
-
-    expect(thrown).toMatchObject({ code: "FORBIDDEN", status: 403, message: error.message });
-    expect(sink.events.map((event) => [event.level, event.message])).toEqual([
-      ["warn", "rpc computer/boot computer allowance used up"],
     ]);
   });
 

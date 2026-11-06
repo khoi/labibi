@@ -1,16 +1,83 @@
-import type { ByokTier, ComputerSize, SandboxKind } from "@labradoodle/contracts";
-import {
-  BYOK_TIERS,
-  byokTierPriceCents,
-  COMPUTER_SIZE_SPECS,
-  CREDITS_SANDBOX_ALLOWANCE_PERCENT,
-  DEFAULT_MONTHLY_CREDIT_AMOUNT,
-  MODEL_CREDIT_AMOUNTS,
-  sandboxAllowanceHours,
-  TRIAL_DAYS,
-  TRIAL_SANDBOX_ALLOWANCE_CENTS,
-} from "@labradoodle/contracts";
+import type { SandboxKind } from "@labradoodle/contracts";
 import { APP_URL, SELF_HOST_GUIDE_PATH } from "./site";
+
+type ByokTier = "standard" | "pro" | "max";
+type ByokInterval = "month" | "year";
+type ComputerSize = "standard" | "large" | "xlarge";
+
+const MODEL_CREDIT_AMOUNTS = [1000, 2000, 3000, 5000, 10000, 20000, 50000] as const;
+const DEFAULT_MONTHLY_CREDIT_AMOUNT = 3000;
+/** Length of a new organization's free trial of the own-model plan, in days. */
+const TRIAL_DAYS = 7;
+
+/** The vCPUs and memory each computer size provides. */
+const COMPUTER_SIZE_SPECS: Record<ComputerSize, { vcpus: number; memoryGb: number }> = {
+  standard: { vcpus: 4, memoryGb: 8 },
+  large: { vcpus: 8, memoryGb: 16 },
+  xlarge: { vcpus: 16, memoryGb: 32 },
+};
+
+/**
+ * What an hour of a billed computer counts against the allowance, $0.20, whatever its size: above
+ * a small cloud machine's raw price, so the allowance also covers storage and saves.
+ */
+const SANDBOX_HOURLY_COST_MICROS = 200_000;
+/** What a trial may spend on computers, in cents; ending the trial early starts the full allowance. */
+const TRIAL_SANDBOX_ALLOWANCE_CENTS = 200;
+/** The share of a monthly credit plan an organization may also spend on computers. */
+const CREDITS_SANDBOX_ALLOWANCE_PERCENT = 20;
+
+/** Computer hours an allowance in cents buys. */
+function sandboxAllowanceHours(allowanceCents: number): number {
+  return (allowanceCents * 10_000) / SANDBOX_HOURLY_COST_MICROS;
+}
+
+interface ByokTierTerms {
+  name: string;
+  /** Monthly price in cents; `null` on Standard makes the own-model plan free, and hides any other tier. */
+  monthlyPriceCents: number | null;
+  /** Yearly price in cents; `null` offers the tier monthly only. */
+  annualPriceCents: number | null;
+  /** What the organization may spend on computers each month, in cents. */
+  computerAllowanceCents: number;
+  computerSize: ComputerSize;
+}
+
+/**
+ * The own-model plan's tiers, in order. Standard is the plan new organizations start on; the
+ * others add bigger computers and more computer hours.
+ */
+const BYOK_TIERS: Record<ByokTier, ByokTierTerms> = {
+  standard: {
+    name: "Standard",
+    monthlyPriceCents: 1500,
+    annualPriceCents: 14400,
+    computerAllowanceCents: 500,
+    computerSize: "standard",
+  },
+  pro: {
+    name: "Pro",
+    monthlyPriceCents: 4900,
+    annualPriceCents: 46800,
+    computerAllowanceCents: 2000,
+    computerSize: "large",
+  },
+  max: {
+    name: "Max",
+    monthlyPriceCents: 14900,
+    annualPriceCents: 142800,
+    computerAllowanceCents: 4000,
+    computerSize: "xlarge",
+  },
+};
+
+/** The tier's price for new subscriptions billed every `interval`; null when it is not offered. */
+function byokTierPriceCents(tier: ByokTier, interval: ByokInterval): number | null {
+  if (BYOK_TIERS.standard.monthlyPriceCents === null) return null;
+  const terms = BYOK_TIERS[tier];
+  if (terms.monthlyPriceCents === null) return null;
+  return interval === "year" ? terms.annualPriceCents : terms.monthlyPriceCents;
+}
 
 /** Whole dollars when the amount is round ("$15"), otherwise cents ("$12.50"). */
 function dollars(cents: number) {

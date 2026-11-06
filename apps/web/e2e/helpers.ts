@@ -188,7 +188,6 @@ export async function openUserSettings(
     | "wallet"
     | "usage"
     | "computer"
-    | "billing"
     | "updates",
 ) {
   // A reload keeps settings open because the URL holds them; closing clears the URL at once.

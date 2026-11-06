@@ -35,14 +35,6 @@ export const ZH_CN_MESSAGES: Record<string, string> = {
   "Self-host Labradoodle": "自行托管 Labradoodle",
   "Have any questions? Reply to this email.": "有任何问题？请回复此邮件。",
   Unsubscribe: "退订",
-  "Invite a friend": "邀请好友",
-  "Invite a friend to Labradoodle: they get {weeks} weeks free, and you earn a free month when they start a qualifying subscription with a new card.":
-    "邀请朋友加入 Labradoodle：对方可免费使用 {weeks} 周；当对方用新卡开始符合条件的订阅时，你将获得一个月免费。",
-  "Open Labradoodle": "打开 Labradoodle",
-  "and choose Invite friends for your link.": "并选择“邀请好友”获取你的链接。",
-  "Have any questions? Just reply to this email.": "有任何问题？直接回复此邮件即可。",
-  "If you're enjoying Labradoodle,": "如果你喜欢 Labradoodle，",
-  "give us a star on GitHub": "欢迎在 GitHub 上给我们点个星标",
   "We received your Labradoodle plugin": "我们已收到你的 Labradoodle 插件",
   "Thanks for submitting a plugin to the Labradoodle marketplace.":
     "感谢你向 Labradoodle 插件市场提交插件。",
@@ -64,9 +56,4 @@ export const ZH_CN_MESSAGES: Record<string, string> = {
   "Your Labradoodle page claim: {name}": "你在 Labradoodle 的页面认领：{name}",
   "Your changes to the {name} page are approved.": "你对 {name} 页面的修改已获批准。",
   "We couldn't approve your changes to the {name} page.": "我们无法批准你对 {name} 页面的修改。",
-  "Your saved computer files will be deleted": "你保存的电脑文件将被删除",
-  "Your saved computer files will be deleted on {date} unless you resubscribe.":
-    "除非你重新订阅，否则你保存的电脑文件将于 {date} 被删除。",
-  "Your saved computer files will be deleted on {date} unless you choose a plan.":
-    "除非你选择一个套餐，否则你保存的电脑文件将于 {date} 被删除。",
 };

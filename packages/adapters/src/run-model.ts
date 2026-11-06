@@ -15,15 +15,10 @@ import { MISSING_MODEL_RUN_ERROR } from "@labradoodle/core";
 import { cloudflareProviderEnv } from "./cloudflare-ai-gateway.js";
 import { resolveDeploymentModel } from "./deployment-model.js";
 import type { ExecutorDeps } from "./executor-deps.js";
-import {
-  HostedModelCreditsRequiredError,
-  hostedModelCreditObserver,
-} from "./model-credit-observer.js";
 import { resolveMemberMainModel, selectConfiguredModel } from "./model-roles.js";
 import {
   enabledOpenAiCompatibleModelIds,
   findConnectedModelCredential,
-  hasHostedModelCredits,
   PINNED_PROVIDER_NOT_CONNECTED,
   UnavailableModelForAuthError,
   validateConnectedModelChoice,
@@ -57,7 +52,6 @@ export function runtimeFallbackModel(runtime: AgentRuntime) {
 export function isTerminalModelSetupError(error: unknown): boolean {
   return (
     error instanceof UnavailableModelForAuthError ||
-    error instanceof HostedModelCreditsRequiredError ||
     isRetiredModelCredentialError(error) ||
     (error instanceof Error &&
       (error.message === CLOUDFLARE_AI_GATEWAY_CONFIG_MESSAGE ||
@@ -69,13 +63,9 @@ export async function botSettingsDeps(
   deps: ExecutorDeps,
   scope: { userId: string; spaceId: string },
 ): Promise<BotSettingsDeps> {
-  const hostedProvider = (await modelCreditBillingEnabled(deps))
-    ? resolveDeploymentModel().provider
-    : undefined;
   return {
     prisma: deps.prisma,
     modelChange: {
-      hostedProvider,
       secretStore: deps.secretStore,
       codexCatalog: deps.codexCatalog,
       refreshExpiredCredential: (credentialScope, secretId, provider) =>
@@ -95,7 +85,6 @@ export async function botSettingsDeps(
           override: null,
           overrideCredential: null,
           main,
-          hostedProvider,
           defaults: {
             settings,
             deployment: deps.deploymentModelConfigured ? resolveDeploymentModel() : null,
@@ -140,29 +129,8 @@ function assertCompatibleModelEnabled(
   }
 }
 
-export async function modelCreditBillingEnabled(
-  deps: Pick<ExecutorDeps, "prisma" | "billingEnabled">,
-): Promise<boolean> {
-  if (deps.billingEnabled !== undefined) return deps.billingEnabled;
-  return (
-    (
-      await deps.prisma.deploymentSettings.findUnique({
-        where: { id: "default" },
-        select: { modelCreditsEnabled: true },
-      })
-    )?.modelCreditsEnabled === true
-  );
-}
-
 export async function resolveModelKey(...args: Parameters<typeof resolveModelKeyMaterial>) {
-  const [deps, userId, spaceId, , provider] = args;
-  const billingEnabled = await modelCreditBillingEnabled(deps);
-  const scope = { userId, spaceId };
-  if (billingEnabled && (await hasHostedModelCredits(deps.prisma, scope, provider))) {
-    args[3] = null;
-    // Funded managed backups use deployment credentials just like the primary.
-    args[7] = { ...args[7], requireStoredSecret: false };
-  }
+  const [deps, , , , provider] = args;
   const credential = args[3];
   const material = await resolveModelKeyMaterial(...args);
   const deployment = resolveDeploymentModel();
@@ -181,9 +149,7 @@ export async function resolveModelKey(...args: Parameters<typeof resolveModelKey
   if (!material.apiKey?.trim() && !runtimeKey?.trim() && !keyless) {
     throw new UnavailableModelForAuthError(MISSING_MODEL_RUN_ERROR);
   }
-  const callObserver =
-    !credential && billingEnabled ? await hostedModelCreditObserver(deps.prisma, scope) : undefined;
-  return { ...material, apiKey: material.apiKey ?? runtimeKey, callObserver };
+  return { ...material, apiKey: material.apiKey ?? runtimeKey };
 }
 
 async function resolveModelKeyMaterial(
@@ -234,8 +200,6 @@ async function resolveModelKeyMaterial(
         where: { id: credential.secretId, userId, spaceId: null },
       });
       if (!row) {
-        if (await modelCreditBillingEnabled(deps))
-          throw new Error("Connect that model provider again.");
         if (requireStoredSecret) throw new Error("Backup model credential is no longer available");
         if (credential.provider === OPENAI_COMPATIBLE_PROVIDER_ID) {
           throw new UnavailableModelForAuthError("Unknown model for that provider");
@@ -401,7 +365,6 @@ export function resolvedModelRunFields(
 ): Omit<AgentRunRequest["model"], "provider" | "id" | "connectionId" | "thinkingLevel"> {
   return {
     apiKey: resolved.oauth ? undefined : resolved.apiKey,
-    callObserver: resolved.callObserver,
     ...(resolved.accountId ? { accountId: resolved.accountId } : {}),
     ...(resolved.gatewayId ? { gatewayId: resolved.gatewayId } : {}),
     baseUrl: resolved.baseUrl,
@@ -426,8 +389,8 @@ export function resolvedModelRunFields(
 }
 
 /**
- * A role row's model on its own connection, or on the deployment's for its funded provider.
- * The connection is returned with the key so a run can record which one served it.
+ * A role row's model on its own connection. The connection is returned with the key so a run can
+ * record which one served it.
  */
 export async function resolveConnectedModelKey(
   deps: ExecutorDeps,
@@ -438,16 +401,13 @@ export async function resolveConnectedModelKey(
   requireStoredSecret = false,
   credentialId?: string,
 ) {
-  const hostedProvider = (await modelCreditBillingEnabled(deps))
-    ? resolveDeploymentModel().provider
-    : undefined;
   const validationError = await validateConnectedModelChoice(
     deps.prisma,
     deps.secretStore,
     scope,
     provider,
     modelId,
-    { hostedProvider, credentialId, codexCatalog: deps.codexCatalog },
+    { credentialId, codexCatalog: deps.codexCatalog },
   );
   if (validationError) throw new Error(validationError);
   const credential = await findConnectedModelCredential(
@@ -458,7 +418,7 @@ export async function resolveConnectedModelKey(
     modelId,
     { credentialId },
   );
-  if (!credential && provider !== hostedProvider) throw new Error(PINNED_PROVIDER_NOT_CONNECTED);
+  if (!credential) throw new Error(PINNED_PROVIDER_NOT_CONNECTED);
   const resolved = await resolveModelKey(
     deps,
     scope.userId,
@@ -544,9 +504,6 @@ export async function resolveRunModel(
     override,
     overrideCredential,
     main,
-    hostedProvider: (await modelCreditBillingEnabled(deps))
-      ? resolveDeploymentModel().provider
-      : undefined,
     defaults: {
       settings,
       deployment: deps.deploymentModelConfigured ? resolveDeploymentModel() : null,

@@ -1,8 +1,8 @@
 import type { Workspace } from "@labradoodle/contracts";
 import { displayName } from "@labradoodle/core";
-import { GUEST_ROLE, isOwnerRole } from "./billing.js";
 import type { PrismaClient } from "./client.js";
 import { Prisma } from "./client.js";
+import { GUEST_ROLE, isOwnerRole } from "./organization-roles.js";
 import type { PageShareSecret } from "./page-shares.js";
 import { runAsSystem } from "./row-security.js";
 import { IsolationError } from "./scope.js";
@@ -143,22 +143,6 @@ async function loadActorSpace(
 }
 
 /**
- * Restores the claim state an account-deletion attempt took over, leaving untouched every claim
- * an earlier attempt of that deletion left, and markers other deletions still need.
- */
-export async function restoreSpaceDeletionClaims(
-  prisma: PrismaClient,
-  claimId: string,
-  takenOver: SpaceDeletionTakeover[],
-): Promise<void> {
-  for (const space of takenOver)
-    await prisma.space.updateMany({
-      where: { id: space.spaceId, deletionClaimId: claimId },
-      data: { deletionClaimId: space.deletionClaimId, deletingAt: space.deletingAt },
-    });
-}
-
-/**
  * A person's skills, recorded demos, MCP servers and plugins work in every Space of theirs but are homed in the
  * one they were added in. Before they leave that Space, or it goes, each moves to their fallback
  * Space, a plugin with its servers and skills as one. An item whose name is taken there stays,
@@ -260,7 +244,7 @@ export async function personalOrganizationIds(
 export async function claimSpacesLeavingWithAccount(
   prisma: PrismaClient,
   userId: string,
-): Promise<{ claimId: string; spaceIds: string[]; takenOver: SpaceDeletionTakeover[] }> {
+): Promise<{ claimId: string; spaceIds: string[] }> {
   const organizationIds = await personalOrganizationIds(prisma, userId);
   const claimId = `account-deletion:${userId}`;
   const candidates = await prisma.space.findMany({
@@ -277,37 +261,16 @@ export async function claimSpacesLeavingWithAccount(
     orderBy: { createdAt: "asc" },
   });
   const spaceIds: string[] = [];
-  const takenOver: SpaceDeletionTakeover[] = [];
   for (const { id } of candidates) {
-    const outcome = await withTransactionRetry(() =>
+    const claimed = await withTransactionRetry(() =>
       prisma.$transaction((tx) => claimSpaceForDeletion(tx, id, claimId, userId), {
         isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
       }),
     );
-    if (!outcome.claimed) continue;
-    spaceIds.push(id);
-    // Only what this attempt claimed may a rollback restore; claims an earlier attempt of
-    // this deletion left stay, so a retry keeps its place in the teardown.
-    if (outcome.tookOver) takenOver.push({ spaceId: id, ...outcome.tookOver });
+    if (claimed) spaceIds.push(id);
   }
-  return { claimId, spaceIds, takenOver };
+  return { claimId, spaceIds };
 }
-
-/** What claiming one space did, with what a takeover replaced, so a rollback can restore it. */
-export type SpaceDeletionClaimOutcome =
-  | { claimed: false }
-  | {
-      claimed: true;
-      /** Null when the claim was already ours; otherwise the state the claim replaced. */
-      tookOver: { deletionClaimId: string | null; deletingAt: Date | null } | null;
-    };
-
-/** A space this attempt claimed, with the claim state to restore on rollback. */
-export type SpaceDeletionTakeover = {
-  spaceId: string;
-  deletionClaimId: string | null;
-  deletingAt: Date | null;
-};
 
 /**
  * Claims a Space for a whole-account or whole-organization deletion, keeping a claim it already
@@ -323,17 +286,17 @@ export async function claimSpaceForDeletion(
   spaceId: string,
   claimId: string,
   soleMemberId?: string,
-): Promise<SpaceDeletionClaimOutcome> {
+): Promise<boolean> {
   await lockSpaceDeletion(tx, spaceId);
   const space = await tx.space.findUnique({
     where: { id: spaceId },
     select: { deletingAt: true, deletionClaimId: true },
   });
-  if (!space) return { claimed: false };
-  if (space.deletionClaimId === claimId) return { claimed: true, tookOver: null };
+  if (!space) return false;
+  if (space.deletionClaimId === claimId) return true;
   if (soleMemberId) {
     const others = await tx.spaceMember.count({ where: otherNonGuests(spaceId, soleMemberId) });
-    if (others > 0) return { claimed: false };
+    if (others > 0) return false;
   }
   const stale = new Date(Date.now() - SPACE_DELETION_CLAIM_TIMEOUT_MS);
   if (space.deletionClaimId && space.deletingAt && space.deletingAt >= stale)
@@ -342,10 +305,7 @@ export async function claimSpaceForDeletion(
     where: { id: spaceId },
     data: { deletingAt: new Date(), deletionClaimId: claimId },
   });
-  return {
-    claimed: true,
-    tookOver: { deletionClaimId: space.deletionClaimId, deletingAt: space.deletingAt },
-  };
+  return true;
 }
 
 /**

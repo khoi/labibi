@@ -36,16 +36,6 @@ export const FR_MESSAGES: Record<string, string> = {
   "Self-host Labradoodle": "Héberger Labradoodle soi-même",
   "Have any questions? Reply to this email.": "Des questions ? Répondez à cet e-mail.",
   Unsubscribe: "Se désabonner",
-  "Invite a friend": "Invitez un ami",
-  "Invite a friend to Labradoodle: they get {weeks} weeks free, and you earn a free month when they start a qualifying subscription with a new card.":
-    "Invitez un ami sur Labradoodle : il profite de {weeks} semaines gratuites, et vous gagnez un mois offert quand il démarre un abonnement éligible avec une nouvelle carte.",
-  "Open Labradoodle": "Ouvrez Labradoodle",
-  "and choose Invite friends for your link.":
-    "et choisissez Inviter des amis pour obtenir votre lien.",
-  "Have any questions? Just reply to this email.":
-    "Des questions ? Répondez simplement à cet e-mail.",
-  "If you're enjoying Labradoodle,": "Si Labradoodle vous plaît,",
-  "give us a star on GitHub": "donnez-nous une étoile sur GitHub",
   "We received your Labradoodle plugin": "Nous avons reçu votre plugin Labradoodle",
   "Thanks for submitting a plugin to the Labradoodle marketplace.":
     "Merci d’avoir proposé un plugin sur la marketplace Labradoodle.",
@@ -70,10 +60,4 @@ export const FR_MESSAGES: Record<string, string> = {
     "Vos modifications de la page {name} sont approuvées.",
   "We couldn't approve your changes to the {name} page.":
     "Nous n'avons pas pu approuver vos modifications de la page {name}.",
-  "Your saved computer files will be deleted":
-    "Les fichiers enregistrés de votre ordinateur vont être supprimés",
-  "Your saved computer files will be deleted on {date} unless you resubscribe.":
-    "Les fichiers enregistrés de votre ordinateur seront supprimés le {date}, sauf si vous vous réabonnez.",
-  "Your saved computer files will be deleted on {date} unless you choose a plan.":
-    "Les fichiers enregistrés de votre ordinateur seront supprimés le {date}, sauf si vous choisissez une offre.",
 };

@@ -7,7 +7,7 @@ import { DecisionAutoReviewProvider } from "./decision-auto-review.js";
 import { decisionModel } from "./decision-models.js";
 import type { ExecutorDeps } from "./executor-deps.js";
 import { HttpDecisionProvider } from "./http-decisions.js";
-import { findConnectedModelCredential, hasHostedModelCredits } from "./model-selection.js";
+import { findConnectedModelCredential } from "./model-selection.js";
 import { resolveModelKey } from "./run-model.js";
 /** The Auto Review provider that judges a run's action with one checker choice. */
 export async function autoReviewCheckerProvider(
@@ -45,8 +45,7 @@ export async function autoReviewCheckerProvider(
       backups?.some(
         (choice) => choice.provider === checker.provider && choice.modelId === checker.model,
       )) &&
-    !reviewCredential &&
-    !(await hasHostedModelCredits(deps.prisma, { userId, spaceId }, checker.provider))
+    !reviewCredential
   ) {
     throw new Error("Selected checker connection is unavailable");
   }
@@ -73,7 +72,6 @@ export async function autoReviewCheckerProvider(
     ? new DecisionAutoReviewProvider({
         provider: new HttpDecisionProvider("openrouter", {
           apiKey: judgeKey.apiKey ?? "",
-          callObserver: judgeKey.callObserver,
           onUsage,
         }),
         providerId: checker.provider,
@@ -85,7 +83,6 @@ export async function autoReviewCheckerProvider(
           runtime: deps.runtime,
           checker,
           apiKey: judgeKey.oauth ? undefined : judgeKey.apiKey,
-          callObserver: judgeKey.callObserver,
           accountId: judgeKey.accountId,
           gatewayId: judgeKey.gatewayId,
           baseUrl: judgeKey.baseUrl,

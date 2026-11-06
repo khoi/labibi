@@ -174,7 +174,6 @@ const subscriptionMe: Me = {
   sandboxProvider: "docker",
   mcpStdioEnabled: false,
   avatarStyle: "organic",
-  billingEnabled: false,
 };
 
 const subscriptionCatalog: ModelCatalogEntry[] = [

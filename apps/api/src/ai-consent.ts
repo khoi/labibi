@@ -110,7 +110,6 @@ export async function aiConsentStatus(
           override,
           overrideCredential,
           main,
-          hostedProvider: deps.billing?.modelCreditsEnabled ? deps.env.defaultProvider : undefined,
           defaults: { settings, deployment },
         });
       }),

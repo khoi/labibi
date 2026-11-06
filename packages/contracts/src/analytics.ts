@@ -1,9 +1,5 @@
 import { z } from "zod";
-import {
-  BILLING_CANCELLATION_REASONS,
-  SIGNUP_SURVEY_TEAM_SIZES,
-  SIGNUP_SURVEY_USES,
-} from "./domain.js";
+import { SIGNUP_SURVEY_TEAM_SIZES, SIGNUP_SURVEY_USES } from "./domain.js";
 import { RUN_ERROR_KINDS, RunTriggerSchema } from "./runs.js";
 
 // No free-form properties: this is also the final allowlist at the external boundary.
@@ -42,7 +38,7 @@ export const AnalyticsBotSetting = z.enum([
 export const AnalyticsTrigger = RunTriggerSchema;
 /** A coarse failure class; "other" covers everything without a known kind. Never the error text. */
 export const AnalyticsErrorKind = z.enum([...RUN_ERROR_KINDS, "other"]);
-export const AnalyticsModelConnectMethod = z.enum(["api_key", "oauth", "credits", "compatible"]);
+export const AnalyticsModelConnectMethod = z.enum(["api_key", "oauth", "compatible"]);
 const modelConnect = {
   method: AnalyticsModelConnectMethod,
   // A model catalog provider id, checked against the fixed catalog by the caller.
@@ -83,14 +79,6 @@ export const AnalyticsEvent = z.discriminatedUnion("name", [
       skipped: z.boolean(),
       use: z.enum(SIGNUP_SURVEY_USES).optional(),
       teamSize: z.enum(SIGNUP_SURVEY_TEAM_SIZES).optional(),
-    })
-    .strict(),
-  // Only the fixed reason; the comment stays in the database.
-  z
-    .object({
-      name: z.literal("subscription_cancel_feedback"),
-      reason: z.enum(BILLING_CANCELLATION_REASONS).optional(),
-      commented: z.boolean(),
     })
     .strict(),
 ]);

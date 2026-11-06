@@ -427,7 +427,6 @@ function fixture({
       findFirst: vi.fn(async () => ({ id: "review-secret", ciphertext: "fake-cipher" })),
     },
     usageRecord: { createMany: vi.fn(async () => ({ count: 1 })) },
-    modelCreditEntry: { findUnique: vi.fn(async () => null) },
     deploymentSettings: {
       findUnique: vi.fn(async () => ({
         defaultModelProvider: "openrouter",

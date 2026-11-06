@@ -1,7 +1,6 @@
 import {
   changeUserTimezone,
   effectiveModelRole,
-  hasHostedModelCredits,
   isAutoReviewCheckerConfigured,
   PushSessionEndedError,
 } from "@labradoodle/adapters";
@@ -27,11 +26,7 @@ import {
   selectVoicePreference,
 } from "@labradoodle/db";
 import { ORPCError } from "@orpc/server";
-import { createAccessGrant, listAccessGrants, revokeAccessGrant } from "../access-grants.js";
-import { requireAdmin } from "../admins.js";
 import { aiConsentStatus, allowAiConsent } from "../ai-consent.js";
-import type { BillingService } from "../billing.js";
-import { firstModelConnectAnalytics } from "../model-connect-analytics.js";
 import type { RouterDeps } from "../router.js";
 import { withSerializableRetry } from "../serializable-retry.js";
 import {
@@ -80,72 +75,6 @@ export function accountRoutes(ctx: RouterContext) {
     },
     health: os.health.handler(async () => ({ ok: true as const, version: "0.1.0" })),
     me: authed.me.handler(async ({ context }): Promise<Me> => meDto(deps, context.actor)),
-    billing: {
-      selectFunding: authed.billing.selectFunding.handler(async ({ context, input }) => {
-        const billing = requireBilling(deps);
-        if (input.funding === "credits") {
-          const record = await firstModelConnectAnalytics(deps, context.actor, "credits");
-          record(undefined, { name: "model_connect_started" });
-        }
-        return billing.selectFunding(context.actor, input.funding, input.client, input.interval);
-      }),
-      purchaseCredits: authed.billing.purchaseCredits.handler(async ({ context, input }) =>
-        requireBilling(deps).purchaseCredits(context.actor, input),
-      ),
-      setMonthlyCredits: authed.billing.setMonthlyCredits.handler(async ({ context, input }) =>
-        requireBilling(deps).setMonthlyCredits(context.actor, input.amountCents),
-      ),
-      status: authed.billing.status.handler(async ({ context, input }) => {
-        const billing = requireBilling(deps);
-        // A failed claim fails the request, so the client keeps the code and sends it again.
-        if (input?.referralCode) await billing.claimReferral(context.actor, input.referralCode);
-        return billing.status(context.actor);
-      }),
-      refresh: authed.billing.refresh.handler(async ({ context }) => {
-        const billing = requireBilling(deps);
-        await billing.syncForActor(context.actor);
-        return billing.status(context.actor);
-      }),
-      checkout: authed.billing.checkout.handler(async ({ context, input }) =>
-        requireBilling(deps).checkout(context.actor, input?.client, input?.interval, input?.tier),
-      ),
-      portal: authed.billing.portal.handler(async ({ context, input }) =>
-        requireBilling(deps).portal(context.actor, input?.client),
-      ),
-      endTrial: authed.billing.endTrial.handler(async ({ context }) => {
-        const billing = requireBilling(deps);
-        await billing.endTrial(context.actor);
-        return billing.status(context.actor);
-      }),
-      switchToYearly: authed.billing.switchToYearly.handler(async ({ context }) => {
-        const billing = requireBilling(deps);
-        await billing.switchToYearly(context.actor);
-        return billing.status(context.actor);
-      }),
-      changeTier: authed.billing.changeTier.handler(async ({ context, input }) => {
-        const billing = requireBilling(deps);
-        await billing.changeTier(context.actor, input.tier);
-        return billing.status(context.actor);
-      }),
-      claimReferral: authed.billing.claimReferral.handler(async ({ context, input }) => {
-        await requireBilling(deps).claimReferral(context.actor, input.code);
-        return { ok: true as const };
-      }),
-    },
-    accessGrants: {
-      list: authed.accessGrants.list.handler(async ({ context }) => {
-        await requireGrantAdmin(deps, context.actor);
-        return listAccessGrants(deps.prisma);
-      }),
-      create: authed.accessGrants.create.handler(async ({ context, input }) => {
-        await requireGrantAdmin(deps, context.actor);
-        return createAccessGrant(deps.prisma, context.actor.userId, input);
-      }),
-      revoke: authed.accessGrants.revoke.handler(async ({ context, input }) => {
-        await requireGrantAdmin(deps, context.actor);
-        return revokeAccessGrant(deps.prisma, input.id);
-      }),
-    },
     preferences: {
       update: authed.preferences.update.handler(async ({ context, input }): Promise<Me> => {
         const userId = context.actor.userId;
@@ -473,25 +402,6 @@ async function loadAutoReviewSettings(deps: RouterDeps, actor: Actor) {
     ),
   );
   const checkerAvailable =
-    connections.some(Boolean) ||
-    (deploymentChecker !== null && environmentAvailable) ||
-    (
-      await Promise.all(
-        [...new Set(memberChoices.map((choice) => choice.provider))].map((provider) =>
-          hasHostedModelCredits(deps.prisma, actor, provider),
-        ),
-      )
-    ).some(Boolean);
+    connections.some(Boolean) || (deploymentChecker !== null && environmentAvailable);
   return { ...settings, checkerAvailable };
-}
-
-function requireBilling(deps: RouterDeps): BillingService {
-  if (!deps.billing) throw new ORPCError("NOT_FOUND", { message: "Billing is not enabled" });
-  return deps.billing;
-}
-
-async function requireGrantAdmin(deps: RouterDeps, actor: Actor) {
-  await requireAdmin(deps, actor.userId);
-  if (!deps.billing?.modelCreditsEnabled)
-    throw new ORPCError("NOT_FOUND", { message: "Model credits are not enabled" });
 }

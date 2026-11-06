@@ -3,7 +3,6 @@ import {
   Brain,
   CloudDownload,
   Cpu,
-  CreditCard,
   Gauge,
   KeyRound,
   Monitor,
@@ -26,7 +25,6 @@ export type SettingsNavItem = {
 export function useSettingsNavItems(available: {
   wallet: boolean;
   computer: boolean;
-  billing: boolean;
   updates: boolean;
 }): SettingsNavItem[] {
   const { t } = useLingui();
@@ -43,7 +41,6 @@ export function useSettingsNavItems(available: {
     ...(available.computer
       ? [{ id: "computer" as const, label: t`My computer`, icon: Monitor }]
       : []),
-    ...(available.billing ? [{ id: "billing" as const, label: t`Billing`, icon: CreditCard }] : []),
     ...(available.updates
       ? [{ id: "updates" as const, label: t`Updates`, icon: CloudDownload }]
       : []),

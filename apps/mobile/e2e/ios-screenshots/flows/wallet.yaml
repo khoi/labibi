@@ -1,45 +1,31 @@
 appId: com.labradoodle.app
-name: Billing
+name: Wallet
 ---
 - runFlow:
     file: ../subflows/sign-in.yaml
     env:
       LABRADOODLE_ACTIVE_EMAIL: ${LABRADOODLE_SCREENSHOT_EMAIL}
-- openLink: "labradoodle:///billing"
-- extendedWaitUntil:
-    visible: ".*Renews.*|.*Plan.*"
-    timeout: 15000
-- waitForAnimationToEnd:
-    timeout: 3000
-- takeScreenshot: 01-billing
-- tapOn: "Standard"
-- extendedWaitUntil:
-    visible: "Max · .*"
-    timeout: 10000
-- waitForAnimationToEnd:
-    timeout: 3000
-- takeScreenshot: 02-billing-tiers
 - openLink: "labradoodle:///wallet"
 - extendedWaitUntil:
     visible: "Disconnect"
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 3000
-- takeScreenshot: 03-wallet
+- takeScreenshot: 01-wallet
 - openLink: "labradoodle:///spending-limit"
 - extendedWaitUntil:
     visible: "Amount.*"
     timeout: 15000
 - waitForAnimationToEnd:
     timeout: 3000
-- takeScreenshot: 04-spending-limit-none
+- takeScreenshot: 02-spending-limit-none
 - tapOn: "Amount.*"
 - waitForAnimationToEnd:
     timeout: 3000
 - inputText: "200"
 - waitForAnimationToEnd:
     timeout: 3000
-- takeScreenshot: 05-spending-limit-amount
+- takeScreenshot: 03-spending-limit-amount
 # Maestro's taps miss the system prompt's buttons; saving is covered by unit and web tests.
 - tapOn:
     text: "Cancel"

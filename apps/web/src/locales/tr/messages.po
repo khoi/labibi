@@ -27,16 +27,6 @@ msgstr "{0, plural, one {# bağlayıcı} other {# bağlayıcı}}"
 msgid "{0, plural, one {# file} other {# files}}"
 msgstr "{0, plural, one {# dosya} other {# dosya}}"
 
-#. placeholder {0}: referral.rewards
-#: src/components/InviteDialog.tsx
-msgid "{0, plural, one {# free month earned} other {# free months earned}}"
-msgstr "{0, plural, one {# ücretsiz ay kazanıldı} other {# ücretsiz ay kazanıldı}}"
-
-#. placeholder {0}: item.freeMonths
-#: src/pages/AdminAccessPage.tsx
-msgid "{0, plural, one {# free month} other {# free months}}"
-msgstr "{0, plural, one {# ücretsiz ay} other {# ücretsiz ay}}"
-
 #. placeholder {0}: skills.length - shownSkills.length
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "{0, plural, one {# more} other {# more}}"
@@ -115,10 +105,6 @@ msgstr "{0} MB"
 msgid "{0} TB"
 msgstr "{0} TB"
 
-#: src/lib/billing.ts
-msgid "{amount} / {period}"
-msgstr "{amount} / {period}"
-
 #: src/components/vault/VaultItemEditor.tsx
 msgid "{commandVariable} is reserved and cannot be used as a command variable. Choose another name."
 msgstr "{commandVariable} ayrılmıştır ve komut değişkeni olarak kullanılamaz. Başka bir ad seçin."
@@ -130,22 +116,6 @@ msgstr "{connectedCount, plural, one {# bağlı} other {# bağlı}}"
 #: src/components/markdown-copy.tsx
 msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# satır} other {# satır}}"
-
-#: src/lib/billing.ts
-msgid "{count} days"
-msgstr "{count} gün"
-
-#: src/lib/billing.ts
-msgid "{count} months"
-msgstr "{count} ay"
-
-#: src/lib/billing.ts
-msgid "{count} weeks"
-msgstr "{count} hafta"
-
-#: src/lib/billing.ts
-msgid "{count} years"
-msgstr "{count} yıl"
 
 #: src/lib/relative-time.ts
 msgid "{days}d ago"
@@ -294,10 +264,6 @@ msgstr "{provider} çok geç yanıt verdi. Tekrar deneyin."
 msgid "{remaining} left"
 msgstr "{remaining} kaldı"
 
-#: src/pages/BillingSettingsPanel.tsx
-msgid "{seats, plural, one {# seat} other {# seats}}"
-msgstr "{seats, plural, one {# koltuk} other {# koltuk}}"
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "{shown} a day"
 msgstr "Günde {shown}"
@@ -363,18 +329,10 @@ msgstr "{summary} Yedek modelleriniz de başarısız oldu."
 msgid "{toolCount, plural, one {# tool} other {# tools}}"
 msgstr "{toolCount, plural, one {# araç} other {# araç}}"
 
-#: src/components/ModelCredits.tsx
-msgid "{vcpus} vCPU, {memoryGb} GB, {hours} computer hours a month"
-msgstr "{vcpus} vCPU, {memoryGb} GB, ayda {hours} bilgisayar saati"
-
 #. placeholder {0}: mention.name
 #: src/pages/shell/composer.tsx
 msgid "@{0}"
 msgstr "@{0}"
-
-#: src/components/ModelCredits.tsx
-msgid "/ month"
-msgstr "/ ay"
 
 #: src/pages/shell/message-cards.tsx
 msgid "A bit of everything"
@@ -451,7 +409,6 @@ msgstr "{label} için eylemler"
 msgid "Actions for {name}"
 msgstr ""
 
-#: src/pages/BillingSettingsPanel.tsx
 #: src/pages/RoutineEditor.tsx
 msgid "Active"
 msgstr "Etkin"
@@ -511,10 +468,6 @@ msgstr "Bir HTTPS sunucu URL'si gir."
 #: src/pages/PluginsOverlay.tsx
 msgid "Add another"
 msgstr "Bir tane daha ekle"
-
-#: src/components/ModelCredits.tsx
-msgid "Add credits"
-msgstr "Kredi ekle"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Add custom"
@@ -611,10 +564,6 @@ msgstr "Gelişmiş..."
 msgid "All"
 msgstr "Tümü"
 
-#: src/components/ModelCredits.tsx
-msgid "All {credit} goes to model usage."
-msgstr "{credit} tutarın tamamı model kullanımına gider."
-
 #: src/pages/Artifacts.tsx
 msgid "All chats"
 msgstr "Tüm sohbetler"
@@ -706,10 +655,6 @@ msgstr "Anthropic API"
 #: src/pages/model-settings/compatible-model-fields.tsx
 msgid "Anthropic Messages"
 msgstr "Anthropic Messages"
-
-#: src/pages/Paywall.tsx
-msgid "Any model, with your own key"
-msgstr "Herhangi bir model, kendi anahtarınla"
 
 #: src/components/pages/SharePopover.tsx
 msgid "Anyone with the link"
@@ -857,10 +802,6 @@ msgstr "Otomatik"
 msgid "Available after the routine is saved"
 msgstr "Rutin kaydedildikten sonra kullanılabilir"
 
-#: src/components/ModelCredits.tsx
-msgid "Available credits"
-msgstr "Kullanılabilir krediler"
-
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Available to shell commands as {commandVariable}"
 msgstr "Kabuk komutlarında {commandVariable} olarak kullanılabilir"
@@ -868,7 +809,6 @@ msgstr "Kabuk komutlarında {commandVariable} olarak kullanılabilir"
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/vault/VaultPageHeader.tsx
-#: src/pages/AdminAccessPage.tsx
 #: src/pages/AdminPluginsPage.tsx
 #: src/pages/Auth.tsx
 #: src/pages/McpServersOverlay.tsx
@@ -909,18 +849,10 @@ msgstr "Temel kimlik doğrulama ({username})"
 msgid "Bearer token"
 msgstr "Bearer token"
 
-#: src/pages/settings-nav.ts
-msgid "Billing"
-msgstr "Faturalandırma"
-
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Billing address"
 msgstr "Fatura adresi"
-
-#: src/components/ModelCredits.tsx
-msgid "Billing period"
-msgstr "Fatura dönemi"
 
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Block"
@@ -972,7 +904,6 @@ msgstr "Görselleri okuyamaz"
 #: src/components/ComputerMaintenanceActions.tsx
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/markdown-link-prompt.tsx
-#: src/components/ModelCredits.tsx
 #: src/components/PasskeySettings.tsx
 #: src/components/SpaceMembersSettings.tsx
 #: src/components/SpendingLimitSettings.tsx
@@ -999,10 +930,6 @@ msgstr ""
 #: src/pages/shell/chat-context.tsx
 msgid "Cancel reply"
 msgstr "Yanıtı iptal et"
-
-#: src/pages/BillingSettingsPanel.tsx
-msgid "Canceled"
-msgstr "İptal edildi"
 
 #: src/components/CloudAgentCard.tsx
 msgid "cancelled"
@@ -1146,11 +1073,6 @@ msgstr "Yeni bir parola seçin"
 #: src/pages/Onboarding.tsx
 msgid "Choose a provider"
 msgstr "Sağlayıcı seç"
-
-#: src/components/ModelCredits.tsx
-#: src/components/SubscriptionGate.tsx
-msgid "Choose how to use Labradoodle"
-msgstr "Labradoodle'yu nasıl kullanacağını seç"
 
 #: src/components/vault/VaultItemEditor.tsx
 msgid "City"
@@ -1303,10 +1225,6 @@ msgstr "Bilgisayar"
 msgid "Computer failed to boot"
 msgstr "Bilgisayar başlatılamadı"
 
-#: src/components/ModelCredits.tsx
-msgid "Computer hours left"
-msgstr "Kalan bilgisayar saati"
-
 #: src/pages/shell/computer-overlay.tsx
 msgid "Computer is asleep"
 msgstr "Bilgisayar uykuda"
@@ -1406,18 +1324,9 @@ msgstr "“{name}” MCP sunucusunu bağla"
 msgid "Connect memory provider"
 msgstr "Hafıza sağlayıcısı bağla"
 
-#: src/components/ModelCredits.tsx
-msgid "Connect my own"
-msgstr "Kendiminkini bağla"
-
 #: src/pages/McpServersOverlay.tsx
 msgid "Connect OAuth"
 msgstr "OAuth ile bağlan"
-
-#. js-lingui-explicit-id
-#: src/lib/run-error.ts
-msgid "Connect your own API key in Models or choose Labradoodle credits in Billing."
-msgstr "Modeller bölümünde kendi API anahtarınızı bağlayın veya Faturalandırma'da Labradoodle kredilerini seçin."
 
 #: src/components/ComputerDeviceSettings.tsx
 #: src/components/integrations/IntegrationSetup.tsx
@@ -1489,16 +1398,11 @@ msgstr "Devam"
 msgid "Continue in Background"
 msgstr "Arka planda devam et"
 
-#: src/components/ModelCredits.tsx
-msgid "Continue to checkout"
-msgstr "Ödemeye devam et"
-
 #. placeholder {0}: reset.sso.name
 #: src/pages/Auth.tsx
 msgid "Continue with {0}"
 msgstr "{0} ile devam et"
 
-#: src/components/InviteDialog.tsx
 #: src/components/markdown-copy.tsx
 #: src/components/pages/PublicPageShell.tsx
 #: src/components/pages/SharePopover.tsx
@@ -1527,7 +1431,6 @@ msgstr "Diyagram kaynağını kopyala"
 msgid "Copy invite link"
 msgstr ""
 
-#: src/components/InviteDialog.tsx
 #: src/components/pages/PublicPageShell.tsx
 #: src/components/pages/SharePopover.tsx
 msgid "Copy link"
@@ -1694,10 +1597,6 @@ msgstr "{0} indirilemedi. Tekrar dene."
 msgid "Could not download {name}. Try again."
 msgstr "{name} indirilemedi. Tekrar dene."
 
-#: src/pages/AdminAccessPage.tsx
-msgid "Could not grant access"
-msgstr "Erişim verilemedi"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not install connector"
 msgstr "Bağlayıcı kurulamadı"
@@ -1724,10 +1623,6 @@ msgstr "Onay kuralları yüklenemedi"
 #: src/pages/Artifacts.tsx
 msgid "Could not load artifacts."
 msgstr "Çıktılar yüklenemedi."
-
-#: src/pages/BillingSettingsPanel.tsx
-msgid "Could not load billing"
-msgstr "Faturalandırma yüklenemedi"
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "Could not load computer settings"
@@ -1783,13 +1678,6 @@ msgstr "Ses ayarları yüklenemedi"
 #: src/lib/sign-out.ts
 msgid "Could not log out. Try again."
 msgstr "Çıkış yapılamadı. Tekrar deneyin."
-
-#: src/components/ModelCredits.tsx
-#: src/pages/BillingSettingsPanel.tsx
-#: src/pages/Onboarding.tsx
-#: src/pages/Paywall.tsx
-msgid "Could not open billing"
-msgstr "Faturalandırma açılamadı"
 
 #: src/pages/Onboarding.tsx
 msgid "Could not open your chat"
@@ -1879,10 +1767,6 @@ msgstr "Parola sıfırlanamadı"
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not revoke connection"
 msgstr "Bağlantı iptal edilemedi"
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Could not revoke grant"
-msgstr "Yetki iptal edilemedi"
 
 #: src/pages/shell/use-routine-editor.ts
 msgid "Could not run routine"
@@ -1989,10 +1873,6 @@ msgstr "MCP sunucusu test edilemedi"
 msgid "Could not transcribe that recording."
 msgstr "Bu kayıt yazıya dökülemedi."
 
-#: src/components/ModelCredits.tsx
-msgid "Could not update billing"
-msgstr "Faturalandırma güncellenemedi"
-
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Could not update computer"
 msgstr "Bilgisayar güncellenemedi"
@@ -2012,10 +1892,6 @@ msgstr "Bilgisayar kurulumu doğrulanamadı ({failureMessage}). Bağlantıyı d�
 #: src/components/pages/SharePopover.tsx
 msgid "Couldn't copy. Select the link and copy it."
 msgstr "Kopyalanamadı. Bağlantıyı seçip kopyalayın."
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Couldn't load grants"
-msgstr "Yetkiler yüklenemedi"
 
 #: src/components/pages/PagesList.tsx
 msgid "Couldn't load pages."
@@ -2069,18 +1945,6 @@ msgstr "Kimlik bilgisi kaydedildi"
 msgid "Credentials are encrypted and never sent to the model."
 msgstr "Kimlik bilgileri şifrelenir ve modele asla gönderilmez."
 
-#: src/components/ModelCredits.tsx
-msgid "Credit amount"
-msgstr "Kredi tutarı"
-
-#: src/components/ModelCredits.tsx
-msgid "Credits"
-msgstr "Krediler"
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Credits ($)"
-msgstr "Krediler ($)"
-
 #: src/lib/cron.ts
 msgid "Cron"
 msgstr "Cron"
@@ -2116,7 +1980,6 @@ msgstr "Koyu"
 msgid "Data"
 msgstr "Veriler"
 
-#: src/lib/billing.ts
 #: src/lib/cron.ts
 msgid "day"
 msgstr "gün"
@@ -2339,10 +2202,6 @@ msgstr "Bitti"
 msgid "Doodle"
 msgstr "Doodle"
 
-#: src/components/ModelCredits.tsx
-msgid "Doodle and browser automation"
-msgstr ""
-
 #: src/pages/shell/composer-error.tsx
 msgid "Doodle can use the file but won't see the picture."
 msgstr ""
@@ -2363,17 +2222,9 @@ msgstr "Doodle ayrıldı"
 msgid "Doodle runs on this computer, not a Linux desktop. Shell and files use your home folder."
 msgstr ""
 
-#: src/pages/Paywall.tsx
-msgid "Doodle with its own computer and browser"
-msgstr ""
-
 #: src/pages/RoutineEditor.tsx
 msgid "Doodle's model"
 msgstr ""
-
-#: src/components/ModelCredits.tsx
-msgid "Downgrade at renewal"
-msgstr "Yenilemede alt pakete geç"
 
 #: src/pages/Artifacts.tsx
 #: src/pages/KnowledgeSection.tsx
@@ -2423,7 +2274,6 @@ msgstr "Önce düzenle"
 
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/vault/VaultItemEditor.tsx
-#: src/pages/AdminAccessPage.tsx
 #: src/pages/Auth.tsx
 msgid "Email"
 msgstr "E-posta"
@@ -2448,10 +2298,6 @@ msgstr "{0} etkinleştir"
 #: src/components/ComputerProviderSettings.tsx
 msgid "End user ID"
 msgstr "Son kullanıcı kimliği"
-
-#: src/lib/billing.ts
-msgid "Ends {day}"
-msgstr "{day} tarihinde sona eriyor"
 
 #: src/lib/user-error.ts
 msgid "Enter a password"
@@ -2689,22 +2535,6 @@ msgstr "Mesaja git"
 msgid "Forgot password?"
 msgstr "Parolanızı mı unuttunuz?"
 
-#: src/components/ModelCredits.tsx
-msgid "Free"
-msgstr "Ücretsiz"
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Free access"
-msgstr "Ücretsiz erişim"
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Free months"
-msgstr "Ücretsiz aylar"
-
-#: src/pages/shell/shell-sidebar.tsx
-msgid "Free plan ends {day}"
-msgstr "Ücretsiz plan {day} tarihinde bitiyor"
-
 #: src/lib/cron.ts
 msgid "Friday"
 msgstr "Cuma"
@@ -2753,10 +2583,6 @@ msgstr "Hazırlanıyor"
 msgid "Git event"
 msgstr "Git olayı"
 
-#: src/components/InviteDialog.tsx
-msgid "Give a friend {weeks} weeks free"
-msgstr "Bir arkadaşına {weeks} hafta ücretsiz hediye et"
-
 #: src/pages/NotFound.tsx
 msgid "Go home"
 msgstr "Ana sayfaya git"
@@ -2764,14 +2590,6 @@ msgstr "Ana sayfaya git"
 #: src/pages/shell/keyboard-shortcuts-dialog.tsx
 msgid "Go to chat"
 msgstr ""
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Grant"
-msgstr "Yetki ver"
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Granting…"
-msgstr "Yetki veriliyor…"
 
 #: src/pages/RoutineEditor.tsx
 msgid "header"
@@ -2884,10 +2702,6 @@ msgstr "Bu model için görüntü girişi yapılandırılmamış."
 msgid "Image input is not configured for this model."
 msgstr "Bu model için görüntü girişi yapılandırılmamış."
 
-#: src/pages/BillingSettingsPanel.tsx
-msgid "Inactive"
-msgstr "Etkin değil"
-
 #: src/pages/shell/message-cards.tsx
 msgid "Inbox & email"
 msgstr "Gelen kutusu ve e-posta"
@@ -2958,11 +2772,6 @@ msgstr "Geçersiz kod"
 msgid "Invite"
 msgstr ""
 
-#: src/components/SidebarFooter.tsx
-msgid "Invite friends"
-msgstr "Arkadaşlarını davet et"
-
-#: src/components/InviteDialog.tsx
 #: src/components/SpaceMembersSettings.tsx
 msgid "Invite link"
 msgstr "Davet bağlantısı"
@@ -3028,10 +2837,6 @@ msgstr "Anahtarlar"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Label"
 msgstr "Etiket"
-
-#: src/pages/Onboarding.tsx
-msgid "Labradoodle credits"
-msgstr "Labradoodle kredileri"
 
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
 msgid "labradoodle-shared and IDs starting with bot- are reserved for Labradoodle."
@@ -3152,7 +2957,6 @@ msgstr "Ses sağlayıcıları yükleniyor…"
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/PageLoading.tsx
 #: src/components/SpaceMembersSettings.tsx
-#: src/pages/AdminAccessPage.tsx
 #: src/pages/Artifacts.tsx
 #: src/pages/Invite.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
@@ -3196,19 +3000,10 @@ msgstr "Düşük"
 msgid "Main model"
 msgstr "Ana model"
 
-#: src/pages/BillingSettingsPanel.tsx
-msgid "Manage"
-msgstr "Yönet"
-
 #. placeholder {0}: providerName(choice)
 #: src/pages/ModelRoleSettings.tsx
 msgid "Manage {0}"
 msgstr "{0} yönet"
-
-#: src/components/ModelCredits.tsx
-#: src/pages/Paywall.tsx
-msgid "Manage billing"
-msgstr "Faturalandırmayı yönet"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Manage MCP servers"
@@ -3388,10 +3183,6 @@ msgstr "Model seçenekleri"
 msgid "Models"
 msgstr "Modeller"
 
-#: src/components/ModelCredits.tsx
-msgid "Models at provider cost"
-msgstr "Modeller sağlayıcı maliyetinden"
-
 #: src/components/FoundModelPicker.tsx
 #: src/pages/model-settings/compatible-model-fields.tsx
 msgid "Models from server"
@@ -3405,23 +3196,10 @@ msgstr "Model listesi tamam. {modelCount, plural, one {# model} other {# model}}
 msgid "Monday"
 msgstr "Pazartesi"
 
-#: src/lib/billing.ts
-msgid "month"
-msgstr "ay"
-
-#: src/components/ModelCredits.tsx
 #: src/components/SpendingLimitSettings.tsx
 #: src/lib/cron.ts
 msgid "Monthly"
 msgstr "Aylık"
-
-#: src/components/ModelCredits.tsx
-msgid "Monthly credits"
-msgstr "Aylık krediler"
-
-#: src/components/ModelCredits.tsx
-msgid "Monthly credits expire at renewal. Top-ups do not expire."
-msgstr "Aylık krediler yenilemede sona erer. Ek krediler sona ermez."
 
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/shell/message-hover-actions.tsx
@@ -3746,10 +3524,6 @@ msgstr "ayın 1'inde saat {0}"
 msgid "One-time"
 msgstr "Tek seferlik"
 
-#: src/components/ModelCredits.tsx
-msgid "One-time purchase. Credits do not expire."
-msgstr "Tek seferlik satın alma. Krediler sona ermez."
-
 #: src/components/SecretAskCard.tsx
 msgid "Only enter a code {codeHost} sent you."
 msgstr "Yalnızca {codeHost} tarafından gönderilen kodu gir."
@@ -3938,10 +3712,6 @@ msgstr "Parola güncellendi"
 msgid "Passwords do not match"
 msgstr "Parolalar eşleşmiyor"
 
-#: src/pages/BillingSettingsPanel.tsx
-msgid "Past due"
-msgstr "Gecikmiş"
-
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Paste a replacement key"
@@ -3963,7 +3733,6 @@ msgstr "API anahtarını yapıştır, sonra yeniden test et."
 msgid "Paused"
 msgstr "Duraklatıldı"
 
-#: src/pages/AdminAccessPage.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
 msgstr "Beklemede"
@@ -4001,10 +3770,6 @@ msgstr "Sabitle"
 #: src/components/pages/PagesList.tsx
 msgid "Pinned"
 msgstr "Sabitlenenler"
-
-#: src/components/ModelCredits.tsx
-msgid "Plan"
-msgstr "Plan"
 
 #: src/components/ArtifactFileCard.tsx
 msgid "Play {name}"
@@ -4128,10 +3893,6 @@ msgstr "Hatırla ve yaz"
 msgid "Recall only"
 msgstr "Yalnızca hatırla"
 
-#: src/pages/AdminAccessPage.tsx
-msgid "Received"
-msgstr "Alındı"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Recommended"
 msgstr "Önerilen"
@@ -4211,13 +3972,8 @@ msgstr "Yönlendirme URI'si"
 
 #: src/App.tsx
 #: src/components/ErrorBoundary.tsx
-#: src/components/ModelCredits.tsx
 msgid "Refresh"
 msgstr "Yenile"
-
-#: src/components/ModelCredits.tsx
-msgid "Refresh credits"
-msgstr "Kredileri yenile"
 
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Refresh view"
@@ -4334,10 +4090,6 @@ msgstr "Kaldırılıyor…"
 msgid "Rename"
 msgstr "Yeniden adlandır"
 
-#: src/lib/billing.ts
-msgid "Renews {day}"
-msgstr "{day} tarihinde yenileniyor"
-
 #: src/pages/model-settings/connection-controls.tsx
 msgid "Replace API key"
 msgstr "API anahtarını değiştir"
@@ -4444,7 +4196,6 @@ msgstr "Çalışma alanın geri yükleniyor"
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/PasskeySettings.tsx
-#: src/pages/AdminAccessPage.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Invite.tsx
 #: src/pages/ModelRoleSettings.tsx
@@ -4469,14 +4220,6 @@ msgstr "Labradoodle'ya dön"
 msgid "Review provider settings and test again."
 msgstr "Sağlayıcı ayarlarını gözden geçir ve yeniden test et."
 
-#: src/pages/AdminAccessPage.tsx
-msgid "Revoke"
-msgstr "İptal et"
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Revoked"
-msgstr "İptal edildi"
-
 #: src/components/ComputerProviderSettings.tsx
 msgid "Root filesystem"
 msgstr "Kök dosya sistemi"
@@ -4495,10 +4238,6 @@ msgstr "Rutin"
 #: src/pages/shell/side-panel.tsx
 msgid "Routines"
 msgstr "Rutinler"
-
-#: src/pages/Paywall.tsx
-msgid "Routines that run while you're away"
-msgstr "Sen yokken çalışan rutinler"
 
 #: src/components/markdown-copy.tsx
 msgid "Row"
@@ -4607,10 +4346,6 @@ msgstr "Kaydediliyor…"
 #: src/pages/RoutineEditor.tsx
 msgid "Schedule delayed"
 msgstr "Zamanlanmış çalıştırma gecikti"
-
-#: src/components/ModelCredits.tsx
-msgid "Scheduled routines"
-msgstr "Zamanlanmış rutinler"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Scopes (optional)"
@@ -4976,30 +4711,13 @@ msgstr "SSO geçici olarak kullanılamıyor. Yeniden deneyin."
 msgid "Start"
 msgstr "Başlat"
 
-#: src/components/ModelCredits.tsx
-#: src/pages/Paywall.tsx
-msgid "Start {trialDays}-day free trial"
-msgstr "{trialDays} günlük ücretsiz denemeyi başlat"
-
 #: src/pages/shell/new-chat-dialog.tsx
 msgid "Start chat"
 msgstr "Sohbeti başlat"
 
-#: src/components/ModelCredits.tsx
-msgid "Start plan"
-msgstr "Planı başlat"
-
-#: src/components/ModelCredits.tsx
-msgid "Start plan now"
-msgstr "Planı şimdi başlat"
-
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Start recording"
 msgstr "Kaydı başlat"
-
-#: src/components/ModelCredits.tsx
-msgid "Start your plan now?"
-msgstr "Planınız şimdi başlatılsın mı?"
 
 #: src/pages/RoutineRunHistory.tsx
 msgid "Started {count}d late"
@@ -5075,31 +4793,6 @@ msgstr "Gönder"
 msgid "Submit a plugin"
 msgstr "Eklenti gönder"
 
-#: src/components/ModelCredits.tsx
-#: src/pages/Paywall.tsx
-msgid "Subscribe"
-msgstr "Abone ol"
-
-#: src/components/ModelCredits.tsx
-msgid "Subscribe for {annualPrice} / year"
-msgstr "Yıllık {annualPrice} ile abone ol"
-
-#: src/components/ModelCredits.tsx
-msgid "Subscribe for {price} / month"
-msgstr "Aylık {price} ile abone ol"
-
-#: src/components/ModelCredits.tsx
-msgid "Subscribe to credits"
-msgstr "Kredilere abone ol"
-
-#: src/components/ModelCredits.tsx
-msgid "Subscribe with your own AI"
-msgstr "Kendi yapay zekânla abone ol"
-
-#: src/pages/Paywall.tsx
-msgid "Subscription required"
-msgstr "Abonelik gerekli"
-
 #: src/lib/cron.ts
 msgid "Sunday"
 msgstr "Pazar"
@@ -5113,22 +4806,6 @@ msgstr "Görüntüleri destekler"
 #: src/pages/Onboarding.tsx
 msgid "Supports thinking"
 msgstr "Düşünmeyi destekler"
-
-#: src/components/ModelCredits.tsx
-msgid "Switch"
-msgstr "Geç"
-
-#: src/components/ModelCredits.tsx
-msgid "Switch to {tierTargetName}?"
-msgstr "{tierTargetName} planına geçilsin mi?"
-
-#: src/components/ModelCredits.tsx
-msgid "Switch to yearly"
-msgstr "Yıllığa geç"
-
-#: src/components/ModelCredits.tsx
-msgid "Switch to yearly?"
-msgstr "Yıllığa geçilsin mi?"
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -5231,18 +4908,10 @@ msgstr "Seçilen hafıza sağlayıcısı bu sürümde kullanılamıyor."
 msgid "The shared link stops working"
 msgstr "Paylaşılan bağlantı çalışmayı durdurur"
 
-#: src/components/ModelCredits.tsx
-msgid "The unused difference is credited to your next invoice."
-msgstr "Kullanılmayan fark bir sonraki faturanıza alacak olarak yansıtılır."
-
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/VaultSettings.tsx
 msgid "These saved settings can't be read. Remove it and add it again."
 msgstr "Bu kayıtlı ayarlar okunamıyor. Kaldırıp yeniden ekle."
-
-#: src/components/InviteDialog.tsx
-msgid "They get {weeks} weeks free."
-msgstr "Arkadaşın {weeks} hafta ücretsiz kullanır."
 
 #: src/pages/DoodleSettings.tsx
 #: src/pages/ModelRoleSettings.tsx
@@ -5452,18 +5121,6 @@ msgstr "Transkripsiyon yanıtı çok büyük."
 msgid "Treg token"
 msgstr "Treg token'ı"
 
-#: src/pages/BillingSettingsPanel.tsx
-msgid "Trial"
-msgstr "Deneme"
-
-#: src/lib/billing.ts
-msgid "Trial ends {day}"
-msgstr "Deneme {day} tarihinde sona eriyor"
-
-#: src/components/ModelCredits.tsx
-msgid "Trials get fewer hours to prevent abuse."
-msgstr "Kötüye kullanımı önlemek için denemelerde daha az saat verilir."
-
 #: src/components/ErrorNotice.tsx
 msgid "Troubleshoot"
 msgstr "Sorun gider"
@@ -5522,10 +5179,6 @@ msgstr "Desteklenmeyen dosya türü: {0}"
 msgid "Up to date"
 msgstr "Güncel"
 
-#: src/components/ModelCredits.tsx
-msgid "Update"
-msgstr "Güncelle"
-
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Update computer"
 msgstr "Bilgisayarı güncelle"
@@ -5558,14 +5211,6 @@ msgstr "Bilgisayarın güncelleniyor"
 msgid "Updating…"
 msgstr "Güncelleniyor…"
 
-#: src/pages/shell/shell-sidebar.tsx
-msgid "Upgrade"
-msgstr "Yükselt"
-
-#: src/components/ModelCredits.tsx
-msgid "Upgrade now"
-msgstr "Şimdi yükselt"
-
 #: src/pages/settings-nav.ts
 msgid "Usage"
 msgstr "Kullanım"
@@ -5593,14 +5238,6 @@ msgstr "Bulunan bir modeli kullan"
 msgid "Use Connect to verify the key."
 msgstr "Anahtarı doğrulamak için Bağlan'ı kullan."
 
-#: src/components/ModelCredits.tsx
-msgid "Use Labradoodle credits"
-msgstr "Labradoodle kredilerini kullan"
-
-#: src/components/ModelCredits.tsx
-msgid "Use my subscription or API key"
-msgstr "Aboneliğimi veya API anahtarımı kullan"
-
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Use Protected input for passwords."
 msgstr "Parolalar için Korumalı giriş'i kullan."
@@ -5622,14 +5259,6 @@ msgstr "Kullanıcı adı"
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Uses this server's own {hostCredentialSource} credentials to access {selectedProviderName}."
 msgstr "{selectedProviderName} erişimi için bu sunucunun kendi {hostCredentialSource} kimlik bilgilerini kullanır."
-
-#: src/components/ModelCredits.tsx
-msgid "Using your API key"
-msgstr "API anahtarını kullanarak"
-
-#: src/components/ModelCredits.tsx
-msgid "Using your API key. Free plan ends {freeUntil}."
-msgstr "Kendi API anahtarın kullanılıyor. Ücretsiz plan {freeUntil} tarihinde bitiyor."
 
 #: src/components/vault/LoginFieldsInput.tsx
 #: src/components/vault/VaultItemDetail.tsx
@@ -5697,14 +5326,6 @@ msgstr "Bekleniyor…"
 msgid "Wallet"
 msgstr "Cüzdan"
 
-#: src/components/ModelCredits.tsx
-msgid "Web, desktop and mobile"
-msgstr "Web, masaüstü ve mobil"
-
-#: src/pages/Paywall.tsx
-msgid "Web, desktop and mobile apps"
-msgstr "Web, masaüstü ve mobil uygulamalar"
-
 #: src/pages/RoutineEditor.tsx
 msgid "Webhook"
 msgstr "Webhook"
@@ -5712,10 +5333,6 @@ msgstr "Webhook"
 #: src/lib/cron.ts
 msgid "Wednesday"
 msgstr "Çarşamba"
-
-#: src/lib/billing.ts
-msgid "week"
-msgstr "hafta"
 
 #: src/lib/cron.ts
 #: src/pages/RoutineEditor.tsx
@@ -5795,10 +5412,6 @@ msgstr "İş"
 msgid "Working…"
 msgstr "Çalışıyor…"
 
-#: src/components/ModelCredits.tsx
-msgid "Works with your ChatGPT or Claude plan."
-msgstr "ChatGPT veya Claude aboneliğinle çalışır."
-
 #: src/lib/identity-display.ts
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
 #: src/pages/settings-nav.ts
@@ -5809,14 +5422,6 @@ msgstr "Çalışma alanı"
 #: src/pages/shell/sidebar-header.tsx
 msgid "Workspace settings"
 msgstr "Çalışma alanı ayarları"
-
-#: src/lib/billing.ts
-msgid "year"
-msgstr "yıl"
-
-#: src/components/ModelCredits.tsx
-msgid "Yearly"
-msgstr "Yıllık"
 
 #: src/pages/shell/chat-context.tsx
 #: src/pages/shell/chat-list.tsx
@@ -5841,10 +5446,6 @@ msgstr "Otomatik yönlendirilmezsen bu sekmeyi kapatabilirsin."
 msgid "You can close this window."
 msgstr "Bu pencereyi kapatabilirsin."
 
-#: src/components/InviteDialog.tsx
-msgid "You get a free month when they start their trial with a new card."
-msgstr "Yeni bir kartla deneme sürümünü başlattıklarında sen bir ay ücretsiz kazanırsın."
-
 #: src/pages/shell/computer-overlay.tsx
 msgid "You have control"
 msgstr "Kontrol sende"
@@ -5853,14 +5454,6 @@ msgstr "Kontrol sende"
 #: src/lib/run-error.ts
 msgid "Your Anthropic"
 msgstr "Anthropic sağlayıcınız"
-
-#: src/components/ModelCredits.tsx
-msgid "Your card is charged {annualPrice} today, less the unused part of this month."
-msgstr "Bugün kartından {annualPrice} tahsil edilir, bu ayın kullanılmayan kısmı düşülür."
-
-#: src/components/ModelCredits.tsx
-msgid "Your card is charged the prorated difference today."
-msgstr "Kartınızdan bugün orantılı fark tahsil edilir."
 
 #: src/components/AccountDataSettings.tsx
 msgid "Your data"
@@ -5889,29 +5482,9 @@ msgstr "OpenAI sağlayıcınız"
 msgid "Your OpenRouter"
 msgstr "OpenRouter sağlayıcınız"
 
-#: src/components/ModelCredits.tsx
-msgid "Your plan becomes {annualPrice} / year when your trial ends."
-msgstr "Deneme süren bitince planın yıllık {annualPrice} olur."
-
-#: src/components/ModelCredits.tsx
-msgid "Your plan becomes {tierTargetLabel} when your trial ends."
-msgstr "Deneme süreniz bittiğinde planınız {tierTargetLabel} olur."
-
 #: src/components/integrations/skills-dialog.tsx
 msgid "Your skills"
 msgstr "Becerilerin"
-
-#: src/components/ModelCredits.tsx
-msgid "Your subscription or API key"
-msgstr "Aboneliğin veya API anahtarın"
-
-#: src/components/ModelCredits.tsx
-msgid "Your trial ends and your card is charged {price} today."
-msgstr "Denemeniz biter ve kartınızdan bugün {price} çekilir."
-
-#: src/components/ModelCredits.tsx
-msgid "Your trial ends and your card is charged today."
-msgstr "Denemeniz biter ve kartınızdan bugün ödeme alınır."
 
 #: src/lib/user-error.ts
 msgid "Your voice provider is out of credit."

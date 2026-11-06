@@ -36,12 +36,6 @@ export const translateRunError: RunErrorTranslator = (message, values) => {
         message: "Connect a model in Settings to use Doodle.",
         values,
       });
-    case "Connect your own API key in Models or choose Labradoodle credits in Billing.":
-      return i18n._({
-        id: "Connect your own API key in Models or choose Labradoodle credits in Billing.",
-        message: "Connect your own API key in Models or choose Labradoodle credits in Billing.",
-        values,
-      });
     case "The model provider returned an error.":
       return i18n._({
         id: "The model provider returned an error.",

@@ -6,7 +6,7 @@ import { DEFERRED_MIGRATION_MARKER } from "./deferred-migrations.js";
 
 const migrationsDir = fileURLToPath(new URL("../prisma/migrations", import.meta.url));
 // Migrations up to this one predate the check or are the declared prototype-phase break.
-const LAST_UNCHECKED = "20261203120000_doodle_chats";
+const LAST_UNCHECKED = "20261206120000_remove_paywall";
 
 // The previous release still reads what these remove while both run during a deploy, so they
 // wait for the next deploy behind the deferred marker.

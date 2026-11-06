@@ -9,7 +9,6 @@ export function signInNext(next: string | null): string | null {
   if (
     next === "/integrations/setup" ||
     next === "/admin/plugins" ||
-    next === "/admin/access" ||
     next.startsWith(`${MCP_OAUTH_CALLBACK_PATH}?`) ||
     INVITE_PATH.test(next)
   ) {

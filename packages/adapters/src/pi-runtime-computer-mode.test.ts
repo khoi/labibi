@@ -163,20 +163,11 @@ it.each(["missing", "text-only", "wrong-provider", "implicit-key"])(
   },
 );
 it.each([false, true])(
-  "switches Claude/Codex roles with isolated auth, endpoints, effort and billing (reverse=%s)",
+  "switches Claude/Codex roles with isolated auth, endpoints and effort (reverse=%s)",
   async (reverse) => {
     const input = crossProviderRequest(reverse);
-    const mainObserver = { beforeCall: vi.fn(async () => "main-reservation"), afterCall: vi.fn() };
-    const computerObserver = {
-      beforeCall: vi.fn(async () => "computer-reservation"),
-      afterCall: vi.fn(),
-    };
-    input.model = { ...input.model, contextWindow: 64000, callObserver: mainObserver };
-    input.computerModel = {
-      ...input.computerModel!,
-      contextWindow: 32000,
-      callObserver: computerObserver,
-    };
+    input.model = { ...input.model, contextWindow: 64000 };
+    input.computerModel = { ...input.computerModel!, contextWindow: 32000 };
     script([
       ["enter_computer_mode", { goal: "Click" }],
       ["browser_act", { actions: [{ kind: "click", ref: "button-1" }] }],
@@ -187,20 +178,6 @@ it.each([false, true])(
     expect(fake.stream.mock.calls.map((c) => c[0].contextWindow)).toEqual([
       64000, 32000, 32000, 64000,
     ]);
-    for (const [observer, config, reservation] of [
-      [mainObserver, input.model, "main-reservation"],
-      [computerObserver, input.computerModel, "computer-reservation"],
-    ] as const) {
-      expect(observer.beforeCall).toHaveBeenCalledTimes(2);
-      expect(observer.beforeCall).toHaveBeenCalledWith(
-        expect.objectContaining({ provider: config.provider, modelId: config.id }),
-      );
-      expect(observer.afterCall).toHaveBeenCalledTimes(2);
-      expect(observer.afterCall).toHaveBeenCalledWith(
-        reservation,
-        expect.objectContaining({ inputTokens: 4, outputTokens: 2 }),
-      );
-    }
     const configs = [input.model, input.computerModel!, input.computerModel!, input.model];
     expect(
       fake.stream.mock.calls.map((c) => [c[0].provider, c[0].id, c[2].apiKey, c[2].reasoning]),

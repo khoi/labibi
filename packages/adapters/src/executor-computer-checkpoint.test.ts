@@ -245,7 +245,6 @@ function fixture(runId = "run-1") {
     usageRecord: {
       createMany: vi.fn(async (_input: { data: Array<{ model: string }> }) => ({ count: 1 })),
     },
-    modelCreditEntry: { findUnique: vi.fn(async () => null) },
     user: { findUnique: vi.fn(async () => null) },
     run: {
       findUnique: vi.fn(async () => run),

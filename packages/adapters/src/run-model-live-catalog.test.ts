@@ -13,7 +13,6 @@ it("validates live-only models against the caller's account catalog before readi
   const deps = {
     prisma: {},
     secretStore: {},
-    billingEnabled: false,
     codexCatalog: catalog,
   } as unknown as ExecutorDeps;
   const scope = { userId: "fixture-user", spaceId: "fixture-space" };

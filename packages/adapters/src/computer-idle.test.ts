@@ -752,67 +752,6 @@ describe("sandbox idle", () => {
     expect(harness.home.commit).not.toHaveBeenCalled();
     expect(harness.sandbox.stop).not.toHaveBeenCalled();
     expect(harness.jobs.enqueue).not.toHaveBeenCalled();
-    expect(goneRuns(harness)).toEqual([harness.computer.id]);
-  });
-
-  it("notes when the provider last reported the computer running", async () => {
-    const runningSince = new Date(Date.now() - 30 * 60_000);
-    const harness = idleHarness({ runningAtProvider: true, runningSince });
-
-    await sleepComputerIfIdle(harness.deps, harness.computer.id);
-
-    expect(harness.prisma.computerRun.updateMany).toHaveBeenCalledWith({
-      where: { computerId: harness.computer.id, startedAt: runningSince, endedAt: null },
-      data: { lastSeenAt: expect.any(Date) },
-    });
-  });
-
-  it("does not note a computer the provider no longer reports running", async () => {
-    const harness = idleHarness({ runningAtProvider: false, runningSince: new Date() });
-
-    await sleepComputerIfIdle(harness.deps, harness.computer.id);
-
-    expect(harness.prisma.computerRun.updateMany).not.toHaveBeenCalledWith(
-      expect.objectContaining({ data: { lastSeenAt: expect.any(Date) } }),
-    );
-  });
-
-  it("ends the computer's run when idle shutdown suspends it", async () => {
-    const harness = idleHarness();
-
-    await sleepComputerIfIdle(harness.deps, harness.computer.id);
-
-    expect(harness.computer.state).toBe("suspended");
-    expect(harness.prisma.computerRun.updateMany).toHaveBeenCalledOnce();
-    expect(harness.prisma.computerRun.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ computerId: harness.computer.id, endedAt: null }),
-        data: expect.objectContaining({ endReason: "idle" }),
-      }),
-    );
-  });
-
-  it("still suspends when the usage write fails", async () => {
-    const sink = createTestSink();
-    installLogger(createLogger({ service: "test", level: "debug", sinks: [sink] }));
-    const harness = idleHarness();
-    harness.prisma.computerRun.updateMany.mockRejectedValueOnce(new Error("database unavailable"));
-
-    await expect(sleepComputerIfIdle(harness.deps, harness.computer.id)).resolves.toBeUndefined();
-
-    expect(harness.computer.state).toBe("suspended");
-    expect(sink.events).toContainEqual(
-      expect.objectContaining({ level: "error", message: "computer.run_record_failed" }),
-    );
-  });
-
-  it("leaves the run open when a stop is called off", async () => {
-    const harness = idleHarness();
-    harness.prisma.run.findFirst.mockResolvedValueOnce({ id: "run" });
-
-    await sleepComputerIfIdle(harness.deps, harness.computer.id);
-
-    expect(harness.prisma.computerRun.updateMany).not.toHaveBeenCalled();
   });
 
   it("stops a computer whose sandbox is gone before the background-work probe", async () => {
@@ -983,9 +922,6 @@ describe("maximum active lifetime", () => {
     );
     await sleepComputerIfIdle(harness.deps, harness.computer.id);
     expect(harness.sandbox.stop).toHaveBeenCalledOnce();
-    expect(harness.prisma.computerRun.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ endReason: "active_limit" }) }),
-    );
   });
 
   it("keeps a billed computer past the limit while a coding agent works", async () => {
@@ -1259,9 +1195,6 @@ describe("maximum active lifetime", () => {
         expect(harness.sandbox.keepAlive).not.toHaveBeenCalled();
         expect(harness.sandbox.stop).toHaveBeenCalledOnce();
         expect(harness.computer.state).toBe("suspended");
-        expect(harness.prisma.computerRun.updateMany).toHaveBeenCalledWith(
-          expect.objectContaining({ data: expect.objectContaining({ endReason: "active_limit" }) }),
-        );
       },
     );
 
@@ -1357,122 +1290,6 @@ describe("maximum active lifetime", () => {
       );
       expect(harness.sandbox.stop).not.toHaveBeenCalled();
     });
-  });
-});
-
-describe("monthly computer allowance", () => {
-  const now = new Date("2026-01-20T12:00:00.000Z").getTime();
-
-  beforeEach(() => {
-    vi.stubEnv("SANDBOX_IDLE_MS", undefined);
-    vi.stubEnv("COMPUTER_MAX_ACTIVE_MS", undefined);
-    vi.useFakeTimers({ toFake: ["Date"] });
-    vi.setSystemTime(now);
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-    vi.restoreAllMocks();
-    vi.unstubAllEnvs();
-  });
-
-  it("saves and stops a computer once the month's allowance is spent, and says so once", async () => {
-    // $5 at the default $0.20 an hour.
-    const harness = idleHarness({
-      billsWhileRunning: true,
-      runningSince: new Date(now - 60_000),
-      backgroundWorkProbeCode: 0,
-      computerHours: 25,
-    });
-    harness.prisma.run.findFirst.mockResolvedValue({ id: "executing" });
-
-    await sleepComputerIfIdle(harness.deps, harness.computer.id);
-    await sleepComputerIfIdle(harness.deps, harness.computer.id);
-
-    expect(harness.prisma.$queryRaw).toHaveBeenCalled();
-    expect(harness.home.commit).toHaveBeenCalledOnce();
-    expect(harness.sandbox.stop).toHaveBeenCalledOnce();
-    expect(harness.computer.state).toBe("suspended");
-    expect(harness.prisma.computerRun.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ endReason: "allowance" }) }),
-    );
-    expect(harness.prisma.message.create).toHaveBeenCalledOnce();
-    expect(harness.prisma.message.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          role: "system",
-          blocks: [
-            {
-              kind: "meta",
-              text: "No computer hours left. The computer was saved and stopped.",
-            },
-          ],
-        }),
-      }),
-    );
-  });
-
-  it("keeps a busy computer running while allowance is left", async () => {
-    const harness = idleHarness({
-      billsWhileRunning: true,
-      runningSince: new Date(now - 60_000),
-      backgroundWorkProbeCode: 0,
-      computerHours: 24,
-    });
-
-    await sleepComputerIfIdle(harness.deps, harness.computer.id);
-
-    expect(harness.sandbox.stop).not.toHaveBeenCalled();
-    expect(harness.computer.state).toBe("running");
-  });
-
-  it("leaves a computer whose allowance is spent to a user in control until the lease ends", async () => {
-    const harness = idleHarness({
-      billsWhileRunning: true,
-      runningSince: new Date(now - 60_000),
-      computerHours: 25,
-    });
-    Object.assign(harness.computer, {
-      controlHolder: "user",
-      controlLeaseId: "lease",
-      controlLeaseExpiresAt: new Date(now + 60_000),
-    });
-    harness.prisma.run.findFirst.mockImplementation(async ({ where }) =>
-      where.status.in.includes("waiting_takeover") ? { id: "waiting-for-user" } : null,
-    );
-
-    await sleepComputerIfIdle(harness.deps, harness.computer.id);
-
-    expect(harness.sandbox.stop).not.toHaveBeenCalled();
-    expect(harness.computer.state).toBe("running");
-  });
-
-  it("stops a computer whose allowance is spent even while a coding agent works", async () => {
-    const harness = idleHarness({
-      billsWhileRunning: true,
-      runningSince: new Date(now - 60_000),
-      codingAgent: "codex",
-      computerHours: 25,
-    });
-
-    await sleepComputerIfIdle(harness.deps, harness.computer.id);
-
-    expect(harness.sandbox.stop).toHaveBeenCalledOnce();
-    expect(harness.computer.state).toBe("suspended");
-  });
-
-  it("never limits a computer that does not bill while running", async () => {
-    const harness = idleHarness({
-      billsWhileRunning: false,
-      runningSince: new Date(now - 60_000),
-      backgroundWorkProbeCode: 0,
-      computerHours: 500,
-    });
-
-    await sleepComputerIfIdle(harness.deps, harness.computer.id);
-
-    expect(harness.prisma.$queryRaw).not.toHaveBeenCalled();
-    expect(harness.sandbox.stop).not.toHaveBeenCalled();
   });
 });
 
@@ -1864,9 +1681,6 @@ function idleHarness(
     homeRevisionAt?: Date | null;
     runSinceSave?: boolean;
     takeoverSinceSave?: boolean;
-    runningAtProvider?: boolean;
-    /** Hours an own-key organization's computers ran this month; unset leaves billing off. */
-    computerHours?: number;
   } = {},
 ) {
   const backgroundWorkProbeCodes = [...(options.backgroundWorkProbeCodes ?? [])];
@@ -1893,13 +1707,6 @@ function idleHarness(
   const notices = new Map<string, { id: string }>();
   const prisma = {
     $transaction: async <T>(work: (tx: unknown) => Promise<T>): Promise<T> => work(prisma),
-    $queryRaw: vi.fn(async () => [{ kind: "e2b", hours: options.computerHours ?? 0 }]),
-    deploymentSettings: {
-      findUnique: vi.fn(async () => ({ modelCreditsEnabled: options.computerHours !== undefined })),
-    },
-    organization: {
-      findUnique: vi.fn(async () => ({ modelCredits: { mode: "byok" }, billing: null })),
-    },
     space: { findUnique: vi.fn(async () => ({ organizationId: "organization" })) },
     thread: { update: vi.fn().mockResolvedValue({ nextMessageSeq: 1, nextEventSeq: 1 }) },
     message: {
@@ -1948,7 +1755,6 @@ function idleHarness(
       }),
     },
     computerExecutionLease: { findMany: vi.fn().mockResolvedValue([]) },
-    computerRun: { updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
     $executeRaw: vi.fn().mockResolvedValue(1),
     bot: {
       findMany: vi.fn().mockResolvedValue([{ id: "bot", thread: { id: "thread" } }]),
@@ -1987,9 +1793,6 @@ function idleHarness(
     }),
     stop: vi.fn().mockResolvedValue(undefined),
     ...(options.stoppedAtProvider ? { isStopped: vi.fn().mockResolvedValue(true) } : {}),
-    ...(options.runningAtProvider === undefined
-      ? {}
-      : { isRunning: vi.fn().mockResolvedValue(options.runningAtProvider) }),
     ...(options.providerBackgroundWorkStatus
       ? {
           inspectBackgroundWork: vi.fn().mockResolvedValue(options.providerBackgroundWorkStatus),
@@ -2039,8 +1842,3 @@ function processExit(child: ReturnType<typeof spawn>): Promise<number> {
 }
 
 /** The computers whose open run each raw `gone` end closed, in order. */
-function goneRuns(harness: { prisma: { $executeRaw: ReturnType<typeof vi.fn> } }) {
-  return harness.prisma.$executeRaw.mock.calls
-    .filter(([, , reason]) => reason === "gone")
-    .map(([, , , computerId]) => computerId);
-}

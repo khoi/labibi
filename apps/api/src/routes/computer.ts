@@ -47,12 +47,8 @@ import {
 } from "@labradoodle/contracts";
 import { ACTIVE_RUN_STATUSES, scrollDirection } from "@labradoodle/core";
 import { addScreenProxyCapability } from "@labradoodle/core/node/screen-capability";
-import type { ComputerRunEnd, PrismaClient } from "@labradoodle/db";
-import {
-  expireComputerExecutionLeases,
-  IsolationError,
-  recordComputerRunEnd,
-} from "@labradoodle/db";
+import type { PrismaClient } from "@labradoodle/db";
+import { expireComputerExecutionLeases, IsolationError } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
 import { ORPCError } from "@orpc/server";
 import { scrollPoint } from "../computer-input.js";
@@ -175,7 +171,6 @@ export function computerRoutes(ctx: RouterContext) {
         await expireComputerExecutionLeases(deps.prisma, { computerId: bot.computer.id });
         let stopping = false;
         try {
-          let end: ComputerRunEnd = "stopped";
           if (bot.computer.providerRef) {
             const ctx = computerContext(context.actor, bot.id, "stop");
             const ref = toComputerRef(bot.computer);
@@ -193,7 +188,6 @@ export function computerRoutes(ctx: RouterContext) {
             } catch (error) {
               // The sandbox is already gone: nothing left to checkpoint or stop.
               if (!isSandboxGoneError(error)) throw error;
-              end = "gone";
             }
           }
           const stopped = await deps.prisma.computer.updateMany({
@@ -213,10 +207,9 @@ export function computerRoutes(ctx: RouterContext) {
             },
           });
           if (stopped.count !== 1) return computerStatus(deps, context.actor);
-          await recordComputerRunEnd(deps.prisma, bot.computer, end);
         } catch (error) {
           // A failed save, or a stop the provider put off, leaves the computer up: hand it back
-          // to idle sleep and metering instead of hiding it as an error.
+          // to idle sleep instead of hiding it as an error.
           const stillUp = !stopping || sleepDeferReason(error) !== undefined;
           await deps.prisma.computer
             .updateMany({
@@ -1116,16 +1109,15 @@ async function computerScreenContext(
  */
 async function clearGoneSandbox(
   deps: RouterDeps,
-  computer: { id: string; providerRef: string | null; runningSince?: Date | null },
+  computer: { id: string; providerRef: string | null },
   error: unknown,
 ): Promise<null> {
   if (!isSandboxGoneError(error)) throw error;
   getLogger().warn(`computer ${computer.id} sandbox ${computer.providerRef} is gone`, { error });
-  const cleared = await deps.prisma.computer.updateMany({
+  await deps.prisma.computer.updateMany({
     where: { id: computer.id, providerRef: computer.providerRef },
     data: { state: "stopped", providerRef: null },
   });
-  if (cleared.count === 1) await recordComputerRunEnd(deps.prisma, computer, "gone");
   return null;
 }
 

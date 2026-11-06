@@ -13,15 +13,12 @@ import {
   SandboxUnresponsiveError,
   WorkspaceTooLargeError,
 } from "@labradoodle/adapter-kit";
-import { COMPUTER_ALLOWANCE_USED_ERROR } from "@labradoodle/contracts";
-import { QUEUE_HOLDING_RUN_STATUSES, withAbort } from "@labradoodle/core";
+import { QUEUE_HOLDING_RUN_STATUSES } from "@labradoodle/core";
 import type { PrismaClient, RunTeardownTarget, ThreadEvents } from "@labradoodle/db";
 import {
   appendEventInTransaction,
   clearEndedExecutionRunBinding,
   createThreadMessageInTransaction,
-  recordComputerRunEnd,
-  recordComputerRunSeen,
   releaseCancelledRunLeases,
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
@@ -32,7 +29,6 @@ import { screenLeaseIdForRun, toComputerRef } from "./computer-lifecycle.js";
 import { BrowserStillRunningError } from "./computer-screens.js";
 import { checkpointComputerWorkspace } from "./computer-workspace.js";
 import { HomeSaveConflictError } from "./home-object-store.js";
-import { sandboxAllowanceUsedUp } from "./sandbox-allowance.js";
 import { isSandboxDamagedError, isSandboxGoneError } from "./sandbox-errors.js";
 
 export const DEFAULT_SANDBOX_IDLE_MS = 10 * 60 * 1000;
@@ -56,7 +52,6 @@ export const TAKEOVER_IDLE_GRACE_MS = 30 * 60 * 1000;
  */
 export const ABANDONED_SUSPEND_CLAIM_MS = 60 * 60 * 1000;
 const IDLE_SWEEP_INTERVAL_MS = 10 * 60 * 1000;
-const STATUS_CHECK_TIMEOUT_MS = 15_000;
 const EXECUTING_RUN_STATUSES = ["leased", "running"] as const;
 const BACKGROUND_WORK_MARKER_PREFIX = "/tmp/labradoodle-background-";
 const BACKGROUND_WORK_IDLE_SENTINEL = "labradoodle-background-idle";
@@ -456,39 +451,25 @@ export async function sleepComputerIfIdle(
     userId: computer.userId,
     signal: new AbortController().signal,
   };
-  // A status read that never answers counts as not seen rather than holding up the check.
-  const statusSignal = AbortSignal.timeout(STATUS_CHECK_TIMEOUT_MS);
-  const status = deps.sandbox.isRunning?.(ref, { ...ctx, signal: statusSignal });
-  if (status && (await withAbort(status, statusSignal).catch(() => false))) {
-    await recordComputerRunSeen(deps.prisma, computer);
-  }
   // Past the lifetime limit only a run executing right now, or a coding agent CLI still writing
   // its session, holds the computer up. Waiting runs and other background work start it again
   // when they next need it. A user in control is left alone: control leases expire on their
   // own, and that release resumes the waiting run.
   // Otherwise a run waiting for takeover holds an unbilled computer for TAKEOVER_IDLE_GRACE_MS.
-  // Once its organization has spent this period's allowance, nothing but a user still in control,
-  // not even a working coding agent, holds the computer up.
   const activeControl = hasActiveComputerControl(computer);
-  const allowanceUsed = !activeControl && (await sandboxAllowanceUsedUp(deps, computer));
   const limitReached =
-    allowanceUsed ||
-    (activeLimitReached(deps.sandbox, ref, computer.runningSince) && !activeControl);
+    activeLimitReached(deps.sandbox, ref, computer.runningSince) && !activeControl;
   const activeStatuses = limitReached
     ? EXECUTING_RUN_STATUSES
     : activeControl
       ? [...QUEUE_HOLDING_RUN_STATUSES]
       : QUEUE_HOLDING_RUN_STATUSES.filter((status) => status !== "waiting_takeover");
-  const runHolds = () =>
-    allowanceUsed
-      ? Promise.resolve(null)
-      : findActiveRun(deps.prisma, computer, activeStatuses, limitReached);
+  const runHolds = () => findActiveRun(deps.prisma, computer, activeStatuses, limitReached);
   const backgroundHolds = async () =>
-    !allowanceUsed &&
-    ((!limitReached && (await hasActiveBackgroundWork(deps.sandbox, ref, ctx, computerId))) ||
-      (await activeCodingAgent(deps.sandbox, ref, ctx, sandboxIdleMs())) !== undefined);
+    (!limitReached && (await hasActiveBackgroundWork(deps.sandbox, ref, ctx, computerId))) ||
+    (await activeCodingAgent(deps.sandbox, ref, ctx, sandboxIdleMs())) !== undefined;
   const graceEndsAt = () =>
-    allowanceUsed || activeControl || deps.sandbox.billsWhileRunning?.(ref) === true
+    activeControl || deps.sandbox.billsWhileRunning?.(ref) === true
       ? Promise.resolve(null)
       : takeoverGraceEndsAt(deps.prisma, computer);
   const runHeld = Boolean(await runHolds());
@@ -576,7 +557,7 @@ export async function sleepComputerIfIdle(
     if (isSandboxGoneError(error)) {
       // Nothing is left to checkpoint or stop. Retrying would fail the same way every idle
       // window, so clear the dead ref and let the next use boot from the last saved revision.
-      const cleared = await deps.prisma.computer.updateMany({
+      await deps.prisma.computer.updateMany({
         where: suspensionClaim,
         data: {
           state: "stopped",
@@ -589,7 +570,6 @@ export async function sleepComputerIfIdle(
           controlRunId: null,
         },
       });
-      if (cleared.count === 1) await recordComputerRunEnd(deps.prisma, computer, "gone");
       return;
     }
     if (isSandboxDamagedError(error)) {
@@ -699,21 +679,12 @@ export async function sleepComputerIfIdle(
     getLogger().warn("computer.suspend_superseded", { "computer.id": computerId });
     return;
   }
-  const reason = allowanceUsed ? "allowance" : limitReached ? "active_limit" : "idle";
-  await recordComputerRunEnd(deps.prisma, computer, reason);
   getLogger().info("computer.suspended", {
     "computer.id": computerId,
     provider: computer.kind,
-    reason,
+    reason: limitReached ? "active_limit" : "idle",
     activeMs: computer.runningSince ? Date.now() - computer.runningSince.getTime() : undefined,
   });
-  if (allowanceUsed)
-    await postComputerNote(
-      deps,
-      computer,
-      `computer-allowance:${computer.id}:${computer.runningSince?.toISOString() ?? ""}`,
-      `${COMPUTER_ALLOWANCE_USED_ERROR} The computer was saved and stopped.`,
-    );
 }
 
 /**
@@ -753,7 +724,6 @@ async function suspendStoppedComputer(
     },
   });
   if (suspended.count !== 1) return false;
-  await recordComputerRunEnd(deps.prisma, computer, "gone");
   getLogger().info("computer.suspended", {
     "computer.id": computer.id,
     provider: computer.kind,

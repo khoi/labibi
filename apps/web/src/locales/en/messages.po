@@ -27,16 +27,6 @@ msgstr "{0, plural, one {# connector} other {# connectors}}"
 msgid "{0, plural, one {# file} other {# files}}"
 msgstr "{0, plural, one {# file} other {# files}}"
 
-#. placeholder {0}: referral.rewards
-#: src/components/InviteDialog.tsx
-msgid "{0, plural, one {# free month earned} other {# free months earned}}"
-msgstr "{0, plural, one {# free month earned} other {# free months earned}}"
-
-#. placeholder {0}: item.freeMonths
-#: src/pages/AdminAccessPage.tsx
-msgid "{0, plural, one {# free month} other {# free months}}"
-msgstr "{0, plural, one {# free month} other {# free months}}"
-
 #. placeholder {0}: skills.length - shownSkills.length
 #: src/components/integrations/plugin-marketplace.tsx
 msgid "{0, plural, one {# more} other {# more}}"
@@ -115,10 +105,6 @@ msgstr "{0} MB"
 msgid "{0} TB"
 msgstr "{0} TB"
 
-#: src/lib/billing.ts
-msgid "{amount} / {period}"
-msgstr "{amount} / {period}"
-
 #: src/components/vault/VaultItemEditor.tsx
 msgid "{commandVariable} is reserved and cannot be used as a command variable. Choose another name."
 msgstr "{commandVariable} is reserved and cannot be used as a command variable. Choose another name."
@@ -130,22 +116,6 @@ msgstr "{connectedCount, plural, one {# connected} other {# connected}}"
 #: src/components/markdown-copy.tsx
 msgid "{count, plural, one {# row} other {# rows}}"
 msgstr "{count, plural, one {# row} other {# rows}}"
-
-#: src/lib/billing.ts
-msgid "{count} days"
-msgstr "{count} days"
-
-#: src/lib/billing.ts
-msgid "{count} months"
-msgstr "{count} months"
-
-#: src/lib/billing.ts
-msgid "{count} weeks"
-msgstr "{count} weeks"
-
-#: src/lib/billing.ts
-msgid "{count} years"
-msgstr "{count} years"
 
 #: src/lib/relative-time.ts
 msgid "{days}d ago"
@@ -294,10 +264,6 @@ msgstr "{provider} took too long to respond. Try again."
 msgid "{remaining} left"
 msgstr "{remaining} left"
 
-#: src/pages/BillingSettingsPanel.tsx
-msgid "{seats, plural, one {# seat} other {# seats}}"
-msgstr "{seats, plural, one {# seat} other {# seats}}"
-
 #: src/components/SpendingLimitSettings.tsx
 msgid "{shown} a day"
 msgstr "{shown} a day"
@@ -363,18 +329,10 @@ msgstr "{summary} Your backup models also failed."
 msgid "{toolCount, plural, one {# tool} other {# tools}}"
 msgstr "{toolCount, plural, one {# tool} other {# tools}}"
 
-#: src/components/ModelCredits.tsx
-msgid "{vcpus} vCPU, {memoryGb} GB, {hours} computer hours a month"
-msgstr "{vcpus} vCPU, {memoryGb} GB, {hours} computer hours a month"
-
 #. placeholder {0}: mention.name
 #: src/pages/shell/composer.tsx
 msgid "@{0}"
 msgstr "@{0}"
-
-#: src/components/ModelCredits.tsx
-msgid "/ month"
-msgstr "/ month"
 
 #: src/pages/shell/message-cards.tsx
 msgid "A bit of everything"
@@ -451,7 +409,6 @@ msgstr "Actions for {label}"
 msgid "Actions for {name}"
 msgstr "Actions for {name}"
 
-#: src/pages/BillingSettingsPanel.tsx
 #: src/pages/RoutineEditor.tsx
 msgid "Active"
 msgstr "Active"
@@ -511,10 +468,6 @@ msgstr "Add an HTTPS server URL."
 #: src/pages/PluginsOverlay.tsx
 msgid "Add another"
 msgstr "Add another"
-
-#: src/components/ModelCredits.tsx
-msgid "Add credits"
-msgstr "Add credits"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Add custom"
@@ -611,10 +564,6 @@ msgstr "Advanced..."
 msgid "All"
 msgstr "All"
 
-#: src/components/ModelCredits.tsx
-msgid "All {credit} goes to model usage."
-msgstr "All {credit} goes to model usage."
-
 #: src/pages/Artifacts.tsx
 msgid "All chats"
 msgstr "All chats"
@@ -706,10 +655,6 @@ msgstr "Anthropic API"
 #: src/pages/model-settings/compatible-model-fields.tsx
 msgid "Anthropic Messages"
 msgstr "Anthropic Messages"
-
-#: src/pages/Paywall.tsx
-msgid "Any model, with your own key"
-msgstr "Any model, with your own key"
 
 #: src/components/pages/SharePopover.tsx
 msgid "Anyone with the link"
@@ -857,10 +802,6 @@ msgstr "Auto"
 msgid "Available after the routine is saved"
 msgstr "Available after the routine is saved"
 
-#: src/components/ModelCredits.tsx
-msgid "Available credits"
-msgstr "Available credits"
-
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Available to shell commands as {commandVariable}"
 msgstr "Available to shell commands as {commandVariable}"
@@ -868,7 +809,6 @@ msgstr "Available to shell commands as {commandVariable}"
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/vault/VaultPageHeader.tsx
-#: src/pages/AdminAccessPage.tsx
 #: src/pages/AdminPluginsPage.tsx
 #: src/pages/Auth.tsx
 #: src/pages/McpServersOverlay.tsx
@@ -909,18 +849,10 @@ msgstr "Basic auth ({username})"
 msgid "Bearer token"
 msgstr "Bearer token"
 
-#: src/pages/settings-nav.ts
-msgid "Billing"
-msgstr "Billing"
-
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Billing address"
 msgstr "Billing address"
-
-#: src/components/ModelCredits.tsx
-msgid "Billing period"
-msgstr "Billing period"
 
 #: src/components/ApprovalRulesSettings.tsx
 msgid "Block"
@@ -972,7 +904,6 @@ msgstr "Can't read images"
 #: src/components/ComputerMaintenanceActions.tsx
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/markdown-link-prompt.tsx
-#: src/components/ModelCredits.tsx
 #: src/components/PasskeySettings.tsx
 #: src/components/SpaceMembersSettings.tsx
 #: src/components/SpendingLimitSettings.tsx
@@ -999,10 +930,6 @@ msgstr "Cancel open invites"
 #: src/pages/shell/chat-context.tsx
 msgid "Cancel reply"
 msgstr "Cancel reply"
-
-#: src/pages/BillingSettingsPanel.tsx
-msgid "Canceled"
-msgstr "Canceled"
 
 #: src/components/CloudAgentCard.tsx
 msgid "cancelled"
@@ -1146,11 +1073,6 @@ msgstr "Choose a new password"
 #: src/pages/Onboarding.tsx
 msgid "Choose a provider"
 msgstr "Choose a provider"
-
-#: src/components/ModelCredits.tsx
-#: src/components/SubscriptionGate.tsx
-msgid "Choose how to use Labradoodle"
-msgstr "Choose how to use Labradoodle"
 
 #: src/components/vault/VaultItemEditor.tsx
 msgid "City"
@@ -1303,10 +1225,6 @@ msgstr "Computer"
 msgid "Computer failed to boot"
 msgstr "Computer failed to boot"
 
-#: src/components/ModelCredits.tsx
-msgid "Computer hours left"
-msgstr "Computer hours left"
-
 #: src/pages/shell/computer-overlay.tsx
 msgid "Computer is asleep"
 msgstr "Computer is asleep"
@@ -1406,18 +1324,9 @@ msgstr "Connect MCP server “{name}”"
 msgid "Connect memory provider"
 msgstr "Connect memory provider"
 
-#: src/components/ModelCredits.tsx
-msgid "Connect my own"
-msgstr "Connect my own"
-
 #: src/pages/McpServersOverlay.tsx
 msgid "Connect OAuth"
 msgstr "Connect OAuth"
-
-#. js-lingui-explicit-id
-#: src/lib/run-error.ts
-msgid "Connect your own API key in Models or choose Labradoodle credits in Billing."
-msgstr "Connect your own API key in Models or choose Labradoodle credits in Billing."
 
 #: src/components/ComputerDeviceSettings.tsx
 #: src/components/integrations/IntegrationSetup.tsx
@@ -1489,16 +1398,11 @@ msgstr "Continue"
 msgid "Continue in Background"
 msgstr "Continue in Background"
 
-#: src/components/ModelCredits.tsx
-msgid "Continue to checkout"
-msgstr "Continue to checkout"
-
 #. placeholder {0}: reset.sso.name
 #: src/pages/Auth.tsx
 msgid "Continue with {0}"
 msgstr "Continue with {0}"
 
-#: src/components/InviteDialog.tsx
 #: src/components/markdown-copy.tsx
 #: src/components/pages/PublicPageShell.tsx
 #: src/components/pages/SharePopover.tsx
@@ -1527,7 +1431,6 @@ msgstr "Copy diagram source"
 msgid "Copy invite link"
 msgstr "Copy invite link"
 
-#: src/components/InviteDialog.tsx
 #: src/components/pages/PublicPageShell.tsx
 #: src/components/pages/SharePopover.tsx
 msgid "Copy link"
@@ -1694,10 +1597,6 @@ msgstr "Could not download {0}. Try again."
 msgid "Could not download {name}. Try again."
 msgstr "Could not download {name}. Try again."
 
-#: src/pages/AdminAccessPage.tsx
-msgid "Could not grant access"
-msgstr "Could not grant access"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not install connector"
 msgstr "Could not install connector"
@@ -1724,10 +1623,6 @@ msgstr "Could not load approval rules"
 #: src/pages/Artifacts.tsx
 msgid "Could not load artifacts."
 msgstr "Could not load artifacts."
-
-#: src/pages/BillingSettingsPanel.tsx
-msgid "Could not load billing"
-msgstr "Could not load billing"
 
 #: src/components/ComputerProviderSettings.tsx
 msgid "Could not load computer settings"
@@ -1783,13 +1678,6 @@ msgstr "Could not load voice settings"
 #: src/lib/sign-out.ts
 msgid "Could not log out. Try again."
 msgstr "Could not log out. Try again."
-
-#: src/components/ModelCredits.tsx
-#: src/pages/BillingSettingsPanel.tsx
-#: src/pages/Onboarding.tsx
-#: src/pages/Paywall.tsx
-msgid "Could not open billing"
-msgstr "Could not open billing"
 
 #: src/pages/Onboarding.tsx
 msgid "Could not open your chat"
@@ -1879,10 +1767,6 @@ msgstr "Could not reset password"
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not revoke connection"
 msgstr "Could not revoke connection"
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Could not revoke grant"
-msgstr "Could not revoke grant"
 
 #: src/pages/shell/use-routine-editor.ts
 msgid "Could not run routine"
@@ -1989,10 +1873,6 @@ msgstr "Could not test MCP server"
 msgid "Could not transcribe that recording."
 msgstr "Could not transcribe that recording."
 
-#: src/components/ModelCredits.tsx
-msgid "Could not update billing"
-msgstr "Could not update billing"
-
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Could not update computer"
 msgstr "Could not update computer"
@@ -2012,10 +1892,6 @@ msgstr "Could not verify computer setup ({failureMessage}). Fix the connection, 
 #: src/components/pages/SharePopover.tsx
 msgid "Couldn't copy. Select the link and copy it."
 msgstr "Couldn't copy. Select the link and copy it."
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Couldn't load grants"
-msgstr "Couldn't load grants"
 
 #: src/components/pages/PagesList.tsx
 msgid "Couldn't load pages."
@@ -2069,18 +1945,6 @@ msgstr "Credential saved"
 msgid "Credentials are encrypted and never sent to the model."
 msgstr "Credentials are encrypted and never sent to the model."
 
-#: src/components/ModelCredits.tsx
-msgid "Credit amount"
-msgstr "Credit amount"
-
-#: src/components/ModelCredits.tsx
-msgid "Credits"
-msgstr "Credits"
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Credits ($)"
-msgstr "Credits ($)"
-
 #: src/lib/cron.ts
 msgid "Cron"
 msgstr "Cron"
@@ -2116,7 +1980,6 @@ msgstr "Dark"
 msgid "Data"
 msgstr "Data"
 
-#: src/lib/billing.ts
 #: src/lib/cron.ts
 msgid "day"
 msgstr "day"
@@ -2339,10 +2202,6 @@ msgstr "Done"
 msgid "Doodle"
 msgstr "Doodle"
 
-#: src/components/ModelCredits.tsx
-msgid "Doodle and browser automation"
-msgstr "Doodle and browser automation"
-
 #: src/pages/shell/composer-error.tsx
 msgid "Doodle can use the file but won't see the picture."
 msgstr "Doodle can use the file but won't see the picture."
@@ -2363,17 +2222,9 @@ msgstr "Doodle left"
 msgid "Doodle runs on this computer, not a Linux desktop. Shell and files use your home folder."
 msgstr "Doodle runs on this computer, not a Linux desktop. Shell and files use your home folder."
 
-#: src/pages/Paywall.tsx
-msgid "Doodle with its own computer and browser"
-msgstr "Doodle with its own computer and browser"
-
 #: src/pages/RoutineEditor.tsx
 msgid "Doodle's model"
 msgstr "Doodle's model"
-
-#: src/components/ModelCredits.tsx
-msgid "Downgrade at renewal"
-msgstr "Downgrade at renewal"
 
 #: src/pages/Artifacts.tsx
 #: src/pages/KnowledgeSection.tsx
@@ -2423,7 +2274,6 @@ msgstr "Edit first"
 
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/vault/VaultItemEditor.tsx
-#: src/pages/AdminAccessPage.tsx
 #: src/pages/Auth.tsx
 msgid "Email"
 msgstr "Email"
@@ -2448,10 +2298,6 @@ msgstr "Enable {0}"
 #: src/components/ComputerProviderSettings.tsx
 msgid "End user ID"
 msgstr "End user ID"
-
-#: src/lib/billing.ts
-msgid "Ends {day}"
-msgstr "Ends {day}"
 
 #: src/lib/user-error.ts
 msgid "Enter a password"
@@ -2689,22 +2535,6 @@ msgstr "Focus message"
 msgid "Forgot password?"
 msgstr "Forgot password?"
 
-#: src/components/ModelCredits.tsx
-msgid "Free"
-msgstr "Free"
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Free access"
-msgstr "Free access"
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Free months"
-msgstr "Free months"
-
-#: src/pages/shell/shell-sidebar.tsx
-msgid "Free plan ends {day}"
-msgstr "Free plan ends {day}"
-
 #: src/lib/cron.ts
 msgid "Friday"
 msgstr "Friday"
@@ -2753,10 +2583,6 @@ msgstr "Getting ready"
 msgid "Git event"
 msgstr "Git event"
 
-#: src/components/InviteDialog.tsx
-msgid "Give a friend {weeks} weeks free"
-msgstr "Give a friend {weeks} weeks free"
-
 #: src/pages/NotFound.tsx
 msgid "Go home"
 msgstr "Go home"
@@ -2764,14 +2590,6 @@ msgstr "Go home"
 #: src/pages/shell/keyboard-shortcuts-dialog.tsx
 msgid "Go to chat"
 msgstr "Go to chat"
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Grant"
-msgstr "Grant"
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Granting…"
-msgstr "Granting…"
 
 #: src/pages/RoutineEditor.tsx
 msgid "header"
@@ -2884,10 +2702,6 @@ msgstr "Image input is not configured for this model."
 msgid "Image input is not configured for this model."
 msgstr "Image input is not configured for this model."
 
-#: src/pages/BillingSettingsPanel.tsx
-msgid "Inactive"
-msgstr "Inactive"
-
 #: src/pages/shell/message-cards.tsx
 msgid "Inbox & email"
 msgstr "Inbox & email"
@@ -2958,11 +2772,6 @@ msgstr "Invalid code"
 msgid "Invite"
 msgstr "Invite"
 
-#: src/components/SidebarFooter.tsx
-msgid "Invite friends"
-msgstr "Invite friends"
-
-#: src/components/InviteDialog.tsx
 #: src/components/SpaceMembersSettings.tsx
 msgid "Invite link"
 msgstr "Invite link"
@@ -3028,10 +2837,6 @@ msgstr "Keys"
 #: src/components/vault/VaultItemEditor.tsx
 msgid "Label"
 msgstr "Label"
-
-#: src/pages/Onboarding.tsx
-msgid "Labradoodle credits"
-msgstr "Labradoodle credits"
 
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
 msgid "labradoodle-shared and IDs starting with bot- are reserved for Labradoodle."
@@ -3152,7 +2957,6 @@ msgstr "Loading voice providers…"
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/PageLoading.tsx
 #: src/components/SpaceMembersSettings.tsx
-#: src/pages/AdminAccessPage.tsx
 #: src/pages/Artifacts.tsx
 #: src/pages/Invite.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
@@ -3196,19 +3000,10 @@ msgstr "Low"
 msgid "Main model"
 msgstr "Main model"
 
-#: src/pages/BillingSettingsPanel.tsx
-msgid "Manage"
-msgstr "Manage"
-
 #. placeholder {0}: providerName(choice)
 #: src/pages/ModelRoleSettings.tsx
 msgid "Manage {0}"
 msgstr "Manage {0}"
-
-#: src/components/ModelCredits.tsx
-#: src/pages/Paywall.tsx
-msgid "Manage billing"
-msgstr "Manage billing"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Manage MCP servers"
@@ -3388,10 +3183,6 @@ msgstr "Model options"
 msgid "Models"
 msgstr "Models"
 
-#: src/components/ModelCredits.tsx
-msgid "Models at provider cost"
-msgstr "Models at provider cost"
-
 #: src/components/FoundModelPicker.tsx
 #: src/pages/model-settings/compatible-model-fields.tsx
 msgid "Models from server"
@@ -3405,23 +3196,10 @@ msgstr "Models list OK. {modelCount, plural, one {# model} other {# models}} ava
 msgid "Monday"
 msgstr "Monday"
 
-#: src/lib/billing.ts
-msgid "month"
-msgstr "month"
-
-#: src/components/ModelCredits.tsx
 #: src/components/SpendingLimitSettings.tsx
 #: src/lib/cron.ts
 msgid "Monthly"
 msgstr "Monthly"
-
-#: src/components/ModelCredits.tsx
-msgid "Monthly credits"
-msgstr "Monthly credits"
-
-#: src/components/ModelCredits.tsx
-msgid "Monthly credits expire at renewal. Top-ups do not expire."
-msgstr "Monthly credits expire at renewal. Top-ups do not expire."
 
 #: src/pages/PluginsOverlay.tsx
 #: src/pages/shell/message-hover-actions.tsx
@@ -3746,10 +3524,6 @@ msgstr "on the 1st at {0}"
 msgid "One-time"
 msgstr "One-time"
 
-#: src/components/ModelCredits.tsx
-msgid "One-time purchase. Credits do not expire."
-msgstr "One-time purchase. Credits do not expire."
-
 #: src/components/SecretAskCard.tsx
 msgid "Only enter a code {codeHost} sent you."
 msgstr "Only enter a code {codeHost} sent you."
@@ -3938,10 +3712,6 @@ msgstr "Password updated"
 msgid "Passwords do not match"
 msgstr "Passwords do not match"
 
-#: src/pages/BillingSettingsPanel.tsx
-msgid "Past due"
-msgstr "Past due"
-
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
 msgid "Paste a replacement key"
@@ -3963,7 +3733,6 @@ msgstr "Paste your API key, then test again."
 msgid "Paused"
 msgstr "Paused"
 
-#: src/pages/AdminAccessPage.tsx
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
 msgstr "Pending"
@@ -4001,10 +3770,6 @@ msgstr "Pin"
 #: src/components/pages/PagesList.tsx
 msgid "Pinned"
 msgstr "Pinned"
-
-#: src/components/ModelCredits.tsx
-msgid "Plan"
-msgstr "Plan"
 
 #: src/components/ArtifactFileCard.tsx
 msgid "Play {name}"
@@ -4128,10 +3893,6 @@ msgstr "Recall and write"
 msgid "Recall only"
 msgstr "Recall only"
 
-#: src/pages/AdminAccessPage.tsx
-msgid "Received"
-msgstr "Received"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Recommended"
 msgstr "Recommended"
@@ -4211,13 +3972,8 @@ msgstr "Redirect URI"
 
 #: src/App.tsx
 #: src/components/ErrorBoundary.tsx
-#: src/components/ModelCredits.tsx
 msgid "Refresh"
 msgstr "Refresh"
-
-#: src/components/ModelCredits.tsx
-msgid "Refresh credits"
-msgstr "Refresh credits"
 
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Refresh view"
@@ -4334,10 +4090,6 @@ msgstr "Removing…"
 msgid "Rename"
 msgstr "Rename"
 
-#: src/lib/billing.ts
-msgid "Renews {day}"
-msgstr "Renews {day}"
-
 #: src/pages/model-settings/connection-controls.tsx
 msgid "Replace API key"
 msgstr "Replace API key"
@@ -4444,7 +4196,6 @@ msgstr "Restoring your workspace"
 #: src/components/integrations/plugin-marketplace.tsx
 #: src/components/integrations/skills-dialog.tsx
 #: src/components/PasskeySettings.tsx
-#: src/pages/AdminAccessPage.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Invite.tsx
 #: src/pages/ModelRoleSettings.tsx
@@ -4469,14 +4220,6 @@ msgstr "Return to Labradoodle"
 msgid "Review provider settings and test again."
 msgstr "Review provider settings and test again."
 
-#: src/pages/AdminAccessPage.tsx
-msgid "Revoke"
-msgstr "Revoke"
-
-#: src/pages/AdminAccessPage.tsx
-msgid "Revoked"
-msgstr "Revoked"
-
 #: src/components/ComputerProviderSettings.tsx
 msgid "Root filesystem"
 msgstr "Root filesystem"
@@ -4495,10 +4238,6 @@ msgstr "Routine"
 #: src/pages/shell/side-panel.tsx
 msgid "Routines"
 msgstr "Routines"
-
-#: src/pages/Paywall.tsx
-msgid "Routines that run while you're away"
-msgstr "Routines that run while you're away"
 
 #: src/components/markdown-copy.tsx
 msgid "Row"
@@ -4607,10 +4346,6 @@ msgstr "Saving…"
 #: src/pages/RoutineEditor.tsx
 msgid "Schedule delayed"
 msgstr "Schedule delayed"
-
-#: src/components/ModelCredits.tsx
-msgid "Scheduled routines"
-msgstr "Scheduled routines"
 
 #: src/pages/McpServersOverlay.tsx
 msgid "Scopes (optional)"
@@ -4976,30 +4711,13 @@ msgstr "SSO is temporarily unavailable. Try again."
 msgid "Start"
 msgstr "Start"
 
-#: src/components/ModelCredits.tsx
-#: src/pages/Paywall.tsx
-msgid "Start {trialDays}-day free trial"
-msgstr "Start {trialDays}-day free trial"
-
 #: src/pages/shell/new-chat-dialog.tsx
 msgid "Start chat"
 msgstr "Start chat"
 
-#: src/components/ModelCredits.tsx
-msgid "Start plan"
-msgstr "Start plan"
-
-#: src/components/ModelCredits.tsx
-msgid "Start plan now"
-msgstr "Start plan now"
-
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Start recording"
 msgstr "Start recording"
-
-#: src/components/ModelCredits.tsx
-msgid "Start your plan now?"
-msgstr "Start your plan now?"
 
 #: src/pages/RoutineRunHistory.tsx
 msgid "Started {count}d late"
@@ -5075,31 +4793,6 @@ msgstr "Submit"
 msgid "Submit a plugin"
 msgstr "Submit a plugin"
 
-#: src/components/ModelCredits.tsx
-#: src/pages/Paywall.tsx
-msgid "Subscribe"
-msgstr "Subscribe"
-
-#: src/components/ModelCredits.tsx
-msgid "Subscribe for {annualPrice} / year"
-msgstr "Subscribe for {annualPrice} / year"
-
-#: src/components/ModelCredits.tsx
-msgid "Subscribe for {price} / month"
-msgstr "Subscribe for {price} / month"
-
-#: src/components/ModelCredits.tsx
-msgid "Subscribe to credits"
-msgstr "Subscribe to credits"
-
-#: src/components/ModelCredits.tsx
-msgid "Subscribe with your own AI"
-msgstr "Subscribe with your own AI"
-
-#: src/pages/Paywall.tsx
-msgid "Subscription required"
-msgstr "Subscription required"
-
 #: src/lib/cron.ts
 msgid "Sunday"
 msgstr "Sunday"
@@ -5113,22 +4806,6 @@ msgstr "Supports images"
 #: src/pages/Onboarding.tsx
 msgid "Supports thinking"
 msgstr "Supports thinking"
-
-#: src/components/ModelCredits.tsx
-msgid "Switch"
-msgstr "Switch"
-
-#: src/components/ModelCredits.tsx
-msgid "Switch to {tierTargetName}?"
-msgstr "Switch to {tierTargetName}?"
-
-#: src/components/ModelCredits.tsx
-msgid "Switch to yearly"
-msgstr "Switch to yearly"
-
-#: src/components/ModelCredits.tsx
-msgid "Switch to yearly?"
-msgstr "Switch to yearly?"
 
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/Shell.tsx
@@ -5231,18 +4908,10 @@ msgstr "The selected memory provider is not available in this build."
 msgid "The shared link stops working"
 msgstr "The shared link stops working"
 
-#: src/components/ModelCredits.tsx
-msgid "The unused difference is credited to your next invoice."
-msgstr "The unused difference is credited to your next invoice."
-
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/VaultSettings.tsx
 msgid "These saved settings can't be read. Remove it and add it again."
 msgstr "These saved settings can't be read. Remove it and add it again."
-
-#: src/components/InviteDialog.tsx
-msgid "They get {weeks} weeks free."
-msgstr "They get {weeks} weeks free."
 
 #: src/pages/DoodleSettings.tsx
 #: src/pages/ModelRoleSettings.tsx
@@ -5452,18 +5121,6 @@ msgstr "Transcription response is too large."
 msgid "Treg token"
 msgstr "Treg token"
 
-#: src/pages/BillingSettingsPanel.tsx
-msgid "Trial"
-msgstr "Trial"
-
-#: src/lib/billing.ts
-msgid "Trial ends {day}"
-msgstr "Trial ends {day}"
-
-#: src/components/ModelCredits.tsx
-msgid "Trials get fewer hours to prevent abuse."
-msgstr "Trials get fewer hours to prevent abuse."
-
 #: src/components/ErrorNotice.tsx
 msgid "Troubleshoot"
 msgstr "Troubleshoot"
@@ -5522,10 +5179,6 @@ msgstr "Unsupported file type: {0}"
 msgid "Up to date"
 msgstr "Up to date"
 
-#: src/components/ModelCredits.tsx
-msgid "Update"
-msgstr "Update"
-
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Update computer"
 msgstr "Update computer"
@@ -5558,14 +5211,6 @@ msgstr "Updating your computer"
 msgid "Updating…"
 msgstr "Updating…"
 
-#: src/pages/shell/shell-sidebar.tsx
-msgid "Upgrade"
-msgstr "Upgrade"
-
-#: src/components/ModelCredits.tsx
-msgid "Upgrade now"
-msgstr "Upgrade now"
-
 #: src/pages/settings-nav.ts
 msgid "Usage"
 msgstr "Usage"
@@ -5593,14 +5238,6 @@ msgstr "Use a found model"
 msgid "Use Connect to verify the key."
 msgstr "Use Connect to verify the key."
 
-#: src/components/ModelCredits.tsx
-msgid "Use Labradoodle credits"
-msgstr "Use Labradoodle credits"
-
-#: src/components/ModelCredits.tsx
-msgid "Use my subscription or API key"
-msgstr "Use my subscription or API key"
-
 #: src/components/teach/TeachRecordingChrome.tsx
 msgid "Use Protected input for passwords."
 msgstr "Use Protected input for passwords."
@@ -5622,14 +5259,6 @@ msgstr "Username"
 #: src/pages/ModelSettingsOverlay.tsx
 msgid "Uses this server's own {hostCredentialSource} credentials to access {selectedProviderName}."
 msgstr "Uses this server's own {hostCredentialSource} credentials to access {selectedProviderName}."
-
-#: src/components/ModelCredits.tsx
-msgid "Using your API key"
-msgstr "Using your API key"
-
-#: src/components/ModelCredits.tsx
-msgid "Using your API key. Free plan ends {freeUntil}."
-msgstr "Using your API key. Free plan ends {freeUntil}."
 
 #: src/components/vault/LoginFieldsInput.tsx
 #: src/components/vault/VaultItemDetail.tsx
@@ -5697,14 +5326,6 @@ msgstr "Waiting…"
 msgid "Wallet"
 msgstr "Wallet"
 
-#: src/components/ModelCredits.tsx
-msgid "Web, desktop and mobile"
-msgstr "Web, desktop and mobile"
-
-#: src/pages/Paywall.tsx
-msgid "Web, desktop and mobile apps"
-msgstr "Web, desktop and mobile apps"
-
 #: src/pages/RoutineEditor.tsx
 msgid "Webhook"
 msgstr "Webhook"
@@ -5712,10 +5333,6 @@ msgstr "Webhook"
 #: src/lib/cron.ts
 msgid "Wednesday"
 msgstr "Wednesday"
-
-#: src/lib/billing.ts
-msgid "week"
-msgstr "week"
 
 #: src/lib/cron.ts
 #: src/pages/RoutineEditor.tsx
@@ -5795,10 +5412,6 @@ msgstr "Work"
 msgid "Working…"
 msgstr "Working…"
 
-#: src/components/ModelCredits.tsx
-msgid "Works with your ChatGPT or Claude plan."
-msgstr "Works with your ChatGPT or Claude plan."
-
 #: src/lib/identity-display.ts
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
 #: src/pages/settings-nav.ts
@@ -5809,14 +5422,6 @@ msgstr "Workspace"
 #: src/pages/shell/sidebar-header.tsx
 msgid "Workspace settings"
 msgstr "Workspace settings"
-
-#: src/lib/billing.ts
-msgid "year"
-msgstr "year"
-
-#: src/components/ModelCredits.tsx
-msgid "Yearly"
-msgstr "Yearly"
 
 #: src/pages/shell/chat-context.tsx
 #: src/pages/shell/chat-list.tsx
@@ -5841,10 +5446,6 @@ msgstr "You can close this tab if it does not redirect automatically."
 msgid "You can close this window."
 msgstr "You can close this window."
 
-#: src/components/InviteDialog.tsx
-msgid "You get a free month when they start their trial with a new card."
-msgstr "You get a free month when they start their trial with a new card."
-
 #: src/pages/shell/computer-overlay.tsx
 msgid "You have control"
 msgstr "You have control"
@@ -5853,14 +5454,6 @@ msgstr "You have control"
 #: src/lib/run-error.ts
 msgid "Your Anthropic"
 msgstr "Your Anthropic"
-
-#: src/components/ModelCredits.tsx
-msgid "Your card is charged {annualPrice} today, less the unused part of this month."
-msgstr "Your card is charged {annualPrice} today, less the unused part of this month."
-
-#: src/components/ModelCredits.tsx
-msgid "Your card is charged the prorated difference today."
-msgstr "Your card is charged the prorated difference today."
 
 #: src/components/AccountDataSettings.tsx
 msgid "Your data"
@@ -5889,29 +5482,9 @@ msgstr "Your OpenAI"
 msgid "Your OpenRouter"
 msgstr "Your OpenRouter"
 
-#: src/components/ModelCredits.tsx
-msgid "Your plan becomes {annualPrice} / year when your trial ends."
-msgstr "Your plan becomes {annualPrice} / year when your trial ends."
-
-#: src/components/ModelCredits.tsx
-msgid "Your plan becomes {tierTargetLabel} when your trial ends."
-msgstr "Your plan becomes {tierTargetLabel} when your trial ends."
-
 #: src/components/integrations/skills-dialog.tsx
 msgid "Your skills"
 msgstr "Your skills"
-
-#: src/components/ModelCredits.tsx
-msgid "Your subscription or API key"
-msgstr "Your subscription or API key"
-
-#: src/components/ModelCredits.tsx
-msgid "Your trial ends and your card is charged {price} today."
-msgstr "Your trial ends and your card is charged {price} today."
-
-#: src/components/ModelCredits.tsx
-msgid "Your trial ends and your card is charged today."
-msgstr "Your trial ends and your card is charged today."
 
 #: src/lib/user-error.ts
 msgid "Your voice provider is out of credit."

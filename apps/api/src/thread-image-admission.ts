@@ -40,7 +40,6 @@ export async function assertThreadImageInput(
   configuration?: {
     secrets: Pick<SecretStore, "load">;
     deployment: { provider: string; model: string } | null;
-    hostedProvider?: string;
     codexCatalog?: CodexLiveCatalog;
   },
 ) {
@@ -75,7 +74,6 @@ export async function assertThreadImageInput(
       settings: await prisma.deploymentSettings.findUnique({ where: { id: "default" } }),
       deployment: configuration?.deployment ?? null,
     },
-    hostedProvider: configuration?.hostedProvider,
   });
   const provider = running ? run.modelProvider : selected.provider;
   const id = running ? run.modelId : selected.id;

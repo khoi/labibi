@@ -1,5 +1,5 @@
 import type { AdapterContext } from "@labradoodle/adapter-kit";
-import { computerControlExpireJobKey, SandboxAllowanceUsedError } from "@labradoodle/adapter-kit";
+import { computerControlExpireJobKey } from "@labradoodle/adapter-kit";
 import type { ComputerUpdate } from "@labradoodle/contracts";
 import { ComputerUpdateSchema } from "@labradoodle/contracts";
 import type { Prisma, PrismaClient, ThreadEvents } from "@labradoodle/db";
@@ -496,18 +496,10 @@ export async function performComputerUpdate(deps: Deps, updateId: string) {
     );
     await finishUpdate(deps.prisma, updateId, update.computerId, "completed");
   } catch (error) {
-    if (error instanceof SandboxAllowanceUsedError) {
-      getLogger().warn("computer update failed", {
-        updateId,
-        computerId: update.computerId,
-        reason: error.message,
-      });
-    } else {
-      getLogger().error("computer update failed", error, {
-        updateId,
-        computerId: update.computerId,
-      });
-    }
+    getLogger().error("computer update failed", error, {
+      updateId,
+      computerId: update.computerId,
+    });
     // Provider errors may contain credentials or private URLs. Expose only the failed stage.
     await finishUpdate(deps.prisma, updateId, update.computerId, "failed");
   } finally {

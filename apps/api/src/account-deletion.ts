@@ -13,11 +13,8 @@ import {
   deleteClaimedSpace,
   deletePageShareSecrets,
   prepareAccountDeletion,
-  recordComputerRunEnd,
-  restoreSpaceDeletionClaims,
 } from "@labradoodle/db";
 import { getLogger } from "@labradoodle/logging";
-import type { BillingService } from "./billing.js";
 import { afterSpaceDeparture } from "./space-departure.js";
 
 export type SpaceDeletionDeps = {
@@ -36,24 +33,11 @@ export type SpaceDeletionDeps = {
  * and deleting again resumes from what is left.
  */
 export async function deleteAccountContent(
-  deps: SpaceDeletionDeps & {
-    events: ThreadEvents;
-    billing?: Pick<BillingService, "cancelForDeletedUser">;
-  },
+  deps: SpaceDeletionDeps & { events: ThreadEvents },
   userId: string,
 ): Promise<void> {
-  const { claimId, spaceIds, takenOver } = await claimSpacesLeavingWithAccount(deps.prisma, userId);
-  try {
-    // Cancel under the claims, so a checkout opened while another organization's cancellation
-    // waits is refused by the deletion check instead of outliving the account.
-    await deps.billing?.cancelForDeletedUser(userId);
-  } catch (error) {
-    // Nothing was destroyed yet, so the account stays as it was: give back only what this
-    // attempt claimed, keeping claims an earlier attempt left and other deletions' markers.
-    await restoreSpaceDeletionClaims(deps.prisma, claimId, takenOver);
-    throw error;
-  }
-  // Then leave other people's workspaces, so the chats there stay with the people still in them.
+  const { claimId, spaceIds } = await claimSpacesLeavingWithAccount(deps.prisma, userId);
+  // Leave other people's workspaces, so the chats there stay with the people still in them.
   // None of them is claimed above: each keeps another full member. As after leaving: tell
   // members, stop the cancelled runs' work, free held screens, start others' waiting
   // follow-ups, and destroy the account's computer there.
@@ -110,7 +94,6 @@ async function deleteClaimedSpaces(
     computers.map(async (computer) => {
       if (computer.providerRef) {
         await deps.sandbox.destroy(toComputerRef(computer), context(computer.spaceId));
-        await recordComputerRunEnd(deps.prisma, computer, "deleted");
       }
       await removeAgentHome(deps.home, computer.homeKey, deps.dataDir);
       // The row holds the stored home's key, so the stored copy is unreadable from here on.

@@ -214,7 +214,6 @@ function account(provider: string, modelId: string) {
     sandboxProvider: "docker",
     mcpStdioEnabled: false,
     avatarStyle: "organic" as const,
-    billingEnabled: false,
     navLinks: [],
   };
 }

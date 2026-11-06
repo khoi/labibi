@@ -49,7 +49,6 @@ import {
 import { mobileTokens, resolveMobileAppearance } from "../lib/appearance";
 import { explicitSignInRoute } from "../lib/auth-routing";
 import { AvatarViewportScope, createAvatarViewport } from "../lib/avatar-life";
-import { isPaywallShown } from "../lib/billing";
 import { useHeaderHeightIfAny } from "../lib/floating-header";
 import { useForegroundPoll } from "../lib/foreground-poll";
 import { getActiveUiLocale, useI18n } from "../lib/i18n";
@@ -61,7 +60,6 @@ import { iosAtLeast } from "../lib/native-controls";
 import { offerPasskeyOnce } from "../lib/passkey";
 import { INBOX_POLL_INTERVAL_MS } from "../lib/poll-cadence";
 import { registerPushToken } from "../lib/push";
-import { forgetReferrals, rememberReferral } from "../lib/referral";
 import { hasSignedInBefore, rememberSignedIn } from "../lib/returning-user";
 import { loadSavedInbox, saveInbox } from "../lib/saved-chats";
 import {
@@ -175,21 +173,6 @@ function Home({ embedded, onSelectSpace }: InboxPaneProps & { embedded: boolean 
         throw new Error(t("Could not save the default workspace"));
       }
       if (stale()) return;
-      if (!nextMe.billingEnabled) forgetReferrals();
-      else {
-        // Filed under the workspace it was fetched for, so a late answer never shows in another.
-        const spaceId = selectedSpaceId();
-        void rpc("billing/status")
-          .then((billing) => {
-            // Only while this session is still the live one: a reply after sign-out must not
-            // restore the previous owner's link.
-            if (stale()) return;
-            rememberReferral(spaceId, billing.referral);
-            if (billing.funding !== undefined && !billing.access && !isPaywallShown())
-              router.push("/paywall");
-          })
-          .catch(() => undefined);
-      }
       setChats(loaded.chats);
       setWorkspaces(loaded.workspaces);
       setMe(nextMe);

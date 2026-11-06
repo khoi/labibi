@@ -1,9 +1,5 @@
 import type { RunErrorKind } from "@labradoodle/contracts";
-import {
-  COMPUTER_ALLOWANCE_USED_ERROR,
-  COMPUTER_RATE_LIMIT_ERROR,
-  providerQuotaResetAt,
-} from "@labradoodle/contracts";
+import { COMPUTER_RATE_LIMIT_ERROR, providerQuotaResetAt } from "@labradoodle/contracts";
 import { stuckWorkStatusMessages } from "./stuck-work.js";
 
 export const MISSING_TOOL_FINAL_RESPONSE_ERROR =
@@ -31,13 +27,6 @@ export const MODEL_REQUEST_LIMIT_ERROR =
   "This connection's request limit is too small. Choose another model.";
 
 export const MISSING_MODEL_RUN_ERROR = "Connect a model in Settings to use Doodle.";
-
-/** A deployment model run while the organization has not chosen Labradoodle credits. */
-export const HOSTED_MODEL_CREDITS_REQUIRED_ERROR =
-  "Connect your own API key in Models or choose Labradoodle credits in Billing.";
-
-/** A run in a billing organization without a paid plan, credits, or free period. */
-export const MODEL_ACCESS_REQUIRED_RUN_ERROR = "Subscribe in Billing to keep using Doodle.";
 
 /** The API rejects a send with this message until the user can reach a model. */
 export const MODEL_REQUIRED_SEND_ERROR = "Connect a model to start a run.";
@@ -105,16 +94,11 @@ const MODEL_OUTPUT_RUN_ERRORS = new Set([
   APPROVED_ACTION_NOT_RUN_ERROR,
 ]);
 /** App advice whose fix is connecting a model. */
-const MODEL_CONNECTION_RUN_ERRORS = new Set([
-  MISSING_MODEL_RUN_ERROR,
-  HOSTED_MODEL_CREDITS_REQUIRED_ERROR,
-]);
+const MODEL_CONNECTION_RUN_ERRORS = new Set([MISSING_MODEL_RUN_ERROR]);
 const APP_RUN_ERRORS = new Set([
   ...MODEL_OUTPUT_RUN_ERRORS,
   ...MODEL_CONNECTION_RUN_ERRORS,
-  MODEL_ACCESS_REQUIRED_RUN_ERROR,
   COMPUTER_RATE_LIMIT_ERROR,
-  COMPUTER_ALLOWANCE_USED_ERROR,
   ...stuckWorkStatusMessages(),
 ]);
 
