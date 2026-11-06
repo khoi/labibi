@@ -25,7 +25,8 @@ import { loadEnv } from "../env.js";
 const USAGE = `Usage: retire-bot-era [--dry-run]
   Removes what the bot era left outside the database before the chats migration deletes its
   rows: sandboxes and saved homes of computers the migration drops, bot folders and browser
-  profiles on the computers it keeps, stored chat files, and secrets held outside the
+  profiles on the computers it keeps, stored chat files, and the secrets of webhooks, page
+  links, browser logins, bot and agent secrets and messaging installs held outside the
   database. Run it against the database the migration will change, before deploying it.
   Everything it removes stays removed, so it can be run again until it reports no failures.`;
 
@@ -107,7 +108,10 @@ try {
        SELECT "webhookSecretId" FROM "bots" WHERE "webhookSecretId" IS NOT NULL
        UNION SELECT "shareSecretId" FROM "pages" WHERE "shareSecretId" IS NOT NULL
        UNION SELECT "secretId" FROM "browser_profiles" WHERE "secretId" IS NOT NULL
-     )`,
+       UNION SELECT "secretId" FROM "agent_secrets"
+     )
+     UNION ALL SELECT "id", "ciphertext" FROM "bot_secrets"
+     UNION ALL SELECT "id", "ciphertext" FROM "messaging_installations"`,
   );
 
   if (dryRun) {
