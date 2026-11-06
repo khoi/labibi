@@ -149,18 +149,17 @@ export function accountRoutes(ctx: RouterContext) {
     preferences: {
       update: authed.preferences.update.handler(async ({ context, input }): Promise<Me> => {
         const userId = context.actor.userId;
+        const other = {
+          ...(input.locale === undefined ? {} : { locale: input.locale }),
+          ...(input.readAloud === undefined ? {} : { readAloud: input.readAloud }),
+        };
         if (input.timezone !== undefined) {
           // The routines that took the account zone keep their local schedule in the new
           // one, and the other fields commit in the same save.
-          await changeUserTimezone(deps, userId, input.timezone, {
-            ...(input.locale === undefined ? {} : { locale: input.locale }),
-          });
+          await changeUserTimezone(deps, userId, input.timezone, other);
         } else {
           // An avatar style from an older app is accepted and ignored: there is only one.
-          await deps.prisma.user.update({
-            where: { id: userId },
-            data: input.locale === undefined ? {} : { locale: input.locale },
-          });
+          await deps.prisma.user.update({ where: { id: userId }, data: other });
         }
         return meDto(deps, context.actor);
       }),

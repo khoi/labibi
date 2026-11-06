@@ -290,6 +290,7 @@ export async function changeUserTimezone(
   timezone: string | null,
   other?: {
     locale?: string;
+    readAloud?: boolean;
     marketingEmailOptOutAt?: Date | null;
   },
 ): Promise<void> {
