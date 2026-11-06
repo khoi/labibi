@@ -70,27 +70,6 @@ async function readSettings(bot: Parameters<typeof readOwnBotSettings>[2], offse
 }
 
 describe("readOwnBotSettings", () => {
-  it("returns the current settings and the values the bot can pick", async () => {
-    const settings = await readSettings(bot);
-    expect(settings).toMatchObject({
-      name: "Scout",
-      instructions: "Cite sources.",
-      notifyOnFinish: true,
-      model: "Google: Gemini 3.8 Flash (default)",
-      thinkingLevel: "default",
-      readAloud: false,
-      voice: "default",
-      thinkingLevels: ["low", "medium", "high"],
-    });
-    expect(settings.models).toEqual([
-      expect.objectContaining({
-        provider: "Google",
-        ids: expect.arrayContaining(["google/gemini-3.8-flash"]),
-      }),
-    ]);
-    expect(settings.models[0]!.ids.length).toBeLessThanOrEqual(15);
-  });
-
   it("pages long instructions, naming the window and the next offset", async () => {
     const long = { ...bot, instructions: "x".repeat(19_000) };
     const first = await readSettings(long);
@@ -212,16 +191,6 @@ describe("prepareOwnBotSettings", () => {
     expect(await prepareOwnBotSettings(deps(), scope, bot, { thinkingLevel: "turbo" })).toEqual({
       error: expect.stringContaining("thinkingLevel must be one of"),
     });
-    expect(await prepareOwnBotSettings(deps(), scope, bot, { readAloud: "yes" })).toEqual({
-      error: "readAloud must be true or false.",
-    });
-    expect(validate).not.toHaveBeenCalled();
-  });
-
-  it("does not touch the model when only read-aloud changes", async () => {
-    expect(await prepareOwnBotSettings(deps(), scope, bot, { readAloud: true })).toEqual({
-      data: { autoSpeak: true },
-    });
     expect(validate).not.toHaveBeenCalled();
   });
 
@@ -295,10 +264,6 @@ describe("prepareOwnBotSettings voice", () => {
 
   it("lists voices only when a voice is asked for and stores the match", async () => {
     const list = vi.fn(async () => voices);
-    expect(await prepareOwnBotSettings(deps(), scope, bot, { readAloud: true }, list)).toEqual({
-      data: { autoSpeak: true },
-    });
-    expect(list).not.toHaveBeenCalled();
     expect(await prepareOwnBotSettings(deps(), scope, bot, { voice: "Rachel" }, list)).toEqual({
       data: { voiceId: "voice-rachel" },
     });

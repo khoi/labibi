@@ -42,7 +42,9 @@ describe("a run whose sender has left the space", () => {
         findUnique: vi.fn(async () => run),
         updateMany: vi.fn(async () => ({ count: 1 })),
       },
-      spaceMember: { findUnique: vi.fn(async () => null) },
+      computer: { findUnique: async () => null },
+      deploymentSettings: { findUnique: async () => null },
+      threadMember: { findFirst: vi.fn(async () => null) },
       user: { findUnique: vi.fn(async () => null) },
       $transaction: vi.fn(async (fn: (client: typeof tx) => Promise<unknown>) => fn(tx)),
     };
@@ -59,8 +61,8 @@ describe("a run whose sender has left the space", () => {
 
     await executor.continueRun(run.id, "worker-1");
 
-    expect(prisma.spaceMember.findUnique).toHaveBeenCalledWith({
-      where: { spaceId_userId: { spaceId: "space-1", userId: "former-member" } },
+    expect(prisma.threadMember.findFirst).toHaveBeenCalledWith({
+      where: { threadId: run.threadId, userId: "former-member", thread: { doodle: true } },
       select: { id: true },
     });
     // Never claimed, never ran.

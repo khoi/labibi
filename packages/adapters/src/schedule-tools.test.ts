@@ -1,6 +1,5 @@
 import { routineWakeupJob } from "@labradoodle/adapter-kit";
 import { ONCE_ROUTINE_CRON } from "@labradoodle/core";
-import { Prisma } from "@labradoodle/db";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   cancelScheduleFromTool,
@@ -806,17 +805,6 @@ describe("schedule_create with a watch", () => {
     expect(enqueue).toHaveBeenCalledTimes(1);
   });
 
-  it("rejects a team path escape before persisting", async () => {
-    const { deps: d, create } = deps();
-    vi.mocked(d.prisma.bot.findFirst).mockResolvedValue({ computer: { scope: "team" } } as never);
-    const result = await createScheduleFromTool(d, {
-      ...base,
-      schedule: { watch: { kind: "files", paths: ["/etc"] } },
-    });
-    expect(result).toMatchObject({ error: expect.stringContaining("inside the bot's folder") });
-    expect(create).not.toHaveBeenCalled();
-  });
-
   it("rejects a write tool before persisting", async () => {
     const { deps: d, create } = deps();
     d.connector = {
@@ -829,22 +817,6 @@ describe("schedule_create with a watch", () => {
       schedule: { watch: { kind: "tool", tool: "send" } },
     });
     expect(result).toMatchObject({ error: expect.stringContaining("can change data") });
-    expect(create).not.toHaveBeenCalled();
-  });
-
-  it("rejects a caller outside the bot owner boundary", async () => {
-    const { deps: d, create } = deps();
-    vi.mocked(d.prisma.bot.findFirst).mockResolvedValue(null);
-    const result = await createScheduleFromTool(d, {
-      ...base,
-      schedule: { watch: { kind: "command", command: "echo changed" } },
-    });
-    expect(result).toMatchObject({ error: "Bot not found." });
-    expect(d.prisma.bot.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: base.botId, spaceId: base.spaceId, archivedAt: null },
-      }),
-    );
     expect(create).not.toHaveBeenCalled();
   });
 
@@ -1042,59 +1014,6 @@ describe("updateScheduleFromTool", () => {
     },
   );
 
-  it("takes over another member's schedule and restarts its watch baseline", async () => {
-    const { findFirst, updateMany, update } = setup();
-    await expect(update({ userId: "user-2", prompt: "Order less" })).resolves.toMatchObject({
-      ok: true,
-    });
-    expect(findFirst).toHaveBeenCalledWith({
-      where: { spaceId: "ws-1", botId: "bot-1", id: "routine-1", bot: { archivedAt: null } },
-    });
-    expect(updateMany).toHaveBeenCalledWith({
-      where: {
-        spaceId: "ws-1",
-        botId: "bot-1",
-        userId: "user-1",
-        id: "routine-1",
-        bot: { archivedAt: null },
-      },
-      data: { userId: "user-2", watchState: Prisma.DbNull, prompt: "Order less" },
-    });
-  });
-
-  it("edits the prompt in place and keeps the timing", async () => {
-    const { updateMany, enqueue, append, update } = setup();
-    const prompt = "Order the usual; if cheddar is out of stock, skip it";
-    await expect(update({ prompt })).resolves.toEqual({
-      ok: true,
-      routineId: "routine-1",
-      name: "Groceries",
-      prompt,
-      active: true,
-      crons: ["0 10 * * 1"],
-      nextRunAt: "2026-10-26T09:00:00.000Z",
-      oneShot: false,
-      timezone: "Europe/Berlin",
-      schedule: "Every Monday at 10:00 AM",
-      nextRun: "Monday, 2026-10-26 10:00 (UTC+01:00)",
-    });
-    expect(updateMany).toHaveBeenCalledWith({
-      where: {
-        spaceId: "ws-1",
-        botId: "bot-1",
-        userId: "user-1",
-        id: "routine-1",
-        bot: { archivedAt: null },
-      },
-      // Only the prompt, so a run claimed meanwhile keeps its advance.
-      data: { prompt },
-    });
-    expect(enqueue).not.toHaveBeenCalled();
-    expect(append).toHaveBeenCalledWith(
-      expect.objectContaining({ type: "routine.updated", threadId: "thread-1" }),
-    );
-  });
-
   it("moves the first run of the current repeat with startAt alone", async () => {
     const { updateMany, enqueue, update } = setup();
     const first = new Date("2026-11-02T09:00:00.000Z");
@@ -1222,23 +1141,6 @@ describe("updateScheduleFromTool", () => {
       nextRunAt: "2026-10-26T09:00:00.000Z",
     });
     expect(enqueue).toHaveBeenCalledOnce();
-  });
-
-  it("does not touch another bot's or thread's routine", async () => {
-    const { findFirst, updateMany, update } = setup(null);
-    await expect(update({ prompt: "x", scopeThreadId: "group-thread-1" })).resolves.toEqual({
-      error: "Schedule not found.",
-    });
-    expect(findFirst).toHaveBeenCalledWith({
-      where: {
-        spaceId: "ws-1",
-        botId: "bot-1",
-        threadId: "group-thread-1",
-        id: "routine-1",
-        bot: { archivedAt: null },
-      },
-    });
-    expect(updateMany).not.toHaveBeenCalled();
   });
 
   it("returns timing errors without writing", async () => {

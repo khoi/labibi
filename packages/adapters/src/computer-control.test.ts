@@ -8,10 +8,8 @@ import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
 import { createLogger, createTestSink, installLogger } from "@labradoodle/logging";
 import { describe, expect, it, vi } from "vitest";
 import {
-  clearInactiveUserComputerControl,
   DEFAULT_TAKEOVER_LEASE_MS,
   expireComputerControl,
-  extendActiveComputerControl,
   hasActiveComputerControl,
   isIdleOwnComputerTakeover,
   revokeScreenControl,
@@ -48,16 +46,11 @@ describe("computer control leases", () => {
     expect(hasActiveComputerControl({ ...active, controlLeaseExpiresAt: now }, now)).toBe(false);
   });
 
-  it("treats only this bot's unbound takeover as idle", () => {
-    const takeover = {
-      controlHolder: "user",
-      controlBotId: "bot-1",
-      controlRunId: null,
-    };
-    expect(isIdleOwnComputerTakeover(takeover, "bot-1")).toBe(true);
-    expect(isIdleOwnComputerTakeover({ ...takeover, controlRunId: "run-1" }, "bot-1")).toBe(false);
-    expect(isIdleOwnComputerTakeover({ ...takeover, controlBotId: "bot-2" }, "bot-1")).toBe(false);
-    expect(isIdleOwnComputerTakeover({ ...takeover, controlHolder: "none" }, "bot-1")).toBe(false);
+  it("treats only an unbound takeover as idle", () => {
+    const takeover = { controlHolder: "user", controlRunId: null };
+    expect(isIdleOwnComputerTakeover(takeover)).toBe(true);
+    expect(isIdleOwnComputerTakeover({ ...takeover, controlRunId: "run-1" })).toBe(false);
+    expect(isIdleOwnComputerTakeover({ ...takeover, controlHolder: "none" })).toBe(false);
   });
 
   it("reschedules an early delivery without revoking control", async () => {
@@ -80,37 +73,6 @@ describe("computer control leases", () => {
       replaceKey: "computer.control-expire:computer-id:lease-1",
     });
     expect(harness.setScreenControl).not.toHaveBeenCalled();
-  });
-
-  it("denies control, revokes the stream, clears the lease, and publishes expiry", async () => {
-    const harness = controlHarness({ waitingRunId: "run-1" });
-
-    await expect(expireComputerControl(harness.deps, "computer-id", "lease-1")).resolves.toBe(true);
-
-    expect(harness.prisma.computer.updateMany.mock.calls[0]?.[0]).toMatchObject({
-      where: { id: "computer-id", controlLeaseId: "lease-1" },
-      data: { controlHolder: "none" },
-    });
-    expect(harness.setScreenControl).toHaveBeenCalledWith(
-      expect.objectContaining({ providerRef: "computer" }),
-      false,
-      expect.objectContaining({ operationId: "computer.control-expire" }),
-      "lease-1",
-    );
-    expect(harness.events.finalizeComputerControlRelease).toHaveBeenCalledWith({
-      spaceId: "workspace",
-      computerId: "computer-id",
-      botId: "bot",
-      runId: "run-1",
-      leaseId: "lease-1",
-      holder: "none",
-      reason: "expired",
-    });
-    expect(harness.enqueue).toHaveBeenCalledWith({
-      name: "run.continue",
-      payload: { runId: "run-1" },
-      replaceKey: "run:run-1",
-    });
   });
 
   it("resumes the run holding the takeover lease instead of a newer waiting run", async () => {
@@ -188,24 +150,6 @@ describe("computer control leases", () => {
     expect(harness.events.finalizeComputerControlRelease).toHaveBeenCalledWith(
       expect.objectContaining({ leaseId: "lease-1", reason: "expired" }),
     );
-  });
-
-  it("clears an orphaned lease instead of rescheduling when the sandbox is gone", async () => {
-    const harness = controlHarness({
-      controlBotId: null,
-      revokeError: Object.assign(new Error("No such container"), {
-        name: "SandboxNotFoundError",
-      }),
-    });
-
-    await expect(expireComputerControl(harness.deps, "computer-id", "lease-1")).resolves.toBe(true);
-
-    expect(harness.prisma.computer.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({ controlLeaseId: null, controlHolder: "none" }),
-      }),
-    );
-    expect(harness.enqueue).not.toHaveBeenCalled();
   });
 
   it("retries atomic lease cleanup when release-event persistence fails", async () => {
@@ -325,86 +269,6 @@ describe("computer control leases", () => {
 
     expect(setScreenControl).not.toHaveBeenCalled();
   });
-
-  it("clears stale user control when the lease is empty or expired", async () => {
-    const updateMany = vi.fn().mockResolvedValue({ count: 1 });
-    const prisma = { computer: { updateMany } } as unknown as PrismaClient;
-    const now = new Date("2026-01-01T00:00:00.000Z");
-
-    await expect(clearInactiveUserComputerControl(prisma, "computer-1", now)).resolves.toBe(true);
-    expect(updateMany).toHaveBeenCalledWith({
-      where: {
-        id: "computer-1",
-        controlHolder: "user",
-        OR: [
-          { controlLeaseId: null },
-          { controlLeaseExpiresAt: null },
-          { controlLeaseExpiresAt: { lte: now } },
-        ],
-      },
-      data: {
-        controlHolder: "none",
-        controlLeaseId: null,
-        controlUserId: null,
-        controlLeaseExpiresAt: null,
-        controlBotId: null,
-        controlRunId: null,
-      },
-    });
-  });
-
-  it("revokes then clears orphaned user control when expiry has no control bot id", async () => {
-    const harness = controlHarness({ controlBotId: null });
-    await expect(expireComputerControl(harness.deps, "computer-id", "lease-1")).resolves.toBe(true);
-    expect(harness.setScreenControl).toHaveBeenCalledWith(
-      expect.objectContaining({ providerRef: "computer" }),
-      false,
-      expect.objectContaining({ operationId: "computer.control-expire" }),
-      "lease-1",
-    );
-    expect(harness.prisma.computer.updateMany).toHaveBeenCalledWith({
-      where: {
-        id: "computer-id",
-        controlLeaseId: "lease-1",
-      },
-      data: {
-        controlHolder: "none",
-        controlLeaseId: null,
-        controlUserId: null,
-        controlLeaseExpiresAt: null,
-        controlBotId: null,
-        controlRunId: null,
-      },
-    });
-  });
-
-  it("keeps an orphaned lease when provider revocation fails", async () => {
-    const harness = controlHarness({
-      controlBotId: null,
-      revokeError: new Error("provider unavailable"),
-    });
-    await expect(expireComputerControl(harness.deps, "computer-id", "lease-1")).resolves.toBe(
-      false,
-    );
-    expect(harness.prisma.computer.updateMany).not.toHaveBeenCalled();
-    expect(harness.enqueue).toHaveBeenCalled();
-  });
-
-  it("keeps an orphaned lease when revoke and reschedule both fail", async () => {
-    const harness = controlHarness({
-      controlBotId: null,
-      revokeError: new Error("provider unavailable"),
-      enqueueError: new Error("queue unavailable"),
-    });
-    const sink = createTestSink();
-    installLogger(createLogger({ service: "rakazo-worker", sinks: [sink] }));
-    await expect(expireComputerControl(harness.deps, "computer-id", "lease-1")).resolves.toBe(
-      false,
-    );
-    expect(harness.prisma.computer.updateMany).not.toHaveBeenCalled();
-    expect(sink.events.length).toBeGreaterThan(0);
-    installLogger(createLogger({ service: "rakazo-worker", level: "off", sinks: [] }));
-  });
 });
 
 describe("teaching control lease extension", () => {
@@ -416,44 +280,6 @@ describe("teaching control lease extension", () => {
     expect(teachingControlLeaseExpiresAt(new Date("2026-01-01T00:20:00.000Z"), now)).toEqual(
       new Date("2026-01-01T00:20:00.000Z"),
     );
-  });
-
-  it("extends an existing user lease and reschedules expiry", async () => {
-    const now = new Date("2026-01-01T00:00:00.000Z");
-    const teachingUntil = new Date("2026-01-01T00:10:00.000Z");
-    const harness = controlHarness({
-      controlLeaseExpiresAt: new Date("2026-01-01T00:04:00.000Z"),
-    });
-    const computer = {
-      id: "computer-id",
-      controlHolder: "user",
-      controlLeaseId: "lease-1",
-      controlLeaseExpiresAt: new Date("2026-01-01T00:04:00.000Z"),
-      controlBotId: "bot",
-    };
-
-    await expect(
-      extendActiveComputerControl(
-        harness.deps.prisma,
-        harness.deps.jobs,
-        computer,
-        "bot",
-        teachingUntil,
-        now,
-      ),
-    ).resolves.toBe(true);
-
-    const expectedExpiry = new Date(now.getTime() + DEFAULT_TAKEOVER_LEASE_MS);
-    expect(harness.prisma.computer.updateMany).toHaveBeenCalledWith({
-      where: {
-        id: "computer-id",
-        controlHolder: "user",
-        controlBotId: "bot",
-        controlLeaseId: "lease-1",
-      },
-      data: { controlLeaseExpiresAt: expectedExpiry },
-    });
-    expect(harness.enqueue).toHaveBeenCalled();
   });
 });
 

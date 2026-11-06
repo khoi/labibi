@@ -482,7 +482,7 @@ export async function sleepComputerIfIdle(
   const runHolds = () =>
     allowanceUsed
       ? Promise.resolve(null)
-      : findActiveRun(deps.prisma, computerId, activeStatuses, limitReached);
+      : findActiveRun(deps.prisma, computer, activeStatuses, limitReached);
   const backgroundHolds = async () =>
     !allowanceUsed &&
     ((!limitReached && (await hasActiveBackgroundWork(deps.sandbox, ref, ctx, computerId))) ||
@@ -490,7 +490,7 @@ export async function sleepComputerIfIdle(
   const graceEndsAt = () =>
     allowanceUsed || activeControl || deps.sandbox.billsWhileRunning?.(ref) === true
       ? Promise.resolve(null)
-      : takeoverGraceEndsAt(deps.prisma, computerId);
+      : takeoverGraceEndsAt(deps.prisma, computer);
   const runHeld = Boolean(await runHolds());
   const takeoverHeldUntil = runHeld ? null : await graceEndsAt();
   if (!runHeld && !takeoverHeldUntil && (await suspendStoppedComputer(deps, computer, ref, ctx))) {
@@ -971,21 +971,17 @@ function loadComputer(prisma: PrismaClient, computerId: string) {
   });
 }
 
-/** A run uses its person's computer only while it holds the computer's lease. */
-async function findActiveRun(
+/** Any run of the computer's person in its workspace may use it, so each holds it awake. */
+function findActiveRun(
   prisma: PrismaClient,
-  computerId: string,
+  computer: { spaceId: string; userId: string },
   statuses: readonly string[],
   liveLeaseOnly = false,
 ) {
-  const leases = await prisma.computerExecutionLease.findMany({
-    where: { computerId, expiresAt: { gt: new Date(Date.now()) } },
-    select: { runId: true },
-  });
-  if (leases.length === 0) return null;
   return prisma.run.findFirst({
     where: {
-      id: { in: leases.map((lease) => lease.runId) },
+      spaceId: computer.spaceId,
+      userId: computer.userId,
       status: { in: statuses as (typeof QUEUE_HOLDING_RUN_STATUSES)[number][] },
       ...(liveLeaseOnly ? { leaseExpiresAt: { gt: new Date(Date.now()) } } : {}),
     },
@@ -1021,17 +1017,14 @@ async function noBlockingExecutionLease(prisma: PrismaClient, computerId: string
 }
 
 /** When the newest takeover request of a run still waiting on this computer stops holding it. */
-async function takeoverGraceEndsAt(prisma: PrismaClient, computerId: string): Promise<Date | null> {
-  const leases = await prisma.computerExecutionLease.findMany({
-    where: { computerId, expiresAt: { gt: new Date() } },
-    select: { runId: true },
+async function takeoverGraceEndsAt(
+  prisma: PrismaClient,
+  computer: { spaceId: string; userId: string },
+): Promise<Date | null> {
+  const waiting = await prisma.run.findMany({
+    where: { spaceId: computer.spaceId, userId: computer.userId, status: "waiting_takeover" },
+    select: { id: true },
   });
-  const waiting = leases.length
-    ? await prisma.run.findMany({
-        where: { id: { in: leases.map((lease) => lease.runId) }, status: "waiting_takeover" },
-        select: { id: true },
-      })
-    : [];
   if (waiting.length === 0) return null;
   const requested = await prisma.event.findFirst({
     where: {

@@ -466,11 +466,11 @@ describe("runReplyGuidance", () => {
   });
 
   it("puts private instructions under the name and treats missing fields as empty", () => {
-    expect(runIdentityInstruction({ name: "Ada", instructions: "Stay quiet." })).toBe(
-      "Ada\nThese instructions are private to you:\nStay quiet.",
+    expect(runIdentityInstruction({ instructions: "Stay quiet." })).toBe(
+      "Doodle\nThese instructions are private to you:\nStay quiet.",
     );
-    expect(runIdentityInstruction({ name: "Ada", instructions: "" })).toBe("Ada");
-    expect(runIdentityInstruction({ name: "Ada" })).toBe("Ada");
+    expect(runIdentityInstruction({ instructions: "" })).toBe("Doodle");
+    expect(runIdentityInstruction({})).toBe("Doodle");
   });
 
   it("opens the model stream only for the current running lease", () => {

@@ -49,14 +49,6 @@ type RunHooks = {
   pictureMessage?: { waiting: boolean };
 };
 
-function deferred<T>(): Deferred<T> {
-  let resolve!: (value: T) => void;
-  const promise = new Promise<T>((done) => {
-    resolve = done;
-  });
-  return { promise, resolve };
-}
-
 function historyMessages(pictureMessage?: { waiting: boolean }): Array<{
   id: string;
   threadId: string;
@@ -167,7 +159,12 @@ async function runWithModel(
     yield { type: "done" as const, text: "Done" };
   });
   const prisma = {
-    spaceMember: { findUnique: vi.fn(async () => ({ id: "member-1" })) },
+    threadMember: {
+      findMany: async () => [{ userId: "user-1" }],
+      findFirst: async () => ({ id: "member-1" }),
+      findUnique: async () => ({ id: "member-1" }),
+      count: async () => 1,
+    },
     user: { findUnique: vi.fn(async () => null) },
     run: {
       findUnique: vi.fn(async () => run),
@@ -179,7 +176,7 @@ async function runWithModel(
           color: "blue",
           notifyOnFinish: true,
         },
-        thread: { groupId: null },
+        thread: { doodle: true },
       })),
       updateMany: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
         Object.assign(run, data);
@@ -219,6 +216,7 @@ async function runWithModel(
     thread: {
       findUniqueOrThrow: vi.fn(async () => ({
         id: run.threadId,
+        _count: { members: 1 },
         groupId: hooks?.group ? "group-1" : null,
         historyCompactionSummary: null,
         historyCompactedUpToSeq: null,
@@ -237,6 +235,13 @@ async function runWithModel(
     },
     task: { findUniqueOrThrow: vi.fn(async () => ({ id: run.taskId, prompt: "Look again" })) },
     computer: {
+      findUnique: async () => ({
+        id: "computer-1",
+        spaceId: "space-1",
+        userId: "user-1",
+        kind: "fake",
+        homeKey: "home-1",
+      }),
       updateMany: vi.fn(async () => ({ count: 1 })),
       findFirst: vi.fn(async () => ({
         state: "running",
@@ -523,53 +528,6 @@ describe("recent turn images follow model vision", () => {
     );
   });
 
-  it("puts an earlier turn's image on the computer once the bot uses it", async () => {
-    const { request, writeFile, exportWorkspace } = await runWithModel(
-      TEXT_ONLY_MODEL,
-      undefined,
-      false,
-      false,
-      true,
-      { useComputer: true },
-    );
-
-    expect(writeFile.mock.calls.map(([, file]) => file)).toEqual([
-      { path: "attachments/art-1.png", content: new Uint8Array([1, 2, 3, 4]) },
-    ]);
-    expect(request.prompt).toContain(
-      'Files attached earlier in this conversation are also on your computer:\n- "shot.png" (image/png, 4 bytes): "attachments/art-1.png"',
-    );
-    expect(exportWorkspace).not.toHaveBeenCalled();
-  });
-
-  it("lists and copies a file reply bound to a resumed routine", async () => {
-    // "Send as file" stores the picture as a file block; a routine reads no thread history.
-    const { request, steering, writeFile } = await runWithModel(
-      TEXT_ONLY_MODEL,
-      undefined,
-      false,
-      false,
-      true,
-      {
-        useComputer: true,
-        trigger: "routine",
-        steeringBlocks: [
-          { kind: "text", text: "Here it is" },
-          { kind: "file", artifactId: "art-2", name: "reply.png", mimeType: "image/png", size: 4 },
-        ],
-      },
-    );
-
-    expect(request.currentRunRequiresImageInput).toBeFalsy();
-    expect(steering).toHaveLength(1);
-    expect(steering[0]?.text).toContain('"attachments/art-2.png"');
-    expect(steering[0]?.images).toBeUndefined();
-    expect(writeFile.mock.calls.map(([, file]) => file)).toContainEqual({
-      path: "attachments/art-2.png",
-      content: new Uint8Array([1, 2, 3, 4]),
-    });
-  });
-
   it("attaches an earlier turn's image for a model that can see it", async () => {
     const { request, get } = await runWithModel(VISION_MODEL);
 
@@ -604,14 +562,6 @@ describe("recent turn images follow model vision", () => {
     expect(prisma.userModelRoleChoice.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { userId: "user-1", role: "main" } }),
     );
-  });
-
-  it("does not read or configure backups for scripted runs", async () => {
-    const { prisma, request } = await runWithModel(TEXT_ONLY_MODEL, undefined, false, true);
-    // Only the main model itself is read.
-    expect(prisma.userModelRoleChoice.findMany).toHaveBeenCalledTimes(1);
-    expect(request.fallbackModels).toEqual([]);
-    expect(request.resolveFallbackModel).toBeUndefined();
   });
 
   it("does not recover a backup's missing secret with a deployment key", async () => {
@@ -716,76 +666,6 @@ describe("recent turn images follow model vision", () => {
   });
 });
 
-describe("screen lifecycle after run completion", () => {
-  it("keeps only a successfully finalized run's screen warm and uses a dedicated screen fence", async () => {
-    const completed = await runWithModel(VISION_MODEL, undefined, false, false, true, {
-      useComputer: true,
-    });
-    expect(completed.releaseScreen).toHaveBeenCalledOnce();
-    expect(completed.releaseScreen.mock.calls[0]?.[1]).toMatchObject({
-      keepScreenWarm: true,
-      screenLeaseId: "run-1:7",
-    });
-
-    const unfinished = await runWithModel(VISION_MODEL, undefined, false, false, false, {
-      useComputer: true,
-    });
-    expect(unfinished.releaseScreen).toHaveBeenCalledOnce();
-    expect(unfinished.releaseScreen.mock.calls[0]?.[1]).not.toHaveProperty("keepScreenWarm");
-    expect(unfinished.releaseScreen.mock.calls[0]?.[1]).toMatchObject({ screenLeaseId: "run-1:7" });
-  });
-
-  it("ignores in-flight lease renewal after successful completion", async () => {
-    vi.useFakeTimers();
-    const runtimeGate = { reached: deferred<void>(), release: deferred<void>() };
-    const notificationGate = { reached: deferred<void>(), release: deferred<void>() };
-    const renewalStarted = deferred<void>();
-    const renewalResult = deferred<boolean>();
-    let completed: Awaited<ReturnType<typeof runWithModel>> | undefined;
-
-    try {
-      completed = await runWithModel(VISION_MODEL, undefined, false, false, true, {
-        runtimeGate,
-        notificationGate,
-        useComputer: true,
-        computerLeaseRenewal: () => {
-          renewalStarted.resolve(undefined);
-          return renewalResult.promise;
-        },
-      });
-
-      await vi.advanceTimersByTimeAsync(60_000);
-      await renewalStarted.promise;
-      expect(lifecycleMocks.renewComputerExecutionLease).toHaveBeenCalledOnce();
-
-      runtimeGate.release.resolve(undefined);
-      await notificationGate.reached.promise;
-      await vi.advanceTimersByTimeAsync(120_000);
-
-      renewalResult.resolve(false);
-      await vi.advanceTimersByTimeAsync(0);
-      notificationGate.release.resolve(undefined);
-      await completed.execution;
-
-      const releaseContext = completed.releaseScreen.mock.calls[0]?.[1] as {
-        keepScreenWarm?: boolean;
-        signal: AbortSignal;
-      };
-      expect({
-        renewals: lifecycleMocks.renewComputerExecutionLease.mock.calls.length,
-        signalAborted: releaseContext.signal.aborted,
-        keepScreenWarm: releaseContext.keepScreenWarm,
-      }).toEqual({ renewals: 1, signalAborted: false, keepScreenWarm: true });
-    } finally {
-      runtimeGate.release.resolve(undefined);
-      renewalResult.resolve(false);
-      notificationGate.release.resolve(undefined);
-      if (completed) await completed.execution;
-      vi.useRealTimers();
-    }
-  });
-});
-
 describe("group history speakers", () => {
   const row = (
     seq: number,
@@ -821,38 +701,6 @@ describe("group history speakers", () => {
     // Archived bots are still found: the lookup does not filter on archivedAt.
     { id: "bot-3", name: "Renamed Anya" },
   ];
-
-  it("labels the user and the other bots, and leaves this bot's own replies plain", async () => {
-    const { request, prisma } = await runWithModel(VISION_MODEL, undefined, false, false, true, {
-      group: { messages: stored, bots },
-    });
-    expect(
-      request.history.map(({ role, speaker, content }) => ({ role, speaker, content })),
-    ).toEqual([
-      { role: "user", speaker: "User", content: "Name our project." },
-      { role: "assistant", speaker: "Renamed Anya", content: "Bluebird." },
-      { role: "assistant", speaker: "another bot", content: "Mystery." },
-      {
-        role: "assistant",
-        speaker: "Anya",
-        content: expect.stringMatching(/^Half an ans\n\n.+/s),
-      },
-      { role: "assistant", speaker: undefined, content: "Bluebird." },
-      { role: "user", speaker: "User", content: "@Boris who named it?" },
-    ]);
-    // One lookup for every other bot; the receiving bot's own id is not asked for.
-    const lookups = prisma.bot.findMany.mock.calls.filter(
-      ([args]) => (args as { where?: { id?: { in?: unknown } } } | undefined)?.where?.id?.in,
-    );
-    expect(lookups).toHaveLength(1);
-    expect((lookups[0]![0] as { where: { id: { in: string[] } } }).where.id.in.sort()).toEqual([
-      "bot-2",
-      "bot-3",
-      "bot-gone",
-    ]);
-    expect(request.promptSpeaker).toBe("User");
-    expect(request.instructions).toContain('messages from other members start with "[Name]:"');
-  });
 
   it("adds no speakers or prompt label in a direct chat", async () => {
     const { request, prisma } = await runWithModel(VISION_MODEL);

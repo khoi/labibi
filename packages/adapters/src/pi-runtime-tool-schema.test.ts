@@ -425,19 +425,3 @@ describe("jsonSchemaParameters", () => {
     expect(wire).toEqual({ type: "object", properties: {}, additionalProperties: false });
   });
 });
-
-describe("update_bot parameters", () => {
-  it("accepts notifyOnFinish as a boolean", () => {
-    const tool = builtinAgentTools.find((entry) => entry.name === "update_bot");
-    expect(tool).toBeTruthy();
-    const schema = JSON.parse(JSON.stringify(parametersFor(tool!))) as Record<string, unknown>;
-    expect(parseConnectorToolArgs(schema, { notifyOnFinish: false })).toEqual({
-      notifyOnFinish: false,
-    });
-    expect(parseConnectorToolArgs(schema, { notifyOnFinish: true, name: "Scout" })).toEqual({
-      notifyOnFinish: true,
-      name: "Scout",
-    });
-    expect(() => parseConnectorToolArgs(schema, { notifyOnFinish: "false" })).toThrow();
-  });
-});

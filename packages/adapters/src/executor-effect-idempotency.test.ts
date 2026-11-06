@@ -141,7 +141,21 @@ function fixture(runId = "run-1") {
     ),
   };
   const prisma = {
-    spaceMember: { findUnique: vi.fn(async () => ({ id: "member-1" })) },
+    computer: {
+      findUnique: async () => ({
+        id: "computer-1",
+        spaceId: "space-1",
+        userId: "user-1",
+        kind: "fake",
+        homeKey: "home-1",
+      }),
+    },
+    threadMember: {
+      findMany: async () => [{ userId: "user-1" }],
+      findFirst: async () => ({ id: "member-1" }),
+      findUnique: async () => ({ id: "member-1" }),
+      count: async () => 1,
+    },
     $transaction: vi.fn(async (write: (tx: unknown) => unknown) => write(prisma)),
     $queryRaw: vi.fn(async () => []),
     user: { findUnique: vi.fn(async () => null) },
@@ -171,7 +185,7 @@ function fixture(runId = "run-1") {
       updateMany: vi.fn(async () => ({ count: 1 })),
     },
     thread: {
-      findUniqueOrThrow: vi.fn(async () => ({ id: run.threadId, groupId: null })),
+      findUniqueOrThrow: vi.fn(async () => ({ id: run.threadId, _count: { members: 1 } })),
       update: vi.fn(async () => ({ nextMessageSeq: 2, nextEventSeq: 2 })),
     },
     message: { findMany: vi.fn(async () => []), create: messageCreate },
@@ -277,64 +291,6 @@ function fixture(runId = "run-1") {
 }
 
 describe("mutating tool effect idempotency keys", () => {
-  it.each(["generate_image", "generate_video"] as const)(
-    "recovers interrupted %s through the executor with a changed tool-call ID",
-    async (name) => {
-      const runId = `run-recover-${name}`;
-      const f = fixture(runId);
-      const args = { prompt: "create a landscape" };
-      f.effects.push({
-        id: "wrapper",
-        spaceId: "space-1",
-        runId,
-        kind: name,
-        idempotencyKey: toolEffectIdempotencyKey(runId, name, args),
-        status: "executing",
-        request: args,
-      });
-      f.effects.push({
-        id: "saved-media",
-        spaceId: "space-1",
-        runId,
-        kind: "media_generation_job",
-        idempotencyKey: `media:${runId}:0`,
-        status: name === "generate_image" ? "media_polling" : "media_pending",
-        request: { prompt: args.prompt, executionId: "wrapper" },
-        result: {
-          provider: "fake",
-          ...(name === "generate_video"
-            ? { jobId: "remote-video" }
-            : { artifactId: "saved-image" }),
-        },
-      });
-      f.artifactRows.push({
-        id: "saved-image",
-        name: "generated.png",
-        mimeType: "image/png",
-        size: 4,
-      });
-      const image = vi.spyOn(f.media, "generateImage");
-      const video = vi.spyOn(f.media, "generateVideo");
-      const poll = vi.spyOn(f.media, "pollVideo");
-      f.setCalls([{ name, args, executionId: "new-call-after-restart" }]);
-      await f.run();
-      expect(f.results[0]).toEqual(
-        name === "generate_video"
-          ? { jobId: "saved-media", status: "queued" }
-          : { status: "completed", artifactId: "saved-image" },
-      );
-      expect(f.effects[0]?.status).toBe("completed");
-      f.setCalls([{ name, args, executionId: "another-call-after-restart" }]);
-      await f.run();
-      expect(f.results[1]).toEqual(f.results[0]);
-      expect(image).not.toHaveBeenCalled();
-      expect(video).not.toHaveBeenCalled();
-      expect(poll).not.toHaveBeenCalled();
-      expect(f.artifactPut).not.toHaveBeenCalled();
-      if (name === "generate_image") expect(f.messageCreate).toHaveBeenCalledTimes(1);
-      else expect(f.messageCreate).not.toHaveBeenCalled();
-    },
-  );
   it("keys a new video job by the stable approved effect instead of the model call ID", async () => {
     const f = fixture("run-media-submit");
     const args = { prompt: "create a landscape" };

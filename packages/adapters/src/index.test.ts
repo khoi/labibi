@@ -151,7 +151,7 @@ describe("builtin tools", () => {
     );
     const options = {
       graphicalToolsAllowed: true,
-      groupId: null,
+      soloChat: true,
       trigger: "user",
       semanticMemoryEnabled: true,
       cloudAgentEnabled: true,

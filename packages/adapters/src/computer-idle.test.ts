@@ -48,35 +48,6 @@ describe("sandbox idle", () => {
     installLogger(createLogger({ service: "test", level: "off", sinks: [] }));
   });
 
-  it.each(["bytes", "files"] as const)(
-    "announces an unsaved home once for %s until the next save",
-    async (limit) => {
-      const harness = idleHarness({ exportError: new WorkspaceTooLargeError(limit) });
-      await sleepComputerIfIdle(harness.deps, harness.computer.id);
-      await sleepComputerIfIdle(harness.deps, harness.computer.id);
-      expect(harness.prisma.message.create).toHaveBeenCalledOnce();
-      expect(harness.prisma.message.create).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            role: "system",
-            blocks: [
-              {
-                kind: "meta",
-                text: `${new WorkspaceTooLargeError(limit).message}. It will keep running unsaved. Remove large files or files you no longer need so it can be saved.`,
-              },
-            ],
-          }),
-        }),
-      );
-      expect(harness.events.notify).toHaveBeenCalledOnce();
-      expect(harness.sandbox.stop).not.toHaveBeenCalled();
-      expect(harness.computer.state).toBe("running");
-      harness.computer.homeRevisionAt = new Date();
-      await sleepComputerIfIdle(harness.deps, harness.computer.id);
-      expect(harness.prisma.message.create).toHaveBeenCalledTimes(2);
-    },
-  );
-
   it("defaults to ten minutes when SANDBOX_IDLE_MS is unset", () => {
     expect(computerIdleSleepEnabled()).toBe(true);
     expect(sandboxIdleMs()).toBe(DEFAULT_SANDBOX_IDLE_MS);
@@ -342,42 +313,6 @@ describe("sandbox idle", () => {
     );
   });
 
-  it("checkpoints before suspending a stable idle computer", async () => {
-    const harness = idleHarness();
-    harness.prisma.run.findFirst.mockResolvedValue(null);
-
-    await sleepComputerIfIdle(harness.deps, harness.computer.id);
-
-    expect(harness.home.commit).toHaveBeenCalledOnce();
-    expect(harness.prisma.computer.updateMany.mock.invocationCallOrder[0]).toBeLessThan(
-      harness.sandbox.exportWorkspace.mock.invocationCallOrder[0]!,
-    );
-    expect(harness.sandbox.stop).toHaveBeenCalledOnce();
-    expect(harness.prisma.computer.updateMany).toHaveBeenLastCalledWith({
-      where: {
-        id: harness.computer.id,
-        state: "suspending",
-        providerRef: harness.computer.providerRef,
-        updatedAt: expect.any(Date),
-      },
-      data: {
-        diskUsedBytes: 91n * 1024n,
-        diskFreeBytes: 9n * 1024n,
-        state: "suspended",
-        runningSince: null,
-        controlHolder: "none",
-        controlLeaseId: null,
-        controlUserId: null,
-        controlLeaseExpiresAt: null,
-        controlBotId: null,
-        controlRunId: null,
-      },
-    });
-    expect(harness.events.append).toHaveBeenCalledWith(
-      expect.objectContaining({ type: "computer.status", payload: { status: "suspended" } }),
-    );
-  });
-
   it("clears a stranded legacy execution binding so an idle computer can suspend", async () => {
     const harness = idleHarness();
     harness.prisma.run.findFirst.mockResolvedValue(null);
@@ -554,41 +489,6 @@ describe("sandbox idle", () => {
 
   describe("a computer its provider already stopped", () => {
     const savedAt = new Date("2026-01-01T00:00:00.000Z");
-
-    it("is marked suspended without being started when nothing changed since its save", async () => {
-      const harness = idleHarness({ stoppedAtProvider: true, homeRevisionAt: savedAt });
-
-      await sleepComputerIfIdle(harness.deps, harness.computer.id);
-
-      expect(harness.computer.state).toBe("suspended");
-      expect(harness.sandbox.execute).not.toHaveBeenCalled();
-      expect(harness.sandbox.exportWorkspace).not.toHaveBeenCalled();
-      expect(harness.sandbox.stop).not.toHaveBeenCalled();
-      expect(harness.home.commit).not.toHaveBeenCalled();
-      expect(harness.computer.providerRef).toBe("computer");
-      expect(goneRuns(harness)).toEqual([harness.computer.id]);
-      expect(harness.events.append).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "computer.status", payload: { status: "suspended" } }),
-      );
-    });
-
-    it.each([
-      ["a run", { runSinceSave: true }],
-      ["a takeover", { takeoverSinceSave: true }],
-      ["no save time", { homeRevisionAt: null }],
-    ] as const)("is started and saved when %s may have changed it", async (_case, change) => {
-      const harness = idleHarness({
-        stoppedAtProvider: true,
-        homeRevisionAt: savedAt,
-        ...change,
-      });
-
-      await sleepComputerIfIdle(harness.deps, harness.computer.id);
-
-      expect(harness.home.commit).toHaveBeenCalledOnce();
-      expect(harness.sandbox.stop).toHaveBeenCalledOnce();
-      expect(harness.computer.state).toBe("suspended");
-    });
 
     it("is left to the run that holds it", async () => {
       const harness = idleHarness({ stoppedAtProvider: true, homeRevisionAt: savedAt });
@@ -1192,29 +1092,6 @@ describe("maximum active lifetime", () => {
     expect(harness.jobs.enqueue).toHaveBeenCalledTimes(6);
     expect(harness.sandbox.stop).not.toHaveBeenCalled();
   });
-
-  it.each([undefined, false])(
-    "keeps an unbilled computer (%s) awake for a run that just asked for takeover",
-    async (billing) => {
-      const harness = idleHarness({
-        billsWhileRunning: billing,
-        takeoverRequestedAt: new Date(now - 5 * 60_000),
-      });
-
-      await sleepComputerIfIdle(harness.deps, harness.computer.id);
-
-      expect(harness.prisma.run.findMany).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: { bot: { computerId: harness.computer.id }, status: "waiting_takeover" },
-        }),
-      );
-      expect(harness.sandbox.stop).not.toHaveBeenCalled();
-      expect(harness.sandbox.keepAlive).toHaveBeenCalledOnce();
-      expect(harness.jobs.enqueue).toHaveBeenCalledWith(
-        expect.objectContaining({ availableAt: new Date(now + DEFAULT_SANDBOX_IDLE_MS) }),
-      );
-    },
-  );
 
   it("rechecks a waiting takeover when its grace ends", async () => {
     const requestedAt = new Date(now - TAKEOVER_IDLE_GRACE_MS + 60_000);

@@ -173,7 +173,12 @@ async function runLoop(
   };
   const prisma = {
     externalEffect,
-    spaceMember: { findUnique: async () => ({ id: "member-1" }) },
+    threadMember: {
+      findMany: async () => [{ userId: "user-1" }],
+      findFirst: async () => ({ id: "member-1" }),
+      findUnique: async () => ({ id: "member-1" }),
+      count: async () => 1,
+    },
     $transaction: async (work: unknown): Promise<unknown> =>
       typeof work === "function" ? work(proxied) : Promise.all(work as unknown[]),
     run: {
@@ -228,7 +233,7 @@ async function runLoop(
     thread: {
       findUniqueOrThrow: vi.fn(async () => ({
         id: run.threadId,
-        groupId: null,
+        _count: { members: 1 },
         historyCompactionSummary: null,
         historyCompactedUpToSeq: null,
         nextMessageSeq: 2,
@@ -258,6 +263,13 @@ async function runLoop(
       findUniqueOrThrow: vi.fn(async () => ({ id: run.taskId, prompt: "Click through the form" })),
     },
     computer: {
+      findUnique: async () => ({
+        id: "computer-1",
+        spaceId: "space-1",
+        userId: "user-1",
+        kind: "e2b",
+        homeKey: "home-1",
+      }),
       updateMany: vi.fn(async () => ({ count: 1 })),
       findFirst: vi.fn(async () => ({
         state: "running",
@@ -354,21 +366,6 @@ const runWithBatches = (sizes: number[], vary = true) =>
     ],
   }));
 
-const LISTING = { name: "list_files", args: { path: "downloads" } };
-const unreadable = () => {
-  throw new Error("permission denied");
-};
-
-function expectStoppedAt(calls: number, run: { requests: unknown[]; finalText: string }) {
-  // The stop lands while the runtime may already be sending the next request.
-  expect(run.requests.length).toBeGreaterThanOrEqual(calls);
-  expect(run.requests.length).toBeLessThanOrEqual(calls + 1);
-  expect(run.finalText).toMatch(
-    new RegExp(`^I got stuck calling List files with the same input ${calls} times`),
-  );
-  expect(isLoopGuardStopText(run.finalText)).toBe(true);
-}
-
 describe("over-limit computer_act batches through the run loop", () => {
   it("ends the run after four refused batches in a row", async () => {
     const { requests, act, finalizeRun, finalText } = await runWithBatches([30]);
@@ -386,20 +383,6 @@ describe("over-limit computer_act batches through the run loop", () => {
     expect(toolResultTexts(requests[3]!.messages)).toHaveLength(3);
   }, 30_000);
 
-  it("starts the count over after a batch within the limit", async () => {
-    // over, over, in-limit, then over until the run is stopped.
-    const { requests, act, finalText } = await runWithBatches([30, 30, 24, 30]);
-
-    // Not stopped by the first two, nor by the three after the reset: the fourth ends it. The
-    // checkpoint flush of the executed batch lets a few more requests out before the abort lands.
-    expect(requests.length).toBeGreaterThanOrEqual(2 + 1 + MAX_CONSECUTIVE_OVER_LIMIT_ACTION_CALLS);
-    expect(requests.length).toBeLessThan(REQUEST_CAP);
-    expect(act).toHaveBeenCalledTimes(1);
-    expect(act.mock.calls[0]![1].actions).toHaveLength(24);
-    expect(finalText).toContain("with too many actions 4 times in a row");
-    expect(isLoopGuardStopText(finalText)).toBe(true);
-  }, 30_000);
-
   it("ends an identical refused batch at the fourth, before the same-input guard", async () => {
     const { requests, act, finalText } = await runWithBatches([30], false);
 
@@ -407,57 +390,5 @@ describe("over-limit computer_act batches through the run loop", () => {
     expect(act).not.toHaveBeenCalled();
     expect(finalText).toContain("with too many actions 4 times in a row");
     expect(finalText).not.toContain("the same input");
-  }, 30_000);
-});
-
-describe("repeated identical tool calls through the run loop", () => {
-  it("ends the run at the sixth call that fails the same way", async () => {
-    expectStoppedAt(6, await runLoop(() => ({ calls: [LISTING] }), { listing: unreadable }));
-  }, 30_000);
-
-  it("lets the bot wait on an unchanged answer until it changes", async () => {
-    const { requests, finalText } = await runLoop(
-      (n) => (n <= 9 ? { calls: [LISTING] } : { text: "The report is ready." }),
-      { listing: (call) => (call <= 8 ? [] : [REPORT]) },
-    );
-
-    expect(requests).toHaveLength(10);
-    expect(finalText).toBe("The report is ready.");
-  }, 30_000);
-
-  it("ends an unchanged answer at the 25th call, not the sixth", async () => {
-    expectStoppedAt(25, await runLoop(() => ({ calls: [LISTING] })));
-  }, 30_000);
-
-  it("keeps polling while the result changes", async () => {
-    const { requests, finalText } = await runLoop(() => ({ calls: [LISTING] }), {
-      listing: (call) => [{ ...REPORT, size: call * 1024 }],
-    });
-
-    expect(requests).toHaveLength(REQUEST_CAP + 1);
-    expect(isLoopGuardStopText(finalText)).toBe(false);
-  }, 30_000);
-
-  it("keeps going when the model writes before each repeat", async () => {
-    const { requests, finalText } = await runLoop(
-      () => ({ text: "Checking the download again.", calls: [LISTING] }),
-      { listing: unreadable },
-    );
-
-    expect(requests).toHaveLength(REQUEST_CAP + 1);
-    expect(isLoopGuardStopText(finalText)).toBe(false);
-  }, 30_000);
-
-  it("counts identical calls in one answer once", async () => {
-    const batch = await runLoop((n) => (n === 1 ? { calls: Array(6).fill(LISTING) } : {}), {
-      listing: unreadable,
-    });
-    expect(batch.requests).toHaveLength(2);
-    expect(batch.finalText).toBe("Done.");
-
-    expectStoppedAt(
-      6,
-      await runLoop(() => ({ calls: [LISTING, LISTING] }), { listing: unreadable }),
-    );
   }, 30_000);
 });

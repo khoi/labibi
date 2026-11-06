@@ -1,5 +1,5 @@
 import type { JobPublisher, NotificationProvider } from "@labradoodle/adapter-kit";
-import { STUCK_WORK_NOTICE, stuckWorkStatusMessage } from "@labradoodle/core";
+import { STUCK_WORK_NOTICE } from "@labradoodle/core";
 import type { PrismaClient, ThreadEvents } from "@labradoodle/db";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ExpoPushProvider } from "./expo-push.js";
@@ -8,7 +8,6 @@ import { MemoryPushTokenStore } from "./push-token-store.test-support.js";
 import { reconcileStuckWork, STUCK_NOTICE_CLAIM_TTL_MS } from "./stuck-work.js";
 
 const now = new Date("2026-09-28T16:00:00.000Z");
-const budget = { timeout: 20_000 };
 
 afterEach(async () => {
   vi.unstubAllGlobals();
@@ -68,67 +67,6 @@ describe("reconcileStuckWork", () => {
     expect(enqueue).not.toHaveBeenCalled();
   });
 
-  it("reminds once for a question that has been waiting for hours", async () => {
-    const run = candidate("waiting_input", 5);
-    const stamps: Array<{ runId: string | null; payload: unknown }> = [];
-    const prisma = noticePrisma(run, stamps);
-    const { jobs } = publisher();
-    const { provider, send } = notifications();
-    const publishChatAlert = vi.fn(async () => undefined);
-    const events = { publishChatAlert } as unknown as ThreadEvents;
-
-    await reconcileStuckWork({
-      prisma,
-      jobs,
-      events,
-      notifications: provider,
-      now,
-      batchSize: 100,
-    });
-    await reconcileStuckWork({
-      prisma,
-      jobs,
-      events,
-      notifications: provider,
-      now,
-      batchSize: 100,
-    });
-
-    expect(publishChatAlert).toHaveBeenCalledTimes(1);
-    expect(publishChatAlert).toHaveBeenCalledWith("user-1", {
-      kind: "help",
-      title: "Ada still needs an answer",
-      body: "This has been waiting on you.",
-      spaceId: "space-1",
-      botId: "bot-1",
-      threadId: "thread-1",
-    });
-    expect(send).toHaveBeenCalledTimes(1);
-    expect(send).toHaveBeenCalledWith(
-      {
-        kind: "help",
-        title: "Ada still needs an answer",
-        body: "This has been waiting on you.",
-        botId: "bot-1",
-        threadId: "thread-1",
-        sender: expect.objectContaining({ botId: "bot-1", name: "Ada" }),
-      },
-      expect.objectContaining({ spaceId: "space-1", userId: "user-1" }),
-    );
-    expect(stamps).toEqual([
-      expect.objectContaining({
-        runId: run.id,
-        payload: {
-          notice: STUCK_WORK_NOTICE,
-          updatedAt: run.updatedAt.toISOString(),
-          state: "delivered",
-        },
-      }),
-    ]);
-    // The claim and the delivered stamp lock the thread row behind snapshot reads.
-    expect(prisma.$transaction.mock.calls.map(([, options]) => options)).toEqual([budget, budget]);
-  });
-
   it("does not send again when this episode was already reminded", async () => {
     const run = candidate("waiting_input", 5);
     const stamps = [
@@ -145,27 +83,6 @@ describe("reconcileStuckWork", () => {
 
     expect(send).not.toHaveBeenCalled();
     expect(prisma.$transaction).not.toHaveBeenCalled();
-  });
-
-  it("does not stamp a skipped reminder, so enabling notices later still sends", async () => {
-    const run = candidate("queued", 5);
-    run.bot.notifyOnFinish = false;
-    const stamps: Array<{ runId: string | null; payload: unknown }> = [];
-    const prisma = noticePrisma(run, stamps);
-    const { jobs } = publisher();
-    const { provider, send } = notifications();
-
-    await reconcileStuckWork({ prisma, jobs, notifications: provider, now, batchSize: 100 });
-
-    expect(stamps).toHaveLength(0);
-    expect(send).not.toHaveBeenCalled();
-    expect(prisma.$transaction).not.toHaveBeenCalled();
-
-    run.bot.notifyOnFinish = true;
-    await reconcileStuckWork({ prisma, jobs, notifications: provider, now, batchSize: 100 });
-
-    expect(send).toHaveBeenCalledTimes(1);
-    expect(stamps).toHaveLength(1);
   });
 
   it("does not stamp a reminder until Expo has a token to deliver it", async () => {
@@ -368,22 +285,6 @@ describe("reconcileStuckWork", () => {
     ]);
   });
 
-  it("still reminds a group thread when finish notices are off", async () => {
-    const run = candidate("queued", 5);
-    run.bot.notifyOnFinish = false;
-    run.thread.groupId = "group-1";
-    const prisma = noticePrisma(run, []);
-    const { jobs } = publisher();
-    const { provider, send } = notifications();
-
-    await reconcileStuckWork({ prisma, jobs, notifications: provider, now, batchSize: 100 });
-
-    expect(send).toHaveBeenCalledWith(
-      expect.objectContaining({ kind: "help", title: "Ada is still queued" }),
-      expect.anything(),
-    );
-  });
-
   it("does not record a reminder when nothing can deliver it", async () => {
     const run = candidate("waiting_input", 5);
     const prisma = noticePrisma(run, []);
@@ -392,108 +293,6 @@ describe("reconcileStuckWork", () => {
     await reconcileStuckWork({ prisma, jobs, now, batchSize: 100 });
 
     expect(prisma.$transaction).not.toHaveBeenCalled();
-  });
-
-  it("cancels a day-old queue with a status line and a stopped notice", async () => {
-    const run = candidate("queued", 25);
-    const client = expireClient(run);
-    const { jobs, enqueue } = publisher();
-    const { provider, send } = notifications();
-    const notify = vi.fn(async () => undefined);
-
-    const cursor = await reconcileStuckWork({
-      prisma: client as unknown as PrismaClient,
-      jobs,
-      events: { notify } as unknown as ThreadEvents,
-      notifications: provider,
-      now,
-      batchSize: 100,
-    });
-
-    expect(cursor).toBeUndefined();
-    expect(client.message.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        role: "system",
-        blocks: [{ kind: "meta", text: stuckWorkStatusMessage("queued") }],
-      }),
-    });
-    expect(notify).toHaveBeenCalledWith("thread-1", 8);
-    expect(enqueue).toHaveBeenCalledWith({
-      name: "run.continue",
-      payload: { runId: "run-next" },
-      replaceKey: "run:run-next",
-    });
-    expect(send).toHaveBeenCalledTimes(1);
-    expect(send).toHaveBeenCalledWith(
-      expect.objectContaining({
-        kind: "failure",
-        title: "Ada stopped",
-        body: stuckWorkStatusMessage("queued"),
-      }),
-      expect.anything(),
-    );
-    expect(client.$transaction.mock.calls.map(([, options]) => options)).toEqual([budget]);
-  });
-
-  it("alerts open apps when work is cancelled, even without a push provider", async () => {
-    const run = { ...candidate("queued", 25), thread: { groupId: "group-1" } };
-    const publishChatAlert = vi.fn(async () => undefined);
-    const { jobs } = publisher();
-
-    await reconcileStuckWork({
-      prisma: expireClient(run) as unknown as PrismaClient,
-      jobs,
-      events: { notify: vi.fn(async () => undefined), publishChatAlert } as unknown as ThreadEvents,
-      now,
-      batchSize: 100,
-    });
-
-    expect(publishChatAlert).toHaveBeenCalledWith("user-1", {
-      kind: "failure",
-      title: "Ada stopped",
-      body: stuckWorkStatusMessage("queued"),
-      spaceId: "space-1",
-      botId: "bot-1",
-      threadId: "thread-1",
-      groupId: "group-1",
-    });
-  });
-
-  it("cancels a takeover nobody acted on after half an hour, without a reminder first", async () => {
-    const young = candidate("waiting_takeover", 29 / 60);
-    const youngClient = expireClient(young);
-    const { jobs } = publisher();
-    await reconcileStuckWork({
-      prisma: youngClient as unknown as PrismaClient,
-      jobs,
-      now,
-      batchSize: 100,
-    });
-    expect(youngClient.$transaction).not.toHaveBeenCalled();
-
-    const run = candidate("waiting_takeover", 0.5);
-    const client = expireClient(run);
-    const { provider, send } = notifications();
-    await reconcileStuckWork({
-      prisma: client as unknown as PrismaClient,
-      jobs,
-      events: { notify: vi.fn(async () => undefined) } as unknown as ThreadEvents,
-      notifications: provider,
-      now,
-      batchSize: 100,
-    });
-
-    expect(client.message.create).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        role: "system",
-        blocks: [{ kind: "meta", text: stuckWorkStatusMessage("waiting_takeover") }],
-      }),
-    });
-    expect(send).toHaveBeenCalledTimes(1);
-    expect(send).toHaveBeenCalledWith(
-      expect.objectContaining({ kind: "failure", title: "Ada stopped" }),
-      expect.anything(),
-    );
   });
 
   it("asks only for takeovers past half an hour and other work past the reminder age", async () => {

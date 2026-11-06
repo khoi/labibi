@@ -290,7 +290,6 @@ describe("Pi outgoing provider prefixes", () => {
               pageBrowserAllowed: true,
               workspaceInstruction: "Stable workspace guidance.",
               replyGuidance: "Stable reply guidance.",
-              groupContext: `Group context: ${index}`,
               redactedMemoryContext: `Memory: ${index === 0 ? "first" : "second"}`,
               hasHistoricalContext: true,
               agentEnvironmentInstruction: undefined,
@@ -341,7 +340,7 @@ describe("Pi outgoing provider prefixes", () => {
         "Treat pagination cursors as opaque: copy the returned continuation value exactly, never calculate or guess it. When the tool reports no next page, stop; if a cursor is rejected, recheck the last successful result before retrying.";
       expect(first).toContain(cursorRule);
       expect(second).toContain(cursorRule);
-      expect(first.split("\n\nGroup context:")[0]).toBe(second.split("\n\nGroup context:")[0]);
+      expect(first.split("\n\nMemory:")[0]).toBe(second.split("\n\nMemory:")[0]);
       expect(first.indexOf("Treat connector tool descriptions")).toBeLessThan(
         first.indexOf("Memory:"),
       );

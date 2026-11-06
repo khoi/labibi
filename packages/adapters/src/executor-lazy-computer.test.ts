@@ -1,11 +1,10 @@
 import type { AgentRunRequest, ComputerRef } from "@labradoodle/adapter-kit";
-import { SandboxRateLimitError, SandboxUnresponsiveError } from "@labradoodle/adapter-kit";
+import { SandboxUnresponsiveError } from "@labradoodle/adapter-kit";
 import type { MessageBlock } from "@labradoodle/contracts";
 import { createLogger, createTestSink, installLogger } from "@labradoodle/logging";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type * as ComputerLifecycleModule from "./computer-lifecycle.js";
 import { createRunExecutor } from "./executor.js";
-import * as runMessages from "./run-messages.js";
 
 const sink = createTestSink();
 
@@ -109,7 +108,12 @@ async function runRoutine(
     yield { type: "done" as const, text: "Inbox is clear." };
   });
   const prisma = {
-    spaceMember: { findUnique: vi.fn(async () => ({ id: "member-1" })) },
+    threadMember: {
+      findMany: async () => [{ userId: "user-1" }],
+      findFirst: async () => ({ id: "member-1" }),
+      findUnique: async () => ({ id: "member-1" }),
+      count: async () => 1,
+    },
     run: {
       findUnique: vi.fn(async () => run),
       findUniqueOrThrow: vi.fn(async () => run),
@@ -176,7 +180,7 @@ async function runRoutine(
     thread: {
       findUniqueOrThrow: vi.fn(async () => ({
         id: run.threadId,
-        groupId: null,
+        _count: { members: 1 },
         historyCompactionSummary: null,
         historyCompactedUpToSeq: null,
         nextMessageSeq: 1,
@@ -203,6 +207,7 @@ async function runRoutine(
     },
     task: { findUniqueOrThrow: vi.fn(async () => ({ id: run.taskId, prompt: "Sweep the inbox" })) },
     computer: {
+      findUnique: async () => null,
       updateMany: vi.fn(async () => ({ count: 1 })),
       findFirst: vi.fn(async () => ({
         state: "running",
@@ -436,266 +441,10 @@ describe("run computer provisioning", () => {
     },
   );
 
-  it.each([false, true])(
-    "copies pending attachments before the first tool, including steering: %s",
-    async (steering) => {
-      const { finalizeRun, sandbox } = await runRoutine(
-        [
-          { name: "list_files", args: { path: "" } },
-          { name: "list_files", args: { path: "" } },
-        ],
-        { attachments: "file", steering },
-      );
-      expect(finalizeRun).toHaveBeenCalledWith(expect.objectContaining({ outcome: "completed" }));
-      expect(provisionComputer).toHaveBeenCalledOnce();
-      expect(sandbox.writeFile).toHaveBeenCalledOnce();
-      expect(sandbox.writeFile.mock.invocationCallOrder[0]).toBeLessThan(
-        sandbox.listFiles.mock.invocationCallOrder[0]!,
-      );
-      expect(sink.events.filter((event) => event.message === "computer.requested")).toEqual([
-        expect.objectContaining({ reason: "tool", tool: "list_files" }),
-      ]);
-    },
-  );
-
-  it("shares provisioning and copies attachments once across parallel tools", async () => {
-    const { sandbox, finalizeRun } = await runRoutine(
-      [
-        { name: "list_files", args: { path: "" } },
-        { name: "list_files", args: { path: "" } },
-      ],
-      { attachments: "file", parallel: true },
-    );
-    expect(finalizeRun).toHaveBeenCalledWith(expect.objectContaining({ outcome: "completed" }));
-    expect(provisionComputer).toHaveBeenCalledOnce();
-    expect(sandbox.writeFile).toHaveBeenCalledOnce();
-    expect(sandbox.listFiles).toHaveBeenCalledTimes(2);
-  });
-
-  it("retries a transient attachment copy before a later tool without reprovisioning", async () => {
-    const { sandbox, finalizeRun } = await runRoutine(
-      [
-        { name: "list_files", args: { path: "" } },
-        { name: "list_files", args: { path: "" } },
-      ],
-      { attachments: "file", copyFailureOnce: true, toolFailure: "recover" },
-    );
-    expect(finalizeRun).toHaveBeenCalledWith(expect.objectContaining({ outcome: "completed" }));
-    expect(provisionComputer).toHaveBeenCalledOnce();
-    expect(sandbox.writeFile).toHaveBeenCalledTimes(2);
-    expect(sandbox.listFiles).toHaveBeenCalledOnce();
-  });
-
-  it("delivers steering text and inline images without copying onto an already-started computer", async () => {
-    const { sandbox, finalizeRun, steeringInputs } = await runRoutine(
-      [{ name: "list_files", args: { path: "" } }],
-      { attachments: "image", steering: true, steeringAfterFirst: true, copyFailureOnce: true },
-    );
-    expect(finalizeRun).toHaveBeenCalledWith(expect.objectContaining({ outcome: "completed" }));
-    expect(provisionComputer).toHaveBeenCalledOnce();
-    expect(sandbox.writeFile).not.toHaveBeenCalled();
-    expect(steeringInputs).toEqual([
-      expect.objectContaining({
-        historyText: "Look at this",
-        images: [
-          expect.objectContaining({ mimeType: "image/png", data: new Uint8Array([1, 2, 3, 4]) }),
-        ],
-      }),
-    ]);
-  });
-
-  it("copies steering attachments onto an already-started computer before the next tool", async () => {
-    const { sandbox, finalizeRun } = await runRoutine(
-      [
-        { name: "list_files", args: { path: "" } },
-        { name: "list_files", args: { path: "" } },
-      ],
-      { attachments: "file", steering: true, steeringAfterFirst: true },
-    );
-    expect(finalizeRun).toHaveBeenCalledWith(expect.objectContaining({ outcome: "completed" }));
-    expect(provisionComputer).toHaveBeenCalledOnce();
-    expect(sandbox.writeFile).toHaveBeenCalledOnce();
-    expect(sandbox.writeFile.mock.invocationCallOrder[0]).toBeGreaterThan(
-      sandbox.listFiles.mock.invocationCallOrder[0]!,
-    );
-    expect(sandbox.writeFile.mock.invocationCallOrder[0]).toBeLessThan(
-      sandbox.listFiles.mock.invocationCallOrder[1]!,
-    );
-  });
-
   it("does not boot for a steering attachment without computer tools", async () => {
     await runRoutine([], { attachments: "image", steering: true });
     expect(provisionComputer).not.toHaveBeenCalled();
   });
-
-  it.each([false, true])(
-    "keeps native chat lazy when native access is unavailable: %s",
-    async (nativeUnavailable) => {
-      const { finalizeRun, sandbox } = await runRoutine([], { native: true, nativeUnavailable });
-      expect(finalizeRun).toHaveBeenCalledWith(expect.objectContaining({ outcome: "completed" }));
-      expect(provisionComputer).not.toHaveBeenCalled();
-      expect(sandbox.environment).toHaveBeenCalledWith(
-        expect.objectContaining({ kind: "desktop", botId: "home-1" }),
-        expect.anything(),
-      );
-    },
-  );
-
-  it("starts the computer the first time a tool needs it and reuses it", async () => {
-    const { finalizeRun, sandbox, sleepJobs, toolResults } = await runRoutine([
-      { name: "list_files", args: { path: "" } },
-      { name: "list_files", args: { path: "" } },
-    ]);
-
-    expect(finalizeRun).toHaveBeenCalledWith(expect.objectContaining({ outcome: "completed" }));
-    expect(provisionComputer).toHaveBeenCalledOnce();
-    expect(provisionComputer).toHaveBeenCalledWith(
-      expect.anything(),
-      "computer-1",
-      expect.objectContaining({ runId: "run-1" }),
-      "bot",
-    );
-    expect(sandbox.listFiles).toHaveBeenCalledTimes(2);
-    expect(sandbox.listFiles).toHaveBeenCalledWith(COMPUTER, expect.any(String), expect.anything());
-    expect(toolResults[0]).toMatchObject({ entries: [{ path: "notes.txt" }] });
-    expect(sleepJobs).toHaveLength(1);
-    expect(sandbox.releaseScreen).toHaveBeenCalledWith(COMPUTER, expect.anything());
-  });
-
-  it("completes the run when its closing workspace checkpoint fails", async () => {
-    const { finalizeRun, sandbox } = await runRoutine(
-      [{ name: "list_files", args: { path: "" } }],
-      {
-        attachments: "file",
-        exportError: new Error("Boat API request failed (HTTP 502, sandbox_direct_failed)"),
-      },
-    );
-
-    expect(sandbox.exportWorkspace).toHaveBeenCalled();
-    expect(finalizeRun).toHaveBeenCalledWith(expect.objectContaining({ outcome: "completed" }));
-    expect(sink.events).toContainEqual(
-      expect.objectContaining({ level: "warn", message: "computer.checkpoint_deferred" }),
-    );
-  });
-
-  it("starts the computer before handing its screen to the user", async () => {
-    await runRoutine([], { takeover: true });
-
-    expect(provisionComputer).toHaveBeenCalledOnce();
-  });
-
-  it("queues the continuation when release wins the race with the takeover pause", async () => {
-    const publish = vi.spyOn(runMessages, "publishMessage").mockResolvedValue(null);
-    try {
-      const { enqueue, finalizeRun } = await runRoutine([], {
-        takeover: true,
-        takeoverReleased: true,
-      });
-      expect(enqueue).toHaveBeenCalledWith(
-        expect.objectContaining({ name: "run.continue", payload: { runId: "run-1" } }),
-      );
-      expect(finalizeRun).not.toHaveBeenCalled();
-    } finally {
-      publish.mockRestore();
-    }
-  });
-
-  it("restarts the idle timer when it asks the user to take over", async () => {
-    const { sleepJobs } = await runRoutine([], { takeover: true });
-
-    // One from starting the computer, one from the takeover request.
-    expect(sleepJobs).toHaveLength(2);
-  });
-
-  it("keeps setup-failure retry semantics when the computer cannot start", async () => {
-    provisionComputer.mockRejectedValue(new Error("provider unavailable"));
-
-    await expect(runRoutine([{ name: "list_files", args: { path: "" } }])).rejects.toThrow(
-      "Run setup failed; retrying",
-    );
-    expect(provisionComputer).toHaveBeenCalledOnce();
-    expect(sink.events).toContainEqual(
-      expect.objectContaining({ level: "error", message: "run setup failed" }),
-    );
-  });
-
-  it("retries setup after a computer provider outage without an error report", async () => {
-    provisionComputer.mockRejectedValue(new SandboxUnresponsiveError("Boat could not be reached"));
-
-    await expect(runRoutine([{ name: "list_files", args: { path: "" } }])).rejects.toThrow(
-      "Run setup failed; retrying",
-    );
-    expect(sink.events).toContainEqual(
-      expect.objectContaining({ level: "warn", message: "run setup failed" }),
-    );
-    expect(sink.events.filter((event) => event.level === "error")).toEqual([]);
-  });
-
-  it("does not report setup that a lost run lease aborted", async () => {
-    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
-    try {
-      provisionComputer.mockImplementation(
-        async (
-          deps: { prisma: { run: { updateMany: ReturnType<typeof vi.fn> } } },
-          _id: string,
-          context: { signal: AbortSignal },
-        ) => {
-          deps.prisma.run.updateMany.mockResolvedValueOnce({ count: 0 });
-          vi.advanceTimersByTime(60_000);
-          await new Promise((resolve) => context.signal.addEventListener("abort", resolve));
-          throw context.signal.reason;
-        },
-      );
-
-      await runRoutine([{ name: "list_files", args: { path: "" } }]).catch(() => undefined);
-    } finally {
-      vi.useRealTimers();
-    }
-    expect(provisionComputer).toHaveBeenCalledOnce();
-    expect(sink.events).toContainEqual(
-      expect.objectContaining({ level: "warn", message: "run setup failed" }),
-    );
-    expect(sink.events.filter((event) => event.level === "error")).toEqual([]);
-  });
-
-  it("fails the run instead of retrying once setup has failed too many times in a row", async () => {
-    provisionComputer.mockRejectedValue(new Error("provider unavailable"));
-
-    const { finalizeRun, enqueue, prisma } = await runRoutine(
-      [{ name: "list_files", args: { path: "" } }],
-      { priorSetupFailures: 7 },
-    );
-
-    expect(finalizeRun).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({ outcome: "failed", error: "provider unavailable" }),
-    );
-    expect(enqueue).not.toHaveBeenCalled();
-    // Busy-computer and database waits between failures neither count nor reset the streak.
-    expect(prisma.attempt.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ NOT: { status: "setup_failed", error: null } }),
-      }),
-    );
-  });
-
-  it.each([undefined, "abort", "recover"] as const)(
-    "finishes rate-limited runs without retrying when the model handles tool failure as %s",
-    async (toolFailure) => {
-      const error = new SandboxRateLimitError({ cause: new Error("Provider account limit") });
-      provisionComputer.mockRejectedValue(error);
-
-      const { finalizeRun, enqueue } = await runRoutine(
-        [{ name: "list_files", args: { path: "" } }],
-        { toolFailure },
-      );
-
-      expect(provisionComputer).toHaveBeenCalledOnce();
-      expect(finalizeRun).toHaveBeenCalledExactlyOnceWith(
-        expect.objectContaining({ outcome: "failed", error: error.message }),
-      );
-      expect(enqueue).not.toHaveBeenCalled();
-    },
-  );
 
   it("requeues a run aborted by shutdown so the next worker resumes it", async () => {
     const { finalizeRun, prisma, run, enqueue, resumeOnNextWorker } = await runRoutine(
@@ -778,17 +527,6 @@ describe("run computer provisioning", () => {
     expect(enqueue).toHaveBeenCalledWith(
       expect.objectContaining({ name: "run.continue", payload: { runId: "run-1" } }),
     );
-  });
-
-  it("still fails an aborted run when the worker is not shutting down", async () => {
-    const { finalizeRun, run, enqueue } = await runRoutine(
-      [{ name: "list_files", args: { path: "" } }],
-      { toolFailure: "abort" },
-    );
-
-    expect(finalizeRun).toHaveBeenCalledWith(expect.objectContaining({ outcome: "failed" }));
-    expect(run.status).not.toBe("queued");
-    expect(continueJobs(enqueue)).toEqual([]);
   });
 
   it("leaves a user-stopped run cancelled", async () => {

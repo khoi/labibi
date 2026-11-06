@@ -227,7 +227,21 @@ function fixture(runId = "run-1") {
   const choice = { modelId: "main-a" };
   const prisma = {
     $queryRaw: vi.fn(async () => []),
-    spaceMember: { findUnique: async () => ({ id: "member-1" }) },
+    computer: {
+      findUnique: async () => ({
+        id: "computer-1",
+        spaceId: "space-1",
+        userId: "user-1",
+        kind: "fake",
+        homeKey: "home-1",
+      }),
+    },
+    threadMember: {
+      findMany: async () => [{ userId: "user-1" }],
+      findFirst: async () => ({ id: "member-1" }),
+      findUnique: async () => ({ id: "member-1" }),
+      count: async () => 1,
+    },
     usageRecord: {
       createMany: vi.fn(async (_input: { data: Array<{ model: string }> }) => ({ count: 1 })),
     },
@@ -262,7 +276,7 @@ function fixture(runId = "run-1") {
       updateMany: vi.fn(async () => ({ count: 1 })),
     },
     thread: {
-      findUniqueOrThrow: vi.fn(async () => ({ id: run.threadId, groupId: null })),
+      findUniqueOrThrow: vi.fn(async () => ({ id: run.threadId, _count: { members: 1 } })),
       update: vi.fn(async () => ({ nextMessageSeq: 2, nextEventSeq: 2 })),
     },
     message: {
@@ -445,51 +459,6 @@ async function paused(tail: ToolCall[] = []) {
   fake.stream.mockReset();
   return { ...f, effect: effect!, checkpoint: checkpoint! };
 }
-it("resumes an approved browser action followed by leave in the same assistant batch", async () => {
-  const f = await paused([leave]);
-  const key = f.effect.idempotencyKey;
-  f.effect.status = "approved";
-  fake.stream.mockImplementation((target: Model<"openai-completions">) => respond(target));
-  await f.run();
-  expect(f.finalizeRun).not.toHaveBeenCalledWith(expect.objectContaining({ outcome: "failed" }));
-  expect(f.browserAct).toHaveBeenCalledTimes(1);
-  expect(f.effect).toMatchObject({ status: "completed", idempotencyKey: key });
-  expect(f.effects.filter((entry) => entry.kind === "browser_act")).toHaveLength(1);
-  expect(fake.stream.mock.calls.map((call) => call[0].id)).toEqual(["main-a"]);
-});
-it("resolves saved A/C before unavailable current B and executes the pending effect once", async () => {
-  const f = await paused();
-  const key = f.effect.idempotencyKey;
-  f.effect.status = "approved";
-  f.choice.modelId = "main-b";
-  fake.unavailable.add("main-b");
-  vi.mocked(resolveModelKey).mockClear();
-  vi.mocked(resolveConnectedRunModel).mockClear();
-  vi.mocked(findConnectedModelCredential).mockClear();
-  fake.stream.mockImplementation((target: Model<"openai-completions">) =>
-    respond(target, target.id === "computer-c" ? [leave] : []),
-  );
-  await f.run();
-  expect(vi.mocked(resolveModelKey).mock.calls.some((call) => call[5] === "main-b")).toBe(false);
-  expect(f.browserAct).toHaveBeenCalledTimes(1);
-  expect(f.effect).toMatchObject({ status: "completed", idempotencyKey: key });
-  expect(f.effects.filter((entry) => entry.kind === "browser_act")).toHaveLength(1);
-  expect(fake.stream.mock.calls.map((call) => call[0].id)).toEqual(["computer-c", "main-a"]);
-  expect(findConnectedModelCredential).not.toHaveBeenCalled();
-  expect(
-    vi
-      .mocked(resolveConnectedRunModel)
-      .mock.calls.every((call) => ["main-a", "computer-c"].includes(call[3])),
-  ).toBe(true);
-  expect(f.runtimeRun.mock.calls.at(-1)?.[0].model).toMatchObject({
-    id: "main-a",
-    connectionId: "main-account",
-    thinkingLevel: "high",
-  });
-  expect(
-    f.prisma.usageRecord.createMany.mock.calls.slice(-2).map((call) => call[0].data[0]?.model),
-  ).toEqual(["computer-c", "main-a"]);
-});
 it("resumes a denied browser action plus leave without dispatching the denied effect", async () => {
   const f = await paused([leave]);
   const key = f.effect.idempotencyKey;

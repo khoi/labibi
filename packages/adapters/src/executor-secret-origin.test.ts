@@ -99,7 +99,12 @@ async function requestSecretWith(origin: string, extra: Record<string, unknown> 
   });
   const prisma = recordingPrisma(
     {
-      spaceMember: { findUnique: async () => ({ id: "member-1" }) },
+      threadMember: {
+        findMany: async () => [{ userId: "user-1" }],
+        findFirst: async () => ({ id: "member-1" }),
+        findUnique: async () => ({ id: "member-1" }),
+        count: async () => 1,
+      },
       run: {
         findUnique: async () => run,
         findUniqueOrThrow: async () => run,
@@ -132,14 +137,23 @@ async function requestSecretWith(origin: string, extra: Record<string, unknown> 
       thread: {
         findUniqueOrThrow: async () => ({
           id: run.threadId,
-          groupId: null,
+          _count: { members: 1 },
           historyCompactionSummary: null,
           historyCompactedUpToSeq: null,
           nextMessageSeq: 1,
         }),
       },
       task: { findUniqueOrThrow: async () => ({ id: run.taskId, prompt: "Sign in to the site" }) },
-      computer: { updateMany: async () => ({ count: 1 }) },
+      computer: {
+        findUnique: async () => ({
+          id: "computer-1",
+          spaceId: "space-1",
+          userId: "user-1",
+          kind: "e2b",
+          homeKey: "home-1",
+        }),
+        updateMany: async () => ({ count: 1 }),
+      },
       deploymentSettings: {
         findUnique: async () => ({
           defaultModelProvider: "openrouter",

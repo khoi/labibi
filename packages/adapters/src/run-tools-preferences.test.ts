@@ -244,7 +244,7 @@ describe("update_preferences", () => {
     const offered = (trigger: string, followUpFromUser = false) =>
       selectBuiltinToolsForRun({
         graphicalToolsAllowed: false,
-        groupId: null,
+        soloChat: true,
         trigger,
         semanticMemoryEnabled: false,
         followUpFromUser,

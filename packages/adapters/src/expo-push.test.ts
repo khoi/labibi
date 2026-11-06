@@ -58,7 +58,7 @@ describe("expo push", () => {
     vi.stubGlobal("fetch", fetchMock);
     const push = new ExpoPushProvider(tokens);
     await push.send(
-      { kind: "completion", title: "done", body: "ok", botId: "b", threadId: "t" },
+      { kind: "completion", title: "done", body: "ok", threadId: "t" },
       {
         operationId: "n",
         traceId: "n",
@@ -71,7 +71,7 @@ describe("expo push", () => {
     await expect(push.hasPushRecipient("missing")).resolves.toBe(false);
     await expect(
       push.deliver(
-        { kind: "completion", title: "done", body: "ok", botId: "b", threadId: "t" },
+        { kind: "completion", title: "done", body: "ok", threadId: "t" },
         {
           operationId: "n",
           traceId: "n",
@@ -94,7 +94,7 @@ describe("expo push", () => {
       );
     vi.stubGlobal("fetch", fetchMock);
     await new ExpoPushProvider(tokens).send(
-      { kind: "completion", title: "Done", body: "", botId: "bot-1", threadId: "th-1", badge: 4 },
+      { kind: "completion", title: "Done", body: "", threadId: "th-1", badge: 4 },
       notifyContext,
     );
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
@@ -112,7 +112,7 @@ describe("expo push", () => {
     vi.stubGlobal("fetch", fetchMock);
     const push = new ExpoPushProvider(tokens);
     await push.send(
-      { kind: "takeover", title: "Need you", body: "on screen", botId: "bot-1", threadId: "th-1" },
+      { kind: "takeover", title: "Need you", body: "on screen", threadId: "th-1" },
       notifyContext,
     );
     expect(fetchMock).toHaveBeenCalledOnce();
@@ -131,7 +131,6 @@ describe("expo push", () => {
     expect(body.tag).toBe("th-1");
     expect(body.data).toEqual({
       kind: "takeover",
-      botId: "bot-1",
       threadId: "th-1",
       spaceId: "w",
       deliveryId: expect.any(String),
@@ -140,7 +139,7 @@ describe("expo push", () => {
     expect(body).not.toHaveProperty("badge");
 
     await push.send(
-      { kind: "takeover", title: "Need you", body: "on screen", botId: "bot-1", threadId: "th-1" },
+      { kind: "takeover", title: "Need you", body: "on screen", threadId: "th-1" },
       notifyContext,
     );
     const secondInit = (fetchMock.mock.calls[1] as [string, RequestInit])[1];
@@ -148,37 +147,32 @@ describe("expo push", () => {
     expect(secondBody.data.deliveryId).not.toBe(body.data.deliveryId);
   });
 
-  it("puts the space and group on the payload a tap opens", () => {
+  it("puts the space on the payload a tap opens", () => {
     expect(
       expoPushData(
         {
           kind: "completion",
           title: "done",
           body: "ok",
-          botId: "bot-1",
           threadId: "thread-1",
-          groupId: "group-1",
         },
         "space-1",
         "delivery-1",
       ),
     ).toEqual({
       kind: "completion",
-      botId: "bot-1",
       threadId: "thread-1",
       spaceId: "space-1",
-      groupId: "group-1",
       deliveryId: "delivery-1",
     });
     expect(
       expoPushData(
-        { kind: "completion", title: "done", body: "ok", botId: "bot-1", threadId: "thread-1" },
+        { kind: "completion", title: "done", body: "ok", threadId: "thread-1" },
         "",
         "delivery-2",
       ),
     ).toEqual({
       kind: "completion",
-      botId: "bot-1",
       threadId: "thread-1",
       deliveryId: "delivery-2",
     });
@@ -194,7 +188,7 @@ describe("expo push", () => {
 
     await expect(
       push.deliver(
-        { kind: "completion", title: "done", body: "secret", botId: "b", threadId: "t" },
+        { kind: "completion", title: "done", body: "secret", threadId: "t" },
         notifyContext,
       ),
     ).resolves.toBe("undeliverable");
@@ -222,7 +216,7 @@ describe("expo push", () => {
 
     await expect(
       push.deliver(
-        { kind: "completion", title: "done", body: "secret", botId: "b", threadId: "t" },
+        { kind: "completion", title: "done", body: "secret", threadId: "t" },
         notifyContext,
       ),
     ).resolves.toBe("undeliverable");
@@ -250,7 +244,7 @@ describe("expo push", () => {
     });
 
     const delivering = push.deliver(
-      { kind: "completion", title: "done", body: "secret", botId: "b", threadId: "t" },
+      { kind: "completion", title: "done", body: "secret", threadId: "t" },
       notifyContext,
     );
     await vi.waitFor(() => expect(waiting).toBe(true));
@@ -277,10 +271,7 @@ describe("expo push", () => {
     });
 
     await expect(
-      push.deliver(
-        { kind: "completion", title: "done", body: "ok", botId: "b", threadId: "t" },
-        notifyContext,
-      ),
+      push.deliver({ kind: "completion", title: "done", body: "ok", threadId: "t" }, notifyContext),
     ).resolves.toBe("delivered");
     expect(fetchMock).toHaveBeenCalledOnce();
   });
@@ -294,7 +285,7 @@ describe("expo push", () => {
 
     await expect(
       push.deliver(
-        { kind: "completion", title: "done", body: "secret", botId: "b", threadId: "t" },
+        { kind: "completion", title: "done", body: "secret", threadId: "t" },
         notifyContext,
       ),
     ).resolves.toBe("undeliverable");
@@ -315,7 +306,7 @@ describe("expo push", () => {
 
     await expect(
       push.deliver(
-        { kind: "completion", title: "done", body: "secret", botId: "b", threadId: "t" },
+        { kind: "completion", title: "done", body: "secret", threadId: "t" },
         notifyContext,
       ),
     ).resolves.toBe("undeliverable");
@@ -332,10 +323,7 @@ describe("expo push", () => {
     );
     const push = new ExpoPushProvider(tokens);
     await expect(
-      push.send(
-        { kind: "completion", title: "done", body: "ok", botId: "b", threadId: "t" },
-        notifyContext,
-      ),
+      push.send({ kind: "completion", title: "done", body: "ok", threadId: "t" }, notifyContext),
     ).rejects.toThrow("boom");
   });
 
@@ -350,7 +338,7 @@ describe("expo push", () => {
 
     await expect(
       new ExpoPushProvider(tokens).send(
-        { kind: "completion", title: "done", body: "ok", botId: "b", threadId: "t" },
+        { kind: "completion", title: "done", body: "ok", threadId: "t" },
         notifyContext,
       ),
     ).rejects.toThrow("Expo push response is too large.");
@@ -381,7 +369,7 @@ describe("expo push", () => {
     const started = Date.now();
     await expect(
       new ExpoPushProvider(tokens).send(
-        { kind: "completion", title: "done", body: "ok", botId: "b", threadId: "t" },
+        { kind: "completion", title: "done", body: "ok", threadId: "t" },
         { ...notifyContext, signal: abort.signal },
       ),
     ).rejects.toThrow("Expo push response is too large.");
@@ -399,7 +387,7 @@ describe("expo push", () => {
 
     await expect(
       new ExpoPushProvider(tokens).send(
-        { kind: "completion", title: "done", body: "ok", botId: "b", threadId: "t" },
+        { kind: "completion", title: "done", body: "ok", threadId: "t" },
         notifyContext,
       ),
     ).rejects.toThrow("Expo push response is too large.");
@@ -412,7 +400,7 @@ describe("expo push", () => {
 
     await expect(
       new ExpoPushProvider(tokens).send(
-        { kind: "completion", title: "done", body: "ok", botId: "b", threadId: "t" },
+        { kind: "completion", title: "done", body: "ok", threadId: "t" },
         notifyContext,
       ),
     ).rejects.toThrow("Expo push returned an invalid response.");
@@ -431,7 +419,7 @@ describe("expo push", () => {
 
     await expect(
       new ExpoPushProvider(tokens).send(
-        { kind: "completion", title: "done", body: "ok", botId: "b", threadId: "t" },
+        { kind: "completion", title: "done", body: "ok", threadId: "t" },
         { ...notifyContext, signal: controller.signal },
       ),
     ).rejects.toThrow("notification cancelled");
@@ -444,10 +432,7 @@ describe("expo push", () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
     const push = new ExpoPushProvider(tokens, { retryDelaysMs: [0, 0] });
     await expect(
-      push.send(
-        { kind: "completion", title: "done", body: "ok", botId: "b", threadId: "t" },
-        notifyContext,
-      ),
+      push.send({ kind: "completion", title: "done", body: "ok", threadId: "t" }, notifyContext),
     ).rejects.toThrow("offline");
   });
 
@@ -465,10 +450,7 @@ describe("expo push", () => {
     );
     const push = new ExpoPushProvider(tokens);
     await expect(
-      push.deliver(
-        { kind: "completion", title: "done", body: "ok", botId: "b", threadId: "t" },
-        notifyContext,
-      ),
+      push.deliver({ kind: "completion", title: "done", body: "ok", threadId: "t" }, notifyContext),
     ).resolves.toBe("undeliverable");
     await expect(loadPushToken(tokens, "user-1")).resolves.toBe("ExponentPushToken[new]");
   });
@@ -482,7 +464,6 @@ describe("expo push", () => {
         kind: "failure",
         title: "🤖".repeat(500),
         body: "é".repeat(5_000),
-        botId: "b",
         threadId: "t",
       },
       notifyContext,
@@ -576,7 +557,6 @@ const pushMessage = {
   kind: "completion",
   title: "done",
   body: "ok",
-  botId: "b",
   threadId: "t",
 } as const;
 
@@ -869,9 +849,8 @@ it("carries sender identity, marks actionable notifications high priority, and b
       kind: "help",
       title: "Marketing",
       body: `x${"🔔".repeat(400)}`,
-      botId: "bot",
       threadId: "thread",
-      sender: { botId: "bot", name: "Head of Marketing", avatar: "a".repeat(2600) },
+      sender: { name: "Head of Marketing", avatar: "a".repeat(2600) },
     },
     notifyContext,
   );
@@ -879,7 +858,6 @@ it("carries sender identity, marks actionable notifications high priority, and b
     String((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body),
   );
   expect(request.data.sender).toEqual({
-    botId: "bot",
     name: "Head of Marketing",
     avatar: "a".repeat(2600),
   });
@@ -899,10 +877,9 @@ it("uses data-only delivery only for Android builds that registered sender suppo
       kind: "completion",
       title: "Marketing",
       body: "Draft ready",
-      botId: "bot",
       threadId: "thread",
       runId: "run",
-      sender: { botId: "bot", name: "Marketing" },
+      sender: { name: "Marketing" },
       badge: 3,
     },
     notifyContext,
@@ -917,7 +894,7 @@ it("uses data-only delivery only for Android builds that registered sender suppo
     notificationBody: "Draft ready",
     notificationBadge: 3,
     runId: "run",
-    sender: { botId: "bot", name: "Marketing" },
+    sender: { name: "Marketing" },
   });
   expect(request).not.toHaveProperty("priority");
 });

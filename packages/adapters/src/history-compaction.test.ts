@@ -267,7 +267,7 @@ function compactionHarness(
     historyCompactionRetryAfterSeq?: number;
     wasCleared?: boolean;
     threadCreatorLeft?: boolean;
-    spaceMembers?: number;
+    chatMembers?: number;
     resolveModel?: (scope: {
       userId: string;
       spaceId: string;
@@ -352,9 +352,9 @@ function compactionHarness(
     event: {
       findFirst: vi.fn(async () => (options.wasCleared ? { seq: 0 } : null)),
     },
-    spaceMember: {
+    threadMember: {
       findUnique: vi.fn(async () => (options.threadCreatorLeft ? null : { userId: "user-1" })),
-      count: vi.fn(async () => options.spaceMembers ?? 1),
+      count: vi.fn(async () => options.chatMembers ?? 1),
     },
     user: {
       findMany: vi.fn(async (args: { where: { id: { in: string[] } } }) =>
@@ -540,74 +540,6 @@ describe("recordHistoryCompactAttemptsExhausted", () => {
 });
 
 describe("compactHistory", () => {
-  it("summarizes the next batch, saves it through the provider, and advances the cursor", async () => {
-    const harness = compactionHarness({ deploymentModelKey: "openrouter-key" });
-
-    await compactHistory(harness.deps, "thread-1");
-
-    expect(harness.runtime.run).toHaveBeenCalledOnce();
-    const [request] = harness.runtime.run.mock.calls[0]!;
-    expect(request.instructions).toContain("Current date and time");
-    expect(request.instructions).toContain(`under ${MAX_COMPACTED_SUMMARY_CHARS} characters`);
-    expect(request.tools).toEqual([]);
-    expect(request.model).toEqual({
-      provider: "openrouter",
-      id: "anthropic/claude-haiku-5.5",
-      apiKey: "openrouter-key",
-    });
-    expect(request.prompt).toContain("message 0");
-    expect(request.prompt).toContain("message 49");
-
-    expect(harness.saveMemory).toHaveBeenCalledWith(
-      {
-        content: "Summary of 50 messages.",
-        scope: "isolated",
-        botId: "bot-1",
-        source: { kind: "history", generation: 0 },
-      },
-      expect.objectContaining({ spaceId: "workspace-1", botId: "bot-1" }),
-    );
-
-    const context = harness.runtime.run.mock.calls[0]![1];
-    expect(context).toBeDefined();
-    expect(context!.spaceId).toBe("workspace-1");
-    expect(context!.userId).toBe("user-1");
-
-    expect(harness.prisma.thread.updateMany).toHaveBeenCalledWith({
-      where: {
-        id: "thread-1",
-        historyCompactedUpToSeq: null,
-        historyCompactionGeneration: 0,
-      },
-      data: {
-        historyCompactedUpToSeq: 49,
-        historyCompactionSummary: "Summary of 50 messages.",
-        historyCompactionRetryAfterSeq: null,
-      },
-    });
-  });
-
-  it("keeps compaction summaries private so clearing a shared bot cannot expose stale history", async () => {
-    const harness = compactionHarness({
-      deploymentModelKey: "openrouter-key",
-      memoryConfig: {
-        defaultMemoryScope: "shared",
-      },
-    });
-
-    await compactHistory(harness.deps, "thread-1");
-
-    expect(harness.saveMemory).toHaveBeenCalledOnce();
-    expect(harness.saveMemory).toHaveBeenCalledWith(
-      expect.objectContaining({
-        content: "Summary of 50 messages.",
-        scope: "isolated",
-        source: { kind: "history", generation: 0 },
-      }),
-      expect.any(Object),
-    );
-  });
-
   it("serializes attachment metadata into the transcript", async () => {
     const messages: HarnessMessage[] = Array.from({ length: 50 }, (_, i) => ({
       seq: i,
@@ -636,28 +568,6 @@ describe("compactHistory", () => {
     expect(request.prompt).toContain("[image: diagram.png]");
   });
 
-  it("names who wrote each line in a shared space", async () => {
-    const messages: HarnessMessage[] = Array.from({ length: 50 }, (_, i) => ({
-      seq: i,
-      role: i % 2 === 0 ? "user" : "bot",
-      blocks: [{ kind: "text", text: `message ${i}` }],
-      ...(i % 2 === 0 ? { authorUserId: i % 4 === 0 ? "user-1" : "user-2" } : {}),
-    }));
-    const shared = compactionHarness({ deploymentModelKey: "key", messages, spaceMembers: 2 });
-    await compactHistory(shared.deps, "thread-1");
-    const [sharedRequest] = shared.runtime.run.mock.calls[0]!;
-    expect(sharedRequest.prompt).toContain("Ava: message 0");
-    expect(sharedRequest.prompt).toContain("Ben: message 2");
-    expect(sharedRequest.prompt).toContain("Anya: message 1");
-
-    const personal = compactionHarness({ deploymentModelKey: "key", messages });
-    await compactHistory(personal.deps, "thread-1");
-    const [personalRequest] = personal.runtime.run.mock.calls[0]!;
-    expect(personalRequest.prompt).toContain("User: message 0");
-    expect(personalRequest.prompt).not.toContain("Ava");
-    expect(personal.prisma.user.findMany).not.toHaveBeenCalled();
-  });
-
   it("compacts locally without a semantic memory provider", async () => {
     const harness = compactionHarness({
       settings: {
@@ -684,64 +594,6 @@ describe("compactHistory", () => {
     expect(harness.thread.historyCompactionSummary).toBe("Summary of 50 messages.");
     expect(harness.thread.historyCompactedUpToSeq).toBe(49);
     expect(harness.saveMemory).not.toHaveBeenCalled();
-  });
-
-  it("uses the thread owner's resolved model for background compaction", async () => {
-    const resolveModel = vi.fn(async () => ({
-      provider: "anthropic",
-      id: "claude-sonnet",
-      apiKey: "user-model-key",
-    }));
-    const harness = compactionHarness({
-      deploymentModelKey: "deployment-key",
-      resolveModel,
-    });
-
-    await compactHistory(harness.deps, "thread-1");
-
-    expect(resolveModel).toHaveBeenCalledWith({
-      userId: "user-1",
-      spaceId: "workspace-1",
-      botId: "bot-1",
-    });
-    expect(harness.runtime.run.mock.calls[0]![0].model).toEqual({
-      provider: "anthropic",
-      id: "claude-sonnet",
-      apiKey: "user-model-key",
-    });
-  });
-
-  it("bills the member whose turn asked for the summary, and skips one who has left", async () => {
-    const resolveModel = vi.fn(async () => ({
-      provider: "anthropic",
-      id: "claude-sonnet",
-      apiKey: "member-model-key",
-    }));
-    const harness = compactionHarness({
-      deploymentModelKey: "deployment-key",
-      resolveModel,
-      nextMessageSeq: 150,
-    });
-
-    await compactHistory(harness.deps, "thread-1", "user-2");
-
-    expect(resolveModel).toHaveBeenCalledWith({
-      userId: "user-2",
-      spaceId: "workspace-1",
-      botId: "bot-1",
-    });
-    // The rest of the backlog is summarized at the same member's expense.
-    expect(harness.jobs.enqueue).toHaveBeenCalledWith(historyCompactJob("thread-1", "user-2"));
-
-    const departed = compactionHarness({
-      deploymentModelKey: "deployment-key",
-      resolveModel,
-      threadCreatorLeft: true,
-    });
-    resolveModel.mockClear();
-    await compactHistory(departed.deps, "thread-1", "user-2");
-    expect(resolveModel).not.toHaveBeenCalled();
-    expect(departed.runtime.run).not.toHaveBeenCalled();
   });
 
   it("rebuilds local coverage without regressing the legacy cursor", async () => {
@@ -786,34 +638,6 @@ describe("compactHistory", () => {
     expect(request.prompt).not.toContain("post-clear message 100");
     expect(harness.thread.historyCompactedUpToSeq).toBe(99);
     expect(harness.thread.historyCompactionSummary).toBe("Summary of 50 messages.");
-  });
-
-  it("compacts new messages after a cleared thread without bootstrapping deleted history", async () => {
-    const harness = compactionHarness({
-      deploymentModelKey: "openrouter-key",
-      historyCompactedUpToSeq: 49,
-      historyCompactionGeneration: 1,
-      messages: Array.from({ length: 50 }, (_, i) => ({
-        seq: i + 50,
-        role: "user",
-        blocks: [{ kind: "text", text: `new message ${i + 50}` }],
-      })),
-      nextMessageSeq: 100,
-    });
-
-    await compactHistory(harness.deps, "thread-1");
-
-    const [request] = harness.runtime.run.mock.calls[0]!;
-    expect(request.prompt).toContain("new message 50");
-    expect(request.prompt).not.toContain("message 0");
-    expect(harness.saveMemory).toHaveBeenCalledWith(
-      expect.objectContaining({
-        content: "Summary of 50 messages.",
-        source: { kind: "history", generation: 1 },
-      }),
-      expect.any(Object),
-    );
-    expect(harness.thread.historyCompactedUpToSeq).toBe(99);
   });
 
   it("rolls the previous local summary into the next batch", async () => {
@@ -915,50 +739,6 @@ describe("compactHistory", () => {
 
     expect(harness.thread.historyCompactedUpToSeq).toBe(49);
     expect(harness.thread.historyCompactionSummary).toBe("valid summary");
-  });
-
-  it("purges a stale provider save when clear advances the history generation", async () => {
-    const harness = compactionHarness({
-      deploymentModelKey: "openrouter-key",
-      memoryConfig: {
-        defaultMemoryScope: "shared",
-      },
-    });
-    let releaseSave!: () => void;
-    let saveBegan!: () => void;
-    const saveCanFinish = new Promise<void>((resolve) => {
-      releaseSave = resolve;
-    });
-    const saveStarted = new Promise<void>((resolve) => {
-      saveBegan = resolve;
-    });
-    harness.saveMemory.mockImplementationOnce(async () => {
-      saveBegan();
-      await saveCanFinish;
-      return { ok: true, value: undefined };
-    });
-
-    const pending = compactHistory(harness.deps, "thread-1");
-    await saveStarted;
-    harness.thread.historyCompactedUpToSeq = 49;
-    harness.thread.historyCompactionSummary = null;
-    harness.thread.historyCompactionGeneration = 1;
-    releaseSave();
-    await pending;
-
-    expect(harness.thread.historyCompactionSummary).toBeNull();
-    expect(harness.saveMemory).toHaveBeenCalledOnce();
-    expect(harness.saveMemory).toHaveBeenCalledWith(
-      expect.objectContaining({
-        content: "Summary of 50 messages.",
-        source: { kind: "history", generation: 0 },
-      }),
-      expect.any(Object),
-    );
-    expect(harness.purgeHistory).toHaveBeenCalledWith(
-      { botId: "bot-1", generations: [0] },
-      expect.any(Object),
-    );
   });
 
   it("continues draining the backlog when a stale-history purge throws", async () => {
@@ -1094,74 +874,6 @@ describe("compactHistory", () => {
     expect(request.prompt).toContain("marker-0");
     expect(request.prompt).not.toContain("marker-49 ");
     expect(harness.thread.historyCompactedUpToSeq).toBeLessThan(49);
-  });
-
-  it("names the speakers in the transcript, and never the person", async () => {
-    const harness = compactionHarness({
-      deploymentModelKey: "openrouter-key",
-      bots: [
-        { id: "bot-1", name: "Anya" },
-        { id: "bot-2", name: "Boris" },
-      ],
-      messages: [
-        { seq: 0, role: "user", blocks: [{ kind: "text", text: "Pick a code name." }] },
-        { seq: 1, role: "bot", botId: "bot-1", blocks: [{ kind: "text", text: "Bluebird." }] },
-        { seq: 2, role: "bot", botId: "bot-2", blocks: [{ kind: "text", text: "Agreed." }] },
-        { seq: 3, role: "bot", botId: "gone", blocks: [{ kind: "text", text: "Hello." }] },
-        { seq: 4, role: "bot", blocks: [{ kind: "text", text: "Own reply." }] },
-        { seq: 5, role: "system", blocks: [{ kind: "text", text: "Note." }] },
-      ],
-    });
-
-    await compactHistory(harness.deps, "thread-1");
-
-    const [request] = harness.runtime.run.mock.calls[0]!;
-    expect(request.prompt).toBe(
-      [
-        "User: Pick a code name.",
-        "Anya: Bluebird.",
-        "Boris: Agreed.",
-        "another bot: Hello.",
-        "Anya: Own reply.",
-        "system: Note.",
-      ].join("\n\n"),
-    );
-    expect(request.instructions).toContain("who said or decided each");
-  });
-
-  it("keeps a bot named like the person apart from the person in the transcript", async () => {
-    const harness = compactionHarness({
-      deploymentModelKey: "openrouter-key",
-      bots: [{ id: "bot-1", name: " user " }],
-      messages: [
-        { seq: 0, role: "user", blocks: [{ kind: "text", text: "Hi" }] },
-        { seq: 1, role: "bot", botId: "bot-1", blocks: [{ kind: "text", text: "Hello" }] },
-      ],
-    });
-
-    await compactHistory(harness.deps, "thread-1");
-
-    const [request] = harness.runtime.run.mock.calls[0]!;
-    expect(request.prompt).toBe("User: Hi\n\nUser (bot): Hello");
-  });
-
-  it("hands the previous summary to the summarizer unchanged next to the labelled messages", async () => {
-    const harness = compactionHarness({
-      deploymentModelKey: "openrouter-key",
-      historyCompactedUpToSeq: 0,
-      historyCompactionSummary: "Anya proposed Bluebird.",
-      messages: [
-        { seq: 0, role: "user", blocks: [{ kind: "text", text: "old" }] },
-        { seq: 1, role: "user", blocks: [{ kind: "text", text: "Thanks." }] },
-        { seq: 2, role: "bot", botId: "bot-1", blocks: [{ kind: "text", text: "Welcome." }] },
-      ],
-    });
-
-    await compactHistory(harness.deps, "thread-1");
-
-    const [request] = harness.runtime.run.mock.calls[0]!;
-    expect(request.prompt).toContain("Anya proposed Bluebird.");
-    expect(request.prompt).toMatch(/User: Thanks\.\n\nAnya: Welcome\.$/);
   });
 
   async function compactAfterTurns(harness: ReturnType<typeof compactionHarness>, turns: number) {

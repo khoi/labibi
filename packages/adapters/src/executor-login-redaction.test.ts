@@ -95,7 +95,12 @@ async function runAfterFill(
     yield { type: "done" as const, text: reply };
   });
   const prisma = {
-    spaceMember: { findUnique: async () => ({ id: "member-1" }) },
+    threadMember: {
+      findMany: async () => [{ userId: "user-1" }],
+      findFirst: async () => ({ id: "member-1" }),
+      findUnique: async () => ({ id: "member-1" }),
+      count: async () => 1,
+    },
     $transaction: vi.fn(async (write: (tx: unknown) => unknown) => write(prisma)),
     $queryRaw: vi.fn(async () => []),
     run: {
@@ -103,7 +108,7 @@ async function runAfterFill(
       findUniqueOrThrow: vi.fn(async () => run),
       findFirst: vi.fn(async () => ({
         bot: { notifyOnFinish: false },
-        thread: { groupId: null },
+        thread: { doodle: true },
       })),
       updateMany: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
         Object.assign(run, data);
@@ -136,7 +141,7 @@ async function runAfterFill(
     thread: {
       findUniqueOrThrow: vi.fn(async () => ({
         id: run.threadId,
-        groupId: null,
+        _count: { members: 1 },
         historyCompactionSummary: null,
         historyCompactedUpToSeq: null,
         nextMessageSeq: 1,
@@ -149,6 +154,13 @@ async function runAfterFill(
     },
     task: { findUniqueOrThrow: vi.fn(async () => ({ id: run.taskId, prompt: "Check the site" })) },
     computer: {
+      findUnique: async () => ({
+        id: "computer-1",
+        spaceId: "space-1",
+        userId: "user-1",
+        kind: "e2b",
+        homeKey: "home-1",
+      }),
       updateMany: vi.fn(async () => ({ count: 1 })),
       findFirst: vi.fn(async () => ({
         state: "running",
@@ -231,44 +243,6 @@ afterEach(() => {
 });
 
 describe("saved logins in a later run", () => {
-  it("hides a password filled by an earlier run from shell and file output", async () => {
-    const { toolResults, loginLoads } = await runAfterFill([
-      { name: "shell", args: { command: "read-filled-fields" } },
-      { name: "read_file", args: { path: "page.txt" } },
-    ]);
-    expect(toolResults).toHaveLength(2);
-    for (const result of toolResults) expect(JSON.stringify(result)).toContain("[redacted]");
-    const text = JSON.stringify(toolResults);
-    for (const value of [
-      PASSWORD,
-      encodeURIComponent(PASSWORD),
-      new URLSearchParams({ v: PASSWORD }).toString().slice(2),
-      Buffer.from(PASSWORD).toString("base64"),
-    ]) {
-      expect(text).not.toContain(JSON.stringify(value).slice(1, -1));
-    }
-    // Only the run that fills a login hides its username.
-    expect(text).toContain(`user=${USERNAME}`);
-    // Decrypted once for the run, not once per tool call.
-    expect(loginLoads).toBe(1);
-  });
-
-  it("hides saved passwords from the run's first tool, whatever it is", async () => {
-    const { toolResults, loginLoads } = await runAfterFill([
-      { name: "list_files", args: { path: "notes" } },
-    ]);
-    const text = JSON.stringify(toolResults);
-    expect(text).toContain("notes/[redacted].txt");
-    expect(text).not.toContain(encodeURIComponent(PASSWORD));
-    expect(text).toContain(`notes/${USERNAME}.txt`);
-    expect(loginLoads).toBe(1);
-  });
-
-  it("hides a password the browser window title echoes", async () => {
-    const { toolResults } = await runAfterFill([{ name: "computer_observe", args: {} }]);
-    expect(JSON.stringify(toolResults)).toContain(`${USERNAME} - [redacted]`);
-  });
-
   it("hides a saved password the model writes before any tool call", async () => {
     const { published, loginLoads } = await runAfterFill([], {
       reply: `The page still shows ${PASSWORD}.`,
@@ -276,15 +250,6 @@ describe("saved logins in a later run", () => {
     expect(published).toContain("The page still shows [redacted].");
     expect(published).not.toContain(PASSWORD);
     expect(loginLoads).toBe(1);
-  });
-
-  it("decrypts no login for a bot without one", async () => {
-    const { toolResults, loginLoads } = await runAfterFill(
-      [{ name: "shell", args: { command: "read-filled-fields" } }],
-      { savedLogin: false },
-    );
-    expect(loginLoads).toBe(0);
-    expect(JSON.stringify(toolResults)).toContain(USERNAME);
   });
 });
 

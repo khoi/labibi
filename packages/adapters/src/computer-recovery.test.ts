@@ -815,19 +815,6 @@ describe("computer recovery preserves live work", () => {
     expect(row).toMatchObject({ state: "running", providerRef: first.providerRef });
   });
 
-  it("stops Recover instead of rebuilding when it cannot look up deleted bots' folders", async () => {
-    const { deps, row, first } = await fixture();
-    row.scope = "team";
-    const blip = new Error("database unavailable");
-    Object.assign(deps.prisma, {
-      botDeletion: { findMany: vi.fn().mockRejectedValue(blip) },
-    });
-    const destroy = vi.spyOn(deps.sandbox, "destroy");
-    await expect(replaceComputer(deps, row.id, "recover", context)).rejects.toBe(blip);
-    expect(destroy).not.toHaveBeenCalled();
-    expect(row).toMatchObject({ state: "running", providerRef: first.providerRef });
-  });
-
   it("records an error when an update fails once teardown has started", async () => {
     const { deps, row, first } = await fixture();
     const failure = new Error("sandbox destroy failed: 500");

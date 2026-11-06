@@ -57,7 +57,7 @@ describe("bot media tools", () => {
       expect(toolRequiresApproval(name, false)).toBe(true);
     const base = {
       graphicalToolsAllowed: false,
-      groupId: null,
+      soloChat: true,
       trigger: "message",
       semanticMemoryEnabled: false,
     };

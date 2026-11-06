@@ -127,7 +127,7 @@ describe("SpaceMemoryProviderResolver", () => {
     });
     const configured = await resolver.resolve("workspace-1");
     await configured!.provider.recall(
-      { query: "project", scope: "isolated", botId: "bot-1", limit: 1 },
+      { query: "project", scope: { kind: "chat", threadId: "thread-1" }, limit: 1 },
       {
         operationId: "op-1",
         traceId: "trace-1",
@@ -157,7 +157,6 @@ describe("SpaceMemoryProviderResolver", () => {
     const configured = await resolver.resolve("workspace-1");
 
     expect(configured?.provider.describe().id).toBe("supermemory");
-    expect(configured?.defaultScope).toBe("shared");
   });
 
   it("keeps legacy raw Supermemory credentials usable after the schema migration", async () => {
@@ -212,7 +211,7 @@ describe("SpaceMemoryProviderResolver", () => {
     );
 
     await provider.recall(
-      { query: "project", scope: "isolated", botId: "bot-1", limit: 1 },
+      { query: "project", scope: { kind: "chat", threadId: "thread-1" }, limit: 1 },
       {
         operationId: "op-1",
         traceId: "trace-1",

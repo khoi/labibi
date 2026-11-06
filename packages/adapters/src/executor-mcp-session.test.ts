@@ -155,7 +155,12 @@ async function executorHarness(server: ReturnType<typeof statefulMcpServer>) {
   });
   const events: AppendEventInput[] = [];
   const prisma = {
-    spaceMember: { findUnique: vi.fn(async () => ({ id: "member-1" })) },
+    threadMember: {
+      findMany: async () => [{ userId: "user-1" }],
+      findFirst: async () => ({ id: "member-1" }),
+      findUnique: async () => ({ id: "member-1" }),
+      count: async () => 1,
+    },
     user: { findUnique: vi.fn(async () => null) },
     run: {
       findUnique: vi.fn(async () => run),
@@ -196,7 +201,7 @@ async function executorHarness(server: ReturnType<typeof statefulMcpServer>) {
       })),
       findUniqueOrThrow: vi.fn(async () => ({
         id: run.threadId,
-        groupId: null,
+        _count: { members: 1 },
         historyCompactionSummary: null,
         historyCompactedUpToSeq: null,
         nextMessageSeq: 3,
@@ -220,7 +225,16 @@ async function executorHarness(server: ReturnType<typeof statefulMcpServer>) {
         prompt: "Pause and resume",
       })),
     },
-    computer: { updateMany: vi.fn(async () => ({ count: 1 })) },
+    computer: {
+      findUnique: async () => ({
+        id: "computer-1",
+        spaceId: "space-1",
+        userId: "user-1",
+        kind: "fake",
+        homeKey: "home-1",
+      }),
+      updateMany: vi.fn(async () => ({ count: 1 })),
+    },
     connection: { findMany: vi.fn(async () => []) },
     userModelPreference: {
       findFirst: vi.fn<(...args: unknown[]) => Promise<Record<string, unknown> | null>>(

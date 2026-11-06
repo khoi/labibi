@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { encodeRunCode, storeBotSecret } from "./bot-secrets.js";
 import { fakeDatabase } from "./bot-secrets.test-support.js";
 import { ComputerBrowserProvider } from "./computer-browser.js";
-import { resolveBotWorkspacePath } from "./computer-support.js";
+import { resolveWorkspacePath } from "./computer-support.js";
 import { FakeBrowserProvider } from "./fake-browser.js";
 import type * as PurchaseServiceModule from "./purchase-service.js";
 import { computerTools, pageBrowserTool } from "./run-tools-computer.js";
@@ -81,7 +81,7 @@ describe("page tools save a page's file downloads in the calling bot's own folde
   // A saved name never has a backslash: the helper turns one into an underscore.
   const nameSecret = 'zq"xv-mk';
 
-  async function download(name: string, mode: "team" | "dedicated", botId: string, saved = true) {
+  async function download(name: string, saved = true) {
     const requests: PageBrowserCommand[] = [];
     const markDirty = vi.fn();
     const browser = new ComputerBrowserProvider({
@@ -112,13 +112,12 @@ describe("page tools save a page's file downloads in the calling bot's own folde
     });
     const ctx = {
       deps: { prisma: { taughtSkill: { findFirst: async () => null } } },
-      run: { spaceId: "space", botId },
-      bot: { id: botId },
+      run: { spaceId: "space", botId: "b1" },
+      bot: { id: "b1" },
       context,
       computer: {
         heldForTakeover: false,
         graphicalToolsAllowed: false,
-        mode,
         checkpoint: { markDirty },
         get: async () => ({ ...computer, kind: "docker" }),
       },
@@ -142,28 +141,22 @@ describe("page tools save a page's file downloads in the calling bot's own folde
 
   // A snapshot saves the PDF its tab shows, such as a report a page opened in a new tab.
   it.each(["browser_act", "browser_navigate", "browser_snapshot"])("%s", async (name) => {
-    for (const [mode, botId, folder] of [
-      ["team", "b1", "bots/b1/Downloads"],
-      ["team", "b2", "bots/b2/Downloads"],
-      ["dedicated", "b1", "Downloads"],
-    ] as const) {
-      const { requests, text, details, markDirty } = await download(name, mode, botId);
-      expect(markDirty).toHaveBeenCalled();
-      expect(requests).toEqual([expect.objectContaining({ downloads: folder })]);
-      // The path the bot reads is the one its shell and file tools take, and leads back to the file.
-      const path = "Downloads/statement [redacted].pdf";
-      expect(JSON.parse(text).downloads).toEqual([
-        { name: "statement [redacted].pdf", path, size: 4, type: "application/pdf" },
-      ]);
-      expect(resolveBotWorkspacePath(mode, botId, path)).toBe(`${folder}/statement [redacted].pdf`);
-      expect(`${text}${details}`).not.toContain("xv");
-    }
+    const { requests, text, details, markDirty } = await download(name);
+    expect(markDirty).toHaveBeenCalled();
+    expect(requests).toEqual([expect.objectContaining({ downloads: "Downloads" })]);
+    // The path the bot reads is the one its shell and file tools take, and leads back to the file.
+    const path = "Downloads/statement [redacted].pdf";
+    expect(JSON.parse(text).downloads).toEqual([
+      { name: "statement [redacted].pdf", path, size: 4, type: "application/pdf" },
+    ]);
+    expect(resolveWorkspacePath(path)).toBe(path);
+    expect(`${text}${details}`).not.toContain("xv");
   });
 
   it.each(["browser_act", "browser_navigate", "browser_snapshot"])(
     "%s result from a helper that saved nothing is unchanged",
     async (name) => {
-      const { text, markDirty } = await download(name, "team", "b1", false);
+      const { text, markDirty } = await download(name, false);
       expect(JSON.parse(text)).not.toHaveProperty("downloads");
       expect(markDirty).toHaveBeenCalledTimes(name === "browser_snapshot" ? 0 : 1);
     },
@@ -171,7 +164,6 @@ describe("page tools save a page's file downloads in the calling bot's own folde
 });
 
 describe("screen tools keep off the screen while a takeover holds it or teaching records it", () => {
-  const teachingMessage = "Teaching is in progress. Stop teaching before using the computer.";
   const screenTools = [
     "open_path",
     "launch_app",
@@ -222,17 +214,6 @@ describe("screen tools keep off the screen while a takeover holds it or teaching
       expect(run.act).not.toHaveBeenCalled();
       expect(run.observe).not.toHaveBeenCalled();
     }
-  });
-
-  it.each(screenTools)("%s refuses while teaching records the screen", async (name) => {
-    const run = await runScreenTool(name, false, true);
-    expect(run.result).toEqual({ error: teachingMessage });
-    expect(run.findFirst).toHaveBeenCalledWith({
-      where: { spaceId: "space", botId: "b1", status: "recording" },
-    });
-    expect(run.get).not.toHaveBeenCalled();
-    expect(run.act).not.toHaveBeenCalled();
-    expect(run.observe).not.toHaveBeenCalled();
   });
 
   it.each(["open_path", "launch_app"])("%s acts when the screen is free", async (name) => {

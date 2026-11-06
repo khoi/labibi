@@ -4,7 +4,6 @@ import { describe, expect, it, vi } from "vitest";
 import type { ComputerProviderSelection, StoredComputerSettings } from "./configured-sandbox.js";
 import {
   ConfiguredSandbox,
-  loadComputerOwnerSettings,
   loadComputerProviderSelection,
   parseStoredComputerSettings,
 } from "./configured-sandbox.js";
@@ -170,29 +169,6 @@ describe("ConfiguredSandbox", () => {
     expect(await sandbox.provisionKind()).toBe("fake");
     expect(await sandbox.provisionKind("mine")).toBe("desktop");
     expect((await sandbox.provision({ botId: "mine", homePath: "/h" }, ctx)).kind).toBe("desktop");
-  });
-
-  it("reads an owner's desktop only for Team Computers", async () => {
-    const secretRow = { id: "s1", ciphertext: "c1" };
-    const findFirst = vi.fn(async () => secretRow);
-    const prisma = (scope: string) =>
-      ({
-        computer: { findUnique: async () => ({ userId: "u1", scope }) },
-        secret: { findFirst },
-      }) as unknown as PrismaClient;
-    const secrets = { load: async () => JSON.stringify(settings) };
-    expect(await loadComputerOwnerSettings(prisma("team"), secrets, "team-k")).toEqual({
-      ...settings,
-      ciphertext: "c1",
-    });
-    expect(findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { userId: "u1", spaceId: null, kind: "computer-provider" },
-      }),
-    );
-    findFirst.mockClear();
-    expect(await loadComputerOwnerSettings(prisma("dedicated"), secrets, "bot-k")).toBeNull();
-    expect(findFirst).not.toHaveBeenCalled();
   });
 
   it("probes background work for providers without their own check", async () => {

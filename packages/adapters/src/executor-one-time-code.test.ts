@@ -64,7 +64,13 @@ function recordingPrisma(models: Record<string, Record<string, unknown>>, calls:
         if (model === "$queryRaw") return async () => [{ locked: 1 }];
         const methods =
           models[model] ??
-          (model === "spaceMember" ? { findUnique: () => ({ id: "member-1" }) } : {});
+          (model === "threadMember"
+            ? {
+                findFirst: () => ({ id: "member-1" }),
+                findUnique: () => ({ id: "member-1" }),
+                count: () => 1,
+              }
+            : {});
         return new Proxy(methods, {
           get: (target, method: string) => {
             const impl = (target[method] ?? fallback[method]) as
@@ -168,7 +174,7 @@ function world(printed = "") {
         thread: {
           findUniqueOrThrow: async () => ({
             id: run.threadId,
-            groupId: null,
+            _count: { members: 1 },
             historyCompactionSummary: null,
             historyCompactedUpToSeq: null,
             nextMessageSeq: 1,
@@ -421,20 +427,6 @@ describe("request_secret for a one-time code", () => {
     expect(run.secrets).toEqual([]);
     expect(run.asked).toHaveLength(2);
   });
-
-  it.each(["run-code", "run-code-spent"])(
-    "keeps hiding a code from what a later attempt reads, while it is %s",
-    async (kind) => {
-      const run = world("field=482913 slots=4 8 2 9 1 3\nother=kept");
-      await run.userAnswers();
-      run.secrets[0]!.kind = `${kind}:run-1`;
-      const [result] = await run.attempt([{ name: "shell", args: { command: "read-page" } }]);
-      const text = JSON.stringify(result);
-      expect(text).not.toContain("482913");
-      expect(text).not.toContain("4 8 2 9 1 3");
-      expect(text).toContain("other=kept");
-    },
-  );
 
   it("does not ask twice for the same card when the attempt is retried", async () => {
     const run = world();

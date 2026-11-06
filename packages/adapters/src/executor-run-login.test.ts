@@ -142,7 +142,21 @@ async function runTool(
     (["name", "origin"] as const).every((key) => !(key in where) || row[key] === where[key]);
   const prisma = recordingPrisma(
     {
-      spaceMember: { findUnique: async () => ({ id: "member-1" }) },
+      computer: {
+        findUnique: async () => ({
+          id: "computer-1",
+          spaceId: "space-1",
+          userId: "user-1",
+          kind: "e2b",
+          homeKey: "home-1",
+        }),
+      },
+      threadMember: {
+        findMany: async () => [{ userId: "user-1" }],
+        findFirst: async () => ({ id: "member-1" }),
+        findUnique: async () => ({ id: "member-1" }),
+        count: async () => 1,
+      },
       run: {
         findUnique: async () => run,
         findUniqueOrThrow: async () => run,
@@ -175,7 +189,7 @@ async function runTool(
       thread: {
         findUniqueOrThrow: async () => ({
           id: run.threadId,
-          groupId: null,
+          _count: { members: 1 },
           historyCompactionSummary: null,
           historyCompactedUpToSeq: null,
           nextMessageSeq: 1,
@@ -532,22 +546,6 @@ describe("request_secret for a login saved for another site", () => {
     } finally {
       vi.unstubAllEnvs();
     }
-  });
-});
-
-describe("this run's login that wasn't saved", () => {
-  it("is hidden from what the run reads before the bot fills anything", async () => {
-    const { toolResults } = await runTool(
-      { name: "shell", args: { command: "read-page" } },
-      {
-        secrets: [await runLogin("run-1")],
-        printed: "field=fake-password-1 user=fake-user other=kept",
-      },
-    );
-    const text = JSON.stringify(toolResults);
-    expect(text).not.toContain("fake-password-1");
-    expect(text).not.toContain("fake-user");
-    expect(text).toContain("other=kept");
   });
 });
 

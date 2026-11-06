@@ -14,7 +14,7 @@ function typicalBotBudget(contextWindow: number) {
   const tools = selectBuiltinToolsForRun({
     historyRetrievalEnabled: true,
     graphicalToolsAllowed: false,
-    groupId: null,
+    soloChat: true,
     trigger: "user",
     semanticMemoryEnabled: false,
   }).map((tool) => ({

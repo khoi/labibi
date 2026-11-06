@@ -385,7 +385,6 @@ export class RunWorkerHost implements JobWorkerHost {
     });
     // A run takes its computer only once it needs it, so every row starts now.
     const blockers = await findRunRecoveryBlockers(this.prisma, rows, now);
-    const runnable = rows;
     // A takeover request holds its person's computer. Their chat work must not wait behind one
     // they have not acted on, so end it.
     if (lane === "interactive") {
@@ -405,7 +404,7 @@ export class RunWorkerHost implements JobWorkerHost {
         if (ended) this.wake();
       }
     }
-    for (const row of runnable) {
+    for (const row of rows) {
       if (this.stopping) break;
       this.starter.take(row.id);
     }

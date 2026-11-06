@@ -18,7 +18,6 @@ function fileWorkspace(content: string, runSecrets: string[] = []) {
   } as unknown as SandboxProvider;
   const workspace: RunWorkspace = {
     botId: "bot-1",
-    computerMode: "dedicated",
     computer: async () => computer,
     markDirty: () => {},
     context: {} as AdapterContext,

@@ -98,7 +98,6 @@ describe("userComputerOwner", () => {
     { trigger: "webhook" },
     { sourceRole: "bot" },
     { sourceRole: undefined },
-    { runUserId: "user-2" },
   ])("is nobody for %o", (change) => {
     expect(userComputerOwner({ ...own, ...change })).toBeUndefined();
   });

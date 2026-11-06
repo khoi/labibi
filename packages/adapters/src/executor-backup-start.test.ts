@@ -136,13 +136,18 @@ async function runTurn({
     {
       $transaction: vi.fn(async (work: (client: typeof tx) => Promise<unknown>) => work(tx)),
       user: { findUnique: vi.fn(async () => null) },
-      spaceMember: { findUnique: async () => ({ id: "member-1" }) },
+      threadMember: {
+        findMany: async () => [{ userId: "user-1" }],
+        findFirst: async () => ({ id: "member-1" }),
+        findUnique: async () => ({ id: "member-1" }),
+        count: async () => 1,
+      },
       run: {
         findUnique: vi.fn(async () => run),
         findUniqueOrThrow: vi.fn(async () => run),
         findFirst: vi.fn(async () => ({
           bot: { notifyOnFinish: false },
-          thread: { groupId: null },
+          thread: { doodle: true },
         })),
         updateMany: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
           Object.assign(run, data);
@@ -174,7 +179,7 @@ async function runTurn({
       thread: {
         findUniqueOrThrow: vi.fn(async () => ({
           id: "thread-1",
-          groupId: null,
+          _count: { members: 1 },
           historyCompactionSummary: null,
           historyCompactedUpToSeq: null,
           nextMessageSeq: 2,
@@ -186,7 +191,16 @@ async function runTurn({
         findFirst: vi.fn(async () => null),
       },
       task: { findUniqueOrThrow: vi.fn(async () => ({ id: "task-1", prompt: "hello" })) },
-      computer: { updateMany: vi.fn(async () => ({ count: 1 })) },
+      computer: {
+        findUnique: async () => ({
+          id: "computer-1",
+          spaceId: "space-1",
+          userId: "user-1",
+          kind: "fake",
+          homeKey: "home-1",
+        }),
+        updateMany: vi.fn(async () => ({ count: 1 })),
+      },
       connection: { findMany: vi.fn(async () => []) },
       userModelPreference: {
         findMany: vi.fn(async () => []),

@@ -11,7 +11,7 @@ import { BUILTIN_AGENT_TOOL_NAMES, selectBuiltinToolsForRun } from "./run-tool-s
 
 const ownerChat = selectBuiltinToolsForRun({
   graphicalToolsAllowed: false,
-  groupId: null,
+  soloChat: true,
   trigger: "user",
   semanticMemoryEnabled: false,
   historyRetrievalEnabled: true,
@@ -102,7 +102,7 @@ describe("built-in tool bridge", () => {
     const { listed, deferred } = partitionTools(
       selectBuiltinToolsForRun({
         graphicalToolsAllowed: false,
-        groupId: null,
+        soloChat: true,
         trigger: "user",
         semanticMemoryEnabled: false,
         disabledBuiltinTools: ["render_plot"],

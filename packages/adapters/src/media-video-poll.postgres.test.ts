@@ -454,7 +454,6 @@ describePostgres("background video delivery (PostgreSQL)", () => {
     await runAsTenant(h.tenant, () =>
       clearThread(prisma, {
         spaceId: h.user.id,
-        botId: h.user.bot.id,
         threadId: h.user.thread.id,
       }),
     );

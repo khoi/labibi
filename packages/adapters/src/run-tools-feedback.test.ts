@@ -107,7 +107,7 @@ describe("feedback", () => {
     const offered = (trigger: string) =>
       selectBuiltinToolsForRun({
         graphicalToolsAllowed: false,
-        groupId: null,
+        soloChat: true,
         trigger,
         semanticMemoryEnabled: false,
       }).some((tool) => tool.name === "feedback");
