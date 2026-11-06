@@ -179,7 +179,7 @@ export const Transcript = memo(function Transcript({
     messageHasVisibleBlocks(message.blocks, showToolActivity),
   );
   const separatorIds = timeSeparatorIds(shownMessages);
-  const unreadDividerId = unreadDividerMessageId(shownMessages, unreadAfterSeq, olderCursor);
+  const unreadDividerId = unreadDividerMessageId(shownMessages, unreadAfterSeq, olderCursor, meId);
   const workingLabel = liveActivityLine(messages) ?? t`Working…`;
   const [quoteDraft, setQuoteDraft] = useState<{
     message: ThreadMessage;

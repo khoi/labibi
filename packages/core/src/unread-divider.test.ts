@@ -7,47 +7,48 @@ import {
   unreadDividerMessageId,
 } from "./unread-divider.js";
 
+const me = { id: "me", name: "Me" };
 const thread = [
   { id: "m0", role: "bot", seq: 0 },
-  { id: "m1", role: "user", seq: 1 },
-  { id: "m2", role: "user", seq: 2 },
+  { id: "m1", role: "user", seq: 1, author: me },
+  { id: "m2", role: "user", seq: 2, author: me },
   { id: "m3", role: "bot", seq: 3 },
   { id: "m4", role: "bot", seq: 4 },
 ];
 
 describe("unreadDividerMessageId", () => {
   it("sits above the first bot message after the read cursor, skipping the user's own", () => {
-    expect(unreadDividerMessageId(thread, 0, null)).toBe("m3");
-    expect(unreadDividerMessageId(thread, 3, null)).toBe("m4");
+    expect(unreadDividerMessageId(thread, 0, null, "me")).toBe("m3");
+    expect(unreadDividerMessageId(thread, 3, null, "me")).toBe("m4");
   });
 
   it("shows nothing when nothing was unread or only the user wrote since", () => {
-    expect(unreadDividerMessageId(thread, null, null)).toBeNull();
-    expect(unreadDividerMessageId(thread, 4, null)).toBeNull();
-    expect(unreadDividerMessageId(thread.slice(0, 3), 0, null)).toBeNull();
+    expect(unreadDividerMessageId(thread, null, null, "me")).toBeNull();
+    expect(unreadDividerMessageId(thread, 4, null, "me")).toBeNull();
+    expect(unreadDividerMessageId(thread.slice(0, 3), 0, null, "me")).toBeNull();
   });
 
   it("shows nothing above the start of a chat never read", () => {
-    expect(unreadDividerMessageId(thread, -1, null)).toBeNull();
-    expect(unreadDividerMessageId(thread.slice(1), -1, null)).toBe("m3");
+    expect(unreadDividerMessageId(thread, -1, null, "me")).toBeNull();
+    expect(unreadDividerMessageId(thread.slice(1), -1, null, "me")).toBe("m3");
   });
 
   it("ignores rows without a seq, such as live progress", () => {
-    expect(unreadDividerMessageId([{ id: "progress:run", role: "bot" }, ...thread], 2, null)).toBe(
-      "m3",
-    );
+    expect(
+      unreadDividerMessageId([{ id: "progress:run", role: "bot" }, ...thread], 2, null, "me"),
+    ).toBe("m3");
   });
 
   it("waits while an unloaded older page could hold the first unread message", () => {
     const latestPage = thread.slice(3);
-    expect(unreadDividerMessageId(latestPage, 0, 3)).toBeNull();
-    expect(unreadDividerMessageId(latestPage, 2, 3)).toBe("m3");
-    expect(unreadDividerMessageId(latestPage, 2, null)).toBeNull();
+    expect(unreadDividerMessageId(latestPage, 0, 3, "me")).toBeNull();
+    expect(unreadDividerMessageId(latestPage, 2, 3, "me")).toBe("m3");
+    expect(unreadDividerMessageId(latestPage, 2, null, "me")).toBeNull();
   });
 
   it("doesn't wait when the loaded page starts with a hidden message right after the cursor", () => {
     // The page starts at seq 50, a hidden tool message; only the reply at 51 is visible.
-    expect(unreadDividerMessageId([{ id: "m51", role: "bot", seq: 51 }], 49, 50)).toBe("m51");
+    expect(unreadDividerMessageId([{ id: "m51", role: "bot", seq: 51 }], 49, 50, "me")).toBe("m51");
   });
 });
 
@@ -151,11 +152,12 @@ describe("canMarkMessageUnread", () => {
     expect(
       unreadDividerMessageId(
         [
-          { id: "m1", role: "user", seq: 1 },
+          { id: "m1", role: "user", seq: 1, author: me },
           { id: "m2", role: "bot", seq: 2 },
         ],
         0,
         null,
+        "me",
       ),
     ).toBe("m2");
   });
