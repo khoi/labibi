@@ -1695,6 +1695,7 @@ async function finalizeRunOnce(
       },
     });
     if (terminal.count !== 1) return null;
+    await expireComputerExecutionLeases(tx, { runId: input.runId });
     await tx.externalEffect.deleteMany({
       where: {
         runId: input.runId,
