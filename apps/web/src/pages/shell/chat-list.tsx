@@ -63,6 +63,7 @@ export function ChatList({
             data-chat-unread={chat.unread ? "true" : undefined}
             aria-current={selected ? "page" : undefined}
             aria-label={mini ? label : undefined}
+            aria-describedby={mini && chat.unread ? `chat-unread-${chat.id}` : undefined}
             onClick={() => onOpen(chat)}
             // Focus the row so closing the menu returns focus here.
             onContextMenu={(event) => event.currentTarget.focus()}
@@ -78,10 +79,15 @@ export function ChatList({
               <span className="relative shrink-0">
                 {avatar}
                 {chat.unread ? (
-                  <span
-                    aria-hidden="true"
-                    className="absolute -end-0.5 top-0 size-2 rounded-full bg-unread ring-2 ring-sidebar"
-                  />
+                  <>
+                    <span
+                      aria-hidden="true"
+                      className="absolute -end-0.5 top-0 size-2 rounded-full bg-unread ring-2 ring-sidebar"
+                    />
+                    <span id={`chat-unread-${chat.id}`} className="sr-only">
+                      <Trans> (unread)</Trans>
+                    </span>
+                  </>
                 ) : null}
               </span>
             ) : (

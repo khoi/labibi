@@ -64,7 +64,7 @@ test("opens Artifacts from the account menu and lists created files", async ({
   await captureScreenshot(page, testInfo, "artifacts-preview");
 
   await page.getByRole("link", { name: "Chats" }).click();
-  await expect(page).toHaveURL(/\/app\/(?!artifacts(?:\/|$))[^/]+$/);
+  await expect(page).toHaveURL(/\/app\/c\/[^/]+$/);
   await expect(page.getByTestId("transcript")).toBeVisible();
 
   await page.setViewportSize({ width: 390, height: 844 });

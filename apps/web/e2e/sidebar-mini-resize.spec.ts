@@ -89,7 +89,7 @@ test("sidebar rail keeps chats interactive and remembers a dragged width", async
   await expect(sidebar).toHaveCSS("width", "316px");
   await expect(sidebar.getByTestId("sidebar-search-trigger")).toBeVisible();
   await expect(sidebar.getByRole("textbox", { name: "Search", exact: true })).toHaveCount(0);
-  await expect(row.locator("[data-roster-bot-name]")).toBeVisible();
+  await expect(row.locator("[data-chat-title]")).toBeVisible();
 });
 
 test("sidebar resize follows RTL and reduced motion", async ({ page }, testInfo) => {

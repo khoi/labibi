@@ -14,7 +14,7 @@ import {
 
 function sidebarBotButton(page: Page, name: RegExp | string) {
   return page.locator("[data-sidebar-group] [data-chat-id]").filter({
-    has: page.locator("[data-roster-bot-name]").filter({ hasText: name }),
+    has: page.locator("[data-chat-title]").filter({ hasText: name }),
   });
 }
 
