@@ -161,7 +161,7 @@ test("logout protects bot deep links and sign-in restores the session", async ({
   await signupThroughForm(page, email, password, userName);
   await completeOnboarding(page);
 
-  await page.waitForURL(/\/app\/[^/]+$/);
+  await page.waitForURL(/\/app\/c\/[^/]+$/);
   const protectedBotPath = new URL(page.url()).pathname;
   await expect(page.getByPlaceholder("Message Doodle")).toBeVisible();
 
@@ -273,7 +273,7 @@ test("changes and recovers an email password", async ({ page }, testInfo) => {
 
   await signup(page, email, originalPassword, userName);
   await completeOnboarding(page);
-  await page.waitForURL(/\/app\/[^/]+$/);
+  await page.waitForURL(/\/app\/c\/[^/]+$/);
 
   await page.getByTestId("sidebar-search-trigger").click();
   await expect(page.getByTestId("sidebar-search").locator("input")).toHaveAttribute(

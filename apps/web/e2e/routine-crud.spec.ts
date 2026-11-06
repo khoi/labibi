@@ -23,7 +23,7 @@ test("a delayed schedule is visible only while the routine is active", async ({
   await completeOnboarding(page);
   const botId = activeThreadId(page);
   const routine = await rpc<Routine>(page, "routines/create", {
-    botId,
+    threadId: botId,
     name: "Morning report",
     prompt: "Prepare the report.",
     crons: ["0 8 * * *"],
@@ -77,7 +77,7 @@ test("routine editing updates in place, preserves timezone, deletion persists, a
   const botId = activeThreadId(page);
 
   const created = await rpc<Routine>(page, "routines/create", {
-    botId,
+    threadId: botId,
     name: "Tokyo check-in",
     prompt: "Send the original update",
     crons: ["0 9 * * *"],
@@ -143,7 +143,7 @@ test("routine editing updates in place, preserves timezone, deletion persists, a
   await page.getByRole("button", { name: "Advanced", exact: true }).click();
   const modelSelect = page.getByRole("combobox", { name: "Model", exact: true });
   await expect(modelSelect).toHaveValue("");
-  await expect(modelSelect).toContainText("Bot's model");
+  await expect(modelSelect).toContainText("Doodle's model");
   await captureScreenshot(page, testInfo, "routine-model-picker");
 
   await page.keyboard.press("Escape");

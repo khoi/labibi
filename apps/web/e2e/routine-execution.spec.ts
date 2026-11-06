@@ -121,7 +121,7 @@ test("a routine run that failed to start shows the error in Details", async ({
   await completeOnboarding(page);
   const botId = activeThreadId(page);
   await rpc<Routine>(page, "routines/create", {
-    botId,
+    threadId: botId,
     name: "Nightly check",
     prompt: "Check the site",
     crons: ["0 9 * * *"],
@@ -176,7 +176,7 @@ test("run history links runs that replied and marks silent ones", async ({ page 
   await completeOnboarding(page);
   const botId = activeThreadId(page);
   await rpc<Routine>(page, "routines/create", {
-    botId,
+    threadId: botId,
     name: "Price watch",
     prompt: "Only message me when the price drops",
     crons: ["0 * * * *"],
@@ -231,7 +231,7 @@ test("run history links runs that replied and marks silent ones", async ({ page 
   await expect(history.getByRole("link")).toHaveCount(1);
   await expect(rows.nth(1).getByRole("link")).toHaveAttribute(
     "href",
-    `/app/${botId}?m=message-${stamp}`,
+    `/app/c/${botId}?m=message-${stamp}`,
   );
   await expect(history.getByText("No reply", { exact: true })).toHaveCount(2);
   await expect(rows.nth(4)).toContainText("Started 40m late");

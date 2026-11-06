@@ -130,7 +130,7 @@ async function requestDestinationWrite(page: Page, prompt: string) {
     .poll(
       async () => {
         const snapshot = await rpc<{ run?: { status: string } | null }>(page, "threads/get", {
-          botId,
+          threadId: botId,
         });
         return snapshot.run?.status ?? null;
       },
@@ -153,7 +153,7 @@ async function waitForRunIdle(page: Page) {
     .poll(
       async () => {
         const snapshot = await rpc<{ run?: { status: string } | null }>(page, "threads/get", {
-          botId,
+          threadId: botId,
         });
         return snapshot.run?.status ?? null;
       },

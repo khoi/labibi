@@ -5,7 +5,7 @@ test("keyboard shortcuts list and focus the composer", async ({ page }, testInfo
   await signup(page, `shortcuts-${Date.now()}@rakazo.test`, "password12", "Shortcut Keys");
   await completeOnboarding(page);
   await page.goto("/app");
-  await page.waitForURL(/\/app\/[^/]+$/);
+  await page.waitForURL(/\/app\/c\/[^/]+$/);
   const composer = page.getByRole("combobox", { name: /^Message / });
   await expect(composer).toBeVisible();
 

@@ -7,7 +7,7 @@ test("shows directly registered MCP servers in Integrations without catalog conn
   await signup(page, `direct-mcp-list-${Date.now()}@rakazo.test`, "password12", "Direct MCP List");
   await completeOnboarding(page);
   await page.goto("/app");
-  await page.waitForURL(/\/app\/[^/]+$/);
+  await page.waitForURL(/\/app\/c\/[^/]+$/);
   await page.getByRole("button", { name: "Connect apps", exact: true }).click();
   await openIntegrationsAdd(page, "Manage MCP servers");
   await expect(page.getByRole("textbox", { name: "Server name", exact: true })).toBeVisible();

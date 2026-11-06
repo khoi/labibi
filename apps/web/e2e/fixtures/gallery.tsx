@@ -17,7 +17,7 @@ import { BOT, FixtureTranscript } from "./thread-fixture";
 // State lives in the URL (?scenario=&theme=&width=&tools=) so any view can be linked.
 
 const SCOUT = { botId: "bot-2", name: "Scout", color: botColor("green") };
-const LEDGER = { botId: "bot-3", name: "Ledger", color: botColor("red") };
+const LEDGER = { botId: "bot-3", name: "Ledger", color: botColor("pink") };
 
 function botColor(id: string) {
   return BOT_COLOR_LIST.find((color) => color.id === id)!.hex;

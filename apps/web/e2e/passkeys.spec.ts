@@ -29,7 +29,7 @@ test("adds a passkey after signup and signs in with it", async ({ page }, testIn
 
   await signup(page, email, "password12", userName);
   await completeOnboarding(page);
-  await page.waitForURL(/\/app\/[^/]+$/);
+  await page.waitForURL(/\/app\/c\/[^/]+$/);
 
   const offer = page.getByTestId("passkey-offer");
   await expect(offer).toBeVisible();

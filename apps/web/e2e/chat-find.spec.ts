@@ -20,7 +20,7 @@ test("the desktop app finds text in the open chat", async ({ page }, testInfo) =
   await signup(page, `find-${Date.now()}@rakazo.test`, "password12", "Find Chat");
   await completeOnboarding(page);
   await page.goto("/app");
-  await page.waitForURL(/\/app\/[^/]+$/);
+  await page.waitForURL(/\/app\/c\/[^/]+$/);
 
   const composer = page.getByRole("combobox", { name: /^Message / });
   await composer.fill("Remember the zephyrine launch window");

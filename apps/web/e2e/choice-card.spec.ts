@@ -41,7 +41,7 @@ test("renders tappable choice buttons and submits the offered action id", async 
     .poll(
       async () => {
         const snapshot = await rpc<{ run?: { status: string } | null }>(page, "threads/get", {
-          botId,
+          threadId: botId,
         });
         return snapshot.run?.status ?? null;
       },

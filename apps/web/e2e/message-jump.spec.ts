@@ -36,7 +36,7 @@ test("a ?m= deep link jumps while the thread is streaming", async ({ page }, tes
         const nonce = `jf-${stamp}-${lane}-${i++}`;
         try {
           await rpc(page, "threads/send", {
-            botId,
+            threadId: botId,
             text: `jump-flood-${stamp}-${lane}-${i}`,
             clientNonce: nonce,
           });

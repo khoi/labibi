@@ -63,7 +63,7 @@ test("swiping inward from the mobile edge opens the bots sidebar", async ({ page
   await signup(page, `mobile-sidebar-swipe-${stamp}@rakazo.test`, "password12", "Swipe Test");
   await completeOnboarding(page);
   await page.goto("/app");
-  await page.waitForURL(/\/app\/[^/]+$/);
+  await page.waitForURL(/\/app\/c\/[^/]+$/);
 
   const closeNavigation = page.getByRole("button", { name: "Close navigation" });
   const edge = page.getByTestId("mobile-sidebar-swipe-edge");

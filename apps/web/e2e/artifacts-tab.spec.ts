@@ -47,7 +47,7 @@ test("opens Artifacts from the account menu and lists created files", async ({
   await page.setViewportSize({ width: 1280, height: 720 });
 
   await rpc(page, "artifacts/create", {
-    botId: chiefId,
+    threadId: chiefId,
     name: "notes/artifacts-tab.md",
     mimeType: "text/markdown",
     contentBase64: Buffer.from("# Artifacts tab").toString("base64"),

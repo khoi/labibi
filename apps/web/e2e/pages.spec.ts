@@ -323,7 +323,7 @@ test("a bot's page shows in its reply, opens full screen, is shared by link and 
   await expect(pageFrame(page, "Signups dashboard").getByText("1.9%")).toBeVisible();
   await page.keyboard.press("Escape");
 
-  await openChatPanelTab(page, "Pages");
+  await openChatPanelTab(page, "Files");
   await page
     .getByTestId("bot-pages")
     .getByRole("button", { name: /^Signups dashboard/ })
@@ -375,7 +375,7 @@ test("a bot's page shows in its reply, opens full screen, is shared by link and 
   await expect(pill).toHaveAttribute("aria-expanded", "false");
   await pill.click();
   await expect(
-    page.getByTestId("chat-panel").getByRole("tab", { name: "Pages", exact: true }),
+    page.getByTestId("chat-panel").getByRole("tab", { name: "Files", exact: true }),
   ).toHaveAttribute("aria-selected", "true");
 });
 
@@ -587,7 +587,7 @@ test("a page's failures, a deleted page's card, and the Library's Share, search 
   await closePage(page);
 
   // The Library's Share opens the popover, every time.
-  await openChatPanelTab(page, "Pages");
+  await openChatPanelTab(page, "Files");
   const library = page.getByTestId("bot-pages");
   for (let round = 0; round < 2; round++) {
     await library.getByRole("button", { name: "Actions for Alpha" }).click();
@@ -629,7 +629,7 @@ test("a page's failures, a deleted page's card, and the Library's Share, search 
 
   // A longer list gets a field to find a page by title.
   for (const title of ["One", "Two", "Three", "Four", "Five", "Six", "Seven"]) await save(title);
-  await openChatPanelTab(page, "Pages");
+  await openChatPanelTab(page, "Files");
   await expect(library.getByRole("listitem")).toHaveCount(8);
   await expect(library.getByRole("button", { name: "Show more" })).toBeHidden();
   await library.getByRole("searchbox", { name: "Find a page" }).fill("sev");
@@ -667,7 +667,7 @@ test("a page's failures, a deleted page's card, and the Library's Share, search 
   await captureScreenshot(page, testInfo, "page-library-stale-error");
   // A list that can't be read at all is not shown as empty.
   await page.reload();
-  await openChatPanelTab(page, "Pages");
+  await openChatPanelTab(page, "Files");
   const unread = page.getByTestId("chat-panel").getByRole("alert");
   await expect(unread).toContainText("Couldn't load pages.");
   await expect(page.getByText("Pages this bot builds for you appear here.")).toBeHidden();

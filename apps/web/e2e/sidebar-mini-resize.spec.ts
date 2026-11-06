@@ -47,7 +47,7 @@ test("sidebar rail keeps chats interactive and remembers a dragged width", async
   await page.getByTestId("minimize-bots-sidebar").click();
   await expect(sidebar).toHaveCSS("width", "72px");
   await row.click();
-  await expect(page).toHaveURL(new RegExp(`/app/${bot.id}$`));
+  await expect(page).toHaveURL(new RegExp(`/app/c/${bot.id}$`));
   await expect(row).toHaveAttribute("aria-current", "page");
   await expect(sidebar.locator("[data-roster-preview]")).toHaveCount(0);
   await page.mouse.move(700, 450);

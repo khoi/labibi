@@ -177,7 +177,7 @@ test("an armed reply survives the parent paging out of the transcript", async ({
   // get discarded as stale — so stop the thread to end the churn first.
   for (let i = 0; i < 105; i++) {
     await rpc(page, "threads/send", {
-      botId,
+      threadId: botId,
       text: `quote-filler-${stamp}-${i}`,
       clientNonce: `qf-${stamp}-${i}`,
     });
@@ -192,7 +192,7 @@ test("an armed reply survives the parent paging out of the transcript", async ({
   // and refreshes are discarded as stale. A reaction writes one durable event
   // past the wedge — no run, no new churn — so the next refresh can commit.
   await rpc(page, "threads/react", {
-    botId,
+    threadId: botId,
     messageId: lastFillerId,
     reaction: "👍",
     clientNonce: `qr-${stamp}`,

@@ -18,7 +18,7 @@ test("renders masked secret card and saves without putting the value in chat", a
     .poll(
       async () => {
         const snapshot = await rpc<{ run?: { status: string } | null }>(page, "threads/get", {
-          botId,
+          threadId: botId,
         });
         return snapshot.run?.status ?? null;
       },
@@ -115,7 +115,7 @@ test("renders masked secret card and saves without putting the value in chat", a
     .poll(
       async () => {
         const snapshot = await rpc<{ run?: { status: string } | null }>(page, "threads/get", {
-          botId,
+          threadId: botId,
         });
         return snapshot.run?.status ?? "completed";
       },
@@ -142,7 +142,7 @@ async function openSecretCard(page: Page, name: string, prompt: string) {
     .poll(
       async () => {
         const snapshot = await rpc<{ run?: { status: string } | null }>(page, "threads/get", {
-          botId,
+          threadId: botId,
         });
         return snapshot.run?.status ?? null;
       },
@@ -376,7 +376,7 @@ test("uses a login for this run only when Save to Vault is turned off on its car
     .poll(
       async () => {
         const snapshot = await rpc<{ run?: { status: string } | null }>(page, "threads/get", {
-          botId,
+          threadId: botId,
         });
         return snapshot.run?.status ?? null;
       },

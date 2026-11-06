@@ -8,7 +8,6 @@ import {
   completeOnboarding,
   manageModelConnection,
   modelConnectionDialog,
-  openChatPanelTab,
   openModelConnection,
   openUserSettings,
   pickReopenedModel,
@@ -320,14 +319,17 @@ test("connects, lists, and uses an OpenAI-compatible endpoint", async ({ page },
       .getByRole("button", { name: "Close", exact: true })
       .click();
     await expect(saved).toBeHidden();
-    await page.getByRole("button", { name: "Close model settings" }).click();
-    await openChatPanelTab(page, "Advanced");
-    const settings = page.getByTestId("chat-panel");
+    await openUserSettings(page, "space");
+    const settings = page.getByTestId("doodle-settings");
     // The Model select sits inside its wrapping <label>, so the label text includes
     // option copy and getByLabel(..., { exact: true }) misses it. Use the role name.
     const botModel = settings.getByRole("combobox", { name: "Model", exact: true });
     await expect(botModel.locator("option")).toContainText([LOCAL_MODEL_ID, SECOND_MODEL_ID]);
+    const modelSaved = page.waitForResponse(
+      (response) => response.url().includes("/rpc/doodle/update") && response.ok(),
+    );
     await botModel.selectOption(`openai-compatible::${SECOND_MODEL_ID}`);
+    await modelSaved;
     // Native select popups are outside Playwright's screenshots. Render the
     // same options as an expanded native list for the CI screenshot, then restore.
     // An expanded select is a listbox, so keep a role-independent handle.
@@ -342,12 +344,12 @@ test("connects, lists, and uses an OpenAI-compatible endpoint", async ({ page },
       select.size = 0;
       select.style.removeProperty("height");
     });
-    await settings.getByRole("combobox", { name: "Thinking", exact: true }).selectOption("high");
     const botSaved = page.waitForResponse(
-      (response) => response.url().includes("/rpc/bots/update") && response.ok(),
+      (response) => response.url().includes("/rpc/doodle/update") && response.ok(),
     );
-    await settings.getByRole("button", { name: "Save", exact: true }).click();
+    await settings.getByRole("combobox", { name: "Thinking", exact: true }).selectOption("high");
     await botSaved;
+    await page.getByRole("button", { name: "Close user settings" }).click();
 
     if (process.env.AGENT_RUNTIME === "pi") {
       const composer = page.getByPlaceholder(/Message/);

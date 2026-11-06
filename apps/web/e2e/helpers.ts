@@ -180,6 +180,7 @@ export async function openUserSettings(
   page: Page,
   section?:
     | "general"
+    | "space"
     | "models"
     | "memory"
     | "voice"

@@ -6,7 +6,7 @@ test("command palette switches bots and runs actions", async ({ page }, testInfo
   await signup(page, `cmdk-bots-${stamp}@rakazo.test`, "password12", "CmdK Bots");
   await completeOnboarding(page);
   await page.goto("/app");
-  await page.waitForURL(/\/app\/[^/]+$/);
+  await page.waitForURL(/\/app\/c\/[^/]+$/);
 
   const chiefId = activeThreadId(page);
   const researcher = await rpc<{ id: string }>(page, "bots/create", {
@@ -16,7 +16,7 @@ test("command palette switches bots and runs actions", async ({ page }, testInfo
     computerMode: "team",
   });
   await page.reload();
-  await page.waitForURL(/\/app\/[^/]+$/);
+  await page.waitForURL(/\/app\/c\/[^/]+$/);
   await expect(
     page
       .locator("aside")
@@ -41,14 +41,14 @@ test("command palette switches bots and runs actions", async ({ page }, testInfo
 
   await page.getByRole("option", { name: /Researcher/ }).click();
   await expect(dialog).toBeHidden();
-  await page.waitForURL(new RegExp(`/app/${researcher.id}$`));
+  await page.waitForURL(new RegExp(`/app/c/${researcher.id}$`));
   expect(activeThreadId(page)).toBe(researcher.id);
   await expect(page.getByRole("combobox", { name: "Message Researcher" })).toBeVisible();
 
   await page.keyboard.press("ControlOrMeta+K");
   await expect(dialog).toBeVisible();
   await page.getByTestId(`command-palette-bot-${chiefId}`).click();
-  await page.waitForURL(new RegExp(`/app/${chiefId}$`));
+  await page.waitForURL(new RegExp(`/app/c/${chiefId}$`));
   expect(activeThreadId(page)).toBe(chiefId);
 
   await page.keyboard.press("ControlOrMeta+K");

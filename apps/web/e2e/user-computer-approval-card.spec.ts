@@ -20,7 +20,7 @@ test("asks before running a command on the user's computer", async ({ page }, te
   await captureScreenshot(page, testInfo, "user-computer-approval-card");
 
   await allow.click();
-  await expect(transcript.getByText("Allowed in this space", { exact: true })).toBeVisible();
+  await expect(transcript.getByText("Allowed in this workspace", { exact: true })).toBeVisible();
 
   // The emulated desktop (see UserDeviceEmulator) records what it ran; tool output is not
   // shown in the transcript, so check that the approved command reached it.

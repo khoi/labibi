@@ -18,7 +18,7 @@ test("memory and skills are readable and editable in the app", async ({ page }, 
   await signup(page, `knowledge-${stamp}@rakazo.test`, "password12", userName);
   await completeOnboarding(page);
   await page.goto("/app");
-  await page.waitForURL(/\/app\/[^/]+$/);
+  await page.waitForURL(/\/app\/c\/[^/]+$/);
   // A second shared document that the user can delete later in this test. Saving shared
   // memory from chat writes directly, without an approval card.
   const retiredPath = "projects/retired.md";

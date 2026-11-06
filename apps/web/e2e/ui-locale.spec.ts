@@ -55,7 +55,7 @@ test("account settings language picker includes Hebrew and mirrors the UI right-
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
 
   await page.goto("/app");
-  await page.waitForURL(/\/app\/[^/]+$/);
+  await page.waitForURL(/\/app\/c\/[^/]+$/);
   const sidebar = page.getByTestId("bots-sidebar");
   await expect(sidebar).toBeInViewport({ ratio: 1 });
   const box = await sidebar.boundingBox();

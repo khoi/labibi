@@ -3,7 +3,7 @@ import {
   captureScreenshot,
   completeOnboarding,
   expectCardWidth,
-  openChatPanelTab,
+  openUserSettings,
   signup,
 } from "./helpers";
 
@@ -12,23 +12,8 @@ test("teach a task records interaction and saves a draft", async ({ page }, test
   await signup(page, `teach-${stamp}@rakazo.test`, "password12", "Teach");
   await completeOnboarding(page);
 
-  await openChatPanelTab(page, "Computer");
-  const sidePanel = page.getByTestId("side-panel");
-  await expect(sidePanel).toHaveAttribute("data-panel", "computer");
-  await expect(sidePanel.getByText("Teach a task")).toHaveCount(0);
-  await expect(sidePanel.getByTestId("teach-start-button")).toHaveCount(0);
-  await expect(sidePanel.getByRole("button", { name: "Recover computer" })).toHaveCount(0);
-  await expect(sidePanel.getByRole("button", { name: "Reset computer" })).toHaveCount(0);
-  await expect(sidePanel.getByRole("button", { name: "Update computer" })).toHaveCount(0);
-  await expect(sidePanel.getByRole("button", { name: "Take control" })).toHaveCount(0);
-  await expect(sidePanel.getByTestId("computer-more-button")).toHaveCount(0);
-  await expect(sidePanel.getByTestId("computer-preview")).toBeVisible();
-  await captureScreenshot(page, testInfo, "teach-sidepanel-simple");
-
-  const openButton = sidePanel.getByTestId("computer-preview-open");
-  await expect(openButton).toHaveText("Wake");
-
-  await openButton.click();
+  const settings = await openUserSettings(page, "computer");
+  await settings.getByTestId("open-my-computer").click();
   await expect(page.getByRole("button", { name: "Close computer" })).toBeVisible();
   const chrome = page.getByTestId("computer-chrome");
   await chrome.getByRole("button", { name: "Take control", exact: true }).click();

@@ -16,7 +16,7 @@ test("saves a website login from a username and password card without echoing ei
     .poll(
       async () => {
         const snapshot = await rpc<{ run?: { status: string } | null }>(page, "threads/get", {
-          botId,
+          threadId: botId,
         });
         return snapshot.run?.status ?? null;
       },
@@ -88,7 +88,7 @@ test("saves a website login from a username and password card without echoing ei
     .poll(
       async () => {
         const snapshot = await rpc<{ run?: { status: string } | null }>(page, "threads/get", {
-          botId,
+          threadId: botId,
         });
         return snapshot.run?.status ?? "completed";
       },
