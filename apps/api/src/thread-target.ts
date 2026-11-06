@@ -676,9 +676,10 @@ export async function sendThreadMessage(
     throw new ORPCError("BAD_REQUEST", { message: "replyQuote requires replyToMessageId." });
   }
   // People-only messages never reach a model, so only one Doodle takes settles model setup.
-  // A bare stop needs no model either.
+  // A bare stop needs no model while there is work to stop.
   const takes = await doodleTakesMessage(deps.prisma, actor, target, input);
-  if (takes && !isStopMessage(input) && options.admitDoodle && !(await options.admitDoodle())) {
+  const noModel = takes && options.admitDoodle ? !(await options.admitDoodle()) : false;
+  if (noModel && !isStopMessage(input)) {
     throw new ORPCError("BAD_REQUEST", { message: MODEL_REQUIRED_SEND_ERROR });
   }
 
@@ -811,6 +812,9 @@ export async function sendThreadMessage(
       }
       // A bare "stop" from the asker while work is active is the Stop button, not a reply.
       const stopping = activeRuns.length > 0 && !routineRuns.length && isStopMessage(input);
+      if (noModel && !stopping) {
+        throw new ORPCError("BAD_REQUEST", { message: MODEL_REQUIRED_SEND_ERROR });
+      }
       const answered: typeof activeRuns = [];
       // Someone else's question stays on its card; this message starts the sender's own run.
       for (const run of activeRuns.filter(

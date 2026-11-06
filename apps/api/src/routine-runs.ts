@@ -13,11 +13,7 @@ export async function listRoutineRuns(
   limit = ROUTINE_HISTORY_PAGE_SIZE,
 ): Promise<RoutineHistory> {
   const routine = await prisma.routine.findFirst({
-    where: {
-      id: routineId,
-      spaceId: actor.spaceId,
-      bot: { archivedAt: null },
-    },
+    where: { id: routineId, spaceId: actor.spaceId },
     select: { botId: true },
   });
   if (!routine) throw new ORPCError("NOT_FOUND");

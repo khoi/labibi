@@ -339,7 +339,8 @@ export function threadsRoutes(ctx: RouterContext) {
             getLogger().error("thread reaction realtime notification", error);
           });
         }
-        return { ok: true as const, runIds: result.runIds };
+        const [runId] = result.runIds;
+        return { ok: true as const, ...(runId ? { runId } : {}) };
       }),
       stop: authed.threads.stop.handler(async ({ context, input }) => {
         const target = await resolveChatTarget(deps.prisma, context.actor, input);

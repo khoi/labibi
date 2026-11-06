@@ -60,10 +60,20 @@ async function stillThere<T>(write: Promise<T>): Promise<T> {
   }
 }
 
-async function requirePage(prisma: PrismaClient, actor: Actor, pageId: string) {
+/** Anyone in the page's chat reads it; only the person it was made for changes it. */
+async function requirePage(
+  prisma: PrismaClient,
+  actor: Actor,
+  pageId: string,
+  access: "read" | "change" = "change",
+) {
   const row = await prisma.page.findFirst({
-    where: { id: pageId, spaceId: actor.spaceId, userId: actor.userId },
-    select: { ...summarySelect, shareSecretId: true },
+    where: {
+      id: pageId,
+      spaceId: actor.spaceId,
+      ...(access === "change" ? { userId: actor.userId } : {}),
+    },
+    select: { ...summarySelect, userId: true, shareSecretId: true },
   });
   if (!row) throw new IsolationError();
   return row;
@@ -114,14 +124,12 @@ function afterCursor(cursor: ListCursor): Prisma.PageWhereInput {
 export async function listPages(
   prisma: PrismaClient,
   actor: Actor,
-  input: { botId?: string; groupId?: string; cursor?: string; limit?: number; query?: string },
+  input: { threadId?: string; cursor?: string; limit?: number; query?: string },
 ) {
   const limit = input.limit ?? DEFAULT_LIST_LIMIT;
   const where: Prisma.PageWhereInput = {
     spaceId: actor.spaceId,
-    userId: actor.userId,
-    ...(input.groupId ? { groupId: input.groupId } : {}),
-    ...(input.botId ? { botId: input.botId, ...(input.groupId ? {} : { groupId: null }) } : {}),
+    ...(input.threadId ? { threadId: input.threadId } : {}),
     ...(input.cursor ? { AND: [afterCursor(decodeCursor(input.cursor))] } : {}),
     ...(input.query ? { title: { contains: input.query, mode: "insensitive" } } : {}),
   };
@@ -158,7 +166,7 @@ export async function getPage(
   actor: Actor,
   input: { pageId: string; version?: number; link?: boolean },
 ): Promise<PageDetail> {
-  const row = await requirePage(deps.prisma, actor, input.pageId);
+  const row = await requirePage(deps.prisma, actor, input.pageId, "read");
   const version = input.version ?? row.currentVersion;
   const [stored, owner] = await Promise.all([
     deps.prisma.pageVersion.findUnique({
@@ -166,7 +174,7 @@ export async function getPage(
       select: { code: true },
     }),
     deps.prisma.user.findUnique({
-      where: { id: actor.userId },
+      where: { id: row.userId },
       select: { name: true, image: true },
     }),
   ]);

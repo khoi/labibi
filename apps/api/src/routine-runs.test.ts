@@ -24,18 +24,14 @@ function fixture() {
   return { prisma, routine, runs, messages };
 }
 describe("routine history", () => {
-  it("refuses missing, foreign or archived routines before reading runs", async () => {
+  it("refuses missing or foreign routines before reading runs", async () => {
     const { prisma, routine, runs, messages } = fixture();
     routine.mockResolvedValue(null);
     await expect(listRoutineRuns(prisma, actor, "routine-1")).rejects.toMatchObject({
       code: "NOT_FOUND",
     });
     expect(routine).toHaveBeenCalledWith({
-      where: {
-        id: "routine-1",
-        spaceId: actor.spaceId,
-        bot: { archivedAt: null },
-      },
+      where: { id: "routine-1", spaceId: actor.spaceId },
       select: { botId: true },
     });
     expect(runs).not.toHaveBeenCalled();

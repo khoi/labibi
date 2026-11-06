@@ -249,7 +249,8 @@ export async function ensureFirstChat(
     withTransactionRetry(() =>
       prisma.$transaction(async (tx) => {
         await lockSpaceForContentCreation(tx, actor);
-        if (await tx.threadMember.count({ where: actor, take: 1 })) return null;
+        const mine = { spaceId: actor.spaceId, userId: actor.userId };
+        if (await tx.threadMember.count({ where: mine, take: 1 })) return null;
         return insertChat(tx, actor, { userIds: [], doodle: true });
       }),
     ),

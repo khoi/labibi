@@ -194,8 +194,8 @@ async function dueDates(db: Db, where: Prisma.ComputerWhereInput, now: Date, cur
 }
 
 /**
- * The latest of each computer's creation, its last save, its bots' latest runs, and its latest
- * running stretch.
+ * The latest of each computer's creation, its last save, its person's latest run in the
+ * workspace, and its latest running stretch.
  * Each lookup reads one index entry, so the cost does not grow with run history.
  */
 async function lastUsed(db: Db, ids: string[]) {
@@ -204,8 +204,8 @@ async function lastUsed(db: Db, ids: string[]) {
     SELECT c.id, GREATEST(
       c."createdAt",
       c."homeRevisionAt",
-      (SELECT max((SELECT max(r."createdAt") FROM runs r WHERE r."botId" = b.id))
-        FROM bots b WHERE b."computerId" = c.id),
+      (SELECT max(r."createdAt") FROM runs r
+        WHERE r."spaceId" = c."spaceId" AND r."userId" = c."userId"),
       (SELECT GREATEST(s."startedAt", s."endedAt", s."lastSeenAt") FROM computer_runs s
         WHERE s."computerId" = c.id ORDER BY s."startedAt" DESC LIMIT 1)
     ) AS at

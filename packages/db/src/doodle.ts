@@ -46,7 +46,7 @@ export async function getSpaceDoodle(
   const [bot, membership] = await Promise.all([
     prisma.bot.findUnique({ where: { spaceId: actor.spaceId } }),
     prisma.spaceMember.findUnique({
-      where: { spaceId_userId: actor },
+      where: { spaceId_userId: { spaceId: actor.spaceId, userId: actor.userId } },
       select: { role: true },
     }),
   ]);

@@ -985,6 +985,7 @@ model Run {
   // Partial index runs_recent_activity_idx (recent foreground activity) is created in SQL.
   // Partial index runs_bot_outcome_pending_idx (unreturned bot-message outcomes) is created in SQL.
   @@index([routineId])
+  @@index([spaceId, userId, createdAt])
   @@map("runs")
 }
 

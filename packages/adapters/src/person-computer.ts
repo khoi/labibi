@@ -18,13 +18,19 @@ export function findPersonComputer(
   prisma: Pick<PrismaClient, "computer">,
   owner: Owner,
 ): Promise<Computer | null> {
-  return prisma.computer.findUnique({ where: { spaceId_userId: owner } });
+  return prisma.computer.findUnique({
+    where: { spaceId_userId: { spaceId: owner.spaceId, userId: owner.userId } },
+  });
 }
 
 /** A person's computer in a workspace, made the first time they need it. */
 export async function ensurePersonComputer(prisma: PrismaClient, owner: Owner): Promise<Computer> {
   return (
     (await findPersonComputer(prisma, owner)) ??
-    ensureComputerRecord(prisma, { ...owner, kind: await newComputerKind(prisma) })
+    ensureComputerRecord(prisma, {
+      spaceId: owner.spaceId,
+      userId: owner.userId,
+      kind: await newComputerKind(prisma),
+    })
   );
 }
