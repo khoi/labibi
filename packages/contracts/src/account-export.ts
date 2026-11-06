@@ -151,8 +151,3 @@ export const AccountExportRecordSchema = z.discriminatedUnion("type", [
   }),
 ]);
 export type AccountExportRecord = z.infer<typeof AccountExportRecordSchema>;
-
-export const AccountImportResultSchema = z.object({
-  spaces: z.array(z.object({ id: Id, name: z.string() })),
-});
-export type AccountImportResult = z.infer<typeof AccountImportResultSchema>;

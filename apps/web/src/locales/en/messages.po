@@ -1811,7 +1811,6 @@ msgstr "Could not preview plugin"
 msgid "Could not reach the model server."
 msgstr "Could not reach the model server."
 
-#: src/components/AccountDataSettings.tsx
 #: src/components/PasskeyOffer.tsx
 #: src/components/PasskeySettings.tsx
 #: src/lib/computer-sandbox.ts
@@ -2328,7 +2327,6 @@ msgstr "Document changed. Reopen to edit the latest version."
 msgid "Don’t have an account?"
 msgstr "Don’t have an account?"
 
-#: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/RoutineRunHistory.tsx
 #: src/pages/shell/message-view.tsx
@@ -2886,14 +2884,6 @@ msgstr "Image input is not configured for this model."
 msgid "Image input is not configured for this model."
 msgstr "Image input is not configured for this model."
 
-#: src/components/AccountDataSettings.tsx
-msgid "Import"
-msgstr "Import"
-
-#: src/components/AccountDataSettings.tsx
-msgid "Import data"
-msgstr "Import data"
-
 #: src/pages/BillingSettingsPanel.tsx
 msgid "Inactive"
 msgstr "Inactive"
@@ -3042,6 +3032,10 @@ msgstr "Label"
 #: src/pages/Onboarding.tsx
 msgid "Labradoodle credits"
 msgstr "Labradoodle credits"
+
+#: src/pages/memory-providers/HonchoSettingsForm.tsx
+msgid "labradoodle-shared and IDs starting with bot- are reserved for Labradoodle."
+msgstr "labradoodle-shared and IDs starting with bot- are reserved for Labradoodle."
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Language"
@@ -4104,10 +4098,6 @@ msgstr "Pull request"
 #: src/pages/RoutineRunHistory.tsx
 msgid "Queued"
 msgstr "Queued"
-
-#: src/pages/memory-providers/HonchoSettingsForm.tsx
-msgid "labradoodle-shared and IDs starting with bot- are reserved for Labradoodle."
-msgstr "labradoodle-shared and IDs starting with bot- are reserved for Labradoodle."
 
 #: src/pages/shell/message-hover-actions.tsx
 msgid "React"

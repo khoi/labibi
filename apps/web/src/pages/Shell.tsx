@@ -970,7 +970,6 @@ function SpaceShell() {
           showSettings={settingsSpaceId === null || Boolean(settingsSpace)}
           renameSpace={renameSpace}
           leftSpace={leftSpace}
-          refreshSpaces={() => refreshChats()}
           onOpenComputer={() => void openComputer()}
           user={session.data?.user}
           refetchSession={() => session.refetch({ query: { disableCookieCache: true } })}

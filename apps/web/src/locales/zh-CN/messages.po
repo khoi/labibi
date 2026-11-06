@@ -1811,7 +1811,6 @@ msgstr "无法预览插件"
 msgid "Could not reach the model server."
 msgstr "无法连接到模型服务器。"
 
-#: src/components/AccountDataSettings.tsx
 #: src/components/PasskeyOffer.tsx
 #: src/components/PasskeySettings.tsx
 #: src/lib/computer-sandbox.ts
@@ -2328,7 +2327,6 @@ msgstr "文档已更改。请重新打开以编辑最新版本。"
 msgid "Don’t have an account?"
 msgstr "还没有账户？"
 
-#: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/RoutineRunHistory.tsx
 #: src/pages/shell/message-view.tsx
@@ -2886,14 +2884,6 @@ msgstr "此模型尚未配置图片输入。"
 msgid "Image input is not configured for this model."
 msgstr "此模型尚未配置图片输入。"
 
-#: src/components/AccountDataSettings.tsx
-msgid "Import"
-msgstr ""
-
-#: src/components/AccountDataSettings.tsx
-msgid "Import data"
-msgstr "导入数据"
-
 #: src/pages/BillingSettingsPanel.tsx
 msgid "Inactive"
 msgstr "未启用"
@@ -3042,6 +3032,10 @@ msgstr "标签"
 #: src/pages/Onboarding.tsx
 msgid "Labradoodle credits"
 msgstr "Labradoodle 额度"
+
+#: src/pages/memory-providers/HonchoSettingsForm.tsx
+msgid "labradoodle-shared and IDs starting with bot- are reserved for Labradoodle."
+msgstr "labradoodle-shared 和以 bot- 开头的 ID 保留给 Labradoodle 使用。"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Language"
@@ -4104,10 +4098,6 @@ msgstr "拉取请求"
 #: src/pages/RoutineRunHistory.tsx
 msgid "Queued"
 msgstr "排队中"
-
-#: src/pages/memory-providers/HonchoSettingsForm.tsx
-msgid "labradoodle-shared and IDs starting with bot- are reserved for Labradoodle."
-msgstr "labradoodle-shared 和以 bot- 开头的 ID 保留给 Labradoodle 使用。"
 
 #: src/pages/shell/message-hover-actions.tsx
 msgid "React"

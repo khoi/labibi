@@ -79,7 +79,6 @@ export function SettingsOverlays({
   showSettings,
   renameSpace,
   leftSpace,
-  refreshSpaces,
   onOpenComputer,
   user,
   refetchSession,
@@ -95,7 +94,6 @@ export function SettingsOverlays({
   showSettings: boolean;
   renameSpace: (spaceId: string, name: string) => Promise<void>;
   leftSpace: (spaceId: string, activeSpaceId: string) => Promise<void>;
-  refreshSpaces: () => Promise<void>;
   onOpenComputer: () => void;
   user: { name?: string | null; email?: string } | undefined;
   refetchSession: () => Promise<unknown>;
@@ -140,7 +138,6 @@ export function SettingsOverlays({
             const nextMe = await rpc.preferences.update({ timezone });
             setBootstrapMe((prev) => (prev ? { ...prev, timezone: nextMe.timezone } : nextMe));
           }}
-          onAccountImported={refreshSpaces}
           memoryConfig={memoryConfig}
           onMemoryConfigChange={(config) => {
             void writeSaved(queryClient, queries.memory.providerConfig.queryKey(), () => config);

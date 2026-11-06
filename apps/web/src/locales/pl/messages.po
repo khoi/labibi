@@ -1811,7 +1811,6 @@ msgstr "Nie udało się wyświetlić podglądu wtyczki"
 msgid "Could not reach the model server."
 msgstr "Nie udało się połączyć z serwerem modelu."
 
-#: src/components/AccountDataSettings.tsx
 #: src/components/PasskeyOffer.tsx
 #: src/components/PasskeySettings.tsx
 #: src/lib/computer-sandbox.ts
@@ -2328,7 +2327,6 @@ msgstr "Dokument się zmienił. Otwórz go ponownie, aby edytować najnowszą we
 msgid "Don’t have an account?"
 msgstr "Nie masz konta?"
 
-#: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/RoutineRunHistory.tsx
 #: src/pages/shell/message-view.tsx
@@ -2886,14 +2884,6 @@ msgstr "Ten model nie ma skonfigurowanej obsługi obrazów."
 msgid "Image input is not configured for this model."
 msgstr "Ten model nie ma skonfigurowanej obsługi obrazów."
 
-#: src/components/AccountDataSettings.tsx
-msgid "Import"
-msgstr "Importuj"
-
-#: src/components/AccountDataSettings.tsx
-msgid "Import data"
-msgstr "Importuj dane"
-
 #: src/pages/BillingSettingsPanel.tsx
 msgid "Inactive"
 msgstr "Nieaktywne"
@@ -3042,6 +3032,10 @@ msgstr "Etykieta"
 #: src/pages/Onboarding.tsx
 msgid "Labradoodle credits"
 msgstr "Środki Labradoodle"
+
+#: src/pages/memory-providers/HonchoSettingsForm.tsx
+msgid "labradoodle-shared and IDs starting with bot- are reserved for Labradoodle."
+msgstr "Nazwy labradoodle-shared i identyfikatory zaczynające się od bot- są zastrzeżone dla Labradoodle."
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Language"
@@ -4104,10 +4098,6 @@ msgstr "Pull request"
 #: src/pages/RoutineRunHistory.tsx
 msgid "Queued"
 msgstr "W kolejce"
-
-#: src/pages/memory-providers/HonchoSettingsForm.tsx
-msgid "labradoodle-shared and IDs starting with bot- are reserved for Labradoodle."
-msgstr "Nazwy labradoodle-shared i identyfikatory zaczynające się od bot- są zastrzeżone dla Labradoodle."
 
 #: src/pages/shell/message-hover-actions.tsx
 msgid "React"

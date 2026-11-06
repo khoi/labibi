@@ -35,10 +35,7 @@ vi.mock("./ConfirmIdentityDialog", async () => {
     },
   };
 });
-vi.mock("../lib/rpc", () => ({
-  rpc: { export: { accountToken } },
-  recheckSessionOnUnauthorized: () => undefined,
-}));
+vi.mock("../lib/rpc", () => ({ rpc: { export: { accountToken } } }));
 vi.mock("@lingui/react/macro", () => ({
   useLingui: () => ({ t: (parts: TemplateStringsArray) => parts.join("") }),
   Trans: ({ children }: { children: ReactNode }) => children,
@@ -48,9 +45,6 @@ vi.mock("@labradoodle/ui-web", () => ({
     <button type="button" {...props} />
   ),
   Spinner: () => null,
-}));
-vi.mock("./ai/primitives", () => ({
-  SuccessPop: ({ label }: { label: string }) => <span data-testid="success">{label}</span>,
 }));
 
 import { AccountDataSettings } from "./AccountDataSettings";
@@ -76,9 +70,9 @@ afterEach(() => {
   accountToken.mockReset();
 });
 
-async function render(onImported?: () => Promise<void>) {
+async function render() {
   await act(async () => {
-    root.render(<AccountDataSettings onImported={onImported} />);
+    root.render(<AccountDataSettings />);
   });
 }
 
@@ -88,14 +82,6 @@ function button(name: string) {
   );
   if (!match) throw new Error(`No ${name} button`);
   return match;
-}
-
-async function chooseFile(file: File) {
-  const input = container.querySelector<HTMLInputElement>('[data-testid="account-import-file"]')!;
-  Object.defineProperty(input, "files", { configurable: true, value: [file] });
-  await act(async () => {
-    input.dispatchEvent(new Event("change", { bubbles: true }));
-  });
 }
 
 it("confirms identity before minting the export token, then downloads it by link", async () => {
@@ -125,47 +111,4 @@ it("confirms identity before minting the export token, then downloads it by link
   expect(link.searchParams.get("token")).toBe("tok/en+1");
   expect(clicked[0]!.hasAttribute("download")).toBe(true);
   expect(fetchMock).not.toHaveBeenCalled();
-});
-
-it("uploads the chosen archive and refreshes spaces", async () => {
-  fetchMock.mockResolvedValue(
-    new Response(JSON.stringify({ spaces: [{ id: "space_1", name: "Imported" }] }), {
-      status: 200,
-      headers: { "content-type": "application/json" },
-    }),
-  );
-  const onImported = vi.fn(async () => undefined);
-  await render(onImported);
-  const file = new File(["zip"], "labradoodle-export.zip", { type: "application/zip" });
-
-  await chooseFile(file);
-
-  expect(fetchMock).toHaveBeenCalledWith("/api/account/import", {
-    method: "POST",
-    headers: { "content-type": "application/zip" },
-    credentials: "include",
-    body: file,
-  });
-  expect(onImported).toHaveBeenCalledTimes(1);
-  expect(container.querySelector('[data-testid="success"]')).not.toBeNull();
-  expect(container.querySelector('[role="alert"]')).toBeNull();
-});
-
-it("shows the server's message when the import is rejected", async () => {
-  fetchMock.mockResolvedValue(
-    new Response(JSON.stringify({ error: "This archive is from a newer version." }), {
-      status: 400,
-      headers: { "content-type": "application/json" },
-    }),
-  );
-  const onImported = vi.fn(async () => undefined);
-  await render(onImported);
-
-  await chooseFile(new File(["zip"], "labradoodle-export.zip"));
-
-  expect(container.querySelector('[role="alert"]')?.textContent).toBe(
-    "This archive is from a newer version.",
-  );
-  expect(onImported).not.toHaveBeenCalled();
-  expect(button("Import").disabled).toBe(false);
 });

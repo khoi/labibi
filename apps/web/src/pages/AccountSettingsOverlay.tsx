@@ -82,7 +82,6 @@ export type SettingsGeneralProps = {
   /** The user's saved IANA timezone, or null before one is set. */
   timezone?: string | null;
   onTimezoneChange?: (timezone: string) => Promise<void>;
-  onAccountImported?: () => Promise<void>;
 };
 
 export function GeneralSettingsPanels({
@@ -91,7 +90,6 @@ export function GeneralSettingsPanels({
   onNameSaved,
   timezone = null,
   onTimezoneChange,
-  onAccountImported,
 }: SettingsGeneralProps) {
   const { t } = useLingui();
   const account = accountDisplay({ name, email }, t`You`);
@@ -463,7 +461,7 @@ export function GeneralSettingsPanels({
       ) : null}
 
       <SettingsGroup title={<Trans>Data</Trans>} data-testid="account-data">
-        <AccountDataSettings onImported={onAccountImported} />
+        <AccountDataSettings />
         <AccountAccess onSecurity={setAccountSecurity} />
       </SettingsGroup>
     </div>

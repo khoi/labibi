@@ -1811,7 +1811,6 @@ msgstr ""
 msgid "Could not reach the model server."
 msgstr "Impossible de joindre le serveur du modèle."
 
-#: src/components/AccountDataSettings.tsx
 #: src/components/PasskeyOffer.tsx
 #: src/components/PasskeySettings.tsx
 #: src/lib/computer-sandbox.ts
@@ -2328,7 +2327,6 @@ msgstr "Le document a changé. Rouvrez-le pour modifier la dernière version."
 msgid "Don’t have an account?"
 msgstr "Vous n'avez pas de compte ?"
 
-#: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/RoutineRunHistory.tsx
 #: src/pages/shell/message-view.tsx
@@ -2886,14 +2884,6 @@ msgstr "La saisie d’images n’est pas configurée pour ce modèle."
 msgid "Image input is not configured for this model."
 msgstr "La saisie d’images n’est pas configurée pour ce modèle."
 
-#: src/components/AccountDataSettings.tsx
-msgid "Import"
-msgstr ""
-
-#: src/components/AccountDataSettings.tsx
-msgid "Import data"
-msgstr "Importer des données"
-
 #: src/pages/BillingSettingsPanel.tsx
 msgid "Inactive"
 msgstr ""
@@ -3041,6 +3031,10 @@ msgstr "Libellé"
 
 #: src/pages/Onboarding.tsx
 msgid "Labradoodle credits"
+msgstr ""
+
+#: src/pages/memory-providers/HonchoSettingsForm.tsx
+msgid "labradoodle-shared and IDs starting with bot- are reserved for Labradoodle."
 msgstr ""
 
 #: src/pages/AccountSettingsOverlay.tsx
@@ -4104,10 +4098,6 @@ msgstr "Demande de fusion"
 #: src/pages/RoutineRunHistory.tsx
 msgid "Queued"
 msgstr "En file d'attente"
-
-#: src/pages/memory-providers/HonchoSettingsForm.tsx
-msgid "labradoodle-shared and IDs starting with bot- are reserved for Labradoodle."
-msgstr ""
 
 #: src/pages/shell/message-hover-actions.tsx
 msgid "React"

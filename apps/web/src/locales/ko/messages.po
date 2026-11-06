@@ -1811,7 +1811,6 @@ msgstr ""
 msgid "Could not reach the model server."
 msgstr "모델 서버에 연결하지 못했습니다."
 
-#: src/components/AccountDataSettings.tsx
 #: src/components/PasskeyOffer.tsx
 #: src/components/PasskeySettings.tsx
 #: src/lib/computer-sandbox.ts
@@ -2328,7 +2327,6 @@ msgstr "문서가 변경되었습니다. 최신 버전을 편집하려면 다시
 msgid "Don’t have an account?"
 msgstr "계정이 없나요?"
 
-#: src/components/AccountDataSettings.tsx
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/RoutineRunHistory.tsx
 #: src/pages/shell/message-view.tsx
@@ -2886,14 +2884,6 @@ msgstr "이 모델에는 이미지 입력이 설정되어 있지 않습니다."
 msgid "Image input is not configured for this model."
 msgstr "이 모델에는 이미지 입력이 설정되어 있지 않습니다."
 
-#: src/components/AccountDataSettings.tsx
-msgid "Import"
-msgstr ""
-
-#: src/components/AccountDataSettings.tsx
-msgid "Import data"
-msgstr "데이터 가져오기"
-
 #: src/pages/BillingSettingsPanel.tsx
 msgid "Inactive"
 msgstr ""
@@ -3041,6 +3031,10 @@ msgstr "레이블"
 
 #: src/pages/Onboarding.tsx
 msgid "Labradoodle credits"
+msgstr ""
+
+#: src/pages/memory-providers/HonchoSettingsForm.tsx
+msgid "labradoodle-shared and IDs starting with bot- are reserved for Labradoodle."
 msgstr ""
 
 #: src/pages/AccountSettingsOverlay.tsx
@@ -4104,10 +4098,6 @@ msgstr "풀 리퀘스트"
 #: src/pages/RoutineRunHistory.tsx
 msgid "Queued"
 msgstr "대기 중"
-
-#: src/pages/memory-providers/HonchoSettingsForm.tsx
-msgid "labradoodle-shared and IDs starting with bot- are reserved for Labradoodle."
-msgstr ""
 
 #: src/pages/shell/message-hover-actions.tsx
 msgid "React"
