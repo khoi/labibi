@@ -356,14 +356,13 @@ export function buildComposerMentionOptions(input: {
   }
 
   for (const connector of input.connectors) {
-    if (!matches(connector.name)) continue;
+    if (connector.authStatus !== "connected" || !matches(connector.name)) continue;
     options.push({
       kind: "connector",
       id: connector.id,
       name: connector.name,
       connectionId: connector.connectionId,
       authStatus: connector.authStatus,
-      subtitle: connector.authStatus === "connected" ? "Connected" : "Needs auth",
     });
   }
 

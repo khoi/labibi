@@ -31,10 +31,8 @@ describe("buildComposerMentionOptions", () => {
       "person",
       "routine",
       "connector",
-      "connector",
     ]);
-    expect(options.find((option) => option.name === "Gmail")?.subtitle).toBe("Connected");
-    expect(options.find((option) => option.name === "Stripe")?.subtitle).toBe("Needs auth");
+    expect(options.some((option) => option.name === "Stripe")).toBe(false);
     expect(options.find((option) => option.kind === "routine")?.subtitle).toMatch(/Weekdays/i);
     expect(mentionChipKey(options.find((option) => option.kind === "routine")!)).toBe("routine:r1");
   });
