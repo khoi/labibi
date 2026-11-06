@@ -234,7 +234,7 @@ async function prepareAuthenticatedProfile(benchmark: BenchmarkContext, profile:
         );
       });
     const connectHeading = page.getByRole("heading", { name: "Connect a model" });
-    const composer = page.getByRole("combobox", { name: "Message Chief" });
+    const composer = page.getByRole("combobox", { name: "Message Doodle" });
     await connectHeading.or(composer).waitFor({ timeout: 20_000 });
     if (await connectHeading.isVisible().catch(() => false)) {
       throw new Error(
@@ -385,9 +385,7 @@ async function measureInteractions(app: ElectronApplication, page: Page) {
   await session.send("Performance.enable");
   const settingsBefore = await cdpMetrics(session);
   const settings = await page.evaluate(async () => {
-    const button = document.querySelector<HTMLButtonElement>(
-      '[data-testid="bot-settings-trigger"]',
-    );
+    const button = document.querySelector<HTMLButtonElement>('[data-testid="chat-panel-trigger"]');
     const panel = document.querySelector<HTMLElement>('[data-testid="side-panel"]');
     if (!button || !panel) throw new Error("Settings benchmark controls are missing");
     const durationMs = maximumTransitionMs(getComputedStyle(panel));
@@ -415,12 +413,12 @@ async function measureInteractions(app: ElectronApplication, page: Page) {
     });
     const committed = new Promise<number>((resolve) => {
       const observer = new MutationObserver(() => {
-        if (!panel.querySelector('[data-testid="bot-settings"]')) return;
+        if (!panel.querySelector('[data-testid="chat-panel"]')) return;
         observer.disconnect();
         resolve(performance.now());
       });
       observer.observe(panel, { childList: true, subtree: true });
-      if (panel.querySelector('[data-testid="bot-settings"]')) {
+      if (panel.querySelector('[data-testid="chat-panel"]')) {
         observer.disconnect();
         resolve(performance.now());
       }
@@ -463,7 +461,7 @@ async function measureInteractions(app: ElectronApplication, page: Page) {
   await page.waitForTimeout(200);
 
   const typingBefore = await cdpMetrics(session);
-  const composer = page.getByPlaceholder(/Message Chief/);
+  const composer = page.getByPlaceholder(/Message Doodle/);
   await composer.fill("");
   await composer.focus();
   const characterCount = 40;

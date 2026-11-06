@@ -264,7 +264,7 @@ async function prepareAccount(bench: Bench, sizes: number[]): Promise<Account> {
     if (!response.ok()) throw new Error(`sign-up ${response.status()}: ${await response.text()}`);
     await page.goto("/onboarding");
     const skip = page.getByRole("button", { name: "Skip", exact: true });
-    const composer = page.getByRole("combobox", { name: "Message Chief" });
+    const composer = page.getByRole("combobox", { name: "Message Doodle" });
     await skip.or(composer).first().waitFor({ timeout: 30_000 });
     if (await skip.isVisible()) await skip.click();
     await composer.waitFor({ timeout: 30_000 });
@@ -287,7 +287,7 @@ async function prepareAccount(bench: Bench, sizes: number[]): Promise<Account> {
     return {
       storageState: await context.storageState(),
       userId: user.id,
-      homeBotName: "Chief",
+      homeBotName: "New chat",
       threads,
     };
   } finally {
@@ -391,7 +391,7 @@ async function measureOpenScrollAndStream(bench: Bench, account: Account, thread
     const page = await context.newPage();
     const session = await context.newCDPSession(page);
     await session.send("Performance.enable");
-    await page.goto(`/app/${thread.botId}`, { waitUntil: "commit" });
+    await page.goto(`/app/c/${thread.threadId}`, { waitUntil: "commit" });
     const coldOpenMs = await waitForPaint(page);
     await settle(page);
     const opened = await heapAndDom(page, session);
@@ -640,11 +640,11 @@ async function measureCachedSwitch(bench: Bench, account: Account, thread: Bench
   try {
     const page = await context.newPage();
     await page.addInitScript(paintWatcher(thread.lastMessageId, "0"));
-    await page.goto(`/app/${thread.botId}`, { waitUntil: "commit" });
+    await page.goto(`/app/c/${thread.threadId}`, { waitUntil: "commit" });
     await waitForPaint(page);
     await settle(page);
     await sidebarRow(page, account.homeBotName).click();
-    await page.getByRole("combobox", { name: `Message ${account.homeBotName}` }).waitFor();
+    await page.getByRole("combobox", { name: "Message Doodle" }).waitFor();
     await settle(page);
     await sidebarRow(page, thread.name).waitFor();
     // Starting the clock and clicking in one task keeps Playwright's round trips out of it.
