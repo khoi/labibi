@@ -34,7 +34,7 @@ import {
   mayUsePrivateEndpoint,
   mcpServerDto,
 } from "../mcp-servers.js";
-import { chooseFocus, dismissFocus, markAppConnected, promptFocus } from "../onboarding.js";
+import { markAppConnected, welcome } from "../onboarding.js";
 import { installPlugin, lockPluginInstalls, setPluginParts } from "../plugin-installs.js";
 import {
   approvedPluginEntries,
@@ -777,16 +777,8 @@ export function mcpRoutes(ctx: RouterContext) {
       },
     },
     onboarding: {
-      promptFocus: authed.onboarding.promptFocus.handler(async ({ context, input }) => {
-        await promptFocus(onboardingDeps, context.actor, input.threadId);
-        return { ok: true as const };
-      }),
-      choose: authed.onboarding.choose.handler(async ({ context, input }) => {
-        await chooseFocus(onboardingDeps, context.actor, input.threadId, input.optionId);
-        return { ok: true as const };
-      }),
-      dismissFocus: authed.onboarding.dismissFocus.handler(async ({ context, input }) => {
-        await dismissFocus(onboardingDeps, context.actor, input.threadId);
+      welcome: authed.onboarding.welcome.handler(async ({ context, input }) => {
+        await welcome(onboardingDeps, context.actor, input.threadId);
         return { ok: true as const };
       }),
       appConnected: authed.onboarding.appConnected.handler(async ({ context, input }) => {

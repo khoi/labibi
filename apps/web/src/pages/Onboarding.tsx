@@ -87,7 +87,7 @@ function providerOptionValue(provider: string, auth?: ProviderAuth): string {
 async function firstChatPath(): Promise<string> {
   const [chat] = await rpc.threads.list();
   if (!chat) return "/app";
-  await rpc.onboarding.promptFocus({ threadId: chat.id }).catch(() => undefined);
+  await rpc.onboarding.welcome({ threadId: chat.id }).catch(() => undefined);
   return chatPath(chat.id);
 }
 

@@ -103,7 +103,6 @@ test("the chat follows your sends and a reader at the bottom, not a reader who s
   await signup(page, `follow-${stamp}@labradoodle.test`, "password12", "Follow Tester");
   await completeOnboarding(page);
   const botId = activeThreadId(page);
-  await rpc(page, "onboarding/dismissFocus", { threadId: botId });
 
   const transcript = page.getByTestId("transcript");
   const rows = transcript.locator("[data-message-id]");

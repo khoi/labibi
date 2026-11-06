@@ -95,7 +95,6 @@ function Host({ messages }: { messages: ThreadMessage[] }) {
       onReact={react}
       onJumpToMessage={reply}
       onRefresh={refresh}
-      onBotChanged={refresh}
       onAddRoutine={quote}
       voiceReady={false}
       speakingMessageId={null}

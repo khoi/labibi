@@ -334,10 +334,6 @@ msgstr "{toolCount, plural, one {# ferramenta} other {# ferramentas}}"
 msgid "@{0}"
 msgstr "@{0}"
 
-#: src/pages/shell/message-cards.tsx
-msgid "A bit of everything"
-msgstr ""
-
 #: src/pages/RoutineEditor.tsx
 msgid "A command's output"
 msgstr "A saída de um comando"
@@ -1577,10 +1573,6 @@ msgid "Could not disconnect this voice provider"
 msgstr "Não foi possível desconectar este provedor de voz"
 
 #: src/pages/shell/message-cards.tsx
-msgid "Could not dismiss"
-msgstr ""
-
-#: src/pages/shell/message-cards.tsx
 msgid "Could not dismiss this server"
 msgstr ""
 
@@ -1820,10 +1812,6 @@ msgstr "Não foi possível salvar essa voz"
 msgid "Could not save the credential"
 msgstr ""
 
-#: src/pages/shell/message-cards.tsx
-msgid "Could not save this choice"
-msgstr "Não foi possível salvar esta opção"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not search catalog"
 msgstr ""
@@ -1983,10 +1971,6 @@ msgstr ""
 #: src/lib/cron.ts
 msgid "day"
 msgstr "dia"
-
-#: src/pages/shell/message-cards.tsx
-msgid "Day-to-day work"
-msgstr ""
 
 #: src/lib/cron.ts
 msgid "days"
@@ -2161,7 +2145,6 @@ msgstr "Desconectando…"
 #: src/components/SecretAskCard.tsx
 #: src/components/teach/TeachComputerOverlay.tsx
 #: src/components/vault/VaultItemEditor.tsx
-#: src/pages/shell/message-cards.tsx
 msgid "Dismiss"
 msgstr "Dispensar"
 
@@ -2693,10 +2676,6 @@ msgstr "A entrada de imagens não está configurada para este modelo."
 #: src/lib/user-error.ts
 msgid "Image input is not configured for this model."
 msgstr "A entrada de imagens não está configurada para este modelo."
-
-#: src/pages/shell/message-cards.tsx
-msgid "Inbox & email"
-msgstr ""
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Input"
@@ -4111,10 +4090,6 @@ msgstr ""
 msgid "Request a new code"
 msgstr "Solicite um novo código"
 
-#: src/pages/shell/message-cards.tsx
-msgid "Research & writing"
-msgstr ""
-
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Reset"
 msgstr "Redefinir"
@@ -5343,10 +5318,6 @@ msgstr "Fins de semana"
 #: src/components/SpendingLimitSettings.tsx
 msgid "Weekly"
 msgstr "Semanal"
-
-#: src/pages/shell/message-cards.tsx
-msgid "What do you want me on first?"
-msgstr ""
 
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "What result will you demonstrate?"

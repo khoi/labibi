@@ -334,10 +334,6 @@ msgstr "{toolCount, plural, one {#個のツール} other {#個のツール}}"
 msgid "@{0}"
 msgstr "@{0}"
 
-#: src/pages/shell/message-cards.tsx
-msgid "A bit of everything"
-msgstr "いろいろ少しずつ"
-
 #: src/pages/RoutineEditor.tsx
 msgid "A command's output"
 msgstr "コマンドの出力"
@@ -1577,10 +1573,6 @@ msgid "Could not disconnect this voice provider"
 msgstr "この音声プロバイダーを切断できませんでした"
 
 #: src/pages/shell/message-cards.tsx
-msgid "Could not dismiss"
-msgstr "閉じられませんでした"
-
-#: src/pages/shell/message-cards.tsx
 msgid "Could not dismiss this server"
 msgstr "このサーバーを閉じられませんでした"
 
@@ -1820,10 +1812,6 @@ msgstr "そのボイスを保存できませんでした"
 msgid "Could not save the credential"
 msgstr "認証情報を保存できませんでした"
 
-#: src/pages/shell/message-cards.tsx
-msgid "Could not save this choice"
-msgstr "この選択を保存できませんでした"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not search catalog"
 msgstr "カタログを検索できませんでした"
@@ -1983,10 +1971,6 @@ msgstr ""
 #: src/lib/cron.ts
 msgid "day"
 msgstr "日"
-
-#: src/pages/shell/message-cards.tsx
-msgid "Day-to-day work"
-msgstr "日々の業務"
 
 #: src/lib/cron.ts
 msgid "days"
@@ -2161,7 +2145,6 @@ msgstr "切断中…"
 #: src/components/SecretAskCard.tsx
 #: src/components/teach/TeachComputerOverlay.tsx
 #: src/components/vault/VaultItemEditor.tsx
-#: src/pages/shell/message-cards.tsx
 msgid "Dismiss"
 msgstr "閉じる"
 
@@ -2693,10 +2676,6 @@ msgstr "このモデルでは画像入力が設定されていません。"
 #: src/lib/user-error.ts
 msgid "Image input is not configured for this model."
 msgstr "このモデルでは画像入力が設定されていません。"
-
-#: src/pages/shell/message-cards.tsx
-msgid "Inbox & email"
-msgstr "受信トレイとメール"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Input"
@@ -4111,10 +4090,6 @@ msgstr "{0}に返信中"
 msgid "Request a new code"
 msgstr "新しいコードをリクエスト"
 
-#: src/pages/shell/message-cards.tsx
-msgid "Research & writing"
-msgstr "リサーチと執筆"
-
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Reset"
 msgstr "リセット"
@@ -5343,10 +5318,6 @@ msgstr "週末"
 #: src/components/SpendingLimitSettings.tsx
 msgid "Weekly"
 msgstr "毎週"
-
-#: src/pages/shell/message-cards.tsx
-msgid "What do you want me on first?"
-msgstr "まず何から取りかかりましょうか？"
 
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "What result will you demonstrate?"

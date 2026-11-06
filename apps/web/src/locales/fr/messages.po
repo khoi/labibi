@@ -334,10 +334,6 @@ msgstr "{toolCount, plural, one {# outil} other {# outils}}"
 msgid "@{0}"
 msgstr "@{0}"
 
-#: src/pages/shell/message-cards.tsx
-msgid "A bit of everything"
-msgstr "Un peu de tout"
-
 #: src/pages/RoutineEditor.tsx
 msgid "A command's output"
 msgstr "La sortie d’une commande"
@@ -1577,10 +1573,6 @@ msgid "Could not disconnect this voice provider"
 msgstr "Impossible de déconnecter ce fournisseur vocal"
 
 #: src/pages/shell/message-cards.tsx
-msgid "Could not dismiss"
-msgstr "Impossible de fermer"
-
-#: src/pages/shell/message-cards.tsx
 msgid "Could not dismiss this server"
 msgstr ""
 
@@ -1820,10 +1812,6 @@ msgstr "Impossible d'enregistrer cette voix"
 msgid "Could not save the credential"
 msgstr ""
 
-#: src/pages/shell/message-cards.tsx
-msgid "Could not save this choice"
-msgstr "Impossible d'enregistrer ce choix"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not search catalog"
 msgstr "Impossible de rechercher dans le catalogue"
@@ -1983,10 +1971,6 @@ msgstr ""
 #: src/lib/cron.ts
 msgid "day"
 msgstr "jour"
-
-#: src/pages/shell/message-cards.tsx
-msgid "Day-to-day work"
-msgstr "Travail quotidien"
 
 #: src/lib/cron.ts
 msgid "days"
@@ -2161,7 +2145,6 @@ msgstr "Déconnexion en cours…"
 #: src/components/SecretAskCard.tsx
 #: src/components/teach/TeachComputerOverlay.tsx
 #: src/components/vault/VaultItemEditor.tsx
-#: src/pages/shell/message-cards.tsx
 msgid "Dismiss"
 msgstr "Fermer"
 
@@ -2693,10 +2676,6 @@ msgstr "La saisie d’images n’est pas configurée pour ce modèle."
 #: src/lib/user-error.ts
 msgid "Image input is not configured for this model."
 msgstr "La saisie d’images n’est pas configurée pour ce modèle."
-
-#: src/pages/shell/message-cards.tsx
-msgid "Inbox & email"
-msgstr "Boîte de réception et e-mail"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Input"
@@ -4111,10 +4090,6 @@ msgstr ""
 msgid "Request a new code"
 msgstr "Demandez un nouveau code"
 
-#: src/pages/shell/message-cards.tsx
-msgid "Research & writing"
-msgstr "Recherche et rédaction"
-
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Reset"
 msgstr "Réinitialiser"
@@ -5343,10 +5318,6 @@ msgstr "Week-ends"
 #: src/components/SpendingLimitSettings.tsx
 msgid "Weekly"
 msgstr "Hebdomadaire"
-
-#: src/pages/shell/message-cards.tsx
-msgid "What do you want me on first?"
-msgstr "Que voulez-vous que je fasse en premier ?"
 
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "What result will you demonstrate?"

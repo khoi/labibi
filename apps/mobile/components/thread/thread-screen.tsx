@@ -341,7 +341,6 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     jump: (messageId) => {
       if (threadId) void applyMessageJump({ threadId, messageId }).catch(() => undefined);
     },
-    dismissChoice: transcript.dismissChoice,
     layout: scroll.layoutJumpRow,
   });
 

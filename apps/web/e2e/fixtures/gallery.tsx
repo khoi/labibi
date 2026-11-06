@@ -155,28 +155,6 @@ const questions: Scenario = {
         status: "pending",
       },
     ]),
-    bot([
-      {
-        kind: "choice",
-        question: "What do you want me on first?",
-        options: [
-          { id: "inbox", letter: "A", label: "Inbox & email" },
-          { id: "calendar", letter: "B", label: "Calendar" },
-          { id: "research", letter: "C", label: "Research" },
-        ],
-      },
-    ]),
-    bot([
-      {
-        kind: "choice",
-        question: "How often should I check in?",
-        options: [
-          { id: "daily", letter: "A", label: "Daily" },
-          { id: "weekly", letter: "B", label: "Weekly" },
-        ],
-        answerId: "weekly",
-      },
-    ]),
   ],
 };
 

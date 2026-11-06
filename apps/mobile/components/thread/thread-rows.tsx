@@ -40,7 +40,6 @@ export function useLatestRowActions(current: MessageRowActions): MessageRowActio
       previewFile: (artifactId) => rowActionsRef.current.previewFile(artifactId),
       previewImage: (target) => rowActionsRef.current.previewImage(target),
       jump: (id) => rowActionsRef.current.jump(id),
-      dismissChoice: (id, question) => rowActionsRef.current.dismissChoice(id, question),
       layout: (id, y, index) => rowActionsRef.current.layout(id, y, index),
     }),
     [],

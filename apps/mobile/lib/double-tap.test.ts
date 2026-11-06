@@ -62,7 +62,6 @@ describe("double tap reaction eligibility", () => {
 
   it.each([
     "ask",
-    "choice",
     "mcp_approval",
     "connect",
     "app_connect",

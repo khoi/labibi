@@ -335,10 +335,6 @@ msgstr "{toolCount, plural, one {# 個工具} other {# 個工具}}"
 msgid "@{0}"
 msgstr "@{0}"
 
-#: src/pages/shell/message-cards.tsx
-msgid "A bit of everything"
-msgstr "什麼都做一點"
-
 #: src/pages/RoutineEditor.tsx
 msgid "A command's output"
 msgstr "命令的輸出"
@@ -1578,10 +1574,6 @@ msgid "Could not disconnect this voice provider"
 msgstr "無法中斷此語音供應商"
 
 #: src/pages/shell/message-cards.tsx
-msgid "Could not dismiss"
-msgstr "無法關閉"
-
-#: src/pages/shell/message-cards.tsx
 msgid "Could not dismiss this server"
 msgstr "無法關閉此伺服器項目"
 
@@ -1821,10 +1813,6 @@ msgstr "無法儲存該語音"
 msgid "Could not save the credential"
 msgstr "無法儲存憑證"
 
-#: src/pages/shell/message-cards.tsx
-msgid "Could not save this choice"
-msgstr "無法儲存此選擇"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not search catalog"
 msgstr "無法搜尋目錄"
@@ -1984,10 +1972,6 @@ msgstr ""
 #: src/lib/cron.ts
 msgid "day"
 msgstr "天"
-
-#: src/pages/shell/message-cards.tsx
-msgid "Day-to-day work"
-msgstr "日常工作"
 
 #: src/lib/cron.ts
 msgid "days"
@@ -2162,7 +2146,6 @@ msgstr "正在中斷…"
 #: src/components/SecretAskCard.tsx
 #: src/components/teach/TeachComputerOverlay.tsx
 #: src/components/vault/VaultItemEditor.tsx
-#: src/pages/shell/message-cards.tsx
 msgid "Dismiss"
 msgstr "忽略"
 
@@ -2694,10 +2677,6 @@ msgstr "此模型尚未設定圖片輸入。"
 #: src/lib/user-error.ts
 msgid "Image input is not configured for this model."
 msgstr "此模型尚未設定圖片輸入。"
-
-#: src/pages/shell/message-cards.tsx
-msgid "Inbox & email"
-msgstr "收件匣和郵件"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Input"
@@ -4112,10 +4091,6 @@ msgstr "正在回覆 {0}"
 msgid "Request a new code"
 msgstr "請重新獲取驗證碼"
 
-#: src/pages/shell/message-cards.tsx
-msgid "Research & writing"
-msgstr "調研和寫作"
-
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Reset"
 msgstr "重設"
@@ -5344,10 +5319,6 @@ msgstr "週末"
 #: src/components/SpendingLimitSettings.tsx
 msgid "Weekly"
 msgstr "每週"
-
-#: src/pages/shell/message-cards.tsx
-msgid "What do you want me on first?"
-msgstr "你想讓我先做什麼？"
 
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "What result will you demonstrate?"

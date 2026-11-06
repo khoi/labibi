@@ -26,7 +26,6 @@ vi.mock("../lib/rpc", () => ({ rpc }));
 // A card's editor lists the vault's saved contacts; these cards need none.
 vi.mock("./vault/use-vault-contacts", () => ({ useVaultContacts: () => [] }));
 
-import { ChoiceCard } from "../pages/shell/message-cards";
 import type { AskBlock } from "./AskCard";
 import { AskCard } from "./AskCard";
 
@@ -416,26 +415,6 @@ it.each(["Allow in this workspace"])(
     expect(container.textContent).toContain("Allowed in this workspace");
   },
 );
-
-it("gives onboarding choices the same lettered rows as questions", async () => {
-  await act(async () =>
-    root.render(
-      <ChoiceCard
-        threadId="thread"
-        block={{
-          kind: "choice",
-          question: "Which city?",
-          options: [{ id: "paris", letter: "A", label: "Paris" }],
-        }}
-        onBotChanged={async () => {}}
-      />,
-    ),
-  );
-  const option = button("AParis")!;
-  expect(option.disabled).toBe(false);
-  expect(option.classList.contains("hover:bg-accent")).toBe(true);
-  expect(option.querySelector("[aria-hidden]")?.textContent).toBe("A");
-});
 
 it.each([
   [

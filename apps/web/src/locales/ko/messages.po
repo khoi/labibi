@@ -334,10 +334,6 @@ msgstr "{toolCount, plural, other {도구 #개}}"
 msgid "@{0}"
 msgstr "@{0}"
 
-#: src/pages/shell/message-cards.tsx
-msgid "A bit of everything"
-msgstr ""
-
 #: src/pages/RoutineEditor.tsx
 msgid "A command's output"
 msgstr "명령 출력"
@@ -1577,10 +1573,6 @@ msgid "Could not disconnect this voice provider"
 msgstr "음성 서비스 연결을 해제하지 못했습니다."
 
 #: src/pages/shell/message-cards.tsx
-msgid "Could not dismiss"
-msgstr ""
-
-#: src/pages/shell/message-cards.tsx
 msgid "Could not dismiss this server"
 msgstr ""
 
@@ -1820,10 +1812,6 @@ msgstr "목소리를 저장하지 못했습니다."
 msgid "Could not save the credential"
 msgstr ""
 
-#: src/pages/shell/message-cards.tsx
-msgid "Could not save this choice"
-msgstr "선택 내용을 저장하지 못했습니다."
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not search catalog"
 msgstr ""
@@ -1983,10 +1971,6 @@ msgstr ""
 #: src/lib/cron.ts
 msgid "day"
 msgstr "일"
-
-#: src/pages/shell/message-cards.tsx
-msgid "Day-to-day work"
-msgstr ""
 
 #: src/lib/cron.ts
 msgid "days"
@@ -2161,7 +2145,6 @@ msgstr "연결 해제 중…"
 #: src/components/SecretAskCard.tsx
 #: src/components/teach/TeachComputerOverlay.tsx
 #: src/components/vault/VaultItemEditor.tsx
-#: src/pages/shell/message-cards.tsx
 msgid "Dismiss"
 msgstr "닫기"
 
@@ -2693,10 +2676,6 @@ msgstr "이 모델에는 이미지 입력이 설정되어 있지 않습니다."
 #: src/lib/user-error.ts
 msgid "Image input is not configured for this model."
 msgstr "이 모델에는 이미지 입력이 설정되어 있지 않습니다."
-
-#: src/pages/shell/message-cards.tsx
-msgid "Inbox & email"
-msgstr ""
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Input"
@@ -4111,10 +4090,6 @@ msgstr ""
 msgid "Request a new code"
 msgstr "새 코드를 요청하세요"
 
-#: src/pages/shell/message-cards.tsx
-msgid "Research & writing"
-msgstr ""
-
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Reset"
 msgstr "재설정"
@@ -5343,10 +5318,6 @@ msgstr "주말"
 #: src/components/SpendingLimitSettings.tsx
 msgid "Weekly"
 msgstr "매주"
-
-#: src/pages/shell/message-cards.tsx
-msgid "What do you want me on first?"
-msgstr ""
 
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "What result will you demonstrate?"

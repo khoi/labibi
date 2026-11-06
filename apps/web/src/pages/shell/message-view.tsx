@@ -30,13 +30,7 @@ import {
 } from "../../lib/tool-activity-view";
 import { ReplyLine } from "./chat-context";
 import { previewMessageText } from "./chat-shared";
-import {
-  AppConnectCard,
-  ArtifactImage,
-  ChartBlockView,
-  ChoiceCard,
-  McpApprovalCard,
-} from "./message-cards";
+import { AppConnectCard, ArtifactImage, ChartBlockView, McpApprovalCard } from "./message-cards";
 import { MessageHoverActions } from "./message-hover-actions";
 
 export const MessageView = memo(function MessageView({
@@ -53,7 +47,6 @@ export const MessageView = memo(function MessageView({
   replyParent,
   onJumpToMessage,
   onRefresh,
-  onBotChanged,
   onAddRoutine,
   voiceReady,
   speaking,
@@ -90,7 +83,6 @@ export const MessageView = memo(function MessageView({
   replyParent?: ThreadMessage;
   onJumpToMessage?: (messageId: string) => void;
   onRefresh: () => Promise<void>;
-  onBotChanged: () => Promise<void>;
   onAddRoutine: (name: string, prompt: string) => void;
   voiceReady: boolean;
   speaking: boolean;
@@ -302,16 +294,6 @@ export const MessageView = memo(function MessageView({
           }
           if (block.kind === "subagent") {
             return <SubagentCard key={i} block={block} />;
-          }
-          if (block.kind === "choice") {
-            return (
-              <ChoiceCard
-                key={i}
-                threadId={message.threadId}
-                block={block}
-                onBotChanged={onBotChanged}
-              />
-            );
           }
           if (block.kind === "app_connect") {
             return (

@@ -150,8 +150,6 @@ function replyBlockText(block: MessageBlock): string {
     case "meta":
     case "progress":
       return block.text;
-    case "choice":
-      return block.question;
     case "card":
       return block.lines.map((line) => `${line.k}: ${line.v}`).join(", ");
     case "steps":

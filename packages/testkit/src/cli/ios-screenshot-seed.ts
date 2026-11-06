@@ -601,17 +601,6 @@ async function ensureRequestCards(
     },
   ]);
   await bot([
-    {
-      kind: "choice",
-      question: "Which tone should replies use?",
-      options: [
-        { id: "warm", letter: "A", label: "Warm and casual" },
-        { id: "brief", letter: "B", label: "Brief and direct" },
-        { id: "formal", letter: "C", label: "Formal" },
-      ],
-    },
-  ]);
-  await bot([
     { kind: "computer", state: "Needs you", text: "Approve the sign-in code on your phone." },
   ]);
 }

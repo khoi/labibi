@@ -334,10 +334,6 @@ msgstr "{toolCount, plural, one {# araç} other {# araç}}"
 msgid "@{0}"
 msgstr "@{0}"
 
-#: src/pages/shell/message-cards.tsx
-msgid "A bit of everything"
-msgstr "Hepsi biraz"
-
 #: src/pages/RoutineEditor.tsx
 msgid "A command's output"
 msgstr "Bir komutun çıktısı"
@@ -1577,10 +1573,6 @@ msgid "Could not disconnect this voice provider"
 msgstr "Bu ses sağlayıcısının bağlantısı kesilemedi"
 
 #: src/pages/shell/message-cards.tsx
-msgid "Could not dismiss"
-msgstr "Kapatılamadı"
-
-#: src/pages/shell/message-cards.tsx
 msgid "Could not dismiss this server"
 msgstr "Bu sunucu kapatılamadı"
 
@@ -1820,10 +1812,6 @@ msgstr "Bu ses kaydedilemedi"
 msgid "Could not save the credential"
 msgstr "Kimlik bilgisi kaydedilemedi"
 
-#: src/pages/shell/message-cards.tsx
-msgid "Could not save this choice"
-msgstr "Bu seçim kaydedilemedi"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not search catalog"
 msgstr "Katalogda arama yapılamadı"
@@ -1983,10 +1971,6 @@ msgstr "Veriler"
 #: src/lib/cron.ts
 msgid "day"
 msgstr "gün"
-
-#: src/pages/shell/message-cards.tsx
-msgid "Day-to-day work"
-msgstr "Günlük işler"
 
 #: src/lib/cron.ts
 msgid "days"
@@ -2161,7 +2145,6 @@ msgstr "Bağlantı kesiliyor…"
 #: src/components/SecretAskCard.tsx
 #: src/components/teach/TeachComputerOverlay.tsx
 #: src/components/vault/VaultItemEditor.tsx
-#: src/pages/shell/message-cards.tsx
 msgid "Dismiss"
 msgstr "Kapat"
 
@@ -2693,10 +2676,6 @@ msgstr "Bu model için görüntü girişi yapılandırılmamış."
 #: src/lib/user-error.ts
 msgid "Image input is not configured for this model."
 msgstr "Bu model için görüntü girişi yapılandırılmamış."
-
-#: src/pages/shell/message-cards.tsx
-msgid "Inbox & email"
-msgstr "Gelen kutusu ve e-posta"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Input"
@@ -4111,10 +4090,6 @@ msgstr "{0} kişisine yanıt veriliyor"
 msgid "Request a new code"
 msgstr "Yeni bir kod isteyin"
 
-#: src/pages/shell/message-cards.tsx
-msgid "Research & writing"
-msgstr "Araştırma ve yazma"
-
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Reset"
 msgstr "Sıfırla"
@@ -5343,10 +5318,6 @@ msgstr "Hafta sonları"
 #: src/components/SpendingLimitSettings.tsx
 msgid "Weekly"
 msgstr "Haftalık"
-
-#: src/pages/shell/message-cards.tsx
-msgid "What do you want me on first?"
-msgstr "İlk olarak neyle ilgilenmemi istiyorsun?"
 
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "What result will you demonstrate?"

@@ -77,7 +77,6 @@ export const Transcript = memo(function Transcript({
   onReact,
   onJumpToMessage,
   onRefresh,
-  onBotChanged,
   onAddRoutine,
   voiceReady,
   speakingMessageId,
@@ -120,7 +119,6 @@ export const Transcript = memo(function Transcript({
   onReact: (message: ThreadMessage, reaction: MessageReaction) => Promise<void>;
   onJumpToMessage: (messageId: string) => void;
   onRefresh: () => Promise<void>;
-  onBotChanged: () => Promise<void>;
   onAddRoutine: (name: string, prompt: string) => void;
   voiceReady: boolean;
   speakingMessageId: string | null;
@@ -524,7 +522,6 @@ export const Transcript = memo(function Transcript({
                       }
                       onJumpToMessage={jumpToMessage}
                       onRefresh={onRefresh}
-                      onBotChanged={onBotChanged}
                       onAddRoutine={onAddRoutine}
                       voiceReady={voiceReady}
                       speaking={speakingMessageId === message.id}

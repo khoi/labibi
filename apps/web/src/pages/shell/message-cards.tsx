@@ -7,7 +7,6 @@ import { X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { BuiCard, SuccessPop } from "../../components/ai/primitives";
 import { ErrorNotice } from "../../components/ErrorNotice";
-import { OptionRow } from "../../components/OptionRow";
 import type { ArtifactTarget } from "../../lib/artifact-open";
 import { chartViewport } from "../../lib/chart-viewport";
 import { connectMcpOauth } from "../../lib/mcp-connect";
@@ -16,126 +15,6 @@ import { rpc } from "../../lib/rpc";
 import { useArtifactImage } from "../../lib/use-artifact-image";
 import type { ErrorDetails } from "../../lib/user-error";
 import { errorDetails, errorText } from "../../lib/user-error";
-
-export function ChoiceCard({
-  threadId,
-  block,
-  onBotChanged,
-}: {
-  threadId: string;
-  block: Extract<MessageBlock, { kind: "choice" }>;
-  onBotChanged: () => Promise<void>;
-}) {
-  const { t } = useLingui();
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [locallyDismissed, setLocallyDismissed] = useState(false);
-  const dismissed = locallyDismissed || block.answerId === "_dismissed";
-
-  async function choose(optionId: string) {
-    setPending(true);
-    setError(null);
-    try {
-      await rpc.onboarding.choose({ threadId, optionId });
-      await onBotChanged();
-    } catch (err) {
-      setError(errorText(err, t`Could not save this choice`));
-      setPending(false);
-    }
-  }
-
-  async function dismiss() {
-    setPending(true);
-    setError(null);
-    try {
-      await rpc.onboarding.dismissFocus({ threadId });
-      setLocallyDismissed(true);
-      void onBotChanged().catch(() => undefined);
-    } catch (err) {
-      setError(errorText(err, t`Could not dismiss`));
-      setPending(false);
-    }
-  }
-
-  if (dismissed) return null;
-
-  return (
-    <div className="flex justify-start">
-      <BuiCard className="relative w-[420px] max-w-full px-[18px] py-[14px]">
-        {!block.answerId ? (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={t`Dismiss`}
-            disabled={pending}
-            onClick={() => void dismiss()}
-            className="absolute end-2 top-2 text-muted-foreground"
-          >
-            <X size={16} strokeWidth={1.8} />
-          </Button>
-        ) : null}
-        <div className="pe-8 text-[15.5px] text-foreground/90">
-          <OnboardingFocusQuestion question={block.question} />
-        </div>
-        {block.subtitle ? (
-          <div className="mt-0.5 text-[13px] text-foreground/75">{block.subtitle}</div>
-        ) : null}
-        <div className="mt-2.5 space-y-0.5">
-          {block.options.map((option) => (
-            <OptionRow
-              key={option.id}
-              letter={option.letter}
-              selected={block.answerId === option.id}
-              disabled={Boolean(block.answerId) || pending}
-              onClick={() => void choose(option.id)}
-            >
-              <OnboardingFocusOptionLabel
-                id={option.id}
-                label={option.label}
-                question={block.question}
-              />
-            </OptionRow>
-          ))}
-        </div>
-        {error ? <p className="mt-2 text-xs text-destructive">{error}</p> : null}
-      </BuiCard>
-    </div>
-  );
-}
-
-const FOCUS_QUESTION = "What do you want me on first?";
-
-/** First-run focus card: API stores English; UI locale catalogs translate it. */
-function OnboardingFocusQuestion({ question }: { question: string }) {
-  if (question === FOCUS_QUESTION) {
-    return <Trans>What do you want me on first?</Trans>;
-  }
-  return question;
-}
-
-function OnboardingFocusOptionLabel({
-  id,
-  label,
-  question,
-}: {
-  id: string;
-  label: string;
-  question: string;
-}) {
-  if (question !== FOCUS_QUESTION) return label;
-  switch (id) {
-    case "day":
-      return <Trans>Day-to-day work</Trans>;
-    case "inbox":
-      return <Trans>Inbox & email</Trans>;
-    case "research":
-      return <Trans>Research & writing</Trans>;
-    case "everything":
-      return <Trans>A bit of everything</Trans>;
-    default:
-      return label;
-  }
-}
 
 export function AppConnectCard({
   threadId,

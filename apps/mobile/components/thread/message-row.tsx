@@ -4,7 +4,7 @@ import { canReactToThreadMessage, MESSAGE_REACTIONS } from "@labradoodle/contrac
 import { canMarkMessageUnread, liveMessageComposing } from "@labradoodle/core";
 import { typeScale } from "@labradoodle/ui-tokens";
 import * as Clipboard from "expo-clipboard";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import type { GestureResponderEvent, LayoutChangeEvent } from "react-native";
 import { Platform, Text, View } from "react-native";
 import Animated, { useReducedMotion, ZoomIn } from "react-native-reanimated";
@@ -55,7 +55,6 @@ export type MessageRowActions = {
   previewFile: (artifactId: string) => void;
   previewImage: (target: ImageArtifactPreviewTarget) => void;
   jump: (messageId: string) => void;
-  dismissChoice: (messageId: string, question: string) => void;
   layout: (messageId: string, y: number, index: number) => void;
 };
 
@@ -119,10 +118,6 @@ export const MessageRow = memo(function MessageRow({
   const artifactTarget = useMemo<MobileArtifactTarget | undefined>(
     () => (threadId ? { threadId } : undefined),
     [threadId],
-  );
-  const onChoiceDismissed = useCallback(
-    (question: string) => actions.dismissChoice(message.id, question),
-    [actions, message.id],
   );
   const onLayout = useMemo(
     () =>
@@ -440,7 +435,6 @@ export const MessageRow = memo(function MessageRow({
               canDismiss={canDismiss}
               onAnswer={actions.answer}
               onOpenComputer={actions.openComputer}
-              onChoiceDismissed={onChoiceDismissed}
               onPreviewFile={actions.previewFile}
               onPreviewImage={actions.previewImage}
               actionProps={actionProps}

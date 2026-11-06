@@ -32,7 +32,6 @@ import { errorText } from "../../lib/user-error";
 import { AppConnectCard } from "../AppConnectCard";
 import { AskActions } from "../AskActions";
 import { AudioAttachment } from "../audio-attachment";
-import { ChoiceCard } from "../ChoiceCard";
 import { ComputerCard } from "../ComputerCard";
 import { ChangeUndo, isUndoableChange } from "../change-undo";
 import type { ImageArtifactPreviewTarget } from "../image-artifact-viewer";
@@ -148,7 +147,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
   canDismiss,
   onAnswer,
   onOpenComputer,
-  onChoiceDismissed,
   onPreviewFile,
   onPreviewImage,
   actionProps,
@@ -173,7 +171,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
     remember?: false,
   ) => Promise<void>;
   onOpenComputer: () => void;
-  onChoiceDismissed?: (question: string) => void;
   /** Opens a file the app can show; other types go to the share sheet. */
   onPreviewFile: (artifactId: string) => void;
   onPreviewImage: (target: ImageArtifactPreviewTarget) => void;
@@ -533,9 +530,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
   const speakerColor = message.role === "bot" ? DOODLE_SPEAKER.color : undefined;
   const showSpeaker = showBotSenderName || Boolean(authorName);
   const firstContent = segments.findIndex((segment) => segment.kind === "content");
-  const choiceBlocks = message.blocks.filter(
-    (block): block is Extract<MessageBlock, { kind: "choice" }> => block.kind === "choice",
-  );
   const computerBlocks = message.blocks.filter(
     (block): block is Extract<MessageBlock, { kind: "computer" }> => block.kind === "computer",
   );
@@ -551,16 +545,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
           actionProps={actionProps}
           doubleTapSurface={doubleTapSurface}
           userBubble={userBubble}
-        />
-      ))}
-      {choiceBlocks.map((block, index) => (
-        <ChoiceCard
-          key={`choice-${index}`}
-          threadId={artifactTarget.threadId}
-          block={block}
-          onDismissed={onChoiceDismissed ? () => onChoiceDismissed(block.question) : undefined}
-          accessibilityActions={actionProps.accessibilityActions}
-          onAccessibilityAction={actionProps.onAccessibilityAction}
         />
       ))}
       {computerBlocks.map((block, index) => (

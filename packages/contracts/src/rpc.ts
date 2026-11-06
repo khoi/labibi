@@ -807,14 +807,8 @@ export const appContract = {
     },
   },
   onboarding: {
-    /** Post the focus choice card when the thread is still idle. */
-    promptFocus: oc.input(threadTarget).output(z.object({ ok: z.literal(true) })),
-    /** Answer the focus choice; posts the app cards. */
-    choose: oc
-      .input(threadTarget.safeExtend({ optionId: z.string() }))
-      .output(z.object({ ok: z.literal(true) })),
-    /** Dismiss the unanswered focus card without choosing an option. */
-    dismissFocus: oc.input(threadTarget).output(z.object({ ok: z.literal(true) })),
+    /** Welcome a new person in their idle first chat, with app cards to connect. */
+    welcome: oc.input(threadTarget).output(z.object({ ok: z.literal(true) })),
     /** Flip an app_connect card to connected after authorization completes. */
     appConnected: oc
       .input(

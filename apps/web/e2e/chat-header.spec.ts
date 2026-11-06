@@ -1,11 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { activeThreadId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
+import { captureScreenshot, completeOnboarding, signup } from "./helpers";
 
 test("the chat header floats over the transcript", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   await signup(page, `chat-header-${Date.now()}@labradoodle.test`, "password12", "Sample");
   await completeOnboarding(page);
-  await rpc(page, "onboarding/dismissFocus", { threadId: activeThreadId(page) });
 
   const composer = page.getByRole("combobox", { name: /Message/ });
   const transcript = page.getByTestId("transcript");

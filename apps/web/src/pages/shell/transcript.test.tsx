@@ -111,7 +111,6 @@ function baseProps(messages: readonly ThreadMessage[]): ComponentProps<typeof Tr
     onReact: vi.fn(),
     onJumpToMessage: vi.fn(),
     onRefresh: vi.fn(),
-    onBotChanged: vi.fn(),
     onAddRoutine: vi.fn(),
     voiceReady: false,
     speakingMessageId: null,

@@ -182,7 +182,6 @@ describe("messageReplyExcerpt", () => {
 const visibleBlocks: Array<[MessageBlock, string]> = [
   [{ kind: "ask", text: "Which release?" }, "Which release?"],
   [{ kind: "chart", name: "Adoption", spec: {}, data: [] }, "Adoption"],
-  [{ kind: "choice", question: "Choose a version", options: [] }, "Choose a version"],
   [{ kind: "card", lines: [{ k: "Version", v: "One" }] }, "Version: One"],
   [{ kind: "connect", name: "Mail", initial: "M", color: "test", status: "pending" }, "Mail"],
   [

@@ -96,13 +96,14 @@ export const BotSettingsValuesSchema = z.object({
 });
 export type BotSettingsValues = z.infer<typeof BotSettingsValuesSchema>;
 
-function retiredCallBlockAsText(block: unknown): unknown {
+function retiredBlockAsText(block: unknown): unknown {
   if (typeof block !== "object" || block === null || !("kind" in block)) return block;
   const fields = block as Record<string, unknown>;
   if (fields.kind === "voice_call") {
     return { kind: "text", text: String(fields.farewell || fields.title || "") };
   }
   if (fields.kind === "call_request") return { kind: "text", text: String(fields.reason ?? "") };
+  if (fields.kind === "choice") return { kind: "text", text: String(fields.question ?? "") };
   return block;
 }
 
@@ -162,14 +163,6 @@ const MessageBlockSchema = z.discriminatedUnion("kind", [
         }),
       )
       .optional(),
-  }),
-  z.object({
-    kind: z.literal("choice"),
-    question: z.string(),
-    subtitle: z.string().optional(),
-    options: z.array(z.object({ id: z.string(), letter: z.string(), label: z.string() })),
-    /** Set once the user picks an option; renders the picker as answered. */
-    answerId: z.string().optional(),
   }),
   z.object({
     /** Inline app authorization card (Composio-backed): logo, name, one-line
@@ -301,7 +294,7 @@ const MessageBlockSchema = z.discriminatedUnion("kind", [
     title: z.string().max(PAGE_TITLE_MAX_LENGTH),
   }),
 ]);
-export const MessageBlock = z.preprocess(retiredCallBlockAsText, MessageBlockSchema);
+export const MessageBlock = z.preprocess(retiredBlockAsText, MessageBlockSchema);
 export type MessageBlock = z.infer<typeof MessageBlock>;
 
 /**

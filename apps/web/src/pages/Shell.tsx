@@ -803,7 +803,6 @@ function SpaceShell() {
               onReact={composer.reactToMessage}
               onJumpToMessage={jumpToReplyMessage}
               onRefresh={refreshActiveThread}
-              onBotChanged={refreshActiveThread}
               onAddRoutine={addSkillRoutine}
               voiceReady={Boolean(voiceStatus?.ready)}
               speakingMessageId={speakingMessageId}

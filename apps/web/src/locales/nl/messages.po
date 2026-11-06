@@ -334,10 +334,6 @@ msgstr "{toolCount, plural, one {# tool} other {# tools}}"
 msgid "@{0}"
 msgstr "@{0}"
 
-#: src/pages/shell/message-cards.tsx
-msgid "A bit of everything"
-msgstr "Van alles een beetje"
-
 #: src/pages/RoutineEditor.tsx
 msgid "A command's output"
 msgstr "De uitvoer van een commando"
@@ -1577,10 +1573,6 @@ msgid "Could not disconnect this voice provider"
 msgstr "Deze spraakaanbieder loskoppelen mislukt"
 
 #: src/pages/shell/message-cards.tsx
-msgid "Could not dismiss"
-msgstr "Sluiten mislukt"
-
-#: src/pages/shell/message-cards.tsx
 msgid "Could not dismiss this server"
 msgstr "Deze server sluiten mislukt"
 
@@ -1820,10 +1812,6 @@ msgstr "Die stem opslaan mislukt"
 msgid "Could not save the credential"
 msgstr "De gegevens opslaan mislukt"
 
-#: src/pages/shell/message-cards.tsx
-msgid "Could not save this choice"
-msgstr "Deze keuze opslaan mislukt"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not search catalog"
 msgstr "Catalogus doorzoeken mislukt"
@@ -1983,10 +1971,6 @@ msgstr ""
 #: src/lib/cron.ts
 msgid "day"
 msgstr "dag"
-
-#: src/pages/shell/message-cards.tsx
-msgid "Day-to-day work"
-msgstr "Dagelijkse taken"
 
 #: src/lib/cron.ts
 msgid "days"
@@ -2161,7 +2145,6 @@ msgstr "Bezig met loskoppelen…"
 #: src/components/SecretAskCard.tsx
 #: src/components/teach/TeachComputerOverlay.tsx
 #: src/components/vault/VaultItemEditor.tsx
-#: src/pages/shell/message-cards.tsx
 msgid "Dismiss"
 msgstr "Sluiten"
 
@@ -2693,10 +2676,6 @@ msgstr "Afbeeldingsinvoer is niet ingesteld voor dit model."
 #: src/lib/user-error.ts
 msgid "Image input is not configured for this model."
 msgstr "Afbeeldingsinvoer is niet ingesteld voor dit model."
-
-#: src/pages/shell/message-cards.tsx
-msgid "Inbox & email"
-msgstr "Postvak IN & e-mail"
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Input"
@@ -4111,10 +4090,6 @@ msgstr "Antwoordt op {0}"
 msgid "Request a new code"
 msgstr "Vraag een nieuwe code aan"
 
-#: src/pages/shell/message-cards.tsx
-msgid "Research & writing"
-msgstr "Onderzoek & schrijven"
-
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Reset"
 msgstr "Opnieuw instellen"
@@ -5343,10 +5318,6 @@ msgstr "Weekenden"
 #: src/components/SpendingLimitSettings.tsx
 msgid "Weekly"
 msgstr "Wekelijks"
-
-#: src/pages/shell/message-cards.tsx
-msgid "What do you want me on first?"
-msgstr "Waarmee wil je dat ik begin?"
 
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "What result will you demonstrate?"

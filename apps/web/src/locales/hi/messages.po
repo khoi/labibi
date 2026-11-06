@@ -334,10 +334,6 @@ msgstr "{toolCount, plural, one {# टूल} other {# टूल}}"
 msgid "@{0}"
 msgstr "@{0}"
 
-#: src/pages/shell/message-cards.tsx
-msgid "A bit of everything"
-msgstr ""
-
 #: src/pages/RoutineEditor.tsx
 msgid "A command's output"
 msgstr "कमांड का आउटपुट"
@@ -1577,10 +1573,6 @@ msgid "Could not disconnect this voice provider"
 msgstr "यह आवाज़ प्रोवाइडर डिस्कनेक्ट नहीं हो सका"
 
 #: src/pages/shell/message-cards.tsx
-msgid "Could not dismiss"
-msgstr ""
-
-#: src/pages/shell/message-cards.tsx
 msgid "Could not dismiss this server"
 msgstr ""
 
@@ -1820,10 +1812,6 @@ msgstr "वह आवाज़ सहेजी नहीं जा सकी"
 msgid "Could not save the credential"
 msgstr ""
 
-#: src/pages/shell/message-cards.tsx
-msgid "Could not save this choice"
-msgstr "यह विकल्प सहेजा नहीं जा सका"
-
 #: src/pages/PluginsOverlay.tsx
 msgid "Could not search catalog"
 msgstr ""
@@ -1983,10 +1971,6 @@ msgstr ""
 #: src/lib/cron.ts
 msgid "day"
 msgstr "दिन"
-
-#: src/pages/shell/message-cards.tsx
-msgid "Day-to-day work"
-msgstr ""
 
 #: src/lib/cron.ts
 msgid "days"
@@ -2161,7 +2145,6 @@ msgstr "डिस्कनेक्ट हो रहा है…"
 #: src/components/SecretAskCard.tsx
 #: src/components/teach/TeachComputerOverlay.tsx
 #: src/components/vault/VaultItemEditor.tsx
-#: src/pages/shell/message-cards.tsx
 msgid "Dismiss"
 msgstr "खारिज करें"
 
@@ -2693,10 +2676,6 @@ msgstr "इस मॉडल के लिए चित्र इनपुट क
 #: src/lib/user-error.ts
 msgid "Image input is not configured for this model."
 msgstr "इस मॉडल के लिए चित्र इनपुट कॉन्फ़िगर नहीं है।"
-
-#: src/pages/shell/message-cards.tsx
-msgid "Inbox & email"
-msgstr ""
 
 #: src/pages/AccountSettingsOverlay.tsx
 msgid "Input"
@@ -4111,10 +4090,6 @@ msgstr ""
 msgid "Request a new code"
 msgstr "नया कोड मँगाएँ"
 
-#: src/pages/shell/message-cards.tsx
-msgid "Research & writing"
-msgstr ""
-
 #: src/components/ComputerMaintenanceActions.tsx
 msgid "Reset"
 msgstr "रीसेट करें"
@@ -5343,10 +5318,6 @@ msgstr "सप्ताहांत"
 #: src/components/SpendingLimitSettings.tsx
 msgid "Weekly"
 msgstr "हर हफ़्ते"
-
-#: src/pages/shell/message-cards.tsx
-msgid "What do you want me on first?"
-msgstr ""
 
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "What result will you demonstrate?"

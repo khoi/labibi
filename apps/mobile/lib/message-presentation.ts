@@ -20,7 +20,7 @@ export type MessagePresentationSegment = {
 
 /** Blocks the thread draws as their own native card instead of inside the text bubble. */
 function isCardBlock(block: MessageBlock): boolean {
-  return block.kind === "app_connect" || block.kind === "choice" || block.kind === "computer";
+  return block.kind === "app_connect" || block.kind === "computer";
 }
 
 export function messagePresentationSegments(
@@ -31,43 +31,7 @@ export function messagePresentationSegments(
 }
 
 export function hasVisibleMessagePresentation(blocks: readonly MessageBlock[]): boolean {
-  return blocks.some((block) => !isToolActivityBlock(block) && !isDismissedChoice(block));
-}
-
-type ChoiceBlock = Extract<MessageBlock, { kind: "choice" }>;
-
-/** The answer id the server stores when the focus card is dismissed without a choice. */
-export const DISMISSED_CHOICE_ANSWER_ID = "_dismissed";
-
-function isDismissedChoice(block: MessageBlock): boolean {
-  return block.kind === "choice" && block.answerId === DISMISSED_CHOICE_ANSWER_ID;
-}
-
-/**
- * Mark choices the reader just dismissed, before the thread snapshot stores that answer.
- * A message that was only that card then drops out of the thread instead of leaving an empty row.
- */
-export function applyLocalChoiceDismissals(
-  blocks: readonly MessageBlock[],
-  dismissedQuestions: ReadonlySet<string>,
-): readonly MessageBlock[] {
-  if (dismissedQuestions.size === 0) return blocks;
-  let changed = false;
-  const next = blocks.map((block) => {
-    if (block.kind === "choice" && !block.answerId && dismissedQuestions.has(block.question)) {
-      changed = true;
-      return { ...block, answerId: DISMISSED_CHOICE_ANSWER_ID };
-    }
-    return block;
-  });
-  return changed ? next : blocks;
-}
-
-/** Options a choice card lists: all of them until answered, then only the picked one. */
-export function choiceCardOptions(block: ChoiceBlock): ChoiceBlock["options"] {
-  return block.answerId
-    ? block.options.filter((option) => option.id === block.answerId)
-    : block.options;
+  return blocks.some((block) => !isToolActivityBlock(block));
 }
 
 /** Pads the content, not the scroll view, so the scroll indicator stays on the screen edge. */

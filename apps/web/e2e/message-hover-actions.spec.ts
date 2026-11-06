@@ -141,13 +141,7 @@ test("message hover shows beside-bubble actions; reply links to parent", async (
 
   const transcript = page.getByTestId("transcript");
 
-  // Empty start: no Fresh-start greeting. Answer the focus card so a plain
-  // bot text bubble exists for hover layout checks.
-  await expect(page.getByText("What do you want me on first?", { exact: true })).toBeVisible({
-    timeout: 20_000,
-  });
-  await page.getByRole("button", { name: /Day-to-day work/ }).click();
-  const botText = page.getByText(/Got it\./);
+  const botText = page.getByText(/^Welcome to Labradoodle/);
   await expect(botText).toBeVisible({ timeout: 20_000 });
   const botRow = transcript.locator(`[data-message-id]`).filter({ has: botText }).first();
   await expect(botRow).toBeVisible();
@@ -416,11 +410,7 @@ test.describe("touch message actions", () => {
     expect(
       await page.evaluate(() => matchMedia("(hover: hover) and (pointer: fine)").matches),
     ).toBe(false);
-    await expect(page.getByText("What do you want me on first?", { exact: true })).toBeVisible({
-      timeout: 20_000,
-    });
-    await page.getByRole("button", { name: /Day-to-day work/ }).click();
-    const botText = page.getByText(/Got it\./);
+    const botText = page.getByText(/^Welcome to Labradoodle/);
     await expect(botText).toBeVisible({ timeout: 20_000 });
     const row = page
       .getByTestId("transcript")
@@ -467,11 +457,7 @@ test.describe("touch message actions", () => {
 test("a reaction receipt refreshes live work and exposes Stop", async ({ page }, testInfo) => {
   await signup(page, `reaction-work-${Date.now()}@labradoodle.test`, "password12", "Reaction Work");
   await completeOnboarding(page);
-  await expect(page.getByText("What do you want me on first?", { exact: true })).toBeVisible({
-    timeout: 20_000,
-  });
-  await page.getByRole("button", { name: /Day-to-day work/ }).click();
-  const botText = page.getByText(/Got it\./);
+  const botText = page.getByText(/^Welcome to Labradoodle/);
   await expect(botText).toBeVisible({ timeout: 20_000 });
   const row = page
     .getByTestId("transcript")
