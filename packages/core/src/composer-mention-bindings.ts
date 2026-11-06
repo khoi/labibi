@@ -196,7 +196,13 @@ export function composerMentionsForPrompt(
 ): ComposerMention[] {
   const offset = (skill ? skill.name.length + 2 : 0) - (draft.length - draft.trimStart().length);
   return composerSelectedMentions(bindings).map((mention) => {
-    if (mention.kind === "bot" || mention.kind === "everyone") return mention;
+    if (
+      mention.kind === "doodle" ||
+      mention.kind === "person" ||
+      mention.kind === "bot" ||
+      mention.kind === "everyone"
+    )
+      return mention;
     return {
       ...mention,
       ranges: bindings

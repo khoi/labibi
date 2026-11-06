@@ -1,9 +1,18 @@
-import type { Connection, ConnectionCatalogItem } from "@labradoodle/contracts";
+import type { ChatMentionTarget, Connection, ConnectionCatalogItem } from "@labradoodle/contracts";
 import type { CronLabels } from "./cron.js";
 import { ENGLISH_CRON_LABELS, formatCron } from "./cron.js";
 import { displayName } from "./display-name.js";
+import { DOOD_INK, DOODLE_DOOD, DOODLE_NAME } from "./dood.js";
 
-export const COMPOSER_MENTION_KINDS = ["bot", "group", "routine", "connector", "everyone"] as const;
+export const COMPOSER_MENTION_KINDS = [
+  "doodle",
+  "person",
+  "bot",
+  "group",
+  "routine",
+  "connector",
+  "everyone",
+] as const;
 
 export type ComposerMentionKind = (typeof COMPOSER_MENTION_KINDS)[number];
 
@@ -31,11 +40,12 @@ export type MentionPickerBot = {
   color?: string;
 };
 export type MentionPickerGroup = { id: string; name: string };
+export type MentionPickerPerson = { id: string; name: string };
 export type MentionPickerRoutine = {
   id: string;
   name: string;
   crons: string[];
-  botId: string;
+  botId?: string;
   botName?: string;
 };
 export type MentionPickerConnector = {
@@ -291,20 +301,16 @@ export function partitionComposerMentions(mentions: readonly ComposerMention[]) 
   return { bots, groups, routines, connectors, everyone };
 }
 
-/** Payload entries for `threads/send` mentions (legacy bare bot ids still accepted). */
-export function toThreadMentionPayload(
-  mentions: readonly ComposerMention[],
-): Array<string | { kind: "bot" | "group" | "routine" | "connector"; id: string }> {
-  const payload: Array<string | { kind: "bot" | "group" | "routine" | "connector"; id: string }> =
-    [];
+/** Payload entries for `threads/send` mentions. */
+export function toThreadMentionPayload(mentions: readonly ComposerMention[]): ChatMentionTarget[] {
+  const payload: ChatMentionTarget[] = [];
   for (const mention of mentions) {
-    if (mention.kind === "everyone") continue;
-    if (mention.kind === "bot") {
-      payload.push({ kind: "bot", id: mention.id });
+    if (mention.kind === "doodle") {
+      payload.push({ kind: "doodle" });
       continue;
     }
-    if (mention.kind === "group") {
-      payload.push({ kind: "group", id: mention.id });
+    if (mention.kind === "person") {
+      payload.push({ kind: "person", id: mention.id });
       continue;
     }
     if (mention.kind === "routine") {
@@ -354,8 +360,12 @@ export function routineScheduleSubtitle(
 
 export function buildComposerMentionOptions(input: {
   query: string;
-  bots: readonly MentionPickerBot[];
-  groups: readonly MentionPickerGroup[];
+  /** Doodle is on in this chat. */
+  doodle?: boolean;
+  /** People in this chat other than the writer. */
+  people?: readonly MentionPickerPerson[];
+  bots?: readonly MentionPickerBot[];
+  groups?: readonly MentionPickerGroup[];
   routines: readonly MentionPickerRoutine[];
   connectors: readonly MentionPickerConnector[];
   currentGroupId?: string | null;
@@ -380,7 +390,22 @@ export function buildComposerMentionOptions(input: {
     });
   }
 
-  for (const bot of input.bots) {
+  if (input.doodle && matches(DOODLE_NAME)) {
+    options.push({
+      kind: "doodle",
+      id: "doodle",
+      name: DOODLE_NAME,
+      color: DOOD_INK[DOODLE_DOOD.color].ink,
+    });
+  }
+
+  for (const person of input.people ?? []) {
+    const name = displayName(person.name, "");
+    if (!name || !matches(name)) continue;
+    options.push({ kind: "person", id: person.id, name });
+  }
+
+  for (const bot of input.bots ?? []) {
     const name = displayName(bot.name, "Bot");
     if (!matches(name)) continue;
     options.push({
@@ -392,7 +417,7 @@ export function buildComposerMentionOptions(input: {
     });
   }
 
-  for (const group of input.groups) {
+  for (const group of input.groups ?? []) {
     if (input.currentGroupId && group.id === input.currentGroupId) continue;
     const name = displayName(group.name, "Group");
     if (!matches(name)) continue;

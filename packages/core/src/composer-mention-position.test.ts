@@ -54,7 +54,7 @@ describe("inline mention completion", () => {
 
   it("does not retain or remove a shorter name inside a recognized longer mention", () => {
     const short = { kind: "group", id: "group-bob", name: "Bob" } as const;
-    const long = { kind: "bot", id: "bot-bob", name: "Bob Smith" } as const;
+    const long = { kind: "person", id: "bot-bob", name: "Bob Smith" } as const;
     const text = "ask @Bob Smith ";
     expect(removeComposerMention(text, short, [short, long])).toBe(text);
     expect(
@@ -62,7 +62,7 @@ describe("inline mention completion", () => {
     ).toMatchObject({
       trimmed: "ask @Bob Smith",
       rerouteGroupId: null,
-      mentionPayload: [{ kind: "bot", id: "bot-bob" }],
+      mentionPayload: [{ kind: "person", id: "bot-bob" }],
     });
   });
 
@@ -74,7 +74,7 @@ describe("inline mention completion", () => {
   });
   it("strips a separate group occurrence without stripping a longer bot name on send", () => {
     const short = { kind: "group", id: "group-bob", name: "Bob" } as const;
-    const long = { kind: "bot", id: "bot-bob", name: "Bob Smith" } as const;
+    const long = { kind: "person", id: "bot-bob", name: "Bob Smith" } as const;
     expect(
       resolveComposerSendPlan({
         text: "@Bob and ask @Bob Smith",
@@ -84,7 +84,7 @@ describe("inline mention completion", () => {
     ).toMatchObject({
       trimmed: "and ask @Bob Smith",
       rerouteGroupId: "group-bob",
-      mentionPayload: [{ kind: "bot", id: "bot-bob" }],
+      mentionPayload: [{ kind: "person", id: "bot-bob" }],
     });
   });
 });

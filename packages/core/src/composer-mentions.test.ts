@@ -187,7 +187,7 @@ describe("partition and payload", () => {
   it("omits needs-auth catalog connectors from API payload", () => {
     expect(
       toThreadMentionPayload([
-        { kind: "bot", id: "b1", name: "Chief" },
+        { kind: "doodle", id: "doodle", name: "Doodle" },
         {
           kind: "connector",
           id: "catalog:stripe",
@@ -202,10 +202,7 @@ describe("partition and payload", () => {
           connectionId: "c1",
         },
       ]),
-    ).toEqual([
-      { kind: "bot", id: "b1" },
-      { kind: "connector", id: "c1" },
-    ]);
+    ).toEqual([{ kind: "doodle" }, { kind: "connector", id: "c1" }]);
   });
 });
 

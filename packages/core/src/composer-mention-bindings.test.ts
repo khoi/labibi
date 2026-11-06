@@ -15,7 +15,7 @@ import type { ComposerMention, ComposerMentionRange } from "./composer-mentions.
 import { composerMentionQuery, resolveComposerSendPlan } from "./composer-mentions.js";
 import { serializeComposerPrompt } from "./composer-slash.js";
 
-const bot: ComposerMention = { kind: "bot", id: "bot-bob", name: "Bob" };
+const bot: ComposerMention = { kind: "person", id: "bot-bob", name: "Bob" };
 const group: ComposerMention = { kind: "group", id: "group-bob", name: "Bob" };
 const text = "@Bob and @Bob ";
 const bindings: ComposerMentionBinding[] = [
@@ -198,7 +198,7 @@ describe("completed mention occurrence bindings", () => {
       ).toMatchObject({
         trimmed: skill ? "/Write\n@Bob and" : "@Bob and",
         rerouteGroupId: group.id,
-        mentionPayload: [{ kind: "bot", id: bot.id }],
+        mentionPayload: [{ kind: "person", id: bot.id }],
       });
     }
   });
