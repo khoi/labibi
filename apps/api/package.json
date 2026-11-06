@@ -18,7 +18,8 @@
     "content-encryption": "tsx src/cli/content-encryption.ts",
     "home-storage": "tsx src/cli/home-storage.ts",
     "shared-storage": "tsx src/cli/shared-storage.ts",
-    "wrap-env": "tsx src/cli/wrap-env.ts"
+    "wrap-env": "tsx src/cli/wrap-env.ts",
+    "retire-bot-era": "tsx src/cli/retire-bot-era.ts"
   },
   "dependencies": {
     "@hono/node-server": "2.1.6",

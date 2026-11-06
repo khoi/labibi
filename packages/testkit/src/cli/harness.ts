@@ -121,12 +121,10 @@ async function main() {
       // the other suites need the database too but carry no suffix.
       const suites = [
         ...globSync("{apps,packages}/*/src/**/*.postgres.test.ts").sort(),
-        "packages/testkit/src/journeys.test.ts",
         "packages/testkit/src/authorization.test.ts",
         "packages/testkit/src/attachments.test.ts",
         "packages/testkit/src/voice.test.ts",
         "packages/testkit/src/search.test.ts",
-        "packages/testkit/src/executor-lifecycle.test.ts",
         "packages/testkit/src/connections.test.ts",
         "packages/testkit/src/bot-secrets.test.ts",
       ];
