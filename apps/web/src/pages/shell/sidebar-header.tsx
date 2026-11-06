@@ -10,7 +10,7 @@ import {
 import { useLingui } from "@lingui/react/macro";
 import {
   Check,
-  ChevronsUpDown,
+  ChevronDown,
   PanelLeftClose,
   PanelLeftOpen,
   Search,
@@ -18,6 +18,7 @@ import {
   SquarePen,
   UserPlus,
 } from "lucide-react";
+import type { ReactNode } from "react";
 import { IconTooltip } from "../../components/IconTooltip";
 import { desktopBridge } from "../../lib/desktop";
 import { WindowChrome } from "../WindowChrome";
@@ -25,11 +26,13 @@ import { WindowChrome } from "../WindowChrome";
 export function SidebarHeader({
   mini = false,
   searchOpen = false,
+  workspace,
   onSearch,
   onNewChat,
   setSidebarCollapsedPref,
 }: {
   mini?: boolean;
+  workspace?: ReactNode;
   searchOpen?: boolean;
   onSearch?: () => void;
   onNewChat: () => void;
@@ -42,8 +45,9 @@ export function SidebarHeader({
     <div
       className={`app-drag flex items-center ${mini ? `flex-col gap-2 px-0 pb-2 ${hasWindowChrome ? "pt-4" : "pt-2"}` : "justify-between px-[18px] pb-3 pt-4"}`}
     >
-      {!mini || hasWindowChrome ? <WindowChrome /> : null}
-      <div className={`relative flex items-center ${mini ? "flex-col gap-0.5" : "gap-1"}`}>
+      {hasWindowChrome || (!mini && !workspace) ? <WindowChrome /> : null}
+      {mini ? null : workspace}
+      <div className={`relative flex shrink-0 items-center ${mini ? "flex-col gap-0.5" : "gap-1"}`}>
         {onSearch ? (
           <IconTooltip label={t`Search`}>
             <Button
@@ -113,14 +117,15 @@ export function WorkspaceSwitcher({
     (workspace) => workspace.id !== currentId && workspace.unread,
   );
   return (
-    <div className="px-2.5 pb-2">
+    <div className="flex min-w-0 flex-1">
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
             <Button
               variant="ghost"
+              size="sm"
               data-testid="workspace-switcher"
-              className="w-full justify-between gap-2 px-2.5 text-body2 font-medium"
+              className="app-no-drag -ms-2 min-w-0 max-w-full justify-start gap-1 px-2 text-body2 font-medium"
             />
           }
         >
@@ -131,10 +136,10 @@ export function WorkspaceSwitcher({
             {otherUnread ? (
               <span aria-hidden="true" className="size-2 rounded-full bg-unread" />
             ) : null}
-            <ChevronsUpDown className="size-4 text-muted-foreground" aria-hidden="true" />
+            <ChevronDown className="size-3.5 text-muted-foreground" aria-hidden="true" />
           </span>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-(--anchor-width) min-w-[220px]">
+        <DropdownMenuContent align="start" className="min-w-[220px]">
           {switchable ? (
             <>
               {workspaces.map((workspace) => (

@@ -119,10 +119,10 @@ export function ShellSidebar({
             setSearchOpen(true);
             focusSidebarSearch();
           }}
+          workspace={switcher}
           onNewChat={onNewChat}
           setSidebarCollapsedPref={setCollapsedPref}
         />
-        {mini ? null : switcher}
         {mini || !(searchOpen || query) ? null : (
           <InputGroup
             data-testid="sidebar-search"
