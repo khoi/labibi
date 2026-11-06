@@ -217,7 +217,6 @@ export default function SignIn() {
   async function openApp() {
     if (hasIncomingShare()) return router.replace("/share");
     const [chat] = mode === "up" ? await rpc("threads/list").catch(() => []) : [];
-    if (chat) await rpc("onboarding/welcome", { threadId: chat.id }).catch(() => undefined);
     router.replace(chat ? { pathname: "/thread", params: { threadId: chat.id } } : "/");
   }
 

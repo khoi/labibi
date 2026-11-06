@@ -26,8 +26,10 @@ import {
   SpaceNotFoundError,
   SpaceOwnerCannotLeaveError,
 } from "@labradoodle/db";
+import { getLogger } from "@labradoodle/logging";
 import { ORPCError } from "@orpc/server";
 import { otherSpaceOfChat } from "../chat-space.js";
+import { welcome } from "../onboarding.js";
 import { afterSpaceDeparture } from "../space-departure.js";
 import { resolveChatTarget, threadSnapshot } from "../thread-target.js";
 import type { RouterContext } from "./context.js";
@@ -234,6 +236,11 @@ export function spacesRoutes(ctx: RouterContext) {
         getSpaceDoodle(deps.prisma, actor),
         listChats(deps.prisma, actor),
       ]);
+      const [only] = chats;
+      if (chats.length === 1 && only?.doodle && !only.preview && only.members.length === 1)
+        void welcome(ctx.onboardingDeps, actor, only.id).catch((error) =>
+          getLogger().error("onboarding welcome failed", error),
+        );
       const requested = input.threadId
         ? chats.find((chat) => chat.id === input.threadId)
         : undefined;

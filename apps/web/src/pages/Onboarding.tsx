@@ -83,12 +83,9 @@ const MAIN_PROVIDER_OPTIONS: ReadonlyArray<{ provider: string; auth?: ProviderAu
 function providerOptionValue(provider: string, auth?: ProviderAuth): string {
   return auth ? `${provider}:${auth}` : provider;
 }
-/** The chat signup made, with the focus choice posted in it; invited people have none here. */
 async function firstChatPath(): Promise<string> {
   const [chat] = await rpc.threads.list();
-  if (!chat) return "/app";
-  await rpc.onboarding.welcome({ threadId: chat.id }).catch(() => undefined);
-  return chatPath(chat.id);
+  return chat ? chatPath(chat.id) : "/app";
 }
 
 export function OnboardingPage() {

@@ -807,8 +807,6 @@ export const appContract = {
     },
   },
   onboarding: {
-    /** Welcome a new person in their idle first chat, with app cards to connect. */
-    welcome: oc.input(threadTarget).output(z.object({ ok: z.literal(true) })),
     /** Flip an app_connect card to connected after authorization completes. */
     appConnected: oc
       .input(

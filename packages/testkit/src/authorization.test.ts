@@ -264,7 +264,6 @@ describeWithDatabase("API authorization and resource isolation", () => {
       ["mcp/oauth/begin"],
       ["mcp/oauth/complete"],
       ["mcp/oauth/disconnect"],
-      ["onboarding/welcome"],
       ["onboarding/appConnected"],
       ["integrationSetup/get"],
       ["integrationSetup/save"],

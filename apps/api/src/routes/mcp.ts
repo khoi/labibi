@@ -34,7 +34,7 @@ import {
   mayUsePrivateEndpoint,
   mcpServerDto,
 } from "../mcp-servers.js";
-import { markAppConnected, welcome } from "../onboarding.js";
+import { markAppConnected } from "../onboarding.js";
 import { installPlugin, lockPluginInstalls, setPluginParts } from "../plugin-installs.js";
 import {
   approvedPluginEntries,
@@ -777,10 +777,6 @@ export function mcpRoutes(ctx: RouterContext) {
       },
     },
     onboarding: {
-      welcome: authed.onboarding.welcome.handler(async ({ context, input }) => {
-        await welcome(onboardingDeps, context.actor, input.threadId);
-        return { ok: true as const };
-      }),
       appConnected: authed.onboarding.appConnected.handler(async ({ context, input }) => {
         await markAppConnected({ ...onboardingDeps, jobs: deps.jobs }, context.actor, {
           ...input,
