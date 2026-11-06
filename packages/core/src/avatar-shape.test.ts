@@ -33,7 +33,7 @@ describe("organic avatar geometry", () => {
   it("names the family an identity is drawn with", () => {
     // Without its per-identity phase, a body is its family's template.
     const unphased = (seed: number) => organicAvatarPath(seed, -((seed % 360) * Math.PI) / 180);
-    for (const identity of ["research", "health", "cmh2x9k0a0000abcd1234efgh", "Chief"]) {
+    for (const identity of ["research", "health", "cmh2x9k0a0000abcd1234efgh", "Doodle"]) {
       const family = organicAvatarFamily(identity);
       expect(family).toBeGreaterThanOrEqual(0);
       expect(family).toBeLessThan(ORGANIC_AVATAR_FAMILY_COUNT);

@@ -9,7 +9,7 @@ const fixture = `<!doctype html>
   <body>
     <main>Desktop fixture ready</main>
     <header class="app-drag" id="conversation-header">
-      <span>Chief</span>
+      <span>Doodle</span>
       <button class="app-no-drag" id="bot-settings">Bot settings</button>
     </header>
     <output id="result"></output>

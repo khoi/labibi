@@ -7,7 +7,7 @@ import { rpc } from "../../src/lib/rpc";
 import { reduceThreadSnapshot } from "../../src/lib/thread-events";
 import { Transcript } from "../../src/pages/shell/transcript";
 
-export const BOT = { botId: "bot-1", name: "Chief", color: DEFAULT_BOT_AVATAR_COLOR };
+export const BOT = { botId: "bot-1", name: "Doodle", color: DEFAULT_BOT_AVATAR_COLOR };
 const NO_IDS = new Set<string>();
 const noop = () => {};
 const resolved = async () => {};
