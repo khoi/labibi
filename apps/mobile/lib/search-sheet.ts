@@ -10,16 +10,16 @@ export type SearchSheetRow = {
   key: string;
   title: string;
   preview: string;
-  label: string;
+  label: string | null;
   chat?: MobileChat;
   kind: SearchHit["kind"];
   destination: ReturnType<typeof mobileSearchDestination>;
 };
 
-export function searchKindLabel(hit: SearchHit): string {
+export function searchKindLabel(hit: SearchHit): string | null {
   switch (hit.kind) {
     case "conversation":
-      return t("Chat");
+      return null;
     case "message":
       return t("Message");
     case "file":
@@ -44,7 +44,7 @@ export function searchSheetRows(
       key: `chat-${chat.id}`,
       title: chat.title || t("New chat"),
       preview: previewSnippet(chat.preview, 40),
-      label: t("Chat"),
+      label: null,
       chat,
       kind: "conversation",
       destination: { pathname: "/thread", params: { threadId: chat.id } },

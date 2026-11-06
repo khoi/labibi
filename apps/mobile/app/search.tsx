@@ -218,7 +218,7 @@ export default function SearchSheet() {
                 <Text numberOfLines={1} style={styles.name}>
                   {item.title}
                 </Text>
-                <Text style={styles.time}>{item.label}</Text>
+                {item.label ? <Text style={styles.time}>{item.label}</Text> : null}
               </View>
               {/* Two lines, so the matched words fit after the text before them. */}
               <Text numberOfLines={2} style={styles.preview}>
