@@ -35,37 +35,6 @@ function setup() {
   return { deps, upsert, actor: { userId: "user", spaceId: "space" } as Actor };
 }
 describe("consent grants", () => {
-  it("includes reachable helper models and cloud services for a targeted send", async () => {
-    const { deps, actor } = setup();
-    deps.env.agentRuntime = "pi";
-    deps.cloudAgent = {
-      key: "test",
-      spaceId: actor.spaceId,
-      provider: { describe: () => ({ id: "cursor", capabilities: { offline: false } }) },
-    } as RouterDeps["cloudAgent"];
-    vi.mocked(deps.prisma.userModelPreference.findMany).mockResolvedValue([
-      {
-        modelId: "helper-model",
-        credential: { provider: "anthropic", secretId: "test-secret" },
-      },
-    ] as never);
-    const status = await aiConsentStatus(deps, actor, { botId: "bot", uses: ["model"] });
-    expect(status.recipients.map((recipient) => recipient.name)).toEqual(
-      expect.arrayContaining(["Anthropic", "Cursor"]),
-    );
-    expect(deps.prisma.userVoicePreference.findMany).not.toHaveBeenCalled();
-    expect(deps.prisma.bot.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: expect.objectContaining({ id: { in: ["bot"] } }) }),
-    );
-    expect(deps.prisma.routine.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({
-          botId: { in: ["bot"] },
-          OR: [{ active: true }],
-        }),
-      }),
-    );
-  });
   it("includes an inactive routine only when the check is for that routine", async () => {
     const { deps, actor } = setup();
     deps.env.agentRuntime = "pi";

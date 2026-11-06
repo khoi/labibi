@@ -4,8 +4,8 @@ import type { PrismaClient } from "@labradoodle/db";
 import { asSystem, createDb, provisionTestBot, runAsSystem, runAsTenant } from "@labradoodle/db";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { loadMessagePage } from "./thread-message-pages.js";
-import type { ThreadTarget } from "./thread-target.js";
-import { sendThreadMessage } from "./thread-target.js";
+import type { ChatTarget } from "./thread-target.js";
+import { resolveChatTarget, sendThreadMessage } from "./thread-target.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 const enabled = process.env.VERIFY_DATABASE === "1" && Boolean(databaseUrl);
@@ -15,7 +15,7 @@ describe.skipIf(!enabled)("message authors (PostgreSQL)", () => {
   let system: PrismaClient;
   let close: () => Promise<void>;
   let actor: Actor;
-  let target: ThreadTarget;
+  let target: ChatTarget;
   const enqueue = vi.fn().mockResolvedValue(undefined);
   const notify = vi.fn().mockResolvedValue(undefined);
 
@@ -41,12 +41,9 @@ describe.skipIf(!enabled)("message authors (PostgreSQL)", () => {
       where: { id: actor.userId },
       data: { name: "Ana" },
     });
-    target = {
-      kind: "bot",
-      botId: identity.botId,
-      threadId: identity.threadId,
-      bot: { computer: null },
-    } as ThreadTarget;
+    target = await runAsTenant(actor, () =>
+      resolveChatTarget(prisma, actor, { threadId: identity.threadId }),
+    );
   });
   afterEach(async () => {
     if (!actor) return;

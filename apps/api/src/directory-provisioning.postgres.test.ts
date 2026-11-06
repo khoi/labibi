@@ -5,7 +5,7 @@ import { join } from "node:path";
 import type { TransactionalEmailProvider } from "@labradoodle/adapter-kit";
 import { FakeSandboxProvider } from "@labradoodle/adapters";
 import type { PrismaClient } from "@labradoodle/db";
-import { asSystem, createRepos } from "@labradoodle/db";
+import { asSystem, ensureComputerRecord } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AppHandles } from "./app.js";
 import { createApp } from "./app.js";
@@ -168,12 +168,15 @@ describePostgres("directory provisioning over SCIM (PostgreSQL)", () => {
       user: { id: ada.id },
     });
     const membership = await system.spaceMember.findFirstOrThrow({ where: { userId: ada.id } });
-    const bot = await createRepos(system).createBot(
-      { userId: ada.id, spaceId: membership.spaceId, email: address, isDeploymentOwner: false },
-      { name: "Helper", instructions: "", notifyOnFinish: false },
-    );
-    const thread = await system.thread.findFirstOrThrow({ where: { botId: bot.id } });
-    const { screenGeneration } = await system.bot.findUniqueOrThrow({ where: { id: bot.id } });
+    const bot = await system.bot.findUniqueOrThrow({ where: { spaceId: membership.spaceId } });
+    const thread = await system.thread.findFirstOrThrow({
+      where: { spaceId: membership.spaceId, members: { some: { userId: ada.id } } },
+    });
+    const computer = await ensureComputerRecord(system, {
+      spaceId: membership.spaceId,
+      userId: ada.id,
+      kind: "fake",
+    });
     const queuedRun = {
       userId: ada.id,
       spaceId: membership.spaceId,
@@ -208,8 +211,8 @@ describePostgres("directory provisioning over SCIM (PostgreSQL)", () => {
     expect(refused.status).toBe(403);
     expect(await refused.json()).toMatchObject({ code: "ACCOUNT_DEACTIVATED" });
     // Ada's content stays, and screen links issued to her stop working.
-    expect(await system.bot.findUniqueOrThrow({ where: { id: bot.id } })).toMatchObject({
-      screenGeneration: screenGeneration + 1,
+    expect(await system.computer.findUniqueOrThrow({ where: { id: computer.id } })).toMatchObject({
+      screenGeneration: computer.screenGeneration + 1,
     });
     const space = await system.space.findUniqueOrThrow({ where: { id: membership.spaceId } });
     expect(

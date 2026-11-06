@@ -505,7 +505,6 @@ describe("thread lock transaction budget", () => {
       finalizeComputerControlRelease({ $transaction } as unknown as PrismaClient, {
         spaceId: "space-1",
         computerId: "computer-1",
-        botId: "bot-1",
         runId: null,
         leaseId: "lease-1",
         holder: "none",
@@ -679,7 +678,6 @@ describe("finalizeComputerControlRelease", () => {
         {
           spaceId: "workspace-1",
           computerId: "computer-1",
-          botId: "bot-1",
           runId: "run-1",
           leaseId: "lease-1",
           holder: "none",
@@ -708,7 +706,6 @@ describe("finalizeComputerControlRelease", () => {
       where: {
         id: "run-1",
         spaceId: "workspace-1",
-        botId: "bot-1",
         status: "waiting_takeover",
       },
       data: { status: "queued", checkpoint: "takeover-skipped" },
@@ -762,7 +759,6 @@ describe("finalizeComputerControlRelease", () => {
       finalizeComputerControlRelease(prisma, {
         spaceId: "workspace-1",
         computerId: "computer-1",
-        botId: "bot-1",
         runId: "run-1",
         leaseId: "lease-1",
         holder: "bot",
@@ -774,7 +770,6 @@ describe("finalizeComputerControlRelease", () => {
       where: {
         id: "run-1",
         spaceId: "workspace-1",
-        botId: "bot-1",
         status: "waiting_takeover",
       },
       data: { status: "queued", checkpoint: "takeover" },
@@ -783,7 +778,6 @@ describe("finalizeComputerControlRelease", () => {
       where: {
         id: "run-1",
         spaceId: "workspace-1",
-        botId: "bot-1",
         status: { in: ["leased", "running"] },
       },
       data: { checkpoint: "takeover" },
@@ -834,7 +828,6 @@ describe("finalizeComputerControlRelease", () => {
       finalizeComputerControlRelease(prisma, {
         spaceId: "workspace-1",
         computerId: "computer-1",
-        botId: "bot-1",
         runId: "run-1",
         leaseId: "lease-1",
         holder: "none",
@@ -869,7 +862,6 @@ describe("finalizeComputerControlRelease", () => {
       finalizeComputerControlRelease(prisma, {
         spaceId: "workspace-1",
         computerId: "computer-1",
-        botId: "deleted-bot",
         runId: null,
         leaseId: "lease-1",
         holder: "none",
@@ -945,7 +937,6 @@ describe("finalizeComputerControlRelease", () => {
     const input = {
       spaceId: "workspace-1",
       computerId: "computer-1",
-      botId: "bot-1",
       runId: "run-1",
       leaseId: "lease-1",
       holder: "bot" as const,
@@ -1043,7 +1034,6 @@ describe("finalizeComputerControlRelease", () => {
       finalizeComputerControlRelease(prisma, {
         spaceId: "workspace-1",
         computerId: "computer-1",
-        botId: "bot-1",
         runId: "run-1",
         leaseId: "lease-1",
         holder: "bot",

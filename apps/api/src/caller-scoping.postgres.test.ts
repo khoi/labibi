@@ -6,18 +6,13 @@ import {
   asSystem,
   createDb,
   createOrganizationWithDefaultSpace,
-  runAsSystem,
   runAsTenant,
 } from "@labradoodle/db";
 import { RPCHandler } from "@orpc/server/fetch";
-import { Hono } from "hono";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { queueMcpConnectedRun } from "./mcp-approval.js";
 import type { RouterDeps } from "./router.js";
 import { createRouter } from "./router.js";
 import { assertThreadImageInput } from "./thread-image-admission.js";
-import type { WebhookDeps } from "./webhook.js";
-import { mountWebhookHttpRoutes, WEBHOOK_SECRET_KIND } from "./webhook.js";
 
 const describePostgres =
   process.env.VERIFY_DATABASE === "1" && process.env.DATABASE_URL
@@ -29,7 +24,6 @@ const image: MessageBlock[] = [
 ];
 const TEXT_ONLY = { modelProvider: "openrouter", modelId: "deepseek/deepseek-v4-pro" };
 const CUSTOM_MODEL = "custom-vision-model";
-const WEBHOOK_TOKEN = "caller-scoping-webhook-token";
 
 describePostgres("caller and tenant scoping (PostgreSQL)", () => {
   // The runtime login enforces row-level security; the owner login bypasses it, as an
@@ -178,94 +172,6 @@ describePostgres("caller and tenant scoping (PostgreSQL)", () => {
         if (provider === "openai-compatible") expect(read.outcome).toBe("refused");
       }
     });
-  });
-
-  it("starts only the target bot's webhook routines in its own space", async () => {
-    const target = await bot(shared, userA);
-    const webhookSecret = await system.secret.create({
-      data: { userId: userA, spaceId: shared, kind: WEBHOOK_SECRET_KIND, ciphertext: "sealed" },
-    });
-    await system.bot.update({
-      where: { id: target.id },
-      data: { webhookSecretId: webhookSecret.id },
-    });
-    const neighbor = await bot(shared, userB);
-    const routine = (botId: string, spaceId: string, userId: string, prompt: string) =>
-      system.routine.create({
-        data: {
-          botId,
-          spaceId,
-          userId,
-          name: prompt,
-          prompt,
-          crons: [],
-          active: true,
-          webhookEnabled: true,
-        },
-      });
-    await routine(target.id, shared, userA, "routine-of-target");
-    await routine(neighbor.id, shared, userB, "routine-of-neighbor");
-    await routine(target.id, other, userA, "routine-in-other-space");
-
-    const sendUserMessage = vi.fn(async () => ({ messageId: "message", runId: null, seq: 1 }));
-    const app = new Hono();
-    app.use("/api/v1/bots/*", (_c, next) => runAsSystem("bot webhook", next));
-    mountWebhookHttpRoutes(app, {
-      prisma: runtime.prisma,
-      secrets: { load: async () => WEBHOOK_TOKEN } as unknown as SecretStore,
-      events: { sendUserMessage } as unknown as WebhookDeps["events"],
-      jobs: { enqueue: vi.fn() },
-    });
-
-    const response = await app.request(`/api/v1/bots/${target.id}/webhook`, {
-      method: "POST",
-      headers: { authorization: `Bearer ${WEBHOOK_TOKEN}`, "content-type": "application/json" },
-      body: JSON.stringify({ event: "ping" }),
-    });
-
-    expect(response.status).toBe(200);
-    const sent = sendUserMessage.mock.calls[0] as unknown as [{ prompt: string }];
-    expect(sent[0].prompt).toContain("routine-of-target");
-    expect(sent[0].prompt).not.toContain("routine-of-neighbor");
-    expect(sent[0].prompt).not.toContain("routine-in-other-space");
-  });
-
-  it("does not continue an MCP approval in an archived group chat", async () => {
-    const member = await bot(shared, userA);
-    const server = await system.mcpServer.create({
-      data: {
-        spaceId: shared,
-        userId: userA,
-        slug: id("mcp"),
-        name: "Scoped MCP",
-        transport: "http",
-        endpoint: "http://127.0.0.1:9/mcp",
-      },
-    });
-    const groupThread = async (archivedAt: Date | null) => {
-      const group = await system.chatGroup.create({
-        data: {
-          spaceId: shared,
-          userId: userA,
-          name: "Group",
-          archivedAt,
-          members: { create: { botId: member.id } },
-        },
-      });
-      return system.thread.create({ data: { spaceId: shared, userId: userA, groupId: group.id } });
-    };
-    const queue = (threadId: string) =>
-      runAsTenant(actorA, () =>
-        runtime.prisma.$transaction((tx) =>
-          queueMcpConnectedRun(tx, actorA, { botId: member.id, serverId: server.id, threadId }),
-        ),
-      );
-
-    const archived = await groupThread(new Date());
-    const active = await groupThread(null);
-
-    await expect(queue(archived.id)).resolves.toBeNull();
-    await expect(queue(active.id)).resolves.toEqual(expect.any(String));
   });
 
   it("runs authenticated procedures inside the caller's tenant", async () => {

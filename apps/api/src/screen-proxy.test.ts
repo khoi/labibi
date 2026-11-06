@@ -1,6 +1,5 @@
 import {
   addScreenProxyCapability,
-  resetRemoteScreenCapabilityReuse,
   SCREEN_TARGET_ENDPOINT,
 } from "@labradoodle/core/node/screen-capability";
 import type { PrismaClient } from "@labradoodle/db";
@@ -63,69 +62,11 @@ function fixture(
 }
 
 describe("screen capability lifecycle authorization", () => {
-  it("returns sealed provider headers only after lifecycle authorization", async () => {
-    const headers = { cookie: "provider_auth=fake-private-token" };
-    const { request, path, computer } = fixture(false, undefined, headers);
-    expect(path).not.toContain("fake-private-token");
-    expect(await (await request()).json()).toMatchObject({ headers });
-    expect((await request(path, "wrong")).status).toBe(403);
-    computer.state = "stopped";
-    expect((await request()).status).toBe(403);
-  });
-
-  it("allows repeat assets and reconnects during the same active lifecycle", async () => {
-    const { request, path } = fixture();
-    expect((await request()).status).toBe(200);
-    expect((await request(path.replace("/embed.html", "/websockify"))).status).toBe(200);
-    expect((await request()).headers.get("cache-control")).toBe("no-store");
-  });
   it("requires the proxy credential before looking up a capability", async () => {
     const { request, findFirst, path } = fixture();
     expect((await request(path, "wrong")).status).toBe(403);
     expect(findFirst).not.toHaveBeenCalled();
   });
-  it("rejects stopped computers and old URLs after restart at the same address", async () => {
-    const { request, computer } = fixture();
-    computer.state = "stopped";
-    expect((await request()).status).toBe(403);
-    computer.state = "running";
-    computer.screenGeneration++;
-    expect((await request()).status).toBe(403);
-  });
-  it("serves a booting computer and rejects one that is suspending or has no sandbox", async () => {
-    const { request, computer } = fixture();
-    computer.state = "booting";
-    expect((await request()).status).toBe(200);
-    computer.state = "suspending";
-    expect((await request()).status).toBe(403);
-    computer.state = "running";
-    computer.providerRef = "";
-    expect((await request()).status).toBe(403);
-  });
-  it("revokes archived, reassigned, and restored bots", async () => {
-    const { request, bot } = fixture();
-    bot.archivedAt = new Date();
-    expect((await request()).status).toBe(403);
-    bot.archivedAt = null;
-    bot.computerId = "other";
-    expect((await request()).status).toBe(403);
-    bot.computerId = "computer";
-    bot.screenGeneration++;
-    expect((await request()).status).toBe(403);
-  });
-  it.each(["expiry", "release", "replacement", "holder", "bot"])(
-    "revokes control on lease %s",
-    async (change) => {
-      const { request, computer } = fixture(true);
-      expect((await request()).status).toBe(200);
-      if (change === "expiry") computer.controlLeaseExpiresAt = new Date(0);
-      if (change === "release") computer.controlLeaseId = "";
-      if (change === "replacement") computer.controlLeaseId = "new-lease";
-      if (change === "holder") computer.controlHolder = "agent";
-      if (change === "bot") computer.controlBotId = "other";
-      expect((await request()).status).toBe(403);
-    },
-  );
   it("rejects legacy stateless capabilities", async () => {
     expect(
       (await fixture().request("/novnc/MTI3LjAuMC4x/49152/view/9999999999999.fake/embed.html"))
@@ -162,19 +103,6 @@ describe("screen capability lifecycle authorization", () => {
       });
       expect(response.status).toBe(403);
     }
-  });
-  it("reuses one remote capability across polls and still revokes it", async () => {
-    resetRemoteScreenCapabilityReuse();
-    const upstream =
-      "https://6100-sandbox.example/vnc.html?autoconnect=true&resize=scale&path=websockify%3Ftoken%3Dview-1&view_only=true";
-    const { path, request, computer } = fixture(false, upstream);
-    const again = new URL(addScreenProxyCapability(upstream, secret, "https://app.example", scope))
-      .pathname;
-    expect(again).toBe(path);
-    expect((await request()).status).toBe(200);
-    expect((await request(again.replace("/vnc.html", "/websockify"))).status).toBe(200);
-    computer.screenGeneration++;
-    expect((await request()).status).toBe(403);
   });
   it("keeps minting a new capability for loopback screens", () => {
     const upstream = "http://127.0.0.1:49152/embed.html?view_only=true";

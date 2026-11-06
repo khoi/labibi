@@ -39,7 +39,7 @@ describe("createChatAlerts", () => {
     await fanout.publish("chat-alerts:user-1", "{");
     await fanout.publish("chat-alerts:user-1", JSON.stringify({ kind: "help" }));
     await alerts.publish("user-1", alert);
-    expect((await pending).value).toEqual(alert);
+    expect((await pending).value).toEqual({ type: "alert", alert });
     await iterator.return(undefined);
   });
 
@@ -50,8 +50,8 @@ describe("createChatAlerts", () => {
     const first = iterator.next();
     await new Promise((resolve) => setTimeout(resolve, 0));
     for (let i = 0; i < 30; i++) await alerts.publish("user-1", { ...alert, body: `Alert ${i}` });
-    expect((await first).value.body).toBe("Alert 0");
-    expect((await iterator.next()).value.body).toBe("Alert 10");
+    expect((await first).value).toMatchObject({ alert: { body: "Alert 0" } });
+    expect((await iterator.next()).value).toMatchObject({ alert: { body: "Alert 10" } });
     await iterator.return(undefined);
   });
 

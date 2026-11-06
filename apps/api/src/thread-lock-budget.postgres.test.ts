@@ -11,7 +11,7 @@ import {
   runAsTenant,
 } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import type { ThreadTarget } from "./thread-target.js";
+import type { ChatTarget } from "./thread-target.js";
 import { sendThreadMessage } from "./thread-target.js";
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -149,7 +149,7 @@ describe.skipIf(!enabled)("thread writes behind a long read (PostgreSQL)", () =>
   it(
     "sends a message that waited behind a long thread read",
     async () => {
-      const target = { kind: "bot", botId, threadId, bot: { computer: null } } as ThreadTarget;
+      const target: ChatTarget = { threadId, spaceId, doodleId: botId, doodle: true, people: 1 };
       const clientNonce = randomUUID();
       const { lockTaken, open, done } = holdThreadShare();
       const xactId = await lockTaken;

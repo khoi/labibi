@@ -60,7 +60,6 @@ describe("routine history", () => {
     const history = await listRoutineRuns(prisma, actor, "routine-1");
     expect(RoutineHistorySchema.parse(history)).toEqual(history);
     expect(history.runs.map((row) => row.messageId)).toEqual([null, "reply-new", null]);
-    expect(history.runs.map((row) => row.groupId)).toEqual([null, "group-1", null]);
     expect(history.runs[2]?.startedAt).toBeNull();
     expect(history.runs.map((row) => row.error)).toEqual([null, "504: request timed out", null]);
     expect(runs).toHaveBeenCalledWith(
@@ -170,29 +169,6 @@ describe("routine history", () => {
         },
       }),
     );
-  });
-  it("keeps the group destination of a routine execution", async () => {
-    const { prisma, runs, messages } = fixture();
-    runs.mockResolvedValue([
-      {
-        id: "group-run",
-        botId: "bot-1",
-        threadId: "group-thread",
-        thread: { groupId: "group-1" },
-        status: "completed",
-        createdAt: at,
-        startedAt: at,
-        completedAt: at,
-      },
-    ]);
-    messages.mockResolvedValue([
-      { id: "group-reply", runId: "group-run", threadId: "group-thread" },
-    ]);
-    const history = await listRoutineRuns(prisma, actor, "routine-1");
-    expect(RoutineHistorySchema.parse(history).runs[0]).toMatchObject({
-      groupId: "group-1",
-      messageId: "group-reply",
-    });
   });
   it("returns the due time recorded on a run that started late", async () => {
     const { prisma, runs } = fixture();

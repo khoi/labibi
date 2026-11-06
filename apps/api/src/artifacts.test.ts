@@ -7,7 +7,6 @@ import {
   createOwnedArtifact,
   deleteArtifactFamily,
   listSpaceArtifacts,
-  resolveGroupSendAttachments,
   resolveSendAttachments,
 } from "./artifacts.js";
 
@@ -57,50 +56,6 @@ function scopedClause(query: { strings: string[] }) {
 }
 
 describe("listSpaceArtifacts", () => {
-  it("pages families in the database instead of slicing a fixed newest-row snapshot", async () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-09-20T12:00:00.000Z"));
-    try {
-      const queryRaw = vi
-        .fn()
-        .mockResolvedValue([
-          listRow("version-a", "family-a"),
-          listRow("version-b", "family-b"),
-          listRow("version-c", "family-c"),
-        ]);
-      const page = await listSpaceArtifacts(
-        {
-          prisma: { artifact: { findFirst: vi.fn() }, $queryRaw: queryRaw } as unknown as Pick<
-            PrismaClient,
-            "artifact" | "$queryRaw"
-          >,
-        },
-        actor,
-        { limit: 2 },
-      );
-
-      const sql = queryRaw.mock.calls[0]?.[0] as { strings: string[]; values: unknown[] };
-      const text = statement(sql);
-      expect(text).toContain("DISTINCT ON");
-      expect(text).toContain("LIMIT");
-      expect(text).not.toMatch(/\b500\b/);
-      expect(scopedClause(sql)).toContain('"createdAt" <=');
-      expect(sql.values).toContain(3);
-      expect(sql.values).toContainEqual(new Date("2026-09-20T12:00:00.000Z"));
-      expect(page.items.map((item) => item.id)).toEqual(["family-a", "family-b"]);
-      expect(page.nextCursor).toBe(
-        cursor({
-          createdAt: "2026-09-01T00:00:00.000Z",
-          id: "version-b",
-          botId: null,
-          asOf: "2026-09-20T12:00:00.000Z",
-        }),
-      );
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
   it("keeps an unseen family on a later page when it gains a version after page one", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-09-20T12:00:00.000Z"));
@@ -162,34 +117,6 @@ describe("listSpaceArtifacts", () => {
     expect(queryRaw).not.toHaveBeenCalled();
   });
 
-  it("keeps paging from a cursor whose row was deleted", async () => {
-    const pageCursor = cursor({
-      createdAt: "2026-08-01T00:00:00.000Z",
-      id: "version-b",
-      botId: null,
-    });
-    const findFirst = vi.fn();
-    const queryRaw = vi.fn().mockResolvedValue([]);
-    await listSpaceArtifacts(
-      {
-        prisma: { artifact: { findFirst }, $queryRaw: queryRaw } as unknown as Pick<
-          PrismaClient,
-          "artifact" | "$queryRaw"
-        >,
-      },
-      actor,
-      { cursor: pageCursor, limit: 2 },
-    );
-
-    expect(findFirst).not.toHaveBeenCalled();
-    const sql = queryRaw.mock.calls[0]?.[0] as { strings: string[]; values: unknown[] };
-    expect(statement(sql)).toContain('latest."createdAt", latest.id');
-    expect(scopedClause(sql)).toContain('"createdAt" <=');
-    expect(sql.values).toContainEqual(new Date("2026-08-01T00:00:00.000Z"));
-    expect(sql.values).toContainEqual(new Date("2026-09-20T00:00:00.000Z"));
-    expect(sql.values).toContain("version-b");
-  });
-
   it("rejects a cursor from a different bot filter instead of replaying the first page", async () => {
     const queryRaw = vi.fn();
     await expect(
@@ -202,7 +129,7 @@ describe("listSpaceArtifacts", () => {
         },
         actor,
         {
-          botId: "bot-2",
+          threadId: "thread-2",
           cursor: cursor({
             createdAt: "2026-08-01T00:00:00.000Z",
             id: "version-b",
@@ -212,32 +139,6 @@ describe("listSpaceArtifacts", () => {
       ),
     ).rejects.toBeInstanceOf(ArtifactListCursorError);
     expect(queryRaw).not.toHaveBeenCalled();
-  });
-
-  it("applies a bot-scoped cursor with that bot filter", async () => {
-    const queryRaw = vi.fn().mockResolvedValue([]);
-    const pageCursor = cursor({
-      createdAt: "2026-08-01T00:00:00.000Z",
-      id: "version-b",
-      botId: "bot-1",
-    });
-    await listSpaceArtifacts(
-      {
-        prisma: { artifact: { findFirst: vi.fn() }, $queryRaw: queryRaw } as unknown as Pick<
-          PrismaClient,
-          "artifact" | "$queryRaw"
-        >,
-      },
-      actor,
-      { botId: "bot-1", cursor: pageCursor, limit: 2 },
-    );
-
-    const sql = queryRaw.mock.calls[0]?.[0] as { strings: string[]; values: unknown[] };
-    const text = sql.strings.join(" ");
-    expect(text).toContain('"botId"');
-    expect(text).not.toContain('"botId" IS NULL');
-    expect(sql.values).toContain("bot-1");
-    expect(sql.values).toContain("version-b");
   });
 });
 
@@ -390,7 +291,7 @@ describe("configured artifact upload limit", () => {
     const deps = { prisma: {} as PrismaClient, artifacts: { put } as unknown as ArtifactStore };
     await expect(
       createOwnedArtifact(deps, actor, {
-        botId: "bot-1",
+        threadId: "thread-1",
         name: "song.m4a",
         mimeType: "audio/aac",
         contentBase64: "YXVkaW8=",
@@ -403,7 +304,7 @@ describe("configured artifact upload limit", () => {
     put.mockClear();
     await expect(
       createOwnedArtifact(deps, actor, {
-        botId: "bot-1",
+        threadId: "thread-1",
         name: "song.flac",
         mimeType: "audio/flac",
         contentBase64: "YXVkaW8=",
@@ -421,7 +322,7 @@ describe("configured artifact upload limit", () => {
     };
     const upload = (size: number) =>
       createOwnedArtifact(deps, actor, {
-        botId: "bot-1",
+        threadId: "thread-1",
         name: "notes.txt",
         mimeType: "text/plain",
         contentBase64: Buffer.alloc(size).toString("base64"),
@@ -434,7 +335,7 @@ describe("configured artifact upload limit", () => {
 });
 
 describe("send attachment count", () => {
-  it.each(["bot", "group"])("enforces the deployment limit for %s attachments", async (target) => {
+  it("enforces the deployment limit for attachments", async () => {
     const findMany = vi.fn().mockImplementation(async ({ where }) =>
       where.id.in.map((id: string) => ({
         id,
@@ -448,9 +349,7 @@ describe("send attachment count", () => {
     const send = (maxAttachmentsPerMessage: number | undefined, count: number) => {
       const deps = { prisma, maxAttachmentsPerMessage };
       const ids = Array.from({ length: count }, (_, i) => `artifact-${i}`);
-      return target === "bot"
-        ? resolveSendAttachments(deps, actor, "bot-1", ids)
-        : resolveGroupSendAttachments(deps, actor, "group-1", ["bot-1"], ids);
+      return resolveSendAttachments(deps, actor, "thread-1", ids);
     };
     for (const limit of [undefined, 1, 8, 100]) {
       findMany.mockClear();

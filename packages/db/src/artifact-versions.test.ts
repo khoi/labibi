@@ -12,7 +12,7 @@ function versionConflict(): Prisma.PrismaClientKnownRequestError {
 
 const params = {
   spaceId: "space-1",
-  botId: "bot-1",
+  threadId: "thread-1",
   name: "Q3 Content Calendar",
 };
 
@@ -28,8 +28,7 @@ describe("resolveNextArtifactVersion", () => {
       expect.objectContaining({
         where: expect.objectContaining({
           spaceId: "space-1",
-          botId: "bot-1",
-          groupId: null,
+          threadId: "thread-1",
           name: { equals: "Q3 Content Calendar", mode: "insensitive" },
         }),
       }),
@@ -60,19 +59,6 @@ describe("resolveNextArtifactVersion", () => {
     const result = await resolveNextArtifactVersion(prisma, params);
 
     expect(result).toEqual({ rootArtifactId: "artifact-root", version: 3 });
-  });
-
-  it("matches by name case-insensitively and scopes to the group when given one", async () => {
-    const findFirst = vi.fn().mockResolvedValue(null);
-    const prisma = { artifact: { findFirst } } as unknown as Pick<PrismaClient, "artifact">;
-
-    await resolveNextArtifactVersion(prisma, { ...params, groupId: "group-1" });
-
-    expect(findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ groupId: "group-1" }),
-      }),
-    );
   });
 });
 
@@ -113,9 +99,7 @@ describe("withResolvedArtifactVersion", () => {
     expect(attempt).toHaveBeenCalledWith(client.tx, { rootArtifactId: null, version: 1 });
     const lockSql = client.queryRaw.mock.calls[0]?.[0] as { strings: string[]; values: unknown[] };
     expect(lockSql.strings.join(" ")).toContain("pg_advisory_xact_lock");
-    expect(lockSql.values).toContain(
-      ["space-1", "bot-1", "", "q3 content calendar"].join("\u001f"),
-    );
+    expect(lockSql.values).toContain(["space-1", "thread-1", "q3 content calendar"].join("\u001f"));
   });
 
   it("re-resolves and retries on a version-uniqueness conflict, seeing the winner's row", async () => {

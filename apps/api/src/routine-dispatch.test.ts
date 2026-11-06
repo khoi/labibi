@@ -9,7 +9,8 @@ describe("routine dispatch DTO", () => {
     vi.setSystemTime(new Date("2026-10-26T09:00:00Z"));
     const row = {
       id: "routine-1",
-      botId: "bot-1",
+      threadId: "thread-1",
+      webhookSecretId: null,
       name: "Morning report",
       prompt: "Prepare the report.",
       crons: ["0 8 * * *"],

@@ -224,7 +224,6 @@ describePostgres("thread row before run rows for clear and control release (Post
         finalizeComputerControlRelease(prisma, {
           spaceId,
           computerId: computer.id,
-          botId,
           runId,
           leaseId: "lease-1",
           holder: "none",

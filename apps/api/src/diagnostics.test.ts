@@ -62,8 +62,6 @@ function input(overrides: Partial<DiagnosticsInput> = {}): DiagnosticsInput {
       {
         id: "bot_private_1",
         spaceId: "space_private_1",
-        userId: "user_private_1",
-        archived: false,
       },
     ],
     mcpServers: [server()],

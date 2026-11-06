@@ -1,11 +1,7 @@
 import { MemoryProviderPrivateEndpointRequiredError } from "@labradoodle/adapters";
 import type { PrismaClient } from "@labradoodle/db";
 import { describe, expect, it, vi } from "vitest";
-import {
-  disconnectMemoryProvider,
-  persistMemoryProviderConfig,
-  updateMemoryProviderDefaultScope,
-} from "./memory-provider-config.js";
+import { disconnectMemoryProvider, persistMemoryProviderConfig } from "./memory-provider-config.js";
 
 const actor = {
   userId: "user-1",
@@ -21,13 +17,11 @@ function makeDeps(
     upsertResult?: {
       provider: string;
       settings: Record<string, string>;
-      defaultMemoryScope: string;
       updatedAt: Date;
     };
     updateResult?: {
       provider: string;
       settings: Record<string, string>;
-      defaultMemoryScope: string;
       updatedAt: Date;
     };
     spaceOwner?: boolean;
@@ -41,7 +35,6 @@ function makeDeps(
     overrides.upsertResult ?? {
       provider: "supermemory",
       settings: { mode: "cloud", baseUrl: "https://api.supermemory.ai" },
-      defaultMemoryScope: "isolated",
       updatedAt: new Date("2026-08-19T00:00:00.000Z"),
     },
   );
@@ -49,7 +42,6 @@ function makeDeps(
     overrides.updateResult ?? {
       provider: "supermemory",
       settings: { mode: "cloud", baseUrl: "https://api.supermemory.ai" },
-      defaultMemoryScope: "shared",
       updatedAt: new Date("2026-08-20T00:00:00.000Z"),
     },
   );
@@ -90,7 +82,6 @@ function connectionInput(mode: "cloud" | "local", baseUrl?: string) {
     provider: "supermemory",
     settings: { mode, ...(baseUrl ? { baseUrl } : {}) },
     credentials: { apiKey: "sm_test_key_12345" },
-    defaultMemoryScope: "isolated" as const,
   };
 }
 
@@ -119,7 +110,6 @@ describe("persistMemoryProviderConfig", () => {
       upsertResult: {
         provider: "honcho",
         settings,
-        defaultMemoryScope: "isolated",
         updatedAt: new Date("2026-08-19T00:00:00.000Z"),
       },
     });
@@ -128,7 +118,6 @@ describe("persistMemoryProviderConfig", () => {
         provider: "honcho",
         settings: { ...settings, apiKey: "discard", baseUrl: "http://localhost" },
         credentials: { apiKey: "hch-test-key" },
-        defaultMemoryScope: "isolated",
       });
       expect(fetchMock).toHaveBeenCalledOnce();
       expect(deps.secrets.put).toHaveBeenCalledWith(
@@ -147,7 +136,6 @@ describe("persistMemoryProviderConfig", () => {
       expect(result).toEqual({
         provider: "honcho",
         settings,
-        defaultMemoryScope: "isolated",
         updatedAt: "2026-08-19T00:00:00.000Z",
       });
       expect(JSON.stringify(result)).not.toMatch(/apiKey|hch-test-key|cipher|secret/);
@@ -365,7 +353,6 @@ describe("persistMemoryProviderConfig", () => {
     expect(result).toEqual({
       provider: "supermemory",
       settings: { mode: "cloud", baseUrl: "https://api.supermemory.ai" },
-      defaultMemoryScope: "isolated",
       updatedAt: "2026-08-19T00:00:00.000Z",
     });
     expect(transaction).toHaveBeenCalledOnce();
@@ -403,7 +390,6 @@ describe("persistMemoryProviderConfig", () => {
           provider: "serenity",
           settings: { endpoint: "https://serenity.example.test/mcp", allowWrites: "false" },
           credentials: { token: "serenity_test_token" },
-          defaultMemoryScope: "isolated",
         },
       ),
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
@@ -430,7 +416,6 @@ describe("persistMemoryProviderConfig", () => {
           provider: "serenity",
           settings: { endpoint: "https://serenity.example.test/mcp", allowWrites: "false" },
           credentials: { token: "serenity_test_token" },
-          defaultMemoryScope: "isolated",
         },
       ),
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
@@ -472,44 +457,5 @@ describe("disconnectMemoryProvider", () => {
 
     expect(deleteConfig).not.toHaveBeenCalled();
     expect(secretDeleteMany).not.toHaveBeenCalled();
-  });
-});
-
-describe("updateMemoryProviderDefaultScope", () => {
-  it("accepts owners with additional Better Auth roles", async () => {
-    const { deps, update } = makeDeps({
-      existing: { id: "cfg-1", secretId: "secret-existing" },
-      memberRole: "owner,admin",
-    });
-
-    await updateMemoryProviderDefaultScope(deps, actor, "shared");
-
-    expect(update).toHaveBeenCalled();
-  });
-
-  it("updates only the generic scope setting and retains the provider secret", async () => {
-    const { deps, update, secretCreate, secretDeleteMany } = makeDeps({
-      existing: { id: "cfg-1", secretId: "secret-existing" },
-    });
-
-    const result = await updateMemoryProviderDefaultScope(deps, actor, "shared");
-
-    expect(update).toHaveBeenCalledWith({
-      where: { id: "cfg-1" },
-      data: { defaultMemoryScope: "shared" },
-    });
-    expect(secretCreate).not.toHaveBeenCalled();
-    expect(secretDeleteMany).not.toHaveBeenCalled();
-    expect(result.defaultMemoryScope).toBe("shared");
-  });
-
-  it("rejects non-owners without updating provider configuration", async () => {
-    const { deps, update } = makeDeps({
-      existing: { id: "cfg-1", secretId: "secret-existing" },
-      spaceOwner: false,
-    });
-
-    await expect(updateMemoryProviderDefaultScope(deps, actor, "shared")).rejects.toThrow();
-    expect(update).not.toHaveBeenCalled();
   });
 });

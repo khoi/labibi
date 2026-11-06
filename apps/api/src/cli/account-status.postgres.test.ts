@@ -2,7 +2,7 @@ import { execFile } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { promisify } from "node:util";
 import type { PrismaClient } from "@labradoodle/db";
-import { asSystem, bootstrapUserSpace, createDb, createRepos } from "@labradoodle/db";
+import { asSystem, bootstrapUserSpace, createDb } from "@labradoodle/db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const run = promisify(execFile);
@@ -40,11 +40,8 @@ describePostgres("the operator's account status command (PostgreSQL)", { timeout
       signupsEnabled: "true",
       signupAllowlist: "",
     });
-    const bot = await createRepos(system).createBot(
-      { userId: user.id, spaceId, email, isDeploymentOwner: false },
-      { name: "Helper", instructions: "", notifyOnFinish: false },
-    );
-    const thread = await system.thread.findFirstOrThrow({ where: { botId: bot.id } });
+    const bot = await system.bot.findUniqueOrThrow({ where: { spaceId } });
+    const thread = await system.thread.findFirstOrThrow({ where: { spaceId } });
     const ids = { userId: user.id, spaceId, botId: bot.id, threadId: thread.id };
     const task = await system.task.create({
       data: { ...ids, prompt: "fixture", status: "queued" },
