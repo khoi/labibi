@@ -79,21 +79,19 @@ function formatAttachmentSkip(item: { name: string; reason: string }): string {
 
 /** The composer's draft attachments, kept per chat, from the picker menu or a file drop. */
 export function useThreadAttachments({
-  botId,
-  groupId,
+  threadId,
   readOnly,
   uploadConfig,
   draftScope,
 }: {
-  botId?: string;
-  groupId?: string;
+  threadId?: string;
   readOnly: boolean;
   uploadConfig?: { maxUploadSizeBytes?: number; maxAttachmentsPerMessage?: number };
   /** The chat's draft key; unsent attachments stay under it between visits to the chat. */
   draftScope?: ComposerDraftScope;
 }) {
   const { t } = useI18n();
-  const threadKey = groupId ?? botId;
+  const threadKey = threadId;
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>(() =>
     draftScope ? (retainedDraftAttachments.get(retainedScopeKey(draftScope)) ?? []) : [],
   );
@@ -166,7 +164,7 @@ export function useThreadAttachments({
       skipped: Array<{ name: string; reason: string }>;
     }>,
   ) {
-    const targetKey = groupId ?? botId;
+    const targetKey = threadId;
     if (!targetKey) return;
     let result: Awaited<ReturnType<typeof picker>>;
     try {
@@ -180,7 +178,7 @@ export function useThreadAttachments({
       setAttachmentNotice(errorText(error, t("Could not attach files")));
       return;
     }
-    if ((groupId ?? botId) !== targetKey) return;
+    if (threadId !== targetKey) return;
     // Two drops can overlap, so the room left is settled against the draft as it
     // is now, not as it was when this read began.
     const room = Math.max(
@@ -221,7 +219,7 @@ export function useThreadAttachments({
       );
     },
     {
-      enabled: !readOnly && Boolean(groupId ?? botId),
+      enabled: !readOnly && Boolean(threadId),
       maxBytes: attachmentMaxBytes(uploadConfig),
       maxFiles: attachmentMaxCount(uploadConfig),
     },

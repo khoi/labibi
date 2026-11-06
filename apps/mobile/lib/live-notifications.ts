@@ -36,17 +36,16 @@ type NativeNotifications = {
     locale: string,
     headers: string,
   ): Promise<void>;
-  /** Missing on native builds that predate pending reply invalidation. */
-  resumeAfterMute?(
+  resumeAfterMute(
     endpoint: string,
     token: string,
     spaceId: string,
     locale: string,
     headers: string,
-    botId: string,
+    threadId: string,
   ): Promise<void>;
   stop(clearSession: boolean): Promise<void>;
-  setOpenThread(botId: string | null, threadId: string | null): Promise<void>;
+  setOpenThread(threadId: string | null): Promise<void>;
   openSettings(): Promise<void>;
   canPostPromotedNotifications(): Promise<boolean>;
   openPromotedSettings(): Promise<void>;
@@ -59,7 +58,7 @@ const nativeNotifications =
     ? requireNativeModule<NativeNotifications>("RakazoNotifications")
     : null;
 
-export type NotificationThreadTarget = { botId?: string; threadId?: string; groupId?: string };
+export type NotificationThreadTarget = { threadId: string };
 
 let openThread: NotificationThreadTarget | null = null;
 let lastConfirmed: NotificationThreadTarget | null = null;
@@ -73,16 +72,7 @@ export function notificationTargetsThread(
   target: NotificationThreadTarget | null,
 ): boolean {
   if (!data || !target) return false;
-  const dataThreadId = data.threadId ?? data["rakazo.threadId"];
-  if (target.threadId && dataThreadId) return dataThreadId === target.threadId;
-  const dataGroupId = data.groupId ?? data["rakazo.groupId"];
-  if (target.groupId) return dataGroupId === target.groupId;
-  // A bot's own chat, not a group it posted in.
-  return Boolean(
-    target.botId &&
-      !dataGroupId &&
-      (data.botId === target.botId || data["rakazo.botId"] === target.botId),
-  );
+  return (data.threadId ?? data["rakazo.threadId"]) === target.threadId;
 }
 
 export function configureForegroundNotifications(): void {
@@ -90,7 +80,7 @@ export function configureForegroundNotifications(): void {
   foregroundHandlerConfigured = true;
   Notifications.setNotificationHandler({
     handleNotification: async ({ request }) => {
-      // Finished work is already on screen while the app is open; only questions and failures alert.
+      // Finished work is already on screen while the app is open; the open chat never alerts.
       const show =
         request.content.data?.kind !== "completion" &&
         !notificationTargetsThread(request.content.data, openThread);
@@ -138,20 +128,20 @@ export async function resumeLiveNotifications(
   endpoint: string,
   token: string,
   spaceId: string,
-  mutedBotId?: string,
+  mutedThreadId?: string,
 ): Promise<void> {
   if (!nativeNotifications || !token) return;
   const parsed = normalizeApiBase(endpoint);
   if (!parsed.ok || apiBaseWarning(parsed.url)) return;
   const headers = nativeServerHeaders(parsed.url);
-  if (mutedBotId && nativeNotifications.resumeAfterMute) {
+  if (mutedThreadId) {
     await nativeNotifications.resumeAfterMute(
       parsed.url,
       token,
       spaceId,
       getActiveUiLocale(),
       headers,
-      mutedBotId,
+      mutedThreadId,
     );
   } else {
     await nativeNotifications.resume(parsed.url, token, spaceId, getActiveUiLocale(), headers);
@@ -178,18 +168,13 @@ export async function setOpenNotificationThread(
   // for the last target it accepted when no report is pending, so overlapping
   // changes reach native and a rejection stays eligible for retry.
   openThread = target;
-  if (
-    pendingReports === 0 &&
-    hasConfirmed &&
-    lastConfirmed?.botId === target?.botId &&
-    lastConfirmed?.threadId === target?.threadId
-  ) {
+  if (pendingReports === 0 && hasConfirmed && lastConfirmed?.threadId === target?.threadId) {
     return;
   }
   const seq = ++reportSeq;
   pendingReports += 1;
   try {
-    await nativeNotifications?.setOpenThread(target?.botId ?? null, target?.threadId ?? null);
+    await nativeNotifications?.setOpenThread(target?.threadId ?? null);
     if (seq === reportSeq) {
       lastConfirmed = target;
       hasConfirmed = true;
@@ -204,7 +189,7 @@ export async function setOpenNotificationThread(
 }
 
 export async function dismissThreadNotifications(target: NotificationThreadTarget): Promise<void> {
-  if (!target.botId && !target.threadId && !target.groupId) return;
+  if (!target.threadId) return;
   const presented = await Notifications.getPresentedNotificationsAsync();
   await Promise.all(
     presented
@@ -221,16 +206,16 @@ export async function afterChatNotifyChange(
   endpoint: string,
   token: string,
   spaceId: string,
-  change: { botId: string; threadId?: string; notify: boolean },
+  change: { threadId: string; notify: boolean },
 ): Promise<void> {
-  // Android also discards replies retained before this bot's own chat was muted.
+  // Android also discards replies retained before this chat was muted.
   await resumeLiveNotifications(
     endpoint,
     token,
     spaceId,
-    change.notify ? undefined : change.botId,
+    change.notify ? undefined : change.threadId,
   ).catch(() => undefined);
-  if (!change.notify && change.threadId) {
+  if (!change.notify) {
     await dismissThreadNotifications({ threadId: change.threadId }).catch(() => undefined);
   }
 }

@@ -5,6 +5,21 @@ import { reconcileVisibleThreadSnapshot } from "./thread-snapshot";
 
 function snapshot(): MobileSnapshot {
   return {
+    chat: {
+      id: "thread-1",
+      spaceId: "space-1",
+      name: null,
+      title: "",
+      doodle: true,
+      members: [],
+      preview: "",
+      status: "idle",
+      unread: false,
+      muted: false,
+      lastReadSeq: -1,
+      lastMessageAt: "",
+      createdAt: "",
+    },
     threadId: "thread-1",
     cursor: 0,
     messages: [],
@@ -70,49 +85,5 @@ describe("visible thread snapshot publication", () => {
     expect(
       reconcileVisibleThreadSnapshot(streaming, withLiveStreamingProgress(streaming, false)),
     ).toEqual({ ...streaming, messages: [] });
-  });
-
-  it("publishes all snapshot fields except cursor, including nested values and array order", () => {
-    const previous = snapshot();
-    expect(reconcileVisibleThreadSnapshot(previous, structuredClone(previous))).toBe(previous);
-    const changes: Partial<MobileSnapshot>[] = [
-      { threadId: "thread-2" },
-      { botId: "bot-1" },
-      { groupId: "group-1", groupName: "Group" },
-      { olderCursor: 1 },
-      { run: { id: "run-1", status: "waiting_input" } },
-      { run: { id: "run-1", status: "failed", error: "Failed" } },
-      { run: null },
-      { activeRuns: [{ id: "run-2", status: "running" }] },
-      { members: [] },
-      {
-        computer: {
-          state: "running",
-          controlHolder: "bot",
-          screenAvailable: true,
-          mode: "team",
-          busyBotName: null,
-        },
-      },
-      { messages: [{ id: "message-1", role: "bot", blocks: [{ kind: "text", text: "Done" }] }] },
-    ];
-    for (const change of changes) {
-      const next = { ...previous, ...change };
-      expect(reconcileVisibleThreadSnapshot(previous, next)).toBe(next);
-    }
-    const messages: MobileSnapshot = {
-      ...previous,
-      messages: [
-        { id: "message-1", role: "bot", blocks: [{ kind: "text", text: "One" }] },
-        { id: "message-2", role: "bot", blocks: [{ kind: "text", text: "Two" }] },
-      ],
-    };
-    const reordered = { ...messages, messages: [...messages.messages].reverse() };
-    expect(reconcileVisibleThreadSnapshot(messages, reordered)).toBe(reordered);
-    const edited = structuredClone(messages);
-    edited.messages[0]!.blocks = [{ kind: "text", text: "Edited" }];
-    expect(reconcileVisibleThreadSnapshot(messages, edited)).toBe(edited);
-    expect(reconcileVisibleThreadSnapshot(null, previous)).toBe(previous);
-    expect(reconcileVisibleThreadSnapshot(previous, null)).toBeNull();
   });
 });

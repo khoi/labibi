@@ -104,7 +104,6 @@ vi.mock("./pages", async (original) => ({
 }));
 
 const { default: PageScreen } = await import("../app/page");
-const { takePageReply } = await import("./pages");
 
 /** A finger at `x`,`y` on the screen, as React Native reports a touch. */
 const at = (x: number, y: number, fingers = 1) => ({
@@ -200,68 +199,6 @@ it("does not let a page that reloads right after a tap act on that tap", async (
   await copy();
   expect(host.copied).toEqual(["x"]);
   host.theme = "light";
-  await act(async () => root.unmount());
-});
-
-it("puts a tapped reply in the page's own chat unsent, closing the page or opening that chat", async () => {
-  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
-  const now = vi.spyOn(Date, "now").mockReturnValue(2_000_000);
-  const show = async () => {
-    const root = createRoot(document.createElement("div"));
-    await act(async () => root.render(createElement(PageScreen)));
-    return root;
-  };
-  const tapThenReply = async (text: string, delay = 500) => {
-    host.touch.onTouchStart?.(at(50, 50));
-    host.touch.onTouchEnd?.(at(50, 50));
-    now.mockReturnValue(2_000_000 + delay);
-    await act(async () =>
-      host.message?.(JSON.stringify({ type: "rakazo-page:reply", text }), () => {}),
-    );
-    now.mockReturnValue(2_000_000);
-  };
-  host.went = [];
-
-  // Opened from its chat: the reply goes back there.
-  host.routes = [{ name: "thread", params: { botId: "bot-1" } }];
-  let root = await show();
-  expect(host.html).toContain('{"reply":true}');
-  await act(async () =>
-    host.message?.(JSON.stringify({ type: "rakazo-page:reply", text: "B" }), () => {}),
-  );
-  await tapThenReply("Pick  option\n B", 1_200);
-  expect([host.went, takePageReply("bot-1")]).toEqual([[], null]);
-  await tapThenReply("Pick  option\n B");
-  expect(host.went).toEqual(["back"]);
-  expect(takePageReply("bot-2")).toBeNull();
-  expect(takePageReply("bot-1")).toEqual({
-    text: "Pick option B",
-    page: { id: "page-1", title: "Plan" },
-  });
-  expect(takePageReply("bot-1")).toBeNull();
-  await act(async () => root.unmount());
-
-  // Opened from somewhere else, such as another chat: the page's group chat opens in its place.
-  host.went = [];
-  host.routes = [{ name: "thread", params: { botId: "bot-9" } }];
-  host.page = { ...host.page, groupId: "group-1" };
-  root = await show();
-  await tapThenReply("Watch it");
-  expect(host.went).toEqual([{ pathname: "/group-thread", params: { groupId: "group-1" } }]);
-  expect(takePageReply("group-1")).toEqual({
-    text: "Watch it",
-    page: { id: "page-1", title: "Plan" },
-  });
-  await act(async () => root.unmount());
-
-  // A page whose chat is gone offers no replies at all.
-  host.went = [];
-  host.page = { ...host.page, botId: null, groupId: null };
-  root = await show();
-  expect(host.html).toContain('{"reply":false}');
-  await tapThenReply("Orphan");
-  expect(host.went).toEqual([]);
-  host.page = { ...host.page, botId: "bot-1" };
   await act(async () => root.unmount());
 });
 

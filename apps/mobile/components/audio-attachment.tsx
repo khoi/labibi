@@ -32,13 +32,10 @@ export function AudioAttachment({
   const tokens = mobileTokens();
   const [state, setState] = useState(INITIAL_ATTACHMENT_AUDIO_STATE);
   const player = useRef<ReturnType<typeof createAttachmentAudioPlayer> | null>(null);
-  const botId = "botId" in target ? target.botId : undefined;
-  const groupId = "groupId" in target ? target.groupId : undefined;
+  const threadId = target.threadId;
   useEffect(() => {
-    const requestTarget: MobileArtifactTarget =
-      botId !== undefined ? { botId } : { groupId: groupId! };
     const instance = createAttachmentAudioPlayer(
-      () => audioArtifactUri(requestTarget, artifactId, mimeType),
+      () => audioArtifactUri({ threadId }, artifactId, mimeType),
       setState,
     );
     player.current = instance;
@@ -47,7 +44,7 @@ export function AudioAttachment({
       player.current = null;
       instance.dispose();
     };
-  }, [botId, groupId, artifactId, mimeType]);
+  }, [threadId, artifactId, mimeType]);
   // The row takes the message long-press; screen readers get the message actions on the
   // name instead so the play and share buttons stay separately focusable.
   const { accessibilityActions, onAccessibilityAction, ...touchProps } = pressableProps ?? {};

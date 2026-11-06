@@ -1,9 +1,9 @@
 import type {
   AccountSecurity,
   AuthCapabilities,
-  Bot,
+  Chat,
   ComputerStatus,
-  Group,
+  Doodle,
   Me,
   MessageBlock,
   ModelCatalogEntry,
@@ -13,10 +13,9 @@ import type {
   RpcPath,
   Run,
   RunStatus,
-  Space,
-  SpaceNavigation,
   ThreadMessage,
   ThreadSnapshot,
+  Workspace,
 } from "@labradoodle/contracts";
 import {
   accountSecuritySchema,
@@ -1113,27 +1112,9 @@ async function request(
   }
 }
 
-export type MobileBot = Pick<
-  Bot,
-  | "id"
-  | "name"
-  | "preview"
-  | "color"
-  | "instructionHistory"
-  | "notifyOnFinish"
-  | "threadId"
-  | "status"
-  | "threadStatus"
-  | "archivedAt"
-  | "unread"
-  | "updatedAt"
-  | "computerMode"
-  | "modelProvider"
-  | "modelId"
-  | "thinkingLevel"
-  | "autoSpeak"
-> &
-  Partial<Pick<Bot, "spaceId" | "instructions">>;
+export type MobileChat = Chat;
+export type MobileDoodle = Doodle;
+export type MobileWorkspace = Workspace;
 
 export type MobileMe = Pick<
   Me,
@@ -1150,6 +1131,7 @@ export type MobileMe = Pick<
   | "needsSignupSurvey"
   | "billingEnabled"
   | "paymentWalletProvider"
+  | "readAloud"
 >;
 
 export type MobileModel = ModelCatalogEntry;
@@ -1160,15 +1142,6 @@ export type MobileModelCredential = ModelCredential;
 /** Live progress and streaming rows are shown before they have a seq, thread, or time. */
 export type MobileMessage = Omit<ThreadMessage, "threadId" | "seq" | "createdAt"> &
   Partial<Pick<ThreadMessage, "threadId" | "seq" | "createdAt">>;
-
-export type MobileGroup = Pick<
-  Group,
-  "id" | "name" | "preview" | "archivedAt" | "unread" | "updatedAt" | "members"
-> &
-  Partial<Pick<Group, "spaceId">>;
-
-export type MobileSpace = Space;
-export type MobileSpaceNavigation = SpaceNavigation;
 
 /** A run as live events report it, before a refresh brings the full record. */
 type MobileRun = Pick<Run, "id"> & Partial<Pick<Run, "botId" | "userId">> & { status: string };
@@ -1185,25 +1158,16 @@ export type MobileSnapshot = Omit<
   messages: MobileMessage[];
   run: (MobileRun & Partial<Pick<Run, "error">>) | null;
   activeRuns?: MobileRun[];
-  computer?: Pick<
-    ComputerStatus,
-    "state" | "controlHolder" | "screenAvailable" | "mode" | "busyBotName"
-  >;
+  computer?: Pick<ComputerStatus, "state" | "controlHolder" | "screenAvailable">;
 };
 
 export function shouldApplyMobileThreadRefresh(input: {
   requestEpoch: number;
   currentEpoch: number;
-  targetBotId: string | undefined;
-  targetGroupId: string | undefined;
-  activeBotId: string | undefined;
-  activeGroupId: string | undefined;
+  targetThreadId: string | undefined;
+  activeThreadId: string | undefined;
 }) {
-  return (
-    input.requestEpoch === input.currentEpoch &&
-    input.targetBotId === input.activeBotId &&
-    input.targetGroupId === input.activeGroupId
-  );
+  return input.requestEpoch === input.currentEpoch && input.targetThreadId === input.activeThreadId;
 }
 
 /**
@@ -1217,10 +1181,8 @@ export function mobileThreadRefreshResult(input: {
   currentGeneration: number;
   requestEpoch: number;
   currentEpoch: number;
-  targetBotId: string | undefined;
-  targetGroupId: string | undefined;
-  activeBotId: string | undefined;
-  activeGroupId: string | undefined;
+  targetThreadId: string | undefined;
+  activeThreadId: string | undefined;
 }): { commit: boolean; snapshot: MobileSnapshot | null } {
   // Live events may advance the screen while this snapshot is in flight.
   const commit =
@@ -1319,7 +1281,7 @@ function httpError(message: string, res: Response, code?: string): Error {
 }
 
 export async function subscribeThread(
-  target: { botId: string } | { groupId: string },
+  threadId: string,
   cursor: number,
   onEvent: (event: ThreadEvent) => void,
   signal: AbortSignal,
@@ -1327,17 +1289,16 @@ export async function subscribeThread(
 ) {
   const context = requestContext ?? (await captureApiRequestContext());
   syncMobileAvatarSession(currentApiBase(), currentSessionGeneration());
-  const activityFeed = beginMobileAvatarFeed(target, cursor);
+  const activityFeed = beginMobileAvatarFeed(threadId, cursor);
   return subscribeRpcEvents(
     "threads/subscribe",
-    { ...target, cursor },
+    { threadId, cursor },
     (event) => {
-      const threadId = event.threadId ?? activityFeed.threadId;
-      if (threadId && typeof event.seq === "number" && event.seq > cursor)
+      if (typeof event.seq === "number" && event.seq > cursor)
         mobileLogoAvatarActivity.apply(activityFeed.source, {
           threadId,
           seq: event.seq,
-          botId: event.botId,
+          botId: threadId,
           runId: event.runId,
           type: event.type,
           payload: event.payload ?? {},
@@ -1347,6 +1308,20 @@ export async function subscribeThread(
     signal,
     context,
     () => mobileLogoAvatarActivity.resetSource(activityFeed.source),
+  );
+}
+
+/** Streams the account's notifications; `doodle` means the workspace's Doodle settings changed. */
+export async function subscribeNotifications(
+  onEvent: (event: { type: string }) => void,
+  signal: AbortSignal,
+) {
+  return subscribeRpcEvents(
+    "notifications/subscribe",
+    {},
+    onEvent,
+    signal,
+    await captureApiRequestContext(),
   );
 }
 
@@ -1495,19 +1470,6 @@ async function subscribeRpcEvents(
   }
 }
 
-/** Mirrors the web reducer so group member status matches across surfaces. */
-function updateMemberStatus(
-  members: MobileSnapshot["members"],
-  botId: string | undefined,
-  status: string,
-): MobileSnapshot["members"] {
-  const member = members?.find((candidate) => candidate.botId === botId);
-  if (!member || member.status === status) return members;
-  return members?.map((candidate) =>
-    candidate.botId === botId ? { ...candidate, status } : candidate,
-  );
-}
-
 export function applyMobileThreadEvent(
   prev: MobileSnapshot | null,
   event: ThreadEvent,
@@ -1533,18 +1495,7 @@ export function applyMobileThreadEvent(
     if (isBackgroundRunTrigger(trigger)) {
       return cursor === prev.cursor ? prev : { ...prev, cursor };
     }
-    const members =
-      event.botId &&
-      prev.members?.some((member) => member.botId === event.botId && member.status !== "running")
-        ? prev.members.map((member) =>
-            member.botId === event.botId ? { ...member, status: "running" } : member,
-          )
-        : prev.members;
-    if (!event.runId) {
-      return cursor === prev.cursor && members === prev.members
-        ? prev
-        : { ...prev, cursor, members };
-    }
+    if (!event.runId) return cursor === prev.cursor ? prev : { ...prev, cursor };
     const previousRun =
       prev.activeRuns?.find((candidate) => candidate.id === event.runId) ??
       (prev.run?.id === event.runId ? prev.run : undefined);
@@ -1561,14 +1512,7 @@ export function applyMobileThreadEvent(
       ),
       run,
     ];
-    return {
-      ...prev,
-      cursor,
-      members,
-      // Keep a group failure visible while another member starts work.
-      run: prev.groupId && prev.run?.status === "failed" && prev.run.id !== run.id ? prev.run : run,
-      activeRuns,
-    };
+    return { ...prev, cursor, run, activeRuns };
   }
   if (event.type === "run.waiting_input" || event.type === "computer.takeover.requested") {
     const status = event.type === "run.waiting_input" ? "waiting_input" : "waiting_takeover";
@@ -1586,8 +1530,8 @@ export function applyMobileThreadEvent(
     const knownInActive = Boolean(
       runId && prev.activeRuns?.some((candidate) => candidate.id === runId),
     );
-    // Peer bot_message runs are omitted from snapshots while busy; the first wait
-    // event is how an open thread learns they need ask/takeover UI.
+    // Another person's run may be missing from the snapshot; the first wait event is how an
+    // open chat learns it needs ask/takeover UI.
     const needsInsert = Boolean(runId) && !knownInRun && !knownInActive;
     const runChanged = Boolean(
       knownInRun &&
@@ -1602,21 +1546,8 @@ export function applyMobileThreadEvent(
             (candidate.status !== status || (userId !== undefined && candidate.userId !== userId)),
         ),
     );
-    const computer =
-      event.type === "computer.takeover.requested" && prev.computer?.busyBotName
-        ? { ...prev.computer, busyBotName: null }
-        : prev.computer;
-    const computerChanged = computer !== prev.computer;
-    const members = updateMemberStatus(prev.members, event.botId, status);
     const cursor = event.seq ?? prev.cursor;
-    if (
-      !runChanged &&
-      !activeRunChanged &&
-      !progressCleared &&
-      !needsInsert &&
-      !computerChanged &&
-      members === prev.members
-    ) {
+    if (!runChanged && !activeRunChanged && !progressCleared && !needsInsert) {
       return cursor === prev.cursor ? prev : { ...prev, cursor };
     }
     if (needsInsert && runId) {
@@ -1634,9 +1565,7 @@ export function applyMobileThreadEvent(
       return {
         ...prev,
         cursor,
-        members,
         messages,
-        computer,
         run: promoteWaiting ? waitingRun : prev.run,
         activeRuns,
       };
@@ -1652,7 +1581,7 @@ export function applyMobileThreadEvent(
             : candidate,
         )
       : prev.activeRuns;
-    return { ...prev, cursor, members, run, activeRuns, messages, computer };
+    return { ...prev, cursor, run, activeRuns, messages };
   }
   if (event.type === "computer.takeover.released") {
     const runId = event.runId;
@@ -1671,34 +1600,24 @@ export function applyMobileThreadEvent(
     if (nextRun === prev.run && !activeChanged) {
       return cursor === prev.cursor ? prev : { ...prev, cursor };
     }
-    const members = prev.members?.some(
-      (member) => member.botId === event.botId && member.status === "waiting_takeover",
-    )
-      ? prev.members.map((member) =>
-          member.botId === event.botId ? { ...member, status: "queued" } : member,
-        )
-      : prev.members;
     return {
       ...prev,
       cursor,
       run: nextRun,
       activeRuns: activeChanged ? prev.activeRuns?.map(settle) : prev.activeRuns,
-      members,
     };
   }
   if (isRunTerminalEvent(event)) {
     const activeRuns = prev.activeRuns?.filter((candidate) => candidate.id !== event.runId);
-    const nextMemberRun = activeRuns?.find((candidate) => candidate.botId === event.botId);
     const failure = runFailureError(event);
     const primaryEnded = prev.run?.id === event.runId ? prev.run : null;
-    // A group member run can fail while another is displayed; see reduceThreadSnapshot.
+    // One person's run can fail while another's is displayed; see reduceThreadSnapshot.
     const endedRun =
       primaryEnded ?? prev.activeRuns?.find((candidate) => candidate.id === event.runId) ?? null;
     return {
       ...prev,
       cursor: event.seq ?? prev.cursor,
       messages: prev.messages.filter((message) => message.id !== progressMessageId(event)),
-      members: updateMemberStatus(prev.members, event.botId, nextMemberRun?.status ?? "idle"),
       // A failed run stays in run so the thread can say why it stopped (see reduceThreadSnapshot).
       run:
         endedRun && failure

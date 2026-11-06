@@ -40,8 +40,6 @@ export const DE_MESSAGES: Record<string, string> = {
   "When to use": "Wann verwenden",
   "ZIP or postal code": "Postleitzahl",
   "Daily check-ins on unfinished work": "Tägliche Rückfragen zu offenen Aufgaben",
-  "Pages this group builds for you appear here.":
-    "Seiten, die diese Gruppe für dich erstellt, erscheinen hier.",
   Deleted: "Gelöscht",
   "Its link stops working. This cannot be undone.":
     "Der Link funktioniert dann nicht mehr. Das kann nicht rückgängig gemacht werden.",
@@ -67,8 +65,6 @@ export const DE_MESSAGES: Record<string, string> = {
   "Could not load this page.": "Diese Seite konnte nicht geladen werden.",
   Pages: "Seiten",
   "Could not load pages.": "Seiten konnten nicht geladen werden.",
-  "Pages this bot builds for you appear here.":
-    "Seiten, die dieser Bot für dich erstellt, erscheinen hier.",
   Shared: "Geteilt",
   "Share to": "Teilen mit",
   "{count} files": "{count} Dateien",
@@ -130,14 +126,8 @@ export const DE_MESSAGES: Record<string, string> = {
   "To:": "An:",
   Next: "Weiter",
   "Ex: Project Falcon": "Z. B. Projekt Falcon",
-  "Search bots": "Bots suchen",
   "{count} messages with {peer}": "{count} Nachrichten mit {peer}",
   "About {label}": "Über {label}",
-  "Manage other bots": "Andere Bots verwalten",
-  "Allow cross-space bot communication":
-    "Kommunikation zwischen Bots in verschiedenen Spaces erlauben",
-  "Organize the sidebar and edit bots. Instruction, model, routine and group edits need approval.":
-    "Ordne die Seitenleiste und bearbeite Bots. Änderungen an Gruppen, Anweisungen, Modellen und Routinen brauchen deine Zustimmung.",
 
   Headers: "Header",
   "Add header": "Header hinzufügen",
@@ -156,8 +146,6 @@ export const DE_MESSAGES: Record<string, string> = {
   Member: "Mitglied",
   Owner: "Inhaber",
   Space: "Space",
-  "Message from another agent": "Nachricht von einem anderen Agenten",
-  "Another agent": "Ein anderer Agent",
   "Update from {name}: {text}": "Update von {name}: {text}",
   "Update from {name}": "Update von {name}",
   "{name} asked: {text}": "{name} fragt: {text}",
@@ -259,10 +247,8 @@ export const DE_MESSAGES: Record<string, string> = {
   "Chat settings": "Chat-Einstellungen",
   Computer: "Computer",
   Group: "Gruppe",
-  "Group settings": "Gruppeneinstellungen",
   Integrations: "Integrationen",
   Models: "Modelle",
-  "New group chat": "Neuer Gruppenchat",
   Routine: "Routine",
   "Server integrations": "Server-Integrationen",
   Thread: "Thread",
@@ -293,9 +279,7 @@ export const DE_MESSAGES: Record<string, string> = {
   "Use default server": "Standardserver verwenden",
   Activity: "Aktivität",
   "Collapse {name}": "{name} einklappen",
-  "Could not load bots": "Bots konnten nicht geladen werden",
   "Could not open this PDF.": "Dieses PDF konnte nicht geöffnet werden.",
-  "Could not save the default space": "Standard-Space konnte nicht gespeichert werden",
   "Could not switch spaces": "Space konnte nicht gewechselt werden",
   Create: "Erstellen",
   "Delete {name}?": "{name} löschen?",
@@ -303,7 +287,6 @@ export const DE_MESSAGES: Record<string, string> = {
   "Mark as Read": "Als gelesen markieren",
   "Mark as Unread": "Als ungelesen markieren",
   "Mark as unread": "Als ungelesen markieren",
-  "No matching bots": "Keine passenden Bots",
   "No messages yet": "Noch keine Nachrichten",
   "No results": "Keine Ergebnisse",
   Personal: "Persönlich",
@@ -311,12 +294,10 @@ export const DE_MESSAGES: Record<string, string> = {
   Search: "Suchen",
   "Search conversations, files, and routines": "Unterhaltungen, Dateien und Routinen durchsuchen",
   "Searching…": "Suche…",
-  "Space actions for {name}": "Space-Aktionen für {name}",
   "notifications silenced": "Benachrichtigungen stumm",
   unread: "ungelesen",
   "@{name}": "@{name}",
   "Add a voice provider in Voice settings.": "Füge unter Stimme einen Sprachanbieter hinzu.",
-  Agent: "Agent",
   "Allowed once": "Einmal erlaubt",
   "Always allowed": "Immer erlaubt",
   Answer: "Annehmen",
@@ -329,7 +310,6 @@ export const DE_MESSAGES: Record<string, string> = {
   Attach: "Anhängen",
   "Attach file": "Datei anhängen",
   Attachment: "Anhang",
-  "Bot actions": "Bot-Aktionen",
   Camera: "Kamera",
   "Cancel reply": "Antwort abbrechen",
   Cancelled: "Abgebrochen",
@@ -403,7 +383,6 @@ export const DE_MESSAGES: Record<string, string> = {
   Play: "Abspielen",
   Pause: "Pause",
   "Select text": "Text auswählen",
-  "All bots": "Alle Bots",
   Artifact: "Artefakt",
   Artifacts: "Artefakte",
   "Could not delete this artifact": "Dieses Artefakt konnte nicht gelöscht werden",
@@ -423,8 +402,6 @@ export const DE_MESSAGES: Record<string, string> = {
     "Das löscht alle {count} Versionen dieses Artefakts. Das lässt sich nicht rückgängig machen.",
   Versions: "Versionen",
   Stop: "Stoppen",
-  "This removes every message and stops current work. The bot, computer, memory, and routines are kept.":
-    "Das entfernt alle Nachrichten und stoppt die laufende Arbeit. Bot, Computer, Erinnerungen und Routinen bleiben erhalten.",
   "Type your answer": "Gib deine Antwort ein",
   Username: "Benutzername",
   "Waiting for this bot’s response.": "Warten auf die Antwort dieses Bots.",
@@ -439,7 +416,6 @@ export const DE_MESSAGES: Record<string, string> = {
   finished: "abgeschlossen",
   running: "läuft",
   subagent: "Subagent",
-  "{count} agents working": "{count} Agents arbeiten",
   "{from} messaged {to}": "{from} hat {to} geschrieben",
   "{name} (max {count} attachments)": "{name} (max. {count} Anhänge)",
   "{name} (over {limit})": "{name} (über {limit})",
@@ -447,9 +423,7 @@ export const DE_MESSAGES: Record<string, string> = {
   "{name} (unsupported type)": "{name} (Dateityp nicht unterstützt)",
   "{name} is working": "{name} arbeitet",
   Advanced: "Erweitert",
-  "Could not load bot": "Bot konnte nicht geladen werden",
   "Could not load model settings": "Modelleinstellungen konnten nicht geladen werden",
-  "Could not save bot": "Bot konnte nicht gespeichert werden",
   "Default (medium)": "Standard (mittel)",
   Description: "Beschreibung",
   "Extra high": "Sehr hoch",
@@ -463,19 +437,10 @@ export const DE_MESSAGES: Record<string, string> = {
   "Read replies aloud": "Antworten vorlesen",
   Save: "Speichern",
   "Saving…": "Wird gespeichert…",
-  "Space default": "Space-Standard",
   "Can't read images": "Kann keine Bilder lesen",
   Thinking: "Denkmodus",
   Title: "Titel",
-  "Could not delete group": "Gruppe konnte nicht gelöscht werden",
-  "Could not load group": "Gruppe konnte nicht geladen werden",
-  "Could not save group": "Gruppe konnte nicht gespeichert werden",
-  "Delete group": "Gruppe löschen",
-  "Bots and their own chats stay.": "Bots und ihre eigenen Chats bleiben erhalten.",
-  "Group name": "Gruppenname",
-  "Group not found": "Gruppe nicht gefunden",
   Members: "Mitglieder",
-  "Could not create group": "Gruppe konnte nicht erstellt werden",
   "Creating…": "Wird erstellt…",
   "Create space": "Space erstellen",
   Active: "Aktiv",
@@ -524,8 +489,6 @@ export const DE_MESSAGES: Record<string, string> = {
   "When to run": "Ausführungszeit",
   "Write what this routine should do.": "Beschreibe, was diese Routine tun soll.",
   "Could not update routine": "Routine konnte nicht aktualisiert werden",
-  "Get notified when this Bot finishes or needs input":
-    "Benachrichtigung, wenn dieser Bot fertig ist oder Eingabe braucht",
   Bot: "Bot",
   "Close computer": "Computer schließen",
   "Computer keyboard": "Computertastatur",
@@ -756,8 +719,6 @@ export const DE_MESSAGES: Record<string, string> = {
   "Replaces the login saved for {site}": "Ersetzt die für {site} gespeicherte Anmeldung",
   "Cancel open invites": "Offene Einladungen widerrufen",
   "Could not cancel invites": "Einladungen konnten nicht widerrufen werden",
-  "Sites you sign in to stay signed in for everyone in this space":
-    "Websites, bei denen du dich anmeldest, bleiben für alle in diesem Bereich angemeldet",
   "The bot's browser stays signed in for everyone in this space":
     "Der Browser des Bots bleibt für alle in diesem Bereich angemeldet",
   "Could not submit answer": "Antwort konnte nicht gesendet werden",
@@ -836,8 +797,6 @@ export const DE_MESSAGES: Record<string, string> = {
   "Could not clear the local session": "Die lokale Sitzung konnte nicht gelöscht werden",
   "Could not clear the previous server session":
     "Die vorherige Serversitzung konnte nicht gelöscht werden",
-  "Could not clear the previous space":
-    "Die vorherige Space-Auswahl konnte nicht zurückgesetzt werden",
   "Could not save the server URL": "Server-URL konnte nicht gespeichert werden",
   "Could not send reset email": "E-Mail zum Zurücksetzen konnte nicht gesendet werden",
   "The server changed while starting the request":
@@ -851,7 +810,6 @@ export const DE_MESSAGES: Record<string, string> = {
   "{channel} {id}": "{channel} {id}",
   "{channel} {id}, {date}": "{channel} {id}, {date}",
   "Saved {name} locally": "{name} lokal gespeichert",
-  "Could not delete bot": "Bot konnte nicht gelöscht werden",
   "Delete memories too": "Erinnerungen ebenfalls löschen",
   "Its conversation, files, and routines will be permanently deleted. What should happen to its memories?":
     "Unterhaltung, Dateien und Routinen werden endgültig gelöscht. Was soll mit den Erinnerungen geschehen?",
@@ -887,10 +845,6 @@ export const DE_MESSAGES: Record<string, string> = {
     "Werden der Reihe nach versucht, wenn das aktive Modell ausfällt.",
   "Could not load backup models": "Backup-Modelle konnten nicht geladen werden.",
   "Could not save backup models": "Backup-Modelle konnten nicht gespeichert werden.",
-  "Space changed. Reload Models to refresh backup models.":
-    "Der Space wurde gewechselt. Lade Modelle neu, um die Backups zu aktualisieren.",
-  "Space changed. Reload Models before saving backups.":
-    "Der Space wurde gewechselt. Lade Modelle neu, bevor du Backups speicherst.",
   "A sign-in page opened — enter this code there:":
     "Eine Anmeldeseite wurde geöffnet — gib dort diesen Code ein:",
   Copied: "Kopiert",
@@ -927,12 +881,8 @@ export const DE_MESSAGES: Record<string, string> = {
   "You can turn this off in Account → AI data sharing.":
     "Du kannst dies unter Konto → KI-Datenfreigabe ausschalten.",
   Allow: "Erlauben",
-  "Messages, chat history, bot instructions, memories, attachments, screenshots and connected-app content are sent to run your bots, including routines.":
-    "Nachrichten, Chatverlauf, Bot-Anweisungen, Erinnerungen, Anhänge, Screenshots und Inhalte verbundener Apps werden gesendet, um deine Bots auszuführen, einschließlich Routinen.",
   "Your recordings are sent for transcription, and text you play is sent to generate speech.":
     "Deine Aufnahmen werden zur Transkription gesendet, und Text, den du abspielst, wird zur Spracherzeugung gesendet.",
-  "Conversation summaries, memories, searches and bot and Space IDs are sent to store and recall context.":
-    "Gesprächszusammenfassungen, Erinnerungen, Suchanfragen sowie Bot- und Space-IDs werden gesendet, um Kontext zu speichern und abzurufen.",
   "AI data sharing": "KI-Datenfreigabe",
   "Allow {name} on mobile": "{name} auf dem Handy erlauben",
   "Could not load permissions.": "Berechtigungen konnten nicht geladen werden.",
@@ -955,7 +905,6 @@ export const DE_MESSAGES: Record<string, string> = {
   "Members ({count})": "Mitglieder ({count})",
   "Show all": "Alle anzeigen",
   "Show selected": "Ausgewählte anzeigen",
-  "Filter bots": "Bots filtern",
   "Pick {min}–{max}": "{min}–{max} auswählen",
   "No members yet": "Noch keine Mitglieder",
   Applied: "Angewendet",
@@ -966,8 +915,6 @@ export const DE_MESSAGES: Record<string, string> = {
   Instructions: "Anweisungen",
   "Instructions updated": "Anweisungen aktualisiert",
   "Settings updated": "Einstellungen aktualisiert",
-  "Let this bot update its own instructions":
-    "Dieser Bot darf seine eigenen Anweisungen aktualisieren",
   Restored: "Wiederhergestellt",
   Undo: "Rückgängig",
   "Update instructions?": "Anweisungen aktualisieren?",
@@ -1256,18 +1203,8 @@ export const DE_MESSAGES: Record<string, string> = {
   "1 free month earned": "1 Gratismonat verdient",
   "{count} free months earned": "{count} Gratismonate verdient",
   "Submit a plugin": "Plugin einreichen",
-  "Bot models": "Bot-Modelle",
-  "1 bot has its own model:": "1 Bot hat ein eigenes Modell:",
-  "{count} bots have their own model:": "{count} Bots haben ein eigenes Modell:",
-  "Use space default": "Space-Standard verwenden",
   "Switching…": "Wird gewechselt…",
-  "Switch 1 bot to the space default?": "1 Bot auf den Space-Standard umstellen?",
-  "Switch {count} bots to the space default?": "{count} Bots auf den Space-Standard umstellen?",
-  "Their own model is cleared. You can pick one again in each bot.":
-    "Ihr eigenes Modell wird entfernt. Du kannst in jedem Bot wieder eines wählen.",
   Switch: "Umstellen",
-  "1 bot now uses the space default.": "1 Bot verwendet jetzt den Space-Standard.",
-  "{count} bots now use the space default.": "{count} Bots verwenden jetzt den Space-Standard.",
   "Could not switch {failedNames}. Try again.":
     "{failedNames} konnte nicht umgestellt werden. Versuche es erneut.",
   "Could not load memory": "Gedächtnis konnte nicht geladen werden",
@@ -1294,6 +1231,54 @@ export const DE_MESSAGES: Record<string, string> = {
   "{amount} spent this week": "Diese Woche {amount} ausgegeben",
   "{amount} spent this month": "Diesen Monat {amount} ausgegeben",
   "{amount} spent": "{amount} ausgegeben",
+  "Add people": "Personen hinzufügen",
+  Chat: "Chat",
+  "Conversation summaries, memories, searches and chat and person IDs are sent to store and recall context.":
+    "Gesprächszusammenfassungen, Erinnerungen, Suchanfragen sowie Chat- und Personen-IDs werden gesendet, um Kontext zu speichern und abzurufen.",
+  "Could not save the default workspace": "Standard-Arbeitsbereich konnte nicht gespeichert werden",
+  "Could not start chat": "Chat konnte nicht gestartet werden",
+  "Could not switch workspaces": "Arbeitsbereich konnte nicht gewechselt werden",
+  "Delete chat": "Chat löschen",
+  "Disable a tool": "Werkzeug deaktivieren",
+  Files: "Dateien",
+  "Leave chat": "Chat verlassen",
+  "Messages, chat history, Doodle's instructions, memories, attachments, screenshots and connected-app content are sent to run Doodle, including routines.":
+    "Nachrichten, Chatverlauf, Doodles Anweisungen, Erinnerungen, Anhänge, Screenshots und Inhalte verbundener Apps werden gesendet, um Doodle auszuführen, auch für Routinen.",
+  "My computer": "Mein Computer",
+  "New chat": "Neuer Chat",
+  "Pages Doodle builds for you appear here.":
+    "Seiten, die Doodle für dich erstellt, erscheinen hier.",
+  "Recovering your computer": "Dein Computer wird wiederhergestellt",
+  "Start chat": "Chat starten",
+  "Updating your computer": "Dein Computer wird aktualisiert",
+  "Ask Doodle in this chat to set up a routine.":
+    "Bitte Doodle in diesem Chat, eine Routine einzurichten.",
+  "Doodle with your own computer": "Doodle mit deinem eigenen Computer",
+  "Put Doodle to work": "Lass Doodle für dich arbeiten",
+  "Could not leave workspace": "Arbeitsbereich konnte nicht verlassen werden",
+  "Leave workspace": "Arbeitsbereich verlassen",
+  "Doodle can use the file but won't see the picture.":
+    "Doodle kann die Datei nutzen, sieht das Bild aber nicht.",
+  "Doodle couldn't finish its reply. Technical details includes the reported error.":
+    "Doodle konnte die Antwort nicht beenden. Die technischen Details enthalten den gemeldeten Fehler.",
+  "Doodle couldn't reply because its provider's daily limit was reached.":
+    "Doodle konnte nicht antworten, weil das Tageslimit des Anbieters erreicht ist.",
+  "Doodle couldn't reply because its provider's monthly limit was reached.":
+    "Doodle konnte nicht antworten, weil das Monatslimit des Anbieters erreicht ist.",
+  "Doodle couldn't reply because its provider's usage limit was reached.":
+    "Doodle konnte nicht antworten, weil das Nutzungslimit des Anbieters erreicht ist.",
+  "Doodle couldn't reply because its provider's weekly limit was reached.":
+    "Doodle konnte nicht antworten, weil das Wochenlimit des Anbieters erreicht ist.",
+  "The provider couldn't serve the model selected for Doodle.":
+    "Der Anbieter konnte das für Doodle gewählte Modell nicht bereitstellen.",
+  "The provider received too many requests to answer Doodle.":
+    "Der Anbieter hat zu viele Anfragen erhalten, um Doodle zu antworten.",
+  "The provider refused the key Doodle used for its reply.":
+    "Der Anbieter hat den Schlüssel abgelehnt, den Doodle für die Antwort verwendet hat.",
+  "This removes the connection from every workspace.":
+    "Dadurch wird die Verbindung aus allen Arbeitsbereichen entfernt.",
+  "Waiting for Doodle’s response.": "Warte auf die Antwort von Doodle.",
+  Workspace: "Arbeitsbereich",
 };
 
 export const PEER_MESSAGE_FORMS: Partial<Record<Intl.LDMLPluralRule, string>> = {

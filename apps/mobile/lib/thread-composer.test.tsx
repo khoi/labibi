@@ -203,8 +203,9 @@ vi.mock("../components/glass-surface", () => ({
     createElement("div", { "data-glass": shape, "data-style": JSON.stringify(style) }, children),
 }));
 vi.mock("../components/native-symbol", () => ({ NativeSymbol: () => null }));
-vi.mock("../components/bot-avatar", () => ({
-  BotAvatar: ({ identity, size }: { identity?: string; size?: number }) =>
+vi.mock("../components/chat-avatar", () => ({ PersonAvatar: () => null, ChatAvatar: () => null }));
+vi.mock("../components/doodle-avatar", () => ({
+  DoodleAvatar: ({ identity, size }: { identity?: string; size?: number }) =>
     createElement("span", { "data-avatar": identity, "data-size": size }),
 }));
 vi.mock("./native", () => ({
@@ -268,9 +269,8 @@ describe("thread composer isolation", () => {
       />
     );
   }
-  const catalogBots = [{ id: "bot-1", name: "Bot" }];
   function MentionThreadHarness({ owner = "thread-a" }: { owner?: string }) {
-    const catalog = useThreadMentionCatalog(owner, catalogBots);
+    const catalog = useThreadMentionCatalog(owner, "thread-1", true);
     return (
       <ThreadComposer
         key={owner}
@@ -423,20 +423,6 @@ describe("thread composer isolation", () => {
   function pickerRows() {
     return [...container.querySelectorAll<HTMLButtonElement>('button[aria-label="@{name}"]')];
   }
-
-  it("lists one row per bot with its avatar and name, at most five", () => {
-    const bots = ["Ada", "Ben", "Cleo", "Dan", "Eve", "Fay", "Gus"].map((name) => ({
-      kind: "bot" as const,
-      id: `bot-${name}`,
-      name,
-    }));
-    render({ composerMentionTargets: bots });
-    type("@");
-    const rows = pickerRows();
-    expect(rows.map((row) => row.textContent)).toEqual(["Ada", "Ben", "Cleo", "Dan", "Eve"]);
-    expect(rows[0]!.querySelector("[data-avatar]")!.getAttribute("data-avatar")).toBe("bot-Ada");
-    expect(rows[0]!.querySelector("[data-avatar]")!.getAttribute("data-size")).toBe("24");
-  });
 
   it("puts everyone first in a group and filters by the words of a name", () => {
     const everyone = { kind: "everyone", id: "everyone", name: "everyone" } as const;

@@ -8,11 +8,12 @@ const COLUMN_PADDING = THREAD_COLUMN_GUTTER * 2;
 export function messageRowLayout(
   blocks: MobileMessage["blocks"],
   {
-    activityBotId,
+    gutter,
     inGroup,
     columnWidth,
   }: {
-    activityBotId?: string;
+    /** An avatar sits beside the message. */
+    gutter: boolean;
     inGroup: boolean;
     columnWidth: number;
   },
@@ -24,15 +25,15 @@ export function messageRowLayout(
     (block) =>
       block.kind === "app_connect" || block.kind === "mcp_approval" || block.kind === "app",
   );
-  const gutter = activityBotId ? (inGroup ? 28 : 36) : 0;
+  const gutterWidth = gutter ? (inGroup ? 28 : 36) : 0;
   return {
-    width: full ? "100%" : appConnect && !activityBotId ? "90%" : undefined,
-    maxWidth: full ? "100%" : activityBotId ? undefined : "90%",
+    width: full ? "100%" : appConnect && !gutter ? "90%" : undefined,
+    maxWidth: full ? "100%" : gutter ? undefined : "90%",
     menuFullWidth: wideAsk || appConnect,
     menuMaxWidth: wideAsk
-      ? columnWidth - COLUMN_PADDING - gutter
-      : activityBotId
-        ? columnWidth - COLUMN_PADDING - gutter
+      ? columnWidth - COLUMN_PADDING - gutterWidth
+      : gutter
+        ? columnWidth - COLUMN_PADDING - gutterWidth
         : (columnWidth - COLUMN_PADDING) * 0.9,
   } as const;
 }

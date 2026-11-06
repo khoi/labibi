@@ -12,17 +12,6 @@ async function load() {
 beforeEach(() => vi.mocked(Notifications.setBadgeCountAsync).mockReset().mockResolvedValue(true));
 
 describe("app icon badge", () => {
-  it("counts unread chats, bots and groups, across every Space", async () => {
-    const { unreadChatCount } = await load();
-    expect(
-      unreadChatCount([
-        { bots: [{ unread: true }, { unread: false }], groups: [{ unread: true }] },
-        { bots: [{ unread: true }], groups: [] },
-      ]),
-    ).toBe(3);
-    expect(unreadChatCount([])).toBe(0);
-  });
-
   it("writes only when the count changes and retries after a failed write", async () => {
     const { syncAppBadge } = await load();
     await syncAppBadge(2);

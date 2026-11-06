@@ -8,19 +8,14 @@ export type ComposerDraftScope = { apiBase: string; userId: string; threadKey: s
 
 export type ComposerDraft = { text: string; bindings: ComposerMentionBinding[] };
 
-/** Uses the web draft key (`bot:<id>` or `group:<id>`) inside the server and account. */
+/** Uses the web draft key (`chat:<id>`) inside the server and account. */
 export function composerDraftScope(
   userId: string,
-  botId: string | undefined,
-  groupId: string | undefined,
+  threadId: string | undefined,
 ): ComposerDraftScope | undefined {
-  if (!userId || (!botId && !groupId)) return undefined;
+  if (!userId || !threadId) return undefined;
   try {
-    return {
-      apiBase: currentApiBase(),
-      userId,
-      threadKey: groupId ? `group:${groupId}` : `bot:${botId}`,
-    };
+    return { apiBase: currentApiBase(), userId, threadKey: `chat:${threadId}` };
   } catch {
     return undefined;
   }

@@ -5,11 +5,10 @@ import type { InboxChatPreviewProps } from "./inbox-chat-preview";
 export type InboxSwipeRowProps = {
   rowKey: string;
   unread?: boolean;
-  /** Bots only; groups have no finish notifications. */
-  notifyOnFinish?: boolean;
+  /** The long-press menu, in order. */
+  menuActions: InboxRowAction[];
   preview: InboxChatPreviewProps;
   onAction: (action: InboxRowAction) => void;
-  onNotifyChange: (notifyOnFinish: boolean) => void;
   children: ReactElement;
 };
 

@@ -2,28 +2,27 @@ import type { LoginFieldInput, RpcInput } from "@labradoodle/contracts";
 import type { MobileMessage } from "./api";
 
 export type ThreadAnswerContext = {
-  botId: string | undefined;
-  groupId: string | undefined;
+  threadId: string | undefined;
   readOnly: boolean;
   rpc: (proc: "threads/answer", body: RpcInput<"threads/answer">) => Promise<unknown>;
-  isCurrentTarget: (botId: string | undefined, groupId: string | undefined) => boolean;
+  isCurrentTarget: (threadId: string | undefined) => boolean;
   refresh: () => Promise<unknown>;
   markRead: () => void;
 };
 
 /** Sends an ask answer or dismissal; resolves once the server accepts it. */
 export async function answerThreadMessage(
-  { botId, groupId, readOnly, rpc, isCurrentTarget, refresh, markRead }: ThreadAnswerContext,
+  { threadId, readOnly, rpc, isCurrentTarget, refresh, markRead }: ThreadAnswerContext,
   message: Pick<MobileMessage, "id" | "runId">,
   answer: string,
   fields?: readonly LoginFieldInput[],
   dismiss?: boolean,
   remember?: false,
 ) {
-  if (readOnly || (!botId && !groupId) || !message.runId) return;
+  if (readOnly || !threadId || !message.runId) return;
   markRead();
   await rpc("threads/answer", {
-    ...(groupId ? { groupId } : { botId }),
+    threadId,
     runId: message.runId,
     messageId: message.id,
     answer,
@@ -32,5 +31,5 @@ export async function answerThreadMessage(
     ...(dismiss ? { dismiss: true as const } : {}),
   });
   // The answer is saved once the server accepts it; a failed refresh only delays the card.
-  if (isCurrentTarget(botId, groupId)) await refresh().catch(() => undefined);
+  if (isCurrentTarget(threadId)) await refresh().catch(() => undefined);
 }

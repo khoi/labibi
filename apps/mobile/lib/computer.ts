@@ -1,17 +1,11 @@
-import type {
-  ComputerMode,
-  ComputerStatus as ContractComputerStatus,
-} from "@labradoodle/contracts";
+import type { ComputerStatus as ContractComputerStatus } from "@labradoodle/contracts";
 import { isLocalhostOrLoopbackIp, isPrivateNetworkHost } from "@labradoodle/contracts";
 import type { ScreenPageState } from "@labradoodle/core";
 import { isRetryableError, SCREEN_PAGE_STATES } from "@labradoodle/core";
 import { t } from "./i18n";
 
 export const COMPUTER_HEARTBEAT_MS = 60_000;
-/**
- * Computer lifecycle calls create, start or stop a container (booting, switching between the
- * Team and a Private computer); give them far more than an ordinary RPC.
- */
+/** Computer lifecycle calls create, start or stop a container; give them far more than an ordinary RPC. */
 export const COMPUTER_LIFECYCLE_TIMEOUT_MS = 120_000;
 export const SCREEN_URL_OPEN_ATTEMPTS = 5;
 export const SCREEN_URL_RETRY_DELAY_MS = 400;
@@ -163,34 +157,18 @@ export function nextLoadedScreenUrl(
   return retainScreenSource(held, next, now);
 }
 
-export function previewPlaceholder(
-  state: string | undefined,
-  booting: boolean,
-  name: string,
-  mode?: ComputerMode,
-): string {
+export function previewPlaceholder(state: string | undefined, booting: boolean): string {
   if (state === "booting" || booting) return t("Booting live desktop…");
-  if (state === "running") return computerLabel(mode, name);
+  if (state === "running") return t("My computer");
   if (state === "suspended") return t("Computer is asleep. Take control to wake it.");
   if (state === "error") return t("Computer failed to boot");
   return t("Computer is stopped");
 }
 
-export function controlLabel(computer: ComputerStatus | null, name: string, botId?: string) {
-  if (computer?.busyBotName) return t("{name} is using it", { name: computer.busyBotName });
-  if (
-    computer?.controlHolder === "user" &&
-    computer.controlBotId === botId &&
-    !computer.controlledByOther
-  ) {
-    return t("You have control");
-  }
+export function controlLabel(computer: ComputerStatus | null) {
+  if (computer?.controlHolder === "user") return t("You have control");
   if (computer?.state === "suspended") return t("Asleep");
-  return computerLabel(computer?.mode, name);
-}
-
-export function computerLabel(mode: ComputerMode | undefined, name: string) {
-  return mode === "dedicated" ? t("{name}’s computer", { name }) : t("Team Computer");
+  return t("My computer");
 }
 
 /**

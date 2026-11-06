@@ -41,7 +41,7 @@ import { rpc } from "../../lib/api";
 import { useAppForeground } from "../../lib/app-foreground";
 import { mobileTokens } from "../../lib/appearance";
 import { useI18n } from "../../lib/i18n";
-import { loadLastBotId } from "../../lib/last-bot";
+import { loadLastChatId } from "../../lib/last-chat";
 import { native, useThemedStyles } from "../../lib/native";
 import { iosAtLeast } from "../../lib/native-controls";
 import type { PluginParams } from "../../lib/plugin-marketplace";
@@ -67,7 +67,7 @@ function PluginScreen() {
   const foreground = useAppForeground();
   const [installs, setInstalls] = useState<CapabilityInstall[]>([]);
   const [allServers, setAllServers] = useState<McpServer[]>([]);
-  const [botId, setBotId] = useState("");
+  const [lastChatId, setLastChatId] = useState("");
   const [loaded, setLoaded] = useState(false);
   const [preview, setPreview] = useState<PluginPreview | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
@@ -82,10 +82,10 @@ function PluginScreen() {
 
   const managed = Boolean(params.managedConnectorId && params.managedSlug);
   const load = useCallback(async () => {
-    const [installRows, serverRows, lastBot, managedState] = await Promise.all([
+    const [installRows, serverRows, lastChat, managedState] = await Promise.all([
       rpc("capabilities/list"),
       rpc("mcp/servers/list"),
-      loadLastBotId(),
+      loadLastChatId(),
       managed
         ? Promise.all([rpc("connections/catalog"), rpc("connections/list")])
         : Promise.resolve(null),
@@ -103,7 +103,7 @@ function PluginScreen() {
     }
     setInstalls(installRows);
     setAllServers(serverRows);
-    setBotId(lastBot);
+    setLastChatId(lastChat);
     setLoaded(true);
   }, [managed, params.managedConnectorId, params.managedSlug]);
 
@@ -215,9 +215,9 @@ function PluginScreen() {
             t("Connection pending"),
             t("Finish connecting in the browser, then refresh this page."),
           );
-        else if (botId)
+        else if (lastChatId)
           void rpc("onboarding/appConnected", {
-            botId,
+            threadId: lastChatId,
             provider: managedApp.slug,
             connectorId: managedApp.connectorId,
           }).catch(() => undefined);

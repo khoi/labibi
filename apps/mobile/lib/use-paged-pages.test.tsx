@@ -16,7 +16,7 @@ vi.mock("expo-router", async () => {
 const page = (id: string) => ({ id, title: id, pinned: false });
 let hook: ReturnType<typeof usePagedPages>;
 function Probe() {
-  hook = usePagedPages({ botId: "b1" });
+  hook = usePagedPages("b1");
   return null;
 }
 function deferred<T>() {
@@ -112,11 +112,11 @@ it("keeps the pages shown when the list comes back on screen, newest first", asy
     nextCursor: "c3",
   } as never);
   await act(async () => hook.refresh());
-  expect(read).toHaveBeenLastCalledWith("pages/list", { botId: "b1", limit: 8 });
+  expect(read).toHaveBeenLastCalledWith("pages/list", { threadId: "b1", limit: 8 });
   expect(items()).toEqual(["new", "a", "b", "c", "d", "e", "f", "g"]);
   read.mockResolvedValueOnce({ items: [page("h")], nextCursor: null } as never);
   await act(async () => hook.showMore());
-  expect(read).toHaveBeenLastCalledWith("pages/list", { botId: "b1", limit: 5, cursor: "c3" });
+  expect(read).toHaveBeenLastCalledWith("pages/list", { threadId: "b1", limit: 5, cursor: "c3" });
   expect(items()).toEqual(["new", "a", "b", "c", "d", "e", "f", "g", "h"]);
 });
 
@@ -126,29 +126,8 @@ it("reads five at first and never more than the server lists at once", async () 
   const many = Array.from({ length: 70 }, (_, index) => page(`p${index}`));
   read.mockResolvedValue({ items: many, nextCursor: "c1" } as never);
   await act(async () => root.render(createElement(Probe)));
-  expect(read).toHaveBeenLastCalledWith("pages/list", { botId: "b1", limit: 5 });
+  expect(read).toHaveBeenLastCalledWith("pages/list", { threadId: "b1", limit: 5 });
   await act(async () => hook.refresh());
-  expect(read).toHaveBeenLastCalledWith("pages/list", { botId: "b1", limit: 60 });
-  read.mockReset();
-});
-
-it("starts from five again when the screen moves to another bot or a group", async () => {
-  const read = vi.mocked(rpc);
-  read.mockReset();
-  read.mockResolvedValue({
-    items: Array.from({ length: 8 }, (_, i) => page(`p${i}`)),
-    nextCursor: "c",
-  } as never);
-  function Owner({ owner }: { owner: { botId?: string; groupId?: string } }) {
-    hook = usePagedPages(owner);
-    return null;
-  }
-  await act(async () => root.render(createElement(Owner, { owner: { botId: "b1" } })));
-  await act(async () => hook.refresh());
-  expect(read).toHaveBeenLastCalledWith("pages/list", { botId: "b1", limit: 8 });
-  await act(async () => root.render(createElement(Owner, { owner: { botId: "b2" } })));
-  expect(read).toHaveBeenLastCalledWith("pages/list", { botId: "b2", limit: 5 });
-  await act(async () => root.render(createElement(Owner, { owner: { groupId: "g1" } })));
-  expect(read).toHaveBeenLastCalledWith("pages/list", { groupId: "g1", limit: 5 });
+  expect(read).toHaveBeenLastCalledWith("pages/list", { threadId: "b1", limit: 60 });
   read.mockReset();
 });

@@ -1,12 +1,11 @@
-import { memberName, resolvePersonaColorDef } from "@labradoodle/core";
 import { useNavigation, useRouter } from "expo-router";
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { Alert, AppState } from "react-native";
-import type { MobileBot, MobileMessage, MobileSnapshot } from "./api";
+import type { MobileMessage, MobileSnapshot } from "./api";
 import { blockText } from "./api";
 import { nextAutoSpeakAction } from "./auto-speak";
+import { DOODLE_SPEAKER } from "./doodle";
 import { useI18n } from "./i18n";
-import { speakerColorFor } from "./thread-message-text";
 import { errorText } from "./user-error";
 import { speakQueue, speakText } from "./voice";
 
@@ -21,60 +20,53 @@ function speakableMessageText(message: MobileMessage): string {
 }
 
 /**
- * Reads a bot's finished reply aloud when the bot has auto-speak on and its chat is in front.
+ * Reads Doodle's finished reply aloud when the person has read-aloud on and the chat is in front.
  * Returns a ref to the latest check, for focus effects that must not re-run on every message.
  */
 export function useAutoSpeakReply({
-  botId,
-  inGroup,
-  currentBot,
+  threadId,
+  readAloud,
   snap,
   showingSaved,
 }: {
-  botId?: string;
-  inGroup: boolean;
-  currentBot?: MobileBot;
+  threadId?: string;
+  readAloud: boolean;
   snap: MobileSnapshot | null;
   showingSaved: boolean;
 }) {
   const navigation = useNavigation();
   const autoSpoken = useRef<string | null>(null);
-  const autoSpokenBotId = useRef<string | null>(null);
+  const autoSpokenThreadId = useRef<string | null>(null);
 
   const speakFinishedReply = useCallback(() => {
-    if (!botId || inGroup || !currentBot) return;
+    if (!threadId || !snap?.chat.doodle) return;
     const decision = nextAutoSpeakAction({
-      botId: currentBot.id,
-      autoSpeak: currentBot.autoSpeak,
+      botId: threadId,
+      autoSpeak: readAloud,
       focused: AppState.currentState === "active" && navigation.isFocused(),
-      snapshotReady: snap?.botId === currentBot.id && !showingSaved,
-      lastSpokenBotId: autoSpokenBotId.current,
+      snapshotReady: snap.threadId === threadId && !showingSaved,
+      lastSpokenBotId: autoSpokenThreadId.current,
       lastSpokenMessageId: autoSpoken.current,
-      runStatus: snap?.run?.status,
-      messages: snap?.messages ?? [],
+      runStatus: snap.run?.status,
+      messages: snap.messages,
     });
     if (decision.action === "seed") {
-      autoSpokenBotId.current = currentBot.id;
+      autoSpokenThreadId.current = threadId;
       autoSpoken.current = decision.messageId;
       return;
     }
     if (decision.action !== "speak") return;
-    autoSpokenBotId.current = currentBot.id;
+    autoSpokenThreadId.current = threadId;
     autoSpoken.current = decision.messageId;
-    void speakText(decision.text, {
-      botId: currentBot.id,
-      speaker: {
-        name: currentBot.name,
-        color: resolvePersonaColorDef(currentBot.id, currentBot.color).hex,
-      },
-    }).catch(() => undefined);
+    const botId = snap.messages.find((message) => message.id === decision.messageId)?.botId;
+    void speakText(decision.text, { botId, speaker: DOODLE_SPEAKER }).catch(() => undefined);
   }, [
-    botId,
-    inGroup,
-    currentBot,
+    threadId,
+    readAloud,
     navigation,
     showingSaved,
-    snap?.botId,
+    snap?.chat.doodle,
+    snap?.threadId,
     snap?.messages,
     snap?.run?.status,
   ]);
@@ -93,20 +85,8 @@ export function useAutoSpeakReply({
   return speakFinishedReplyRef;
 }
 
-/** Reads the chat aloud from one message on, each bot reply in its speaker's voice. */
-export function useSpeakMessages({
-  visibleMessages,
-  botId,
-  members,
-  displayName,
-  mentionBots,
-}: {
-  visibleMessages: MobileMessage[];
-  botId?: string;
-  members: MobileSnapshot["members"] | undefined;
-  displayName?: string;
-  mentionBots: MobileBot[];
-}) {
+/** Reads the chat aloud from one message on, each of Doodle's replies in Doodle's voice. */
+export function useSpeakMessages({ visibleMessages }: { visibleMessages: MobileMessage[] }) {
   const { t } = useI18n();
   const router = useRouter();
   return useCallback(
@@ -117,18 +97,7 @@ export function useSpeakMessages({
         if (candidate.role !== "bot") return [];
         const text = speakableMessageText(candidate);
         if (!text) return [];
-        const speakerBotId = candidate.botId ?? botId ?? members?.[0]?.botId ?? "";
-        return [
-          {
-            text,
-            botId: speakerBotId,
-            messageId: candidate.id,
-            speaker: {
-              name: memberName(members, speakerBotId) ?? displayName,
-              color: speakerColorFor(mentionBots, members, speakerBotId),
-            },
-          },
-        ];
+        return [{ text, botId: candidate.botId, messageId: candidate.id, speaker: DOODLE_SPEAKER }];
       });
       if (items.length === 0) return;
       void speakQueue(items)
@@ -143,6 +112,6 @@ export function useSpeakMessages({
           Alert.alert(t("Could not speak"), errorText(err, t("Try again."))),
         );
     },
-    [botId, displayName, mentionBots, members, visibleMessages],
+    [visibleMessages],
   );
 }

@@ -6,7 +6,6 @@ import { native } from "../lib/native";
 export const INBOX_ROW = { padding: 16, gap: 12, avatarSize: 62 };
 export const COMPACT_INBOX_ROW = { padding: 12, gap: 10 };
 // Drops the Android create menu below the header pill; the trigger's negative margin keeps the layout.
-export const CREATE_MENU_GAP = 6;
 
 export function createHomeStyles() {
   const tokens = mobileTokens();
@@ -18,6 +17,10 @@ export function createHomeStyles() {
     centered: {
       alignItems: "center",
       justifyContent: "center",
+    },
+    emptyInbox: {
+      alignItems: "center",
+      paddingTop: 48,
     },
     emptyPane: {
       color: native.secondaryLabel,
@@ -55,15 +58,23 @@ export function createHomeStyles() {
       justifyContent: "center",
       overflow: "hidden",
     },
-    createMenuAnchor: {
-      height: 40 + CREATE_MENU_GAP,
-      paddingBottom: CREATE_MENU_GAP,
-    },
     headerButtonActive: {
       backgroundColor: native.fill,
     },
-    headerButtonAccent: {
-      backgroundColor: tokens.primary,
+    workspaceTitle: {
+      flexShrink: 1,
+      minHeight: 44,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 4,
+      paddingHorizontal: 8,
+    },
+    workspaceName: {
+      flexShrink: 1,
+      color: native.label,
+      ...typeScale.cardTitle,
+      writingDirection: "auto",
     },
     profileInitials: {
       color: native.label,
@@ -150,6 +161,9 @@ export function createHomeStyles() {
     unreadPreview: {
       color: native.label,
       fontWeight: "600",
+    },
+    unreadName: {
+      fontWeight: "700",
     },
     unreadDot: {
       width: 8,

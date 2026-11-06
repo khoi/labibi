@@ -1147,7 +1147,7 @@ export default function ModelConnection() {
         onPress={() => {
           Alert.alert(
             t("Disconnect {name}?", { name: selectedProviderLabel }),
-            t("This removes the connection from every space."),
+            t("This removes the connection from every workspace."),
             [
               { text: t("Cancel"), style: "cancel" },
               {

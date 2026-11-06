@@ -68,7 +68,7 @@ export type RoutineSaveRequest =
 export function routineSaveRequest(
   draft: RoutineDraft,
   routine: Routine | null,
-  botId: string,
+  threadId: string,
   timezone: string,
 ): RoutineSaveRequest {
   const name = draft.name.trim();
@@ -81,7 +81,7 @@ export function routineSaveRequest(
   }
   if (!routine) {
     return {
-      create: { botId, name, prompt, crons, timezone, active: draft.active, notify: true },
+      create: { threadId, name, prompt, crons, timezone, active: draft.active, notify: true },
     };
   }
   const update = routineChanges(draft, routine);

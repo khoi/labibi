@@ -1,10 +1,14 @@
-export type InboxChatKind = "bot" | "group";
-export type InboxRowAction = "read" | "unread" | "delete";
+import type { MobileChat } from "./api";
+
+export type InboxRowAction = "read" | "unread" | "mute" | "unmute" | "leave" | "delete";
 
 export const INBOX_ROW_ACTIONS = {
   read: { label: "Mark as Read", systemImage: "checkmark.message.fill" },
   unread: { label: "Mark as Unread", systemImage: "message.badge.filled.fill" },
-  delete: { label: "Delete…", systemImage: "trash" },
+  mute: { label: "Silence notifications", systemImage: "bell.slash" },
+  unmute: { label: "Resume notifications", systemImage: "bell" },
+  leave: { label: "Leave chat", systemImage: "rectangle.portrait.and.arrow.right" },
+  delete: { label: "Delete chat", systemImage: "trash" },
 } as const satisfies Record<InboxRowAction, { label: string; systemImage: string }>;
 
 /** Swipe right toggles read state. */
@@ -12,23 +16,34 @@ export function inboxReadAction(chat: { unread?: boolean }): InboxRowAction {
   return chat.unread ? "read" : "unread";
 }
 
-export function chatTarget(kind: InboxChatKind, id: string) {
-  return kind === "bot" ? { botId: id } : { groupId: id };
+/** A chat with only you can be deleted; with other people you can only leave it. */
+export function chatHasOthers(
+  chat: Pick<MobileChat, "members">,
+  viewerUserId: string | undefined,
+): boolean {
+  return chat.members.some((member) => member.userId !== viewerUserId);
 }
 
-export function unreadOverrideKey(kind: InboxChatKind, id: string) {
-  return `${kind}:${id}`;
+/** The row's menu: read state, notifications, then leaving or deleting the chat. */
+export function inboxRowActions(
+  chat: Pick<MobileChat, "unread" | "muted" | "members">,
+  viewerUserId: string | undefined,
+): InboxRowAction[] {
+  return [
+    inboxReadAction(chat),
+    chat.muted ? "unmute" : "mute",
+    chatHasOthers(chat, viewerUserId) ? "leave" : "delete",
+  ];
 }
 
 /** Shows read state the user just changed until its request settles, so a poll can't undo it. */
 export function applyUnreadOverrides<T extends { id: string; unread?: boolean }>(
-  kind: InboxChatKind,
   chats: T[],
   overrides: ReadonlyMap<string, boolean>,
 ): T[] {
   if (overrides.size === 0) return chats;
   return chats.map((chat) => {
-    const unread = overrides.get(unreadOverrideKey(kind, chat.id));
+    const unread = overrides.get(chat.id);
     return unread === undefined || unread === chat.unread ? chat : { ...chat, unread };
   });
 }

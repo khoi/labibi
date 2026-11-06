@@ -145,7 +145,7 @@ vi.mock("./i18n", () => ({
 
 const routine = (id: string, name: string, partial: Partial<Routine> = {}): Routine => ({
   id,
-  botId: "bot-fixture",
+  threadId: "thread-fixture",
   name,
   prompt: "Check the inbox",
   crons: ["0 7 * * *"],
@@ -153,6 +153,7 @@ const routine = (id: string, name: string, partial: Partial<Routine> = {}): Rout
   active: true,
   notify: false,
   webhookEnabled: false,
+  webhookConfigured: false,
   githubEnabled: false,
   modelProvider: null,
   modelId: null,

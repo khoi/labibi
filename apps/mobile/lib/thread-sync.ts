@@ -11,7 +11,6 @@ import {
   liveSavedChatsScope,
   readSavedThread,
   savedChatsScope,
-  savedChatTarget,
   writeSavedThread,
 } from "./saved-chats";
 import { currentSessionGeneration } from "./session";
@@ -33,36 +32,30 @@ import { errorText } from "./user-error";
 export function useThreadSync({
   history,
   scroll,
-  botId,
-  groupId,
+  threadId,
   messageId,
   readOnly,
   foreground,
   sessionEpoch,
-  activeBotId,
-  activeGroupId,
+  activeThreadId,
   readVisibleTarget,
   setError,
   onRefreshed,
-  refreshMentionBots,
   markReadIfVisible,
 }: {
   history: ThreadHistory;
   scroll: ThreadListScroll;
-  botId?: string;
-  groupId?: string;
+  threadId?: string;
   /** A search hit to open the chat around. */
   messageId?: string;
   readOnly: boolean;
   foreground: boolean;
   sessionEpoch: number;
-  activeBotId: RefObject<string | undefined>;
-  activeGroupId: RefObject<string | undefined>;
+  activeThreadId: RefObject<string | undefined>;
   readVisibleTarget: RefObject<string | null>;
   setError: (error: string | null) => void;
   /** A refresh for the chat on screen finished, committed or not. */
   onRefreshed: (threadKey: string | undefined) => void;
-  refreshMentionBots: () => Promise<unknown>;
   markReadIfVisible: () => void;
 }) {
   const { t } = useI18n();
@@ -82,22 +75,23 @@ export function useThreadSync({
     jumpAnchor,
   } = history;
 
-  function isCurrentTarget(targetBotId: string | undefined, targetGroupId: string | undefined) {
-    return activeBotId.current === targetBotId && activeGroupId.current === targetGroupId;
+  function isCurrentTarget(targetThreadId: string | undefined) {
+    return activeThreadId.current === targetThreadId;
   }
 
   /** Shows the chat's saved copy until live data for it arrives; never under a search jump. */
   function showSavedThread(signal: AbortSignal) {
-    const target = savedChatTarget({ botId, groupId });
+    const target = threadId;
+    if (!target) return;
     // Another chat's messages must never stay on screen under this chat's name.
-    if (snapRef.current && savedChatTarget(snapRef.current) !== target) {
+    if (snapRef.current && snapRef.current.threadId !== target) {
       commitSnap(null);
       setShowingSaved(false);
     }
     void savedChatsScope().then((scope) => {
       if (signal.aborted || !scope) return;
       const onScreen = snapRef.current;
-      if (messageId || (onScreen && savedChatTarget(onScreen) === target)) return;
+      if (messageId || (onScreen && onScreen.threadId === target)) return;
       const saved = readSavedThread(scope, target);
       if (!saved) return;
       snapshotOrigin.current = scope;
@@ -107,19 +101,15 @@ export function useThreadSync({
   }
 
   async function refresh() {
-    if (!botId && !groupId) return;
-    const targetBotId = botId;
-    const targetGroupId = groupId;
+    if (!threadId) return;
+    const targetThreadId = threadId;
     const epoch = historyEpoch.current;
     const origin = {
       sessionGeneration: currentSessionGeneration(),
       selectionId: selectedSpaceId(),
     };
     const generation = ++refreshGeneration.current;
-    const next = await rpc(
-      "threads/get",
-      targetGroupId ? { groupId: targetGroupId } : { botId: targetBotId! },
-    );
+    const next = await rpc("threads/get", { threadId: targetThreadId });
     if (
       origin.sessionGeneration !== currentSessionGeneration() ||
       origin.selectionId !== selectedSpaceId()
@@ -144,23 +134,19 @@ export function useThreadSync({
       currentGeneration: refreshGeneration.current,
       requestEpoch: epoch,
       currentEpoch: historyEpoch.current,
-      targetBotId,
-      targetGroupId,
-      activeBotId: activeBotId.current,
-      activeGroupId: activeGroupId.current,
+      targetThreadId,
+      activeThreadId: activeThreadId.current,
     });
     if (result.commit) {
       snapshotOrigin.current = scope;
       pendingSave.current = null;
-      writeSavedThread(scope, savedChatTarget(next), next);
+      writeSavedThread(scope, next.threadId, next);
       commitSnap(
         mergeMobileSnapshot(snapRef.current, next, expandedHistoryThread.current === next.threadId),
       );
       setShowingSaved(false);
     }
-    if (isCurrentTarget(targetBotId, targetGroupId)) {
-      onRefreshed(targetGroupId ?? targetBotId);
-    }
+    if (isCurrentTarget(targetThreadId)) onRefreshed(targetThreadId);
     return result.snapshot ?? undefined;
   }
 
@@ -168,11 +154,10 @@ export function useThreadSync({
     ...history,
     scrollBehavior: scroll.behavior,
     setThreadScrollState: scroll.setState,
-    activeBotId,
-    activeGroupId,
+    activeThreadId,
   };
 
-  function applyMessageJump(target: { botId?: string; groupId?: string; messageId: string }) {
+  function applyMessageJump(target: { threadId: string; messageId: string }) {
     return applyThreadMessageJump(threadJump, target);
   }
 
@@ -180,9 +165,10 @@ export function useThreadSync({
     showLatestThread(threadJump);
   }
 
+  const onChatChanged = useCallback(() => void refresh().catch(() => undefined), [threadId]);
+
   const liveSubscribed = useThreadLiveSubscription({
-    botId,
-    groupId,
+    threadId,
     foreground,
     readOnly,
     sessionEpoch,
@@ -198,19 +184,19 @@ export function useThreadSync({
     refresh,
     commitSnap,
     setError,
-    refreshMentionBots,
+    onChatChanged,
     markReadIfVisible,
   });
 
-  useEffect(() => () => pendingSave.current?.(), [botId, groupId]);
+  useEffect(() => () => pendingSave.current?.(), [threadId]);
 
   // A save still waiting when the chat is cleared would write the old messages back.
   useEffect(() => {
-    if (!botId) return;
-    return onConversationCleared((clearedBotId) => {
-      if (clearedBotId === botId) pendingSave.current = null;
+    if (!threadId) return;
+    return onConversationCleared((clearedThreadId) => {
+      if (clearedThreadId === threadId) pendingSave.current = null;
     });
-  }, [botId]);
+  }, [threadId]);
 
   // Save the latest messages of the live chat (not a jump or loaded history) once updates settle.
   useEffect(() => {
@@ -222,9 +208,9 @@ export function useThreadSync({
       expandedHistoryThread.current
     )
       return;
-    const target = savedChatTarget({ botId, groupId });
+    const target = threadId;
     const latest = snapRef.current;
-    if (!latest || savedChatTarget(latest) !== target) return;
+    if (!target || !latest || latest.threadId !== target) return;
     const origin = snapshotOrigin.current;
     if (!origin) return;
     const write = () => writeSavedThread(origin, target, latest);
@@ -234,14 +220,14 @@ export function useThreadSync({
       pendingSave.current = null;
     }, 600);
     return () => clearTimeout(timer);
-  }, [snap, showingSaved, botId, groupId]);
+  }, [snap, showingSaved, threadId]);
 
   // The safety snapshot is a gap detector, not the live path: SSE already carries
   // deltas. Stop the timer while the app is backgrounded; the stream effect resumes
   // from its cursor when the app returns.
   useFocusEffect(
     useCallback(() => {
-      if (!foreground || (!botId && !groupId)) return;
+      if (!foreground || !threadId) return;
       let cancelled = false;
       let timer: ReturnType<typeof setTimeout> | undefined;
       let ticking = false;
@@ -273,11 +259,11 @@ export function useThreadSync({
         cancelled = true;
         if (timer !== undefined) clearTimeout(timer);
       };
-    }, [botId, foreground, groupId, readOnly, snap?.run?.status]),
+    }, [threadId, foreground, readOnly, snap?.run?.status]),
   );
 
   useEffect(() => {
-    if (!botId && !groupId) return;
+    if (!threadId) return;
     // A conversation hit is the thread itself: stay on the live tail, not an older page.
     if (!messageId) {
       const pinned = pinnedAroundRef.current != null || jumpAnchor.current.holds();
@@ -291,12 +277,10 @@ export function useThreadSync({
       return;
     }
     jumpAnchor.current.begin(messageId);
-    void applyMessageJump(groupId ? { groupId, messageId } : { botId: botId!, messageId }).catch(
-      (err) => {
-        setError(errorText(err, t("Could not open message")));
-      },
-    );
-  }, [botId, groupId, messageId, sessionEpoch]);
+    void applyMessageJump({ threadId, messageId }).catch((err) => {
+      setError(errorText(err, t("Could not open message")));
+    });
+  }, [threadId, messageId, sessionEpoch]);
 
   return { isCurrentTarget, refresh, applyMessageJump, showLatest };
 }

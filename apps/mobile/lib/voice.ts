@@ -225,7 +225,7 @@ async function speakPrepared(text: string, opts: SpeechOptions, epoch: number): 
     if (!isCurrentSpeech(epoch)) return false;
     const prepared = await rpc(
       "voice/prepare",
-      { text, voiceId: opts.voiceId, botId: opts.botId },
+      { text, voiceId: opts.voiceId },
       { requestContext },
     );
     if (!isCurrentSpeech(epoch)) return false;

@@ -26,8 +26,7 @@ function pinnedDistanceFromEnd(event: ScrollEvent) {
 export function useThreadPaging({
   history,
   scroll,
-  botId,
-  groupId,
+  threadId,
   visibleMessages,
   anchor,
   setError,
@@ -35,8 +34,7 @@ export function useThreadPaging({
 }: {
   history: ThreadHistory;
   scroll: ThreadListScroll;
-  botId?: string;
-  groupId?: string;
+  threadId?: string;
   visibleMessages: MobileMessage[];
   /** Where a jump target settles below the header. */
   anchor: number;
@@ -66,7 +64,7 @@ export function useThreadPaging({
   async function loadNewerMessages() {
     const pinned = pinnedAroundRef.current;
     if (
-      (!botId && !groupId) ||
+      !threadId ||
       pinned?.newerCursor == null ||
       loadingNewerContent.current ||
       newerLoadFailed.current
@@ -80,7 +78,7 @@ export function useThreadPaging({
     try {
       // Pages come back centered on the seq, so the one after the cursor overlaps what is loaded.
       const page = await rpc("threads/messages", {
-        ...(groupId ? { groupId } : { botId: botId! }),
+        threadId,
         around: { seq: probe },
       });
       if (epoch !== historyEpoch.current || pinnedAroundRef.current !== pinned || !snapRef.current)
@@ -130,14 +128,14 @@ export function useThreadPaging({
   }
 
   async function loadOlderMessages() {
-    if ((!botId && !groupId) || snap?.olderCursor == null || loadingOlder) return;
+    if (!threadId || snap?.olderCursor == null || loadingOlder) return;
     loadingOlderContent.current = true;
     setLoadingOlder(true);
     const epoch = historyEpoch.current;
     const pinned = pinnedAroundRef.current;
     try {
       const page = await rpc("threads/messages", {
-        ...(groupId ? { groupId } : { botId: botId! }),
+        threadId,
         before: snap.olderCursor,
       });
       if (epoch !== historyEpoch.current || pinnedAroundRef.current !== pinned) {

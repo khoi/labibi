@@ -41,7 +41,8 @@ import { readComposerDraft, writeComposerDraft } from "../lib/composer-draft";
 import { useI18n } from "../lib/i18n";
 import { useMobileTokens, useResolvedAppearance } from "../lib/native";
 import type { ComposerSnapshot } from "../lib/thread-feedback";
-import { BotAvatar } from "./bot-avatar";
+import { PersonAvatar } from "./chat-avatar";
+import { DoodleAvatar } from "./doodle-avatar";
 import { GlassSurface } from "./glass-surface";
 import { NativeSymbol } from "./native-symbol";
 
@@ -773,15 +774,9 @@ export function ThreadComposer({
 
 function MentionOptionIcon({ mention }: { mention: ComposerMention }) {
   const tokens = useMobileTokens();
-  if (mention.kind === "bot") {
-    return (
-      <BotAvatar
-        color={mention.color ?? tokens.mutedForeground}
-        identity={mention.id}
-        size={MENTION_AVATAR_SIZE}
-      />
-    );
-  }
+  if (mention.kind === "doodle") return <DoodleAvatar size={MENTION_AVATAR_SIZE} />;
+  if (mention.kind === "person")
+    return <PersonAvatar person={{ name: mention.name, image: null }} size={MENTION_AVATAR_SIZE} />;
   const symbol =
     mention.kind === "routine"
       ? ({ ios: "clock", android: "time-outline" } as const)

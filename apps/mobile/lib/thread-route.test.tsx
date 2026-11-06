@@ -95,7 +95,7 @@ it("offers a way back when the space switch fails or is rolled back", async () =
   // selectSpace reports success but a failed write rolled the selection back.
   state.selectSpace.mockResolvedValue(true);
   await render();
-  expect(container.textContent).toContain("Could not switch spaces");
+  expect(container.textContent).toContain("Could not switch workspaces");
   expect(container.textContent).not.toContain("thread:");
   act(() => container.querySelector("button")?.click());
   expect(state.replace).toHaveBeenCalledWith("/");

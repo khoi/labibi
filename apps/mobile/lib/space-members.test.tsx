@@ -168,7 +168,7 @@ it("lets the owner share an invite link and remove a member after confirming", a
     "Ada Lovelace | ada@example.test | Owner",
     "Bob Stone | bob@example.test",
   ]);
-  expect(buttonNamed("Leave space")).toBeUndefined();
+  expect(buttonNamed("Leave workspace")).toBeUndefined();
 
   await act(async () => header.invite?.());
   expect(rpc).toHaveBeenCalledWith("spaces/invites/create", { spaceId: "space-shared" });
@@ -194,7 +194,7 @@ it("lets a member leave and returns home in their own space", async () => {
   expect(header.invite).toBeUndefined();
   expect(buttonNamed("Remove")).toBeUndefined();
 
-  await act(async () => buttonNamed("Leave space")?.click());
+  await act(async () => buttonNamed("Leave workspace")?.click());
   expect(alert.mock.calls.at(-1)?.[0]).toBe("Leave Home?");
   await act(async () => pressAlertButton("Leave"));
   expect(rpc).toHaveBeenCalledWith("spaces/members/leave", { spaceId: "space-shared" });

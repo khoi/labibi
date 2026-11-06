@@ -12,7 +12,7 @@ vi.mock("./i18n", () => ({ t: (message: string) => message }));
 
 const routine: Routine = {
   id: "routine-1",
-  botId: "bot-1",
+  threadId: "thread-1",
   name: "Inbox",
   prompt: "Summarize my inbox.\n",
   crons: ["0 9 * * 1-5"],
@@ -20,6 +20,7 @@ const routine: Routine = {
   active: true,
   notify: true,
   webhookEnabled: false,
+  webhookConfigured: false,
   githubEnabled: false,
   modelProvider: null,
   modelId: null,
@@ -39,9 +40,9 @@ describe("routineSaveRequest", () => {
       prompt: "Summarize.",
       schedules: [defaultCronPreset()],
     };
-    expect(routineSaveRequest(draft, null, "bot-1", "Asia/Tokyo")).toEqual({
+    expect(routineSaveRequest(draft, null, "thread-1", "Asia/Tokyo")).toEqual({
       create: {
-        botId: "bot-1",
+        threadId: "thread-1",
         name: "Inbox",
         prompt: "Summarize.",
         crons: ["0 9 * * *"],

@@ -10,7 +10,6 @@ import Account from "../app/(settings)/account";
 import { deleteAccount, fetchAccountSecurity, requestAccountDeletionCode } from "./api";
 import { replaceWithSignIn } from "./auth-routing";
 import { promptAccountDeletion } from "./delete-account-prompt";
-import { registerSettingsSheet } from "./settings-sheet";
 
 type Pressed = {
   children?: ReactNode;
@@ -432,62 +431,6 @@ it("hides password change from an account without a password", async () => {
   const view = await renderAccount();
   expect(view.button("Change password")).toBeUndefined();
 });
-
-it.each([false, true])(
-  "keeps account navigation free of server controls (stored owner: %s)",
-  async (isDeploymentOwner) => {
-    account.me = { ...account.me, isDeploymentOwner };
-    const events: string[] = [];
-    const unregister = registerSettingsSheet(() => events.push("close"));
-    account.push.mockImplementation((href: string) => events.push(href));
-    try {
-      const view = await renderAccount();
-      const titles = Array.from(
-        view.screen.querySelectorAll("[data-row]"),
-        (row) => row.textContent,
-      );
-      const links = [
-        "Artifacts",
-        "Models",
-        "Voice",
-        "Approvals",
-        "Vault",
-        "Integrations",
-        "Skills",
-        "Memory",
-        "AI data sharing",
-      ];
-      const start = titles.indexOf("Artifacts");
-      expect(titles.slice(start, start + links.length)).toEqual(links);
-      expect(titles[start + links.length]).toBe("Advanced");
-      const artifacts = view.button("Artifacts")!;
-      expect(artifacts.getAttribute("role")).toBe("button");
-      expect(artifacts.dataset.chevron).toBe("right");
-
-      // Artifacts lives on the root stack, so it closes the settings sheet first.
-      await view.press("Artifacts");
-      expect(events).toEqual(["close", "/artifacts"]);
-      for (const [title, href] of [
-        ["Models", "/models"],
-        ["Vault", "/vault"],
-        ["Memory", "/memory"],
-      ]) {
-        events.length = 0;
-        await view.press(title!);
-        expect(events).toEqual([href]);
-      }
-
-      // The links wait while a deletion is in flight.
-      vi.mocked(deleteAccount).mockReturnValueOnce(new Promise(() => undefined));
-      await view.press("Delete account");
-      await view.type("Current password", "hunter2");
-      await view.press("Delete");
-      expect(view.button("Artifacts")!.disabled).toBe(true);
-    } finally {
-      unregister();
-    }
-  },
-);
 
 it("lists trusted link sites only when there is one, each with a remove action", async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);

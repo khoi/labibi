@@ -1,22 +1,11 @@
 import * as Notifications from "expo-notifications";
 
-type InboxChats = {
-  bots: readonly { unread?: boolean }[];
-  groups: readonly { unread?: boolean }[];
-};
-
 let written: number | null = null;
 let generation = 0;
 
-/** Chats with unread replies across every Space in the inbox: what the app icon shows. */
-export function unreadChatCount(spaces: readonly InboxChats[]): number {
-  return spaces.reduce(
-    (count, space) =>
-      count +
-      space.bots.filter((bot) => bot.unread).length +
-      space.groups.filter((group) => group.unread).length,
-    0,
-  );
+/** Unread chats in the workspace on screen: what the app icon shows. */
+export function unreadChatCount(chats: readonly { unread?: boolean }[]): number {
+  return chats.filter((chat) => chat.unread).length;
 }
 
 /**

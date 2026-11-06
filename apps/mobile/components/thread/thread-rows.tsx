@@ -1,15 +1,16 @@
 import {
   answerableAskMessageIds,
+  DOODLE_NAME,
   dismissableAskMessageIds,
-  memberName,
   otherAuthor,
   timeSeparatorIds,
   unreadDividerMessageId,
 } from "@labradoodle/core";
 import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import type { ListRenderItemInfo } from "react-native";
-import type { MobileBot, MobileMessage, MobileSnapshot } from "../../lib/api";
+import type { MobileMessage, MobileSnapshot } from "../../lib/api";
 import { useI18n } from "../../lib/i18n";
+import type { UserMentionTarget } from "../../lib/message-mentions";
 import { threadHeaderFloats } from "../../lib/thread-edges";
 import { previewMessageText } from "../../lib/thread-message-text";
 import type { useThreadTranscript } from "../../lib/thread-transcript";
@@ -35,8 +36,7 @@ export function useLatestRowActions(current: MessageRowActions): MessageRowActio
       markUnread: (message) => rowActionsRef.current.markUnread(message),
       answer: (message, answer, fields, dismiss, remember) =>
         rowActionsRef.current.answer(message, answer, fields, dismiss, remember),
-      openBot: (id, name) => rowActionsRef.current.openBot(id, name),
-      openComputer: (id, name) => rowActionsRef.current.openComputer(id, name),
+      openComputer: () => rowActionsRef.current.openComputer(),
       previewFile: (artifactId) => rowActionsRef.current.previewFile(artifactId),
       previewImage: (target) => rowActionsRef.current.previewImage(target),
       jump: (id) => rowActionsRef.current.jump(id),
@@ -53,14 +53,11 @@ export function useThreadRows({
   userId,
   transcript,
   rowActions,
-  botId,
-  groupId,
+  threadId,
   inGroup,
   readOnly,
-  displayName,
-  mentionBots,
-  currentBot,
-  currentBotStatus,
+  mentionTargets,
+  doodleStatus,
   userBubble,
   columnWidth,
   readSeq,
@@ -71,14 +68,13 @@ export function useThreadRows({
   userId: string;
   transcript: ReturnType<typeof useThreadTranscript>;
   rowActions: MessageRowActions;
-  botId?: string;
-  groupId?: string;
+  threadId?: string;
+  /** Other people are in the chat. */
   inGroup: boolean;
   readOnly: boolean;
-  displayName?: string;
-  mentionBots: MobileBot[];
-  currentBot?: MobileBot;
-  currentBotStatus?: string;
+  mentionTargets: readonly UserMentionTarget[];
+  /** Doodle's activity in the chat, for its live progress row. */
+  doodleStatus?: string;
   userBubble?: UserBubble;
   columnWidth: number;
   /** What the user had read up to when this visit began. */
@@ -88,7 +84,17 @@ export function useThreadRows({
 }) {
   const { t, locale } = useI18n();
   const { showBotSenderName, reactionView, visibleMessages } = transcript;
-  const answerableAskIds = useMemo(() => answerableAskMessageIds(snap), [snap]);
+  // Everyone sees an approval card; only the person whose request it is can answer it.
+  const answerableAskIds = useMemo(() => {
+    const runs = [...(snap?.activeRuns ?? []), ...(snap?.run ? [snap.run] : [])];
+    const askers = new Map(runs.map((run) => [run.id, run.userId]));
+    const ids = answerableAskMessageIds(snap);
+    for (const message of snap?.messages ?? []) {
+      const asker = message.runId ? askers.get(message.runId) : undefined;
+      if (asker !== undefined && asker !== userId) ids.delete(message.id);
+    }
+    return ids;
+  }, [snap, userId]);
   const dismissableAskIds = useMemo(() => dismissableAskMessageIds(snap, userId), [snap, userId]);
   const separatorIds = useMemo(() => timeSeparatorIds(visibleMessages), [visibleMessages]);
   const unreadDividerId = useMemo(
@@ -100,45 +106,31 @@ export function useThreadRows({
     () => new Map((snap?.messages ?? []).map((message) => [message.id, message])),
     [snap?.messages],
   );
+  const people = snap?.chat.members;
 
   const renderMessageRow = useCallback(
     (message: MobileMessage, options?: { enableJump?: boolean; index?: number }) => {
       const parent = message.replyToMessageId
         ? messagesById.get(message.replyToMessageId)
         : undefined;
-      const replyBotId = message.replyPreview?.botId ?? parent?.botId;
       const replyAuthor =
         (message.replyPreview?.role ?? parent?.role) === "user"
           ? (otherAuthor(message.replyPreview?.author ?? parent?.author, userId)?.name ?? t("You"))
-          : (memberName(snap?.members, replyBotId) ??
-            mentionBots.find((bot) => bot.id === replyBotId)?.name ??
-            displayName ??
-            t("Bot"));
+          : DOODLE_NAME;
       const messageReactions = reactionView.reactions.get(message.id);
-      const activityBotId =
-        !inGroup && message.role === "bot" && message.id.startsWith("progress:")
-          ? (message.botId ?? botId)
-          : undefined;
-      const activityBot = activityBotId
-        ? (snap?.members?.find((member) => member.botId === activityBotId) ??
-          (currentBot?.id === activityBotId ? currentBot : undefined))
-        : undefined;
-      const activityStatus = activityBotId
-        ? (snap?.activeRuns?.find((run) => run.botId === activityBotId)?.status ??
-          (snap?.run?.botId === activityBotId ? snap.run.status : currentBotStatus))
-        : undefined;
+      const showActivity = message.role === "bot" && message.id.startsWith("progress:");
+      const author = message.role === "user" ? otherAuthor(message.author, userId) : undefined;
+      const authorImage = author
+        ? (people?.find((person) => person.userId === author.id)?.image ?? null)
+        : null;
       return (
         <MessageRow
           key={message.id}
           message={message}
           actions={rowActions}
-          botId={botId}
-          bubbleBotId={botId ?? snap?.members?.[0]?.botId ?? ""}
-          groupId={groupId}
-          botName={displayName}
+          threadId={threadId}
           showBotSenderName={showBotSenderName}
-          bots={mentionBots}
-          members={snap?.members}
+          mentionTargets={mentionTargets}
           readOnly={readOnly}
           canAnswer={!readOnly && answerableAskIds.has(message.id)}
           canDismiss={dismissableAskIds.has(message.id)}
@@ -147,9 +139,7 @@ export function useThreadRows({
           headerAdjacent={threadHeaderFloats() && message.id === visibleMessages[0]?.id}
           unreadDivider={message.id === unreadDividerId}
           markedUnread={message.id === markedUnreadMessageId}
-          authorName={
-            message.role === "user" ? otherAuthor(message.author, userId)?.name : undefined
-          }
+          author={author ? { name: author.name, image: authorImage } : undefined}
           replyAuthor={replyAuthor}
           replyFallbackText={parent ? previewMessageText(parent) : undefined}
           waitingForUser={[...(snap?.activeRuns ?? []), ...(snap?.run ? [snap.run] : [])].some(
@@ -158,9 +148,16 @@ export function useThreadRows({
               (run.status === "waiting_input" || run.status === "waiting_takeover"),
           )}
           messageReactions={messageReactions}
-          activityBotId={activityBotId}
-          activityColor={activityBot?.color}
-          activityStatus={activityStatus}
+          activity={
+            showActivity
+              ? {
+                  identity: threadId ?? "",
+                  status:
+                    snap?.activeRuns?.find((run) => run.id === message.runId)?.status ??
+                    doodleStatus,
+                }
+              : undefined
+          }
           userBubble={userBubble}
           inGroup={inGroup}
           columnWidth={columnWidth}
@@ -172,17 +169,14 @@ export function useThreadRows({
     [
       messagesById,
       showBotSenderName,
-      snap?.members,
+      people,
       snap?.activeRuns,
       snap?.run,
-      mentionBots,
-      displayName,
+      mentionTargets,
       reactionView,
       inGroup,
-      botId,
-      groupId,
-      currentBot,
-      currentBotStatus,
+      threadId,
+      doodleStatus,
       userBubble,
       rowActions,
       readOnly,

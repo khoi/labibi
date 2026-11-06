@@ -49,13 +49,13 @@ const styles = StyleSheet.create({
 });
 
 export function ChoiceCard({
-  botId,
+  threadId,
   block,
   onDismissed,
   accessibilityActions,
   onAccessibilityAction,
 }: {
-  botId: string;
+  threadId: string;
   block: Extract<MessageBlock, { kind: "choice" }>;
   onDismissed?: () => void;
   accessibilityActions?: ViewProps["accessibilityActions"];
@@ -80,9 +80,9 @@ export function ChoiceCard({
     setBusy(true);
     try {
       if (optionId === DISMISSED_CHOICE_ANSWER_ID) {
-        await rpc("onboarding/dismissFocus", { botId });
+        await rpc("onboarding/dismissFocus", { threadId });
       } else {
-        await rpc("onboarding/choose", { botId, optionId });
+        await rpc("onboarding/choose", { threadId, optionId });
       }
       setLocalAnswerId(optionId);
       if (optionId === DISMISSED_CHOICE_ANSWER_ID) onDismissed?.();

@@ -1,25 +1,19 @@
 import { artifactTypeLabel } from "@labradoodle/core";
 import { useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import type { ReactNode } from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import type { LayoutChangeEvent } from "react-native";
 import {
   ActivityIndicator,
   Alert,
   FlatList,
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BotAvatar } from "../components/bot-avatar";
 import { NativeSymbol } from "../components/native-symbol";
 import { formatActivityRelativeTime } from "../lib/activity";
-import type { MobileBot } from "../lib/api";
-import { rpc } from "../lib/api";
 import { mobileTokens } from "../lib/appearance";
 import type { MobileArtifactSummary } from "../lib/artifacts";
 import { listSpaceArtifacts, matchesArtifactQuery, removeArtifact } from "../lib/artifacts";
@@ -38,28 +32,9 @@ export default function ArtifactsScreen() {
   const styles = useThemedStyles(createStyles);
   const insets = useSafeAreaInsets();
 
-  const [bots, setBots] = useState<MobileBot[]>([]);
-  const { botId } = useLocalSearchParams<{ botId?: string }>();
-  const [activeBotId, setActiveBotId] = useState<string | null>(botId || null);
-  const chipsScrollRef = useRef<ScrollView>(null);
-  const initialChipLayout = useRef({
-    viewportWidth: 0,
-    contentWidth: 0,
-    chip: null as { x: number; width: number } | null,
-    revealed: false,
-  });
-
-  function revealInitialChip() {
-    const layout = initialChipLayout.current;
-    if (layout.revealed || !layout.viewportWidth || !layout.chip) return;
-    const right = layout.chip.x + layout.chip.width;
-    if (layout.contentWidth < right) return;
-    chipsScrollRef.current?.scrollTo({
-      x: Math.max(0, right - layout.viewportWidth),
-      animated: false,
-    });
-    layout.revealed = true;
-  }
+  // From a chat's settings: that chat's files; from the account: every chat's.
+  const { threadId } = useLocalSearchParams<{ threadId?: string }>();
+  const scope = threadId || null;
 
   const [items, setItems] = useState<MobileArtifactSummary[] | null>(null);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -71,9 +46,7 @@ export default function ArtifactsScreen() {
   const loadingMoreRef = useRef(false);
   const generationRef = useRef(0);
   const autoFetchedCursorRef = useRef<string | null>(null);
-  const activeBotIdRef = useRef(activeBotId);
   const didFocusRef = useRef(false);
-  activeBotIdRef.current = activeBotId;
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -89,16 +62,8 @@ export default function ArtifactsScreen() {
     });
   }, [navigation, t]);
 
-  useFocusEffect(
-    useCallback(() => {
-      rpc("bots/list")
-        .then(setBots)
-        .catch(() => undefined);
-    }, []),
-  );
-
   const load = useCallback(
-    async (botId: string | null, mode: "replace" | "refresh") => {
+    async (mode: "replace" | "refresh") => {
       const generation = ++generationRef.current;
       loadingMoreRef.current = false;
       setLoadingMore(false);
@@ -110,7 +75,7 @@ export default function ArtifactsScreen() {
         setNextCursor(null);
       }
       try {
-        const page = await listSpaceArtifacts({ botId: botId ?? undefined, limit: PAGE_SIZE });
+        const page = await listSpaceArtifacts({ threadId: scope ?? undefined, limit: PAGE_SIZE });
         if (generation !== generationRef.current) return;
         setItems(page.items);
         setNextCursor(page.nextCursor);
@@ -121,7 +86,7 @@ export default function ArtifactsScreen() {
         }
       }
     },
-    [t],
+    [scope, t],
   );
 
   useFocusEffect(
@@ -130,7 +95,7 @@ export default function ArtifactsScreen() {
         didFocusRef.current = true;
         return;
       }
-      void load(activeBotIdRef.current, "refresh");
+      void load("refresh");
     }, [load]),
   );
 
@@ -141,7 +106,7 @@ export default function ArtifactsScreen() {
     setLoadingMore(true);
     try {
       const page = await listSpaceArtifacts({
-        botId: activeBotId ?? undefined,
+        threadId: scope ?? undefined,
         cursor: nextCursor,
         limit: PAGE_SIZE,
       });
@@ -157,12 +122,12 @@ export default function ArtifactsScreen() {
         setLoadingMore(false);
       }
     }
-  }, [activeBotId, nextCursor]);
+  }, [scope, nextCursor]);
 
   async function refresh() {
     setRefreshing(true);
     try {
-      await load(activeBotId, "refresh");
+      await load("refresh");
     } finally {
       setRefreshing(false);
     }
@@ -200,12 +165,11 @@ export default function ArtifactsScreen() {
     if (!queryActive) return items;
     return items.filter((item) => matchesArtifactQuery(item, query));
   }, [items, query, queryActive]);
-  const botsById = useMemo(() => new Map(bots.map((bot) => [bot.id, bot])), [bots]);
 
   useEffect(() => {
     autoFetchedCursorRef.current = null;
     setSearchPageFailed(false);
-  }, [query, activeBotId]);
+  }, [query, scope]);
 
   useEffect(() => {
     if (searchPageFailed || !queryActive || !nextCursor || loadingMore || items === null) return;
@@ -216,59 +180,12 @@ export default function ArtifactsScreen() {
   }, [filtered, items, loadMore, loadingMore, nextCursor, queryActive, searchPageFailed]);
 
   useEffect(() => {
-    void load(activeBotId, "replace");
-  }, [activeBotId, load]);
+    void load("replace");
+  }, [load]);
 
   return (
     <View style={[styles.screen, { paddingBottom: insets.bottom }]}>
       <FlatList<MobileArtifactSummary>
-        ListHeaderComponent={
-          <ScrollView
-            ref={chipsScrollRef}
-            onLayout={(event) => {
-              initialChipLayout.current.viewportWidth = event.nativeEvent.layout.width;
-              revealInitialChip();
-            }}
-            onContentSizeChange={(width) => {
-              initialChipLayout.current.contentWidth = width;
-              revealInitialChip();
-            }}
-            horizontal
-            contentInsetAdjustmentBehavior="never"
-            showsHorizontalScrollIndicator={false}
-            style={styles.chipsScroll}
-            contentContainerStyle={styles.chipsRow}
-          >
-            <Chip
-              label={t("All bots")}
-              active={activeBotId === null}
-              onPress={() => setActiveBotId(null)}
-            />
-            {bots.map((bot) => (
-              <Chip
-                key={bot.id}
-                onLayout={
-                  bot.id === botId && activeBotId === botId
-                    ? (event) => {
-                        initialChipLayout.current.chip = event.nativeEvent.layout;
-                        revealInitialChip();
-                      }
-                    : undefined
-                }
-                label={bot.name}
-                active={activeBotId === bot.id}
-                onPress={() => setActiveBotId(bot.id)}
-                avatar={
-                  <BotAvatar
-                    color={bot.color}
-                    identity={bot.id}
-                    size={16}
-                  />
-                }
-              />
-            ))}
-          </ScrollView>
-        }
         style={[styles.listView, sideInsets]}
         contentInsetAdjustmentBehavior="automatic"
         data={filtered ?? []}
@@ -328,7 +245,6 @@ export default function ArtifactsScreen() {
         renderItem={({ item }) => (
           <ArtifactRow
             item={item}
-            bot={activeBotId === null && item.botId ? botsById.get(item.botId) : undefined}
             onPress={() => router.push({ pathname: "/artifact", params: { artifactId: item.id } })}
             onLongPress={() => confirmDelete(item)}
           />
@@ -338,44 +254,12 @@ export default function ArtifactsScreen() {
   );
 }
 
-function Chip({
-  label,
-  active,
-  onPress,
-  avatar,
-  onLayout,
-}: {
-  label: string;
-  active: boolean;
-  onPress: () => void;
-  avatar?: ReactNode;
-  onLayout?: (event: LayoutChangeEvent) => void;
-}) {
-  const styles = useThemedStyles(createStyles);
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ selected: active }}
-      onPress={onPress}
-      onLayout={onLayout}
-      style={[styles.chip, active && styles.chipActive]}
-    >
-      {avatar}
-      <Text style={[styles.chipLabel, active && styles.chipLabelActive]} numberOfLines={1}>
-        {label}
-      </Text>
-    </Pressable>
-  );
-}
-
 function ArtifactRow({
   item,
-  bot,
   onPress,
   onLongPress,
 }: {
   item: MobileArtifactSummary;
-  bot?: MobileBot;
   onPress: () => void;
   onLongPress: () => void;
 }) {
@@ -385,7 +269,7 @@ function ArtifactRow({
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={bot ? `${item.name}, ${bot.name}` : item.name}
+      accessibilityLabel={item.name}
       accessibilityHint={t("Long press to delete")}
       onPress={onPress}
       onLongPress={onLongPress}
@@ -412,14 +296,6 @@ function ArtifactRow({
           </Text>
         ) : null}
         <View style={styles.rowFooter}>
-          {bot ? (
-            <>
-              <BotAvatar color={bot.color} identity={bot.id} size={14} />
-              <Text style={styles.rowBotName} numberOfLines={1}>
-                {bot.name}
-              </Text>
-            </>
-          ) : null}
           <Text style={styles.rowMeta}>{formatActivityRelativeTime(item.createdAt)}</Text>
         </View>
       </View>

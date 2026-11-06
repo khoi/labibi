@@ -1,20 +1,27 @@
 import type { Connection, ConnectionCatalogItem, Routine } from "@labradoodle/contracts";
 import type { MentionPickerConnector } from "@labradoodle/core";
-import { createRoutineMentionBatcher, mentionConnectorsFrom } from "@labradoodle/core";
+import { mentionConnectorsFrom } from "@labradoodle/core";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { captureApiRequestContext, currentApiBase, rpc, selectedSpaceId } from "./api";
 import { currentSessionGeneration, subscribeSessionGeneration } from "./session";
 
-type MentionBot = { id: string; name: string };
 type MentionCatalog = {
-  routines: Array<Routine & { botName: string }>;
+  routines: Routine[];
   connectors: MentionPickerConnector[];
 };
 type MentionCatalogState = MentionCatalog & { scope: string; activation: symbol | null };
 
 const EMPTY_CATALOG: MentionCatalog = { routines: [], connectors: [] };
 
-export function useThreadMentionCatalog(owner: string, bots: readonly MentionBot[]) {
+/**
+ * What the composer's `@` picker offers besides Doodle and the chat's people: the chat's routines
+ * (only while Doodle is in it) and the person's connectors. Loads on the first `@`.
+ */
+export function useThreadMentionCatalog(
+  owner: string,
+  threadId: string | undefined,
+  doodle: boolean,
+) {
   const generation = useSyncExternalStore(subscribeSessionGeneration, currentSessionGeneration);
   const apiBase = currentApiBase();
   const spaceId = selectedSpaceId();
@@ -35,15 +42,8 @@ export function useThreadMentionCatalog(owner: string, bots: readonly MentionBot
   }, [scope]);
 
   useEffect(() => {
-    if (!activation) return;
-    if (bots.length === 0) {
-      setState((current) =>
-        current.scope === scope && current.activation === activation
-          ? { ...current, ...EMPTY_CATALOG }
-          : current,
-      );
-      return;
-    }
+    if (!activation || !threadId) return;
+    const chatId = threadId;
     const abort = new AbortController();
     function invalidateActivation() {
       if (abort.signal.aborted) return;
@@ -100,23 +100,14 @@ export function useThreadMentionCatalog(owner: string, bots: readonly MentionBot
         if (!isCurrent()) throw new Error("Request aborted.");
         return { ...options, signal };
       };
-      const lists: MentionCatalog["routines"][] = new Array(bots.length);
-      const loadRoutineMentions = createRoutineMentionBatcher(
-        (botIds, signal) => rpc("routines/listForMentions", { botIds }, requestOptions(signal)),
-        (botId, signal) => rpc("routines/list", { botId }, requestOptions(signal)),
-      );
-      const routines = Promise.all(
-        bots.map(async (bot, index) => {
-          try {
-            const rows = await loadRoutineMentions(bot.id, abort.signal);
-            if (!isCurrent()) return;
-            lists[index] = rows.map((routine) => ({ ...routine, botName: bot.name }));
-          } catch {
-            failed = true;
-            lists[index] = [];
-          }
-        }),
-      ).then(() => update({ routines: lists.flat() }));
+      const routines = (
+        doodle
+          ? rpc("routines/list", { threadId: chatId }, requestOptions(abort.signal)).catch(() => {
+              failed = true;
+              return [] as Routine[];
+            })
+          : Promise.resolve([] as Routine[])
+      ).then((rows) => update({ routines: rows }));
       const connectors = Promise.all([
         rpc("connections/list", {}, options).catch(() => {
           failed = true;
@@ -135,7 +126,7 @@ export function useThreadMentionCatalog(owner: string, bots: readonly MentionBot
     }
     void load().catch(allowRetry);
     return () => abort.abort();
-  }, [activation, apiBase, bots, generation, scope, spaceId]);
+  }, [activation, apiBase, doodle, threadId, generation, scope, spaceId]);
 
   const catalog = state.scope === scope ? state : EMPTY_CATALOG;
   return {

@@ -41,13 +41,7 @@ export function MessageCaption({
           ? (run) =>
               splitMentionText(run, userMentions.targets).map((part, index) =>
                 part.target ? (
-                  <UserMention
-                    key={index}
-                    target={part.target}
-                    label={part.text.slice(1)}
-                    color={tokens.chatUserForeground}
-                    onOpenBot={userMentions.onOpenBot}
-                  />
+                  <UserMention key={index} target={part.target} label={part.text.slice(1)} />
                 ) : (
                   part.text
                 ),

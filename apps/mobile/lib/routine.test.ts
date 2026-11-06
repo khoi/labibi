@@ -5,7 +5,7 @@ import { routineRowDetail, routineTriggerRows } from "./routine.js";
 function routine(partial: Partial<Routine>): Routine {
   return {
     id: "routine-1",
-    botId: "bot-1",
+    threadId: "thread-1",
     name: "Weekly review",
     prompt: "Review the week.",
     crons: [],
@@ -13,6 +13,7 @@ function routine(partial: Partial<Routine>): Routine {
     active: true,
     notify: true,
     webhookEnabled: false,
+    webhookConfigured: false,
     githubEnabled: false,
     modelProvider: null,
     modelId: null,

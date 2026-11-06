@@ -1,40 +1,31 @@
-import type { SpaceBot } from "@labradoodle/contracts";
-import { displayName as safeDisplayName } from "@labradoodle/core";
 import { useRouter } from "expo-router";
 import { useSyncExternalStore } from "react";
 import { Pressable } from "react-native";
-import type { MobileBot, MobileGroup } from "../lib/api";
-import type { ChatTitleRoute } from "../lib/chat-settings-route";
-import { chatTitleRoute } from "../lib/chat-settings-route";
+import type { MobileChat } from "../lib/api";
 import { useI18n } from "../lib/i18n";
 import { useThemedStyles } from "../lib/native";
-import { useInboxBot, useInboxGroup } from "../lib/search-inbox";
-import { CHAT_TITLE_AVATAR_SIZE, ChatTitleAvatar } from "./chat-title-avatar";
+import { useInboxChat } from "../lib/search-inbox";
+import { ChatAvatar } from "./chat-avatar";
 import { ChatTitleLabel } from "./chat-title-label";
+import { DoodleAvatar } from "./doodle-avatar";
 import { GlassSurface } from "./glass-surface";
-import { GroupSeats } from "./group-seats";
 import { createThreadHeaderStyles } from "./thread-header-styles";
+
+const TITLE_AVATAR_SIZE = 28;
 
 /** What an open chat shows in its title, once it has loaded its own data. */
 export type ChatTitle = {
-  bot: MobileBot | SpaceBot | undefined;
+  chat: MobileChat | undefined;
+  viewerUserId: string | undefined;
+  /** Doodle's activity in the chat. */
   status: string | undefined;
   composing: boolean;
-  /** The chat's name, or undefined while only a placeholder is known. */
-  name: string | undefined;
-  /** Where tapping the title goes, or null when it opens nothing. */
-  opens: ChatTitleRoute | null;
-  /** A group's members, in order, for its title. */
-  members?: MobileGroup["members"];
+  /** Tapping the title opens the chat's settings, unless the chat is read-only. */
+  opens: boolean;
 };
 
 /** The route params a chat screen opens with. */
-export type ChatTitleParams = {
-  botId?: string;
-  groupId?: string;
-  name?: string;
-  readOnly?: string;
-};
+export type ChatTitleParams = { threadId?: string; readOnly?: string };
 
 // The open chat screens' titles, by screen (route key): two screens of the same chat, as during
 // a push, a pop or a cancelled swipe back, each keep their own. A chat publishes its title here
@@ -60,10 +51,9 @@ function subscribe(listener: () => void): () => void {
 }
 
 /**
- * A chat's title capsule: its avatar (or the avatar's reserved place) and name, opening the
- * bot's profile in a one-to-one chat and the group's settings in a group. The chat route renders
- * it from the screen's first native header, from the route params and the inbox's copy of the
- * bot, until the open chat publishes its own data.
+ * A chat's title capsule: the people in it (or Doodle in a chat with only you) and its name,
+ * opening the chat's settings. The chat route renders it from the screen's first native header,
+ * from the inbox's copy of the chat, until the open chat publishes its own data.
  */
 export function ChatHeaderTitle({
   routeKey,
@@ -76,40 +66,35 @@ export function ChatHeaderTitle({
   const router = useRouter();
   const styles = useThemedStyles(createThreadHeaderStyles);
   const published = useSyncExternalStore(subscribe, () => titles.get(routeKey));
-  const inboxBot = useInboxBot(params.botId);
-  const inboxGroup = useInboxGroup(params.groupId);
-  const inGroup = Boolean(params.groupId);
-  const title: ChatTitle = published ?? {
-    bot: inboxBot,
-    status: inboxBot?.status,
-    composing: false,
-    name: params.name || inboxBot?.name,
-    opens: chatTitleRoute({
-      groupId: params.groupId,
-      botId: params.botId,
-      name: params.name || inboxBot?.name,
-      readOnly: params.readOnly === "1",
-    }),
-  };
-  // A group seats its members from the inbox's copy until the chat has loaded its own.
-  const members = inGroup ? (title.members ?? inboxGroup?.members) : undefined;
-  const label = safeDisplayName(title.name, inGroup ? t("Group") : t("Bot")) || t("Thread");
-  const opens = title.opens;
+  const inboxChat = useInboxChat(params.threadId);
+  const chat = published?.chat ?? inboxChat;
+  const opens = published?.opens ?? params.readOnly !== "1";
+  const label = chat ? chat.title || t("New chat") : t("Chat");
+  const viewerUserId = published?.viewerUserId;
+  const solo = chat ? chat.members.every((member) => member.userId === viewerUserId) : true;
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={opens ? t(inGroup ? "Group settings" : "Profile") : label}
-      disabled={!opens}
+      accessibilityLabel={opens ? t("Chat settings") : label}
+      disabled={!opens || !params.threadId}
       onPress={() => {
-        if (opens) router.push(opens);
+        if (opens && params.threadId)
+          router.push({ pathname: "/chat-settings", params: { threadId: params.threadId } });
       }}
     >
       <GlassSurface style={styles.titleCapsule} fallbackStyle={styles.titleCapsuleFill}>
-        {!inGroup && params.botId ? (
-          <ChatTitleAvatar bot={title.bot} status={title.status} composing={title.composing} />
+        {chat && solo && chat.doodle ? (
+          <DoodleAvatar
+            identity={chat.id}
+            size={TITLE_AVATAR_SIZE}
+            status={published?.status ?? chat.status}
+            composing={published?.composing ?? false}
+            muted={chat.muted}
+          />
+        ) : chat ? (
+          <ChatAvatar chat={chat} viewerUserId={viewerUserId} size={TITLE_AVATAR_SIZE} />
         ) : null}
-        {inGroup ? <GroupSeats members={members ?? []} size={CHAT_TITLE_AVATAR_SIZE} /> : null}
-        <ChatTitleLabel label={label} placeholder={!title.name} style={styles.title} />
+        <ChatTitleLabel label={label} placeholder={!chat} style={styles.title} />
       </GlassSurface>
     </Pressable>
   );

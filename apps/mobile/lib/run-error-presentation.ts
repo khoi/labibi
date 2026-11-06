@@ -89,23 +89,23 @@ export function runErrorWhatHappened(
   if (error.kind === "credit" || error.kind === "spending") {
     switch (error.period) {
       case "daily":
-        return t("The bot couldn't reply because its provider's daily limit was reached.");
+        return t("Doodle couldn't reply because its provider's daily limit was reached.");
       case "weekly":
-        return t("The bot couldn't reply because its provider's weekly limit was reached.");
+        return t("Doodle couldn't reply because its provider's weekly limit was reached.");
       case "monthly":
-        return t("The bot couldn't reply because its provider's monthly limit was reached.");
+        return t("Doodle couldn't reply because its provider's monthly limit was reached.");
       default:
-        return t("The bot couldn't reply because its provider's usage limit was reached.");
+        return t("Doodle couldn't reply because its provider's usage limit was reached.");
     }
   }
   switch (error.kind) {
     case "rate":
-      return t("The provider received too many requests to answer this bot.");
+      return t("The provider received too many requests to answer Doodle.");
     case "auth":
-      return t("The provider refused the key this bot used for its reply.");
+      return t("The provider refused the key Doodle used for its reply.");
     case "model":
-      return t("The provider couldn't serve the model selected for this bot.");
+      return t("The provider couldn't serve the model selected for Doodle.");
     default:
-      return t("The bot couldn't finish its reply. Technical details includes the reported error.");
+      return t("Doodle couldn't finish its reply. Technical details includes the reported error.");
   }
 }

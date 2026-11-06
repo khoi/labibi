@@ -21,19 +21,15 @@ export function syncMobileAvatarSession(apiBase: string, generation: number) {
   mobileLogoAvatarActivity.clear();
 }
 export const newMobileAvatarSnapshotRequest = () => ++snapshotOrder;
+/**
+ * Doodle is one assistant in many chats, so its activity is kept per chat: a run's "bot" here is
+ * the chat it runs in, and an inbox row reads its chat's activity by the chat id.
+ */
 export function rememberMobileAvatarSnapshot(
-  snapshot: Pick<
-    ThreadSnapshot,
-    "threadId" | "cursor" | "botId" | "groupId" | "run" | "activeRuns"
-  >,
+  snapshot: Pick<ThreadSnapshot, "threadId" | "cursor" | "run" | "activeRuns">,
   order = newMobileAvatarSnapshotRequest(),
 ) {
-  const key = snapshot.groupId
-    ? `group:${snapshot.groupId}`
-    : snapshot.botId
-      ? `bot:${snapshot.botId}`
-      : null;
-  if (!key) return;
+  const key = snapshot.threadId;
   const previous = snapshots.get(key);
   if (
     previous &&
@@ -42,25 +38,22 @@ export function rememberMobileAvatarSnapshot(
   )
     return;
   // Keep only current run metadata, never message contents or historical tool rows.
+  const perChat = <T extends { botId: string }>(run: T): T => ({ ...run, botId: key });
   const value = {
-    threadId: snapshot.threadId,
+    threadId: key,
     cursor: snapshot.cursor,
-    botId: snapshot.botId,
-    run: snapshot.run,
-    activeRuns: snapshot.activeRuns,
+    botId: key,
+    run: snapshot.run ? perChat(snapshot.run) : null,
+    activeRuns: snapshot.activeRuns?.map(perChat),
   };
   snapshots.set(key, { order, value });
   projection.reconcile(value);
   if (snapshots.size > 100) snapshots.delete(snapshots.keys().next().value!);
 }
-export function beginMobileAvatarFeed(
-  target: { botId: string } | { groupId: string },
-  cursor: number,
-) {
+export function beginMobileAvatarFeed(threadId: string, cursor: number) {
   const source = `mobile-avatar-${++serial}`;
-  const key = "groupId" in target ? `group:${target.groupId}` : `bot:${target.botId}`;
-  const snapshot = snapshots.get(key)?.value;
+  const snapshot = snapshots.get(threadId)?.value;
   // A snapshot older than the feed cursor misses runs started since, so it can't vouch for idle.
   if (snapshot && snapshot.cursor >= cursor) projection.hydrate(source, snapshot);
-  return { source, threadId: snapshot?.threadId };
+  return { source };
 }

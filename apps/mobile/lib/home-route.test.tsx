@@ -44,18 +44,14 @@ vi.mock("./native", () => ({
   useThemedStyles: (factory: () => unknown) => factory(),
 }));
 
-const toggleActivityMode = vi.fn();
-const runCreateAction = vi.fn();
+const newChat = vi.fn();
 
 function Inbox({ embedded = false }: { embedded?: boolean }) {
   useHomeHeader({
     nativeHeader: !embedded,
     ready: true,
     hasSession: true,
-    initials: "A",
-    activityMode: false,
-    toggleActivityMode,
-    runCreateAction,
+    newChat,
   });
   return <p>{embedded ? "Embedded inbox" : "Compact inbox"}</p>;
 }
@@ -83,58 +79,10 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-it.each([false, true])(
-  "hides the index header on every unfold and restores compact controls (initial split: %s)",
-  (initialSplit) => {
-    for (const split of [initialSplit, false, true, false, true]) {
-      // The index route shows the placeholder on a split window and the compact inbox otherwise;
-      // the chat list beside the placeholder is embedded and has no navigation bar.
-      act(() =>
-        root.render(
-          split ? (
-            <>
-              <Inbox embedded />
-              <PickChatPane />
-            </>
-          ) : (
-            <Inbox />
-          ),
-        ),
-      );
-      expect(home.options.headerShown).toBe(!split);
-      if (!split) {
-        expect(home.options.headerTransparent).toBe(true);
-        expect(home.options.headerStyle).toEqual({ backgroundColor: "transparent" });
-        expect(
-          home.options.unstable_headerLeftItems().map((item: { label: string }) => item.label),
-        ).toEqual(["Account"]);
-        expect(
-          home.options
-            .unstable_headerRightItems()
-            .map((item: { accessibilityLabel: string }) => item.accessibilityLabel),
-        ).toEqual(["Activity", "Search", "Create"]);
-      }
-    }
-  },
-);
-
 it("leaves the navigation bar alone from the embedded inbox", () => {
   act(() => root.render(<Inbox embedded />));
   expect(container.textContent).toBe("Embedded inbox");
   expect(home.setOptions).not.toHaveBeenCalled();
-});
-
-it("wires the compact header items to their actions", () => {
-  act(() => root.render(<Inbox />));
-  const [account] = home.options.unstable_headerLeftItems();
-  const [activity, search, create] = home.options.unstable_headerRightItems();
-  account.onPress();
-  search.onPress();
-  activity.onPress();
-  for (const item of create.menu.items) item.onPress();
-  expect(home.push.mock.calls).toEqual([["/account"], ["/search"]]);
-  expect(toggleActivityMode).toHaveBeenCalledOnce();
-  expect(runCreateAction.mock.calls).toEqual([["group"]]);
 });
 
 it("shows a translated, safe-area-centred placeholder only in the split pane", () => {

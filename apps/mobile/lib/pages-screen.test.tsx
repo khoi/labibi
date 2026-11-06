@@ -196,27 +196,6 @@ it("renames a page from its menu, keeping it as it was on cancel, an empty name 
   await act(async () => root.unmount());
 });
 
-it("shows what the server has after a rename, pin or delete whose answer was lost", async () => {
-  const { container, root } = await library();
-  host.loseAnswer = true;
-  host.prompt = null;
-  await act(async () => host.menus.get("Plan")!.press("rename"));
-  await act(async () => host.prompt!.find((each) => each.text === "Save")!.onPress?.("Launch"));
-  expect(rows(container)).toEqual(["Could not rename the page.", "Launch | now"]);
-
-  await act(async () => host.menus.get("Launch")!.press("pin"));
-  expect(rows(container)).toEqual(["Could not pin the page.", "Launch | now"]);
-  // Pinned on the server, so its menu now offers Unpin.
-  const pin = host.menus.get("Launch")!.actions.find((action) => action.id === "pin");
-  expect(pin).toMatchObject({ title: "Unpin" });
-
-  await act(async () => host.menus.get("Launch")!.press("delete"));
-  await act(async () => host.alert!.find((each) => each.text === "Delete")!.onPress?.());
-  expect(rows(container)).toEqual(["Pages this bot builds for you appear here."]);
-  host.loseAnswer = false;
-  await act(async () => root.unmount());
-});
-
 it("says a list that could not load in the user's words, and Try again reads it again", async () => {
   host.listFails = true;
   const { container, root } = await library();

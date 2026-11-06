@@ -60,35 +60,6 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-it("opens the thread once and keeps it open across new read callbacks", () => {
-  render({ botId: "bot-1", threadId: "thread-1", markReadIfVisible: vi.fn() });
-  // Each streamed message gives the screen a new markReadIfVisible.
-  render({ botId: "bot-1", threadId: "thread-1", markReadIfVisible: vi.fn() });
-  render({ botId: "bot-1", threadId: "thread-1", markReadIfVisible: vi.fn() });
-  expect(state.setOpen.mock.calls).toEqual([[{ botId: "bot-1", threadId: "thread-1" }]]);
-
-  render({ botId: "bot-1", threadId: "thread-2", markReadIfVisible: vi.fn() });
-  expect(state.setOpen.mock.calls.slice(1)).toEqual([
-    [null],
-    [{ botId: "bot-1", threadId: "thread-2" }],
-  ]);
-  act(() => root.unmount());
-  expect(state.setOpen).toHaveBeenLastCalledWith(null);
-  root = createRoot(document.createElement("div"));
-});
-
-it("closes the thread in the background and reopens and reads it on return", () => {
-  const markRead = vi.fn();
-  render({ botId: "bot-1", threadId: "thread-1", markReadIfVisible: markRead });
-  state.setOpen.mockClear();
-
-  act(() => state.listener?.("background"));
-  expect(state.setOpen).toHaveBeenLastCalledWith(null);
-  act(() => state.listener?.("active"));
-  expect(state.setOpen).toHaveBeenLastCalledWith({ botId: "bot-1", threadId: "thread-1" });
-  expect(markRead).toHaveBeenCalledTimes(1);
-});
-
 it("does not reopen or read on return when the thread is not focused or not known", () => {
   const markRead = vi.fn();
   render({ botId: "bot-1", threadId: "thread-1", markReadIfVisible: markRead });

@@ -16,14 +16,14 @@ import { useMobileTokens, useResolvedAppearance } from "../lib/native";
 import { getLatestPage, removePage, renamePage } from "../lib/pages";
 import { usePagedPages } from "../lib/use-paged-pages";
 
-/** The bot's pages, pinned first and then most recently updated. */
+/** A chat's pages, pinned first and then most recently updated. */
 export default function PagesScreen() {
-  const { botId, groupId } = useLocalSearchParams<{ botId?: string; groupId?: string }>();
+  const { threadId } = useLocalSearchParams<{ threadId?: string }>();
   const router = useRouter();
   const { t } = useI18n();
   const tokens = useMobileTokens();
   const colorScheme = useResolvedAppearance();
-  const { listed, showMore, refresh } = usePagedPages({ botId, groupId });
+  const { listed, showMore, refresh } = usePagedPages(threadId);
   const [problem, setProblem] = useState<string | null>(null);
   const rename = useTextEditDialog(t("Rename"), PAGE_TITLE_MAX_LENGTH);
 
@@ -46,9 +46,7 @@ export default function PagesScreen() {
     return (
       <View style={styles.center}>
         <Text style={[styles.message, { color: tokens.mutedForeground }]}>
-          {groupId
-            ? t("Pages this group builds for you appear here.")
-            : t("Pages this bot builds for you appear here.")}
+          {t("Pages Doodle builds for you appear here.")}
         </Text>
       </View>
     );

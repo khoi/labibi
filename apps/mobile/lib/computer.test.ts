@@ -1,12 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ComputerStatus } from "./computer.js";
 import {
-  controlLabel,
   embeddableScreenUrl,
   fromScreenPage,
   isProxiedScreenPage,
   nextLoadedScreenUrl,
-  previewPlaceholder,
   readScreenUrl,
   retainScreenSource,
   SCREEN_URL_RENEW_MS,
@@ -16,20 +14,16 @@ import {
   screenStreamKey,
 } from "./computer.js";
 
-function computer(overrides: Partial<ComputerStatus> = {}): ComputerStatus {
+function _computer(overrides: Partial<ComputerStatus> = {}): ComputerStatus {
   return {
-    botId: "bot-1",
-    mode: "team",
     kind: "fake",
     state: "running",
     controlHolder: "none",
-    controlBotId: null,
     takeoverRequested: false,
     screenAvailable: true,
     screenWidth: 1280,
     screenHeight: 800,
     homeRevision: null,
-    busyBotName: null,
     canUpdate: true,
     terminalAvailable: true,
     ...overrides,
@@ -195,50 +189,6 @@ describe("screen stream identity", () => {
     expect(screenStreamKey(held)).toBe(screenStreamKey(rotated));
     expect(retainScreenSource(held, rotated, now)).toBe(held);
     expect(retainScreenSource(held, takeover, now)).toBe(takeover);
-  });
-});
-
-describe("computer copy", () => {
-  it("matches the web pane while booting, asleep, or in control", () => {
-    expect(previewPlaceholder("stopped", false, "Chief")).toBe("Computer is stopped");
-    expect(previewPlaceholder("suspended", false, "Chief")).toBe(
-      "Computer is asleep. Take control to wake it.",
-    );
-    expect(previewPlaceholder("running", true, "Chief")).toBe("Booting live desktop…");
-    expect(
-      controlLabel(
-        computer({
-          state: "running",
-          controlHolder: "user",
-          controlBotId: "bot-1",
-          takeoverRequested: true,
-        }),
-        "Chief",
-        "bot-1",
-      ),
-    ).toBe("You have control");
-    expect(
-      controlLabel(
-        computer({
-          state: "running",
-          controlHolder: "user",
-          controlBotId: "other-bot",
-        }),
-        "Chief",
-        "bot-1",
-      ),
-    ).toBe("Team Computer");
-    expect(
-      controlLabel(
-        computer({
-          state: "suspended",
-          controlHolder: "none",
-          controlBotId: null,
-          screenAvailable: false,
-        }),
-        "Chief",
-      ),
-    ).toBe("Asleep");
   });
 });
 

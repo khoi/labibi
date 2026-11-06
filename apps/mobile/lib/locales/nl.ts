@@ -40,8 +40,6 @@ export const NL_MESSAGES: Record<string, string> = {
   "When to use": "Wanneer gebruiken",
   "ZIP or postal code": "Postcode",
   "Daily check-ins on unfinished work": "Dagelijks navragen over onafgemaakt werk",
-  "Pages this group builds for you appear here.":
-    "Pagina's die deze groep voor je maakt, verschijnen hier.",
   Deleted: "Verwijderd",
   "Its link stops working. This cannot be undone.":
     "De link werkt dan niet meer. Dit kan niet ongedaan worden gemaakt.",
@@ -67,8 +65,6 @@ export const NL_MESSAGES: Record<string, string> = {
   "Could not load this page.": "Deze pagina laden mislukt.",
   Pages: "Pagina's",
   "Could not load pages.": "Pagina's laden mislukt.",
-  "Pages this bot builds for you appear here.":
-    "Pagina's die deze bot voor je maakt, verschijnen hier.",
   Shared: "Gedeeld",
   "Share to": "Delen met",
   "{count} files": "{count} bestanden",
@@ -127,14 +123,8 @@ export const NL_MESSAGES: Record<string, string> = {
   "To:": "Aan:",
   Next: "Volgende",
   "Ex: Project Falcon": "Bijv. Project Falcon",
-  "Search bots": "Bots zoeken",
   "{count} messages with {peer}": "{count} berichten met {peer}",
   "About {label}": "Over {label}",
-  "Manage other bots": "Andere bots beheren",
-  "Allow cross-space bot communication":
-    "Communicatie tussen bots in verschillende ruimtes toestaan",
-  "Organize the sidebar and edit bots. Instruction, model, routine and group edits need approval.":
-    "Orden de zijbalk en bewerk bots. Wijzigingen aan groepen, instructies, modellen en routines vereisen je goedkeuring.",
 
   Headers: "Headers",
   "Add header": "Header toevoegen",
@@ -153,8 +143,6 @@ export const NL_MESSAGES: Record<string, string> = {
   Member: "Lid",
   Owner: "Eigenaar",
   Space: "Space",
-  "Message from another agent": "Bericht van een andere agent",
-  "Another agent": "Een andere agent",
   "Update from {name}: {text}": "Update van {name}: {text}",
   "Update from {name}": "Update van {name}",
   "{name} asked: {text}": "{name} vraagt: {text}",
@@ -254,10 +242,8 @@ export const NL_MESSAGES: Record<string, string> = {
   "Chat settings": "Chatinstellingen",
   Computer: "Computer",
   Group: "Groep",
-  "Group settings": "Groepsinstellingen",
   Integrations: "Integraties",
   Models: "Modellen",
-  "New group chat": "Nieuwe groepschat",
   Routine: "Routine",
   "Server integrations": "Serverintegraties",
   Thread: "Thread",
@@ -288,9 +274,7 @@ export const NL_MESSAGES: Record<string, string> = {
   "Use default server": "Gebruik de standaardserver",
   Activity: "Activiteit",
   "Collapse {name}": "{name} inklappen",
-  "Could not load bots": "Bots laden mislukt",
   "Could not open this PDF.": "Kan deze pdf niet openen.",
-  "Could not save the default space": "De standaardspace opslaan mislukt",
   "Could not switch spaces": "Van space wisselen mislukt",
   Create: "Aanmaken",
   "Delete {name}?": "{name} verwijderen?",
@@ -298,7 +282,6 @@ export const NL_MESSAGES: Record<string, string> = {
   "Mark as Read": "Markeren als gelezen",
   "Mark as Unread": "Markeren als ongelezen",
   "Mark as unread": "Markeren als ongelezen",
-  "No matching bots": "Geen overeenkomende bots",
   "No messages yet": "Nog geen berichten",
   "No results": "Geen resultaten",
   Personal: "Persoonlijk",
@@ -306,12 +289,10 @@ export const NL_MESSAGES: Record<string, string> = {
   Search: "Zoeken",
   "Search conversations, files, and routines": "Zoek in gesprekken, bestanden en routines",
   "Searching…": "Bezig met zoeken…",
-  "Space actions for {name}": "Space-acties voor {name}",
   "notifications silenced": "meldingen gedempt",
   unread: "ongelezen",
   "@{name}": "@{name}",
   "Add a voice provider in Voice settings.": "Voeg een spraakanbieder toe in de steminstellingen.",
-  Agent: "Agent",
   "Allowed once": "Een keer toegestaan",
   "Always allowed": "Altijd toegestaan",
   Answer: "Opnemen",
@@ -324,7 +305,6 @@ export const NL_MESSAGES: Record<string, string> = {
   Attach: "Bijvoegen",
   "Attach file": "Bestand bijvoegen",
   Attachment: "Bijlage",
-  "Bot actions": "Bot-acties",
   Camera: "Camera",
   "Cancel reply": "Antwoord annuleren",
   Cancelled: "Geannuleerd",
@@ -398,7 +378,6 @@ export const NL_MESSAGES: Record<string, string> = {
   Play: "Afspelen",
   Pause: "Pauzeren",
   "Select text": "Tekst selecteren",
-  "All bots": "Alle bots",
   Artifact: "Artefact",
   Artifacts: "Artefacten",
   "Could not delete this artifact": "Dit artefact verwijderen mislukt",
@@ -418,8 +397,6 @@ export const NL_MESSAGES: Record<string, string> = {
     "Hiermee worden alle {count} versies van dit artefact verwijderd. Dit kan niet ongedaan worden gemaakt.",
   Versions: "Versies",
   Stop: "Stoppen",
-  "This removes every message and stops current work. The bot, computer, memory, and routines are kept.":
-    "Hiermee worden alle berichten verwijderd en lopend werk gestopt. De bot, computer, het geheugen en de routines blijven behouden.",
   "Type your answer": "Typ je antwoord",
   Username: "Gebruikersnaam",
   "Waiting for this bot’s response.": "Wachten op het antwoord van deze bot.",
@@ -434,7 +411,6 @@ export const NL_MESSAGES: Record<string, string> = {
   finished: "voltooid",
   running: "draait",
   subagent: "subagent",
-  "{count} agents working": "{count} agents aan het werk",
   "{from} messaged {to}": "{from} stuurde een bericht naar {to}",
   "{name} (max {count} attachments)": "{name} (max. {count} bijlagen)",
   "{name} (over {limit})": "{name} (meer dan {limit})",
@@ -442,9 +418,7 @@ export const NL_MESSAGES: Record<string, string> = {
   "{name} (unsupported type)": "{name} (niet-ondersteund type)",
   "{name} is working": "{name} is aan het werk",
   Advanced: "Geavanceerd",
-  "Could not load bot": "Bot laden mislukt",
   "Could not load model settings": "Modelinstellingen laden mislukt",
-  "Could not save bot": "Bot opslaan mislukt",
   "Default (medium)": "Standaard (gemiddeld)",
   Description: "Beschrijving",
   "Extra high": "Extra hoog",
@@ -458,19 +432,10 @@ export const NL_MESSAGES: Record<string, string> = {
   "Read replies aloud": "Antwoorden hardop voorlezen",
   Save: "Opslaan",
   "Saving…": "Bezig met opslaan…",
-  "Space default": "Spacestandaard",
   "Can't read images": "Kan afbeeldingen niet lezen",
   Thinking: "Denkt",
   Title: "Titel",
-  "Could not delete group": "Groep verwijderen mislukt",
-  "Could not load group": "Groep laden mislukt",
-  "Could not save group": "Groep opslaan mislukt",
-  "Delete group": "Groep verwijderen",
-  "Bots and their own chats stay.": "Bots en hun eigen chats blijven behouden.",
-  "Group name": "Groepsnaam",
-  "Group not found": "Groep niet gevonden",
   Members: "Leden",
-  "Could not create group": "Groep aanmaken mislukt",
   "Creating…": "Bezig met aanmaken…",
   "Create space": "Space aanmaken",
   Active: "Actief",
@@ -722,8 +687,6 @@ export const NL_MESSAGES: Record<string, string> = {
   "Needs attention": "Heeft aandacht nodig",
   Unread: "Ongelezen",
   "Notification settings": "Meldingsinstellingen",
-  "Get notified when this Bot finishes or needs input":
-    "Ontvang een melding wanneer deze bot klaar is of invoer nodig heeft",
   Notifications: "Meldingen",
   "Questions, approvals, takeover": "Vragen, goedkeuringen, overname",
   "Replies and completed work": "Antwoorden en afgerond werk",
@@ -753,8 +716,6 @@ export const NL_MESSAGES: Record<string, string> = {
   "Replaces the login saved for {site}": "Vervangt de opgeslagen login voor {site}",
   "Cancel open invites": "Openstaande uitnodigingen intrekken",
   "Could not cancel invites": "Uitnodigingen konden niet worden ingetrokken",
-  "Sites you sign in to stay signed in for everyone in this space":
-    "Sites waarop je inlogt, blijven ingelogd voor iedereen in deze ruimte",
   "The bot's browser stays signed in for everyone in this space":
     "De browser van de bot blijft ingelogd voor iedereen in deze ruimte",
   "Could not submit answer": "Antwoord insturen mislukt",
@@ -831,7 +792,6 @@ export const NL_MESSAGES: Record<string, string> = {
   "Could not clear the custom server URL": "De eigen server-URL wissen mislukt",
   "Could not clear the local session": "De lokale sessie wissen mislukt",
   "Could not clear the previous server session": "De vorige serversessie wissen mislukt",
-  "Could not clear the previous space": "De vorige space wissen mislukt",
   "Could not save the server URL": "De server-URL opslaan mislukt",
   "Could not send reset email": "Herstellingsmail versturen mislukt",
   "The server changed while starting the request":
@@ -845,7 +805,6 @@ export const NL_MESSAGES: Record<string, string> = {
   "{channel} {id}": "{channel} {id}",
   "{channel} {id}, {date}": "{channel} {id}, {date}",
   "Saved {name} locally": "{name} lokaal opgeslagen",
-  "Could not delete bot": "Bot verwijderen mislukt",
   "Delete memories too": "Herinneringen ook verwijderen",
   "Its conversation, files, and routines will be permanently deleted. What should happen to its memories?":
     "Het gesprek, de bestanden en de routines worden definitief verwijderd. Wat moet er met de herinneringen gebeuren?",
@@ -880,10 +839,6 @@ export const NL_MESSAGES: Record<string, string> = {
     "Worden op volgorde geprobeerd als het actieve model faalt.",
   "Could not load backup models": "Back-upmodellen laden mislukt",
   "Could not save backup models": "Back-upmodellen opslaan mislukt",
-  "Space changed. Reload Models to refresh backup models.":
-    "De space is gewijzigd. Herlaad Modellen om de back-upmodellen te vernieuwen.",
-  "Space changed. Reload Models before saving backups.":
-    "De space is gewijzigd. Herlaad Modellen voordat je back-ups opslaat.",
   "A sign-in page opened — enter this code there:":
     "Er is een aanmeldpagina geopend — voer daar deze code in:",
   Copied: "Gekopieerd",
@@ -920,12 +875,8 @@ export const NL_MESSAGES: Record<string, string> = {
   "You can turn this off in Account → AI data sharing.":
     "Je kunt dit uitschakelen in Account → AI-gegevensdeling.",
   Allow: "Toestaan",
-  "Messages, chat history, bot instructions, memories, attachments, screenshots and connected-app content are sent to run your bots, including routines.":
-    "Berichten, chatgeschiedenis, botinstructies, herinneringen, bijlagen, schermafbeeldingen en content van gekoppelde apps worden verstuurd om je bots te laten werken, inclusief routines.",
   "Your recordings are sent for transcription, and text you play is sent to generate speech.":
     "Je opnamen worden verstuurd voor transcriptie en de tekst die je afspeelt wordt verstuurd om spraak te genereren.",
-  "Conversation summaries, memories, searches and bot and Space IDs are sent to store and recall context.":
-    "Gesprekssamenvattingen, herinneringen, zoekopdrachten en bot- en Space-ID's worden verstuurd om context op te slaan en op te roepen.",
   "AI data sharing": "AI-gegevensdeling",
   "Allow {name} on mobile": "{name} op mobiel toestaan",
   "Could not load permissions.": "Toestemmingen laden mislukt.",
@@ -948,7 +899,6 @@ export const NL_MESSAGES: Record<string, string> = {
   "Members ({count})": "Leden ({count})",
   "Show all": "Alles tonen",
   "Show selected": "Selectie tonen",
-  "Filter bots": "Bots filteren",
   "Pick {min}–{max}": "Kies {min}–{max}",
   "No members yet": "Nog geen leden",
   Applied: "Toegepast",
@@ -959,7 +909,6 @@ export const NL_MESSAGES: Record<string, string> = {
   Instructions: "Instructies",
   "Instructions updated": "Instructies bijgewerkt",
   "Settings updated": "Instellingen bijgewerkt",
-  "Let this bot update its own instructions": "Laat deze bot zijn eigen instructies bijwerken",
   Restored: "Hersteld",
   Undo: "Ongedaan maken",
   "Update instructions?": "Instructies bijwerken?",
@@ -1247,18 +1196,8 @@ export const NL_MESSAGES: Record<string, string> = {
   "1 free month earned": "1 gratis maand verdiend",
   "{count} free months earned": "{count} gratis maanden verdiend",
   "Submit a plugin": "Plugin indienen",
-  "Bot models": "Botmodellen",
-  "1 bot has its own model:": "1 bot heeft een eigen model:",
-  "{count} bots have their own model:": "{count} bots hebben een eigen model:",
-  "Use space default": "Spacestandaard gebruiken",
   "Switching…": "Bezig met wisselen…",
-  "Switch 1 bot to the space default?": "1 bot naar de spacestandaard overzetten?",
-  "Switch {count} bots to the space default?": "{count} bots naar de spacestandaard overzetten?",
-  "Their own model is cleared. You can pick one again in each bot.":
-    "Hun eigen model wordt gewist. Je kunt in elke bot opnieuw een model kiezen.",
   Switch: "Overzetten",
-  "1 bot now uses the space default.": "1 bot gebruikt nu de spacestandaard.",
-  "{count} bots now use the space default.": "{count} bots gebruiken nu de spacestandaard.",
   "Could not switch {failedNames}. Try again.":
     "Kon {failedNames} niet overzetten. Probeer het opnieuw.",
   "Could not load memory": "Geheugen kon niet worden geladen",
@@ -1285,6 +1224,54 @@ export const NL_MESSAGES: Record<string, string> = {
   "{amount} spent this week": "{amount} deze week uitgegeven",
   "{amount} spent this month": "{amount} deze maand uitgegeven",
   "{amount} spent": "{amount} uitgegeven",
+  "Add people": "Mensen toevoegen",
+  Chat: "Chat",
+  "Conversation summaries, memories, searches and chat and person IDs are sent to store and recall context.":
+    "Gesprekssamenvattingen, herinneringen, zoekopdrachten en chat- en persoons-ID's worden verzonden om context op te slaan en terug te halen.",
+  "Could not save the default workspace": "Standaardwerkruimte kon niet worden opgeslagen",
+  "Could not start chat": "Chat kon niet worden gestart",
+  "Could not switch workspaces": "Kon niet van werkruimte wisselen",
+  "Delete chat": "Chat verwijderen",
+  "Disable a tool": "Een tool uitschakelen",
+  Files: "Bestanden",
+  "Leave chat": "Chat verlaten",
+  "Messages, chat history, Doodle's instructions, memories, attachments, screenshots and connected-app content are sent to run Doodle, including routines.":
+    "Berichten, chatgeschiedenis, de instructies van Doodle, herinneringen, bijlagen, schermafbeeldingen en inhoud van gekoppelde apps worden verzonden om Doodle te laten werken, ook voor routines.",
+  "My computer": "Mijn computer",
+  "New chat": "Nieuwe chat",
+  "Pages Doodle builds for you appear here.":
+    "Pagina's die Doodle voor je maakt, verschijnen hier.",
+  "Recovering your computer": "Je computer wordt hersteld",
+  "Start chat": "Chat starten",
+  "Updating your computer": "Je computer wordt bijgewerkt",
+  "Ask Doodle in this chat to set up a routine.":
+    "Vraag Doodle in deze chat om een routine in te stellen.",
+  "Doodle with your own computer": "Doodle met je eigen computer",
+  "Put Doodle to work": "Zet Doodle aan het werk",
+  "Could not leave workspace": "Kon de werkruimte niet verlaten",
+  "Leave workspace": "Werkruimte verlaten",
+  "Doodle can use the file but won't see the picture.":
+    "Doodle kan het bestand gebruiken, maar ziet de afbeelding niet.",
+  "Doodle couldn't finish its reply. Technical details includes the reported error.":
+    "Doodle kon het antwoord niet afmaken. De technische details bevatten de gemelde fout.",
+  "Doodle couldn't reply because its provider's daily limit was reached.":
+    "Doodle kon niet antwoorden omdat de daglimiet van de aanbieder is bereikt.",
+  "Doodle couldn't reply because its provider's monthly limit was reached.":
+    "Doodle kon niet antwoorden omdat de maandlimiet van de aanbieder is bereikt.",
+  "Doodle couldn't reply because its provider's usage limit was reached.":
+    "Doodle kon niet antwoorden omdat de gebruikslimiet van de aanbieder is bereikt.",
+  "Doodle couldn't reply because its provider's weekly limit was reached.":
+    "Doodle kon niet antwoorden omdat de weeklimiet van de aanbieder is bereikt.",
+  "The provider couldn't serve the model selected for Doodle.":
+    "De aanbieder kon het voor Doodle gekozen model niet leveren.",
+  "The provider received too many requests to answer Doodle.":
+    "De aanbieder kreeg te veel verzoeken om Doodle te beantwoorden.",
+  "The provider refused the key Doodle used for its reply.":
+    "De aanbieder weigerde de sleutel die Doodle voor het antwoord gebruikte.",
+  "This removes the connection from every workspace.":
+    "Hiermee wordt de verbinding uit elke werkruimte verwijderd.",
+  "Waiting for Doodle’s response.": "Wachten op het antwoord van Doodle.",
+  Workspace: "Werkruimte",
 };
 
 export const PEER_MESSAGE_FORMS: Partial<Record<Intl.LDMLPluralRule, string>> = {

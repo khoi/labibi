@@ -73,11 +73,9 @@ export function pageActionAllowed(tappedAt: number | null, now: number): boolean
   return tappedAt !== null && now >= tappedAt && now - tappedAt <= PAGE_ACTION_WINDOW_MS;
 }
 
-/** The chat a page was made in, where its reply buttons write; null once that chat is gone. */
-export function pageChat(page: Pick<PageDetail, "botId" | "groupId">) {
-  if (page.groupId) return { pathname: "/group-thread", key: "groupId", threadKey: page.groupId };
-  if (page.botId) return { pathname: "/thread", key: "botId", threadKey: page.botId };
-  return null;
+/** The chat a page was made in, where its reply buttons write. */
+export function pageChat(page: Pick<PageDetail, "threadId">) {
+  return { pathname: "/thread", key: "threadId", threadKey: page.threadId } as const;
 }
 
 type PageReply = { text: string; page: { id: string; title: string } };

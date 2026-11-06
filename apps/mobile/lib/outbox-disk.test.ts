@@ -138,8 +138,6 @@ function attempt(nonce = "nonce-a"): SendAttempt {
       originThreadKey: "bot-a",
       displayText: "Hello",
       replyPreview: null,
-      botTarget: "bot-a",
-      reroutedToGroup: false,
       plan: resolveComposerSendPlan({ text: "Hello", mentions: [], hasAttachments: true }),
       replyQuote: null,
       attachments: [

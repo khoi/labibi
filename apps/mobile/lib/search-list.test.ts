@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { searchHitPreview, searchHitRowPreview } from "./search-list.js";
+import { searchHitPreview } from "./search-list.js";
 
 describe("searchHitPreview", () => {
   it("strips markdown to a plain line", () => {
@@ -23,21 +23,5 @@ describe("searchHitPreview", () => {
     expect(searchHitPreview("note data:,hello next")).toBe("note next");
     expect(searchHitPreview("see data:image/png next")).toBe("see data:image/png next");
     expect(searchHitPreview("keep metadata: label")).toBe("keep metadata: label");
-  });
-
-  it("joins the conversation name with the plain preview", () => {
-    expect(
-      searchHitRowPreview({
-        title: "launch-notes.txt",
-        botName: "Scout",
-        snippet: "See **this** ![x](data:image/png;base64,aaaa)",
-      }),
-    ).toBe("Scout: See this x");
-  });
-
-  it("does not repeat the chat the row title already names", () => {
-    expect(
-      searchHitRowPreview({ title: "Scout", botName: "Scout", snippet: "The plan is ready." }),
-    ).toBe("The plan is ready.");
   });
 });

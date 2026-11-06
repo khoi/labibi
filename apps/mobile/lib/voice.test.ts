@@ -113,30 +113,6 @@ describe("mobile speech", () => {
     vi.unstubAllGlobals();
   });
 
-  it("keeps every request on the server and space captured before preparation", async () => {
-    await expect(speakText("Read this", { botId: "bot-1" })).resolves.toBe(true);
-
-    const requestContext = {
-      apiBase: "https://support.example",
-      headers: {
-        authorization: "Bearer support-token",
-        "x-rakazo-space-id": "space-support",
-      },
-    };
-    expect(rpc).toHaveBeenCalledWith(
-      "voice/prepare",
-      { text: "Read this", voiceId: undefined, botId: "bot-1" },
-      { requestContext },
-    );
-    expect(captureApiRequestContext).toHaveBeenCalledTimes(1);
-    const fetchMock = vi.mocked(fetch);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    for (const [url, init] of fetchMock.mock.calls) {
-      expect(url).toBe("https://support.example/api/voice/speak");
-      expect(init?.headers).toMatchObject(requestContext.headers);
-    }
-  });
-
   it("plays WAV from a server that renders speech itself and MP3 otherwise", () => {
     const wav = new TextEncoder().encode("RIFF\0\0\0\0WAVEfmt ");
     expect(speechClipType(wav)).toEqual({ mimeType: "audio/wav", extension: "wav" });

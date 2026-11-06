@@ -128,7 +128,11 @@ describe("the activity mark's clock", () => {
     const root = createRoot(container);
     roots.push(root);
     const from = styles.length;
-    act(() => root.render(<ActivityMark bots={[bot]} atBottom />));
+    act(() =>
+      root.render(
+        <ActivityMark identity={bot.id} status={bot.status} composing={false} atBottom />,
+      ),
+    );
     return { container, styles: [from, styles.length] as const };
   };
 

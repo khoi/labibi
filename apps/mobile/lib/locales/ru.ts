@@ -40,8 +40,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "When to use": "Когда использовать",
   "ZIP or postal code": "Почтовый индекс",
   "Daily check-ins on unfinished work": "Ежедневные напоминания о незавершённой работе",
-  "Pages this group builds for you appear here.":
-    "Здесь появятся страницы, которые эта группа создаст для вас.",
   Deleted: "Удалена",
   "Its link stops working. This cannot be undone.":
     "Ссылка перестанет работать. Это нельзя отменить.",
@@ -67,8 +65,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "Could not load this page.": "Не удалось загрузить эту страницу.",
   Pages: "Страницы",
   "Could not load pages.": "Не удалось загрузить страницы.",
-  "Pages this bot builds for you appear here.":
-    "Здесь появятся страницы, которые этот бот создаст для вас.",
   Shared: "Общий",
   "Share to": "Отправить в",
   "{count} files": "Файлов: {count}",
@@ -127,13 +123,8 @@ export const RU_MESSAGES: Record<string, string> = {
   "To:": "Кому:",
   Next: "Далее",
   "Ex: Project Falcon": "Например: проект «Сокол»",
-  "Search bots": "Поиск ботов",
   "{count} messages with {peer}": "{count} сообщения с {peer}",
   "About {label}": "О настройке «{label}»",
-  "Manage other bots": "Управлять другими ботами",
-  "Allow cross-space bot communication": "Разрешить общение ботов из разных пространств",
-  "Organize the sidebar and edit bots. Instruction, model, routine and group edits need approval.":
-    "Упорядочивайте боковую панель и редактируйте ботов. Изменения групп, инструкций, моделей и процедур требуют вашего одобрения.",
 
   Headers: "Заголовки",
   "Add header": "Добавить заголовок",
@@ -151,8 +142,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "Technical details": "Технические сведения",
   Member: "Участник",
   Owner: "Владелец",
-  "Message from another agent": "Сообщение от другого агента",
-  "Another agent": "Другой агент",
   "Update from {name}: {text}": "Обновление от {name}: {text}",
   "Update from {name}": "Обновление от {name}",
   "{name} asked: {text}": "{name} спрашивает: {text}",
@@ -279,7 +268,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "Server integrations": "Интеграции сервера",
   "Set up Executor on your server in the web app.":
     "Настройте Executor на сервере в веб-приложении.",
-  "Space default": "Пространство по умолчанию",
   "Can't read images": "Не может читать изображения",
   "Stop all workers and confirm that provider operations have stopped before releasing this computer.":
     "Остановите всех воркеров и убедитесь, что операции провайдера остановлены, прежде чем освобождать этот компьютер.",
@@ -303,7 +291,6 @@ export const RU_MESSAGES: Record<string, string> = {
   Dark: "Тёмная",
   Light: "Светлая",
   System: "Системная",
-  "{count} agents working": "Работает агентов: {count}",
   "{count}m ago": "{count} мин назад",
   "Started {count}m late": "Запущено с опозданием на {count} мин",
   "Started {count}h late": "Запущено с опозданием на {count} ч",
@@ -346,8 +333,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "Replaces the login saved for {site}": "Заменяет сохранённый вход для {site}",
   "Cancel open invites": "Отменить открытые приглашения",
   "Could not cancel invites": "Не удалось отменить приглашения",
-  "Sites you sign in to stay signed in for everyone in this space":
-    "Сайты, на которых вы входите, остаются в аккаунте для всех в этом пространстве",
   "The bot's browser stays signed in for everyone in this space":
     "Браузер бота остаётся в аккаунте для всех в этом пространстве",
   "Always allowed": "Всегда разрешено",
@@ -373,7 +358,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "Back to sign in": "Вернуться ко входу",
   Back: "Назад",
   Bot: "Бот",
-  "Bot actions": "Действия бота",
   "Booting live desktop…": "Запуск рабочего стола…",
   Camera: "Камера",
   Cancel: "Отмена",
@@ -435,21 +419,14 @@ export const RU_MESSAGES: Record<string, string> = {
     "Не удалось очистить URL-адрес пользовательского сервера.",
   "Could not clear the local session": "Не удалось очистить локальный сеанс",
   "Could not clear the previous server session": "Не удалось очистить предыдущий сеанс сервера.",
-  "Could not clear the previous space": "Не удалось очистить предыдущее пространство",
   "Could not connect": "Не удалось подключиться",
   "Could not connect this provider": "Не удалось подключить этого провайдера",
   "Could not continue": "Не удалось продолжить",
   "Could not disconnect": "Не удалось отключить",
-  "Could not create group": "Не удалось создать группу",
   "Could not delete account": "Не удалось удалить аккаунт",
-  "Could not delete bot": "Не удалось удалить бота",
-  "Could not delete group": "Не удалось удалить группу",
   "Could not finish sign-in": "Не удалось завершить вход",
-  "Could not load bot": "Не удалось загрузить бота",
   "Could not open this PDF.": "Не удалось открыть этот PDF.",
-  "Could not load bots": "Не удалось загрузить ботов",
   "Could not load earlier messages": "Не удалось загрузить предыдущие сообщения",
-  "Could not load group": "Не удалось загрузить группу",
   "Could not load integrations": "Не удалось загрузить интеграции",
   "Could not load model settings": "Не удалось загрузить настройки модели.",
   "Could not load routine": "Не удалось загрузить программу",
@@ -486,8 +463,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "When to run": "Когда запускать",
   "Write what this routine should do.": "Опишите, что должна делать эта задача.",
   "Could not update routine": "Не удалось обновить задачу",
-  "Get notified when this Bot finishes or needs input":
-    "Получать уведомления, когда этот бот завершает работу или ждёт ввода",
   "Could not load the desktop. This device cannot reach the screen URL.":
     "Не удалось загрузить рабочий стол. Это устройство не может получить доступ к URL-адресу экрана.",
   "Could not load this file.": "Не удалось загрузить этот файл.",
@@ -515,11 +490,8 @@ export const RU_MESSAGES: Record<string, string> = {
   "Could not remove source": "Не удалось удалить источник",
   "Could not load chats": "Не удалось загрузить чаты",
   "Could not revoke connection": "Не удалось отменить соединение",
-  "Could not save bot": "Не удалось сохранить бота",
-  "Could not save group": "Не удалось сохранить группу",
   "Could not save that speech model": "Не удалось сохранить речевую модель",
   "Could not save that voice": "Не удалось сохранить этот голос",
-  "Could not save the default space": "Не удалось сохранить пространство по умолчанию.",
   "Could not save the server URL": "Не удалось сохранить URL-адрес сервера.",
   "Could not send reset email": "Не удалось отправить электронное письмо для сброса",
   "Could not send answer": "Не удалось отправить ответ",
@@ -544,10 +516,8 @@ export const RU_MESSAGES: Record<string, string> = {
   "Custom server {host}": "Пользовательский сервер {host}",
   Delete: "Удалить",
   "Delete account": "Удалить аккаунт",
-  "Delete group": "Удалить группу",
   "Delete memories too": "Удалить также память",
   "Delete {name}?": "Удалить {name}?",
-  "Bots and their own chats stay.": "Боты и их собственные чаты сохранятся.",
   "Delete your account?": "Удалить аккаунт?",
   "Delete…": "Удалить…",
   Denied: "Запрещено",
@@ -589,9 +559,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "Teams not enabled": "Teams не настроен",
   "Slack not enabled": "Slack не включен",
   Group: "Группа",
-  "Group name": "Название группы",
-  "Group not found": "Группа не найдена",
-  "Group settings": "Настройки группы",
   "Hear a sample": "Прослушать образец",
   Hide: "Скрыть",
   "Hide {label}": "Скрыть {label}",
@@ -636,10 +603,8 @@ export const RU_MESSAGES: Record<string, string> = {
   "Needs input": "Требуется ввод данных",
   "Needs takeover": "Ожидает передачи управления",
   "New password": "Новый пароль",
-  "New group chat": "Новый групповой чат",
   "No apps match your search.": "Нет приложений, соответствующих вашему запросу.",
   "No tools available.": "Нет доступных инструментов.",
-  "No matching bots": "Нет подходящих ботов",
   "No matching models": "Нет подходящих моделей",
   "No messages yet": "Сообщений пока нет",
   "No results": "Нет результатов",
@@ -747,7 +712,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "Silence notifications": "Отключить уведомления",
   Skip: "Пропустить",
   Space: "Пространство",
-  "Space actions for {name}": "Действия пространства {name}",
   "Read replies aloud": "Читать ответы вслух",
   "Speak message": "Озвучить сообщение",
   Play: "Воспроизвести",
@@ -822,7 +786,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "Maximum images per request": "Максимум изображений в запросе",
   "Enter a whole number from 1 to 1000 for the image limit.":
     "Введите целое число от 1 до 1000 для лимита изображений.",
-  Agent: "Агент",
   archived: "в архиве",
   Attachment: "Вложение",
   bot: "бот",
@@ -865,8 +828,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "sk-…": "sk-…",
   Submitted: "Отправлено",
   "Teach a task": "Научить задачу",
-  "This removes every message and stops current work. The bot, computer, memory, and routines are kept.":
-    "Это удалит все сообщения и остановит текущую работу. Бот, компьютер, память и задачи сохранятся.",
   "This subscription sign-in is not available in Labradoodle yet. Use a deployment credential or choose another provider.":
     "Вход по этой подписке пока недоступен в Labradoodle. Используйте учётные данные развёртывания или выберите другого провайдера.",
   Tools: "Инструменты",
@@ -897,10 +858,6 @@ export const RU_MESSAGES: Record<string, string> = {
     "Используются по порядку, если активная модель не отвечает.",
   "Could not load backup models": "Не удалось загрузить резервные модели.",
   "Could not save backup models": "Не удалось сохранить резервные модели.",
-  "Space changed. Reload Models to refresh backup models.":
-    "Пространство изменилось. Перезагрузите раздел «Модели», чтобы обновить резервные модели.",
-  "Space changed. Reload Models before saving backups.":
-    "Пространство изменилось. Перезагрузите раздел «Модели», прежде чем сохранять резервные модели.",
   "A sign-in page opened — enter this code there:":
     "Открылась страница входа — введите там этот код:",
   Copied: "Скопировано",
@@ -920,7 +877,6 @@ export const RU_MESSAGES: Record<string, string> = {
 
   Artifact: "Артефакт",
   Artifacts: "Артефакты",
-  "All bots": "Все боты",
   "Search artifacts…": "Поиск артефактов…",
   "No artifacts yet": "Пока нет артефактов",
   "No matching artifacts": "Нет подходящих артефактов",
@@ -960,12 +916,8 @@ export const RU_MESSAGES: Record<string, string> = {
   "You can turn this off in Account → AI data sharing.":
     "Это можно отключить в разделе Аккаунт → Передача данных ИИ.",
   Allow: "Разрешить",
-  "Messages, chat history, bot instructions, memories, attachments, screenshots and connected-app content are sent to run your bots, including routines.":
-    "Сообщения, история чата, инструкции ботов, воспоминания, вложения, снимки экрана и содержимое подключённых приложений отправляются для работы ваших ботов, включая задачи.",
   "Your recordings are sent for transcription, and text you play is sent to generate speech.":
     "Ваши записи отправляются для расшифровки, а воспроизводимый вами текст — для генерации речи.",
-  "Conversation summaries, memories, searches and bot and Space IDs are sent to store and recall context.":
-    "Сводки разговоров, воспоминания, поисковые запросы и идентификаторы ботов и пространств отправляются для хранения и извлечения контекста.",
   "AI data sharing": "Передача данных ИИ",
   "Allow {name} on mobile": "Разрешить {name} на телефоне",
   "Could not load permissions.": "Не удалось загрузить разрешения.",
@@ -987,7 +939,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "Members ({count})": "Участники ({count})",
   "Show all": "Показать всех",
   "Show selected": "Показать выбранных",
-  "Filter bots": "Фильтровать ботов",
   "Pick {min}–{max}": "Выберите {min}–{max}",
   "No members yet": "Пока нет участников",
   Applied: "Применено",
@@ -998,7 +949,6 @@ export const RU_MESSAGES: Record<string, string> = {
   Instructions: "Инструкции",
   "Instructions updated": "Инструкции обновлены",
   "Settings updated": "Настройки обновлены",
-  "Let this bot update its own instructions": "Разрешить этому боту обновлять свои инструкции",
   Restored: "Восстановлено",
   Undo: "Отменить",
   "Update instructions?": "Обновить инструкции?",
@@ -1286,20 +1236,8 @@ export const RU_MESSAGES: Record<string, string> = {
   "1 free month earned": "Получен 1 бесплатный месяц",
   "{count} free months earned": "Бесплатных месяцев получено: {count}",
   "Submit a plugin": "Предложить плагин",
-  "Bot models": "Модели ботов",
-  "1 bot has its own model:": "1 бот использует свою модель:",
-  "{count} bots have their own model:": "Своя модель у ботов ({count}):",
-  "Use space default": "Использовать модель пространства по умолчанию",
   "Switching…": "Переключение…",
-  "Switch 1 bot to the space default?": "Переключить 1 бота на модель пространства по умолчанию?",
-  "Switch {count} bots to the space default?":
-    "Переключить ботов на модель пространства по умолчанию ({count})?",
-  "Their own model is cleared. You can pick one again in each bot.":
-    "Их собственная модель будет сброшена. Её можно снова выбрать в каждом боте.",
   Switch: "Переключить",
-  "1 bot now uses the space default.": "1 бот теперь использует модель пространства по умолчанию.",
-  "{count} bots now use the space default.":
-    "Ботов переведено на модель пространства по умолчанию: {count}.",
   "Could not switch {failedNames}. Try again.":
     "Не удалось переключить {failedNames}. Попробуйте снова.",
   "Could not load memory": "Не удалось загрузить память",
@@ -1326,6 +1264,54 @@ export const RU_MESSAGES: Record<string, string> = {
   "{amount} spent this week": "Потрачено на этой неделе: {amount}",
   "{amount} spent this month": "Потрачено в этом месяце: {amount}",
   "{amount} spent": "Потрачено: {amount}",
+  "Add people": "Добавить людей",
+  Chat: "Чат",
+  "Conversation summaries, memories, searches and chat and person IDs are sent to store and recall context.":
+    "Сводки разговоров, воспоминания, запросы поиска и идентификаторы чатов и людей отправляются для сохранения и восстановления контекста.",
+  "Could not save the default workspace": "Не удалось сохранить рабочее пространство по умолчанию",
+  "Could not start chat": "Не удалось начать чат",
+  "Could not switch workspaces": "Не удалось переключить рабочее пространство",
+  "Delete chat": "Удалить чат",
+  "Disable a tool": "Отключить инструмент",
+  Files: "Файлы",
+  "Leave chat": "Покинуть чат",
+  "Messages, chat history, Doodle's instructions, memories, attachments, screenshots and connected-app content are sent to run Doodle, including routines.":
+    "Сообщения, история чата, инструкции Doodle, воспоминания, вложения, снимки экрана и содержимое подключённых приложений отправляются для работы Doodle, включая регулярные задачи.",
+  "My computer": "Мой компьютер",
+  "New chat": "Новый чат",
+  "Pages Doodle builds for you appear here.":
+    "Здесь появятся страницы, которые Doodle создаёт для вас.",
+  "Recovering your computer": "Восстановление вашего компьютера",
+  "Start chat": "Начать чат",
+  "Updating your computer": "Обновление вашего компьютера",
+  "Ask Doodle in this chat to set up a routine.":
+    "Попросите Doodle в этом чате настроить регулярную задачу.",
+  "Doodle with your own computer": "Doodle с вашим собственным компьютером",
+  "Put Doodle to work": "Поручите работу Doodle",
+  "Could not leave workspace": "Не удалось покинуть рабочее пространство",
+  "Leave workspace": "Покинуть рабочее пространство",
+  "Doodle can use the file but won't see the picture.":
+    "Doodle может использовать файл, но не увидит изображение.",
+  "Doodle couldn't finish its reply. Technical details includes the reported error.":
+    "Doodle не смог закончить ответ. Сообщённая ошибка есть в технических подробностях.",
+  "Doodle couldn't reply because its provider's daily limit was reached.":
+    "Doodle не смог ответить: достигнут дневной лимит поставщика.",
+  "Doodle couldn't reply because its provider's monthly limit was reached.":
+    "Doodle не смог ответить: достигнут месячный лимит поставщика.",
+  "Doodle couldn't reply because its provider's usage limit was reached.":
+    "Doodle не смог ответить: достигнут лимит использования поставщика.",
+  "Doodle couldn't reply because its provider's weekly limit was reached.":
+    "Doodle не смог ответить: достигнут недельный лимит поставщика.",
+  "The provider couldn't serve the model selected for Doodle.":
+    "Поставщик не смог предоставить модель, выбранную для Doodle.",
+  "The provider received too many requests to answer Doodle.":
+    "Поставщик получил слишком много запросов и не смог ответить Doodle.",
+  "The provider refused the key Doodle used for its reply.":
+    "Поставщик отклонил ключ, который Doodle использовал для ответа.",
+  "This removes the connection from every workspace.":
+    "Подключение будет удалено из всех рабочих пространств.",
+  "Waiting for Doodle’s response.": "Ожидание ответа Doodle.",
+  Workspace: "Рабочее пространство",
 };
 
 export const PEER_MESSAGE_FORMS: Partial<Record<Intl.LDMLPluralRule, string>> = {

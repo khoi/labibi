@@ -13,10 +13,11 @@ import { SettingsGroup, SettingsRow } from "./settings-group";
 
 export function RoutineRunHistory({
   routineId,
-  botName,
+  threadId,
 }: {
   routineId: string;
-  botName: string | undefined;
+  /** The routine's chat, where each run's reply lives. */
+  threadId: string | undefined;
 }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -45,7 +46,7 @@ export function RoutineRunHistory({
           <SettingsRow key="empty" title={t("No runs yet")} dimmed />
         ) : (
           history.runs.map((run) => {
-            const destination = routineRunDestination(run, botName);
+            const destination = routineRunDestination(run, threadId);
             const error = run.status === "failed" ? run.error : null;
             return (
               <RunRow

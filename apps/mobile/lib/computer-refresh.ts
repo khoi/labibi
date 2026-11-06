@@ -16,10 +16,8 @@ export { SCREEN_URL_RENEW_MS };
 function screenKey(status: ComputerStatus) {
   return [
     status.state,
-    status.mode,
     status.kind,
     status.controlHolder,
-    status.controlBotId,
     status.screenAvailable,
     status.screenWidth,
     status.screenHeight,

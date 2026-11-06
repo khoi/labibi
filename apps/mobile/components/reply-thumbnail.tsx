@@ -14,16 +14,15 @@ export function ReplyThumbnail({
 }) {
   const [uri, setUri] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
-  const botId = threadTarget && "botId" in threadTarget ? threadTarget.botId : undefined;
-  const groupId = threadTarget && "groupId" in threadTarget ? threadTarget.groupId : undefined;
+  const threadId = threadTarget?.threadId;
   const artifactId = attachment?.kind === "image" ? attachment.artifactId : undefined;
   const mimeType = attachment?.mimeType;
   useEffect(() => {
     let cancelled = false;
     setUri(null);
     setFailed(false);
-    if (!artifactId || !mimeType || (!botId && !groupId)) return;
-    void imageArtifactUri(botId ? { botId } : { groupId: groupId! }, artifactId, mimeType)
+    if (!artifactId || !mimeType || !threadId) return;
+    void imageArtifactUri({ threadId }, artifactId, mimeType)
       .then((uri) => {
         if (!cancelled) setUri(uri);
       })
@@ -33,7 +32,7 @@ export function ReplyThumbnail({
     return () => {
       cancelled = true;
     };
-  }, [artifactId, mimeType, botId, groupId]);
+  }, [artifactId, mimeType, threadId]);
   if (!artifactId || !threadTarget || failed) return null;
   const style = { width: 32, height: 32, borderRadius: 6, backgroundColor: mobileTokens().muted };
   return uri ? (

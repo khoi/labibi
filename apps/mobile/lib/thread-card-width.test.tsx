@@ -100,7 +100,8 @@ vi.mock("@labradoodle/chat-ui/native", () => ({
 vi.mock("../components/message-caption", () => ({
   MessageCaption: ({ text }: { text: string }) => <span>{text}</span>,
 }));
-vi.mock("../components/bot-avatar", () => ({ BotAvatar: () => <i /> }));
+vi.mock("../components/chat-avatar", () => ({ PersonAvatar: () => null, ChatAvatar: () => null }));
+vi.mock("../components/doodle-avatar", () => ({ DoodleAvatar: () => <i /> }));
 vi.mock("../components/native-symbol", () => ({
   NativeSymbol: ({ ios }: { ios: string }) => <i data-symbol={ios} />,
 }));
@@ -125,7 +126,6 @@ vi.mock("../components/change-undo", () => ({
   isUndoableChange: () => false,
 }));
 
-import { McpApprovalCard } from "../components/McpApprovalCard";
 import { MessageBubble } from "../components/thread/message-bubble";
 
 type BubbleProps = ComponentProps<typeof MessageBubble>;
@@ -133,13 +133,12 @@ type BubbleProps = ComponentProps<typeof MessageBubble>;
 function Bubble(props: Partial<BubbleProps> & Pick<BubbleProps, "message">) {
   return (
     <MessageBubble
-      botId="bot-1"
-      bots={[]}
+      threadId="thread-1"
+      mentionTargets={[]}
       showBotSenderName={false}
       canAnswer={false}
       canDismiss={false}
       onAnswer={async () => undefined}
-      onOpenBot={() => undefined}
       onOpenComputer={() => undefined}
       onPreviewFile={() => undefined}
       onPreviewImage={() => undefined}
@@ -194,8 +193,6 @@ describe("thread cards", () => {
     act(() =>
       root.render(
         <Bubble
-          botId="bot-1"
-          bots={[]}
           message={{ id: "message-1", role, blocks }}
           canAnswer={false}
           actionProps={{}}
@@ -395,8 +392,6 @@ describe("thread cards", () => {
     act(() =>
       root.render(
         <Bubble
-          botId="bot-1"
-          bots={[]}
           message={message}
           canAnswer={canAnswer}
           onAnswer={async () => undefined}
@@ -409,27 +404,6 @@ describe("thread cards", () => {
     );
     return question?.parentElement;
   }
-
-  it.each([false, true])(
-    "keeps text passive when surface gestures are enabled: %s",
-    (doubleTapSurface) => {
-      act(() =>
-        root.render(
-          <Bubble
-            botId="bot-1"
-            bots={[]}
-            message={{ id: "text-1", role: "bot", blocks: [{ kind: "text", text: "Hello" }] }}
-            canAnswer={false}
-            onAnswer={async () => undefined}
-            actionProps={{}}
-            doubleTapSurface={doubleTapSurface}
-          />,
-        ),
-      );
-      expect(container.textContent).toBe("Hello");
-      expect(container.querySelectorAll("button").length).toBe(doubleTapSurface ? 0 : 1);
-    },
-  );
 
   // The iOS message menu hosts each bubble without a definite width, so a percentage width
   // resolves against the card's own cap instead of the message column and overflows the screen.
@@ -475,102 +449,4 @@ describe("thread cards", () => {
       expect(style.fontSize).toBe(fontSize);
     },
   );
-
-  it("bounds the MCP approval card the same way", () => {
-    act(() =>
-      root.render(
-        <McpApprovalCard
-          botId="bot-1"
-          block={{
-            kind: "mcp_approval",
-            serverId: "server-1",
-            name: "Example notes",
-            transport: "streamable_http",
-            endpoint: "https://mcp.example.test/a/very/long/endpoint/path/for/the/notes/server",
-            needsOAuth: false,
-            status: "pending",
-          }}
-        />,
-      ),
-    );
-    const card = container.firstElementChild;
-    expect(card?.textContent).toContain("Example notes");
-    expect(styleOf(card)).toMatchObject({ maxWidth: 576 });
-    expect(styleOf(card).width).toBeUndefined();
-  });
-
-  it("labels a running helper", () => {
-    const message = {
-      id: "running-message",
-      role: "bot",
-      blocks: [
-        {
-          kind: "subagent",
-          agentId: "running-helper",
-          name: "writer",
-          task: longQuestion,
-          status: "running",
-        },
-      ],
-    } as MobileMessage;
-    act(() => root.render(<Bubble botId="bot-1" bots={[]} message={message} actionProps={{}} />));
-    expect(container.textContent).toContain("Running");
-  });
-
-  it("folds a helper card to one line of the task until it is pressed, across its saved message", () => {
-    const message = {
-      id: "message-1",
-      role: "bot",
-      blocks: [
-        {
-          kind: "subagent",
-          agentId: "agent-1",
-          name: "writer",
-          task: longQuestion,
-          status: "completed",
-          result: "A long report",
-        },
-      ],
-    } as MobileMessage;
-    const onLongPress = vi.fn();
-    act(() =>
-      root.render(
-        <Bubble botId="bot-1" bots={[]} message={message} actionProps={{ onLongPress }} />,
-      ),
-    );
-    const card = () => container.querySelector("button[aria-expanded]");
-    expect(container.querySelector("[data-symbol='chevron.down']")).not.toBeNull();
-    expect(container.textContent).toContain("Completed");
-    act(() => card()?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true })));
-    expect(onLongPress).toHaveBeenCalled();
-    const task = () =>
-      [...container.querySelectorAll("span")].find((span) => span.textContent === longQuestion);
-    expect(card()?.getAttribute("aria-expanded")).toBe("false");
-    expect(task()?.getAttribute("data-number-of-lines")).toBe("1");
-    expect(container.textContent).not.toContain("A long report");
-
-    act(() => (card() as HTMLElement).click());
-    expect(card()?.getAttribute("aria-expanded")).toBe("true");
-    expect(task()?.hasAttribute("data-number-of-lines")).toBe(false);
-    expect(container.textContent).toContain("A long report");
-
-    onLongPress.mockClear();
-    act(() =>
-      container.querySelector("p")?.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true })),
-    );
-    expect(onLongPress).toHaveBeenCalledTimes(1);
-    act(() => container.querySelector("p")?.click());
-    expect(card()?.getAttribute("aria-expanded")).toBe("true");
-
-    // The saved message replaces the live card under a new id; the card stays open.
-    const saved = { ...message, id: "message-2" };
-    act(() =>
-      root.render(<Bubble key="saved" botId="bot-1" bots={[]} message={saved} actionProps={{}} />),
-    );
-    expect(card()?.getAttribute("aria-expanded")).toBe("true");
-
-    act(() => (card() as HTMLElement).click());
-    expect(card()?.getAttribute("aria-expanded")).toBe("false");
-    expect(container.textContent).not.toContain("A long report");
-  });
 });

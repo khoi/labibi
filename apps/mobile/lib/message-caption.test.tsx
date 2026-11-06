@@ -15,7 +15,8 @@ const linking = vi.hoisted(() => ({
 }));
 
 // Only drawn for a sent mention, which these tests do not use.
-vi.mock("../components/bot-avatar", () => ({ BotAvatar: () => null }));
+vi.mock("../components/chat-avatar", () => ({ PersonAvatar: () => null, ChatAvatar: () => null }));
+vi.mock("../components/doodle-avatar", () => ({ DoodleAvatar: () => null }));
 vi.mock("../components/native-symbol", () => ({ NativeSymbol: () => null }));
 
 vi.mock("react-native", () => {

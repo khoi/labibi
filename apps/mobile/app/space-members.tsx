@@ -116,7 +116,7 @@ export default function SpaceMembersScreen() {
       router.dismissAll();
       router.replace("/");
     } catch (err) {
-      Alert.alert(t("Could not leave space"), errorText(err, t("Try again.")));
+      Alert.alert(t("Could not leave workspace"), errorText(err, t("Try again.")));
       setPending(false);
     }
   }
@@ -218,7 +218,7 @@ export default function SpaceMembersScreen() {
           <SettingsGroup>
             <SettingsRow
               key="leave"
-              title={t("Leave space")}
+              title={t("Leave workspace")}
               destructive
               disabled={pending}
               accessibilityRole="button"

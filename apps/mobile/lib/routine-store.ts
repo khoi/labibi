@@ -25,8 +25,8 @@ const toggleErrors = new Map<string, (error: unknown) => void>();
 const skippedReads = new Map<string, string>();
 
 /** The bot's routines in the shared in-memory cache, with one more try when a read fails. */
-function routinesQuery(botId: string) {
-  const read = rpcQuery("routines/list", { botId });
+function routinesQuery(threadId: string) {
+  const read = rpcQuery("routines/list", { threadId });
   const queryFn: QueryFunction<Routine[]> = async (context) => {
     try {
       return await read.queryFn(context);
@@ -53,22 +53,22 @@ function countWrite(scope: string, change: 1 | -1) {
     return;
   }
   writing.delete(scope);
-  const botId = skippedReads.get(scope);
+  const threadId = skippedReads.get(scope);
   skippedReads.delete(scope);
   // A screen that doesn't poll would otherwise keep what it showed before the save.
-  if (botId !== undefined && hashKey(routinesQuery(botId).queryKey) === scope) {
-    void loadBotRoutines(botId);
+  if (threadId !== undefined && hashKey(routinesQuery(threadId).queryKey) === scope) {
+    void loadChatRoutines(threadId);
   }
 }
 
 /** Reads the bot's routines; a read already running is shared. */
-export async function loadBotRoutines(botId: string): Promise<void> {
-  const query = routinesQuery(botId);
+export async function loadChatRoutines(threadId: string): Promise<void> {
+  const query = routinesQuery(threadId);
   // A read sent during a save or delete could answer with the value from before it, so it
   // waits until they finish.
   const scope = hashKey(query.queryKey);
   if (writing.has(scope)) {
-    skippedReads.set(scope, botId);
+    skippedReads.set(scope, threadId);
     return;
   }
   try {
@@ -83,12 +83,12 @@ export async function loadBotRoutines(botId: string): Promise<void> {
  * latest tap is written. If that write fails, the routine goes back to its saved state.
  */
 export function setRoutineActive(
-  botId: string,
+  threadId: string,
   routine: Routine,
   active: boolean,
   onError: (error: unknown) => void,
 ) {
-  const { queryKey } = routinesQuery(botId);
+  const { queryKey } = routinesQuery(threadId);
   const scope = hashKey(queryKey);
   const id = `${scope}\n${routine.id}`;
   toggleErrors.set(id, onError);
@@ -97,7 +97,7 @@ export function setRoutineActive(
     // The server, account and space of the tap, not of whenever the save gets to run.
     const requestContext = captureApiRequestContext();
     requestContext.catch(() => undefined);
-    const current = () => hashKey(routinesQuery(botId).queryKey) === scope;
+    const current = () => hashKey(routinesQuery(threadId).queryKey) === scope;
     const patch = (change: (row: Routine) => Routine) =>
       writeSaved(queryClient, queryKey, (rows) =>
         (rows ?? []).map((row) => (row.id === routine.id ? change(row) : row)),
@@ -137,11 +137,11 @@ export function setRoutineActive(
 }
 
 /** Creates or edits a routine; the list shows the server's copy once it answers. */
-export async function saveBotRoutine(
-  botId: string,
+export async function saveChatRoutine(
+  threadId: string,
   request: { create: RpcInput<"routines/create"> } | { update: RpcInput<"routines/update"> },
 ): Promise<Routine> {
-  const { queryKey } = routinesQuery(botId);
+  const { queryKey } = routinesQuery(threadId);
   const scope = hashKey(queryKey);
   const requestContext = captureApiRequestContext();
   requestContext.catch(() => undefined);
@@ -149,12 +149,12 @@ export async function saveBotRoutine(
   try {
     await queryClient.cancelQueries({ queryKey, exact: true });
     const context = await requestContext;
-    if (hashKey(routinesQuery(botId).queryKey) !== scope) throw new Error("Space changed");
+    if (hashKey(routinesQuery(threadId).queryKey) !== scope) throw new Error("Space changed");
     const saved =
       "create" in request
         ? await rpc("routines/create", request.create, { requestContext: context })
         : await rpc("routines/update", request.update, { requestContext: context });
-    if (hashKey(routinesQuery(botId).queryKey) === scope) {
+    if (hashKey(routinesQuery(threadId).queryKey) === scope) {
       // An update only replaces its row, so a routine deleted meanwhile stays gone.
       await writeSaved(queryClient, queryKey, (rows) =>
         "create" in request
@@ -169,8 +169,8 @@ export async function saveBotRoutine(
 }
 
 /** Deletes a routine; its row goes once the server confirms. */
-export async function removeBotRoutine(botId: string, routineId: string): Promise<void> {
-  const { queryKey } = routinesQuery(botId);
+export async function removeChatRoutine(threadId: string, routineId: string): Promise<void> {
+  const { queryKey } = routinesQuery(threadId);
   const scope = hashKey(queryKey);
   // The server, account and space of the confirmation, as for a switch save.
   const requestContext = captureApiRequestContext();
@@ -179,7 +179,7 @@ export async function removeBotRoutine(botId: string, routineId: string): Promis
   try {
     await queryClient.cancelQueries({ queryKey, exact: true });
     const context = await requestContext;
-    if (hashKey(routinesQuery(botId).queryKey) !== scope) return;
+    if (hashKey(routinesQuery(threadId).queryKey) !== scope) return;
     await rpc("routines/remove", { routineId }, { requestContext: context });
     await writeSaved(queryClient, queryKey, (rows) =>
       (rows ?? []).filter((row) => row.id !== routineId),
@@ -193,19 +193,19 @@ export async function removeBotRoutine(botId: string, routineId: string): Promis
  * The bot's routines, shared by every screen that shows them. Each time a screen comes into
  * view it shows what is already known and reads again, then keeps reading while it stays.
  */
-export function useBotRoutines(botId: string) {
+export function useChatRoutines(threadId: string) {
   const [shownSince] = useState(Date.now);
   const { data, error, dataUpdatedAt, errorUpdatedAt } = useQuery(
-    { ...routinesQuery(botId), enabled: false, select: oldestFirst },
+    { ...routinesQuery(threadId), enabled: false, select: oldestFirst },
     queryClient,
   );
   useFocusEffect(
     useCallback(() => {
-      if (!botId) return;
-      void loadBotRoutines(botId);
-      const timer = setInterval(() => void loadBotRoutines(botId), ROUTINES_POLL_MS);
+      if (!threadId) return;
+      void loadChatRoutines(threadId);
+      const timer = setInterval(() => void loadChatRoutines(threadId), ROUTINES_POLL_MS);
       return () => clearInterval(timer);
-    }, [botId]),
+    }, [threadId]),
   );
   const failedSinceShown = errorUpdatedAt >= shownSince && errorUpdatedAt > dataUpdatedAt;
   // A delay seen before a failed read may already have cleared.

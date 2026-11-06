@@ -56,7 +56,12 @@ function Probe({
   draftScope?: { apiBase: string; userId: string; threadKey: string };
   uploadConfig?: { maxUploadSizeBytes?: number; maxAttachmentsPerMessage?: number };
 }) {
-  attachments = useThreadAttachments({ botId, readOnly: false, uploadConfig, draftScope });
+  attachments = useThreadAttachments({
+    threadId: botId,
+    readOnly: false,
+    uploadConfig,
+    draftScope,
+  });
   return null;
 }
 
@@ -64,7 +69,7 @@ const uploadConfig = {};
 
 function ImportProbe({ botId }: { botId: string }) {
   attachments = useThreadAttachments({
-    botId,
+    threadId: botId,
     readOnly: false,
     uploadConfig,
     draftScope: { apiBase: "https://example.test", userId: "user-1", threadKey: botId },

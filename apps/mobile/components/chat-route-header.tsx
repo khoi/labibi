@@ -1,5 +1,4 @@
 import type { NativeStackNavigationOptions } from "expo-router";
-import { router } from "expo-router";
 import { Pressable } from "react-native";
 import { mobileTokens } from "../lib/appearance";
 import { iosAtLeast } from "../lib/native-controls";
@@ -30,22 +29,13 @@ export function chatRouteHeader(
   canInvite = false,
 ): NativeStackNavigationOptions {
   const params = (route.params ?? {}) as ChatTitleParams;
-  const { groupId, botId } = params;
   const readOnly = params.readOnly === "1";
   const color = mobileTokens().foreground;
   return {
     headerTitleAlign: "center",
     ...threadEdgeOptions(),
     headerTitle: () => <ChatHeaderTitle routeKey={route.key} params={params} />,
-    ...threadHeaderRight({
-      inGroup: Boolean(groupId),
-      readOnly,
-      t,
-      color,
-      onGroupSettings: () =>
-        router.push({ pathname: "/group-settings", params: { groupId: groupId ?? "" } }),
-      onInvite: canInvite && botId ? openInvite : undefined,
-    }),
+    ...threadHeaderRight({ readOnly, t, color, onInvite: canInvite ? openInvite : undefined }),
     ...threadHeaderLeft({ split, inboxHidden, foldActive, t, color }),
   };
 }

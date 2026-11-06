@@ -11,8 +11,6 @@ import type { ThreadScrollBehavior } from "./thread-scroll";
 
 /** The page a search jump pinned the chat to, until it rejoins the live thread. */
 export type PinnedThreadWindow = {
-  botId?: string;
-  groupId?: string;
   messageId: string;
   threadId: string;
   newerCursor: number | null;
@@ -36,8 +34,7 @@ export type ThreadWindow = {
 export type ThreadJump = ThreadWindow & {
   historyEpoch: RefObject<number>;
   jumpGeneration: RefObject<number>;
-  activeBotId: RefObject<string | undefined>;
-  activeGroupId: RefObject<string | undefined>;
+  activeThreadId: RefObject<string | undefined>;
   newerLoadFailed: RefObject<boolean>;
   pinnedScrollMetrics: RefObject<{ offset: number; viewport: number; content: number }>;
   snapshotOrigin: RefObject<SavedChatsScope | null>;
@@ -62,9 +59,9 @@ export function showLatestThread(thread: ThreadWindow) {
 /** Opens the page around a message and pins the chat to it. */
 export async function applyThreadMessageJump(
   jump: ThreadJump,
-  target: { botId?: string; groupId?: string; messageId: string },
+  target: { threadId: string; messageId: string },
 ) {
-  const threadTarget = target.groupId ? { groupId: target.groupId } : { botId: target.botId! };
+  const threadTarget = { threadId: target.threadId };
   const epoch = jump.historyEpoch.current;
   jump.jumpGeneration.current += 1;
   const jumpId = jump.jumpGeneration.current;
@@ -85,15 +82,13 @@ export async function applyThreadMessageJump(
     !isIntegrationsScopeCurrent(scope)
   )
     return;
-  if (target.groupId && jump.activeGroupId.current !== target.groupId) return;
-  if (target.botId && jump.activeBotId.current !== target.botId) return;
+  if (jump.activeThreadId.current !== target.threadId) return;
   const messageId = target.messageId;
   const targetInPage = page.messages.some((message) => message.id === messageId);
   const opened = targetInPage ? openThreadWindow(snap, page) : null;
   jump.expandedHistoryThread.current = targetInPage ? page.threadId : null;
   jump.pinnedAroundRef.current = opened
     ? {
-        ...threadTarget,
         messageId,
         threadId: page.threadId,
         newerCursor: opened.newerCursor,

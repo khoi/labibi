@@ -1,9 +1,7 @@
-import type { SearchHit, SpaceBot, SpaceGroup } from "@labradoodle/contracts";
+import type { SearchHit } from "@labradoodle/contracts";
 import { dedupeSearchHits, searchHitListKey } from "@labradoodle/core";
-import type { MobileBot, MobileGroup } from "./api";
+import type { MobileChat } from "./api";
 import { t } from "./i18n";
-import { filterBots } from "./inbox";
-import type { InboxSpace } from "./inbox-spaces";
 import { previewSnippet } from "./preview";
 import { mobileSearchDestination } from "./search-destination";
 import { searchHitRowPreview } from "./search-list";
@@ -13,17 +11,15 @@ export type SearchSheetRow = {
   title: string;
   preview: string;
   label: string;
-  bot?: SpaceBot | MobileBot;
-  group?: SpaceGroup | MobileGroup;
+  chat?: MobileChat;
   kind: SearchHit["kind"];
-  spaceId?: string;
   destination: ReturnType<typeof mobileSearchDestination>;
 };
 
 export function searchKindLabel(hit: SearchHit): string {
   switch (hit.kind) {
     case "conversation":
-      return hit.groupId ? t("Group") : t("Bot");
+      return t("Chat");
     case "message":
       return t("Message");
     case "file":
@@ -35,69 +31,35 @@ export function searchKindLabel(hit: SearchHit): string {
   }
 }
 
+/** The chats whose title or last message matches, then what the server found inside chats. */
 export function searchSheetRows(
-  spaces: readonly InboxSpace[],
+  chats: readonly MobileChat[],
   query: string,
   hits: readonly SearchHit[],
 ): SearchSheetRow[] {
-  // An archived bot is in the roster only while its read-only chat opens; search skips it.
-  const bots = spaces
-    .flatMap((space) => space.bots)
-    .filter((bot) => !("archivedAt" in bot && bot.archivedAt));
-  const groups = spaces.flatMap((space) => space.groups);
   const needle = query.trim().toLowerCase();
-  const rows: SearchSheetRow[] = [
-    ...filterBots(bots, query).map(
-      (bot): SearchSheetRow => ({
-        key: `bot-${bot.id}`,
-        title: bot.name,
-        preview: previewSnippet(bot.preview, 40) || t("No messages yet"),
-        label: t("Bot"),
-        bot,
-        kind: "conversation",
-        spaceId: bot.spaceId,
-        destination: { pathname: "/thread", params: { botId: bot.id, name: bot.name } },
-      }),
-    ),
-    ...groups
-      .filter((group) => `${group.name} ${group.preview}`.toLowerCase().includes(needle))
-      .map(
-        (group): SearchSheetRow => ({
-          key: `group-${group.id}`,
-          title: group.name,
-          preview:
-            previewSnippet(group.preview, 40) ||
-            group.members.map((member) => member.name).join(", "),
-          label: t("Group"),
-          group,
-          kind: "conversation",
-          spaceId: group.spaceId,
-          destination: {
-            pathname: "/group-thread",
-            params: { groupId: group.id, name: group.name },
-          },
-        }),
-      ),
-  ];
+  const rows: SearchSheetRow[] = chats
+    .filter((chat) => `${chat.title} ${chat.preview}`.toLowerCase().includes(needle))
+    .map((chat) => ({
+      key: `chat-${chat.id}`,
+      title: chat.title || t("New chat"),
+      preview: previewSnippet(chat.preview, 40),
+      label: t("Chat"),
+      chat,
+      kind: "conversation",
+      destination: { pathname: "/thread", params: { threadId: chat.id } },
+    }));
   if (!needle) return rows;
-  const chats = new Set(rows.map((row) => row.key));
+  const listed = new Set(rows.map((row) => row.key));
   for (const hit of dedupeSearchHits(hits)) {
-    if (
-      hit.kind === "conversation" &&
-      chats.has(hit.groupId ? `group-${hit.groupId}` : `bot-${hit.botId}`)
-    )
-      continue;
-    const bot = hit.botId ? bots.find((bot) => bot.id === hit.botId) : undefined;
-    const group = hit.groupId ? groups.find((group) => group.id === hit.groupId) : undefined;
+    if (hit.kind === "conversation" && listed.has(`chat-${hit.threadId}`)) continue;
     rows.push({
       key: searchHitListKey(hit),
       title: hit.title,
       preview: searchHitRowPreview(hit),
       label: searchKindLabel(hit),
-      bot,
-      group,
+      chat: chats.find((chat) => chat.id === hit.threadId),
       kind: hit.kind,
-      spaceId: group?.spaceId ?? bot?.spaceId,
       destination: mobileSearchDestination(hit),
     });
   }

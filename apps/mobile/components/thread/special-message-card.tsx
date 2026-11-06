@@ -10,7 +10,6 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import type { MobileBot, MobileSnapshot } from "../../lib/api";
 import { mobileTokens } from "../../lib/appearance";
 import { useI18n } from "../../lib/i18n";
 import { useResolvedAppearance } from "../../lib/native";
@@ -33,9 +32,6 @@ export function isSpecialMessageBlock(block: MessageBlock): block is SpecialMess
 type SpecialMessageCardProps = {
   special: SpecialMessageBlock;
   actionProps: MessageActionProps;
-  bots: MobileBot[];
-  members?: MobileSnapshot["members"];
-  onOpenBot: (botId: string, name: string) => void;
   onHelperToggle?: MessageRowActions["helperToggle"];
   userBubble?: UserBubble;
 };

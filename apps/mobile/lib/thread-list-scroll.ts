@@ -29,16 +29,12 @@ type HelperMeasure = (done: (y: number, cardBottom: number) => void) => void;
 export function useThreadListScroll({
   history,
   threadKey,
-  botId,
-  groupId,
   anchor,
   visibleBottomInset,
   latestRowKey,
 }: {
   history: ThreadHistory;
   threadKey: string | undefined;
-  botId?: string;
-  groupId?: string;
   /** Where a jump target and an opened helper settle below the header. */
   anchor: number;
   /** Space under the list that the composer does not cover. */
@@ -101,10 +97,7 @@ export function useThreadListScroll({
 
   const pinnedTarget = pinnedAroundRef.current;
   const showPinnedPage = Boolean(
-    jumpScrollTarget.current ||
-      (pinnedTarget &&
-        ((pinnedTarget.botId && pinnedTarget.botId === botId) ||
-          (pinnedTarget.groupId && pinnedTarget.groupId === groupId))),
+    jumpScrollTarget.current || (pinnedTarget && pinnedTarget.threadId === threadKey),
   );
   const pinnedNewerCursor = showPinnedPage ? (pinnedTarget?.newerCursor ?? null) : null;
 
@@ -280,9 +273,7 @@ export function useThreadListScroll({
       }
       const blocked = Boolean(
         jumpScrollTarget.current ||
-          (pinnedAroundRef.current &&
-            ((pinnedAroundRef.current.botId && pinnedAroundRef.current.botId === botId) ||
-              (pinnedAroundRef.current.groupId && pinnedAroundRef.current.groupId === groupId))) ||
+          pinnedAroundRef.current?.threadId === threadKey ||
           expandedHistoryThread.current === snap?.threadId,
       );
       follow(behavior.current.onContentChanged(blocked, latestRowKey));

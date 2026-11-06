@@ -6,7 +6,7 @@ import {
   MermaidDiagramContext,
   RemoteImagesContext,
 } from "@labradoodle/chat-ui/native";
-import { analyticsScreen } from "@labradoodle/core";
+import { analyticsScreen, DOODLE_NAME } from "@labradoodle/core";
 import {
   DarkTheme,
   Stack,
@@ -49,7 +49,7 @@ import { replaceWithSignIn } from "../lib/auth-routing";
 import { AvatarScreenFocus } from "../lib/avatar-life";
 import { installClientUpdates, watchForegroundUpdates } from "../lib/client-update";
 import { bootstrapI18n, useI18n } from "../lib/i18n";
-import { clearLastBot } from "../lib/last-bot";
+import { clearLastChat } from "../lib/last-chat";
 import { loadLinkFavicon } from "../lib/link-favicons";
 import {
   configureForegroundNotifications,
@@ -102,7 +102,7 @@ configureForegroundNotifications();
 registerSessionDiskCache(clearSavedChats);
 registerSessionDiskCache(clearQueries);
 registerSessionDiskCache((sameAccount) => {
-  if (!sameAccount) return clearLastBot();
+  if (!sameAccount) return clearLastChat();
 });
 installClientUpdates();
 registerSessionDiskCache(() => void clearAppBadge());
@@ -449,9 +449,17 @@ function LayoutContent() {
                       }}
                     />
                     <Stack.Screen
-                      name="new-group"
+                      name="new-chat"
                       options={{
-                        title: t("New group chat"),
+                        title: t("New chat"),
+                        presentation: "modal",
+                        gestureEnabled: true,
+                      }}
+                    />
+                    <Stack.Screen
+                      name="add-people"
+                      options={{
+                        title: t("Add people"),
                         presentation: "modal",
                         gestureEnabled: true,
                       }}
@@ -465,7 +473,7 @@ function LayoutContent() {
                         headerBackVisible: false,
                       }}
                     />
-                    <Stack.Screen name="artifacts" options={glassHeaderOptions(t("Artifacts"))} />
+                    <Stack.Screen name="artifacts" options={glassHeaderOptions(t("Files"))} />
                     <Stack.Screen name="artifact" options={{ title: t("Artifact") }} />
                     <Stack.Screen name="pages" options={glassHeaderOptions(t("Pages"))} />
                     <Stack.Screen
@@ -488,27 +496,18 @@ function LayoutContent() {
                       }}
                     />
                     <Stack.Screen
-                      name="group-thread"
-                      options={({ route }) => ({
-                        title: t("Group"),
-                        animation: chatAnimation,
-                        ...chatRouteHeader(route, t, { split, inboxHidden, foldActive }, canInvite),
-                      })}
-                    />
-                    <Stack.Screen
-                      name="group-settings"
-                      options={glassHeaderOptions(t("Group settings"))}
-                    />
-                    <Stack.Screen name="bot-profile" options={glassHeaderOptions(t("Profile"))} />
-                    <Stack.Screen
-                      name="bot-settings"
+                      name="chat-settings"
                       options={glassHeaderOptions(t("Chat settings"))}
                     />
-                    <Stack.Screen name="bot-model" options={glassHeaderOptions(t("Model"))} />
+                    <Stack.Screen
+                      name="doodle-settings"
+                      options={glassHeaderOptions(DOODLE_NAME)}
+                    />
+                    <Stack.Screen name="doodle-model" options={glassHeaderOptions(t("Model"))} />
                     <Stack.Screen
                       name="thread"
                       options={({ route }) => ({
-                        title: t("Thread"),
+                        title: t("Chat"),
                         animation: chatAnimation,
                         ...chatRouteHeader(route, t, { split, inboxHidden, foldActive }, canInvite),
                       })}

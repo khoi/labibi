@@ -15,11 +15,9 @@ import { NativeSymbol } from "./native-symbol";
 type Action = "stop" | "recover" | "reset" | "update";
 
 export function ComputerMaintenanceActions({
-  botId,
   computer,
   onChanged,
 }: {
-  botId: string;
   computer: ComputerStatus | null;
   onChanged: () => Promise<void>;
 }) {
@@ -29,17 +27,17 @@ export function ComputerMaintenanceActions({
   const navigation = useNavigation();
   const [pending, setPending] = useState<Action | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const busy = Boolean(computer?.busyBotName) || computer?.state === "booting" || pending !== null;
+  const busy = computer?.state === "booting" || pending !== null;
 
   async function run(action: Action) {
     if (busy) return;
     setPending(action);
     setError(null);
     try {
-      if (action === "stop") await rpc("computer/stop", { botId });
-      else if (action === "recover") await computerUpdates.start(botId, "recover");
-      else if (action === "reset") await rpc("computer/reset", { botId });
-      else await computerUpdates.start(botId);
+      if (action === "stop") await rpc("computer/stop");
+      else if (action === "recover") await computerUpdates.start("own", "recover");
+      else if (action === "reset") await rpc("computer/reset");
+      else await computerUpdates.start("own");
       await onChanged();
     } catch (err) {
       setError(
@@ -150,7 +148,7 @@ export function ComputerMaintenanceActions({
     return () => {
       navigation.setOptions({ unstable_headerRightItems: () => [] });
     };
-  }, [navigation, hasComputer, canUpdate, running, busy, t, botId, onChanged]);
+  }, [navigation, hasComputer, canUpdate, running, busy, t, onChanged]);
 
   if (!computer) return null;
   return (

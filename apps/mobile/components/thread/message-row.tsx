@@ -7,20 +7,22 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { GestureResponderEvent, LayoutChangeEvent } from "react-native";
 import { Platform, View } from "react-native";
 import Animated, { useReducedMotion, ZoomIn } from "react-native-reanimated";
-import type { MobileBot, MobileMessage, MobileSnapshot } from "../../lib/api";
+import type { MobileMessage } from "../../lib/api";
 import { blockText, copyableMobileMessageText, selectableMobileMessageText } from "../../lib/api";
 import type { MobileArtifactTarget } from "../../lib/artifact-open";
 import { canDoubleTapReact } from "../../lib/double-tap";
 import { useI18n } from "../../lib/i18n";
 import { presentMessageActionSheet } from "../../lib/message-action-sheet";
 import { buildMessageContextMenu, messageMenuReaction } from "../../lib/message-context-menu";
+import type { UserMentionTarget } from "../../lib/message-mentions";
 import { messageHasInlineControls, quotableMessageSegments } from "../../lib/message-presentation";
 import { messageRowLayout } from "../../lib/message-row-layout";
 import { useMobileTokens, useResolvedAppearance } from "../../lib/native";
 import { selectableTextFromMarkdown } from "../../lib/selectable-text";
 import { ThreadReadOnlyContext } from "../../lib/thread-read-only";
 import type { UserBubble } from "../../lib/user-bubble";
-import { BotAvatar } from "../bot-avatar";
+import { PersonAvatar } from "../chat-avatar";
+import { DoodleAvatar } from "../doodle-avatar";
 import type { ImageArtifactPreviewTarget } from "../image-artifact-viewer";
 import { presentMessageMenu } from "../message-action-menu";
 import { MessageContextMenu } from "../message-context-menu";
@@ -49,8 +51,7 @@ export type MessageRowActions = {
     dismiss?: boolean,
     remember?: false,
   ) => Promise<void>;
-  openBot: (id: string, name: string) => void;
-  openComputer: (id: string, name: string) => void;
+  openComputer: () => void;
   previewFile: (artifactId: string) => void;
   previewImage: (target: ImageArtifactPreviewTarget) => void;
   jump: (messageId: string) => void;
@@ -61,13 +62,10 @@ export type MessageRowActions = {
 type MessageRowProps = {
   message: MobileMessage;
   actions: MessageRowActions;
-  botId?: string;
-  bubbleBotId: string;
-  groupId?: string;
-  botName?: string;
+  threadId?: string;
   showBotSenderName: boolean;
-  bots: MobileBot[];
-  members?: MobileSnapshot["members"];
+  /** Who a sent message's `@Name` can refer to. */
+  mentionTargets: readonly UserMentionTarget[];
   readOnly: boolean;
   canAnswer: boolean;
   canDismiss: boolean;
@@ -76,15 +74,14 @@ type MessageRowProps = {
   headerAdjacent: boolean;
   unreadDivider: boolean;
   markedUnread: boolean;
-  /** Someone else in a shared space wrote this message. */
-  authorName?: string;
+  /** Someone else in the chat wrote this message. */
+  author?: { name: string; image: string | null };
   replyAuthor: string;
   replyFallbackText?: string;
   waitingForUser: boolean;
   messageReactions?: ReadonlyMap<MessageReaction, number>;
-  activityBotId?: string;
-  activityColor?: string;
-  activityStatus?: MobileBot["status"];
+  /** Doodle's live progress row: its avatar moves beside it. */
+  activity?: { identity: string; status?: string };
   userBubble?: UserBubble;
   inGroup: boolean;
   columnWidth: number;
@@ -95,13 +92,9 @@ type MessageRowProps = {
 export const MessageRow = memo(function MessageRow({
   message,
   actions,
-  botId,
-  bubbleBotId,
-  groupId,
-  botName,
+  threadId,
   showBotSenderName,
-  bots,
-  members,
+  mentionTargets,
   readOnly,
   canAnswer,
   canDismiss,
@@ -110,14 +103,12 @@ export const MessageRow = memo(function MessageRow({
   headerAdjacent,
   unreadDivider,
   markedUnread,
-  authorName,
+  author,
   replyAuthor,
   replyFallbackText,
   messageReactions,
   waitingForUser,
-  activityBotId,
-  activityColor,
-  activityStatus,
+  activity,
   userBubble,
   inGroup,
   columnWidth,
@@ -128,8 +119,8 @@ export const MessageRow = memo(function MessageRow({
   const colorScheme = useResolvedAppearance();
   const { t, locale } = useI18n();
   const artifactTarget = useMemo<MobileArtifactTarget | undefined>(
-    () => (groupId ? { groupId } : botId ? { botId } : undefined),
-    [botId, groupId],
+    () => (threadId ? { threadId } : undefined),
+    [threadId],
   );
   const onChoiceDismissed = useCallback(
     (question: string) => actions.dismissChoice(message.id, question),
@@ -353,7 +344,11 @@ export const MessageRow = memo(function MessageRow({
     hasLike,
     optimisticLike,
   ]);
-  const layout = messageRowLayout(message.blocks, { activityBotId, inGroup, columnWidth });
+  const layout = messageRowLayout(message.blocks, {
+    gutter: Boolean(activity),
+    inGroup,
+    columnWidth,
+  });
   return (
     <View
       key={message.id}
@@ -375,24 +370,27 @@ export const MessageRow = memo(function MessageRow({
           justifyContent: message.role === "user" ? "flex-end" : "flex-start",
         }}
       >
-        {activityBotId ? (
+        {activity ? (
           <View style={{ paddingTop: 22 }}>
-            <BotAvatar
-              color={activityColor ?? tokens.mutedForeground}
-              identity={activityBotId}
+            <DoodleAvatar
+              identity={activity.identity}
               size={inGroup ? 20 : 28}
-              status={activityStatus}
+              status={activity.status}
               motion="running"
               composing={liveMessageComposing(message.blocks)}
               pokeable
             />
+          </View>
+        ) : author ? (
+          <View style={{ paddingTop: 18 }}>
+            <PersonAvatar person={author} size={24} />
           </View>
         ) : null}
         <View
           style={{
             width: layout.width,
             maxWidth: layout.maxWidth,
-            flex: activityBotId ? 1 : undefined,
+            flex: activity ? 1 : undefined,
             flexShrink: 1,
           }}
         >
@@ -416,18 +414,14 @@ export const MessageRow = memo(function MessageRow({
           >
             <ThreadReadOnlyContext.Provider value={readOnly}>
               <MessageBubble
-                botId={bubbleBotId}
-                groupId={groupId}
+                threadId={threadId}
                 message={message}
-                authorName={authorName}
-                botName={botName}
+                authorName={author?.name}
                 showBotSenderName={showBotSenderName}
-                bots={bots}
-                members={members}
+                mentionTargets={mentionTargets}
                 canAnswer={canAnswer}
                 canDismiss={canDismiss}
                 onAnswer={actions.answer}
-                onOpenBot={actions.openBot}
                 onOpenComputer={actions.openComputer}
                 onChoiceDismissed={onChoiceDismissed}
                 onPreviewFile={actions.previewFile}

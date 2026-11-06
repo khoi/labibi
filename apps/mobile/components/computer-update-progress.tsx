@@ -38,12 +38,8 @@ export function ComputerUpdateProgress() {
         ? t("Recovery failed")
         : t("Update failed")
       : update.action === "recover"
-        ? update.mode === "team"
-          ? t("Recovering Team Computer")
-          : t("Recovering {name}’s Computer", { name: update.name })
-        : update.mode === "team"
-          ? t("Updating Team Computer")
-          : t("Updating {name}’s Computer", { name: update.name });
+        ? t("Recovering your computer")
+        : t("Updating your computer");
   const selected = updates.find((item) => item.id === openId);
   if (!authenticated) return null;
   return (
@@ -135,7 +131,7 @@ export function ComputerUpdateProgress() {
                   setBusy(true);
                   setError(false);
                   void computerUpdates
-                    .start(selected.botId, "recover")
+                    .start("own", "recover")
                     .catch(() => setError(true))
                     .finally(() => setBusy(false));
                 }}

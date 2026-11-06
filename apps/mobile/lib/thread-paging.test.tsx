@@ -18,6 +18,21 @@ vi.mock("./response-streaming", () => ({
 }));
 
 const snapshot: MobileSnapshot = {
+  chat: {
+    id: "thread-1",
+    spaceId: "space-1",
+    name: null,
+    title: "",
+    doodle: true,
+    members: [],
+    preview: "",
+    status: "idle",
+    unread: false,
+    muted: false,
+    lastReadSeq: -1,
+    lastMessageAt: "",
+    createdAt: "",
+  },
   threadId: "thread-1",
   cursor: 2,
   olderCursor: 1,
@@ -45,7 +60,7 @@ function mount() {
     const paging = useThreadPaging({
       history,
       scroll: {} as ThreadListScroll,
-      botId,
+      threadId: botId,
       visibleMessages: [],
       anchor: 0,
       setError,

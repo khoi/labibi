@@ -28,13 +28,8 @@ export function removeArtifact(artifactId: string) {
   return rpc("artifacts/remove", { artifactId });
 }
 
-/** Group scope wins: a bot-scoped read drops rows that also have a group id. */
-export function artifactThreadTarget(
-  artifact: Pick<Artifact, "botId" | "groupId">,
-): MobileArtifactTarget | null {
-  if (artifact.groupId) return { groupId: artifact.groupId };
-  if (artifact.botId) return { botId: artifact.botId };
-  return null;
+export function artifactThreadTarget(artifact: Pick<Artifact, "threadId">): MobileArtifactTarget {
+  return { threadId: artifact.threadId };
 }
 
 /** Client-side search over an already-loaded page, matching the web Artifacts page. */

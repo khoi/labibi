@@ -1,51 +1,40 @@
 import { plainTextLinkParts } from "@labradoodle/chat-ui/native";
 import type { MentionTextPart } from "@labradoodle/core";
-import { displayName, splitMentionText } from "@labradoodle/core";
+import { DOODLE_NAME, displayName, splitMentionText } from "@labradoodle/core";
 import type { ReactNode } from "react";
 import { createContext } from "react";
 
-/** Draws the bots a reply announces where its text names them. */
+/** Draws what a reply announces where its text names it. */
 export const MessageMentionsContext = createContext<((id: string) => ReactNode) | undefined>(
   undefined,
 );
 
-/** A group member a sent message can name with `@Name`, or everyone in the group. */
+/** Who a sent message's `@Name` can refer to: Doodle, or a person in the chat. */
 export type UserMentionTarget =
-  | { kind: "bot"; id: string; name: string; color: string }
-  | { kind: "everyone"; id: "everyone"; name: "everyone" };
+  | { kind: "doodle"; id: "doodle"; name: string }
+  | { kind: "person"; id: string; name: string; image: string | null };
 
-/** Who a sent message's `@Name` can refer to; absent outside groups. */
+/** Who a sent message's `@Name` can refer to; absent without anyone to name. */
 export const UserMentionsContext = createContext<
-  | {
-      targets: readonly UserMentionTarget[];
-      onOpenBot: (botId: string, name: string) => void;
-    }
-  | undefined
+  { targets: readonly UserMentionTarget[] } | undefined
 >(undefined);
 
 /**
- * The targets a sent message can name: the group's members, plus everyone with two or more. A name
- * two members share, or a bot named everyone, stays plain text: the text alone cannot say which
- * one was meant.
+ * The targets a sent message can name: Doodle while it is in the chat, and its people. A name two
+ * people share stays plain text: the text alone cannot say which one was meant.
  */
-export function userMentionTargets(
-  members: readonly { botId: string; name: string; color: string }[],
-): UserMentionTarget[] {
-  const named = members.map((member) => ({ member, name: displayName(member.name, "Bot") }));
-  const everyone = members.length >= 2;
-  const counts = new Map<string, number>(everyone ? [["everyone", 1]] : []);
+export function userMentionTargets(chat: {
+  doodle: boolean;
+  members: readonly { userId: string; name: string; image: string | null }[];
+}): UserMentionTarget[] {
+  const named = chat.members.map((member) => ({ member, name: displayName(member.name, "") }));
+  const counts = new Map<string, number>();
   for (const { name } of named)
     counts.set(name.toLowerCase(), (counts.get(name.toLowerCase()) ?? 0) + 1);
-  const targets: UserMentionTarget[] = named
-    .filter(({ name }) => counts.get(name.toLowerCase()) === 1)
-    .map(({ member, name }) => ({
-      kind: "bot",
-      id: member.botId,
-      name,
-      color: member.color,
-    }));
-  if (everyone) targets.unshift({ kind: "everyone", id: "everyone", name: "everyone" });
-  return targets;
+  const people: UserMentionTarget[] = named
+    .filter(({ name }) => name && counts.get(name.toLowerCase()) === 1)
+    .map(({ member, name }) => ({ kind: "person", id: member.userId, name, image: member.image }));
+  return chat.doodle ? [{ kind: "doodle", id: "doodle", name: DOODLE_NAME }, ...people] : people;
 }
 
 /**
@@ -59,17 +48,6 @@ export function textWithMentions(
   return plainTextLinkParts(text).flatMap((piece) =>
     piece.type === "text" ? splitMentionText(piece.value, targets) : [{ text: piece.value }],
   );
-}
-
-/** The bots a sent message names, each once, in the order they first appear. */
-export function mentionedBots(
-  parts: readonly { target?: UserMentionTarget }[],
-): Extract<UserMentionTarget, { kind: "bot" }>[] {
-  const bots = new Map<string, Extract<UserMentionTarget, { kind: "bot" }>>();
-  for (const part of parts)
-    if (part.target?.kind === "bot" && !bots.has(part.target.id))
-      bots.set(part.target.id, part.target);
-  return [...bots.values()];
 }
 
 /** Opens a page a reply links as `[title](page:<pageId>)`. */

@@ -150,31 +150,6 @@ function lastAlert() {
   return { title, press: (text: string) => buttons.find((b) => b.text === text)?.onPress?.() };
 }
 
-it("edits a bot's note against the revision it opened, then goes back", async () => {
-  mocks.rpc.mockImplementation(async (proc: string, body: Record<string, unknown>) => {
-    if (proc === "memory/list") return [note];
-    if (proc === "memory/update") return { ...note, content: body.content, revision: 4 };
-    throw new Error(`Unexpected ${proc}`);
-  });
-  await render();
-  expect(mocks.rpc).toHaveBeenCalledWith("memory/list", { botId: "bot-1", scope: "bot" });
-  expect(mocks.options.title).toBe("preferences.md");
-  expect(editor()?.value).toBe(note.content);
-  expect((await headerSave()).disabled).toBe(true);
-  expect(mocks.preventRemove.active).toBe(false);
-
-  await type("Prefers bullet points.\n");
-  expect(mocks.preventRemove.active).toBe(true);
-  await headerSave();
-  expect(mocks.rpc).toHaveBeenCalledWith("memory/update", {
-    documentId: note.id,
-    content: "Prefers bullet points.\n",
-    expectedRevision: 3,
-  });
-  expect(mocks.preventRemove.active).toBe(false);
-  expect(mocks.back).toHaveBeenCalledTimes(1);
-});
-
 it("keeps the edit and stays open when saving fails", async () => {
   mocks.rpc.mockImplementation(async (proc: string) => {
     if (proc === "memory/list") return [note];
@@ -270,18 +245,6 @@ it("keeps the note open when deleting fails", async () => {
   expect(container.textContent).toContain("Request failed");
   expect(mocks.back).not.toHaveBeenCalled();
   expect(button("Delete")?.disabled).toBe(false);
-});
-
-it("opens a shared note from the space's notes and never offers to delete MEMORY.md", async () => {
-  mocks.params = { id: "index-1" };
-  mocks.rpc.mockResolvedValue([
-    { ...note, id: "index-1", scope: "user", botId: null, path: "MEMORY.md" },
-  ]);
-  await render();
-  expect(mocks.rpc).toHaveBeenCalledWith("memory/list", { scope: "user" });
-  expect(mocks.options.title).toBe("MEMORY.md");
-  expect(editor()).not.toBeNull();
-  expect(button("Delete")).toBeUndefined();
 });
 
 it("says when the note is gone and retries a failed load", async () => {

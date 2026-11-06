@@ -14,12 +14,10 @@ export default function ImageScreen() {
     artifactId?: string | string[];
     name?: string | string[];
     mimeType?: string | string[];
-    botId?: string | string[];
-    groupId?: string | string[];
+    threadId?: string | string[];
   }>();
-  const groupId = first(params.groupId);
 
-  const threadTarget: MobileArtifactTarget = groupId ? { groupId } : { botId: first(params.botId) };
+  const threadTarget: MobileArtifactTarget = { threadId: first(params.threadId) };
   // The app root mounts no SafeAreaProvider; this screen hides the native header, so it
   // provides its own, seeded with the window metrics so the first frame already has the
   // right insets (a measured SafeAreaView starts at zero inside a modal presentation).

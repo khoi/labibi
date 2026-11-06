@@ -195,7 +195,7 @@ export function AskBlock({
         ) : null}
         {!answered && !canAnswer ? (
           <Text style={{ color: tokens.mutedForeground, ...typeScale.caption }}>
-            {t("Waiting for this bot’s response.")}
+            {t("Waiting for Doodle’s response.")}
           </Text>
         ) : null}
         {error ? (
@@ -257,11 +257,6 @@ export function AskBlock({
       </Text>
       {secretInput && destination ? (
         <Text style={{ color: tokens.mutedForeground, ...typeScale.secondary }}>{destination}</Text>
-      ) : null}
-      {secretInput && ask.sharedBrowser && !ownerOnly && !answered ? (
-        <Text style={{ color: tokens.mutedForeground, ...typeScale.secondary }}>
-          {t("The bot's browser stays signed in for everyone in this space")}
-        </Text>
       ) : null}
       {secretInput && ask.replaces && !ownerOnly && !answered ? (
         <Text style={{ color: tokens.mutedForeground, ...typeScale.secondary }}>
@@ -329,7 +324,7 @@ export function AskBlock({
         </>
       ) : (
         <Text style={{ color: tokens.mutedForeground, ...typeScale.caption }}>
-          {t("Waiting for this bot’s response.")}
+          {t("Waiting for Doodle’s response.")}
         </Text>
       )}
       {error ? (

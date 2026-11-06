@@ -1,16 +1,14 @@
-import { BOT_COLORS, INVITED_TRIAL_WEEKS } from "@labradoodle/contracts";
+import { INVITED_TRIAL_WEEKS } from "@labradoodle/contracts";
 import { typeScale } from "@labradoodle/ui-tokens";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { ScrollView, Share, StyleSheet, Text, View } from "react-native";
-import { BotAvatar } from "../components/bot-avatar";
+import { DoodleAvatar } from "../components/doodle-avatar";
 import { NativeActionButton } from "../components/native-action-button";
 import { NativeSymbol } from "../components/native-symbol";
 import { useI18n } from "../lib/i18n";
 import { native, useMobileTokens, useThemedStyles } from "../lib/native";
 import { useReferral } from "../lib/referral";
-
-const AVATAR_SIZES = [44, 52, 64, 52, 44];
 
 /** The invite sheet the chat's gift opens: what the friend and the owner each get, and the link. */
 export default function InviteScreen() {
@@ -42,14 +40,7 @@ export default function InviteScreen() {
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
       >
-        {AVATAR_SIZES.map((size, index) => (
-          <BotAvatar
-            key={BOT_COLORS[index]}
-            color={BOT_COLORS[index]!}
-            identity={`invite-${index}`}
-            size={size}
-          />
-        ))}
+        <DoodleAvatar size={64} />
       </View>
       <Text accessibilityRole="header" style={styles.title}>
         {t("Give a friend {weeks} weeks free", { weeks: INVITED_TRIAL_WEEKS })}

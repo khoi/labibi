@@ -61,7 +61,7 @@ import {
   readIntegrationsCache,
   writeIntegrationsCache,
 } from "../../lib/integrations-cache";
-import { loadLastBotId } from "../../lib/last-bot";
+import { loadLastChatId } from "../../lib/last-chat";
 import { native, useResolvedAppearance, useThemedStyles } from "../../lib/native";
 import { iosAtLeast } from "../../lib/native-controls";
 import type { PluginParams } from "../../lib/plugin-marketplace";
@@ -135,7 +135,7 @@ export default function Integrations() {
   const [pending, setPending] = useState<string | null>(null);
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [sourceError, setSourceError] = useState<string | null>(null);
-  const [lastBotId, setLastBotId] = useState("");
+  const [lastChatId, setLastChatId] = useState("");
   const [catalogReady, setCatalogReady] = useState(false);
   const [labelDrafts, setLabelDrafts] = useState<Record<string, string>>({});
   const [detailKey, setDetailKey] = useState<{ connectorId: string; slug: string } | null>(null);
@@ -416,8 +416,8 @@ export default function Integrations() {
         }
         await retryRefresh();
       })();
-      void loadLastBotId().then((id) => {
-        if (!cancelled) setLastBotId(id);
+      void loadLastChatId().then((id) => {
+        if (!cancelled) setLastChatId(id);
       });
       return () => {
         cancelled = true;
@@ -760,11 +760,11 @@ export default function Integrations() {
   }
 
   async function notifyAppConnected(item: ConnectionCatalogItem, isCurrent: () => boolean) {
-    const botId = lastBotId || (await loadLastBotId());
-    if (!botId || !isCurrent()) return;
-    if (botId !== lastBotId) setLastBotId(botId);
+    const threadId = lastChatId || (await loadLastChatId());
+    if (!threadId || !isCurrent()) return;
+    if (threadId !== lastChatId) setLastChatId(threadId);
     void rpc("onboarding/appConnected", {
-      botId,
+      threadId,
       provider: item.slug,
       connectorId: item.connectorId,
     }).catch(() => undefined);

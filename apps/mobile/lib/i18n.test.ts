@@ -64,7 +64,7 @@ describe("mobile i18n", () => {
     resetI18nForTests("zh-CN");
     expect(t("Account")).toBe("账户");
     expect(t("Sign in to Labradoodle")).toBe("登录 Labradoodle");
-    expect(t("New group chat")).toBe("新建群聊");
+    expect(t("New chat")).toBe("新建聊天");
     expect(t("{runs} runs, {tokens} tokens", { runs: 3, tokens: 12 })).toBe(
       "3 次运行，12 个 token",
     );
@@ -73,7 +73,7 @@ describe("mobile i18n", () => {
     resetI18nForTests("ru");
     expect(t("Account")).toBe("Аккаунт");
     expect(t("Sign in to Labradoodle")).toBe("Войти в Labradoodle");
-    expect(t("New group chat")).toBe("Новый групповой чат");
+    expect(t("New chat")).toBe("Новый чат");
     expect(t("{runs} runs, {tokens} tokens", { runs: 3, tokens: 12 })).toBe(
       "Запусков: 3, токенов: 12",
     );
@@ -82,7 +82,7 @@ describe("mobile i18n", () => {
     resetI18nForTests("nl");
     expect(t("Account")).toBe("Account");
     expect(t("Sign in to Labradoodle")).toBe("Aanmelden bij Labradoodle");
-    expect(t("New group chat")).toBe("Nieuwe groepschat");
+    expect(t("New chat")).toBe("Nieuwe chat");
     expect(t("{runs} runs, {tokens} tokens", { runs: 3, tokens: 12 })).toBe(
       "3 uitvoeringen, 12 tokens",
     );
@@ -91,7 +91,7 @@ describe("mobile i18n", () => {
     resetI18nForTests("ja");
     expect(t("Account")).toBe("アカウント");
     expect(t("Sign in to Labradoodle")).toBe("Labradoodleにログイン");
-    expect(t("New group chat")).toBe("新しいグループチャット");
+    expect(t("New chat")).toBe("新しいチャット");
     expect(t("{runs} runs, {tokens} tokens", { runs: 3, tokens: 12 })).toBe(
       "3回の実行、12トークン",
     );
@@ -100,7 +100,7 @@ describe("mobile i18n", () => {
     resetI18nForTests("de");
     expect(t("Account")).toBe("Konto");
     expect(t("Sign in to Labradoodle")).toBe("Bei Labradoodle anmelden");
-    expect(t("New group chat")).toBe("Neuer Gruppenchat");
+    expect(t("New chat")).toBe("Neuer Chat");
     expect(t("{runs} runs, {tokens} tokens", { runs: 3, tokens: 12 })).toBe(
       "3 Ausführungen, 12 Token",
     );
@@ -109,7 +109,7 @@ describe("mobile i18n", () => {
     resetI18nForTests("es");
     expect(t("Account")).toBe("Cuenta");
     expect(t("Sign in to Labradoodle")).toBe("Inicia sesión en Labradoodle");
-    expect(t("New group chat")).toBe("Nuevo chat grupal");
+    expect(t("New chat")).toBe("Nuevo chat");
     expect(t("{runs} runs, {tokens} tokens", { runs: 3, tokens: 12 })).toBe(
       "3 ejecuciones, 12 tokens",
     );
@@ -214,7 +214,6 @@ describe("mobile i18n", () => {
     const { AI_DATA_DISCLOSURES, OPENAI_COMPATIBLE_BASE_URL_HINT } = await import(
       "@labradoodle/contracts"
     );
-    const { createMenuItems } = await import("./create-chooser");
     const mobileRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
     const ids = new Set<string>([
       ...Object.values(AI_DATA_DISCLOSURES),
@@ -247,7 +246,6 @@ describe("mobile i18n", () => {
       EMPTY_PLUGIN_CATALOG_MESSAGE,
       OPENAI_COMPATIBLE_BASE_URL_HINT,
       ...SLASH_ACTIONS.map((action) => action.label),
-      ...createMenuItems.map((item) => item.label),
       "Sign-in did not return a session",
       "Sign-up did not return a session",
       "{count} model",

@@ -19,9 +19,9 @@ function errorCode(error: unknown): unknown {
   return (error as { code?: unknown } | null)?.code;
 }
 
-/** One memory note: a bot's when opened with its id, otherwise one shared by the space's bots. */
+/** One memory note: a chat's when opened with its id, otherwise one of the person's own. */
 export default function MemoryNoteScreen() {
-  const params = useLocalSearchParams<{ id: string; botId?: string }>();
+  const params = useLocalSearchParams<{ id: string; threadId?: string }>();
   const navigation = useNavigation();
   const router = useRouter();
   const sideInsets = useSideInsets();
@@ -35,13 +35,11 @@ export default function MemoryNoteScreen() {
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
   const live = useRef(true);
-  const { id, botId } = params;
+  const { id, threadId } = params;
 
-  // There is no single-note read, so find the note in its bot's or the space's list.
+  // There is no single-note read, so find the note in its chat's or the person's list.
   const latest = async () =>
-    (await rpc("memory/list", botId ? { botId, scope: "bot" } : { scope: "user" })).find(
-      (doc) => doc.id === id,
-    );
+    (await rpc("memory/list", threadId ? { threadId } : {})).find((doc) => doc.id === id);
   const latestRef = useRef(latest);
   latestRef.current = latest;
 
@@ -69,7 +67,7 @@ export default function MemoryNoteScreen() {
     return () => {
       live.current = false;
     };
-  }, [id, botId, t, attempt]);
+  }, [id, threadId, t, attempt]);
 
   useEffect(() => {
     if (closing) router.back();

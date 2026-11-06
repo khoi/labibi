@@ -1,5 +1,5 @@
 import type { MemoryDocument } from "@labradoodle/contracts";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -12,9 +12,13 @@ import { native, useThemedStyles } from "../../lib/native";
 import { useSideInsets } from "../../lib/side-insets";
 import { errorText } from "../../lib/user-error";
 
-/** The notes every bot in this space shares. A bot's own notes live in its chat settings. */
+/**
+ * What Doodle remembers: a chat's notes, which everyone in it can read and change, when opened from
+ * the chat; otherwise the person's own, which Doodle reads only in chats with just them.
+ */
 export default function MemoryScreen() {
   const router = useRouter();
+  const { threadId } = useLocalSearchParams<{ threadId?: string }>();
   const sideInsets = useSideInsets();
   const styles = useThemedStyles(createStyles);
   const { t } = useI18n();
@@ -29,16 +33,16 @@ export default function MemoryScreen() {
     const order = ++latestLoad.current;
     const current = () => live.current && order === latestLoad.current;
     try {
-      const docs = await rpc("memory/list", { scope: "user" });
+      const docs = await rpc("memory/list", threadId ? { threadId } : {});
       if (!current()) return;
       setNotes(docs);
       setError(null);
     } catch (reason) {
       if (current()) setError(errorText(reason, t("Could not load memory")));
     }
-  }, [t]);
+  }, [threadId, t]);
 
-  // Bots write memory as they run, and a note may have changed in its editor.
+  // Doodle writes memory as it runs, and a note may have changed in its editor.
   useFocusEffect(
     useCallback(() => {
       live.current = true;
@@ -76,7 +80,12 @@ export default function MemoryScreen() {
                 key={note.id}
                 accessibilityRole="button"
                 chevron="right"
-                onPress={() => router.push({ pathname: "/memory-note", params: { id: note.id } })}
+                onPress={() =>
+                  router.push({
+                    pathname: "/memory-note",
+                    params: { id: note.id, ...(threadId ? { threadId } : {}) },
+                  })
+                }
                 title={note.path}
               />
             ))}

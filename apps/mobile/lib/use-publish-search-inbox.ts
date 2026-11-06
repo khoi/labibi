@@ -1,11 +1,11 @@
 import { useEffect } from "react";
-import type { InboxSpace } from "./inbox-spaces";
+import type { MobileChat } from "./api";
 import { setSearchInbox } from "./search-inbox";
 
-/** Shares the inbox roster with search once a saved or live inbox has supplied the account. */
-export function usePublishSearchInbox(inboxSpaces: readonly InboxSpace[], loaded: boolean) {
+/** Shares the inbox's chats with search once a saved or live inbox has supplied the account. */
+export function usePublishSearchInbox(chats: readonly MobileChat[], loaded: boolean) {
   useEffect(() => {
     // A remounted session has no roster until its saved or live inbox arrives.
-    if (loaded) setSearchInbox(inboxSpaces);
-  }, [inboxSpaces, loaded]);
+    if (loaded) setSearchInbox(chats);
+  }, [chats, loaded]);
 }

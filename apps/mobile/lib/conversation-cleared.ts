@@ -1,13 +1,13 @@
-const listeners = new Set<(botId: string) => void>();
+const listeners = new Set<(threadId: string) => void>();
 
-/** Runs when a bot's conversation is cleared, wherever it was cleared from. */
-export function onConversationCleared(listener: (botId: string) => void): () => void {
+/** Runs when a chat's history is cleared, wherever it was cleared from. */
+export function onConversationCleared(listener: (threadId: string) => void): () => void {
   listeners.add(listener);
   return () => {
     listeners.delete(listener);
   };
 }
 
-export function notifyConversationCleared(botId: string) {
-  for (const listener of listeners) listener(botId);
+export function notifyConversationCleared(threadId: string) {
+  for (const listener of listeners) listener(threadId);
 }

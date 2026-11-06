@@ -3,53 +3,45 @@ import type { RefObject } from "react";
 import { useCallback, useEffect } from "react";
 import { AppState } from "react-native";
 import { selectedSpaceId } from "./api";
-import { saveLastBotId } from "./last-bot";
+import { saveLastChatId } from "./last-chat";
 import { dismissThreadNotifications, setOpenNotificationThread } from "./live-notifications";
 import { useOpenNotificationThread } from "./use-open-notification-thread";
 
 /**
- * What the chat does while it is in front: clears its notifications, remembers the bot, and
+ * What the chat does while it is in front: clears its notifications, remembers the chat, and
  * catches up on read state and spoken replies on return.
  */
 export function useThreadFocus({
-  botId,
+  threadId,
   readOnly,
-  notificationThreadId,
-  refreshMentionBots,
   markReadIfVisible,
   speakFinishedReplyRef,
 }: {
-  botId?: string;
+  threadId?: string;
   readOnly: boolean;
-  notificationThreadId?: string;
-  refreshMentionBots: () => Promise<unknown>;
   markReadIfVisible: () => void;
   speakFinishedReplyRef: RefObject<() => void>;
 }) {
   const navigation = useNavigation();
 
   useEffect(() => {
-    if (!notificationThreadId || AppState.currentState !== "active" || !navigation.isFocused())
-      return;
-    void setOpenNotificationThread({ botId, threadId: notificationThreadId }).catch(
-      () => undefined,
-    );
-    void dismissThreadNotifications({ threadId: notificationThreadId }).catch(() => undefined);
-  }, [botId, navigation, notificationThreadId]);
+    if (!threadId || AppState.currentState !== "active" || !navigation.isFocused()) return;
+    void setOpenNotificationThread({ threadId }).catch(() => undefined);
+    void dismissThreadNotifications({ threadId }).catch(() => undefined);
+  }, [navigation, threadId]);
 
   // Covers returning from a pushed screen; the AppState listener covers returning from background.
   useFocusEffect(
     useCallback(() => {
-      if (botId && !readOnly) void saveLastBotId(botId, selectedSpaceId()).catch(() => undefined);
-      void refreshMentionBots();
+      if (threadId && !readOnly)
+        void saveLastChatId(threadId, selectedSpaceId()).catch(() => undefined);
       markReadIfVisible();
       if (!readOnly) speakFinishedReplyRef.current();
-    }, [botId, readOnly, markReadIfVisible, refreshMentionBots]),
+    }, [threadId, readOnly, markReadIfVisible]),
   );
 
   useOpenNotificationThread({
-    botId,
-    threadId: notificationThreadId,
+    threadId,
     navigation,
     markReadIfVisible,
   });

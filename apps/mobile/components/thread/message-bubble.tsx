@@ -2,34 +2,30 @@ import { MarkdownLongPressContext } from "@labradoodle/chat-ui/native";
 import type { LoginFieldInput, MessageBlock } from "@labradoodle/contracts";
 import { artifactPreviewKind, isAttachmentAudioMimeType } from "@labradoodle/contracts";
 import {
+  DOODLE_NAME,
   formatFileSize,
   isApprovalAskBlock,
-  memberName,
   selectedAskActionLabel,
 } from "@labradoodle/core";
 import { fontWeight, typeScale } from "@labradoodle/ui-tokens";
 import type { ComponentProps } from "react";
-import { memo, useContext, useMemo } from "react";
+import { memo, useMemo } from "react";
 import type { TextProps } from "react-native";
 import { Alert, Pressable, Text, View } from "react-native";
-import type { MobileBot, MobileMessage, MobileSnapshot } from "../../lib/api";
+import type { MobileMessage } from "../../lib/api";
 import { blockText } from "../../lib/api";
 import { mobileTokens } from "../../lib/appearance";
 import type { MobileArtifactTarget } from "../../lib/artifact-open";
 import { openMobileArtifact } from "../../lib/artifact-open";
 import { allowsSpace } from "../../lib/ask-action-label";
 import { plainAskTitle } from "../../lib/ask-title";
+import { DOODLE_SPEAKER } from "../../lib/doodle";
 import { t, useI18n } from "../../lib/i18n";
 import { isInlineImageBlock } from "../../lib/inline-image";
-import {
-  mentionedBots,
-  textWithMentions,
-  UserMentionsContext,
-  userMentionTargets,
-} from "../../lib/message-mentions";
+import type { UserMentionTarget } from "../../lib/message-mentions";
+import { UserMentionsContext } from "../../lib/message-mentions";
 import { messagePresentationSegments } from "../../lib/message-presentation";
 import { useResolvedAppearance } from "../../lib/native";
-import { speakerColorFor } from "../../lib/thread-message-text";
 import type { UserBubble } from "../../lib/user-bubble";
 import { withUserBubble } from "../../lib/user-bubble";
 import { errorText } from "../../lib/user-error";
@@ -76,10 +72,10 @@ export type MessageActionProps = Pick<
 export const MessageBubble = memo(function MessageBubble(
   props: ComponentProps<typeof MessageBubbleContent>,
 ) {
-  const { members, onOpenBot } = props;
+  const { mentionTargets } = props;
   const userMentions = useMemo(
-    () => (members?.length ? { targets: userMentionTargets(members), onOpenBot } : undefined),
-    [members, onOpenBot],
+    () => (mentionTargets.length ? { targets: mentionTargets } : undefined),
+    [mentionTargets],
   );
   const body = (
     <MarkdownLongPressContext.Provider value={props.actionProps.onLongPress}>
@@ -120,7 +116,7 @@ function MessageBubbleBody(props: ComponentProps<typeof MessageBubbleContent>) {
         <McpAppCard
           key={`app-${index}`}
           block={first}
-          target={props.groupId ? { groupId: props.groupId } : { botId: props.botId }}
+          target={{ threadId: props.threadId ?? "" }}
         />
       );
     return isSpecialMessageBlock(first) ? (
@@ -128,9 +124,6 @@ function MessageBubbleBody(props: ComponentProps<typeof MessageBubbleContent>) {
         key={first.kind === "subagent" ? first.agentId : `${first.kind}-${index}`}
         special={first}
         actionProps={props.actionProps}
-        bots={props.bots}
-        members={props.members}
-        onOpenBot={props.onOpenBot}
         onHelperToggle={props.onHelperToggle}
         userBubble={props.userBubble}
       />
@@ -151,14 +144,10 @@ function MessageBubbleBody(props: ComponentProps<typeof MessageBubbleContent>) {
 }
 
 const MessageBubbleContent = memo(function MessageBubbleContent({
-  botId,
+  threadId,
   authorName,
-  botName,
   showBotSenderName,
-  bots,
-  groupId,
   message,
-  members,
   canAnswer,
   canDismiss,
   onAnswer,
@@ -171,15 +160,13 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
   userBubble,
 }: {
   onHelperToggle?: MessageRowActions["helperToggle"];
-  botId: string;
-  /** Someone else in a shared space wrote this message: named and set apart. */
+  threadId?: string;
+  /** Someone else in the chat wrote this message: named and set apart. */
   authorName?: string;
-  botName?: string;
   showBotSenderName: boolean;
-  bots: MobileBot[];
-  groupId?: string;
+  /** Who a sent message's `@Name` can refer to. */
+  mentionTargets: readonly UserMentionTarget[];
   message: MobileMessage;
-  members?: MobileSnapshot["members"];
   canAnswer: boolean;
   canDismiss: boolean;
   onAnswer: (
@@ -189,8 +176,7 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
     dismiss?: boolean,
     remember?: false,
   ) => Promise<void>;
-  onOpenBot: (botId: string, name: string) => void;
-  onOpenComputer: (botId: string, name: string) => void;
+  onOpenComputer: () => void;
   onChoiceDismissed?: (question: string) => void;
   /** Opens a file the app can show; other types go to the share sheet. */
   onPreviewFile: (artifactId: string) => void;
@@ -203,9 +189,7 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
   const tokens = withUserBubble(mobileTokens(), userBubble);
   const { t } = useI18n();
   const outgoing = message.role === "user" && !authorName;
-  const artifactTarget: MobileArtifactTarget = groupId ? { groupId } : { botId };
-  const cardBotId = message.botId ?? botId;
-  const computerBotId = message.botId ?? (groupId ? undefined : botId);
+  const artifactTarget: MobileArtifactTarget = { threadId: threadId ?? message.threadId ?? "" };
   const appConnectBlocks = message.blocks.filter(
     (block): block is Extract<MessageBlock, { kind: "app_connect" }> =>
       block.kind === "app_connect",
@@ -236,7 +220,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
         {appConnectBlocks.map((block, index) => (
           <AppConnectCard
             key={`${block.provider}-${index}`}
-            botId={cardBotId}
             threadId={message.threadId}
             messageId={message.id}
             block={block}
@@ -247,7 +230,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
         {mcpApprovalBlocks.map((block) => (
           <McpApprovalCard
             key={block.serverId}
-            botId={cardBotId}
             threadId={message.threadId}
             block={block}
             accessibilityActions={actionProps.accessibilityActions}
@@ -264,7 +246,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
         {appConnectBlocks.map((block, index) => (
           <AppConnectCard
             key={`${block.provider}-${index}`}
-            botId={cardBotId}
             threadId={message.threadId}
             messageId={message.id}
             block={block}
@@ -275,7 +256,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
         {mcpApprovalBlocks.map((block) => (
           <McpApprovalCard
             key={block.serverId}
-            botId={cardBotId}
             threadId={message.threadId}
             block={block}
             accessibilityActions={actionProps.accessibilityActions}
@@ -372,7 +352,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
         {appConnectBlocks.map((block, index) => (
           <AppConnectCard
             key={`${block.provider}-${index}`}
-            botId={cardBotId}
             threadId={message.threadId}
             messageId={message.id}
             block={block}
@@ -383,7 +362,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
         {mcpApprovalBlocks.map((block) => (
           <McpApprovalCard
             key={block.serverId}
-            botId={cardBotId}
             threadId={message.threadId}
             block={block}
             accessibilityActions={actionProps.accessibilityActions}
@@ -400,10 +378,8 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
     .flatMap((block) => (block.kind === "text" && block.text ? [block.text] : []))
     .join("\n");
   if (attachments.length > 0) {
-    const speaker =
-      message.role === "bot" ? (memberName(members, message.botId) ?? botName) : authorName;
-    const speakerColor =
-      message.role === "bot" ? speakerColorFor(bots, members, message.botId) : undefined;
+    const speaker = message.role === "bot" ? DOODLE_NAME : authorName;
+    const speakerColor = message.role === "bot" ? DOODLE_SPEAKER.color : undefined;
     const hasInlineImages = attachments.some(isInlineImageBlock);
     const bubbleStyle = {
       maxWidth: "100%",
@@ -537,7 +513,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
         {appConnectBlocks.map((block, index) => (
           <AppConnectCard
             key={`${block.provider}-${index}`}
-            botId={cardBotId}
             threadId={message.threadId}
             messageId={message.id}
             block={block}
@@ -548,7 +523,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
         {mcpApprovalBlocks.map((block) => (
           <McpApprovalCard
             key={block.serverId}
-            botId={cardBotId}
             threadId={message.threadId}
             block={block}
             accessibilityActions={actionProps.accessibilityActions}
@@ -559,10 +533,8 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
     );
   }
   const segments = messagePresentationSegments(message.blocks);
-  const speaker =
-    message.role === "bot" ? (memberName(members, message.botId) ?? botName) : authorName;
-  const speakerColor =
-    message.role === "bot" ? speakerColorFor(bots, members, message.botId) : undefined;
+  const speaker = message.role === "bot" ? DOODLE_NAME : authorName;
+  const speakerColor = message.role === "bot" ? DOODLE_SPEAKER.color : undefined;
   const showSpeaker = showBotSenderName || Boolean(authorName);
   const firstContent = segments.findIndex((segment) => segment.kind === "content");
   const choiceBlocks = message.blocks.filter(
@@ -588,7 +560,7 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
       {choiceBlocks.map((block, index) => (
         <ChoiceCard
           key={`choice-${index}`}
-          botId={cardBotId}
+          threadId={artifactTarget.threadId}
           block={block}
           onDismissed={onChoiceDismissed ? () => onChoiceDismissed(block.question) : undefined}
           accessibilityActions={actionProps.accessibilityActions}
@@ -599,9 +571,7 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
         <ComputerCard
           key={`computer-${index}`}
           block={block}
-          onOpen={
-            computerBotId ? () => onOpenComputer(computerBotId, speaker ?? t("Bot")) : undefined
-          }
+          onOpen={onOpenComputer}
           accessibilityActions={actionProps.accessibilityActions}
           onAccessibilityAction={actionProps.onAccessibilityAction}
         />
@@ -609,7 +579,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
       {appConnectBlocks.map((block, index) => (
         <AppConnectCard
           key={`${block.provider}-${index}`}
-          botId={cardBotId}
           threadId={message.threadId}
           messageId={message.id}
           block={block}
@@ -620,8 +589,6 @@ const MessageBubbleContent = memo(function MessageBubbleContent({
     </View>
   );
 });
-
-const OPEN_BOT_ACTION = "open-bot:";
 
 function MessageTextCard({
   message,
@@ -643,37 +610,13 @@ function MessageTextCard({
   const colorScheme = useResolvedAppearance();
   const tokens = withUserBubble(mobileTokens(), userBubble);
   const contentText = blockText(message);
-  const { t } = useI18n();
-  const userMentions = useContext(UserMentionsContext);
   if (!contentText) return null;
-  // The surface is one accessibility element, so the bots a message names are offered as its
-  // actions too; a tap on the name still opens the chat for everyone else.
-  const bots =
-    message.role === "user" && userMentions
-      ? mentionedBots(textWithMentions(contentText, userMentions.targets))
-      : [];
-  const accessibilityActions = bots.length
-    ? [
-        ...(actionProps.accessibilityActions ?? []),
-        ...bots.map((bot) => ({
-          name: `${OPEN_BOT_ACTION}${bot.id}`,
-          label: t("Open {name}", { name: bot.name }),
-        })),
-      ]
-    : actionProps.accessibilityActions;
   // The menu wrapper owns surface gestures; links and code controls remain responders.
   const Surface = doubleTapSurface ? View : Pressable;
   return (
     <Surface
       {...actionProps}
       accessible
-      accessibilityActions={accessibilityActions}
-      onAccessibilityAction={(event) => {
-        const actionName = event.nativeEvent.actionName;
-        const bot = bots.find((candidate) => `${OPEN_BOT_ACTION}${candidate.id}` === actionName);
-        if (bot) userMentions?.onOpenBot(bot.id, bot.name);
-        else actionProps.onAccessibilityAction?.(event);
-      }}
       onLongPress={doubleTapSurface ? undefined : actionProps.onLongPress}
       style={{
         flexShrink: 1,

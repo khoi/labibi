@@ -40,8 +40,6 @@ export const JA_MESSAGES: Record<string, string> = {
   "When to use": "使う場面",
   "ZIP or postal code": "郵便番号",
   "Daily check-ins on unfinished work": "未完了の作業を毎日確認",
-  "Pages this group builds for you appear here.":
-    "このグループが作成したページがここに表示されます。",
   Deleted: "削除済み",
   "Its link stops working. This cannot be undone.":
     "リンクは使えなくなります。この操作は元に戻せません。",
@@ -67,7 +65,6 @@ export const JA_MESSAGES: Record<string, string> = {
   "Could not load this page.": "このページを読み込めませんでした。",
   Pages: "ページ",
   "Could not load pages.": "ページを読み込めませんでした。",
-  "Pages this bot builds for you appear here.": "このボットが作成したページがここに表示されます。",
   Shared: "共有",
   "Share to": "共有先",
   "{count} files": "{count}個のファイル",
@@ -136,12 +133,7 @@ export const JA_MESSAGES: Record<string, string> = {
   "To:": "宛先:",
   Next: "次へ",
   "Ex: Project Falcon": "例: Project Falcon",
-  "Search bots": "ボットを検索",
   "About {label}": "{label}について",
-  "Manage other bots": "他のボットを管理",
-  "Allow cross-space bot communication": "スペースをまたいだボット間の通信を許可",
-  "Organize the sidebar and edit bots. Instruction, model, routine and group edits need approval.":
-    "サイドバーの整理とボットの編集ができます。指示、モデル、ルーティン、グループの編集には承認が必要です。",
   Headers: "ヘッダー",
   "Add header": "ヘッダーを追加",
   "Remove header": "ヘッダーを削除",
@@ -158,8 +150,6 @@ export const JA_MESSAGES: Record<string, string> = {
   Member: "メンバー",
   Owner: "オーナー",
   Space: "スペース",
-  "Message from another agent": "別のエージェントからのメッセージ",
-  "Another agent": "別のエージェント",
   "Update from {name}: {text}": "{name}からの更新: {text}",
   "Update from {name}": "{name}からの更新",
   "{name} asked: {text}": "{name}からの質問: {text}",
@@ -241,10 +231,8 @@ export const JA_MESSAGES: Record<string, string> = {
   "Chat settings": "チャット設定",
   Computer: "コンピューター",
   Group: "グループ",
-  "Group settings": "グループ設定",
   Integrations: "連携",
   Models: "モデル",
-  "New group chat": "新しいグループチャット",
   Routine: "ルーティン",
   "Server integrations": "サーバー連携",
   Thread: "スレッド",
@@ -275,9 +263,7 @@ export const JA_MESSAGES: Record<string, string> = {
   "Use default server": "デフォルトのサーバーを使用",
   Activity: "アクティビティ",
   "Collapse {name}": "{name}を折りたたむ",
-  "Could not load bots": "ボットを読み込めませんでした",
   "Could not open this PDF.": "このPDFを開けませんでした。",
-  "Could not save the default space": "デフォルトのスペースを保存できませんでした",
   "Could not switch spaces": "スペースを切り替えられませんでした",
   Create: "作成",
   "Delete {name}?": "{name}を削除しますか？",
@@ -285,7 +271,6 @@ export const JA_MESSAGES: Record<string, string> = {
   "Mark as Read": "既読にする",
   "Mark as Unread": "未読にする",
   "Mark as unread": "未読にする",
-  "No matching bots": "一致するボットはありません",
   "No messages yet": "まだメッセージはありません",
   "No results": "結果はありません",
   Personal: "個人",
@@ -293,12 +278,10 @@ export const JA_MESSAGES: Record<string, string> = {
   Search: "検索",
   "Search conversations, files, and routines": "会話、ファイル、ルーティンを検索",
   "Searching…": "検索中…",
-  "Space actions for {name}": "{name}のスペース操作",
   "notifications silenced": "通知ミュート中",
   unread: "未読",
   "@{name}": "@{name}",
   "Add a voice provider in Voice settings.": "音声設定で音声プロバイダーを追加してください。",
-  Agent: "エージェント",
   "Allowed once": "今回のみ許可しました",
   "Always allowed": "常に許可済み",
   Answer: "応答",
@@ -311,7 +294,6 @@ export const JA_MESSAGES: Record<string, string> = {
   Attach: "添付",
   "Attach file": "ファイルを添付",
   Attachment: "添付ファイル",
-  "Bot actions": "ボットの操作",
   Camera: "カメラ",
   "Cancel reply": "返信をキャンセル",
   Cancelled: "キャンセル済み",
@@ -385,7 +367,6 @@ export const JA_MESSAGES: Record<string, string> = {
   Play: "再生",
   Pause: "一時停止",
   "Select text": "テキストを選択",
-  "All bots": "すべてのボット",
   Artifact: "アーティファクト",
   Artifacts: "アーティファクト",
   "Could not delete this artifact": "このアーティファクトを削除できませんでした",
@@ -405,8 +386,6 @@ export const JA_MESSAGES: Record<string, string> = {
     "このアーティファクトの全{count}個のバージョンを削除します。この操作は元に戻せません。",
   Versions: "バージョン",
   Stop: "停止",
-  "This removes every message and stops current work. The bot, computer, memory, and routines are kept.":
-    "すべてのメッセージを削除し、現在の作業を停止します。ボット、コンピューター、メモリ、ルーティンは保持されます。",
   "Type your answer": "回答を入力",
   Username: "ユーザー名",
   "Waiting for this bot’s response.": "このボットの応答を待っています。",
@@ -421,7 +400,6 @@ export const JA_MESSAGES: Record<string, string> = {
   finished: "完了",
   running: "実行中",
   subagent: "サブエージェント",
-  "{count} agents working": "{count}個のエージェントが作業中",
   "{from} messaged {to}": "{from}が{to}にメッセージを送信しました",
   "{name} (max {count} attachments)": "{name}（添付ファイルは最大{count}個）",
   "{name} (over {limit})": "{name}（{limit}超過）",
@@ -429,9 +407,7 @@ export const JA_MESSAGES: Record<string, string> = {
   "{name} (unsupported type)": "{name}（未対応の形式）",
   "{name} is working": "{name}が作業中",
   Advanced: "詳細設定",
-  "Could not load bot": "ボットを読み込めませんでした",
   "Could not load model settings": "モデル設定を読み込めませんでした",
-  "Could not save bot": "ボットを保存できませんでした",
   "Default (medium)": "デフォルト（中）",
   "Describe what this bot does": "このボットの役割を説明",
   Description: "説明",
@@ -447,19 +423,10 @@ export const JA_MESSAGES: Record<string, string> = {
   "Read replies aloud": "返信を読み上げる",
   Save: "保存",
   "Saving…": "保存中…",
-  "Space default": "スペースのデフォルト",
   "Can't read images": "画像を読み取れません",
   Thinking: "思考",
   Title: "タイトル",
-  "Could not delete group": "グループを削除できませんでした",
-  "Could not load group": "グループを読み込めませんでした",
-  "Could not save group": "グループを保存できませんでした",
-  "Delete group": "グループを削除",
-  "Bots and their own chats stay.": "ボットとそれぞれのチャットは残ります。",
-  "Group name": "グループ名",
-  "Group not found": "グループが見つかりません",
   Members: "メンバー",
-  "Could not create group": "グループを作成できませんでした",
   "Creating…": "作成中…",
   "Create space": "スペースを作成",
   Active: "有効",
@@ -710,8 +677,6 @@ export const JA_MESSAGES: Record<string, string> = {
   "Needs attention": "要対応",
   Unread: "未読",
   "Notification settings": "通知設定",
-  "Get notified when this Bot finishes or needs input":
-    "このボットが完了したときや入力が必要なときに通知を受け取る",
   Notifications: "通知",
   "Questions, approvals, takeover": "質問、承認、操作の引き継ぎ",
   "Replies and completed work": "返信と完了した作業",
@@ -741,8 +706,6 @@ export const JA_MESSAGES: Record<string, string> = {
   "Replaces the login saved for {site}": "{site} に保存されたログインを置き換えます",
   "Cancel open invites": "未使用の招待を取り消す",
   "Could not cancel invites": "招待を取り消せませんでした",
-  "Sites you sign in to stay signed in for everyone in this space":
-    "サインインしたサイトは、このスペースの全員に対してサインインしたままになります",
   "The bot's browser stays signed in for everyone in this space":
     "ボットのブラウザは、このスペースの全員に対してサインインしたままになります",
   "Could not submit answer": "回答を送信できませんでした",
@@ -820,7 +783,6 @@ export const JA_MESSAGES: Record<string, string> = {
   "Could not clear the custom server URL": "カスタムサーバーURLをクリアできませんでした",
   "Could not clear the local session": "ローカルセッションをクリアできませんでした",
   "Could not clear the previous server session": "以前のサーバーセッションをクリアできませんでした",
-  "Could not clear the previous space": "以前のスペースをクリアできませんでした",
   "Could not save the server URL": "サーバーURLを保存できませんでした",
   "Could not send reset email": "リセット用メールを送信できませんでした",
   "The server changed while starting the request": "リクエストの開始中にサーバーが変更されました",
@@ -833,7 +795,6 @@ export const JA_MESSAGES: Record<string, string> = {
   "{channel} {id}": "{channel} {id}",
   "{channel} {id}, {date}": "{channel} {id}, {date}",
   "Saved {name} locally": "{name}をローカルに保存しました",
-  "Could not delete bot": "ボットを削除できませんでした",
   "Delete memories too": "メモリも削除",
   "Its conversation, files, and routines will be permanently deleted. What should happen to its memories?":
     "会話、ファイル、ルーティンは完全に削除されます。メモリはどうしますか？",
@@ -867,10 +828,6 @@ export const JA_MESSAGES: Record<string, string> = {
   "Tried in order if the active model fails.": "使用中のモデルが失敗した場合、順番に試します。",
   "Could not load backup models": "バックアップモデルを読み込めませんでした",
   "Could not save backup models": "バックアップモデルを保存できませんでした",
-  "Space changed. Reload Models to refresh backup models.":
-    "スペースが変更されました。モデルを再読み込みしてバックアップモデルを更新してください。",
-  "Space changed. Reload Models before saving backups.":
-    "スペースが変更されました。バックアップを保存する前にモデルを再読み込みしてください。",
   "A sign-in page opened — enter this code there:":
     "ログインページが開きました。次のコードを入力してください:",
   Copied: "コピーしました",
@@ -907,12 +864,8 @@ export const JA_MESSAGES: Record<string, string> = {
   "You can turn this off in Account → AI data sharing.":
     "これは「アカウント → AIデータ共有」でオフにできます。",
   Allow: "許可",
-  "Messages, chat history, bot instructions, memories, attachments, screenshots and connected-app content are sent to run your bots, including routines.":
-    "メッセージ、チャット履歴、ボットの指示、メモリ、添付ファイル、スクリーンショット、接続アプリのコンテンツが、ルーティンを含むボットの実行のために送信されます。",
   "Your recordings are sent for transcription, and text you play is sent to generate speech.":
     "録音は文字起こしのために送信され、再生するテキストは音声生成のために送信されます。",
-  "Conversation summaries, memories, searches and bot and Space IDs are sent to store and recall context.":
-    "会話の要約、メモリ、検索、ボットとスペースのIDが、コンテキストの保存と呼び出しのために送信されます。",
   "AI data sharing": "AIデータ共有",
   "Allow {name} on mobile": "モバイルで{name}を許可",
   "Could not load permissions.": "権限を読み込めませんでした。",
@@ -935,7 +888,6 @@ export const JA_MESSAGES: Record<string, string> = {
   "Members ({count})": "メンバー（{count}）",
   "Show all": "すべて表示",
   "Show selected": "選択中を表示",
-  "Filter bots": "ボットを絞り込む",
   "Pick {min}–{max}": "{min}–{max}個を選択",
   "No members yet": "メンバーはまだいません",
   Applied: "適用済み",
@@ -946,7 +898,6 @@ export const JA_MESSAGES: Record<string, string> = {
   Instructions: "指示",
   "Instructions updated": "指示を更新しました",
   "Settings updated": "設定を更新しました",
-  "Let this bot update its own instructions": "このボットに自身の指示の更新を許可",
   Restored: "復元しました",
   Undo: "元に戻す",
   "Update instructions?": "指示を更新しますか？",
@@ -1278,21 +1229,8 @@ export const JA_MESSAGES: Record<string, string> = {
   "Could not create invite link": "招待リンクを作成できませんでした",
   "Could not remove member": "メンバーを削除できませんでした",
   "Could not leave space": "スペースから退出できませんでした",
-  "Bot models": "ボットのモデル",
-  "1 bot has its own model:": "1個のボットが独自のモデルを使用しています:",
-  "{count} bots have their own model:": "{count}個のボットが独自のモデルを使用しています:",
-  "Use space default": "スペースのデフォルトを使用",
   "Switching…": "切り替え中…",
-  "Switch 1 bot to the space default?": "1個のボットをスペースのデフォルトに切り替えますか？",
-  "Switch {count} bots to the space default?":
-    "{count}個のボットをスペースのデフォルトに切り替えますか？",
-  "Their own model is cleared. You can pick one again in each bot.":
-    "個別のモデル設定は解除されます。各ボットで再度選択できます。",
   Switch: "切り替え",
-  "1 bot now uses the space default.":
-    "1個のボットがスペースのデフォルトを使用するようになりました。",
-  "{count} bots now use the space default.":
-    "{count}個のボットがスペースのデフォルトを使用するようになりました。",
   "Could not switch {failedNames}. Try again.":
     "{failedNames}を切り替えられませんでした。もう一度お試しください。",
   "Could not load memory": "メモリを読み込めませんでした",
@@ -1319,6 +1257,53 @@ export const JA_MESSAGES: Record<string, string> = {
   "{amount} spent this week": "今週の支出: {amount}",
   "{amount} spent this month": "今月の支出: {amount}",
   "{amount} spent": "支出: {amount}",
+  "Add people": "メンバーを追加",
+  Chat: "チャット",
+  "Conversation summaries, memories, searches and chat and person IDs are sent to store and recall context.":
+    "会話の要約、メモリー、検索内容、チャットと人物の ID が、コンテキストの保存と呼び出しのために送信されます。",
+  "Could not save the default workspace": "デフォルトのワークスペースを保存できませんでした",
+  "Could not start chat": "チャットを開始できませんでした",
+  "Could not switch workspaces": "ワークスペースを切り替えられませんでした",
+  "Delete chat": "チャットを削除",
+  "Disable a tool": "ツールを無効にする",
+  Files: "ファイル",
+  "Leave chat": "チャットから退出",
+  "Messages, chat history, Doodle's instructions, memories, attachments, screenshots and connected-app content are sent to run Doodle, including routines.":
+    "メッセージ、チャット履歴、Doodle の指示、メモリー、添付ファイル、スクリーンショット、接続済みアプリの内容が、ルーティンを含む Doodle の実行のために送信されます。",
+  "My computer": "マイコンピューター",
+  "New chat": "新しいチャット",
+  "Pages Doodle builds for you appear here.": "Doodle が作成したページがここに表示されます。",
+  "Recovering your computer": "コンピューターを復旧しています",
+  "Start chat": "チャットを開始",
+  "Updating your computer": "コンピューターを更新しています",
+  "Ask Doodle in this chat to set up a routine.":
+    "このチャットで Doodle にルーティンの設定を頼んでください。",
+  "Doodle with your own computer": "自分専用のコンピューターで動く Doodle",
+  "Put Doodle to work": "Doodle に仕事を任せましょう",
+  "Could not leave workspace": "ワークスペースから退出できませんでした",
+  "Leave workspace": "ワークスペースから退出",
+  "Doodle can use the file but won't see the picture.":
+    "Doodle はファイルを使えますが、画像は見えません。",
+  "Doodle couldn't finish its reply. Technical details includes the reported error.":
+    "Doodle は返信を完了できませんでした。技術的な詳細に報告されたエラーがあります。",
+  "Doodle couldn't reply because its provider's daily limit was reached.":
+    "プロバイダーの1日の上限に達したため、Doodle は返信できませんでした。",
+  "Doodle couldn't reply because its provider's monthly limit was reached.":
+    "プロバイダーの月間上限に達したため、Doodle は返信できませんでした。",
+  "Doodle couldn't reply because its provider's usage limit was reached.":
+    "プロバイダーの利用上限に達したため、Doodle は返信できませんでした。",
+  "Doodle couldn't reply because its provider's weekly limit was reached.":
+    "プロバイダーの週間上限に達したため、Doodle は返信できませんでした。",
+  "The provider couldn't serve the model selected for Doodle.":
+    "プロバイダーは Doodle 用に選ばれたモデルを提供できませんでした。",
+  "The provider received too many requests to answer Doodle.":
+    "プロバイダーへのリクエストが多すぎて Doodle に応答できませんでした。",
+  "The provider refused the key Doodle used for its reply.":
+    "プロバイダーは Doodle が返信に使ったキーを拒否しました。",
+  "This removes the connection from every workspace.":
+    "この接続はすべてのワークスペースから削除されます。",
+  "Waiting for Doodle’s response.": "Doodle の応答を待っています。",
+  Workspace: "ワークスペース",
 };
 
 export const PEER_MESSAGE_FORMS = { other: "{peer}とのメッセージ{count}件" };

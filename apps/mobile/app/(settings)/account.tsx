@@ -1,6 +1,6 @@
 import { MenuView } from "@expo/ui/community/menu";
 import type { AccountSecurity, UsageSummary } from "@labradoodle/contracts";
-import { accountDisplay, displayName } from "@labradoodle/core";
+import { accountDisplay, DOODLE_NAME, displayName } from "@labradoodle/core";
 import * as Notifications from "expo-notifications";
 import type { Href } from "expo-router";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
@@ -50,6 +50,7 @@ import {
 } from "../../lib/appearance";
 import { useApprovalSettings } from "../../lib/approval-settings";
 import { replaceWithSignIn } from "../../lib/auth-routing";
+import { useDoodle } from "../../lib/doodle";
 import { dateLocaleForUi, useI18n } from "../../lib/i18n";
 import type { LiveNotificationSettings } from "../../lib/live-notifications";
 import {
@@ -100,6 +101,7 @@ export default function Account() {
   const router = useRouter();
   const { focus } = useLocalSearchParams<{ focus?: string }>();
   const [me, setMe] = useState<MobileMe | null>(null);
+  const { doodle } = useDoodle();
   const account = accountDisplay(me ?? {}, t("Your account"));
   const [nameDialogOpen, setNameDialogOpen] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
@@ -186,7 +188,7 @@ export default function Account() {
       accessibilityRole="button"
       chevron="right"
       disabled={pending}
-      // Artifacts lives on the root stack, so it closes the sheet before opening.
+      // Files, Doodle and My computer live on the root stack, so they close the sheet first.
       onPress={() =>
         isSettingsLink(href) ? router.push(href) : openFromSettingsSheet(router, href)
       }
@@ -607,12 +609,14 @@ export default function Account() {
               onPress={() => router.push("/billing")}
             />
           ) : null}
+          {doodle?.canCustomize
+            ? settingsLink({ title: DOODLE_NAME, href: "/doodle-settings" })
+            : null}
           {me ? (
             <SettingsRow
               accessibilityRole="button"
               chevron="right"
               disabled={pending}
-              // The space header holds Members too, but a single space has no header.
               onPress={() =>
                 openFromSettingsSheet(router, {
                   pathname: "/space-members",
@@ -624,11 +628,28 @@ export default function Account() {
           ) : null}
           {(
             [
-              { title: t("Artifacts"), href: "/artifacts" },
+              { title: t("Files"), href: "/artifacts" },
+              { title: t("My computer"), href: "/computer" },
               { title: t("Models"), href: "/models" },
               { title: t("Voice"), href: "/voice" },
             ] as const
           ).map(settingsLink)}
+          {me ? (
+            <SettingsSwitch
+              key="read-aloud"
+              label={t("Read replies aloud")}
+              value={me.readAloud}
+              disabled={pending}
+              onChange={(readAloud) => {
+                setMe((current) => (current ? { ...current, readAloud } : current));
+                void rpc("preferences/update", { readAloud })
+                  .then(setMe)
+                  .catch(() =>
+                    setMe((current) => (current ? { ...current, readAloud: !readAloud } : current)),
+                  );
+              }}
+            />
+          ) : null}
           <ApprovalModeRow key="approvals" approvals={approvals} disabled={pending} />
           {approvals.ruleCount ? (
             <ApprovalRulesRow

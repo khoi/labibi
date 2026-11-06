@@ -51,7 +51,7 @@ export function McpAppCard({ block, target }: { block: AppBlock; target: MobileA
   const tapStart = useRef<ReturnType<typeof pageTapStart>>(null);
   const tappedAt = useRef<number | null>(null);
   const answer = useRef<((message: object) => void) | null>(null);
-  const threadKey = "botId" in target ? target.botId : target.groupId;
+  const threadKey = target.threadId;
 
   useEffect(() => {
     let active = true;

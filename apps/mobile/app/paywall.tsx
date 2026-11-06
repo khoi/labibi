@@ -24,7 +24,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAccountDeletion } from "../components/account-deletion";
-import { BotAvatar } from "../components/bot-avatar";
+import { DoodleAvatar } from "../components/doodle-avatar";
 import { GlassIconButton } from "../components/glass-icon-button";
 import { NativeActionButton } from "../components/native-action-button";
 import { NativeSegmentedControl } from "../components/native-segmented-control";
@@ -51,15 +51,6 @@ type Amount = (typeof MODEL_CREDIT_AMOUNTS)[number];
 type SymbolName = ComponentProps<typeof NativeSymbol>["android"];
 
 const TERMS_URL = "https://labradoodle.com/terms/";
-
-// Bots carry the app's only colour, so the paywall's colour is a small crew of them.
-const CREW = [
-  { color: botColors[4], shape: 1, size: 40 },
-  { color: botColors[0], shape: 3, size: 52 },
-  { color: botColors[1], shape: 0, size: 64 },
-  { color: botColors[3], shape: 2, size: 52 },
-  { color: botColors[6], shape: 4, size: 40 },
-];
 
 /**
  * The plan choice. Shown over the app until the organization can run bots, and from Billing
@@ -282,7 +273,7 @@ export default function Paywall() {
   const creditPrice = `$${amount / 100}`;
   const features: { label: string; ios: string; android: SymbolName; color: string }[] = [
     {
-      label: t("Bots with their own computer"),
+      label: t("Doodle with your own computer"),
       ios: "desktopcomputer",
       android: "desktop-outline",
       color: botColors[2],
@@ -336,21 +327,10 @@ export default function Paywall() {
             importantForAccessibility="no-hide-descendants"
             style={styles.crew}
           >
-            {CREW.map((bot, index) => (
-              <View
-                key={bot.color}
-                style={[styles.crewBot, { zIndex: index === 2 ? 2 : index % 2 }]}
-              >
-                <BotAvatar
-                  color={`${bot.color}::shape_${bot.shape}`}
-                  size={bot.size}
-                  motion={index === 2 ? "live" : "static"}
-                />
-              </View>
-            ))}
+            <DoodleAvatar size={64} motion="live" />
           </View>
           <Text accessibilityRole="header" style={[styles.title, { color: tokens.foreground }]}>
-            {t("Put your bots to work")}
+            {t("Put Doodle to work")}
           </Text>
         </View>
         <View style={styles.features}>
@@ -666,7 +646,6 @@ const styles = StyleSheet.create({
   features: { gap: 14 },
   feature: { flexDirection: "row", alignItems: "center", gap: 12 },
   crew: { flexDirection: "row", alignItems: "flex-end", justifyContent: "center", height: 68 },
-  crewBot: { marginHorizontal: -5 },
   featureIcon: {
     width: 34,
     height: 34,

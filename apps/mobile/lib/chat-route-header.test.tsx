@@ -55,18 +55,6 @@ it("leaves a bot chat's right side empty when the account cannot invite", () => 
   expect(options.headerRight).toBeUndefined();
 });
 
-it("declares a group chat's settings button, which opens the group's settings", () => {
-  const options = header({ groupId: "group-1" });
-  expect(options.headerTitle).toBeTypeOf("function");
-  const [item] = rightItems(options);
-  expect(item).toMatchObject({ type: "button", icon: { type: "sfSymbol", name: "gearshape" } });
-  (item as { onPress: () => void }).onPress();
-  expect(push).toHaveBeenCalledWith({
-    pathname: "/group-settings",
-    params: { groupId: "group-1" },
-  });
-});
-
 it("beside the chat list, declares the sidebar button in place of the back button", () => {
   const options = header({ botId: "bot-1" }, { split: true, inboxHidden: false });
   expect(options.headerBackVisible).toBe(false);

@@ -1,12 +1,7 @@
-export type NotificationRoute =
-  | {
-      pathname: "/thread";
-      params: { botId: string; threadId?: string; spaceId?: string; name?: string };
-    }
-  | {
-      pathname: "/group-thread";
-      params: { groupId: string; threadId?: string; spaceId?: string; name?: string };
-    };
+export type NotificationRoute = {
+  pathname: "/thread";
+  params: { threadId: string; spaceId?: string };
+};
 
 export type ThreadSpaceRequest =
   | { action: "show" }
@@ -14,8 +9,8 @@ export type ThreadSpaceRequest =
   | { action: "unavailable" };
 
 export function threadRouteId(name: string, params: Record<string, unknown>): string | undefined {
-  const ownerId = params.groupId ?? params.botId;
-  return typeof ownerId === "string" && ownerId ? JSON.stringify([name, ownerId]) : undefined;
+  const { threadId } = params;
+  return typeof threadId === "string" && threadId ? JSON.stringify([name, threadId]) : undefined;
 }
 
 function singleRouteParam(value: string | string[] | undefined): string | undefined {
@@ -34,47 +29,14 @@ function notificationField(data: Record<string, unknown>, key: string): string |
   return typeof value === "string" ? singleRouteParam(value) : undefined;
 }
 
-/**
- * A bot and a group each have one thread. groupId wins when both are present
- * so a group run does not open that bot's direct chat.
- */
+/** A push or link for a chat opens that chat, in the workspace it belongs to. */
 export function notificationOpenTarget(data: unknown): NotificationRoute | null {
   if (!data || typeof data !== "object" || Array.isArray(data)) return null;
   const record = data as Record<string, unknown>;
   const threadId = notificationField(record, "threadId");
+  if (!threadId) return null;
   const spaceId = notificationField(record, "spaceId");
-  const name = notificationField(record, "name");
-  const shared = {
-    ...(threadId ? { threadId } : {}),
-    ...(spaceId ? { spaceId } : {}),
-    ...(name ? { name } : {}),
-  };
-  const groupId = notificationField(record, "groupId");
-  if (groupId) return { pathname: "/group-thread", params: { groupId, ...shared } };
-  const botId = notificationField(record, "botId");
-  if (botId) return { pathname: "/thread", params: { botId, ...shared } };
-  return null;
-}
-
-export function notificationOpenTargetFromLink(url: string): NotificationRoute | null {
-  let parsed: URL;
-  try {
-    parsed = new URL(url);
-  } catch {
-    return null;
-  }
-  if (parsed.protocol !== "rakazo:") return null;
-  const screen = (parsed.hostname || parsed.pathname.replace(/^\//, "")).replace(/\/$/, "");
-  const data: Record<string, string> = {};
-  for (const [key, value] of parsed.searchParams) data[key] = value;
-  if (screen === "thread") {
-    delete data.groupId;
-  } else if (screen === "group-thread") {
-    delete data.botId;
-  } else {
-    return null;
-  }
-  return notificationOpenTarget(data);
+  return { pathname: "/thread", params: { threadId, ...(spaceId ? { spaceId } : {}) } };
 }
 
 export function notificationResponseRoute(

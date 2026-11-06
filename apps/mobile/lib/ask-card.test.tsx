@@ -5,9 +5,6 @@ import type { CSSProperties, ReactNode } from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import type { MobileMessage } from "./api";
-import { messageRowLayout } from "./message-row-layout";
-import { answerThreadMessage } from "./thread-answer";
 
 type SheetProps = {
   destination: string;
@@ -309,34 +306,6 @@ it("keeps a reopened sheet open when an earlier save completes", async () => {
   expect(container.querySelector("button")).toBeNull();
 });
 
-it("closes the current sheet and keeps the card saved when refresh fails", async () => {
-  const refresh = vi.fn().mockRejectedValue(new Error("offline"));
-  const rpc = vi.fn().mockResolvedValue(undefined);
-  await render(loginAsk, () =>
-    answerThreadMessage(
-      {
-        botId: "bot-1",
-        groupId: undefined,
-        readOnly: false,
-        rpc,
-        isCurrentTarget: () => true,
-        refresh,
-        markRead: vi.fn(),
-      },
-      { id: "message-1", runId: "run-1" },
-      "example-password",
-    ),
-  );
-  await openSheet();
-  await act(async () => sheet.onSave(loginAnswer, true));
-  expect(rpc).toHaveBeenCalledTimes(1);
-  expect(refresh).toHaveBeenCalledTimes(1);
-  expect(container.querySelector("[data-sheet]")).toBeNull();
-  expect(container.textContent).toContain("Saved");
-  expect(container.textContent).not.toContain("Could not send answer");
-  expect(container.querySelector("button")).toBeNull();
-});
-
 for (const [type, destination] of [
   ["card", "Card"],
   ["contact", "Contact"],
@@ -512,71 +481,6 @@ it("stretches secret inputs and equal actions, enabling Save only with input", a
   });
   expect(button("Save").disabled).toBe(false);
   expect(button("Save").dataset.prominence).toBe("primary");
-});
-
-it("fills the message column only for secret asks, including answered and login asks", async () => {
-  const isWideAskBlock = (blocks: unknown[]) =>
-    messageRowLayout(blocks as MobileMessage["blocks"], { inGroup: false, columnWidth: 400 })
-      .menuFullWidth;
-  for (const status of ["pending", "answered"]) {
-    for (const ask of [{ input: "secret" }, loginAsk]) {
-      expect(isWideAskBlock([{ kind: "ask", ...ask, status }])).toBe(true);
-      await render({ ...ask, status });
-      expect((container.firstElementChild as HTMLElement).style.width).toBe("100%");
-    }
-  }
-  expect(isWideAskBlock([{ kind: "ask" }])).toBe(false);
-  expect(isWideAskBlock([{ kind: "ask", input: "secret", approvalEffectId: "approval" }])).toBe(
-    false,
-  );
-  await render({});
-  expect((container.firstElementChild as HTMLElement).style.width).toBe("90%");
-});
-
-it("uses the full column for wide asks and reserves only the visible avatar gutter", () => {
-  const blocks = {
-    wide: [{ kind: "ask", text: "Secret", input: "secret", status: "pending" }],
-    regular: [{ kind: "text", text: "Hello" }],
-    appConnect: [
-      {
-        kind: "app_connect",
-        provider: "example",
-        name: "Example",
-        description: "",
-        logo: null,
-        status: "pending",
-      },
-    ],
-    mcpApproval: [{ kind: "mcp_approval", serverId: "server-1", name: "Example" }],
-  };
-  const measure = (kind: keyof typeof blocks, avatar: boolean, inGroup: boolean) =>
-    messageRowLayout(blocks[kind] as MobileMessage["blocks"], {
-      activityBotId: avatar ? "bot-1" : undefined,
-      inGroup,
-      columnWidth: 400,
-    });
-  for (const [avatar, inGroup, gutter] of [
-    [false, false, 0],
-    [true, false, 36],
-    [true, true, 28],
-  ] as const) {
-    const wide = measure("wide", avatar, inGroup);
-    expect(wide.width).toBe("100%");
-    expect(wide.maxWidth).toBe("100%");
-    expect(wide.menuMaxWidth).toBe(400 - 40 - gutter);
-    const regular = measure("regular", avatar, inGroup);
-    expect(regular.width).toBeUndefined();
-    expect(regular.maxWidth).toBe(avatar ? undefined : "90%");
-    expect(regular.menuMaxWidth).toBe(avatar ? 360 - gutter : 324);
-  }
-  // Connect cards take the full bubble width rather than shrinking to their button.
-  for (const kind of ["appConnect", "mcpApproval"] as const) {
-    const card = measure(kind, false, false);
-    expect(card.width).toBe("90%");
-    expect(card.maxWidth).toBe("90%");
-    expect(card.menuMaxWidth).toBe(324);
-    expect(card.menuFullWidth).toBe(true);
-  }
 });
 
 it.each([

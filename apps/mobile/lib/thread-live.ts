@@ -20,8 +20,7 @@ import { errorText } from "./user-error";
  * another chat or session starts fresh. Returns whether the stream is connected right now.
  */
 export function useThreadLiveSubscription({
-  botId,
-  groupId,
+  threadId,
   foreground,
   readOnly,
   sessionEpoch,
@@ -37,11 +36,10 @@ export function useThreadLiveSubscription({
   refresh,
   commitSnap,
   setError,
-  refreshMentionBots,
+  onChatChanged,
   markReadIfVisible,
 }: {
-  botId?: string;
-  groupId?: string;
+  threadId?: string;
   foreground: boolean;
   readOnly: boolean;
   sessionEpoch: number;
@@ -58,7 +56,8 @@ export function useThreadLiveSubscription({
   refresh: () => Promise<MobileSnapshot | undefined>;
   commitSnap: (next: MobileSnapshot | null) => void;
   setError: (error: string | null) => void;
-  refreshMentionBots: () => Promise<unknown>;
+  /** Someone joined, left, renamed the chat or turned Doodle on or off. */
+  onChatChanged: () => void;
   markReadIfVisible: () => void;
 }): RefObject<boolean> {
   const liveSubscribed = useRef(false);
@@ -67,11 +66,11 @@ export function useThreadLiveSubscription({
 
   useEffect(() => {
     liveCursor.current = null;
-  }, [botId, groupId, sessionEpoch]);
+  }, [threadId, sessionEpoch]);
 
   useEffect(() => {
     // Resume the same chat from its applied cursor so pinned and expanded windows catch up.
-    if ((!botId && !groupId) || !foreground) return;
+    if (!threadId || !foreground) return;
     // Invalidate pending history loads while retaining pages already loaded for this chat.
     historyEpoch.current += 1;
     const abort = new AbortController();
@@ -95,12 +94,10 @@ export function useThreadLiveSubscription({
         liveCursor.current !== null
           ? null
           : messageId
-            ? await rpc("threads/get", groupId ? { groupId } : { botId: botId! }).catch(
-                (err: unknown) => {
-                  setError(errorText(err));
-                  return null;
-                },
-              )
+            ? await rpc("threads/get", { threadId }).catch((err: unknown) => {
+                setError(errorText(err));
+                return null;
+              })
             : await refresh().catch((err: unknown) => {
                 setError(errorText(err));
                 return null;
@@ -114,7 +111,7 @@ export function useThreadLiveSubscription({
         try {
           liveSubscribed.current = true;
           await subscribeThread(
-            groupId ? { groupId } : { botId: botId! },
+            threadId,
             cursor,
             (event) => {
               if (abort.signal.aborted || sessionGeneration !== currentSessionGeneration()) return;
@@ -131,15 +128,12 @@ export function useThreadLiveSubscription({
               const reduced = applyMobileThreadEvent(previous, event);
               if (reduced !== previous) commitSnap(reduced);
               liveCursor.current = cursor;
-              if (event.type === "bot.updated") {
-                void refreshMentionBots();
-              }
-              if (event.type === "thread.message.created" && event.payload?.role === "bot") {
+              if (event.type === "thread.message.created" && event.payload?.role !== "user") {
                 readVisibleTarget.current = null;
                 markReadIfVisible();
               }
-              if (isRunTerminalEvent(event)) {
-                void refreshMentionBots();
+              if (event.type === "thread.message.created" && event.payload?.role === "system") {
+                onChatChanged();
               }
               if (isRunTerminalEvent(event) || event.type === "run.waiting_input") {
                 // Reconcile run ownership for ask cards first seen through live events.
@@ -179,7 +173,7 @@ export function useThreadLiveSubscription({
       snapshotRefresh.dispose();
       abort.abort();
     };
-  }, [botId, groupId, foreground, readOnly, markReadIfVisible, refreshMentionBots, sessionEpoch]);
+  }, [threadId, foreground, readOnly, markReadIfVisible, onChatChanged, sessionEpoch]);
 
   return liveSubscribed;
 }

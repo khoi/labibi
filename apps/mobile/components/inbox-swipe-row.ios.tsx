@@ -32,10 +32,9 @@ let lastRowHeight = 0;
 export function InboxSwipeRow({
   rowKey,
   unread,
-  notifyOnFinish,
+  menuActions,
   preview,
   onAction,
-  onNotifyChange,
   children,
 }: InboxSwipeRowProps) {
   const { t } = useI18n();
@@ -52,7 +51,7 @@ export function InboxSwipeRow({
         key={action}
         label={t(label)}
         systemImage={systemImage}
-        role={!swipe && action === "delete" ? "destructive" : undefined}
+        role={!swipe && (action === "delete" || action === "leave") ? "destructive" : undefined}
         modifiers={swipe ? [labelStyle("iconOnly"), tint(PlatformColor("systemBlue"))] : undefined}
         onPress={() => onAction(action)}
       />
@@ -98,15 +97,7 @@ export function InboxSwipeRow({
                 <InboxChatPreview {...preview} />
               </ContextMenu.Preview>
               <ContextMenu.Items>
-                {button(readAction, false)}
-                {notifyOnFinish === undefined ? null : (
-                  <Button
-                    label={notifyOnFinish ? t("Silence notifications") : t("Resume notifications")}
-                    systemImage={notifyOnFinish ? "bell.slash" : "bell"}
-                    onPress={() => onNotifyChange(!notifyOnFinish)}
-                  />
-                )}
-                {button("delete", false)}
+                {menuActions.map((action) => button(action, false))}
               </ContextMenu.Items>
             </ContextMenu>
             <SwipeActions.Actions edge="leading">{button(readAction)}</SwipeActions.Actions>

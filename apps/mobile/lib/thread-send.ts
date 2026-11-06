@@ -11,10 +11,8 @@ import type { RefObject } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert } from "react-native";
 import type { ThreadComposerHandle } from "../components/thread-composer";
-import type { MobileBot, MobileMessage, MobileSnapshot } from "./api";
+import type { MobileMessage, MobileSnapshot } from "./api";
 import { currentApiBase, loadSessionToken, rpc, selectedSpaceId } from "./api";
-import { findSwitchTarget } from "./bot-switch";
-import { chatSettingsRoute } from "./chat-settings-route";
 import { subscribeComposerOffer } from "./composer-offer";
 import { useI18n } from "./i18n";
 import { resumeLiveNotifications } from "./live-notifications";
@@ -35,41 +33,32 @@ import { errorText } from "./user-error";
  * work, ask answers and reactions, and slash actions.
  */
 export function useThreadSend({
-  botId,
-  groupId,
+  threadId,
   readOnly,
-  threadKey,
   history,
   scroll,
   feedback,
   attachments,
-  mentionBotsRef,
-  activeBotId,
-  activeGroupId,
+  activeThreadId,
   isCurrentTarget,
   refresh,
   showLatest,
   markCaughtUp,
-  openBotChat,
 }: {
-  botId?: string;
-  groupId?: string;
+  threadId?: string;
   readOnly: boolean;
-  threadKey: string | undefined;
   history: ThreadHistory;
   scroll: ThreadListScroll;
   feedback: ReturnType<typeof useThreadFeedback>;
   attachments: ReturnType<typeof useThreadAttachments>;
-  mentionBotsRef: RefObject<MobileBot[]>;
-  activeBotId: RefObject<string | undefined>;
-  activeGroupId: RefObject<string | undefined>;
-  isCurrentTarget: (botId: string | undefined, groupId: string | undefined) => boolean;
+  activeThreadId: RefObject<string | undefined>;
+  isCurrentTarget: (threadId: string | undefined) => boolean;
   refresh: () => Promise<MobileSnapshot | undefined>;
   showLatest: () => void;
   /** Clears the "New" divider: the user has caught up. */
   markCaughtUp: () => void;
-  openBotChat: (target: MobileBot) => void;
 }) {
+  const threadKey = threadId;
   const { t } = useI18n();
   const router = useRouter();
   const navigation = useNavigation();
@@ -119,8 +108,7 @@ export function useThreadSend({
 
   function runSlashAction(action: SlashActionId) {
     if (action === "chat-settings") {
-      const settings = chatSettingsRoute({ groupId, botId });
-      if (settings) router.push(settings);
+      if (threadId) router.push({ pathname: "/chat-settings", params: { threadId } });
       return;
     }
     router.push({
@@ -138,10 +126,8 @@ export function useThreadSend({
 
   async function send() {
     if (readOnly || importingShare.current) return;
-    const initialBotTarget = botId;
-    const initialGroupTarget = groupId;
-    if ((!initialBotTarget && !initialGroupTarget) || sending || preparingSend.current) return;
-    const originThreadKey = initialGroupTarget ?? initialBotTarget;
+    const originThreadKey = threadId;
+    if (!originThreadKey || sending || preparingSend.current) return;
     const submitted = composerRef.current?.snapshot();
     if (!submitted) return;
     const attachments = attachmentsForThread(pendingAttachments, originThreadKey);
@@ -151,14 +137,6 @@ export function useThreadSend({
       hasAttachments: attachments.length > 0,
     });
     if (plan.isNoOp) return;
-    const typedSwitch =
-      initialBotTarget && attachments.length === 0
-        ? findSwitchTarget(plan.trimmed, mentionBotsRef.current)
-        : undefined;
-    if (typedSwitch && typedSwitch.id !== initialBotTarget) {
-      openBotChat(typedSwitch);
-      return;
-    }
     preparingSend.current = true;
     try {
       await prepareUnsentSends();
@@ -169,34 +147,24 @@ export function useThreadSend({
       preparingSend.current = false;
     }
     if (
-      !isCurrentTarget(initialBotTarget, initialGroupTarget) ||
+      !isCurrentTarget(originThreadKey) ||
       JSON.stringify(submitted) !== JSON.stringify(composerRef.current?.snapshot())
     )
       return;
-    const reroutedToGroup = Boolean(
-      plan.rerouteGroupId && plan.rerouteGroupId !== initialGroupTarget,
-    );
-    const groupTarget = plan.rerouteGroupId ?? initialGroupTarget;
-    const botTarget = reroutedToGroup ? undefined : initialBotTarget;
     // As on the web: a page's reply goes to its card here, or names the page when none is loaded.
     const messages = history.snapRef.current?.messages ?? [];
-    const fromPage =
-      plan.shouldSend && !reroutedToGroup
-        ? pageReply(plan.trimmed, messages, replyPage.current, replyTarget?.id)
-        : { text: plan.trimmed };
+    const fromPage = plan.shouldSend
+      ? pageReply(plan.trimmed, messages, replyPage.current, replyTarget?.id)
+      : { text: plan.trimmed };
     const pageCard = messages.find((message) => message.id === fromPage.replyToMessageId);
     let attempt: SendAttempt;
     try {
       attempt = feedback.sendAttempt({
-        originThreadKey: originThreadKey!,
+        originThreadKey,
         displayText: fromPage.text === plan.trimmed ? submitted.promptText : fromPage.text,
         replyPreview: pageCard
           ? previewMessageText(pageCard)
           : (replyQuote ?? (replyTarget ? previewMessageText(replyTarget) : null)),
-        initialBotTarget,
-        botTarget,
-        groupTarget,
-        reroutedToGroup,
         plan: { ...plan, trimmed: fromPage.text },
         attachments,
         replyTargetId: pageCard?.id ?? replyTarget?.id,
@@ -229,7 +197,6 @@ export function useThreadSend({
   }
 
   function afterDelivered(attempt: SendAttempt) {
-    const { botTarget, groupTarget, reroutedToGroup, plan } = attempt.payload;
     const generation = currentSessionGeneration();
     const apiBase = currentApiBase();
     const spaceId = selectedSpaceId();
@@ -243,19 +210,9 @@ export function useThreadSend({
           return resumeLiveNotifications(apiBase, token, spaceId ?? "");
       })
       .catch(() => undefined);
-    if (
-      attempt.payload.originThreadKey !== (activeGroupId.current ?? activeBotId.current) ||
-      !navigation.isFocused()
-    )
+    if (attempt.payload.originThreadKey !== activeThreadId.current || !navigation.isFocused())
       return;
-    if (reroutedToGroup && groupTarget) {
-      router.push({
-        pathname: "/group-thread",
-        params: { groupId: groupTarget, name: plan.rerouteGroupName ?? t("Group") },
-      });
-      return;
-    }
-    if (isCurrentTarget(botTarget, groupTarget)) {
+    if (isCurrentTarget(attempt.payload.originThreadKey)) {
       if (history.pinnedAroundRef.current) showLatest();
       void refresh().catch(() => undefined);
     }
@@ -267,17 +224,13 @@ export function useThreadSend({
 
   async function stop() {
     if (readOnly) return;
-    const targetBotId = botId;
-    const targetGroupId = groupId;
-    if ((!targetBotId && !targetGroupId) || sending) return;
+    const target = threadId;
+    if (!target || sending) return;
     setSending(true);
     try {
-      await rpc(
-        "threads/stop",
-        targetGroupId ? { groupId: targetGroupId } : { botId: targetBotId! },
-      );
+      await rpc("threads/stop", { threadId: target });
     } catch (err) {
-      if (isCurrentTarget(targetBotId, targetGroupId)) {
+      if (isCurrentTarget(target)) {
         Alert.alert(t("Failed to stop work"), errorText(err, t("Try again.")));
       }
       setSending(false);
@@ -286,7 +239,7 @@ export function useThreadSend({
     try {
       await refresh();
     } catch (err) {
-      if (isCurrentTarget(targetBotId, targetGroupId)) {
+      if (isCurrentTarget(target)) {
         const detail = errorText(err, t("Failed to refresh"));
         setError(t("Work stopped, but the thread could not refresh: {detail}", { detail }));
       }
@@ -304,35 +257,34 @@ export function useThreadSend({
       remember?: false,
     ) =>
       answerThreadMessage(
-        { botId, groupId, readOnly, rpc, isCurrentTarget, refresh, markRead: markCaughtUp },
+        { threadId, readOnly, rpc, isCurrentTarget, refresh, markRead: markCaughtUp },
         message,
         answer,
         fields,
         dismiss,
         remember,
       ),
-    [botId, groupId, readOnly],
+    [threadId, readOnly],
   );
 
   async function react(message: MobileMessage, reaction: MessageReaction) {
     if (readOnly) return false;
-    const targetBotId = botId;
-    const targetGroupId = groupId;
-    if (!targetBotId && !targetGroupId) return false;
+    const target = threadId;
+    if (!target) return false;
     try {
       const result = await rpc("threads/react", {
-        ...(targetGroupId ? { groupId: targetGroupId } : { botId: targetBotId! }),
+        threadId: target,
         messageId: message.id,
         reaction,
         clientNonce: newClientId(),
       });
-      if (result.runIds?.length && isCurrentTarget(targetBotId, targetGroupId)) {
+      if (result.runId && isCurrentTarget(target)) {
         // The reaction is saved; a failed refresh is caught up by live events.
         await refresh().catch(() => {});
       }
       return true;
     } catch (err) {
-      if (!isCurrentTarget(targetBotId, targetGroupId)) return false;
+      if (!isCurrentTarget(target)) return false;
       Alert.alert(t("Could not update reaction"), errorText(err, t("Try again.")));
       return false;
     }

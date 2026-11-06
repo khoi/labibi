@@ -2,15 +2,6 @@ import { dateLocaleForUi } from "./i18n";
 
 const DAY_MS = 86_400_000;
 
-export function filterBots<T extends { name: string; preview: string }>(
-  bots: T[],
-  query: string,
-): T[] {
-  const needle = query.trim().toLowerCase();
-  if (!needle) return bots;
-  return bots.filter((bot) => `${bot.name} ${bot.preview}`.toLowerCase().includes(needle));
-}
-
 export function formatThreadTime(iso: string, now = new Date()) {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";

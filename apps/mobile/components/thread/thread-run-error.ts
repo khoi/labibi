@@ -7,7 +7,7 @@ import { runErrorActionLabel } from "../../lib/run-error-presentation";
 import { useRunError } from "../run-error-sheet";
 
 /** The chat's failed run: its error, the recovery action, and whether its details are open. */
-export function useThreadRunError(run: MobileSnapshot["run"] | undefined, botId?: string) {
+export function useThreadRunError(run: MobileSnapshot["run"] | undefined, canCustomize: boolean) {
   const { t } = useI18n();
   const router = useRouter();
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -16,19 +16,15 @@ export function useThreadRunError(run: MobileSnapshot["run"] | undefined, botId?
   const failedRunId = runError ? run?.id : null;
   useEffect(() => setDetailsOpen(false), [failedRunId]);
   const label = normalizedRunError ? runErrorActionLabel(t, normalizedRunError) : null;
-  const runBotId = run?.botId ?? botId;
   const runErrorAction = label
     ? {
         label,
-        // Without a bot to change, the model settings pick the default model instead.
+        // Only the workspace's owner changes Doodle's model; everyone else picks their default.
         onPress:
-          normalizedRunError?.recovery === "model" && runBotId
+          normalizedRunError?.recovery === "model" && canCustomize
             ? () => {
                 setDetailsOpen(false);
-                router.push({
-                  pathname: "/bot-settings",
-                  params: { botId: runBotId, focus: "model" },
-                });
+                router.push({ pathname: "/doodle-settings", params: { focus: "model" } });
               }
             : () => {
                 setDetailsOpen(false);

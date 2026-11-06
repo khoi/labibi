@@ -13,33 +13,32 @@ type PagedPages =
   | { status: "ready"; items: PageSummary[]; nextCursor: string | null };
 
 /**
- * A bot's or group's pages, five at a time, read again each time the list comes back on screen
+ * A chat's pages, five at a time, read again each time the list comes back on screen
  * (after Share, or a page a routine changed), as many as were shown, as the web list does.
  * One "Show more" runs at a time, and a page of results that started before a reload (a pin,
  * rename or delete) is dropped.
  */
-export function usePagedPages(owner: { botId?: string; groupId?: string }) {
-  const { botId, groupId } = owner;
+export function usePagedPages(threadId: string | undefined) {
   const [listed, setListed] = useState<PagedPages>({ status: "loading" });
   const generation = useRef(0);
   const loadingMore = useRef(false);
-  // How many of whose pages are shown: another bot or group starts again from five.
+  // How many of whose pages are shown: another chat starts again from five.
   const shown = useRef({ owner: "", count: 0 });
   useEffect(() => {
     if (listed.status === "ready") shown.current.count = listed.items.length;
   }, [listed]);
   const input = useCallback(
     (cursor?: string, limit = PAGE_SIZE) => ({
-      ...(botId ? { botId } : { groupId }),
+      ...(threadId ? { threadId } : {}),
       limit,
       ...(cursor ? { cursor } : {}),
     }),
-    [botId, groupId],
+    [threadId],
   );
   const load = useCallback(() => {
     const started = ++generation.current;
     loadingMore.current = false;
-    const owner = botId ? `bot:${botId}` : `group:${groupId}`;
+    const owner = threadId ?? "";
     if (shown.current.owner !== owner) shown.current = { owner, count: 0 };
     const limit = Math.min(Math.max(shown.current.count, PAGE_SIZE), PAGE_LIST_MAX_LIMIT);
     void rpc("pages/list", input(undefined, limit)).then(
@@ -50,7 +49,7 @@ export function usePagedPages(owner: { botId?: string; groupId?: string }) {
         if (started === generation.current) setListed({ status: "error", error });
       },
     );
-  }, [input, botId, groupId]);
+  }, [input, threadId]);
   useFocusEffect(load);
   const showMore = useCallback(async () => {
     if (listed.status !== "ready" || !listed.nextCursor || loadingMore.current) return;

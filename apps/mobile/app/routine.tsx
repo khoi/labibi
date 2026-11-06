@@ -28,10 +28,10 @@ import {
   routineScheduleLocked,
 } from "../lib/routine-draft";
 import {
-  removeBotRoutine,
-  saveBotRoutine,
+  removeChatRoutine,
+  saveChatRoutine,
   setRoutineActive,
-  useBotRoutines,
+  useChatRoutines,
 } from "../lib/routine-store";
 import { useSideInsets } from "../lib/side-insets";
 import { errorText } from "../lib/user-error";
@@ -40,9 +40,8 @@ export default function RoutineDetail() {
   const sideInsets = useSideInsets();
   const tokens = useMobileTokens();
   const { t } = useI18n();
-  const { botId, botName, routineId, origin } = useLocalSearchParams<{
-    botId?: string;
-    botName?: string;
+  const { threadId, routineId, origin } = useLocalSearchParams<{
+    threadId?: string;
     routineId?: string;
     origin?: string;
   }>();
@@ -54,11 +53,11 @@ export default function RoutineDetail() {
     error: loadError,
     readSinceShown,
     failedSinceShown,
-  } = useBotRoutines(botId ?? "");
+  } = useChatRoutines(threadId ?? "");
   const [editing, setEditing] = useState(false);
-  const creating = Boolean(botId) && !routineId;
+  const creating = Boolean(threadId) && !routineId;
   const routine = routines?.find((item) => item.id === routineId) ?? null;
-  const error = !botId
+  const error = !threadId
     ? t("Routine link is incomplete")
     : creating || routine
       ? null
@@ -82,9 +81,9 @@ export default function RoutineDetail() {
       {loading || error ? <Stack.Screen options={{ title: t("Routine") }} /> : null}
       {loading ? <ActivityIndicator color={tokens.mutedForeground} /> : null}
       {error ? <Text style={{ color: tokens.destructive, fontSize: 15 }}>{error}</Text> : null}
-      {botId && editable && (creating || editing) ? (
+      {threadId && editable && (creating || editing) ? (
         <RoutineEditor
-          botId={botId}
+          threadId={threadId}
           routine={routine}
           onCancel={() => setEditing(false)}
           onSaved={(saved) => {
@@ -93,10 +92,9 @@ export default function RoutineDetail() {
           }}
           onDeleted={() => router.back()}
         />
-      ) : botId && routine ? (
+      ) : threadId && routine ? (
         <RoutineView
-          botId={botId}
-          botName={botName}
+          threadId={threadId}
           routine={routine}
           editable={editable}
           showConversation={origin !== "profile"}
@@ -109,15 +107,13 @@ export default function RoutineDetail() {
 
 /** What the routine does and when, with the switch first; changing it is behind Edit. */
 function RoutineView({
-  botId,
-  botName,
+  threadId,
   routine,
   editable,
   showConversation,
   onEdit,
 }: {
-  botId: string;
-  botName: string | undefined;
+  threadId: string;
   routine: Routine;
   editable: boolean;
   showConversation: boolean;
@@ -200,7 +196,7 @@ function RoutineView({
           // Only the routine's creator can pause or resume it.
           disabled={!editable}
           onChange={(active) =>
-            setRoutineActive(botId, routine, active, (cause) =>
+            setRoutineActive(threadId, routine, active, (cause) =>
               Alert.alert(t("Could not update routine"), errorText(cause, t("Try again."))),
             )
           }
@@ -237,7 +233,7 @@ function RoutineView({
           title={t("Run history")}
           chevron="right"
           onPress={() =>
-            router.push({ pathname: "/routine-runs", params: { routineId: routine.id, botName } })
+            router.push({ pathname: "/routine-runs", params: { routineId: routine.id, threadId } })
           }
         />
         {showConversation ? (
@@ -249,7 +245,7 @@ function RoutineView({
             onPress={() =>
               router.push({
                 pathname: "/thread",
-                params: { botId, name: botName ?? t("Bot") },
+                params: { threadId },
               })
             }
           />
@@ -272,13 +268,13 @@ function RoutineView({
 
 /** The form for a new routine, or for one opened with Edit. Save and Cancel live in the header. */
 function RoutineEditor({
-  botId,
+  threadId,
   routine,
   onCancel,
   onSaved,
   onDeleted,
 }: {
-  botId: string;
+  threadId: string;
   routine: Routine | null;
   onCancel: () => void;
   onSaved: (routine: Routine) => void;
@@ -315,7 +311,7 @@ function RoutineEditor({
   async function save() {
     if (busy.current) return;
     const timezone = base?.timezone ?? deviceTimeZone() ?? "UTC";
-    const request = routineSaveRequest(draft, base, botId, timezone);
+    const request = routineSaveRequest(draft, base, threadId, timezone);
     if ("error" in request) {
       setSaveError(
         request.error === "name"
@@ -334,7 +330,7 @@ function RoutineEditor({
     setSaving(true);
     setSaveError(null);
     try {
-      onSaved(await saveBotRoutine(botId, request));
+      onSaved(await saveChatRoutine(threadId, request));
     } catch (cause) {
       setSaveError(errorText(cause, t("Could not save routine")));
     } finally {
@@ -356,7 +352,7 @@ function RoutineEditor({
           style: "destructive",
           onPress: () => {
             busy.current = true;
-            void removeBotRoutine(botId, target.id)
+            void removeChatRoutine(threadId, target.id)
               .then(onDeleted)
               .catch((cause) =>
                 Alert.alert(t("Could not delete routine"), errorText(cause, t("Try again."))),

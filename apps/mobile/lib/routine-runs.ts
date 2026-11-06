@@ -44,19 +44,7 @@ export function useRoutineRuns(routineId: string) {
 }
 
 /** Where a run's reply lives, opened at that message; null when it finished silently. */
-export function routineRunDestination(run: RoutineRun, botName: string | undefined) {
-  if (!run.messageId) return null;
-  return run.groupId
-    ? {
-        pathname: "/group-thread" as const,
-        params: { groupId: run.groupId, messageId: run.messageId },
-      }
-    : {
-        pathname: "/thread" as const,
-        params: {
-          botId: run.botId,
-          messageId: run.messageId,
-          ...(botName ? { name: botName } : {}),
-        },
-      };
+export function routineRunDestination(run: RoutineRun, threadId: string | undefined) {
+  if (!run.messageId || !threadId) return null;
+  return { pathname: "/thread" as const, params: { threadId, messageId: run.messageId } };
 }

@@ -1,13 +1,6 @@
 import { displayIdentityResult, identitySource } from "@labradoodle/core";
 import { Directory, File, Paths } from "expo-file-system";
-import type {
-  MobileBot,
-  MobileGroup,
-  MobileMe,
-  MobileSnapshot,
-  MobileSpace,
-  MobileSpaceNavigation,
-} from "./api";
+import type { MobileChat, MobileMe, MobileSnapshot, MobileWorkspace } from "./api";
 import { currentApiBase, selectedSpaceId } from "./api";
 import { artifactCacheSession } from "./artifact-cache-session";
 import { onConversationCleared } from "./conversation-cleared";
@@ -24,24 +17,19 @@ import {
 export type SavedChatsScope = IntegrationsCacheScope & { namespace: string };
 
 export type SavedInbox = {
-  bots: MobileBot[];
-  groups: MobileGroup[];
-  spaces: MobileSpace[];
+  chats: MobileChat[];
+  workspaces: MobileWorkspace[];
   me: Pick<MobileMe, "userId" | "spaceId" | "name">;
 };
 
 export const SAVED_CHAT_MESSAGES = 100;
 export const SAVED_CHATS = 40;
 export const SAVED_INBOXES = 10;
-const LEGACY_ROOT = "saved-chats-v1";
-const ROOT = "saved-chats-v2";
+const LEGACY_ROOTS = ["saved-chats-v1", "saved-chats-v2"];
+const ROOT = "saved-chats-v3";
 export const SAVED_CHAT_MAX_BYTES = 1024 * 1024;
 export const SAVED_CHATS_MAX_BYTES = 20 * 1024 * 1024;
 const SAVED_INBOX_ROWS = 200;
-
-export function savedChatTarget(target: { botId?: string; groupId?: string }): string {
-  return target.groupId ? `group:${target.groupId}` : `bot:${target.botId}`;
-}
 
 function spaceFile(scope: SavedChatsScope, name: string): File {
   clearLegacySavedChats();
@@ -82,9 +70,8 @@ export function readSavedInbox(scope: SavedChatsScope): SavedInbox | null {
     const me = inbox?.me;
     if (
       !inbox ||
-      !isRows(inbox.bots) ||
-      !isRows(inbox.groups) ||
-      !isRows(inbox.spaces) ||
+      !isRows(inbox.chats) ||
+      !isRows(inbox.workspaces) ||
       me?.userId !== scope.userId ||
       typeof me.spaceId !== "string" ||
       typeof me.name !== "string"
@@ -98,55 +85,13 @@ export function readSavedInbox(scope: SavedChatsScope): SavedInbox | null {
 
 export function writeSavedInbox(
   scope: SavedChatsScope,
-  navigation: MobileSpaceNavigation,
+  loaded: Omit<SavedInbox, "me">,
   me: MobileMe,
 ): void {
   try {
-    navigation = identitySource(navigation);
     const inbox: SavedInbox = {
-      bots: navigation.current.bots.slice(0, SAVED_INBOX_ROWS).map(
-        ({
-          id,
-          name,
-          color,
-          preview,
-          unread,
-          spaceId,
-          status,
-          notifyOnFinish,
-          threadId,
-          updatedAt,
-        }) =>
-          ({
-            id,
-            name,
-            color,
-            preview,
-            unread,
-            spaceId,
-            status,
-            notifyOnFinish,
-            threadId,
-            updatedAt,
-          }) as MobileBot,
-      ),
-      groups: navigation.current.groups.slice(0, SAVED_INBOX_ROWS).map(
-        ({ id, name, members, preview, unread, spaceId, updatedAt }) =>
-          ({
-            id,
-            name,
-            members,
-            preview,
-            unread,
-            spaceId,
-            updatedAt,
-          }) as MobileGroup,
-      ),
-      spaces: navigation.spaces.slice(0, 40).map((space) => ({
-        ...space,
-        bots: space.bots.slice(0, SAVED_INBOX_ROWS),
-        groups: space.groups.slice(0, SAVED_INBOX_ROWS),
-      })),
+      chats: identitySource(loaded.chats).slice(0, SAVED_INBOX_ROWS),
+      workspaces: loaded.workspaces.slice(0, 40),
       me: { userId: me.userId, spaceId: me.spaceId, name: me.name },
     };
     if (!isIntegrationsScopeCurrent(scope) || me.userId !== scope.userId) return;
@@ -196,14 +141,14 @@ export async function loadSavedInbox(): Promise<SavedInbox | null> {
 
 export function saveInbox(
   verifiedLoad: IntegrationsCacheScope,
-  navigation: MobileSpaceNavigation,
+  loaded: Omit<SavedInbox, "me">,
   me: MobileMe,
 ): void {
   if (!isIntegrationsScopeCurrent(verifiedLoad) || verifiedLoad.userId !== me.userId) return;
   const { sessionGeneration, ...verified } = verifiedLoad;
   void saveVerifiedIntegrationsScope(sessionGeneration, verified);
   void withSessionNamespace(verifiedLoad).then((scope) => {
-    if (scope) writeSavedInbox(scope, navigation, me);
+    if (scope) writeSavedInbox(scope, loaded, me);
   });
 }
 
@@ -227,15 +172,15 @@ export function savedThreadSnapshot(snapshot: MobileSnapshot): MobileSnapshot {
   };
 }
 
-export function readSavedThread(scope: SavedChatsScope, target: string): MobileSnapshot | null {
+export function readSavedThread(scope: SavedChatsScope, threadId: string): MobileSnapshot | null {
   if (!isIntegrationsScopeCurrent(scope)) return null;
   try {
-    const data = readJson(spaceFile(scope, target), scopeKey(scope, target));
+    const data = readJson(spaceFile(scope, threadId), scopeKey(scope, threadId));
     const snapshot = data?.snapshot as MobileSnapshot | undefined;
     if (
       !snapshot ||
-      savedChatTarget(snapshot) !== target ||
-      typeof snapshot.threadId !== "string" ||
+      snapshot.threadId !== threadId ||
+      typeof snapshot.chat !== "object" ||
       !isRows(snapshot.messages) ||
       !snapshot.messages.every(
         (message) => typeof message.role === "string" && Array.isArray(message.blocks),
@@ -295,27 +240,27 @@ function writeSavedFile(
 
 export function writeSavedThread(
   scope: SavedChatsScope,
-  target: string,
+  threadId: string,
   snapshot: MobileSnapshot,
 ): void {
-  if (!isIntegrationsScopeCurrent(scope) || savedChatTarget(snapshot) !== target) return;
+  if (!isIntegrationsScopeCurrent(scope) || snapshot.threadId !== threadId) return;
   try {
-    writeSavedFile(scope, target, {
-      key: scopeKey(scope, target),
+    writeSavedFile(scope, threadId, {
+      key: scopeKey(scope, threadId),
       snapshot: savedThreadSnapshot(snapshot),
     });
   } catch {}
 }
 
 // A cleared chat never reopens showing its old messages, even when it was not open.
-onConversationCleared((botId) => forgetSavedThread({ botId }));
+onConversationCleared((threadId) => forgetSavedThread(threadId));
 
 /**
- * Drops one chat's saved copy in every Space and account: bot and group IDs are unique, and the
- * Space selected when the clear finishes need not be the one it was cleared in.
+ * Drops one chat's saved copy in every workspace and account: chat ids are unique, and the
+ * workspace selected when the clear finishes need not be the one it was cleared in.
  */
-function forgetSavedThread(target: { botId?: string; groupId?: string }) {
-  const name = `${encodeURIComponent(savedChatTarget(target))}.json`;
+export function forgetSavedThread(threadId: string) {
+  const name = `${encodeURIComponent(threadId)}.json`;
   const remove = (directory: Directory) => {
     for (const entry of directory.list()) {
       if (entry instanceof File) {
@@ -338,8 +283,10 @@ export function clearSavedChats(): void {
 }
 
 function clearLegacySavedChats(): void {
-  try {
-    const root = new Directory(Paths.cache, LEGACY_ROOT);
-    if (root.exists) root.delete();
-  } catch {}
+  for (const legacy of LEGACY_ROOTS) {
+    try {
+      const root = new Directory(Paths.cache, legacy);
+      if (root.exists) root.delete();
+    } catch {}
+  }
 }

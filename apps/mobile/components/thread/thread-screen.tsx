@@ -1,16 +1,14 @@
 import type { AgentSkillCatalogEntry } from "@labradoodle/contracts";
 import {
   buildComposerMentionOptions,
-  chatUserBubbleColors,
+  DOODLE_NAME,
   isRunWaitingOnUser,
   isRunWorking,
   liveActivityLine,
   liveMessageComposing,
-  memberName,
   newClientId,
   newestPageCards,
   otherAuthor,
-  displayName as safeDisplayName,
 } from "@labradoodle/core";
 import { useFocusEffect, useIsFocused, useLocalSearchParams, useRouter } from "expo-router";
 import { useHeaderHeight } from "expo-router/react-navigation";
@@ -25,13 +23,14 @@ import { mobileTokens } from "../../lib/appearance";
 import type { MobileArtifactTarget } from "../../lib/artifact-open";
 import { composerDraftScope } from "../../lib/composer-draft";
 import { cronLabels } from "../../lib/cron";
+import { useDoodle } from "../../lib/doodle";
 import { useI18n } from "../../lib/i18n";
+import { userMentionTargets } from "../../lib/message-mentions";
 import { useThemedStyles } from "../../lib/native";
 import { useChatOnScreen } from "../../lib/page-card-detail";
-import { useInboxBot } from "../../lib/search-inbox";
+import { useInboxChat } from "../../lib/search-inbox";
 import { useSplitView } from "../../lib/split-view";
 import { useIncomingShareImport, useThreadAttachments } from "../../lib/thread-attachments";
-import { useThreadBots } from "../../lib/thread-bots";
 import {
   threadColumnPadding,
   threadHeaderClearance,
@@ -47,7 +46,6 @@ import { useThreadPaging } from "../../lib/thread-paging";
 import { useThreadRead } from "../../lib/thread-read";
 import { isOwnThreadMessage, latestThreadRowKey } from "../../lib/thread-scroll";
 import { useThreadSend } from "../../lib/thread-send";
-import { threadGroupMembers } from "../../lib/thread-snapshot";
 import { useThreadSync } from "../../lib/thread-sync";
 import { useThreadTranscript } from "../../lib/thread-transcript";
 import { useAutoSpeakReply, useSpeakMessages } from "../../lib/thread-voice";
@@ -100,34 +98,20 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     [columnInsets.left, columnInsets.right],
   );
   const {
-    botId,
-    groupId,
-    name,
+    threadId: threadParam,
     messageId,
-    threadId,
     readOnly: readOnlyParam,
-  } = useLocalSearchParams<{
-    botId?: string;
-    groupId?: string;
-    name?: string;
-    messageId?: string;
-    threadId?: string;
-    readOnly?: string;
-  }>();
+  } = useLocalSearchParams<{ threadId?: string; messageId?: string; readOnly?: string }>();
   const readOnly = readOnlyParam === "1";
-  const requestedThreadId = typeof threadId === "string" && threadId ? threadId : undefined;
-  const inGroup = Boolean(groupId);
+  const threadId = typeof threadParam === "string" && threadParam ? threadParam : undefined;
   // The composer floats over the list, which scrolls underneath; this keeps the newest message
   // clear of it. A read-only chat has no composer.
   const [dockHeight, setDockHeight] = useState(0);
   const bottomInset = Math.max(dockHeight, readOnly ? insets.bottom : 0);
-  const activeBotId = useRef(botId);
-  activeBotId.current = botId;
-  const activeGroupId = useRef(groupId);
-  activeGroupId.current = groupId;
+  const activeThreadId = useRef(threadId);
+  activeThreadId.current = threadId;
   const {
     threadKey,
-    activeThreadId,
     readVisit,
     readVisibleTarget,
     readBoundary,
@@ -135,30 +119,26 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     markedUnreadMessageId,
     markUnreadFrom,
     markReadIfVisible,
-  } = useThreadRead({ botId, groupId, focused, readOnly });
+  } = useThreadRead({ threadId, focused, readOnly });
   const markCaughtUp = () => setReadBoundary({ visit: readVisit.current.visit, seq: null });
-  const artifactTarget: MobileArtifactTarget | undefined = groupId
-    ? { groupId }
-    : botId
-      ? { botId }
-      : undefined;
+  const artifactTarget: MobileArtifactTarget | undefined = threadId ? { threadId } : undefined;
   const history = useThreadSnapshot();
-  const { snap, composingBots, showingSaved } = history;
+  const { snap, composing, showingSaved } = history;
+  const { doodle: workspaceDoodle } = useDoodle();
   const [agentSkills, setAgentSkills] = useState<AgentSkillCatalogEntry[]>([]);
-  const [uploadConfig, setUploadConfig] = useState<{
+  const [me, setMe] = useState<{
     maxUploadSizeBytes?: number;
     maxAttachmentsPerMessage?: number;
+    needsModel: boolean;
+    readAloud: boolean;
   }>();
-  const [needsModel, setNeedsModel] = useState<boolean>();
   // Re-read on focus so returning from Models settings updates unsent missing-model messages.
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
       void rpc("me")
-        .then((me) => {
-          if (cancelled) return;
-          setUploadConfig(me);
-          setNeedsModel(me.needsModel);
+        .then((next) => {
+          if (!cancelled) setMe(next);
         })
         .catch(() => undefined);
       return () => {
@@ -167,28 +147,34 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     }, []),
   );
 
-  const { mentionBots, mentionBotsRef, mentionGroups, refreshMentionBots } = useThreadBots({
-    botId,
-    groupId,
-    name,
-    activeBotId,
-  });
+  // Until the chat's own snapshot arrives, the chat as the inbox last loaded it.
+  const inboxChat = useInboxChat(threadId);
+  const chat = snap?.threadId === threadId ? snap?.chat : inboxChat;
+  const others = useMemo(
+    () => (chat?.members ?? []).filter((member) => member.userId !== userId),
+    [chat?.members, userId],
+  );
+  const inGroup = others.length > 0;
+  const doodleOn = chat?.doodle ?? false;
+  const mentionTargets = useMemo(
+    () => (chat ? userMentionTargets(chat) : []),
+    [chat?.doodle, chat?.members],
+  );
   const {
     routines: mentionRoutines,
     connectors: mentionConnectors,
     onMentionRequested,
-  } = useThreadMentionCatalog(
-    JSON.stringify([userId, sessionEpoch, botId, groupId, requestedThreadId]),
-    mentionBots,
-  );
-  const draftScope = useMemo(
-    () => composerDraftScope(userId, botId, groupId),
-    [userId, botId, groupId],
-  );
-  const attachments = useThreadAttachments({ botId, groupId, readOnly, uploadConfig, draftScope });
+  } = useThreadMentionCatalog(JSON.stringify([userId, sessionEpoch, threadId]), threadId, doodleOn);
+  const draftScope = useMemo(() => composerDraftScope(userId, threadId), [userId, threadId]);
+  const attachments = useThreadAttachments({
+    threadId,
+    readOnly,
+    uploadConfig: me,
+    draftScope,
+  });
   const echoed = useMemo(
     () =>
-      snap && (snap.groupId ?? snap.botId) === threadKey
+      snap && snap.threadId === threadKey
         ? new Set(
             snap.messages.flatMap((message) =>
               message.role === "user" && message.seq !== undefined ? [message.seq] : [],
@@ -209,74 +195,46 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     () =>
       buildComposerMentionOptions({
         query: "",
-        includeEveryone: inGroup,
-        currentGroupId: groupId,
-        bots: mentionBots.map((bot) => ({
-          id: bot.id,
-          name: bot.name,
-          color: bot.color,
-        })),
-        groups: mentionGroups.map((group) => ({ id: group.id, name: group.name })),
-        routines: mentionRoutines.map((routine) => ({
-          id: routine.id,
-          name: routine.name,
-          crons: routine.crons,
-          botId: routine.botId,
-          botName: routine.botName,
-        })),
+        doodle: doodleOn,
+        people: others.map((person) => ({ id: person.userId, name: person.name })),
+        routines: doodleOn
+          ? mentionRoutines.map((routine) => ({
+              id: routine.id,
+              name: routine.name,
+              crons: routine.crons,
+            }))
+          : [],
         connectors: mentionConnectors,
         cronLabels: cronLabels(locale),
       }),
-    [groupId, inGroup, locale, mentionBots, mentionConnectors, mentionGroups, mentionRoutines],
+    [doodleOn, locale, others, mentionConnectors, mentionRoutines],
   );
-  const currentBot = botId ? mentionBots.find((bot) => bot.id === botId) : undefined;
-  // Until the chat's own roster arrives, the bot as the inbox last loaded it.
-  const inboxBot = useInboxBot(botId);
-  const titleBot = currentBot ?? inboxBot;
-  // Without a name yet (a notification can leave it out), the title shows a placeholder.
-  const titleName = currentBot?.name ?? name ?? inboxBot?.name;
-  const displayName = safeDisplayName(titleName, inGroup ? t("Group") : t("Bot"));
-  const composerPrompt = displayName ? t("Message {name}", { name: displayName }) : t("Message…");
-  const notificationThreadId = snap?.threadId ?? requestedThreadId ?? currentBot?.threadId;
-  activeThreadId.current = notificationThreadId;
-  const currentBotStatus =
-    snap && (!showingSaved || error)
-      ? snap.run?.status
-      : (titleBot?.threadStatus ?? snap?.run?.status);
-  // The group's members in its order, once the chat or its group list has loaded them; the
-  // title seats the inbox's copy until then.
-  const groupMembers = threadGroupMembers(groupId, snap, mentionGroups);
+  const title = chat ? chat.title || t("New chat") : "";
+  // Only a chat where Doodle answers everything is addressed to Doodle.
+  const composerPrompt =
+    doodleOn && !inGroup
+      ? t("Message {name}", { name: DOODLE_NAME })
+      : title
+        ? t("Message {name}", { name: title })
+        : t("Message…");
+  const doodleStatus =
+    snap && (!showingSaved || error) ? snap.run?.status : (inboxChat?.status ?? snap?.run?.status);
   // Only reply text being written replaces the footer; earlier sentences above a tool call don't.
   const hasLiveProgress = visibleMessages.some(
     (message) => message.id.startsWith("progress:") && liveMessageComposing(message.blocks),
   );
   const activityLine = liveActivityLine(snap?.messages ?? []);
-  const userBubble = useMemo(
-    () =>
-      !inGroup && currentBot ? chatUserBubbleColors(currentBot.color, currentBot.id) : undefined,
-    [inGroup, currentBot?.color, currentBot?.id],
-  );
-  const activeGroupBots = useMemo(() => {
-    if (!inGroup) return [];
-    const seen = new Set<string>();
-    const active = snap?.activeRuns ?? (snap?.run ? [snap.run] : []);
-    return active.flatMap((run) => {
-      if (!run.botId || seen.has(run.botId) || !isActiveStatus(run.status)) return [];
-      const member = snap?.members?.find((candidate) => candidate.botId === run.botId);
-      if (!member) return [];
-      seen.add(run.botId);
-      return [{ ...member, status: run.status }];
-    });
-  }, [inGroup, snap?.activeRuns, snap?.members, snap?.run]);
-  // A bot waiting on the user (an ask card, a computer takeover) can still be stopped, but its
+  const activeRuns = snap?.activeRuns ?? (snap?.run ? [snap.run] : []);
+  const working =
+    doodleOn &&
+    (activeRuns.some((run) => isActiveStatus(run.status)) || isActiveStatus(doodleStatus));
+  // Doodle waiting on someone (an ask card, a computer takeover) can still be stopped, but its
   // card is the state: no typing dots under it.
-  const workingGroupBots = activeGroupBots.filter((bot) => isRunWorking(bot.status));
-  const working = inGroup ? activeGroupBots.length > 0 : isActiveStatus(currentBotStatus);
+  const doodleWorking = doodleOn && isRunWorking(doodleStatus);
 
   const speakFinishedReplyRef = useAutoSpeakReply({
-    botId,
-    inGroup,
-    currentBot,
+    threadId,
+    readAloud: me?.readAloud ?? false,
     snap,
     showingSaved,
   });
@@ -290,8 +248,6 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
   const scroll = useThreadListScroll({
     history,
     threadKey,
-    botId,
-    groupId,
     anchor: headerClearance.anchor,
     visibleBottomInset: bottomInset,
     latestRowKey: latestThreadRowKey(
@@ -302,51 +258,37 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
   });
 
   useThreadHeader({
-    botId,
-    groupId,
-    inGroup,
+    threadId,
     readOnly,
-    displayName,
-    titleBot,
-    titleName,
-    groupMembers,
-    currentBotStatus,
-    composingBots,
+    chat,
+    viewerUserId: userId,
+    title,
+    status: doodleStatus,
+    composing,
     onCleared: history.clear,
   });
 
-  useThreadFocus({
-    botId,
-    readOnly,
-    notificationThreadId,
-    refreshMentionBots,
-    markReadIfVisible,
-    speakFinishedReplyRef,
-  });
+  useThreadFocus({ threadId, readOnly, markReadIfVisible, speakFinishedReplyRef });
 
   const { isCurrentTarget, refresh, applyMessageJump, showLatest } = useThreadSync({
     history,
     scroll,
-    botId,
-    groupId,
+    threadId,
     messageId,
     readOnly,
     foreground,
     sessionEpoch,
-    activeBotId,
-    activeGroupId,
+    activeThreadId,
     readVisibleTarget,
     setError,
     onRefreshed: feedback.refreshed,
-    refreshMentionBots,
     markReadIfVisible,
   });
 
   const paging = useThreadPaging({
     history,
     scroll,
-    botId,
-    groupId,
+    threadId,
     visibleMessages,
     anchor: headerClearance.anchor,
     setError,
@@ -354,23 +296,17 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
   });
 
   const composer = useThreadSend({
-    botId,
-    groupId,
+    threadId,
     readOnly,
-    threadKey,
     history,
     scroll,
     feedback,
     attachments,
-    mentionBotsRef,
-    activeBotId,
-    activeGroupId,
+    activeThreadId,
     isCurrentTarget,
     refresh,
     showLatest,
     markCaughtUp,
-    openBotChat: (target) =>
-      router.replace({ pathname: "/thread", params: { botId: target.id, name: target.name } }),
   });
   const { replyTarget, setReplyTarget, replyQuote, setReplyQuote, quoteTarget, setQuoteTarget } =
     composer;
@@ -381,31 +317,15 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     composerRef: composer.composerRef,
     readOnly,
     threadKey,
-    uploadConfig,
+    uploadConfig: me,
   });
 
-  const openBot = useCallback(
-    (id: string, botName: string) =>
-      router.push({ pathname: "/thread", params: { botId: id, name: botName } }),
-    [router],
-  );
+  const openComputer = useCallback(() => router.push("/computer"), [router]);
 
-  const openComputer = useCallback(
-    (id: string, botName: string) =>
-      router.push({ pathname: "/computer", params: { botId: id, name: botName } }),
-    [router],
-  );
-
-  const speak = useSpeakMessages({
-    visibleMessages,
-    botId,
-    members: snap?.members,
-    displayName,
-    mentionBots,
-  });
+  const speak = useSpeakMessages({ visibleMessages });
 
   const { runError, normalizedRunError, runErrorAction, detailsOpen, setDetailsOpen } =
-    useThreadRunError(snap?.run, botId);
+    useThreadRunError(snap?.run, workspaceDoodle?.canCustomize ?? false);
 
   // Event actions read the latest committed screen state without invalidating settled rows.
   const rowActions = useLatestRowActions({
@@ -420,22 +340,14 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     react: composer.react,
     markUnread: markUnreadFrom,
     answer: composer.answer,
-    openBot,
     openComputer,
     // A chat attachment opens the version it was sent with, not the newest.
     previewFile: (artifactId) =>
       router.push({ pathname: "/artifact", params: { artifactId, exact: "1" } }),
     previewImage: (target) =>
-      router.push({
-        pathname: "/image",
-        params: { ...target, ...(groupId ? { groupId } : { botId }) },
-      }),
+      router.push({ pathname: "/image", params: { ...target, threadId: threadId ?? "" } }),
     jump: (messageId) => {
-      void applyMessageJump({
-        botId,
-        groupId,
-        messageId,
-      }).catch(() => undefined);
+      if (threadId) void applyMessageJump({ threadId, messageId }).catch(() => undefined);
     },
     dismissChoice: transcript.dismissChoice,
     layout: scroll.layoutJumpRow,
@@ -446,45 +358,23 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     userId,
     transcript,
     rowActions,
-    botId,
-    groupId,
+    threadId,
     inGroup,
     readOnly,
-    displayName,
-    mentionBots,
-    currentBot,
-    currentBotStatus,
-    userBubble,
+    mentionTargets,
+    doodleStatus,
     columnWidth,
     readSeq: readBoundary?.visit === readVisit.current.visit ? readBoundary.seq : null,
     markedUnreadMessageId,
     highlightedMessageId: scroll.highlightedMessageId,
   });
 
-  const workingBots =
-    !inGroup && titleBot && isRunWorking(currentBotStatus) && !hasLiveProgress
-      ? [
-          {
-            id: titleBot.id,
-            name: titleBot.name,
-            color: titleBot.color,
-            status: currentBotStatus,
-          },
-        ]
-      : inGroup
-        ? workingGroupBots.map((bot) => ({
-            id: bot.botId,
-            name: bot.name,
-            color: bot.color,
-            status: bot.status,
-          }))
-        : [];
   const workingFooter = (
     <ThreadWorkingFooter
-      bots={workingBots.map((bot) => ({
-        ...bot,
-        composing: composingBots.split(",").includes(bot.id),
-      }))}
+      working={doodleWorking && !hasLiveProgress && Boolean(threadId)}
+      identity={threadId ?? ""}
+      status={doodleStatus}
+      composing={composing}
       atBottom={!scroll.state.detached}
       label={activityLine ?? t("Working…")}
     />
@@ -502,10 +392,9 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
     <FailedSendBubble
       key={attempt.clientNonce}
       attempt={attempt}
-      needsModel={needsModel}
+      needsModel={doodleOn ? me?.needsModel : false}
       onRetry={() => composer.retry(attempt)}
       onDelete={() => feedback.discard(attempt)}
-      userBubble={userBubble}
     />
   ));
 
@@ -569,7 +458,7 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
             replyAuthor={
               replyTarget?.role === "user"
                 ? (otherAuthor(replyTarget.author, userId)?.name ?? t("You"))
-                : (memberName(snap?.members, replyTarget?.botId) ?? displayName ?? t("Bot"))
+                : DOODLE_NAME
             }
             replyQuote={replyQuote}
             threadTarget={artifactTarget}

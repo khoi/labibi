@@ -132,7 +132,7 @@ export default function ThreadRoute() {
       ) : (
         <View style={{ alignItems: "center", gap: 12 }}>
           <Text style={{ color: tokens.foreground, fontSize: 16 }}>
-            {t("Could not switch spaces")}
+            {t("Could not switch workspaces")}
           </Text>
           <Pressable accessibilityRole="button" onPress={() => router.replace("/")}>
             <Text style={{ color: tokens.foreground, fontSize: 16 }}>{t("Return to inbox")}</Text>

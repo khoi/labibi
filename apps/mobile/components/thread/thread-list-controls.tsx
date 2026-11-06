@@ -1,33 +1,41 @@
+import { DOODLE_NAME } from "@labradoodle/core";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { mobileTokens } from "../../lib/appearance";
 import { useI18n } from "../../lib/i18n";
-import type { ActivityMarkBot } from "../activity-mark";
 import { ActivityMark } from "../activity-mark";
 import { ScrollToBottomButton } from "../scroll-to-bottom-button";
 
-/** The bots still working on a reply, under the newest message. */
+/** Doodle still working on a reply, under the newest message. */
 export function ThreadWorkingFooter({
-  bots,
+  working,
+  identity,
+  status,
+  composing,
   label,
   atBottom,
 }: {
-  bots: ReadonlyArray<ActivityMarkBot & { name?: string }>;
+  working: boolean;
+  identity: string;
+  status?: string;
+  composing: boolean;
   label: string;
   atBottom: boolean;
 }) {
   const { t } = useI18n();
-  if (bots.length === 0) return null;
+  if (!working) return null;
   return (
     <View
-      accessibilityLabel={
-        bots.length === 1
-          ? t("{name} is working", { name: bots[0]?.name ?? t("Agent") })
-          : t("{count} agents working", { count: bots.length })
-      }
+      accessibilityLabel={t("{name} is working", { name: DOODLE_NAME })}
       accessibilityRole="text"
       style={{ minHeight: 40, marginTop: 12, justifyContent: "center" }}
     >
-      <ActivityMark bots={bots} atBottom={atBottom} label={label} />
+      <ActivityMark
+        identity={identity}
+        status={status}
+        composing={composing}
+        atBottom={atBottom}
+        label={label}
+      />
     </View>
   );
 }

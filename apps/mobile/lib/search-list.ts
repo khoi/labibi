@@ -13,9 +13,9 @@ export function searchHitPreview(snippet: string): string {
 
 /** The snippet, after the chat it came from unless the row title already names that chat. */
 export function searchHitRowPreview(
-  hit: Pick<SearchHit, "title" | "groupName" | "botName" | "snippet">,
+  hit: Pick<SearchHit, "title" | "chatTitle" | "snippet">,
 ): string {
-  const context = hit.groupName ?? hit.botName ?? "";
+  const context = hit.chatTitle;
   const preview = searchHitPreview(hit.snippet);
   if (!context || context === hit.title) return preview;
   if (!preview) return context;

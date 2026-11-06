@@ -1,13 +1,12 @@
-import type { ComputerMode, ComputerReleaseReason } from "@labradoodle/contracts";
+import type { ComputerReleaseReason } from "@labradoodle/contracts";
 import type { ScreenPageState } from "@labradoodle/core";
 import {
   createScreenReconnect,
-  displayName,
   isRetryableError,
   screenProbeUrl,
   waitForScreenPage,
 } from "@labradoodle/core";
-import { useLocalSearchParams, useNavigation } from "expo-router";
+import { useNavigation } from "expo-router";
 import type { RefObject } from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
@@ -16,7 +15,6 @@ import {
   Modal,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   useWindowDimensions,
   View,
@@ -30,7 +28,6 @@ import {
 import { WebView } from "react-native-webview";
 import { ComputerKeyboardBar } from "../components/computer-keyboard-bar";
 import { ComputerMaintenanceActions } from "../components/computer-maintenance-actions";
-import { ComputerModePicker } from "../components/computer-mode-picker";
 import { GlassIconButton } from "../components/glass-icon-button";
 import { NativeActionButton } from "../components/native-action-button";
 import { currentApiBase, rpc } from "../lib/api";
@@ -39,7 +36,6 @@ import type { ComputerStatus } from "../lib/computer";
 import {
   COMPUTER_HEARTBEAT_MS,
   COMPUTER_LIFECYCLE_TIMEOUT_MS,
-  computerLabel,
   controlLabel,
   embeddableScreenUrl,
   fromScreenPage,
@@ -67,10 +63,12 @@ import { useFoldRegions } from "../lib/fold-regions";
 import { useI18n } from "../lib/i18n";
 import { useMobileTokens } from "../lib/native";
 import { iosAtLeast } from "../lib/native-controls";
+import { addToSearchInbox } from "../lib/search-inbox";
 import { useSideInsets } from "../lib/side-insets";
 import { stacksAtTextScale } from "../lib/text-scale";
 import { computerBootErrorDetail, errorText } from "../lib/user-error";
 
+/** The person's own computer in this workspace: its screen, taking control, and upkeep. */
 export default function Computer() {
   const sideInsets = useSideInsets();
   const { t } = useI18n();
@@ -79,8 +77,6 @@ export default function Computer() {
   const windowSize = useWindowDimensions();
   const stacked = stacksAtTextScale(windowSize.fontScale);
   const folds = useFoldRegions();
-  const { botId, name: nameParam } = useLocalSearchParams<{ botId?: string; name?: string }>();
-  const name = displayName(nameParam, t("Bot"));
   const foreground = useAppForeground();
   const [computer, setComputer] = useState<ComputerStatus | null>(null);
   const [cleaningUp, setCleaningUp] = useState(false);
@@ -88,16 +84,14 @@ export default function Computer() {
   const [screenError, setScreenError] = useState<string | null>(null);
   const [screenOriginError, setScreenOriginError] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [readyBotId, setReadyBotId] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
   const [bootingCount, setBootingCount] = useState(0);
-  const [switchingCount, setSwitchingCount] = useState(0);
   const booting = bootingCount > 0;
   const [bootFailed, setBootFailed] = useState(false);
-  const switching = switchingCount > 0;
   const [computerOpen, setComputerOpen] = useState(false);
   // The keyboard closes on the Release tap, not when the server answers.
   const [releasing, setReleasing] = useState(false);
-  const autoBooted = useRef<string | null>(null);
+  const autoBooted = useRef(false);
   const screenWebViewRef = useRef<WebView>(null);
   const keyboardGate = useRef({
     key: "",
@@ -119,10 +113,7 @@ export default function Computer() {
   const unreachableScreen =
     computer?.state === "running" && Boolean(screenUrl) && !embeddedScreenUrl;
 
-  const hasControl =
-    computer?.controlHolder === "user" &&
-    computer.controlBotId === botId &&
-    !computer.controlledByOther;
+  const hasControl = computer?.controlHolder === "user";
   // Propped open like a laptop, the desktop stays above the fold and the keys go below it.
   const tabletop = hasControl ? tabletopLayout(windowSize.width, windowSize.height, folds) : null;
   const screenVisible =
@@ -160,7 +151,7 @@ export default function Computer() {
     for (const command of commands) webView.injectJavaScript(computerKeyboardScript(command));
   }
 
-  const label = computerLabel(computer?.mode, name);
+  const label = t("My computer");
 
   useLayoutEffect(() => {
     navigation.setOptions({ title: label });
@@ -169,21 +160,18 @@ export default function Computer() {
   const refreshController = useMemo(
     () =>
       createComputerRefresh({
-        readStatus: () => rpc("computer/status", { botId: botId ?? "" }),
-        readScreen: (attempts) =>
-          readScreenUrl(() => rpc("computer/screenUrl", { botId: botId ?? "" }), {
-            attempts,
-          }),
+        readStatus: () => rpc("computer/status"),
+        readScreen: (attempts) => readScreenUrl(() => rpc("computer/screenUrl"), { attempts }),
         onStatus: (status) => {
           setComputer(status);
           // Another client may have started it since this one failed.
           if (status.state === "running") setBootFailed(false);
         },
         onScreen: setScreenUrl,
-        onReady: () => setReadyBotId(botId ?? null),
+        onReady: () => setReady(true),
         onInitialError: (err) => setError(errorText(err)),
       }),
-    [botId],
+    [],
   );
   const refresh = refreshController.refresh;
   const refreshAfterMaintenance = useCallback(async () => {
@@ -196,23 +184,21 @@ export default function Computer() {
     setScreenError(null);
     setScreenOriginError(false);
     setError(null);
-    setReadyBotId(null);
+    setReady(false);
     setBootingCount(0);
     setBootFailed(false);
-    setSwitchingCount(0);
     setComputerOpen(false);
-    autoBooted.current = null;
-    if (botId) refreshController.start();
+    autoBooted.current = false;
+    refreshController.start();
     return () => refreshController.dispose();
-  }, [botId, refreshController]);
+  }, [refreshController]);
 
   // The computer status poll and the live WebView are expensive; neither should
   // run while the app is in the background.
   useEffect(() => {
-    if (!botId) return;
     if (foreground) refreshController.resume();
     else refreshController.pause();
-  }, [botId, foreground, refreshController]);
+  }, [foreground, refreshController]);
 
   async function bootComputer({
     takeControl,
@@ -223,7 +209,7 @@ export default function Computer() {
     showProgress: boolean;
     force?: boolean;
   }) {
-    if (!botId || !refreshController.isActive()) return false;
+    if (!refreshController.isActive()) return false;
     const action = refreshController.beginAction();
     const needsBoot = force || computer?.state !== "running" || !screenUrl;
     let starting = needsBoot;
@@ -235,11 +221,9 @@ export default function Computer() {
     setBootFailed(false);
     try {
       if (needsBoot) {
-        const answered = await rpc(
-          "computer/boot",
-          { botId },
-          { timeoutMs: COMPUTER_LIFECYCLE_TIMEOUT_MS },
-        ).then(
+        const answered = await rpc("computer/boot", undefined, {
+          timeoutMs: COMPUTER_LIFECYCLE_TIMEOUT_MS,
+        }).then(
           () => true,
           (err: unknown) => {
             // The server keeps booting after the client stops waiting; the status poll takes over.
@@ -251,7 +235,7 @@ export default function Computer() {
       }
       starting = false;
       if (!action.isActive()) return false;
-      if (takeControl) await rpc("computer/takeover", { botId });
+      if (takeControl) await rpc("computer/takeover");
       if (!action.isActive()) return false;
       await action.refresh({ screenAttempts: SCREEN_URL_OPEN_ATTEMPTS });
       if (!action.isActive()) return false;
@@ -275,16 +259,16 @@ export default function Computer() {
   }
 
   useEffect(() => {
-    if (!botId || readyBotId !== botId || switching) return;
+    if (!ready) return;
     if (computer?.state === "booting" || computer?.state === "suspended") return;
-    if (autoBooted.current === botId) return;
-    autoBooted.current = botId;
+    if (autoBooted.current) return;
+    autoBooted.current = true;
     void bootComputer({
       takeControl: false,
       showProgress: computer?.state !== "running",
       force: true,
     }).catch(() => undefined);
-  }, [readyBotId, botId, computer?.state, switching]);
+  }, [ready, computer?.state]);
 
   const reloadScreen = useCallback(async () => {
     await refresh().catch(() => undefined);
@@ -302,7 +286,7 @@ export default function Computer() {
   // fresh one. useMemo ties the new budget to a committed render: a render that never
   // commits, such as a suspended transition toward another bot that is then cancelled,
   // leaves the screen on screen with its budget.
-  const screenReconnect = useMemo(() => createScreenReconnect(), [botId]);
+  const screenReconnect = useMemo(() => createScreenReconnect(), []);
   const screenReconnectTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const screenReconnectWait = useRef<AbortController | null>(null);
   const currentScreenUrl = useRef<string | null>(null);
@@ -356,7 +340,7 @@ export default function Computer() {
     screenReconnecting.current = false;
     screenReconnect.loaded();
   }, [screenReconnect]);
-  // Closing the screen, leaving the app, switching bots or a new screen URL (taking or
+  // Closing the screen, leaving the app or a new screen URL (taking or
   // releasing control) cancels a pending reconnect.
   useEffect(
     () => () => {
@@ -365,12 +349,7 @@ export default function Computer() {
       screenReconnecting.current = false;
     },
     // A renewed link for the same screen keeps the page and the pending reconnect.
-    [
-      botId,
-      computerOpen,
-      foreground,
-      embeddedScreenUrl ? screenStreamKey(embeddedScreenUrl) : null,
-    ],
+    [computerOpen, foreground, embeddedScreenUrl ? screenStreamKey(embeddedScreenUrl) : null],
   );
 
   useEffect(() => {
@@ -386,20 +365,19 @@ export default function Computer() {
   }, [computerOpen, reloadScreen]);
 
   useEffect(() => {
-    if (!botId || !foreground || computer?.state !== "running") return;
+    if (!foreground || computer?.state !== "running") return;
     // A refused heartbeat (403, 404, 426...) stops until the computer's state changes.
     const ping = () =>
-      void rpc("computer/heartbeat", { botId }).catch((error: unknown) => {
+      void rpc("computer/heartbeat").catch((error: unknown) => {
         if (!isRetryableError(error)) clearInterval(timer);
       });
     const timer = setInterval(ping, COMPUTER_HEARTBEAT_MS);
     ping();
     return () => clearInterval(timer);
-  }, [botId, computer?.state, foreground]);
+  }, [computer?.state, foreground]);
 
   /** Open the full window. Only an explicit Take control asks for the lease. */
   async function openComputer({ takeControl }: { takeControl: boolean }) {
-    if (!botId) return;
     const needsTakeover = takeControl && !hasControl;
     try {
       const opened = await bootComputer({
@@ -417,14 +395,17 @@ export default function Computer() {
 
   function dismissDiskWarning() {
     setComputer((current) => current && { ...current, diskFullPercent: undefined });
-    void rpc("computer/dismissDiskWarning", { botId: botId ?? "" }).catch(() => undefined);
+    void rpc("computer/dismissDiskWarning").catch(() => undefined);
   }
 
   async function cleanUpDisk() {
     setCleaningUp(true);
     try {
+      // Doodle does the cleanup in a new chat with only you, where it runs on this computer.
+      const chat = await rpc("threads/create", { userIds: [], doodle: true });
+      addToSearchInbox(chat);
       await rpc("threads/send", {
-        botId: botId ?? "",
+        threadId: chat.id,
         text: t(
           "Your computer's disk is nearly full. Free up space by removing build output and caches you no longer need.",
         ),
@@ -438,11 +419,11 @@ export default function Computer() {
   }
 
   async function releaseComputer(reason?: ComputerReleaseReason) {
-    if (!botId || !refreshController.isActive()) return;
+    if (!refreshController.isActive()) return;
     const action = refreshController.beginAction();
     setReleasing(true);
     try {
-      await rpc("computer/release", { botId, reason });
+      await rpc("computer/release", { reason });
       if (!action.isActive()) return;
       setComputerOpen(false);
       await action.refresh().catch(() => undefined);
@@ -453,34 +434,6 @@ export default function Computer() {
       }
     } finally {
       setReleasing(false);
-      action.finish();
-    }
-  }
-
-  async function setComputerMode(mode: ComputerMode) {
-    if (!botId || !refreshController.isActive() || mode === computer?.mode) return;
-    const action = refreshController.beginAction();
-    setSwitchingCount((count) => count + 1);
-    setError(null);
-    try {
-      if (hasControl) {
-        await rpc("computer/release", {
-          botId,
-          reason: computer?.takeoverRequested ? "skipped" : undefined,
-        });
-      }
-      if (!action.isActive()) return;
-      await rpc("bots/setComputer", { botId, mode }, { timeoutMs: COMPUTER_LIFECYCLE_TIMEOUT_MS });
-      if (!action.isActive()) return;
-      setComputer(null);
-      setScreenUrl(null);
-      autoBooted.current = null;
-      await action.refresh();
-    } catch (err) {
-      if (!action.isActive()) return;
-      setError(errorText(err, t("Could not switch computer")));
-    } finally {
-      if (action.isActive()) setSwitchingCount((count) => count - 1);
       action.finish();
     }
   }
@@ -497,7 +450,7 @@ export default function Computer() {
     screenError ??
     (unreachableScreen
       ? t("Could not load the desktop. This device cannot reach the screen URL.")
-      : previewPlaceholder(computer?.state, booting, name, computer?.mode));
+      : previewPlaceholder(computer?.state, booting));
   // Booting shows in the preview; the header and Back stay, and leaving lets the boot finish.
   const bootPending = booting || computer?.state === "booting";
   const canRetry = !bootPending && (bootFailed || computer?.state === "error");
@@ -627,7 +580,7 @@ export default function Computer() {
             ...(stacked ? { alignSelf: "stretch" } : { flex: 1 }),
           }}
         >
-          {controlLabel(computer, name, botId)}
+          {controlLabel(computer)}
         </Text>
         {hasControl ? (
           <ComputerReleaseActions
@@ -672,19 +625,8 @@ export default function Computer() {
         </View>
       ) : null}
       {computer ? (
-        <ComputerMaintenanceActions
-          botId={botId ?? ""}
-          computer={computer}
-          onChanged={refreshAfterMaintenance}
-        />
+        <ComputerMaintenanceActions computer={computer} onChanged={refreshAfterMaintenance} />
       ) : null}
-      <ComputerModePicker
-        // Restacking the row above leaves the native picker at its old measured height; remount it.
-        key={stacked ? "stacked" : "row"}
-        value={computer?.mode}
-        disabled={switching || bootPending}
-        onChange={(mode) => void setComputerMode(mode)}
-      />
 
       <Modal
         visible={computerOpen}
@@ -776,14 +718,6 @@ export default function Computer() {
                 />
               </View>
             </SafeAreaView>
-            {hasControl && computer?.shared ? (
-              <Text
-                testID="computer-shared-browser"
-                style={[styles.sharedBrowser, { color: tokens.mutedForeground }]}
-              >
-                {t("Sites you sign in to stay signed in for everyone in this space")}
-              </Text>
-            ) : null}
             <View style={{ flex: 1, backgroundColor: tokens.card }}>
               {foreground && loadedScreenUrl ? (
                 <ScreenWebView
@@ -964,7 +898,3 @@ function ScreenWebView({
     />
   );
 }
-
-const styles = StyleSheet.create({
-  sharedBrowser: { fontSize: 12, paddingHorizontal: 14, paddingBottom: 4 },
-});

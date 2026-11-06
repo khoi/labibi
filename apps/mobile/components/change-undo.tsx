@@ -9,7 +9,7 @@ import { NativeActionButton } from "./native-action-button";
 
 type AskBlock = Extract<MessageBlock, { kind: "ask" }>;
 
-/** Instructions or settings a bot changed from chat, which the user can undo. */
+/** Instructions or settings Doodle changed from chat, which its owner can undo. */
 export function isUndoableChange(block: MessageBlock): boolean {
   return (
     block.kind === "ask" && Boolean(block.instructionUpdate?.undoVersionId || block.settingsUpdate)
@@ -24,15 +24,13 @@ export function ChangeUndo({ block }: { block: AskBlock }) {
   const { instructionUpdate, settingsUpdate } = block;
   const undo = () =>
     instructionUpdate?.undoVersionId
-      ? rpc("bots/restoreInstructions", {
-          botId: instructionUpdate.botId,
+      ? rpc("doodle/restoreInstructions", {
           versionId: instructionUpdate.undoVersionId,
           expectedInstructions: instructionUpdate.after,
           undo: true,
         })
       : settingsUpdate &&
-        rpc("bots/update", {
-          botId: settingsUpdate.botId,
+        rpc("doodle/update", {
           ...settingsUpdate.before,
           expectedSettings: settingsUpdate.after,
         });

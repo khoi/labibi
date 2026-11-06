@@ -14,8 +14,8 @@ import type { PinnedThreadWindow } from "./thread-window";
 /** The chat on screen and the refs that place it on the live thread, loaded history or a pinned page. */
 export type ThreadHistory = {
   snap: MobileSnapshot | null;
-  /** Bots writing reply text right now, comma-separated. */
-  composingBots: string;
+  /** Doodle is writing reply text right now. */
+  composing: boolean;
   /** The copy saved on this device stays on screen until a live snapshot replaces it. */
   showingSaved: boolean;
   setShowingSaved: (showing: boolean) => void;
@@ -43,7 +43,7 @@ export type ThreadHistory = {
 /** Owns the chat's snapshot: what is committed, what is shown, and the history window refs. */
 export function useThreadSnapshot(): ThreadHistory {
   const [snap, setSnap] = useState<MobileSnapshot | null>(null);
-  const [composingBots, setComposingBots] = useState("");
+  const [composing, setComposing] = useState(false);
   const [showingSaved, setShowingSaved] = useState(false);
   const snapRef = useRef<MobileSnapshot | null>(null);
   const snapshotOrigin = useRef<SavedChatsScope | null>(null);
@@ -73,14 +73,10 @@ export function useThreadSnapshot(): ThreadHistory {
     const visible = withLiveStreamingProgress(next, streamResponsesRef.current);
     setSnap((previous) => reconcileVisibleThreadSnapshot(previous, visible));
     // Read before streamed text is hidden, so a writing bot shows it even with streaming off.
-    setComposingBots(
-      (next?.messages ?? [])
-        .filter(
-          (message) => message.id.startsWith("progress:") && liveMessageComposing(message.blocks),
-        )
-        .map((message) => message.botId ?? next?.botId ?? "")
-        .sort()
-        .join(","),
+    setComposing(
+      (next?.messages ?? []).some(
+        (message) => message.id.startsWith("progress:") && liveMessageComposing(message.blocks),
+      ),
     );
   }, []);
 
@@ -101,7 +97,7 @@ export function useThreadSnapshot(): ThreadHistory {
 
   return {
     snap,
-    composingBots,
+    composing,
     showingSaved,
     setShowingSaved,
     commitSnap,

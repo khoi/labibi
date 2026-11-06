@@ -7,9 +7,9 @@ import { useSideInsets } from "../lib/side-insets";
 /** A routine's past runs, opened from its detail. */
 export default function RoutineRuns() {
   const sideInsets = useSideInsets();
-  const { routineId = "", botName } = useLocalSearchParams<{
+  const { routineId = "", threadId } = useLocalSearchParams<{
     routineId?: string;
-    botName?: string;
+    threadId?: string;
   }>();
   return (
     <ScrollView
@@ -17,7 +17,7 @@ export default function RoutineRuns() {
       contentContainerStyle={{ padding: 24, gap: 18 }}
       contentInsetAdjustmentBehavior="automatic"
     >
-      <RoutineRunHistory routineId={routineId} botName={botName} />
+      <RoutineRunHistory routineId={routineId} threadId={threadId} />
     </ScrollView>
   );
 }

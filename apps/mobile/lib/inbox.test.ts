@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { filterBots, formatThreadTime } from "./inbox.js";
+import { formatThreadTime } from "./inbox.js";
 
 const now = new Date(2026, 7, 13, 21, 53, 0);
 
@@ -21,23 +21,6 @@ describe("formatThreadTime", () => {
   });
 });
 
-describe("filterBots", () => {
-  const bots = [
-    bot("seo", "SEO Bot", "tracking-pixel page"),
-    bot("inbox", "Inbox Triage", "draft replies"),
-  ];
-
-  it("returns the full list when the query is empty", () => {
-    expect(filterBots(bots, "  ")).toEqual(bots);
-  });
-
-  it("matches name or preview", () => {
-    expect(filterBots(bots, "seo").map((item) => item.id)).toEqual(["seo"]);
-    expect(filterBots(bots, "triage").map((item) => item.id)).toEqual(["inbox"]);
-    expect(filterBots(bots, "PIXEL").map((item) => item.id)).toEqual(["seo"]);
-  });
-});
-
 function local(base: Date, daysAgo: number, hours: number, minutes: number) {
   const date = new Date(base);
   date.setDate(date.getDate() - daysAgo);
@@ -45,7 +28,7 @@ function local(base: Date, daysAgo: number, hours: number, minutes: number) {
   return date.toISOString();
 }
 
-function bot(id: string, name: string, preview: string) {
+function _bot(id: string, name: string, preview: string) {
   return {
     id,
     name,

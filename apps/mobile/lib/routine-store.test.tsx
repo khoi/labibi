@@ -6,7 +6,7 @@ import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { rpc } from "./api";
 import { queryClient, rpcQuery } from "./query";
-import { saveBotRoutine, useBotRoutines } from "./routine-store";
+import { saveChatRoutine, useChatRoutines } from "./routine-store";
 
 vi.mock("./api", () => ({
   rpc: vi.fn(),
@@ -18,7 +18,7 @@ vi.mock("./session", () => ({ currentSessionGeneration: () => 1 }));
 vi.mock("expo-router", () => ({ useFocusEffect: () => {} }));
 
 const routine = { id: "routine-1", createdAt: "2026-10-01T00:00:00Z", scheduleDelayed: true };
-const key = rpcQuery("routines/list", { botId: "bot-1" }).queryKey;
+const key = rpcQuery("routines/list", { threadId: "bot-1" }).queryKey;
 let root: Root;
 let container: HTMLDivElement;
 
@@ -31,7 +31,7 @@ async function update(change: () => void) {
 }
 
 function Status() {
-  const { routines } = useBotRoutines("bot-1");
+  const { routines } = useChatRoutines("bot-1");
   return createElement("span", null, routines?.[0]?.scheduleDelayed ? "delayed" : "on time");
 }
 
@@ -66,6 +66,6 @@ it("hides a delay seen before a failed read until a read answers again", async (
 it("keeps a routine deleted while its update was saving out of the list", async () => {
   vi.mocked(rpc).mockResolvedValueOnce(routine as Routine);
   await update(() => queryClient.setQueryData(key, []));
-  await saveBotRoutine("bot-1", { update: { routineId: "routine-1", name: "Renamed" } });
+  await saveChatRoutine("bot-1", { update: { routineId: "routine-1", name: "Renamed" } });
   expect(queryClient.getQueryData(key)).toEqual([]);
 });

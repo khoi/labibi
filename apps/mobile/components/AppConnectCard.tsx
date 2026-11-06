@@ -1,5 +1,5 @@
 import type { MessageBlock } from "@labradoodle/contracts";
-import { appConnectedInput, waitForConnection } from "@labradoodle/core";
+import { waitForConnection } from "@labradoodle/core";
 import { fontWeight, typeScale } from "@labradoodle/ui-tokens";
 import { useEffect, useRef, useState } from "react";
 import type { ViewProps } from "react-native";
@@ -14,14 +14,12 @@ import { ConnectorIcon } from "./connector-icon";
 import { NativeActionButton } from "./native-action-button";
 
 export function AppConnectCard({
-  botId,
   threadId,
   messageId,
   block,
   accessibilityActions,
   onAccessibilityAction,
 }: {
-  botId: string;
   threadId?: string;
   messageId?: string;
   block: Extract<MessageBlock, { kind: "app_connect" }>;
@@ -66,7 +64,12 @@ export function AppConnectCard({
       );
       if (result.status === "aborted") return;
       if (result.status === "connected") {
-        await rpc("onboarding/appConnected", appConnectedInput(botId, threadId, block, messageId));
+        await rpc("onboarding/appConnected", {
+          threadId,
+          ...(messageId ? { messageId } : {}),
+          connectorId: block.connectorId,
+          provider: block.provider,
+        });
         if (controller.signal.aborted) return;
         setLocalStatus("connected");
         return;

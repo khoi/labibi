@@ -1,8 +1,7 @@
-import { botColors, typeScale } from "@labradoodle/ui-tokens";
+import { typeScale } from "@labradoodle/ui-tokens";
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import {
-  Alert,
   FlatList,
   Platform,
   Pressable,
@@ -14,20 +13,18 @@ import {
 } from "react-native";
 import { KeyboardController } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BotAvatar } from "../components/bot-avatar";
+import { ChatAvatar } from "../components/chat-avatar";
 import { GlassIconButton } from "../components/glass-icon-button";
-import { GroupAvatar } from "../components/group-avatar";
 import { NativeActionButton } from "../components/native-action-button";
 import { NativeSymbol } from "../components/native-symbol";
 import { readableGutters } from "../lib/adaptive-layout";
-import { currentApiBase, selectedSpaceId, selectSpace, spaceSelectionSeq } from "../lib/api";
+import { rpc } from "../lib/api";
 import { mobileTokens, resolveMobileAppearance } from "../lib/appearance";
 import { useI18n } from "../lib/i18n";
 import { native, useThemedStyles } from "../lib/native";
 import { getSearchInbox, subscribeSearchInbox } from "../lib/search-inbox";
 import type { SearchSheetRow } from "../lib/search-sheet";
 import { searchSheetRows } from "../lib/search-sheet";
-import { currentSessionGeneration } from "../lib/session";
 import { useSearch } from "../lib/use-search";
 
 const kindIcons = {
@@ -52,9 +49,15 @@ export default function SearchSheet() {
   const attempt = useRef(0);
   const focused = useRef(false);
   const [query, setQuery] = useState("");
-  const spaces = useSyncExternalStore(subscribeSearchInbox, getSearchInbox);
+  const chats = useSyncExternalStore(subscribeSearchInbox, getSearchInbox);
   const { hits, loading, error, retry } = useSearch(query);
-  const rows = useMemo(() => searchSheetRows(spaces, query, hits), [spaces, query, hits, locale]);
+  const rows = useMemo(() => searchSheetRows(chats, query, hits), [chats, query, hits, locale]);
+  const [viewerUserId, setViewerUserId] = useState<string>();
+  useEffect(() => {
+    void rpc("me")
+      .then((me) => setViewerUserId(me.userId))
+      .catch(() => undefined);
+  }, []);
 
   const cancelOpen = useCallback(() => {
     attempt.current += 1;
@@ -89,52 +92,12 @@ export default function SearchSheet() {
     opening.current = true;
     const currentAttempt = ++attempt.current;
     const isCurrent = () => focused.current && attempt.current === currentAttempt;
-    const previousSpaceId = selectedSpaceId();
-    const generation = currentSessionGeneration();
-    const apiBase = currentApiBase();
-    let selected = false;
-    let selectionSeq: number | undefined;
-    let navigated = false;
     try {
-      if (row.spaceId) {
-        const selection = selectSpace(row.spaceId);
-        selectionSeq = spaceSelectionSeq();
-        selected = await selection;
-        if (
-          !isCurrent() ||
-          selectionSeq !== spaceSelectionSeq() ||
-          (selected && selectedSpaceId() !== row.spaceId)
-        )
-          return;
-        if (!selected) {
-          Alert.alert(t("Could not switch spaces"), t("Try again."));
-          return;
-        }
-      }
       await KeyboardController.dismiss();
-      if (
-        !isCurrent() ||
-        (selectionSeq !== undefined &&
-          (selectionSeq !== spaceSelectionSeq() || selectedSpaceId() !== row.spaceId))
-      )
-        return;
+      if (!isCurrent()) return;
       // Replace removes the sheet from history while preserving messageId search jumps.
-      navigated = true;
       router.replace(row.destination);
     } finally {
-      // Native dismissal can outlive the switch; newer selections (even pending) own it now.
-      if (
-        !navigated &&
-        !isCurrent() &&
-        selected &&
-        selectionSeq === spaceSelectionSeq() &&
-        previousSpaceId !== row.spaceId &&
-        selectedSpaceId() === row.spaceId &&
-        generation === currentSessionGeneration() &&
-        apiBase === currentApiBase()
-      ) {
-        await selectSpace(previousSpaceId ?? "").catch(() => false);
-      }
       if (isCurrent()) opening.current = false;
     }
   };
@@ -243,14 +206,8 @@ export default function SearchSheet() {
             onPress={() => void open(item)}
             style={({ pressed }) => [styles.row, pressed && styles.pressed]}
           >
-            {item.group ? (
-              <GroupAvatar members={item.group.members} size={54} />
-            ) : item.bot ? (
-              <BotAvatar
-                identity={item.bot.id}
-                color={item.bot.color || botColors[3]}
-                status={item.bot.status}
-              />
+            {item.chat && item.kind === "conversation" ? (
+              <ChatAvatar chat={item.chat} viewerUserId={viewerUserId} size={54} />
             ) : (
               <View style={styles.neutralAvatar}>
                 <NativeSymbol {...kindIcons[item.kind]} color={tokens.mutedForeground} size={24} />

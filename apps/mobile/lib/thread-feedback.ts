@@ -26,13 +26,10 @@ export function settleComposer(submitted: ComposerSnapshot, current: ComposerSna
 }
 
 export type SendPayload = {
+  /** The chat's thread id. */
   originThreadKey: string;
   displayText: string;
   replyPreview: string | null;
-  initialBotTarget?: string;
-  botTarget?: string;
-  groupTarget?: string;
-  reroutedToGroup: boolean;
   plan: ReturnType<typeof resolveComposerSendPlan>;
   attachments: PickedAttachment[];
   replyTargetId?: string;
@@ -65,8 +62,8 @@ export async function deliverSend(
   attempt: SendAttempt,
   request: typeof rpc,
 ): Promise<number | undefined> {
-  const { plan, groupTarget, botTarget, reroutedToGroup, attachments } = payload;
-  const target = groupTarget ? { groupId: groupTarget } : { botId: botTarget! };
+  const { plan, attachments } = payload;
+  const target = { threadId: payload.originThreadKey };
   if (!plan.shouldSend) {
     if (plan.shouldRunRoutines)
       await request("threads/sendWithRoutines", {
@@ -103,9 +100,9 @@ export async function deliverSend(
     text: plan.trimmed || undefined,
     mentions: plan.mentionPayload.length ? plan.mentionPayload : undefined,
     artifactIds: artifactIds.length ? artifactIds : undefined,
-    replyToMessageId: reroutedToGroup ? undefined : payload.replyTargetId,
-    replyQuote: reroutedToGroup ? undefined : (payload.replyQuote ?? undefined),
-    fromPage: reroutedToGroup ? undefined : payload.fromPage,
+    replyToMessageId: payload.replyTargetId,
+    replyQuote: payload.replyQuote ?? undefined,
+    fromPage: payload.fromPage,
   } as const;
   // The routines run in the same server operation as the message: both or neither.
   const sent = plan.shouldRunRoutines
@@ -327,7 +324,6 @@ export function sendWaitingMessages(force = false): Promise<void> {
           if (
             !screens.has(attempt.payload.originThreadKey) ||
             seq === undefined ||
-            attempt.payload.reroutedToGroup ||
             echoes.get(attempt.payload.originThreadKey)?.has(seq)
           )
             remove(attempt);

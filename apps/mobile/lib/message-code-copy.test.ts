@@ -36,7 +36,8 @@ vi.mock("../components/message-action-menu", () => ({ presentMessageMenu: vi.fn(
 vi.mock("../components/message-context-menu", () => ({
   MessageContextMenu: ({ children }: { children: unknown }) => children,
 }));
-vi.mock("../components/bot-avatar", () => ({ BotAvatar: () => null }));
+vi.mock("../components/chat-avatar", () => ({ PersonAvatar: () => null, ChatAvatar: () => null }));
+vi.mock("../components/doodle-avatar", () => ({ DoodleAvatar: () => null }));
 vi.mock("../components/reply-line", () => ({ ReplyLine: () => null }));
 vi.mock("../components/time-separator", () => ({ TimeSeparator: () => null }));
 vi.mock("../components/unread-divider", () => ({ UnreadDivider: () => null }));

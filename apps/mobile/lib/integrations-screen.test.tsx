@@ -47,7 +47,7 @@ vi.mock("./integrations-cache", () => ({
   readIntegrationsCache: state.read,
   writeIntegrationsCache: state.write,
 }));
-vi.mock("./last-bot", () => ({ loadLastBotId: async () => "" }));
+vi.mock("./last-chat", () => ({ loadLastChatId: async () => "" }));
 vi.mock("./appearance", () => ({ mobileTokens: () => ({ destructive: "red" }) }));
 vi.mock("./native", () => ({
   native: {},

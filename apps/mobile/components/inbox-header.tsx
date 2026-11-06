@@ -1,34 +1,24 @@
-import { MenuView } from "@expo/ui/community/menu";
 import { useRouter } from "expo-router";
 import type { ReactNode } from "react";
-import { Platform, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { mobileTokens, resolveMobileAppearance } from "../lib/appearance";
-import type { CreateAction } from "../lib/create-chooser";
-import { createMenuActions, isCreateAction } from "../lib/create-chooser";
 import { useI18n } from "../lib/i18n";
 import { useThemedStyles } from "../lib/native";
-import { CREATE_MENU_GAP, createHomeStyles } from "./home-styles";
+import { createHomeStyles } from "./home-styles";
 import { NativeSymbol } from "./native-symbol";
 
 /** The inbox's own header where the native Liquid Glass bar is unavailable. */
 export function InboxHeader({
   initials,
-  activityMode,
-  toggleActivityMode,
-  runCreateAction,
+  newChat,
   columnInsets,
   title,
 }: {
   initials: string;
-  activityMode: boolean;
-  toggleActivityMode: () => void;
-  runCreateAction: (action: CreateAction) => void;
+  newChat: () => void;
   columnInsets: { left: number; right: number };
   title?: ReactNode;
 }) {
-  const tokens = mobileTokens();
-  const appearance = resolveMobileAppearance();
   const styles = useThemedStyles(createHomeStyles);
   const { t } = useI18n();
   const router = useRouter();
@@ -52,41 +42,19 @@ export function InboxHeader({
       {title}
       <View style={styles.headerActions}>
         <HeaderButton
-          accessibilityLabel={t("Activity")}
-          active={activityMode}
-          accent
-          onPress={toggleActivityMode}
-        >
-          <NativeSymbol
-            ios={activityMode ? "bell.fill" : "bell"}
-            android={activityMode ? "notifications" : "notifications-outline"}
-            size={17}
-            color={activityMode ? tokens.primaryForeground : tokens.foreground}
-          />
-        </HeaderButton>
-        <HeaderButton
           testID="home-search-button"
           accessibilityLabel={t("Search")}
           onPress={() => router.push("/search")}
         >
           <NativeSymbol ios="magnifyingglass" android="search" size={17} />
         </HeaderButton>
-        <MenuView
-          actions={createMenuActions(t, Platform.OS)}
-          {...(Platform.OS === "android" ? { style: { marginBottom: -CREATE_MENU_GAP } } : {})}
-          colorScheme={appearance}
-          onPressAction={({ nativeEvent }) => {
-            if (isCreateAction(nativeEvent.event)) runCreateAction(nativeEvent.event);
-          }}
+        <HeaderButton
+          testID="home-new-chat-button"
+          accessibilityLabel={t("New chat")}
+          onPress={newChat}
         >
-          <View
-            accessibilityLabel={t("Create")}
-            accessibilityRole="button"
-            style={[styles.headerButton, Platform.OS === "android" && styles.createMenuAnchor]}
-          >
-            <NativeSymbol ios="plus" android="add" size={18} />
-          </View>
-        </MenuView>
+          <NativeSymbol ios="square.and.pencil" android="create-outline" size={18} />
+        </HeaderButton>
       </View>
     </View>
   );
@@ -97,15 +65,11 @@ function HeaderButton({
   children,
   onPress,
   accessibilityLabel,
-  active = false,
-  accent = false,
 }: {
   children: ReactNode;
   onPress: () => void;
   accessibilityLabel: string;
   testID?: string;
-  active?: boolean;
-  accent?: boolean;
 }) {
   const styles = useThemedStyles(createHomeStyles);
   return (
@@ -113,15 +77,9 @@ function HeaderButton({
       testID={testID}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      accessibilityState={{ selected: active }}
       onPress={onPress}
       hitSlop={4}
-      style={({ pressed }) => [
-        styles.headerButton,
-        accent && active
-          ? styles.headerButtonAccent
-          : (active || pressed) && styles.headerButtonActive,
-      ]}
+      style={({ pressed }) => [styles.headerButton, pressed && styles.headerButtonActive]}
     >
       {children}
     </Pressable>

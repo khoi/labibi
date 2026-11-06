@@ -415,7 +415,7 @@ it("hands a connected model back to the slot that asked for it", async () => {
   expect(back).toHaveBeenCalledOnce();
 });
 
-async function switchToSpaceDefault(confirmTitle: string) {
+async function _switchToSpaceDefault(confirmTitle: string) {
   const button = [...container.querySelectorAll("button")].find(
     (node) => node.textContent === "Use space default",
   );
@@ -425,73 +425,6 @@ async function switchToSpaceDefault(confirmTitle: string) {
   expect(title).toBe(confirmTitle);
   await act(async () => buttons!.find((choice) => choice.text === "Switch")!.onPress!());
 }
-
-it("moves bots off their own model onto the main model, keeping failed ones listed", async () => {
-  const pinned = (id: string, name: string) => ({
-    id,
-    name,
-    modelProvider: "anthropic",
-    modelId: "claude-fixture",
-  });
-  saved.bots = [
-    pinned("bot-archie", "Archie"),
-    pinned("bot-basil", "Basil"),
-    pinned("bot-nova", "Nova"),
-    pinned("bot-inbox", "Inbox"),
-    { id: "bot-default", name: "Scout", modelProvider: null, modelId: null },
-  ];
-  const renderModels = () =>
-    remount(async () => {
-      await act(async () => root.render(createElement(Models)));
-    });
-  try {
-    // An unreadable bot list hides only the bot group.
-    saved.failBotList = true;
-    await renderModels();
-    expect(container.textContent).toContain("Main model");
-    expect(container.textContent).not.toContain("Bot models");
-    expect(container.textContent).not.toContain("Could not load model settings");
-    saved.failBotList = false;
-    // Without a main model there is no default to move bots onto.
-    saved.needsModel = true;
-    await renderModels();
-    expect(container.textContent).toContain("Main model");
-    expect(container.textContent).not.toContain("Archie");
-    saved.needsModel = false;
-    await renderModels();
-    expect(container.textContent).toContain(
-      "4 bots have their own model: Archie, Basil, Nova, Inbox",
-    );
-    expect(container.textContent).not.toContain("Scout");
-
-    saved.failBotUpdates = { "bot-inbox": "kept", "bot-nova": "changed elsewhere" };
-    rpcCalls.length = 0;
-    await switchToSpaceDefault("Switch 4 bots to the space default?");
-    expect(container.textContent).toContain("2 bots now use the space default.");
-    expect(container.textContent).toContain("Could not switch Inbox. Try again.");
-    expect(container.textContent).toContain("1 bot has its own model: Inbox");
-    expect(container.textContent).not.toMatch(/Archie|Basil|Nova/);
-
-    saved.failBotUpdates = {};
-    rpcCalls.length = 0;
-    await switchToSpaceDefault("Switch 1 bot to the space default?");
-    expect(rpcCalls.filter(([procedure]) => procedure === "bots/update")).toEqual([
-      [
-        "bots/update",
-        { botId: "bot-inbox", modelProvider: null, modelId: null, thinkingLevel: null },
-        { requestContext: { headers: { "x-rakazo-space-id": "space-fixture" } } },
-      ],
-    ]);
-    expect(container.textContent).toContain("1 bot now uses the space default.");
-    expect(container.textContent).not.toContain("Could not switch");
-    expect(container.textContent).not.toContain("Use space default");
-  } finally {
-    saved.bots = [];
-    saved.failBotList = false;
-    saved.failBotUpdates = {};
-    saved.needsModel = false;
-  }
-});
 
 const PROTOCOL_LABELS = ["Chat Completions", "Responses", "Anthropic Messages"] as const;
 

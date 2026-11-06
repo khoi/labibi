@@ -71,7 +71,7 @@ export function ModelProviders({
     else if (id === "disconnect")
       Alert.alert(
         t("Disconnect {name}?", { name }),
-        t("This removes the connection from every space."),
+        t("This removes the connection from every workspace."),
         [
           { text: t("Cancel"), style: "cancel" },
           { text: t("Disconnect"), style: "destructive", onPress: () => onDisconnect(credential) },

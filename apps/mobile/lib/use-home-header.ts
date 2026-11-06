@@ -1,28 +1,20 @@
 import { useNavigation, useRouter } from "expo-router";
 import type { ReactNode } from "react";
 import { useLayoutEffect } from "react";
-import type { CreateAction } from "./create-chooser";
-import { createMenuItems } from "./create-chooser";
 import { useI18n } from "./i18n";
 
-/** Liquid Glass home header: account on the left; activity, search and create on the right. */
+/** Liquid Glass home header: account on the left, the workspace as its title, search and new chat on the right. */
 export function useHomeHeader({
   nativeHeader,
   ready,
   hasSession,
-  initials,
-  activityMode,
-  toggleActivityMode,
-  runCreateAction,
+  newChat,
   headerTitle,
 }: {
   nativeHeader: boolean;
   ready: boolean;
   hasSession: boolean;
-  initials: string;
-  activityMode: boolean;
-  toggleActivityMode: () => void;
-  runCreateAction: (action: CreateAction) => void;
+  newChat: () => void;
   headerTitle?: () => ReactNode;
 }) {
   const navigation = useNavigation();
@@ -49,14 +41,6 @@ export function useHomeHeader({
       unstable_headerRightItems: () => [
         {
           type: "button" as const,
-          label: t("Activity"),
-          accessibilityLabel: t("Activity"),
-          icon: { type: "sfSymbol" as const, name: activityMode ? "bell.fill" : "bell" },
-          selected: activityMode,
-          onPress: toggleActivityMode,
-        },
-        {
-          type: "button" as const,
           label: t("Search"),
           accessibilityLabel: t("Search"),
           identifier: "home-search-button",
@@ -64,33 +48,14 @@ export function useHomeHeader({
           onPress: () => router.push("/search"),
         },
         {
-          type: "menu" as const,
-          label: t("Create"),
-          accessibilityLabel: t("Create"),
-          icon: { type: "sfSymbol" as const, name: "plus" },
-          menu: {
-            items: createMenuItems.map(({ id, label, sfSymbol }) => ({
-              type: "action" as const,
-              label: t(label),
-              icon: { type: "sfSymbol" as const, name: sfSymbol },
-              onPress: () => runCreateAction(id),
-            })),
-          },
+          type: "button" as const,
+          label: t("New chat"),
+          accessibilityLabel: t("New chat"),
+          identifier: "home-new-chat-button",
+          icon: { type: "sfSymbol" as const, name: "square.and.pencil" },
+          onPress: newChat,
         },
       ],
     });
-  }, [
-    nativeHeader,
-    navigation,
-    ready,
-    hasSession,
-    initials,
-    activityMode,
-    toggleActivityMode,
-    runCreateAction,
-    headerTitle,
-    router,
-    t,
-    locale,
-  ]);
+  }, [nativeHeader, navigation, ready, hasSession, newChat, headerTitle, router, t, locale]);
 }

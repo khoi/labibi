@@ -249,10 +249,8 @@ export function ImageArtifactViewer({
     | { status: "ready"; uri: string; natural: ImageSize }
     | { status: "error"; message: string }
   >({ status: "loading" });
-  const targetBotId = "botId" in threadTarget ? threadTarget.botId : undefined;
-  const targetGroupId = "groupId" in threadTarget ? threadTarget.groupId : undefined;
-  const requestTarget = (): MobileArtifactTarget =>
-    targetBotId !== undefined ? { botId: targetBotId } : { groupId: targetGroupId! };
+  const threadId = threadTarget.threadId;
+  const requestTarget = (): MobileArtifactTarget => ({ threadId });
   const fail = (error: unknown) =>
     setState({
       status: "error",
@@ -272,7 +270,7 @@ export function ImageArtifactViewer({
       cancelled = true;
     };
     // The request target is derived from the two ids below.
-  }, [targetBotId, targetGroupId, target.artifactId, target.mimeType]);
+  }, [threadId, target.artifactId, target.mimeType]);
 
   // Re-resolve the file before sharing: it re-downloads when the OS purged the cache since load.
   const share = () =>

@@ -10,10 +10,10 @@ import { native, useThemedStyles } from "../lib/native";
 import { iosAtLeast } from "../lib/native-controls";
 import { deviceTimeZone } from "../lib/routine";
 import {
-  loadBotRoutines,
-  removeBotRoutine,
+  loadChatRoutines,
+  removeChatRoutine,
   setRoutineActive,
-  useBotRoutines,
+  useChatRoutines,
 } from "../lib/routine-store";
 import { useSideInsets } from "../lib/side-insets";
 import { errorText } from "../lib/user-error";
@@ -23,14 +23,14 @@ export default function Routines() {
   const { t } = useI18n();
   const router = useRouter();
   const styles = useThemedStyles(createStyles);
-  const { botId = "", name } = useLocalSearchParams<{ botId?: string; name?: string }>();
-  const { routines, error } = useBotRoutines(botId);
+  const { threadId = "" } = useLocalSearchParams<{ threadId?: string }>();
+  const { routines, error } = useChatRoutines(threadId);
   const [deleting, setDeleting] = useState(false);
 
   async function remove(routine: Routine) {
     setDeleting(true);
     try {
-      await removeBotRoutine(botId, routine.id);
+      await removeChatRoutine(threadId, routine.id);
     } catch (cause) {
       Alert.alert(t("Could not delete routine"), errorText(cause, t("Try again.")));
     } finally {
@@ -53,7 +53,7 @@ export default function Routines() {
   }
 
   const create = () =>
-    router.push({ pathname: "/routine", params: { botId, botName: name, origin: "profile" } });
+    router.push({ pathname: "/routine", params: { threadId, origin: "profile" } });
   const header = (
     <Stack.Screen
       options={
@@ -93,11 +93,11 @@ export default function Routines() {
           onOpen={(routine) =>
             router.push({
               pathname: "/routine",
-              params: { botId, botName: name, routineId: routine.id, origin: "profile" },
+              params: { threadId, routineId: routine.id, origin: "profile" },
             })
           }
           onToggle={(routine, active) =>
-            setRoutineActive(botId, routine, active, (cause) =>
+            setRoutineActive(threadId, routine, active, (cause) =>
               Alert.alert(t("Could not update routine"), errorText(cause, t("Try again."))),
             )
           }
@@ -111,7 +111,7 @@ export default function Routines() {
       {header}
       {routines ? (
         <>
-          <Text style={styles.message}>{t("Ask this Bot in chat to set up a routine.")}</Text>
+          <Text style={styles.message}>{t("Ask Doodle in this chat to set up a routine.")}</Text>
           <NativeActionButton
             label={t("New routine")}
             variant="text"
@@ -128,7 +128,7 @@ export default function Routines() {
             variant="text"
             prominence="secondary"
             style={styles.centered}
-            onPress={() => void loadBotRoutines(botId)}
+            onPress={() => void loadChatRoutines(threadId)}
           />
         </>
       ) : (

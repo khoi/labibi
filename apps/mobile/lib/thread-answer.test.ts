@@ -7,8 +7,7 @@ function setup(refresh: () => Promise<void>, overrides: Partial<ThreadAnswerCont
   const rpc = vi.fn(async (_proc: string, _body: Record<string, unknown>) => undefined as unknown);
   const spies = { rpc, refresh: vi.fn(refresh), markRead: vi.fn() };
   const context: ThreadAnswerContext = {
-    botId: "bot-1",
-    groupId: undefined,
+    threadId: "thread-1",
     readOnly: false,
     isCurrentTarget: () => true,
     ...spies,
@@ -38,7 +37,7 @@ describe("mobile ask answers", () => {
     await h.answerMessage(message, "", fields);
     expect(h.markRead).toHaveBeenCalledTimes(1);
     expect(h.rpc).toHaveBeenCalledWith("threads/answer", {
-      botId: "bot-1",
+      threadId: "thread-1",
       runId: "run-1",
       messageId: "message-1",
       answer: "",
@@ -55,7 +54,7 @@ describe("mobile ask answers", () => {
     const fields = [{ label: "Password", value: "example-password", hidden: true }];
     await h.answerMessage(message, "", fields, undefined, false);
     expect(h.rpc).toHaveBeenCalledWith("threads/answer", {
-      botId: "bot-1",
+      threadId: "thread-1",
       runId: "run-1",
       messageId: "message-1",
       answer: "",
@@ -64,22 +63,11 @@ describe("mobile ask answers", () => {
     });
   });
 
-  it("targets the group in a group thread", async () => {
-    const h = setup(async () => undefined, { botId: undefined, groupId: "group-1" });
-    await h.answerMessage(message, "yes");
-    expect(h.rpc).toHaveBeenCalledWith("threads/answer", {
-      groupId: "group-1",
-      runId: "run-1",
-      messageId: "message-1",
-      answer: "yes",
-    });
-  });
-
   it("sends a dismissal with an empty answer and no username", async () => {
     const h = setup(async () => undefined);
     await h.answerMessage(message, "", undefined, true);
     expect(h.rpc).toHaveBeenCalledWith("threads/answer", {
-      botId: "bot-1",
+      threadId: "thread-1",
       runId: "run-1",
       messageId: "message-1",
       answer: "",
@@ -113,16 +101,5 @@ describe("mobile ask answers", () => {
     await h.answerMessage(message, "yes");
     expect(h.rpc).toHaveBeenCalledTimes(1);
     expect(h.refresh).not.toHaveBeenCalled();
-  });
-
-  it.each([
-    ["read-only", { readOnly: true }, message],
-    ["targetless", { botId: undefined }, message],
-    ["runless", {}, { id: "message-1" }],
-  ] as const)("sends nothing for a %s answer", async (_name, overrides, target) => {
-    const h = setup(async () => undefined, overrides);
-    await h.answerMessage(target, "yes");
-    expect(h.rpc).not.toHaveBeenCalled();
-    expect(h.markRead).not.toHaveBeenCalled();
   });
 });

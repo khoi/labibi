@@ -41,8 +41,6 @@ export const ES_MESSAGES: Record<string, string> = {
   "When to use": "Cuándo usarlo",
   "ZIP or postal code": "Código postal",
   "Daily check-ins on unfinished work": "Seguimiento diario del trabajo pendiente",
-  "Pages this group builds for you appear here.":
-    "Las páginas que este grupo cree para ti aparecerán aquí.",
   Deleted: "Eliminada",
   "Its link stops working. This cannot be undone.":
     "Su enlace dejará de funcionar. No se puede deshacer.",
@@ -68,8 +66,6 @@ export const ES_MESSAGES: Record<string, string> = {
   "Could not load this page.": "No se pudo cargar esta página.",
   Pages: "Páginas",
   "Could not load pages.": "No se pudieron cargar las páginas.",
-  "Pages this bot builds for you appear here.":
-    "Las páginas que este bot cree para ti aparecerán aquí.",
   Shared: "Compartido",
   "Share to": "Compartir en",
   "{count} files": "{count} archivos",
@@ -139,11 +135,7 @@ export const ES_MESSAGES: Record<string, string> = {
   "To:": "Para:",
   Next: "Siguiente",
   "Ex: Project Falcon": "Ej.: Proyecto Halcón",
-  "Search bots": "Buscar bots",
   "About {label}": "Acerca de {label}",
-  "Manage other bots": "Gestionar otros bots",
-  "Allow cross-space bot communication":
-    "Permitir la comunicación entre bots de distintos espacios",
   Headers: "Encabezados",
   "Add header": "Agregar encabezado",
   "Remove header": "Eliminar encabezado",
@@ -160,8 +152,6 @@ export const ES_MESSAGES: Record<string, string> = {
   Member: "Miembro",
   Owner: "Propietario",
   Space: "Espacio",
-  "Message from another agent": "Mensaje de otro agente",
-  "Another agent": "Otro agente",
   "Update from {name}: {text}": "Actualización de {name}: {text}",
   "Update from {name}": "Actualización de {name}",
   "{name} asked: {text}": "{name} pregunta: {text}",
@@ -245,10 +235,8 @@ export const ES_MESSAGES: Record<string, string> = {
   "Chat settings": "Configuración del chat",
   Computer: "Computadora",
   Group: "Grupo",
-  "Group settings": "Configuración del grupo",
   Integrations: "Integraciones",
   Models: "Modelos",
-  "New group chat": "Nuevo chat grupal",
   Routine: "Rutina",
   "Server integrations": "Integraciones del servidor",
   Thread: "Hilo",
@@ -279,9 +267,7 @@ export const ES_MESSAGES: Record<string, string> = {
   "Use default server": "Usar el servidor predeterminado",
   Activity: "Actividad",
   "Collapse {name}": "Contraer {name}",
-  "Could not load bots": "No se pudieron cargar los bots",
   "Could not open this PDF.": "No se pudo abrir este PDF.",
-  "Could not save the default space": "No se pudo guardar el espacio predeterminado",
   "Could not switch spaces": "No se pudo cambiar de espacio",
   Create: "Crear",
   "Delete {name}?": "¿Eliminar {name}?",
@@ -289,20 +275,17 @@ export const ES_MESSAGES: Record<string, string> = {
   "Mark as Read": "Marcar como leído",
   "Mark as Unread": "Marcar como no leído",
   "Mark as unread": "Marcar como no leído",
-  "No matching bots": "No hay bots que coincidan",
   "No messages yet": "Aún no hay mensajes",
   "No results": "Sin resultados",
   Personal: "Personal",
   Recent: "Recientes",
   Search: "Buscar",
   "Searching…": "Buscando…",
-  "Space actions for {name}": "Acciones del espacio {name}",
   "notifications silenced": "notificaciones silenciadas",
   unread: "sin leer",
   "@{name}": "@{name}",
   "Add a voice provider in Voice settings.":
     "Agrega un proveedor de voz en la configuración de voz.",
-  Agent: "Agente",
   "Allowed once": "Permitido una vez",
   "Always allowed": "Siempre permitido",
   Answer: "Contestar",
@@ -314,7 +297,6 @@ export const ES_MESSAGES: Record<string, string> = {
   "Only enter a code {host} sent you.": "Introduce solo un código que te haya enviado {host}.",
   "Attach file": "Adjuntar archivo",
   Attachment: "Archivo adjunto",
-  "Bot actions": "Acciones del bot",
   Camera: "Cámara",
   "Cancel reply": "Cancelar respuesta",
   Cancelled: "Cancelado",
@@ -387,7 +369,6 @@ export const ES_MESSAGES: Record<string, string> = {
   Play: "Reproducir",
   Pause: "Pausar",
   "Select text": "Seleccionar texto",
-  "All bots": "Todos los bots",
   Artifact: "Artefacto",
   Artifacts: "Artefactos",
   "Could not delete this artifact": "No se pudo eliminar este artefacto",
@@ -406,8 +387,6 @@ export const ES_MESSAGES: Record<string, string> = {
     "Esto elimina las {count} versiones de este artefacto. No se puede deshacer.",
   Versions: "Versiones",
   Stop: "Detener",
-  "This removes every message and stops current work. The bot, computer, memory, and routines are kept.":
-    "Esto elimina todos los mensajes y detiene el trabajo en curso. Se conservan el bot, la computadora, la memoria y las rutinas.",
   "Type your answer": "Escribe tu respuesta",
   Username: "Nombre de usuario",
   "Waiting for this bot’s response.": "Esperando la respuesta de este bot.",
@@ -422,7 +401,6 @@ export const ES_MESSAGES: Record<string, string> = {
   finished: "finalizado",
   running: "en ejecución",
   subagent: "subagente",
-  "{count} agents working": "{count} agentes trabajando",
   "{from} messaged {to}": "{from} escribió a {to}",
   "{name} (max {count} attachments)": "{name} (máx. {count} archivos adjuntos)",
   "{name} (over {limit})": "{name} (supera {limit})",
@@ -430,9 +408,7 @@ export const ES_MESSAGES: Record<string, string> = {
   "{name} (unsupported type)": "{name} (tipo no compatible)",
   "{name} is working": "{name} está trabajando",
   Advanced: "Avanzado",
-  "Could not load bot": "No se pudo cargar el bot",
   "Could not load model settings": "No se pudo cargar la configuración de modelos",
-  "Could not save bot": "No se pudo guardar el bot",
   "Extra high": "Extra alto",
   High: "Alto",
   Low: "Bajo",
@@ -445,17 +421,8 @@ export const ES_MESSAGES: Record<string, string> = {
   "Read replies aloud": "Leer respuestas en voz alta",
   Save: "Guardar",
   "Saving…": "Guardando…",
-  "Space default": "Predeterminado del espacio",
   "Can't read images": "No puede leer imágenes",
   Thinking: "Pensando",
-  "Could not delete group": "No se pudo eliminar el grupo",
-  "Could not load group": "No se pudo cargar el grupo",
-  "Could not save group": "No se pudo guardar el grupo",
-  "Delete group": "Eliminar grupo",
-  "Bots and their own chats stay.": "Los bots y sus propios chats se conservan.",
-  "Group name": "Nombre del grupo",
-  "Group not found": "No se encontró el grupo",
-  "Could not create group": "No se pudo crear el grupo",
   "Creating…": "Creando…",
   "Create space": "Crear espacio",
   Active: "Activo",
@@ -689,8 +656,6 @@ export const ES_MESSAGES: Record<string, string> = {
   "Needs attention": "Requiere atención",
   Unread: "No leídos",
   "Notification settings": "Configuración de notificaciones",
-  "Get notified when this Bot finishes or needs input":
-    "Recibe un aviso cuando este bot termine o necesite una respuesta",
   Notifications: "Notificaciones",
   "Questions, approvals, takeover": "Preguntas, aprobaciones, toma de control",
   "Replies and completed work": "Respuestas y trabajo terminado",
@@ -720,8 +685,6 @@ export const ES_MESSAGES: Record<string, string> = {
   "Replaces the login saved for {site}": "Reemplaza el inicio de sesión guardado para {site}",
   "Cancel open invites": "Cancelar invitaciones abiertas",
   "Could not cancel invites": "No se pudieron cancelar las invitaciones",
-  "Sites you sign in to stay signed in for everyone in this space":
-    "Los sitios en los que inicies sesión siguen con la sesión iniciada para todos en este espacio",
   "The bot's browser stays signed in for everyone in this space":
     "El navegador del bot sigue con la sesión iniciada para todos en este espacio",
   "Could not submit answer": "No se pudo enviar la respuesta",
@@ -804,7 +767,6 @@ export const ES_MESSAGES: Record<string, string> = {
   "{channel} {id}": "{channel} {id}",
   "{channel} {id}, {date}": "{channel} {id}, {date}",
   "Saved {name} locally": "{name} se guardó en el dispositivo",
-  "Could not delete bot": "No se pudo eliminar el bot",
   "Delete memories too": "Eliminar también las memorias",
   "Its conversation, files, and routines will be permanently deleted. What should happen to its memories?":
     "Su conversación, archivos y rutinas se eliminarán de forma permanente. ¿Qué debe pasar con sus memorias?",
@@ -871,12 +833,8 @@ export const ES_MESSAGES: Record<string, string> = {
   "You can turn this off in Account → AI data sharing.":
     "Puedes desactivarlo en Cuenta → Compartir datos con IA.",
   Allow: "Permitir",
-  "Messages, chat history, bot instructions, memories, attachments, screenshots and connected-app content are sent to run your bots, including routines.":
-    "Los mensajes, el historial de chat, las instrucciones de los bots, las memorias, los archivos adjuntos, las capturas de pantalla y el contenido de las apps conectadas se envían para ejecutar tus bots, incluidas las rutinas.",
   "Your recordings are sent for transcription, and text you play is sent to generate speech.":
     "Tus grabaciones se envían para transcribirlas, y el texto que reproduces se envía para generar la voz.",
-  "Conversation summaries, memories, searches and bot and Space IDs are sent to store and recall context.":
-    "Los resúmenes de conversaciones, las memorias, las búsquedas y los ID de bots y espacios se envían para guardar y recuperar el contexto.",
   "AI data sharing": "Compartir datos con IA",
   "Allow {name} on mobile": "Permitir {name} en la app móvil",
   "Could not load permissions.": "No se pudieron cargar los permisos.",
@@ -899,7 +857,6 @@ export const ES_MESSAGES: Record<string, string> = {
   "Members ({count})": "Miembros ({count})",
   "Show all": "Mostrar todos",
   "Show selected": "Mostrar seleccionados",
-  "Filter bots": "Filtrar bots",
   "Pick {min}–{max}": "Elige de {min} a {max}",
   "No members yet": "Aún no hay miembros",
   Apply: "Aplicar",
@@ -1191,20 +1148,8 @@ export const ES_MESSAGES: Record<string, string> = {
   "Use email code": "Usar código por correo",
   "Use password": "Usar contraseña",
   "{count} messages with {peer}": "{count} mensajes con {peer}",
-  "Bot models": "Modelos de los bots",
-  "1 bot has its own model:": "1 bot tiene su propio modelo:",
-  "{count} bots have their own model:": "{count} bots tienen su propio modelo:",
-  "Use space default": "Usar el predeterminado del espacio",
   "Switching…": "Cambiando…",
-  "Switch 1 bot to the space default?": "¿Cambiar 1 bot al modelo predeterminado del espacio?",
-  "Switch {count} bots to the space default?":
-    "¿Cambiar {count} bots al modelo predeterminado del espacio?",
-  "Their own model is cleared. You can pick one again in each bot.":
-    "Se quitará su modelo propio. Puedes volver a elegir uno en cada bot.",
   Switch: "Cambiar",
-  "1 bot now uses the space default.": "1 bot ahora usa el modelo predeterminado del espacio.",
-  "{count} bots now use the space default.":
-    "{count} bots ahora usan el modelo predeterminado del espacio.",
   "Could not switch {failedNames}. Try again.":
     "No se pudo cambiar {failedNames}. Vuelve a intentarlo.",
   Members: "Miembros",
@@ -1239,6 +1184,53 @@ export const ES_MESSAGES: Record<string, string> = {
   "{amount} spent this week": "{amount} gastados esta semana",
   "{amount} spent this month": "{amount} gastados este mes",
   "{amount} spent": "{amount} gastados",
+  "Add people": "Añadir personas",
+  Chat: "Chat",
+  "Conversation summaries, memories, searches and chat and person IDs are sent to store and recall context.":
+    "Se envían resúmenes de conversaciones, recuerdos, búsquedas e ID de chats y personas para guardar y recuperar contexto.",
+  "Could not save the default workspace": "No se pudo guardar el espacio de trabajo predeterminado",
+  "Could not start chat": "No se pudo iniciar el chat",
+  "Could not switch workspaces": "No se pudo cambiar de espacio de trabajo",
+  "Delete chat": "Eliminar chat",
+  "Disable a tool": "Desactivar una herramienta",
+  Files: "Archivos",
+  "Leave chat": "Salir del chat",
+  "Messages, chat history, Doodle's instructions, memories, attachments, screenshots and connected-app content are sent to run Doodle, including routines.":
+    "Se envían mensajes, historial del chat, instrucciones de Doodle, recuerdos, adjuntos, capturas de pantalla y contenido de apps conectadas para ejecutar Doodle, incluidas las rutinas.",
+  "My computer": "Mi ordenador",
+  "New chat": "Nuevo chat",
+  "Pages Doodle builds for you appear here.": "Aquí aparecen las páginas que Doodle crea para ti.",
+  "Recovering your computer": "Recuperando tu ordenador",
+  "Start chat": "Iniciar chat",
+  "Updating your computer": "Actualizando tu ordenador",
+  "Ask Doodle in this chat to set up a routine.":
+    "Pide a Doodle en este chat que configure una rutina.",
+  "Doodle with your own computer": "Doodle con tu propio ordenador",
+  "Put Doodle to work": "Pon a Doodle a trabajar",
+  "Could not leave workspace": "No se pudo salir del espacio de trabajo",
+  "Leave workspace": "Salir del espacio de trabajo",
+  "Doodle can use the file but won't see the picture.":
+    "Doodle puede usar el archivo, pero no verá la imagen.",
+  "Doodle couldn't finish its reply. Technical details includes the reported error.":
+    "Doodle no pudo terminar su respuesta. Los detalles técnicos incluyen el error informado.",
+  "Doodle couldn't reply because its provider's daily limit was reached.":
+    "Doodle no pudo responder porque se alcanzó el límite diario de su proveedor.",
+  "Doodle couldn't reply because its provider's monthly limit was reached.":
+    "Doodle no pudo responder porque se alcanzó el límite mensual de su proveedor.",
+  "Doodle couldn't reply because its provider's usage limit was reached.":
+    "Doodle no pudo responder porque se alcanzó el límite de uso de su proveedor.",
+  "Doodle couldn't reply because its provider's weekly limit was reached.":
+    "Doodle no pudo responder porque se alcanzó el límite semanal de su proveedor.",
+  "The provider couldn't serve the model selected for Doodle.":
+    "El proveedor no pudo servir el modelo seleccionado para Doodle.",
+  "The provider received too many requests to answer Doodle.":
+    "El proveedor recibió demasiadas solicitudes para responder a Doodle.",
+  "The provider refused the key Doodle used for its reply.":
+    "El proveedor rechazó la clave que Doodle usó para su respuesta.",
+  "This removes the connection from every workspace.":
+    "Esto elimina la conexión de todos los espacios de trabajo.",
+  "Waiting for Doodle’s response.": "Esperando la respuesta de Doodle.",
+  Workspace: "Espacio de trabajo",
 };
 
 export const PEER_MESSAGE_FORMS: Partial<Record<Intl.LDMLPluralRule, string>> = {

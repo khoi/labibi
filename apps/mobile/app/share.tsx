@@ -1,10 +1,10 @@
 import { useNavigation, useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
-import { Image, Text, View } from "react-native";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { ActivityIndicator, Image, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GlassIconButton } from "../components/glass-icon-button";
 import { NativeSymbol } from "../components/native-symbol";
-import type { MobileBot } from "../lib/api";
+import { loadSessionToken, rpc } from "../lib/api";
 import { useI18n } from "../lib/i18n";
 import {
   cancelIncomingShare,
@@ -12,9 +12,11 @@ import {
   subscribeIncomingShare,
 } from "../lib/incoming-share";
 import { useMobileTokens } from "../lib/native";
+import { addToSearchInbox } from "../lib/search-inbox";
 import { sharePreview } from "../lib/share-preview";
-import { HomeSession } from "./index";
+import { errorText } from "../lib/user-error";
 
+/** Something shared from another app opens a new chat with you and Doodle, the share in its composer. */
 export default function ShareRoute() {
   const router = useRouter();
   const navigation = useNavigation();
@@ -46,24 +48,35 @@ export default function ShareRoute() {
     if (!share && !selected.current && !closing.current) close();
   }, [share, close]);
 
-  const open = useCallback(
-    (bot: Pick<MobileBot, "id" | "name">) => {
-      // Removal must preserve the share for thread.tsx to claim it.
-      if (!getIncomingShare()) return;
-      selected.current = true;
-      navigation.dispatch({
-        type: "RESET",
-        payload: {
-          index: 1,
-          routes: [
-            { name: "index" },
-            { name: "thread", params: { botId: bot.id, name: bot.name } },
-          ],
-        },
-      });
-    },
-    [navigation],
-  );
+  const [error, setError] = useState<string | null>(null);
+  const started = useRef(false);
+  useEffect(() => {
+    if (!share || started.current) return;
+    started.current = true;
+    void (async () => {
+      // Signed out, the sign-in screen takes over and comes back here with the share.
+      if (!(await loadSessionToken())) {
+        router.replace("/sign-in");
+        return;
+      }
+      try {
+        const chat = await rpc("threads/create", { userIds: [], doodle: true });
+        // Removal must preserve the share for thread.tsx to claim it.
+        if (!getIncomingShare()) return;
+        addToSearchInbox(chat);
+        selected.current = true;
+        navigation.dispatch({
+          type: "RESET",
+          payload: {
+            index: 1,
+            routes: [{ name: "index" }, { name: "thread", params: { threadId: chat.id } }],
+          },
+        });
+      } catch (err) {
+        setError(errorText(err, t("Could not start chat")));
+      }
+    })();
+  }, [share, navigation, router, t]);
   const preview = share ? sharePreview(share) : null;
 
   return (
@@ -97,7 +110,7 @@ export default function ShareRoute() {
           accessibilityRole="header"
           style={{ fontSize: 20, fontWeight: "600", color: tokens.foreground }}
         >
-          {t("Share to")}
+          {t("New chat")}
         </Text>
       </View>
       {preview ? (
@@ -141,7 +154,13 @@ export default function ShareRoute() {
           ) : null}
         </View>
       ) : null}
-      <HomeSession onShareSelect={open} />
+      <View style={{ paddingTop: 24, alignItems: "center" }}>
+        {error ? (
+          <Text style={{ color: tokens.destructive }}>{error}</Text>
+        ) : (
+          <ActivityIndicator color={tokens.mutedForeground} />
+        )}
+      </View>
     </View>
   );
 }
