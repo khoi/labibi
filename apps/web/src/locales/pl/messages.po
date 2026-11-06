@@ -1846,7 +1846,7 @@ msgstr "Nie udało się rozpocząć OAuth"
 
 #: src/pages/shell/shell-sidebar.tsx
 msgid "Could not start over. Try again."
-msgstr ""
+msgstr "Nie udało się zacząć od nowa. Spróbuj ponownie."
 
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Could not start teaching"
@@ -2047,7 +2047,7 @@ msgstr "Usuń czat"
 
 #: src/pages/shell/shell-sidebar.tsx
 msgid "Delete everything and start over?"
-msgstr ""
+msgstr "Usunąć wszystko i zacząć od nowa?"
 
 #: src/components/PasskeySettings.tsx
 #: src/pages/Artifacts.tsx
@@ -4705,7 +4705,7 @@ msgstr "Rozpocznij czat"
 #: src/components/SidebarFooter.tsx
 #: src/pages/shell/shell-sidebar.tsx
 msgid "Start over"
-msgstr ""
+msgstr "Zacznij od nowa"
 
 #: src/components/teach/TeachComputerOverlay.tsx
 msgid "Start recording"
@@ -4729,7 +4729,7 @@ msgstr "Uruchamianie"
 
 #: src/pages/shell/shell-sidebar.tsx
 msgid "Starting over…"
-msgstr ""
+msgstr "Zaczynanie od nowa…"
 
 #: src/components/teach/TeachComputerOverlay.tsx
 #: src/pages/model-settings/connection-controls.tsx
