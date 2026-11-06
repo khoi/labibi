@@ -111,7 +111,8 @@ describe.skipIf(!enabled)("send model gate with a bot's own model (PostgreSQL)",
       clientNonce: randomUUID(),
     });
     expect(response.status).toBe(200);
-    return ((await response.json()) as { json: { runIds: string[] } }).json.runIds;
+    const { runId } = ((await response.json()) as { json: { runId?: string } }).json;
+    return runId ? [runId] : [];
   };
 
   it("starts a bot's turn on its own connected model, and refuses one without it", async () => {

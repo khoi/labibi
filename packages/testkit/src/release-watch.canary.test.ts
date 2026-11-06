@@ -92,7 +92,7 @@ describeLive("live release-watch eval (GPT 5.6 Luna + GitHub emulator)", () => {
 
     const {
       doodle: bot,
-      chats: [_botChat],
+      chats: [botChat],
     } = await rpc<{
       doodle: { id: string };
       chats: Array<{ id: string }>;
@@ -101,14 +101,14 @@ describeLive("live release-watch eval (GPT 5.6 Luna + GitHub emulator)", () => {
     // Mirror the Discord user ask: no tool names, no Bing/browser coaching.
     // schedule_create + connected-plugin guidance should steer the model.
     await rpc(handles.app, cookie, "threads/send", {
-      botId: bot.id,
+      threadId: botChat!.id,
       text: [
         "Create a daily task to watch for new releases of elie222/rakazo",
         "and stay current on the project's capabilities.",
       ].join(" "),
     });
 
-    await waitFor(handles.app, cookie, bot.id, 180_000);
+    await waitFor(handles.app, cookie, botChat!.id, 180_000);
 
     const routines = await rpc<Array<{ id: string; name: string; prompt: string }>>(
       handles.app,
@@ -137,7 +137,7 @@ describeLive("live release-watch eval (GPT 5.6 Luna + GitHub emulator)", () => {
       payload: { routineId: routine.id, scheduledFor: dueAt.toISOString() },
     });
 
-    const snap = await waitFor(handles.app, cookie, bot.id, 180_000, { requireSeenRun: true });
+    const snap = await waitFor(handles.app, cookie, botChat!.id, 180_000, { requireSeenRun: true });
     const routineRunId = snap.run?.id;
     const toolEvents = await handles.prisma.event.findMany({
       where: {
@@ -219,7 +219,7 @@ async function rpc<T>(app: App, cookie: string, proc: string, body: unknown = {}
 async function waitFor(
   app: App,
   cookie: string,
-  botId: string,
+  threadId: string,
   ms: number,
   options?: { requireSeenRun?: boolean },
 ): Promise<Snap> {
@@ -228,7 +228,7 @@ async function waitFor(
   let seenRun = false;
   let lastSeenRun: Snap["run"] = null;
   while (Date.now() - start < ms) {
-    last = await rpc<Snap>(app, cookie, "threads/get", { botId });
+    last = await rpc<Snap>(app, cookie, "threads/get", { threadId });
     if (last.run) {
       seenRun = true;
       lastSeenRun = last.run;

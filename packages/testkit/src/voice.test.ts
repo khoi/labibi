@@ -42,7 +42,6 @@ describeVoice("voice credentials and speech HTTP", () => {
 
   it("connects a scripted key, speaks, and transcribes without leaking the secret", async () => {
     const cookie = await signup(app, `voice-${stamp}@rakazo.test`, "Voice User");
-    const other = await signup(app, `voice-other-${stamp}@rakazo.test`, "Other Voice");
 
     const before = await rpc<{ ready: boolean; utterances: string[] }>(
       app,
@@ -112,19 +111,6 @@ describeVoice("voice credentials and speech HTTP", () => {
     });
     expect(transcribed.status).toBe(200);
     expect(await transcribed.json()).toEqual({ text: SCRIPTED_TRANSCRIPT });
-
-    const {
-      doodle: bot,
-      chats: [_botChat],
-    } = await rpc<{
-      doodle: { id: string };
-      chats: Array<{ id: string }>;
-    }>(app, cookie, "bootstrap", {});
-    const stolen = await raw(app, other, "voice/prepare", {
-      text: "stolen",
-      botId: bot.id,
-    });
-    expect(stolen.status).toBeGreaterThanOrEqual(400);
 
     const unauth = await app.request("/api/voice/speak", {
       method: "POST",

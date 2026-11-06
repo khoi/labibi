@@ -63,17 +63,13 @@ it.skipIf(!databaseUrl)(
         json: { maxUploadSizeBytes, maxAttachmentsPerMessage: 8 },
       });
 
-      const bot = await call("bots/create", {
-        name: "Upload fixture",
-        title: "",
-        instructions: "Keep files.",
-        notifyOnFinish: false,
-      });
-      expect(bot.status).toBe(200);
-      const botId = ((await bot.json()) as { json: { id: string } }).json.id;
+      const bootstrap = await call("bootstrap", {});
+      expect(bootstrap.status).toBe(200);
+      const threadId = ((await bootstrap.json()) as { json: { chats: Array<{ id: string }> } }).json
+        .chats[0]!.id;
       // Above the 10 MiB default, within the configured limit.
       const upload = await call("artifacts/create", {
-        botId,
+        threadId,
         name: "large.txt",
         mimeType: "text/plain",
         contentBase64: Buffer.alloc(12 * 1024 * 1024, "a").toString("base64"),
@@ -82,7 +78,7 @@ it.skipIf(!databaseUrl)(
       const artifactIds: string[] = [];
       for (let i = 0; i < 9; i++) {
         const attachment = await call("artifacts/create", {
-          botId,
+          threadId,
           name: `${i}.txt`,
           mimeType: "text/plain",
           contentBase64: "YQ==",
@@ -90,9 +86,12 @@ it.skipIf(!databaseUrl)(
         expect(attachment.status).toBe(200);
         artifactIds.push(((await attachment.json()) as { json: { id: string } }).json.id);
       }
-      const tooMany = await call("threads/send", { botId, artifactIds });
+      const tooMany = await call("threads/send", { threadId, artifactIds });
       expect(tooMany.status).toBe(400);
-      const accepted = await call("threads/send", { botId, artifactIds: artifactIds.slice(0, 8) });
+      const accepted = await call("threads/send", {
+        threadId,
+        artifactIds: artifactIds.slice(0, 8),
+      });
       expect(accepted.status).toBe(200);
     } finally {
       await handles.stop();

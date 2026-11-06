@@ -47,28 +47,27 @@ describeAttachments("chat attachments", () => {
   it("uploads, sends with image/file, and rejects invalid attachments", async () => {
     const cookie = await signup(app, `attachments-${stamp}@rakazo.test`, "Attachment User");
     const {
-      doodle: bot,
-      chats: [_botChat],
+      chats: [botChat],
     } = await rpc<{
       doodle: { id: string };
       chats: Array<{ id: string }>;
     }>(app, cookie, "bootstrap", {});
 
     const image = await rpc<{ id: string; mimeType: string }>(app, cookie, "artifacts/create", {
-      botId: bot.id,
+      threadId: botChat!.id,
       name: "pixel.png",
       mimeType: "image/png",
       contentBase64: tinyPng.toString("base64"),
     });
     const file = await rpc<{ id: string }>(app, cookie, "artifacts/create", {
-      botId: bot.id,
+      threadId: botChat!.id,
       name: "notes.txt",
       mimeType: "text/plain",
       contentBase64: Buffer.from("hello attachment").toString("base64"),
     });
 
-    await sendAndWait(app, cookie, bot.id, { text: "see this", artifactIds: [image.id] });
-    let snapshot = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { botId: bot.id });
+    await sendAndWait(app, cookie, botChat!.id, { text: "see this", artifactIds: [image.id] });
+    let snapshot = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { threadId: botChat!.id });
     const imageMessage = snapshot.messages.find((message) =>
       message.blocks.some((block) => block.kind === "image"),
     );
@@ -79,8 +78,8 @@ describeAttachments("chat attachments", () => {
       ]),
     );
 
-    await sendAndWait(app, cookie, bot.id, { artifactIds: [file.id] });
-    snapshot = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { botId: bot.id });
+    await sendAndWait(app, cookie, botChat!.id, { artifactIds: [file.id] });
+    snapshot = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { threadId: botChat!.id });
     const fileMessage = snapshot.messages.find((message) =>
       message.blocks.some((block) => block.kind === "file"),
     );
@@ -91,7 +90,7 @@ describeAttachments("chat attachments", () => {
     );
 
     const fetched = await rpc<{ contentBase64: string }>(app, cookie, "artifacts/get", {
-      botId: bot.id,
+      threadId: botChat!.id,
       artifactId: image.id,
     });
     expect(fetched.contentBase64).toBe(tinyPng.toString("base64"));
@@ -106,15 +105,15 @@ describeAttachments("chat attachments", () => {
       "application/octet-stream",
     ]) {
       zip = await rpc(app, cookie, "artifacts/create", {
-        botId: bot.id,
+        threadId: botChat!.id,
         name: "bundle.ZIP",
         mimeType,
         contentBase64: zipBytes.toString("base64"),
       });
       expect(zip.mimeType).toBe("application/zip");
     }
-    await sendAndWait(app, cookie, bot.id, { artifactIds: [zip.id] });
-    snapshot = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { botId: bot.id });
+    await sendAndWait(app, cookie, botChat!.id, { artifactIds: [zip.id] });
+    snapshot = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { threadId: botChat!.id });
     const zipMessage = snapshot.messages.find((message) =>
       message.blocks.some((block) => block.kind === "file" && block.name === "bundle.ZIP"),
     );
@@ -129,13 +128,13 @@ describeAttachments("chat attachments", () => {
       ]),
     );
     const fetchedZip = await rpc<{ contentBase64: string }>(app, cookie, "artifacts/get", {
-      botId: bot.id,
+      threadId: botChat!.id,
       artifactId: zip.id,
     });
     expect(Buffer.from(fetchedZip.contentBase64, "base64")).toEqual(zipBytes);
 
     const badMime = await raw(app, cookie, "artifacts/create", {
-      botId: bot.id,
+      threadId: botChat!.id,
       name: "payload.exe",
       mimeType: "application/octet-stream",
       contentBase64: Buffer.from("nope").toString("base64"),
@@ -143,7 +142,7 @@ describeAttachments("chat attachments", () => {
     expect(badMime.status).toBeGreaterThanOrEqual(400);
 
     const oversize = await raw(app, cookie, "artifacts/create", {
-      botId: bot.id,
+      threadId: botChat!.id,
       name: "big.zip",
       mimeType: "application/zip",
       contentBase64: Buffer.alloc(10 * 1024 * 1024 + 1, 1).toString("base64"),
@@ -154,16 +153,17 @@ describeAttachments("chat attachments", () => {
   it("attaches a workspace file into the thread", async () => {
     const cookie = await signup(app, `attach-thread-${stamp}@rakazo.test`, "Attach Thread User");
     const {
-      doodle: bot,
-      chats: [_botChat],
+      chats: [botChat],
     } = await rpc<{
       doodle: { id: string };
       chats: Array<{ id: string }>;
     }>(app, cookie, "bootstrap", {});
-    await sendAndWait(app, cookie, bot.id, {
+    await sendAndWait(app, cookie, botChat!.id, {
       text: "write notes/result.txt and attach it to the thread",
     });
-    const snapshot = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { botId: bot.id });
+    const snapshot = await rpc<ThreadSnapshot>(app, cookie, "threads/get", {
+      threadId: botChat!.id,
+    });
     const fileMessage = snapshot.messages.find((message) =>
       message.blocks.some((block) => block.kind === "file"),
     );
@@ -171,7 +171,7 @@ describeAttachments("chat attachments", () => {
     expect(fileBlock).toMatchObject({ kind: "file", name: "result.txt" });
     if (fileBlock?.kind !== "file") throw new Error("expected file block");
     const fetched = await rpc<{ contentBase64: string }>(app, cookie, "artifacts/get", {
-      botId: bot.id,
+      threadId: botChat!.id,
       artifactId: fileBlock.artifactId,
     });
     expect(Buffer.from(fetched.contentBase64, "base64").toString("utf8")).toContain(
@@ -182,17 +182,16 @@ describeAttachments("chat attachments", () => {
     const cookie = await signup(app, `replies-${stamp}@rakazo.test`, "Reply User");
     const otherCookie = await signup(app, `replies-other-${stamp}@rakazo.test`, "Other User");
     const {
-      doodle: bot,
-      chats: [_botChat],
+      chats: [botChat],
     } = await rpc<{
       doodle: { id: string };
       chats: Array<{ id: string }>;
     }>(app, cookie, "bootstrap", {});
-    await sendAndWait(app, cookie, bot.id, { text: "Parent first line\nSecond line" });
-    let snapshot = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { botId: bot.id });
+    await sendAndWait(app, cookie, botChat!.id, { text: "Parent first line\nSecond line" });
+    let snapshot = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { threadId: botChat!.id });
     const parent = snapshot.messages.find((message) => message.role === "user")!;
-    await sendAndWait(app, cookie, bot.id, { text: "A reply", replyToMessageId: parent.id });
-    snapshot = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { botId: bot.id });
+    await sendAndWait(app, cookie, botChat!.id, { text: "A reply", replyToMessageId: parent.id });
+    snapshot = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { threadId: botChat!.id });
     const reply = snapshot.messages.find((message) =>
       message.blocks.some((block) => block.kind === "text" && block.text === "A reply"),
     )!;
@@ -216,24 +215,21 @@ describeAttachments("chat attachments", () => {
     });
 
     const denied = await raw(app, otherCookie, "threads/send", {
-      botId: bot.id,
+      threadId: botChat!.id,
       text: "Unauthorized",
       replyToMessageId: parent.id,
     });
     expect(denied.status).toBeGreaterThanOrEqual(400);
-    const {
-      doodle: otherBot,
-      chats: [_otherBotChat],
-    } = await rpc<{
-      doodle: { id: string };
-      chats: Array<{ id: string }>;
-    }>(app, cookie, "bootstrap", {});
-    await sendAndWait(app, cookie, otherBot.id, {
+    const otherBotChat = await rpc<{ id: string }>(app, cookie, "threads/create", {
+      userIds: [],
+      doodle: true,
+    });
+    await sendAndWait(app, cookie, otherBotChat.id, {
       text: "Foreign target",
       replyToMessageId: parent.id,
     });
     const otherThread = await rpc<ThreadSnapshot>(app, cookie, "threads/get", {
-      botId: otherBot.id,
+      threadId: otherBotChat.id,
     });
     const foreignReply = otherThread.messages.find((message) => message.role === "user")!;
     expect(foreignReply.replyToMessageId).toBeUndefined();
@@ -241,13 +237,16 @@ describeAttachments("chat attachments", () => {
     expect(foreignReply.replyQuote).toBe("");
 
     await asSystem(botIntroHarness!.prisma).message.delete({ where: { id: parent.id } });
-    snapshot = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { botId: bot.id });
+    snapshot = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { threadId: botChat!.id });
     const deletedReply = snapshot.messages.find((message) => message.id === reply.id)!;
     expect(deletedReply.replyToMessageId).toBeUndefined();
     expect(deletedReply.replyPreview).toBeNull();
     expect(deletedReply.replyQuote).toBe("Parent first line");
-    await sendAndWait(app, cookie, bot.id, { text: "Deleted target", replyToMessageId: parent.id });
-    snapshot = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { botId: bot.id });
+    await sendAndWait(app, cookie, botChat!.id, {
+      text: "Deleted target",
+      replyToMessageId: parent.id,
+    });
+    snapshot = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { threadId: botChat!.id });
     const missingReply = snapshot.messages.find((message) =>
       message.blocks.some((block) => block.kind === "text" && block.text === "Deleted target"),
     );
@@ -291,14 +290,14 @@ async function raw(app: App, cookie: string, proc: string, body: unknown) {
 async function sendAndWait(
   app: App,
   cookie: string,
-  botId: string,
+  threadId: string,
   input: { text?: string; artifactIds?: string[]; replyToMessageId?: string },
 ) {
-  await rpc(app, cookie, "threads/send", { botId, ...input });
+  await rpc(app, cookie, "threads/send", { threadId, ...input });
   await waitFor(
     app,
     cookie,
-    botId,
+    threadId,
     (snap) => !snap.run || ["completed", "failed", "cancelled"].includes(snap.run.status),
   );
 }
@@ -306,13 +305,13 @@ async function sendAndWait(
 async function waitFor(
   app: App,
   cookie: string,
-  botId: string,
+  threadId: string,
   pred: (snap: ThreadSnapshot) => boolean,
 ) {
   const start = Date.now();
   let last: ThreadSnapshot | null = null;
   while (Date.now() - start < 20_000) {
-    last = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { botId });
+    last = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { threadId });
     if (pred(last)) return last;
     await new Promise((resolve) => setTimeout(resolve, 100));
   }

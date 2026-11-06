@@ -210,11 +210,15 @@ export async function runTrial(
           { threadId },
         );
         const index = documents.find((document) => document.path === "MEMORY.md");
-        if (!index) throw new EvalFailure("harness", "New chat has no MEMORY.md to seed");
-        await rpc(app, cookie, "memory/update", {
-          documentId: index.id,
-          content: scenario.botMemory,
-        });
+        if (index)
+          await rpc(app, cookie, "memory/update", {
+            documentId: index.id,
+            content: scenario.botMemory,
+          });
+        else
+          await prisma.memoryDocument.create({
+            data: { ...persistedChat, threadId, path: "MEMORY.md", content: scenario.botMemory },
+          });
       }
       // Ask mode asks before any change, so the write stops at its approval card.
       if (scenario.approvalTool) await rpc(app, cookie, "autoReview/set", { mode: "ask" });

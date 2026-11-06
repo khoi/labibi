@@ -52,11 +52,37 @@ describePostgres("tenant-scoped background jobs (PostgreSQL)", () => {
         data: { id: t.userId, name: t.name, email: `${t.userId}@rakazo.test`, emailVerified: true },
       });
       await o.space.create({ data: { id: t.spaceId, organizationId, name: t.name } });
-      await o.bot.create({
-        data: { id: t.botId, spaceId: t.spaceId, userId: t.userId, name: t.name, color: "#000" },
+      await o.member.create({
+        data: {
+          id: `${t.userId}-member`,
+          organizationId,
+          userId: t.userId,
+          role: "member",
+          createdAt: new Date(),
+        },
+      });
+      await o.spaceMember.create({
+        data: {
+          id: `${t.spaceId}-member`,
+          spaceId: t.spaceId,
+          organizationId,
+          userId: t.userId,
+          createdAt: new Date(),
+        },
+      });
+      await o.bot.upsert({
+        where: { spaceId: t.spaceId },
+        create: { id: t.botId, spaceId: t.spaceId },
+        update: {},
       });
       await o.thread.create({
-        data: { id: t.threadId, spaceId: t.spaceId, userId: t.userId, botId: t.botId },
+        data: {
+          id: t.threadId,
+          spaceId: t.spaceId,
+          userId: t.userId,
+          doodle: true,
+          members: { create: { userId: t.userId } },
+        },
       });
       await o.message.create({
         data: { threadId: t.threadId, seq: 1, role: "user", blocks: [{ text: t.name }] },

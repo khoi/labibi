@@ -45,8 +45,22 @@ describePostgres("space search with CONTENT_ENCRYPTION on and off (PostgreSQL)",
         data: { id: organizationId, name: "Search", slug: organizationId, createdAt: new Date() },
       });
       await prisma.space.create({ data: { id: spaceId, organizationId, name: "General" } });
-      await prisma.bot.create({ data: { id: botId, spaceId, userId, name: "Ada", color: "ink" } });
-      await prisma.thread.create({ data: { id: threadId, spaceId, userId, botId } });
+      await prisma.member.create({
+        data: {
+          id: `${userId}-member`,
+          organizationId,
+          userId,
+          role: "owner",
+          createdAt: new Date(),
+        },
+      });
+      await prisma.spaceMember.create({
+        data: { id: `${spaceId}-member`, spaceId, organizationId, userId, createdAt: new Date() },
+      });
+      await prisma.bot.create({ data: { id: botId, spaceId } });
+      await prisma.thread.create({
+        data: { id: threadId, spaceId, userId, doodle: true, members: { create: { userId } } },
+      });
     }),
   );
 

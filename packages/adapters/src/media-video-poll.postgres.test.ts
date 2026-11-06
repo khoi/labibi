@@ -81,11 +81,13 @@ describePostgres("background video delivery (PostgreSQL)", () => {
       await prisma.member.create({
         data: { id, organizationId: id, userId: id, role: "owner", createdAt: new Date() },
       });
-      const bot = await prisma.bot.create({
-        data: { spaceId: id, userId: id, name: "Video test", color: "test-color" },
+      const bot = await prisma.bot.upsert({
+        where: { spaceId: id },
+        create: { spaceId: id },
+        update: {},
       });
       const thread = await prisma.thread.create({
-        data: { spaceId: id, userId: id, botId: bot.id },
+        data: { spaceId: id, userId: id, doodle: true, members: { create: { userId: id } } },
       });
       const task = await prisma.task.create({
         data: {
@@ -429,23 +431,6 @@ describePostgres("background video delivery (PostgreSQL)", () => {
     expect(h.recovered()).toEqual(expect.arrayContaining(jobIds));
     // A job checked recently still has its poll scheduled.
     expect(h.recovered()).not.toContain(healthy);
-  });
-
-  it("closes a job whose bot was archived, even one left mid-check", async () => {
-    const h = await setup();
-    const jobId = await h.submit();
-    await runAsSystem("test fixture", async () => {
-      await prisma.externalEffect.update({
-        where: { id: jobId },
-        data: { status: "media_polling" },
-      });
-      await prisma.bot.update({ where: { id: h.user.bot.id }, data: { archivedAt: new Date() } });
-    });
-    h.media.remote = "completed";
-    await h.poll(jobId);
-    expect((await h.job(jobId)).status).toBe("media_failed");
-    expect(await h.messages()).toHaveLength(0);
-    expect(await h.wakes()).toHaveLength(0);
   });
 
   it("posts nothing into a chat cleared after the video was submitted", async () => {

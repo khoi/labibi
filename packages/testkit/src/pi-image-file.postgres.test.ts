@@ -73,8 +73,7 @@ describe.skipIf(!databaseAvailable)("offline Pi product journey", () => {
         maxTokens: 4096,
       });
       const {
-        doodle: bot,
-        chats: [_botChat],
+        chats: [botChat],
       } = await rpc<{
         doodle: { id: string };
         chats: Array<{ id: string }>;
@@ -84,14 +83,14 @@ describe.skipIf(!databaseAvailable)("offline Pi product journey", () => {
         modelId: model.model.id,
       });
       const artifact = await rpc<{ id: string }>(handles.app, cookie, "artifacts/create", {
-        botId: bot.id,
+        threadId: botChat!.id,
         name: "picture.png",
         mimeType: "image/png",
         contentBase64: Buffer.from([137, 80, 78, 71]).toString("base64"),
       });
       attachmentPath = `attachments/${artifact.id}.png`;
       const input = {
-        botId: bot.id,
+        threadId: botChat!.id,
         text: "Process the attached image as a file",
         artifactIds: [artifact.id],
         clientNonce: "image-file-confirmation",
@@ -140,10 +139,7 @@ describe.skipIf(!databaseAvailable)("offline Pi product journey", () => {
         handles.app,
         cookie,
         "computer/downloadFile",
-        {
-          botId: bot.id,
-          path: `attachments/${artifact.id}.png`,
-        },
+        { path: `attachments/${artifact.id}.png` },
       );
       expect(imageFile.contentBase64).toBe(Buffer.from([137, 80, 78, 71]).toString("base64"));
     } finally {

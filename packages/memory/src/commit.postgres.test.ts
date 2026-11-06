@@ -40,7 +40,7 @@ describePostgres("memory commits (PostgreSQL)", () => {
           create: {
             id: context.spaceId,
             name: "Memory Test Space",
-            bots: { create: { id: "memory-commit-bot" } },
+            bot: { create: { id: "memory-commit-bot" } },
           },
         },
       },

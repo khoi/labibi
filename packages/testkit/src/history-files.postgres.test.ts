@@ -112,7 +112,6 @@ describe.skipIf(!enabled)("earlier files through history tools", () => {
         maxTokens: 4096,
       });
       const {
-        doodle: bot,
         chats: [botChat],
       } = await rpc<{
         doodle: { id: string };
@@ -125,7 +124,7 @@ describe.skipIf(!enabled)("earlier files through history tools", () => {
       });
       const upload = (name: string, content: string) =>
         rpc<{ id: string; name: string; mimeType: string; size: number }>("artifacts/create", {
-          botId: bot.id,
+          threadId: botChat!.id,
           name,
           mimeType: "text/markdown",
           contentBase64: Buffer.from(content).toString("base64"),
@@ -162,7 +161,7 @@ describe.skipIf(!enabled)("earlier files through history tools", () => {
         });
       await db.thread.update({ where: { id: thread.id }, data: { nextMessageSeq: 4 } });
       const run = await rpc<{ runId: string }>("threads/send", {
-        botId: bot.id,
+        threadId: botChat!.id,
         text: "What notice period does the office lease I sent require?",
       });
       await expect

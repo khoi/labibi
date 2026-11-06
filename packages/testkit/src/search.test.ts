@@ -39,34 +39,33 @@ describeSearch("workspace search", () => {
   it("finds bots, messages, files, links, and routines within the workspace", async () => {
     const cookie = await signup(app, `search-${stamp}@rakazo.test`, "Search User");
     const {
-      doodle: bot,
-      chats: [_botChat],
+      chats: [botChat],
     } = await rpc<{
       doodle: { id: string };
       chats: Array<{ id: string }>;
     }>(app, cookie, "bootstrap", {});
-    await sendAndWait(app, cookie, bot.id, {
+    await sendAndWait(app, cookie, botChat!.id, {
       text: "Bookmark https://example.com/spec for later",
     });
     const artifact = await rpc<{ id: string }>(app, cookie, "artifacts/create", {
-      botId: bot.id,
+      threadId: botChat!.id,
       name: "fixture-notes.txt",
       mimeType: "text/plain",
       contentBase64: Buffer.from("fixture file").toString("base64"),
     });
     const secondArtifact = await rpc<{ id: string }>(app, cookie, "artifacts/create", {
-      botId: bot.id,
+      threadId: botChat!.id,
       name: "fixture-second.txt",
       mimeType: "text/plain",
       contentBase64: Buffer.from("second fixture").toString("base64"),
     });
     await rpc(app, cookie, "artifacts/create", {
-      botId: bot.id,
+      threadId: botChat!.id,
       name: "fixture-unattached.txt",
       mimeType: "text/plain",
       contentBase64: Buffer.from("unattached fixture").toString("base64"),
     });
-    await sendAndWait(app, cookie, bot.id, { artifactIds: [artifact.id, secondArtifact.id] });
+    await sendAndWait(app, cookie, botChat!.id, { artifactIds: [artifact.id, secondArtifact.id] });
     const initialFiles = await rpc<{ hits: SearchHit[] }>(app, cookie, "search/query", {
       q: "fixture",
     });
@@ -77,7 +76,7 @@ describeSearch("workspace search", () => {
     const initialMessageId = initialFiles.hits.find(
       (hit) => hit.artifactId === artifact.id,
     )?.messageId;
-    await sendAndWait(app, cookie, bot.id, { artifactIds: [artifact.id] });
+    await sendAndWait(app, cookie, botChat!.id, { artifactIds: [artifact.id] });
     const latestFiles = await rpc<{ hits: SearchHit[] }>(app, cookie, "search/query", {
       q: "fixture",
     });
@@ -87,7 +86,7 @@ describeSearch("workspace search", () => {
     expect(latestMessageId).toBeDefined();
     expect(latestMessageId).not.toBe(initialMessageId);
     await rpc(app, cookie, "routines/create", {
-      botId: bot.id,
+      threadId: botChat!.id,
       name: "Weekly fixture",
       prompt: "check the fixture",
       crons: ["0 9 * * 1"],
@@ -100,7 +99,7 @@ describeSearch("workspace search", () => {
       q: "fixture",
     });
     expect(hits.hits.map((hit) => hit.kind)).toEqual(
-      expect.arrayContaining(["conversation", "message", "file", "routine"]),
+      expect.arrayContaining(["message", "file", "routine"]),
     );
     const linkHits = await rpc<{ hits: Array<{ kind: string }> }>(app, cookie, "search/query", {
       q: "example.com",
@@ -111,28 +110,29 @@ describeSearch("workspace search", () => {
   it("finds literal message text without widening wildcard queries", async () => {
     const cookie = await signup(app, `search-literal-${stamp}@rakazo.test`, "Literal Search");
     const {
-      doodle: bot,
-      chats: [_botChat],
+      chats: [botChat],
     } = await rpc<{
       doodle: { id: string };
       chats: Array<{ id: string }>;
     }>(app, cookie, "bootstrap", {});
     const queries = [String.raw`back\slash`, 'say "hi"', "50%_off", "café/東京"];
     for (const text of [...queries, "500 off"]) {
-      await sendAndWait(app, cookie, bot.id, { text });
+      await sendAndWait(app, cookie, botChat!.id, { text });
     }
     for (const q of queries) {
       const { hits } = await rpc<{ hits: SearchHit[] }>(app, cookie, "search/query", { q });
       expect(hits).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ kind: "message", botId: bot.id, snippet: q }),
+          expect.objectContaining({ kind: "message", threadId: botChat!.id, snippet: q }),
         ]),
       );
     }
     const { hits } = await rpc<{ hits: SearchHit[] }>(app, cookie, "search/query", { q: "50%" });
     const messages = hits.filter((hit) => hit.kind === "message");
     expect(messages).toEqual(
-      expect.arrayContaining([expect.objectContaining({ botId: bot.id, snippet: "50%_off" })]),
+      expect.arrayContaining([
+        expect.objectContaining({ threadId: botChat!.id, snippet: "50%_off" }),
+      ]),
     );
     expect(messages.some((hit) => hit.snippet.includes("500 off"))).toBe(false);
   });
@@ -140,13 +140,12 @@ describeSearch("workspace search", () => {
   it("returns no hits for another workspace", async () => {
     const ownerCookie = await signup(app, `search-owner-${stamp}@rakazo.test`, "Owner");
     const {
-      doodle: ownerBot,
-      chats: [_ownerBotChat],
+      chats: [ownerBotChat],
     } = await rpc<{
       doodle: { id: string };
       chats: Array<{ id: string }>;
     }>(app, ownerCookie, "bootstrap", {});
-    await sendAndWait(app, ownerCookie, ownerBot.id, { text: "owner-only-token-xyz" });
+    await sendAndWait(app, ownerCookie, ownerBotChat!.id, { text: "owner-only-token-xyz" });
 
     const intruderCookie = await signup(app, `search-intruder-${stamp}@rakazo.test`, "Intruder");
     const hits = await rpc<{ hits: unknown[] }>(app, intruderCookie, "search/query", {
@@ -191,14 +190,14 @@ async function raw(app: App, cookie: string, proc: string, body: unknown) {
 async function sendAndWait(
   app: App,
   cookie: string,
-  botId: string,
+  threadId: string,
   input: { text?: string; artifactIds?: string[] },
 ) {
-  await rpc(app, cookie, "threads/send", { botId, ...input });
+  await rpc(app, cookie, "threads/send", { threadId, ...input });
   await waitFor(
     app,
     cookie,
-    botId,
+    threadId,
     (snap) => !snap.run || ["completed", "failed", "cancelled"].includes(snap.run.status),
   );
 }
@@ -206,13 +205,13 @@ async function sendAndWait(
 async function waitFor(
   app: App,
   cookie: string,
-  botId: string,
+  threadId: string,
   pred: (snap: ThreadSnapshot) => boolean,
 ) {
   const start = Date.now();
   let last: ThreadSnapshot | null = null;
   while (Date.now() - start < 20_000) {
-    last = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { botId });
+    last = await rpc<ThreadSnapshot>(app, cookie, "threads/get", { threadId });
     if (pred(last)) return last;
     await new Promise((resolve) => setTimeout(resolve, 100));
   }

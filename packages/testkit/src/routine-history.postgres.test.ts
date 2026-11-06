@@ -50,7 +50,7 @@ describeHistory("routines.history late starts", () => {
       chats: Array<{ id: string }>;
     }>(app, cookie, "bootstrap", {});
     const routine = await rpc<{ id: string }>(app, cookie, "routines/create", {
-      botId: bot.id,
+      threadId: botChat!.id,
       name: "Morning brief",
       prompt: "Send the morning brief",
       crons: ["0 8 * * *"],

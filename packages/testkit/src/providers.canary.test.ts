@@ -339,14 +339,10 @@ describePiApp("live OpenRouter product journey", () => {
     expect(signup.status).toBeLessThan(400);
     const cookie = sessionCookieHeader(signup);
     const {
-      doodle: botRes,
-      chats: [_botResChat],
-    } = await rpc<{
-      doodle: { id: string };
-      chats: Array<{ id: string }>;
-    }>(handles.app, cookie, "bootstrap", {});
+      chats: [chat],
+    } = await rpc<{ chats: Array<{ id: string }> }>(handles.app, cookie, "bootstrap", {});
     const sent = await rpc<{ runId: string }>(handles.app, cookie, "threads/send", {
-      botId: botRes.id,
+      threadId: chat!.id,
       text: "Use write_file to save notes/result.txt containing exactly openrouter-ok",
     });
     const run = await waitForRun(
@@ -358,11 +354,10 @@ describePiApp("live OpenRouter product journey", () => {
       90_000,
     );
     expect(run.status).toBe("completed");
-    const snap = await rpc<Snap>(handles.app, cookie, "threads/get", { botId: botRes.id });
+    const snap = await rpc<Snap>(handles.app, cookie, "threads/get", { threadId: chat!.id });
     const blob = JSON.stringify(snap);
     expect(blob).not.toMatch(/sk-or-/i);
     const file = await rpc<{ content: string }>(handles.app, cookie, "computer/readFile", {
-      botId: botRes.id,
       path: "notes/result.txt",
     });
     expect(file.content).toBe("openrouter-ok");

@@ -98,7 +98,7 @@ describe.skipIf(!databaseAvailable)("offline Pi product journey", () => {
       });
       const {
         doodle: bot,
-        chats: [_botChat],
+        chats: [botChat],
       } = await rpc<{
         doodle: { id: string };
         chats: Array<{ id: string }>;
@@ -108,7 +108,7 @@ describe.skipIf(!databaseAvailable)("offline Pi product journey", () => {
         modelId: model.model.id,
       });
       const sent = await rpc<{ runId: string }>(handles.app, cookie, "threads/send", {
-        botId: bot.id,
+        threadId: botChat!.id,
         text: "Save hello to notes/result.txt.",
       });
       await expect
@@ -126,7 +126,6 @@ describe.skipIf(!databaseAvailable)("offline Pi product journey", () => {
         .toBe("completed");
       model.assertComplete();
       const file = await rpc<{ content: string }>(handles.app, cookie, "computer/readFile", {
-        botId: bot.id,
         path: "notes/result.txt",
       });
       expect(file.content).toBe("hello");
@@ -134,7 +133,7 @@ describe.skipIf(!databaseAvailable)("offline Pi product journey", () => {
         handles.app,
         cookie,
         "threads/get",
-        { botId: bot.id },
+        { threadId: botChat!.id },
       );
       const messages = JSON.stringify(thread.messages);
       expect(messages).toContain("Saved notes/result.txt.");

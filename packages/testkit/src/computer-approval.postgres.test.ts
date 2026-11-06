@@ -115,7 +115,6 @@ describe.skipIf(!databaseAvailable)("offline Pi computer approval", () => {
           maxTokens: 4096,
         });
         const {
-          doodle: bot,
           chats: [botChat],
         } = await rpc<{
           doodle: { id: string };
@@ -135,7 +134,7 @@ describe.skipIf(!databaseAvailable)("offline Pi computer approval", () => {
           },
         });
         const sent = await rpc<{ runId: string }>(handles.app, cookie, "threads/send", {
-          botId: bot.id,
+          threadId: botChat!.id,
           text: "Put approved clipboard content on the computer clipboard.",
         });
         const waitForRun = async (status: string) => {
@@ -179,7 +178,7 @@ describe.skipIf(!databaseAvailable)("offline Pi computer approval", () => {
           ]),
         );
         await rpc(handles.app, cookie, "threads/answer", {
-          botId: bot.id,
+          threadId: botChat!.id,
           runId: sent.runId,
           messageId: card.id,
           answer,

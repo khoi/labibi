@@ -152,7 +152,7 @@ describeIntegration("reusable credential lifecycle", () => {
             );
           } else {
             await rpc(seeded.cookie, "threads/answer", {
-              botId: seeded.bot.id,
+              threadId: seeded.thread.id,
               runId,
               messageId: message.id,
               answer: "allow",
@@ -178,7 +178,7 @@ describeIntegration("reusable credential lifecycle", () => {
             ]),
           );
           await rpc(seeded.cookie, "threads/answer", {
-            botId: seeded.bot.id,
+            threadId: seeded.thread.id,
             runId,
             messageId: message.id,
             answer: value,
@@ -215,7 +215,7 @@ describeIntegration("reusable credential lifecycle", () => {
         for (const invalid of ["x".repeat(16_385), "key\r\nX-Evil: injected", "key "]) {
           await expect(
             rpc(seeded.cookie, "threads/answer", {
-              botId: seeded.bot.id,
+              threadId: seeded.thread.id,
               runId: seeded.run.id,
               messageId: pending.id,
               answer: invalid,
@@ -403,7 +403,7 @@ describeIntegration("reusable credential lifecycle", () => {
         orderBy: { seq: "desc" },
       });
       await rpc(seeded.cookie, "threads/answer", {
-        botId: seeded.bot.id,
+        threadId: seeded.thread.id,
         runId: seeded.run.id,
         messageId: card.id,
         answer: "",
@@ -524,7 +524,10 @@ describeIntegration("reusable credential lifecycle", () => {
         };
         yield { type: "done", text: "Done" };
       });
-    const runs = {} as Record<keyof typeof sites, { runId: string; botId: string; card: string }>;
+    const runs = {} as Record<
+      keyof typeof sites,
+      { runId: string; threadId: string; card: string }
+    >;
     try {
       const seeded = await seedRun("login-replace", "Sign in");
       const { userId, spaceId } = seeded.me;
@@ -560,8 +563,8 @@ describeIntegration("reusable credential lifecycle", () => {
           status: "queued",
         },
       });
-      runs.login = { runId: seeded.run.id, botId: seeded.bot.id, card: "" };
-      runs.other = { runId: run.id, botId: bot.id, card: "" };
+      runs.login = { runId: seeded.run.id, threadId: seeded.thread.id, card: "" };
+      runs.other = { runId: run.id, threadId: thread.id, card: "" };
       for (const site of ["login", "other"] as const) {
         await runAsSystem("background job run.continue", () =>
           handles.executor.continueRun(runs[site].runId, "test-worker"),
@@ -594,7 +597,7 @@ describeIntegration("reusable credential lifecycle", () => {
             },
             body: JSON.stringify({
               json: {
-                botId: runs[site].botId,
+                threadId: runs[site].threadId,
                 runId: runs[site].runId,
                 messageId: runs[site].card,
                 answer: "",

@@ -22,8 +22,10 @@ it.skipIf(!testDatabase)(
         signupsEnabled: "true",
         signupAllowlist: "",
       });
-      const bot = await prisma.bot.create({
-        data: { spaceId, userId: user.id, name: "Secret Bot", color: "#000000" },
+      const bot = await prisma.bot.upsert({
+        where: { spaceId },
+        create: { spaceId },
+        update: {},
       });
       const server = await prisma.mcpServer.create({
         data: {

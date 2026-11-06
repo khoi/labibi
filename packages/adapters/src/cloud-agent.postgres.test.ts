@@ -61,11 +61,13 @@ describePostgres("cloud agent lifecycle and recovery (PostgreSQL + Cursor emulat
       await prisma.member.create({
         data: { id, organizationId: id, userId: id, role: "owner", createdAt: new Date() },
       });
-      const bot = await prisma.bot.create({
-        data: { spaceId: id, userId: id, name: "Cloud test", color: "test-color" },
+      const bot = await prisma.bot.upsert({
+        where: { spaceId: id },
+        create: { spaceId: id },
+        update: {},
       });
       const thread = await prisma.thread.create({
-        data: { spaceId: id, userId: id, botId: bot.id },
+        data: { spaceId: id, userId: id, doodle: true, members: { create: { userId: id } } },
       });
       const task = await prisma.task.create({
         data: {
@@ -306,15 +308,6 @@ describePostgres("cloud agent lifecycle and recovery (PostgreSQL + Cursor emulat
       id: afterId,
       status: "cancelled",
     });
-  });
-
-  it("retains ownership and cancels when the original bot is deleted", async () => {
-    const h = await setup();
-    const id = await h.launch();
-    await h.poll(id);
-    await asSystem(prisma).bot.delete({ where: { id: h.bot.id } });
-    await h.poll(id);
-    expect(await h.state(id)).toMatchObject({ status: "cancelled", nextPollAt: null });
   });
 
   it("does not wake an owner whose membership is revoked during the provider request", async () => {

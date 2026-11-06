@@ -112,7 +112,7 @@ describePostgres("saved home retention (PostgreSQL)", () => {
       data: {
         id: docker,
         spaceId: id,
-        userId: id,
+        userId: docker,
         scopeKey: docker,
         homeKey: docker,
         kind: "docker",
@@ -230,7 +230,7 @@ describePostgres("saved home retention (PostgreSQL)", () => {
       data: extra.map((computerId) => ({
         id: computerId,
         spaceId: id,
-        userId: id,
+        userId: computerId,
         scopeKey: computerId,
         homeKey: computerId,
         kind: "fake",
