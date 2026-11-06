@@ -863,10 +863,6 @@ msgstr "לחסום"
 msgid "Booting live desktop…"
 msgstr "מפעיל שולחן עבודה חי…"
 
-#: src/components/SignupSurvey.tsx
-msgid "Both"
-msgstr ""
-
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 msgid "Brain label"
 msgstr "תווית Brain"
@@ -1387,7 +1383,6 @@ msgstr "מגבלת הקשר"
 #: src/components/ConfirmIdentityDialog.tsx
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/components/SecretAskCard.tsx
-#: src/components/SignupSurvey.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Onboarding.tsx
@@ -2665,14 +2660,6 @@ msgstr "שעה"
 msgid "hours"
 msgstr "שעות"
 
-#: src/components/SignupSurvey.tsx
-msgid "How big is your team?"
-msgstr ""
-
-#: src/components/SignupSurvey.tsx
-msgid "How did you hear about us?"
-msgstr ""
-
 #: src/pages/RoutineSchedule.tsx
 msgid "How often"
 msgstr "תדירות"
@@ -2680,10 +2667,6 @@ msgstr "תדירות"
 #: src/components/teach/SkillDraftCard.tsx
 msgid "How to check"
 msgstr "איך לבדוק"
-
-#: src/components/SignupSurvey.tsx
-msgid "How will you use Labradoodle?"
-msgstr ""
 
 #: src/pages/shell/computer-release-actions.tsx
 msgid "I’m done"
@@ -3585,7 +3568,6 @@ msgstr "כתובת URL של שרת תואם OpenAI"
 msgid "Opens your browser's print dialog. Choose Save as PDF as the destination."
 msgstr "פותח את חלון ההדפסה של הדפדפן. בחר/י „שמירה כ-PDF” כיעד."
 
-#: src/components/SignupSurvey.tsx
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/Onboarding.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
@@ -3735,10 +3717,6 @@ msgstr "מושהה"
 
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
-msgstr ""
-
-#: src/components/SignupSurvey.tsx
-msgid "Personal"
 msgstr ""
 
 #: src/components/vault/VaultItemDetail.tsx
@@ -5348,14 +5326,6 @@ msgstr "סופי שבוע"
 msgid "Weekly"
 msgstr "שבועי"
 
-#: src/components/SignupSurvey.tsx
-msgid "Welcome to Labradoodle"
-msgstr ""
-
-#: src/components/SignupSurvey.tsx
-msgid "What do you most want Labradoodle to help with?"
-msgstr ""
-
 #: src/pages/shell/message-cards.tsx
 msgid "What do you want me on first?"
 msgstr "במה להתחיל קודם?"
@@ -5401,10 +5371,6 @@ msgstr ""
 #: src/components/pages/SharePopover.tsx
 msgid "Who can open this page"
 msgstr "מי יכול לפתוח את הדף הזה"
-
-#: src/components/SignupSurvey.tsx
-msgid "Work"
-msgstr ""
 
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/Auth.tsx

@@ -78,9 +78,7 @@ it("marks onboarding as usable for the desktop only once a step shows", async ()
   const marked = () => host.querySelector('[data-labradoodle-surface="onboarding"]');
   expect(marked()).toBeNull();
 
-  await act(async () =>
-    account.load({ needsModel: true, needsSignupSurvey: false }),
-  );
+  await act(async () => account.load({ needsModel: true }));
   expect(host.querySelector("h1")?.textContent).toBe("Connect a model");
   expect(marked()).not.toBeNull();
   act(() => root.unmount());
@@ -97,9 +95,7 @@ it("finds and searches a long custom endpoint list during onboarding", async () 
       </MemoryRouter>,
     ),
   );
-  await act(async () =>
-    account.load({ needsModel: true, needsSignupSurvey: false }),
-  );
+  await act(async () => account.load({ needsModel: true }));
   await act(async () => document.querySelector<HTMLElement>('[aria-label="Provider"]')!.click());
   await act(async () =>
     [...document.querySelectorAll<HTMLElement>('[role="option"]')]

@@ -59,7 +59,6 @@ async function main() {
   process.env.SCREEN_PROXY_SECRET = "ios-screenshot-screen-secret-32-chars";
   const email = "ios-screenshots@example.test";
   const emptyEmail = "ios-screenshots-empty@example.test";
-  const freeEmail = "ios-screenshots-free@example.test";
   const password = LOCAL_PASSWORD;
   const outDir = path.resolve(
     process.env.IOS_SCREENSHOT_OUT || path.join(ROOT, "test-report", "ios-screenshots"),
@@ -90,7 +89,6 @@ async function main() {
       databaseUrl,
       email,
       emptyEmail,
-      freeEmail,
       password,
     });
     await captureSections({
@@ -101,7 +99,6 @@ async function main() {
       env: {
         LABRADOODLE_SCREENSHOT_EMAIL: email,
         LABRADOODLE_SCREENSHOT_EMPTY_EMAIL: emptyEmail,
-        LABRADOODLE_SCREENSHOT_FREE_EMAIL: freeEmail,
         LABRADOODLE_SCREENSHOT_PASSWORD: password,
         LABRADOODLE_SCREENSHOT_THREAD_ID: fixture.threadId,
         LABRADOODLE_SCREENSHOT_TEAM_THREAD_ID: fixture.teamThreadId,

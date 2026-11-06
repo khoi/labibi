@@ -50,7 +50,6 @@ import {
 } from "../components/ModelConnectionPreflightNotice";
 import { ModelHeadersEditor } from "../components/ModelHeadersEditor";
 import { PageLoading } from "../components/PageLoading";
-import { SignupSurvey } from "../components/SignupSurvey";
 import { chatPath } from "../lib/bootstrap-target";
 import { useCopyText } from "../lib/copy-text";
 import { providerDisplayName } from "../lib/localized-provider-hint";
@@ -96,14 +95,11 @@ export function OnboardingPage() {
   const { t } = useLingui();
   const navigate = useNavigate();
   const fieldId = useId();
-  // The URL holds the survey and model steps, so /onboarding/survey and /onboarding/model open directly.
+  // The URL holds the model step, so /onboarding/model opens directly.
   const { step: routeStep } = useParams();
-  const linkedStep = routeStep === "survey" || routeStep === "model" ? routeStep : undefined;
+  const linkedStep = routeStep === "model" ? routeStep : undefined;
   const [creatingBot, setCreatingBot] = useState(false);
-  const [surveyDone, setSurveyDone] = useState(false);
-  const step = creatingBot ? "bot" : surveyDone ? "loading" : (linkedStep ?? "loading");
-  // The step after the survey; null until me loads.
-  const [afterSurvey, setAfterSurvey] = useState<"model" | "bot" | null>(null);
+  const step = creatingBot ? "bot" : (linkedStep ?? "loading");
   const [catalog, setCatalog] = useState<ModelCatalogEntry[]>([]);
   const [provider, setProvider] = useState("");
   const [providerAuth, setProviderAuth] = useState<ProviderAuth | undefined>();
@@ -157,12 +153,9 @@ export function OnboardingPage() {
     void Promise.all([rpc.me(), rpc.models.list().catch(() => [])])
       .then(([me, models]) => {
         setCatalog(models);
-        const next = me.needsModel ? "model" : "bot";
-        setAfterSurvey(next);
-        if (!linkedStep) goTo(me.needsSignupSurvey ? "survey" : next);
+        if (!linkedStep) goTo(me.needsModel ? "model" : "bot");
       })
       .catch(() => {
-        setAfterSurvey("bot");
         if (!linkedStep) goTo("bot");
       });
     return () => {
@@ -170,13 +163,7 @@ export function OnboardingPage() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!surveyDone || !afterSurvey) return;
-    setSurveyDone(false);
-    goTo(afterSurvey);
-  }, [surveyDone, afterSurvey]);
-
-  function goTo(next: "survey" | "model" | "bot") {
+  function goTo(next: "model" | "bot") {
     if (next === "bot") setCreatingBot(true);
     navigate(next === "bot" ? "/onboarding" : `/onboarding/${next}`, { replace: true });
   }
@@ -491,7 +478,6 @@ export function OnboardingPage() {
     <div className="min-h-full bg-background px-6 py-12" data-labradoodle-surface="onboarding">
       <AccountMenu signingOut={signingOut} onLogOut={() => void logOut()} />
       <div key={step} className="rk-step-enter mx-auto w-full max-w-[560px]">
-        {step === "survey" ? <SignupSurvey onDone={() => setSurveyDone(true)} /> : null}
         {step === "model" ? (
           <div>
             <h1 className="text-[32px] font-medium text-foreground">

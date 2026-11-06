@@ -387,17 +387,6 @@ it("opens the app after code sign-in without server setup", async () => {
   expect(router.replace).toHaveBeenCalledWith("/");
 });
 
-it("asks the signup survey before opening the app", async () => {
-  vi.mocked(passwordResetCapabilities).mockResolvedValue({ ...capabilities, emailCode: true });
-  vi.mocked(rpc).mockResolvedValue({ needsSignupSurvey: true } as never);
-  await render();
-  await type(input("Email")!, "ada@example.test");
-  await press("Continue");
-  await type(input("Code")!, "123456");
-  expect(rpc).toHaveBeenCalledWith("me");
-  expect(router.replace).toHaveBeenCalledWith("/signup-survey");
-});
-
 function buttonNamed(label: string) {
   return [...host.querySelectorAll("button")].find((button) => button.textContent === label);
 }
@@ -421,19 +410,6 @@ it("offers a secondary passkey sign-in only in sign-in mode on a supported serve
 
   act(() => buttonNamed("Sign up")!.click());
   expect(buttonNamed("Sign in with passkey")).toBeUndefined();
-});
-
-it("asks the signup survey after an external sign-in creates the account", async () => {
-  vi.mocked(passwordResetCapabilities).mockResolvedValue({
-    ...capabilities,
-    passkeyRpId: "example.invalid",
-  });
-  vi.mocked(passkeysAvailable).mockResolvedValue(true);
-  vi.mocked(signInWithPasskey).mockResolvedValue(true);
-  vi.mocked(rpc).mockResolvedValue({ needsSignupSurvey: true } as never);
-  await render();
-  await act(async () => buttonNamed("Sign in with passkey")!.click());
-  expect(router.replace).toHaveBeenCalledWith("/signup-survey");
 });
 
 it("hides passkey sign-in where the device or server cannot use it", async () => {

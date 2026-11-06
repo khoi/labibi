@@ -863,10 +863,6 @@ msgstr "Блокировать"
 msgid "Booting live desktop…"
 msgstr "Загрузка рабочего стола…"
 
-#: src/components/SignupSurvey.tsx
-msgid "Both"
-msgstr ""
-
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 msgid "Brain label"
 msgstr ""
@@ -1387,7 +1383,6 @@ msgstr ""
 #: src/components/ConfirmIdentityDialog.tsx
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/components/SecretAskCard.tsx
-#: src/components/SignupSurvey.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Onboarding.tsx
@@ -2665,14 +2660,6 @@ msgstr "час"
 msgid "hours"
 msgstr "часы"
 
-#: src/components/SignupSurvey.tsx
-msgid "How big is your team?"
-msgstr ""
-
-#: src/components/SignupSurvey.tsx
-msgid "How did you hear about us?"
-msgstr ""
-
 #: src/pages/RoutineSchedule.tsx
 msgid "How often"
 msgstr "Как часто"
@@ -2680,10 +2667,6 @@ msgstr "Как часто"
 #: src/components/teach/SkillDraftCard.tsx
 msgid "How to check"
 msgstr "Как проверить"
-
-#: src/components/SignupSurvey.tsx
-msgid "How will you use Labradoodle?"
-msgstr ""
 
 #: src/pages/shell/computer-release-actions.tsx
 msgid "I’m done"
@@ -3585,7 +3568,6 @@ msgstr "URL-адрес сервера, совместимого с OpenAI"
 msgid "Opens your browser's print dialog. Choose Save as PDF as the destination."
 msgstr "Открывает окно печати браузера. Выберите «Сохранить как PDF»."
 
-#: src/components/SignupSurvey.tsx
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/Onboarding.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
@@ -3735,10 +3717,6 @@ msgstr "Приостановлено"
 
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
-msgstr ""
-
-#: src/components/SignupSurvey.tsx
-msgid "Personal"
 msgstr ""
 
 #: src/components/vault/VaultItemDetail.tsx
@@ -5348,14 +5326,6 @@ msgstr "По выходным"
 msgid "Weekly"
 msgstr "Еженедельно"
 
-#: src/components/SignupSurvey.tsx
-msgid "Welcome to Labradoodle"
-msgstr ""
-
-#: src/components/SignupSurvey.tsx
-msgid "What do you most want Labradoodle to help with?"
-msgstr ""
-
 #: src/pages/shell/message-cards.tsx
 msgid "What do you want me on first?"
 msgstr ""
@@ -5401,10 +5371,6 @@ msgstr ""
 #: src/components/pages/SharePopover.tsx
 msgid "Who can open this page"
 msgstr "Кто может открыть эту страницу"
-
-#: src/components/SignupSurvey.tsx
-msgid "Work"
-msgstr ""
 
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/Auth.tsx

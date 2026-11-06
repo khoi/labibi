@@ -1521,34 +1521,10 @@ export const MeSchema = z.object({
   locale: z.string().nullable().optional(),
   /** Doodle's replies are read aloud as they arrive. */
   readAloud: z.boolean(),
-  /** True until a user of a billing deployment answers or skips the signup survey. Absent from older servers. */
-  needsSignupSurvey: z.boolean().optional(),
   /** The wallet bots can spend from, when this deployment offers one. Absent from older servers. */
   paymentWalletProvider: z.object({ id: z.string(), name: z.string() }).nullable().optional(),
 });
 export type Me = z.infer<typeof MeSchema>;
-
-export const SIGNUP_SURVEY_USES = ["personal", "work", "both"] as const;
-export const SIGNUP_SURVEY_TEAM_SIZES = ["1", "2-10", "11-50", "51-200", "201+"] as const;
-
-/** Team sizes as shown: en dashes for ranges, and the open-ended bucket as "200+". */
-export function signupSurveyTeamSizeLabel(size: (typeof SIGNUP_SURVEY_TEAM_SIZES)[number]): string {
-  return size === "201+" ? "200+" : size.replace("-", "–");
-}
-
-/** Every answer is optional; an empty survey records that the user skipped it. */
-export const SignupSurveySchema = z.object({
-  reason: z.string().trim().max(2000).optional(),
-  use: z.enum(SIGNUP_SURVEY_USES).optional(),
-  /** Only kept when the survey asks it; see signupSurveyAsksTeamSize. */
-  teamSize: z.enum(SIGNUP_SURVEY_TEAM_SIZES).optional(),
-  source: z.string().trim().max(500).optional(),
-});
-export type SignupSurvey = z.infer<typeof SignupSurveySchema>;
-
-export function signupSurveyAsksTeamSize(use: SignupSurvey["use"]): boolean {
-  return use === "work" || use === "both";
-}
 
 export const AppBootstrapSchema = z.object({
   me: MeSchema,

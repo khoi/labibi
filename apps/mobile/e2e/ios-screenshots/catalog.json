@@ -116,12 +116,6 @@
     "screens": ["wallet", "spending-limit"]
   },
   {
-    "id": "new-account",
-    "title": "New account",
-    "flow": "flows/new-account.yaml",
-    "screens": ["signup-survey"]
-  },
-  {
     "id": "pages",
     "title": "Pages",
     "flow": "flows/pages.yaml",

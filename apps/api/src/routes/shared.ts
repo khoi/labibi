@@ -34,7 +34,6 @@ export async function meDto(deps: RouterDeps, actor: Actor): Promise<Me> {
         timezone: true,
         locale: true,
         readAloud: true,
-        signupSurvey: { select: { userId: true } },
       },
     }),
     modelSetup(deps, actor),
@@ -77,7 +76,6 @@ export async function meDto(deps: RouterDeps, actor: Actor): Promise<Me> {
     timezone: user.timezone ?? null,
     locale: user.locale ?? null,
     readAloud: user.readAloud,
-    needsSignupSurvey: false,
     paymentWalletProvider: deps.paymentWallet
       ? { id: deps.paymentWallet.describe().id, name: deps.paymentWallet.displayName }
       : null,

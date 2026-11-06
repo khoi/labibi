@@ -863,10 +863,6 @@ msgstr "阻止"
 msgid "Booting live desktop…"
 msgstr "正在启动实时桌面…"
 
-#: src/components/SignupSurvey.tsx
-msgid "Both"
-msgstr "两者"
-
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 msgid "Brain label"
 msgstr "Brain 标签"
@@ -1387,7 +1383,6 @@ msgstr "上下文限制"
 #: src/components/ConfirmIdentityDialog.tsx
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/components/SecretAskCard.tsx
-#: src/components/SignupSurvey.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Onboarding.tsx
@@ -2665,14 +2660,6 @@ msgstr "小时"
 msgid "hours"
 msgstr "小时"
 
-#: src/components/SignupSurvey.tsx
-msgid "How big is your team?"
-msgstr "你的团队有多大？"
-
-#: src/components/SignupSurvey.tsx
-msgid "How did you hear about us?"
-msgstr "你是怎么知道我们的？"
-
 #: src/pages/RoutineSchedule.tsx
 msgid "How often"
 msgstr "频率"
@@ -2680,10 +2667,6 @@ msgstr "频率"
 #: src/components/teach/SkillDraftCard.tsx
 msgid "How to check"
 msgstr "如何检查"
-
-#: src/components/SignupSurvey.tsx
-msgid "How will you use Labradoodle?"
-msgstr "你会如何使用 Labradoodle？"
 
 #: src/pages/shell/computer-release-actions.tsx
 msgid "I’m done"
@@ -3585,7 +3568,6 @@ msgstr "OpenAI 兼容服务器 URL"
 msgid "Opens your browser's print dialog. Choose Save as PDF as the destination."
 msgstr "打开浏览器的打印对话框。目标请选择“另存为 PDF”。"
 
-#: src/components/SignupSurvey.tsx
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/Onboarding.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
@@ -3736,10 +3718,6 @@ msgstr "已暂停"
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
 msgstr "待处理"
-
-#: src/components/SignupSurvey.tsx
-msgid "Personal"
-msgstr "个人"
 
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/vault/VaultItemEditor.tsx
@@ -5348,14 +5326,6 @@ msgstr "周末"
 msgid "Weekly"
 msgstr "每周"
 
-#: src/components/SignupSurvey.tsx
-msgid "Welcome to Labradoodle"
-msgstr "欢迎使用 Labradoodle"
-
-#: src/components/SignupSurvey.tsx
-msgid "What do you most want Labradoodle to help with?"
-msgstr "你最希望 Labradoodle 帮你做什么？"
-
 #: src/pages/shell/message-cards.tsx
 msgid "What do you want me on first?"
 msgstr "你想让我先做什么？"
@@ -5401,10 +5371,6 @@ msgstr ""
 #: src/components/pages/SharePopover.tsx
 msgid "Who can open this page"
 msgstr "谁可以打开此页面"
-
-#: src/components/SignupSurvey.tsx
-msgid "Work"
-msgstr "工作"
 
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/Auth.tsx

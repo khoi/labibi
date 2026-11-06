@@ -863,10 +863,6 @@ msgstr "Engelle"
 msgid "Booting live desktop…"
 msgstr "Canlı masaüstü başlatılıyor…"
 
-#: src/components/SignupSurvey.tsx
-msgid "Both"
-msgstr "İkisi de"
-
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 msgid "Brain label"
 msgstr "Beyin etiketi"
@@ -1387,7 +1383,6 @@ msgstr "Bağlam sınırı"
 #: src/components/ConfirmIdentityDialog.tsx
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/components/SecretAskCard.tsx
-#: src/components/SignupSurvey.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Onboarding.tsx
@@ -2665,14 +2660,6 @@ msgstr "saat"
 msgid "hours"
 msgstr "saat"
 
-#: src/components/SignupSurvey.tsx
-msgid "How big is your team?"
-msgstr "Takımın ne kadar büyük?"
-
-#: src/components/SignupSurvey.tsx
-msgid "How did you hear about us?"
-msgstr "Bizi nereden duydun?"
-
 #: src/pages/RoutineSchedule.tsx
 msgid "How often"
 msgstr "Ne sıklıkla"
@@ -2680,10 +2667,6 @@ msgstr "Ne sıklıkla"
 #: src/components/teach/SkillDraftCard.tsx
 msgid "How to check"
 msgstr "Nasıl kontrol edilir"
-
-#: src/components/SignupSurvey.tsx
-msgid "How will you use Labradoodle?"
-msgstr "Labradoodle'yu nasıl kullanacaksın?"
 
 #: src/pages/shell/computer-release-actions.tsx
 msgid "I’m done"
@@ -3585,7 +3568,6 @@ msgstr "OpenAI uyumlu sunucu URL'si"
 msgid "Opens your browser's print dialog. Choose Save as PDF as the destination."
 msgstr "Tarayıcınızın yazdırma penceresini açar. Hedef olarak PDF olarak kaydet'i seçin."
 
-#: src/components/SignupSurvey.tsx
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/Onboarding.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
@@ -3736,10 +3718,6 @@ msgstr "Duraklatıldı"
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
 msgstr "Beklemede"
-
-#: src/components/SignupSurvey.tsx
-msgid "Personal"
-msgstr "Kişisel"
 
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/vault/VaultItemEditor.tsx
@@ -5348,14 +5326,6 @@ msgstr "Hafta sonları"
 msgid "Weekly"
 msgstr "Haftalık"
 
-#: src/components/SignupSurvey.tsx
-msgid "Welcome to Labradoodle"
-msgstr "Labradoodle'ya hoş geldin"
-
-#: src/components/SignupSurvey.tsx
-msgid "What do you most want Labradoodle to help with?"
-msgstr "Labradoodle'nun en çok neye yardım etmesini istiyorsun?"
-
 #: src/pages/shell/message-cards.tsx
 msgid "What do you want me on first?"
 msgstr "İlk olarak neyle ilgilenmemi istiyorsun?"
@@ -5401,10 +5371,6 @@ msgstr ""
 #: src/components/pages/SharePopover.tsx
 msgid "Who can open this page"
 msgstr "Bu sayfayı kimler açabilir"
-
-#: src/components/SignupSurvey.tsx
-msgid "Work"
-msgstr "İş"
 
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/Auth.tsx

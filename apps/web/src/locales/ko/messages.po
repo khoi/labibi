@@ -863,10 +863,6 @@ msgstr "차단"
 msgid "Booting live desktop…"
 msgstr "라이브 데스크톱 시작 중…"
 
-#: src/components/SignupSurvey.tsx
-msgid "Both"
-msgstr ""
-
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 msgid "Brain label"
 msgstr ""
@@ -1387,7 +1383,6 @@ msgstr "컨텍스트 한도"
 #: src/components/ConfirmIdentityDialog.tsx
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/components/SecretAskCard.tsx
-#: src/components/SignupSurvey.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Onboarding.tsx
@@ -2665,14 +2660,6 @@ msgstr "시간"
 msgid "hours"
 msgstr "시간"
 
-#: src/components/SignupSurvey.tsx
-msgid "How big is your team?"
-msgstr ""
-
-#: src/components/SignupSurvey.tsx
-msgid "How did you hear about us?"
-msgstr ""
-
 #: src/pages/RoutineSchedule.tsx
 msgid "How often"
 msgstr "실행 주기"
@@ -2680,10 +2667,6 @@ msgstr "실행 주기"
 #: src/components/teach/SkillDraftCard.tsx
 msgid "How to check"
 msgstr "완료 확인 방법"
-
-#: src/components/SignupSurvey.tsx
-msgid "How will you use Labradoodle?"
-msgstr ""
 
 #: src/pages/shell/computer-release-actions.tsx
 msgid "I’m done"
@@ -3585,7 +3568,6 @@ msgstr "OpenAI 호환 서버 주소"
 msgid "Opens your browser's print dialog. Choose Save as PDF as the destination."
 msgstr "브라우저의 인쇄 대화상자를 엽니다. 대상으로 PDF로 저장을 선택하세요."
 
-#: src/components/SignupSurvey.tsx
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/Onboarding.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
@@ -3735,10 +3717,6 @@ msgstr "일시 중지됨"
 
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
-msgstr ""
-
-#: src/components/SignupSurvey.tsx
-msgid "Personal"
 msgstr ""
 
 #: src/components/vault/VaultItemDetail.tsx
@@ -5348,14 +5326,6 @@ msgstr "주말"
 msgid "Weekly"
 msgstr "매주"
 
-#: src/components/SignupSurvey.tsx
-msgid "Welcome to Labradoodle"
-msgstr ""
-
-#: src/components/SignupSurvey.tsx
-msgid "What do you most want Labradoodle to help with?"
-msgstr ""
-
 #: src/pages/shell/message-cards.tsx
 msgid "What do you want me on first?"
 msgstr ""
@@ -5401,10 +5371,6 @@ msgstr ""
 #: src/components/pages/SharePopover.tsx
 msgid "Who can open this page"
 msgstr "이 페이지를 열 수 있는 사람"
-
-#: src/components/SignupSurvey.tsx
-msgid "Work"
-msgstr ""
 
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/Auth.tsx

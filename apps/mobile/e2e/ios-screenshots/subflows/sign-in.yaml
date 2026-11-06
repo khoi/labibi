@@ -24,7 +24,6 @@ appId: com.labradoodle.app
 - tapOn:
     text: "Don't allow"
     optional: true
-# A new account answers the signup survey before the inbox.
 - extendedWaitUntil:
-    visible: "Account|.*How did you hear about us.*"
+    visible: "Account"
     timeout: 40000

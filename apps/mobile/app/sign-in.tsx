@@ -214,13 +214,10 @@ export default function SignIn() {
     }
   }
 
-  // Any sign-in can create the account (a code, SSO), so ask the server rather than the form.
   async function openApp() {
     if (hasIncomingShare()) return router.replace("/share");
-    const me = await rpc("me").catch(() => null);
     const [chat] = mode === "up" ? await rpc("threads/list").catch(() => []) : [];
     if (chat) await rpc("onboarding/promptFocus", { threadId: chat.id }).catch(() => undefined);
-    if (me?.needsSignupSurvey) return router.replace("/signup-survey");
     router.replace(chat ? { pathname: "/thread", params: { threadId: chat.id } } : "/");
   }
 

@@ -73,13 +73,10 @@ export async function seedIosScreenshotFixture(input: {
   databaseUrl: string;
   email: string;
   emptyEmail: string;
-  freeEmail: string;
   password: string;
 }): Promise<IosScreenshotFixture> {
   const populated = await ensureUser(input.apiUrl, input.email, input.password, "Screenshot User");
   const empty = await ensureUser(input.apiUrl, input.emptyEmail, input.password, "Empty User");
-  // Signs in without a survey answer, to show what a new account meets first.
-  await ensureUser(input.apiUrl, input.freeEmail, input.password, "Free User");
   // Someone else in the screenshot user's workspace, so a chat can hold more than one person.
   const teammate = await ensureUser(
     input.apiUrl,
@@ -93,7 +90,6 @@ export async function seedIosScreenshotFixture(input: {
   }
 
   const me = await rpc<MeRow>(input.apiUrl, populated.headers, "me");
-  const emptyMe = await rpc<MeRow>(input.apiUrl, empty.headers, "me");
   const teammateMe = await rpc<MeRow>(input.apiUrl, teammate.headers, "me");
   const doodle = await rpc<{ id: string }>(input.apiUrl, populated.headers, "doodle/get");
   const workspace = await rpc<{ members: { userId: string }[] }>(
@@ -320,14 +316,6 @@ export async function seedIosScreenshotFixture(input: {
       userId: me.userId,
     });
     await ensureWaitingKeyRequest(input.apiUrl, populated.headers, cards.id);
-    for (const userId of [me.userId, emptyMe.userId]) {
-      // Hosted sign-ups answer a survey first; the free user's flow shows it.
-      await db.prisma.signupSurvey.upsert({
-        where: { userId },
-        create: { userId, use: "work" },
-        update: {},
-      });
-    }
     return {
       threadId: research.id,
       teamThreadId: team.id,

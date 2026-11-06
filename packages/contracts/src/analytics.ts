@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { SIGNUP_SURVEY_TEAM_SIZES, SIGNUP_SURVEY_USES } from "./domain.js";
 import { RUN_ERROR_KINDS, RunTriggerSchema } from "./runs.js";
 
 // No free-form properties: this is also the final allowlist at the external boundary.
@@ -72,15 +71,6 @@ export const AnalyticsEvent = z.discriminatedUnion("name", [
     .strict(),
   // A manual edit in bot settings; which setting only, never its value.
   z.object({ name: z.literal("bot_setting_changed"), setting: AnalyticsBotSetting }).strict(),
-  // Only the fixed choices; free-text answers stay in the database.
-  z
-    .object({
-      name: z.literal("signup_survey_answered"),
-      skipped: z.boolean(),
-      use: z.enum(SIGNUP_SURVEY_USES).optional(),
-      teamSize: z.enum(SIGNUP_SURVEY_TEAM_SIZES).optional(),
-    })
-    .strict(),
 ]);
 export type AnalyticsEvent = z.infer<typeof AnalyticsEvent>;
 

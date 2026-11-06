@@ -14,7 +14,7 @@ import {
   verifyMcpInstall,
 } from "@labradoodle/adapters";
 import type { Actor } from "@labradoodle/contracts";
-import { MCP_OAUTH_REDIRECT_MISMATCH, signupSurveyAsksTeamSize } from "@labradoodle/contracts";
+import { MCP_OAUTH_REDIRECT_MISMATCH } from "@labradoodle/contracts";
 import { comparePlugins, containsSecret, matchesPluginQuery } from "@labradoodle/core";
 import type { Prisma } from "@labradoodle/db";
 import { IsolationError, itemSecretIn } from "@labradoodle/db";
@@ -777,31 +777,6 @@ export function mcpRoutes(ctx: RouterContext) {
       },
     },
     onboarding: {
-      signupSurvey: authed.onboarding.signupSurvey.handler(async ({ context, input }) => {
-        const answers = {
-          reason: input.reason || null,
-          use: input.use ?? null,
-          teamSize: signupSurveyAsksTeamSize(input.use) ? (input.teamSize ?? null) : null,
-          source: input.source || null,
-        };
-        const saved = await deps.prisma.signupSurvey.upsert({
-          where: { userId: context.actor.userId },
-          create: { userId: context.actor.userId, ...answers },
-          update: answers,
-        });
-        deps.analytics?.capture(
-          context.actor.userId,
-          {
-            name: "signup_survey_answered",
-            skipped: Object.values(answers).every((answer) => answer === null),
-            ...(answers.use ? { use: answers.use } : {}),
-            ...(answers.teamSize ? { teamSize: answers.teamSize } : {}),
-          },
-          // The first save's time keeps a resubmission a duplicate of the same event.
-          { id: context.actor.userId, at: saved.createdAt },
-        );
-        return { ok: true as const };
-      }),
       promptFocus: authed.onboarding.promptFocus.handler(async ({ context, input }) => {
         await promptFocus(onboardingDeps, context.actor, input.threadId);
         return { ok: true as const };

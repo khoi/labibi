@@ -79,7 +79,6 @@ import {
   ServerUpdateRequestSchema,
   ServerUpdateRunSchema,
   ServerUpdateStatusSchema,
-  SignupSurveySchema,
   SkillPlaybookSchema,
   SpaceInviteLinkSchema,
   SpaceInvitePreviewSchema,
@@ -808,8 +807,6 @@ export const appContract = {
     },
   },
   onboarding: {
-    /** Record the optional signup survey; an empty submission marks it skipped. */
-    signupSurvey: oc.input(SignupSurveySchema).output(z.object({ ok: z.literal(true) })),
     /** Post the focus choice card when the thread is still idle. */
     promptFocus: oc.input(threadTarget).output(z.object({ ok: z.literal(true) })),
     /** Answer the focus choice; posts the app cards. */

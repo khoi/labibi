@@ -863,10 +863,6 @@ msgstr "Zablokuj"
 msgid "Booting live desktop…"
 msgstr "Uruchamianie pulpitu na żywo…"
 
-#: src/components/SignupSurvey.tsx
-msgid "Both"
-msgstr "Oba"
-
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 msgid "Brain label"
 msgstr "Etykieta mózgu"
@@ -1387,7 +1383,6 @@ msgstr "Limit kontekstu"
 #: src/components/ConfirmIdentityDialog.tsx
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/components/SecretAskCard.tsx
-#: src/components/SignupSurvey.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Onboarding.tsx
@@ -2665,14 +2660,6 @@ msgstr "godzina"
 msgid "hours"
 msgstr "godz."
 
-#: src/components/SignupSurvey.tsx
-msgid "How big is your team?"
-msgstr "Jak duży jest Twój zespół?"
-
-#: src/components/SignupSurvey.tsx
-msgid "How did you hear about us?"
-msgstr "Skąd o nas wiesz?"
-
 #: src/pages/RoutineSchedule.tsx
 msgid "How often"
 msgstr "Jak często"
@@ -2680,10 +2667,6 @@ msgstr "Jak często"
 #: src/components/teach/SkillDraftCard.tsx
 msgid "How to check"
 msgstr "Jak sprawdzić"
-
-#: src/components/SignupSurvey.tsx
-msgid "How will you use Labradoodle?"
-msgstr "Jak będziesz korzystać z Labradoodle?"
 
 #: src/pages/shell/computer-release-actions.tsx
 msgid "I’m done"
@@ -3585,7 +3568,6 @@ msgstr "Adres serwera zgodnego z OpenAI"
 msgid "Opens your browser's print dialog. Choose Save as PDF as the destination."
 msgstr "Otwiera okno drukowania przeglądarki. Jako drukarkę wybierz Zapisz jako PDF."
 
-#: src/components/SignupSurvey.tsx
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/Onboarding.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
@@ -3736,10 +3718,6 @@ msgstr "Wstrzymano"
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
 msgstr "Oczekuje"
-
-#: src/components/SignupSurvey.tsx
-msgid "Personal"
-msgstr "Osobiste"
 
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/vault/VaultItemEditor.tsx
@@ -5348,14 +5326,6 @@ msgstr "Weekendy"
 msgid "Weekly"
 msgstr "Co tydzień"
 
-#: src/components/SignupSurvey.tsx
-msgid "Welcome to Labradoodle"
-msgstr "Witaj w Labradoodle"
-
-#: src/components/SignupSurvey.tsx
-msgid "What do you most want Labradoodle to help with?"
-msgstr "W czym Labradoodle ma Ci najbardziej pomóc?"
-
 #: src/pages/shell/message-cards.tsx
 msgid "What do you want me on first?"
 msgstr "Od czego mam zacząć?"
@@ -5401,10 +5371,6 @@ msgstr "Gdzie ma działać Doodle?"
 #: src/components/pages/SharePopover.tsx
 msgid "Who can open this page"
 msgstr "Kto może otworzyć tę stronę"
-
-#: src/components/SignupSurvey.tsx
-msgid "Work"
-msgstr "Praca"
 
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/Auth.tsx

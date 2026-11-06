@@ -863,10 +863,6 @@ msgstr "ブロック"
 msgid "Booting live desktop…"
 msgstr "ライブデスクトップを起動中…"
 
-#: src/components/SignupSurvey.tsx
-msgid "Both"
-msgstr "両方"
-
 #: src/pages/memory-providers/SerenitySettingsForm.tsx
 msgid "Brain label"
 msgstr "Brainラベル"
@@ -1387,7 +1383,6 @@ msgstr "コンテキスト上限"
 #: src/components/ConfirmIdentityDialog.tsx
 #: src/components/integrations/IntegrationSetup.tsx
 #: src/components/SecretAskCard.tsx
-#: src/components/SignupSurvey.tsx
 #: src/components/vault/VaultItemEditor.tsx
 #: src/pages/Auth.tsx
 #: src/pages/Onboarding.tsx
@@ -2665,14 +2660,6 @@ msgstr "時間"
 msgid "hours"
 msgstr "時間"
 
-#: src/components/SignupSurvey.tsx
-msgid "How big is your team?"
-msgstr "チームの規模は？"
-
-#: src/components/SignupSurvey.tsx
-msgid "How did you hear about us?"
-msgstr "Labradoodleを何で知りましたか？"
-
 #: src/pages/RoutineSchedule.tsx
 msgid "How often"
 msgstr "頻度"
@@ -2680,10 +2667,6 @@ msgstr "頻度"
 #: src/components/teach/SkillDraftCard.tsx
 msgid "How to check"
 msgstr "確認方法"
-
-#: src/components/SignupSurvey.tsx
-msgid "How will you use Labradoodle?"
-msgstr "Labradoodleをどのように使いますか？"
 
 #: src/pages/shell/computer-release-actions.tsx
 msgid "I’m done"
@@ -3585,7 +3568,6 @@ msgstr "OpenAI互換サーバーのURL"
 msgid "Opens your browser's print dialog. Choose Save as PDF as the destination."
 msgstr "ブラウザの印刷ダイアログを開きます。送信先に「PDF に保存」を選んでください。"
 
-#: src/components/SignupSurvey.tsx
 #: src/pages/model-settings/connection-controls.tsx
 #: src/pages/Onboarding.tsx
 #: src/pages/VoiceSettingsOverlay.tsx
@@ -3736,10 +3718,6 @@ msgstr "一時停止中"
 #: src/pages/PluginSubmissionsPanel.tsx
 msgid "Pending"
 msgstr ""
-
-#: src/components/SignupSurvey.tsx
-msgid "Personal"
-msgstr "個人"
 
 #: src/components/vault/VaultItemDetail.tsx
 #: src/components/vault/VaultItemEditor.tsx
@@ -5348,14 +5326,6 @@ msgstr "週末"
 msgid "Weekly"
 msgstr "毎週"
 
-#: src/components/SignupSurvey.tsx
-msgid "Welcome to Labradoodle"
-msgstr "Labradoodleへようこそ"
-
-#: src/components/SignupSurvey.tsx
-msgid "What do you most want Labradoodle to help with?"
-msgstr "Labradoodleに最も手伝ってほしいことは何ですか？"
-
 #: src/pages/shell/message-cards.tsx
 msgid "What do you want me on first?"
 msgstr "まず何から取りかかりましょうか？"
@@ -5401,10 +5371,6 @@ msgstr ""
 #: src/components/pages/SharePopover.tsx
 msgid "Who can open this page"
 msgstr "このページを開けるユーザー"
-
-#: src/components/SignupSurvey.tsx
-msgid "Work"
-msgstr "仕事"
 
 #: src/components/ToolActivityDisclosure.tsx
 #: src/pages/Auth.tsx

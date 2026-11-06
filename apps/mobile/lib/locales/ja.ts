@@ -271,7 +271,6 @@ export const JA_MESSAGES: Record<string, string> = {
   "Mark as unread": "未読にする",
   "No messages yet": "まだメッセージはありません",
   "No results": "結果はありません",
-  Personal: "個人",
   Recent: "最近",
   Search: "検索",
   "Search conversations, files, and routines": "会話、ファイル、ルーティンを検索",
@@ -965,13 +964,6 @@ export const JA_MESSAGES: Record<string, string> = {
   "{label}, above": "{label}、上",
   "{label}, below": "{label}、下",
   Work: "仕事",
-  Both: "両方",
-  "How will you use Labradoodle?": "Labradoodleをどのように使いますか？",
-  "What do you most want Labradoodle to help with?":
-    "Labradoodleで一番手伝ってほしいことは何ですか？",
-  "How big is your team?": "チームの規模はどのくらいですか？",
-  "How did you hear about us?": "Labradoodleを何で知りましたか？",
-  "Welcome to Labradoodle": "Labradoodleへようこそ",
   "Stop all workers and confirm that provider operations have stopped before releasing this computer.":
     "このコンピューターを解放する前に、すべてのワーカーを停止し、プロバイダーの処理が停止したことを確認してください。",
   "Workers and operations are stopped": "ワーカーと処理は停止済み",
