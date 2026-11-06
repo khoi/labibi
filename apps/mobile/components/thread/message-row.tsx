@@ -371,6 +371,7 @@ export const MessageRow = memo(function MessageRow({
       </View>
     );
   }
+  const mine = message.role === "user" && !author;
   const layout = messageRowLayout(message.blocks, {
     gutter: Boolean(activity),
     inGroup,
@@ -394,7 +395,7 @@ export const MessageRow = memo(function MessageRow({
           flexDirection: "row",
           alignItems: "flex-start",
           gap: 8,
-          justifyContent: message.role === "user" ? "flex-end" : "flex-start",
+          justifyContent: mine ? "flex-end" : "flex-start",
         }}
       >
         {activity ? (
@@ -467,7 +468,7 @@ export const MessageRow = memo(function MessageRow({
                 flexWrap: "wrap",
                 gap: 4,
                 marginTop: 4,
-                justifyContent: message.role === "user" ? "flex-end" : "flex-start",
+                justifyContent: mine ? "flex-end" : "flex-start",
               }}
             >
               {[...displayedReactions].map(([emoji, count]) => (
