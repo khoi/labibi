@@ -629,7 +629,7 @@ msgstr "İzin ver"
 
 #: src/components/AskCard.tsx
 msgid "Allow in this workspace"
-msgstr ""
+msgstr "Bu çalışma alanında izin ver"
 
 #: src/lib/dictation.ts
 msgid "Allow Labradoodle to use Speech Recognition and the microphone in System Settings."
@@ -645,7 +645,7 @@ msgstr "Yazmaya izin ver"
 
 #: src/components/AskCard.tsx
 msgid "Allowed in this workspace"
-msgstr ""
+msgstr "Bu çalışma alanında izin verildi"
 
 #: src/components/AskCard.tsx
 msgid "Allowed once"
@@ -1008,7 +1008,6 @@ msgstr "İptal edildi"
 msgid "cancelled"
 msgstr "iptal edildi"
 
-#: src/components/AskCard.tsx
 #: src/pages/RoutineRunHistory.tsx
 msgid "Cancelled"
 msgstr "İptal edildi"
@@ -1057,7 +1056,6 @@ msgstr "Değiştiriliyor…"
 msgid "Chart failed to render: {error}"
 msgstr "Grafik çizilemedi: {error}"
 
-#: src/lib/identity-display.ts
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/SpaceSearch.tsx
 msgid "Chat"
@@ -1387,8 +1385,8 @@ msgstr "Model bağla"
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
-msgid "Connect a model in Settings before running bots."
-msgstr "Botları çalıştırmadan önce Ayarlar'dan bir model bağlayın."
+msgid "Connect a model in Settings to use Doodle."
+msgstr "Doodle'ı kullanmak için Ayarlar'da bir model bağla."
 
 #: src/pages/model-settings/connection-controls.tsx
 msgid "Connect API key"
@@ -2056,17 +2054,9 @@ msgstr "Hesap oluştur"
 msgid "Create Routine"
 msgstr "Rutin oluştur"
 
-#: src/components/AskCard.tsx
-msgid "Create space"
-msgstr "Alan oluştur"
-
 #: src/pages/Auth.tsx
 msgid "Create your Labradoodle"
 msgstr "Labradoodle hesabını oluştur"
-
-#: src/components/AskCard.tsx
-msgid "Created"
-msgstr "Oluşturuldu"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Credential"
@@ -3866,7 +3856,6 @@ msgstr "Çıktı"
 
 #: src/components/pages/SharePopover.tsx
 #: src/components/SpaceMembersSettings.tsx
-#: src/lib/identity-display.ts
 msgid "Owner"
 msgstr "Sahip"
 

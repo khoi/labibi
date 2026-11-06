@@ -95,9 +95,7 @@ describe("run error recovery", () => {
     const node = mount(
       createElement(RunErrorSheet, { details, onClose, action: { label: "Add model", onPress } }),
     );
-    expect(node.textContent).toContain(
-      "This bot's reply stopped at its key's weekly limit. Your own key has its own limits.",
-    );
+    expect(node.textContent).toContain("Doodle's reply stopped at the key's weekly limit.");
     expect(node.textContent).not.toContain("opens connection settings");
     expect(node.textContent).not.toContain("opens this bot's settings");
     expect(node.textContent).not.toContain("403:");

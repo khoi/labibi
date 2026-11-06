@@ -160,8 +160,8 @@ export const NL_MESSAGES: Record<string, string> = {
   "Your OpenAI": "Jouw OpenAI",
   "Your Anthropic": "Jouw Anthropic",
   "Your model provider": "Jouw modelaanbieder",
-  "Connect a model in Settings before running bots.":
-    "Verbind een model in Instellingen voordat je bots uitvoert.",
+  "Connect a model in Settings to use Doodle.":
+    "Verbind een model in Instellingen om Doodle te gebruiken.",
   "Connect your own API key in Models or choose Labradoodle credits in Billing.":
     "Verbind je eigen API-sleutel bij Modellen of kies Labradoodle-tegoed bij Facturatie.",
   "The model provider returned an error.": "De modelaanbieder heeft een fout teruggegeven.",
@@ -333,7 +333,6 @@ export const NL_MESSAGES: Record<string, string> = {
   "Save to Vault": "Opslaan in kluis",
   "Could not speak": "Spreken mislukt",
   "Could not update reaction": "Reactie bijwerken mislukt",
-  Created: "Aangemaakt",
   "Delete…": "Verwijderen…",
   Denied: "Geweigerd",
   Done: "Klaar",
@@ -437,7 +436,6 @@ export const NL_MESSAGES: Record<string, string> = {
   Title: "Titel",
   Members: "Leden",
   "Creating…": "Bezig met aanmaken…",
-  "Create space": "Space aanmaken",
   Active: "Actief",
   "Could not load routine": "Routine laden mislukt",
   "Git event": "Git-gebeurtenis",
@@ -696,8 +694,8 @@ export const NL_MESSAGES: Record<string, string> = {
   "Stream replies": "Antwoorden streamen",
   "Load web images automatically": "Webafbeeldingen automatisch laden",
   System: "Systeem",
-  "This permanently deletes your account, bots, conversations, memories, files, and saved connections. This cannot be undone.":
-    "Hiermee worden je account, bots, gesprekken, herinneringen, bestanden en opgeslagen verbindingen definitief verwijderd. Dit kan niet ongedaan worden gemaakt.",
+  "This permanently deletes your account, chats, memories, files, and saved connections. This cannot be undone.":
+    "Hiermee worden je account, chats, herinneringen, bestanden en opgeslagen verbindingen definitief verwijderd. Dit kan niet ongedaan worden gemaakt.",
   "Try again.": "Probeer het opnieuw.",
   Usage: "Gebruik",
   "Your account": "Je account",
@@ -708,8 +706,8 @@ export const NL_MESSAGES: Record<string, string> = {
   "New password": "Nieuw wachtwoord",
   "Passwords do not match": "Wachtwoorden komen niet overeen",
   "Allow once": "Een keer toestaan",
-  "Allow in this space": "Toestaan in deze space",
-  "Allowed in this space": "Toegestaan in deze space",
+  "Allow in this workspace": "Toestaan in deze werkruimte",
+  "Allowed in this workspace": "Toegestaan in deze werkruimte",
   "Always allow": "Altijd toestaan",
   "Always allow this tool": "Deze tool altijd toestaan",
   "Always allow {site}": "{site} altijd toestaan",
@@ -941,14 +939,14 @@ export const NL_MESSAGES: Record<string, string> = {
     "De provider kon het voor deze bot gekozen model niet aanbieden.",
   "The bot couldn't finish its reply. Technical details includes the reported error.":
     "De bot kon zijn antwoord niet afronden. De technische details bevatten de gemelde fout.",
-  "This bot's reply stopped at its key's daily limit. Your own key has its own limits.":
-    "Het antwoord van deze bot stopte bij de daglimiet van zijn sleutel. Je eigen sleutel heeft eigen limieten.",
-  "This bot's reply stopped at its key's weekly limit. Your own key has its own limits.":
-    "Het antwoord van deze bot stopte bij de weeklimiet van zijn sleutel. Je eigen sleutel heeft eigen limieten.",
-  "This bot's reply stopped at its key's monthly limit. Your own key has its own limits.":
-    "Het antwoord van deze bot stopte bij de maandlimiet van zijn sleutel. Je eigen sleutel heeft eigen limieten.",
-  "This bot's reply stopped at its key's usage limit. Your own key has its own limits.":
-    "Het antwoord van deze bot stopte bij de gebruikslimiet van zijn sleutel. Je eigen sleutel heeft eigen limieten.",
+  "Doodle's reply stopped at the key's daily limit.":
+    "Het antwoord van Doodle stopte bij de daglimiet van de sleutel.",
+  "Doodle's reply stopped at the key's weekly limit.":
+    "Het antwoord van Doodle stopte bij de weeklimiet van de sleutel.",
+  "Doodle's reply stopped at the key's monthly limit.":
+    "Het antwoord van Doodle stopte bij de maandlimiet van de sleutel.",
+  "Doodle's reply stopped at the key's usage limit.":
+    "Het antwoord van Doodle stopte bij de gebruikslimiet van de sleutel.",
   "Sign in with passkey": "Aanmelden met passkey",
   Passkeys: "Passkeys",
   Passkey: "Passkey",

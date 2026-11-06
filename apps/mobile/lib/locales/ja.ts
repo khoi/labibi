@@ -167,8 +167,8 @@ export const JA_MESSAGES: Record<string, string> = {
   "Your OpenAI": "お使いのOpenAI",
   "Your Anthropic": "お使いのAnthropic",
   "Your model provider": "お使いのモデルプロバイダー",
-  "Connect a model in Settings before running bots.":
-    "ボットを実行する前に、設定でモデルを接続してください。",
+  "Connect a model in Settings to use Doodle.":
+    "Doodle を使うには、設定でモデルを接続してください。",
   "Connect your own API key in Models or choose Labradoodle credits in Billing.":
     "モデルで自分のAPIキーを接続するか、請求でLabradoodleクレジットを選択してください。",
   "The model provider returned an error.": "モデルプロバイダーがエラーを返しました。",
@@ -322,7 +322,6 @@ export const JA_MESSAGES: Record<string, string> = {
   "Save to Vault": "保管庫に保存",
   "Could not speak": "読み上げできませんでした",
   "Could not update reaction": "リアクションを更新できませんでした",
-  Created: "作成済み",
   "Delete…": "削除…",
   Denied: "拒否",
   Done: "完了",
@@ -428,7 +427,6 @@ export const JA_MESSAGES: Record<string, string> = {
   Title: "タイトル",
   Members: "メンバー",
   "Creating…": "作成中…",
-  "Create space": "スペースを作成",
   Active: "有効",
   "Could not load routine": "ルーティンを読み込めませんでした",
   "Git event": "Gitイベント",
@@ -686,8 +684,8 @@ export const JA_MESSAGES: Record<string, string> = {
   "Stream replies": "返信をストリーミング",
   "Load web images automatically": "Web画像を自動で読み込む",
   System: "システム",
-  "This permanently deletes your account, bots, conversations, memories, files, and saved connections. This cannot be undone.":
-    "アカウント、ボット、会話、メモリ、ファイル、保存済みの接続が完全に削除されます。この操作は元に戻せません。",
+  "This permanently deletes your account, chats, memories, files, and saved connections. This cannot be undone.":
+    "アカウント、チャット、メモリ、ファイル、保存済みの接続が完全に削除されます。この操作は元に戻せません。",
   "Try again.": "もう一度お試しください。",
   Usage: "使用量",
   "Your account": "あなたのアカウント",
@@ -698,8 +696,8 @@ export const JA_MESSAGES: Record<string, string> = {
   "New password": "新しいパスワード",
   "Passwords do not match": "パスワードが一致しません",
   "Allow once": "今回のみ許可",
-  "Allow in this space": "このスペースで許可",
-  "Allowed in this space": "このスペースで許可しました",
+  "Allow in this workspace": "このワークスペースで許可",
+  "Allowed in this workspace": "このワークスペースで許可しました",
   "Always allow": "常に許可",
   "Always allow this tool": "このツールを常に許可",
   "Always allow {site}": "{site} を常に許可",
@@ -930,14 +928,14 @@ export const JA_MESSAGES: Record<string, string> = {
     "プロバイダーはこのボットに選択されたモデルを提供できませんでした。",
   "The bot couldn't finish its reply. Technical details includes the reported error.":
     "ボットは返信を完了できませんでした。報告されたエラーは技術的な詳細で確認できます。",
-  "This bot's reply stopped at its key's daily limit. Your own key has its own limits.":
-    "このボットの返信は、キーの1日の上限に達したため停止しました。ご自身のキーには別の上限があります。",
-  "This bot's reply stopped at its key's weekly limit. Your own key has its own limits.":
-    "このボットの返信は、キーの週間上限に達したため停止しました。ご自身のキーには別の上限があります。",
-  "This bot's reply stopped at its key's monthly limit. Your own key has its own limits.":
-    "このボットの返信は、キーの月間上限に達したため停止しました。ご自身のキーには別の上限があります。",
-  "This bot's reply stopped at its key's usage limit. Your own key has its own limits.":
-    "このボットの返信は、キーの使用量上限に達したため停止しました。ご自身のキーには別の上限があります。",
+  "Doodle's reply stopped at the key's daily limit.":
+    "キーの1日の上限に達したため、Doodle の返信が停止しました。",
+  "Doodle's reply stopped at the key's weekly limit.":
+    "キーの1週間の上限に達したため、Doodle の返信が停止しました。",
+  "Doodle's reply stopped at the key's monthly limit.":
+    "キーの1か月の上限に達したため、Doodle の返信が停止しました。",
+  "Doodle's reply stopped at the key's usage limit.":
+    "キーの利用上限に達したため、Doodle の返信が停止しました。",
   "Sign in with passkey": "パスキーでログイン",
   Passkeys: "パスキー",
   Passkey: "パスキー",

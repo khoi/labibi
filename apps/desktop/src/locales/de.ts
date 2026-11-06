@@ -58,13 +58,13 @@ export const DE_MESSAGES: Record<string, string> = {
     "Das Update konnte nicht abgeschlossen werden. Versuche es später erneut.",
   "Could not reach the update server.": "Der Update-Server ist nicht erreichbar.",
   "Allow local computer access?": "Zugriff auf den lokalen Computer erlauben?",
-  "Allow bots to use this computer?": "Bots die Nutzung dieses Computers erlauben?",
+  "Allow Doodle to use this computer?": "Doodle die Nutzung dieses Computers erlauben?",
   Cancel: "Abbrechen",
   Allow: "Erlauben",
-  "Bots on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
-    "Bots auf {host} können Befehle ausführen, Dateien lesen und ändern und Apps mit den Berechtigungen deines Kontos starten. Du kannst den Zugriff in den Einstellungen widerrufen.",
-  "Bots on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
-    "Bots auf dieser lokalen Instanz können Befehle ausführen, Dateien lesen und ändern und Apps mit den Berechtigungen deines Kontos starten. Du kannst den Zugriff im App-Menü widerrufen.",
+  "Doodle on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
+    "Doodle auf {host} kann Befehle ausführen, Dateien lesen und ändern und Apps mit den Berechtigungen deines Kontos starten. Du kannst den Zugriff in den Einstellungen widerrufen.",
+  "Doodle on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
+    "Doodle auf dieser lokalen Instanz kann Befehle ausführen, Dateien lesen und ändern und Apps mit den Berechtigungen deines Kontos starten. Du kannst den Zugriff im App-Menü widerrufen.",
   "Local computer access requires an app-managed local instance.":
     "Der Zugriff auf den lokalen Computer erfordert eine von der App verwaltete lokale Instanz.",
   "Local server is unavailable": "Der lokale Server ist nicht verfügbar",

@@ -17,7 +17,7 @@ import { blockText } from "../../lib/api";
 import { mobileTokens } from "../../lib/appearance";
 import type { MobileArtifactTarget } from "../../lib/artifact-open";
 import { openMobileArtifact } from "../../lib/artifact-open";
-import { allowsSpace } from "../../lib/ask-action-label";
+import { allowsWorkspace } from "../../lib/ask-action-label";
 import { plainAskTitle } from "../../lib/ask-title";
 import { DOODLE_SPEAKER } from "../../lib/doodle";
 import { t, useI18n } from "../../lib/i18n";
@@ -53,12 +53,8 @@ function formatApprovalAnswer(
   approval: boolean,
 ): string {
   if (!answer) return t("Answered");
-  const selectedAction = actions?.find((action) => action.id === answer);
-  const outcome = selectedAction?.outcome;
-  if (approval && outcome === "created") return t("Created");
-  if (approval && outcome === "cancelled") return t("Cancelled");
   if (approval && answer === "allow")
-    return allowsSpace(actions) ? t("Allowed in this space") : t("Allowed once");
+    return allowsWorkspace(actions) ? t("Allowed in this workspace") : t("Allowed once");
   if (approval && answer === "always") return t("Always allowed");
   if (approval && answer === "deny") return t("Denied");
   return t("Answered: {answer}", { answer: selectedAskActionLabel(answer, actions) });

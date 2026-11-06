@@ -748,7 +748,7 @@ describe("add_mcp_server", () => {
     await f.run();
 
     expect(f.results[0]).toEqual({
-      error: "Bots can't add local (stdio) MCP servers. Ask an admin to add it in Settings.",
+      error: "Doodle can't add local (stdio) MCP servers. Ask an admin to add it in Settings.",
     });
   });
 });

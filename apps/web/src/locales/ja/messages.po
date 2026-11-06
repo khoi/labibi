@@ -629,7 +629,7 @@ msgstr "許可"
 
 #: src/components/AskCard.tsx
 msgid "Allow in this workspace"
-msgstr ""
+msgstr "このワークスペースで許可"
 
 #: src/lib/dictation.ts
 msgid "Allow Labradoodle to use Speech Recognition and the microphone in System Settings."
@@ -645,7 +645,7 @@ msgstr "書き込みを許可"
 
 #: src/components/AskCard.tsx
 msgid "Allowed in this workspace"
-msgstr ""
+msgstr "このワークスペースで許可しました"
 
 #: src/components/AskCard.tsx
 msgid "Allowed once"
@@ -1008,7 +1008,6 @@ msgstr "キャンセル済み"
 msgid "cancelled"
 msgstr "キャンセル済み"
 
-#: src/components/AskCard.tsx
 #: src/pages/RoutineRunHistory.tsx
 msgid "Cancelled"
 msgstr "キャンセル済み"
@@ -1057,7 +1056,6 @@ msgstr "変更中…"
 msgid "Chart failed to render: {error}"
 msgstr "チャートを表示できませんでした: {error}"
 
-#: src/lib/identity-display.ts
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/SpaceSearch.tsx
 msgid "Chat"
@@ -1387,8 +1385,8 @@ msgstr "モデルを接続"
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
-msgid "Connect a model in Settings before running bots."
-msgstr "ボットを実行する前に、設定でモデルを接続してください。"
+msgid "Connect a model in Settings to use Doodle."
+msgstr "Doodle を使うには、設定でモデルを接続してください。"
 
 #: src/pages/model-settings/connection-controls.tsx
 msgid "Connect API key"
@@ -2056,17 +2054,9 @@ msgstr "アカウントを作成"
 msgid "Create Routine"
 msgstr "ルーティンを作成"
 
-#: src/components/AskCard.tsx
-msgid "Create space"
-msgstr "スペースを作成"
-
 #: src/pages/Auth.tsx
 msgid "Create your Labradoodle"
 msgstr "Labradoodleを作成"
-
-#: src/components/AskCard.tsx
-msgid "Created"
-msgstr "作成済み"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Credential"
@@ -3866,7 +3856,6 @@ msgstr "出力"
 
 #: src/components/pages/SharePopover.tsx
 #: src/components/SpaceMembersSettings.tsx
-#: src/lib/identity-display.ts
 msgid "Owner"
 msgstr "オーナー"
 

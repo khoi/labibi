@@ -159,7 +159,6 @@ const MessageBlockSchema = z.discriminatedUnion("kind", [
         z.object({
           id: z.string(),
           label: z.string(),
-          outcome: z.enum(["created", "cancelled"]).optional(),
         }),
       )
       .optional(),

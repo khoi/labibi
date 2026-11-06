@@ -55,13 +55,13 @@ export const HE_MESSAGES: Record<string, string> = {
     "לא ניתן היה להשלים את העדכון. כדאי לנסות שוב מאוחר יותר.",
   "Could not reach the update server.": "לא ניתן היה להתחבר לשרת העדכונים.",
   "Allow local computer access?": "לאפשר גישה למחשב המקומי?",
-  "Allow bots to use this computer?": "לאפשר לבוטים להשתמש במחשב הזה?",
+  "Allow Doodle to use this computer?": "לאפשר ל-Doodle להשתמש במחשב הזה?",
   Cancel: "ביטול",
   Allow: "אישור",
-  "Bots on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
-    "בוטים ב-{host} יכולים להריץ פקודות, לקרוא ולשנות קבצים ולפתוח אפליקציות עם ההרשאות של החשבון שלך. אפשר לבטל את הגישה בהגדרות.",
-  "Bots on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
-    "בוטים במופע המקומי הזה יכולים להריץ פקודות, לקרוא ולשנות קבצים ולפתוח אפליקציות עם ההרשאות של החשבון שלך. אפשר לבטל את הגישה מתפריט האפליקציה.",
+  "Doodle on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
+    "Doodle ב-{host} יכול להריץ פקודות, לקרוא ולשנות קבצים ולהפעיל אפליקציות עם ההרשאות של החשבון שלכם. אפשר לבטל את הגישה בהגדרות.",
+  "Doodle on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
+    "Doodle במופע המקומי הזה יכול להריץ פקודות, לקרוא ולשנות קבצים ולהפעיל אפליקציות עם ההרשאות של החשבון שלכם. אפשר לבטל את הגישה מתפריט האפליקציה.",
   "Local computer access requires an app-managed local instance.":
     "גישה למחשב המקומי דורשת מופע מקומי שהאפליקציה מנהלת.",
   "Local server is unavailable": "השרת המקומי לא זמין",

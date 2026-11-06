@@ -143,7 +143,7 @@ export const ZH_TW_MESSAGES: Record<string, string> = {
   "Your OpenAI": "你的 OpenAI",
   "Your Anthropic": "你的 Anthropic",
   "Your model provider": "你的模型供應商",
-  "Connect a model in Settings before running bots.": "執行機器人前，請先在設定中連接模型。",
+  "Connect a model in Settings to use Doodle.": "請先在設定中連接模型，才能使用 Doodle。",
   "Connect your own API key in Models or choose Labradoodle credits in Billing.":
     "請在「模型」中連接你自己的 API 金鑰，或在「帳務」中選擇 Labradoodle 點數。",
   "The model provider returned an error.": "模型供應商回傳了錯誤。",
@@ -287,8 +287,8 @@ export const ZH_TW_MESSAGES: Record<string, string> = {
   "Agent messages": "代理程式訊息",
   "Allowed once": "已允許一次",
   "Allow once": "允許一次",
-  "Allow in this space": "在此空間允許",
-  "Allowed in this space": "已在此空間允許",
+  "Allow in this workspace": "在此工作區允許",
+  "Allowed in this workspace": "已在此工作區允許",
   "Already have an account?": "已有帳號？",
   "Always allow": "一律允許",
   "Always allowed": "已一律允許",
@@ -464,7 +464,6 @@ export const ZH_TW_MESSAGES: Record<string, string> = {
   "Could not update notifications": "無法更新通知",
   "Could not update reaction": "無法更新反應",
   Create: "建立",
-  "Create space": "建立空間",
   Creating: "建立中",
   "Creating…": "正在建立…",
   "Current password": "目前密碼",
@@ -694,8 +693,8 @@ export const ZH_TW_MESSAGES: Record<string, string> = {
   "That URL did not look like a Labradoodle server": "該地址看起來不是 Labradoodle 伺服器",
   "That URL is missing a host": "該地址缺少主機名稱",
   "The server changed while starting the request": "請求開始時伺服器已更改",
-  "This permanently deletes your account, bots, conversations, memories, files, and saved connections. This cannot be undone.":
-    "這將永久刪除你的帳號、機器人、對話、記憶、檔案和已儲存的連線。此操作無法復原。",
+  "This permanently deletes your account, chats, memories, files, and saved connections. This cannot be undone.":
+    "這將永久刪除你的帳號、聊天、記憶、檔案和已儲存的連線。此操作無法復原。",
   "This routine no longer exists": "此例行任務已不存在",
   Thread: "對話",
   Title: "標題",
@@ -751,7 +750,6 @@ export const ZH_TW_MESSAGES: Record<string, string> = {
     "請在伺服器上設定外掛程式目錄，以連接應用程式。",
   "Connected {name}.": "已連線 {name}。",
   "Connection pending": "連線待完成",
-  Created: "已建立",
   deleted: "已刪除",
   "Display name": "顯示名稱",
   "exact-model-id": "exact-model-id",
@@ -938,14 +936,10 @@ export const ZH_TW_MESSAGES: Record<string, string> = {
     "供應商無法提供為此機器人選擇的模型。",
   "The bot couldn't finish its reply. Technical details includes the reported error.":
     "機器人未能完成回覆。技術詳細資訊包含報告的錯誤。",
-  "This bot's reply stopped at its key's daily limit. Your own key has its own limits.":
-    "此機器人的回覆因其金鑰達到每日限額而停止。你自己的金鑰有獨立的限額。",
-  "This bot's reply stopped at its key's weekly limit. Your own key has its own limits.":
-    "此機器人的回覆因其金鑰達到每週限額而停止。你自己的金鑰有獨立的限額。",
-  "This bot's reply stopped at its key's monthly limit. Your own key has its own limits.":
-    "此機器人的回覆因其金鑰達到每月限額而停止。你自己的金鑰有獨立的限額。",
-  "This bot's reply stopped at its key's usage limit. Your own key has its own limits.":
-    "此機器人的回覆因其金鑰達到使用限額而停止。你自己的金鑰有獨立的限額。",
+  "Doodle's reply stopped at the key's daily limit.": "Doodle 的回覆因金鑰達到每日限額而停止。",
+  "Doodle's reply stopped at the key's weekly limit.": "Doodle 的回覆因金鑰達到每週限額而停止。",
+  "Doodle's reply stopped at the key's monthly limit.": "Doodle 的回覆因金鑰達到每月限額而停止。",
+  "Doodle's reply stopped at the key's usage limit.": "Doodle 的回覆因金鑰達到使用限額而停止。",
   "Sign in with passkey": "使用通行金鑰登入",
   Passkeys: "通行金鑰",
   Passkey: "通行金鑰",

@@ -69,21 +69,13 @@ export function runErrorWhatHappened(
   if (error.kind === "key") {
     switch (error.period) {
       case "daily":
-        return t(
-          "This bot's reply stopped at its key's daily limit. Your own key has its own limits.",
-        );
+        return t("Doodle's reply stopped at the key's daily limit.");
       case "weekly":
-        return t(
-          "This bot's reply stopped at its key's weekly limit. Your own key has its own limits.",
-        );
+        return t("Doodle's reply stopped at the key's weekly limit.");
       case "monthly":
-        return t(
-          "This bot's reply stopped at its key's monthly limit. Your own key has its own limits.",
-        );
+        return t("Doodle's reply stopped at the key's monthly limit.");
       default:
-        return t(
-          "This bot's reply stopped at its key's usage limit. Your own key has its own limits.",
-        );
+        return t("Doodle's reply stopped at the key's usage limit.");
     }
   }
   if (error.kind === "credit" || error.kind === "spending") {

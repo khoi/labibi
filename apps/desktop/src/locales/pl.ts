@@ -64,13 +64,13 @@ export const PL_MESSAGES: Record<string, string> = {
 
   // Computer access
   "Allow local computer access?": "Zezwolić na dostęp do lokalnego komputera?",
-  "Allow bots to use this computer?": "Zezwolić botom na korzystanie z tego komputera?",
+  "Allow Doodle to use this computer?": "Zezwolić Doodle na używanie tego komputera?",
   Cancel: "Anuluj",
   Allow: "Zezwól",
-  "Bots on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
-    "Boty na {host} mogą wykonywać polecenia, odczytywać i zmieniać pliki oraz uruchamiać aplikacje z uprawnieniami Twojego konta. Możesz cofnąć dostęp w Ustawieniach.",
-  "Bots on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
-    "Boty w tej lokalnej instancji mogą wykonywać polecenia, odczytywać i zmieniać pliki oraz uruchamiać aplikacje z uprawnieniami Twojego konta. Możesz cofnąć dostęp w menu aplikacji.",
+  "Doodle on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
+    "Doodle na {host} może uruchamiać polecenia, czytać i zmieniać pliki oraz otwierać aplikacje z uprawnieniami Twojego konta. Dostęp możesz cofnąć w Ustawieniach.",
+  "Doodle on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
+    "Doodle w tej lokalnej instancji może uruchamiać polecenia, czytać i zmieniać pliki oraz otwierać aplikacje z uprawnieniami Twojego konta. Dostęp możesz cofnąć w menu aplikacji.",
   "Local computer access requires an app-managed local instance.":
     "Dostęp do lokalnego komputera wymaga lokalnej instancji zarządzanej przez aplikację.",
   "Local server is unavailable": "Serwer lokalny jest niedostępny",

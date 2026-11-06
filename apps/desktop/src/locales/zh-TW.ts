@@ -53,13 +53,13 @@ export const ZH_TW_MESSAGES: Record<string, string> = {
   "The update could not be completed. Try again later.": "無法完成更新。請稍後再試一次。",
   "Could not reach the update server.": "無法連線到更新伺服器。",
   "Allow local computer access?": "要允許存取本機電腦嗎？",
-  "Allow bots to use this computer?": "要允許機器人使用這台電腦嗎？",
+  "Allow Doodle to use this computer?": "允許 Doodle 使用這台電腦？",
   Cancel: "取消",
   Allow: "允許",
-  "Bots on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
-    "{host} 上的機器人可以用你帳號的權限執行指令、讀取和更改檔案，以及開啟 App。你可以在設定中撤銷存取權。",
-  "Bots on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
-    "此本機執行個體上的機器人可以用你帳號的權限執行指令、讀取和更改檔案，以及開啟 App。你可以從 App 選單撤銷存取權。",
+  "Doodle on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
+    "{host} 上的 Doodle 可以用你帳號的權限執行指令、讀取和修改檔案以及啟動 App。你可以在設定中撤銷存取權。",
+  "Doodle on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
+    "此本機執行個體上的 Doodle 可以用你帳號的權限執行指令、讀取和修改檔案以及啟動 App。你可以在 App 選單中撤銷存取權。",
   "Local computer access requires an app-managed local instance.":
     "本機電腦存取權需要由 App 管理的本機執行個體。",
   "Local server is unavailable": "無法使用本機伺服器",

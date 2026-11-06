@@ -169,8 +169,8 @@ export const ES_MESSAGES: Record<string, string> = {
   "Your OpenAI": "Tu OpenAI",
   "Your Anthropic": "Tu Anthropic",
   "Your model provider": "Tu proveedor de modelos",
-  "Connect a model in Settings before running bots.":
-    "Conecta un modelo en Configuración antes de ejecutar bots.",
+  "Connect a model in Settings to use Doodle.":
+    "Conecta un modelo en Configuración para usar Doodle.",
   "Connect your own API key in Models or choose Labradoodle credits in Billing.":
     "Conecta tu propia clave de API en Modelos o elige créditos de Labradoodle en Facturación.",
   "The model provider returned an error.": "El proveedor de modelos devolvió un error.",
@@ -325,7 +325,6 @@ export const ES_MESSAGES: Record<string, string> = {
   "Save to Vault": "Guardar en la bóveda",
   "Could not speak": "No se pudo leer en voz alta",
   "Could not update reaction": "No se pudo actualizar la reacción",
-  Created: "Creado",
   "Delete…": "Eliminar…",
   Denied: "Denegado",
   Done: "Listo",
@@ -424,7 +423,6 @@ export const ES_MESSAGES: Record<string, string> = {
   "Can't read images": "No puede leer imágenes",
   Thinking: "Pensando",
   "Creating…": "Creando…",
-  "Create space": "Crear espacio",
   Active: "Activo",
   "Could not load routine": "No se pudo cargar la rutina",
   "Git event": "Evento de Git",
@@ -665,8 +663,8 @@ export const ES_MESSAGES: Record<string, string> = {
   "Stream replies": "Transmitir respuestas",
   "Load web images automatically": "Cargar imágenes web automáticamente",
   System: "Sistema",
-  "This permanently deletes your account, bots, conversations, memories, files, and saved connections. This cannot be undone.":
-    "Esto elimina de forma permanente tu cuenta, bots, conversaciones, memorias, archivos y conexiones guardadas. No se puede deshacer.",
+  "This permanently deletes your account, chats, memories, files, and saved connections. This cannot be undone.":
+    "Esto elimina de forma permanente tu cuenta, chats, memorias, archivos y conexiones guardadas. No se puede deshacer.",
   "Try again.": "Inténtalo de nuevo.",
   Usage: "Uso",
   "Your account": "Tu cuenta",
@@ -677,8 +675,8 @@ export const ES_MESSAGES: Record<string, string> = {
   "New password": "Nueva contraseña",
   "Passwords do not match": "Las contraseñas no coinciden",
   "Allow once": "Permitir una vez",
-  "Allow in this space": "Permitir en este espacio",
-  "Allowed in this space": "Permitido en este espacio",
+  "Allow in this workspace": "Permitir en este espacio de trabajo",
+  "Allowed in this workspace": "Permitido en este espacio de trabajo",
   "Always allow": "Permitir siempre",
   "Always allow this tool": "Permitir siempre esta herramienta",
   "Always allow {site}": "Permitir siempre {site}",
@@ -898,14 +896,14 @@ export const ES_MESSAGES: Record<string, string> = {
     "El proveedor no pudo ofrecer el modelo seleccionado para este bot.",
   "The bot couldn't finish its reply. Technical details includes the reported error.":
     "El bot no pudo terminar su respuesta. Detalles técnicos incluye el error informado.",
-  "This bot's reply stopped at its key's daily limit. Your own key has its own limits.":
-    "La respuesta de este bot se detuvo al llegar al límite diario de su clave. Tu propia clave tiene sus propios límites.",
-  "This bot's reply stopped at its key's weekly limit. Your own key has its own limits.":
-    "La respuesta de este bot se detuvo al llegar al límite semanal de su clave. Tu propia clave tiene sus propios límites.",
-  "This bot's reply stopped at its key's monthly limit. Your own key has its own limits.":
-    "La respuesta de este bot se detuvo al llegar al límite mensual de su clave. Tu propia clave tiene sus propios límites.",
-  "This bot's reply stopped at its key's usage limit. Your own key has its own limits.":
-    "La respuesta de este bot se detuvo al llegar al límite de uso de su clave. Tu propia clave tiene sus propios límites.",
+  "Doodle's reply stopped at the key's daily limit.":
+    "La respuesta de Doodle se detuvo al llegar al límite diario de la clave.",
+  "Doodle's reply stopped at the key's weekly limit.":
+    "La respuesta de Doodle se detuvo al llegar al límite semanal de la clave.",
+  "Doodle's reply stopped at the key's monthly limit.":
+    "La respuesta de Doodle se detuvo al llegar al límite mensual de la clave.",
+  "Doodle's reply stopped at the key's usage limit.":
+    "La respuesta de Doodle se detuvo al llegar al límite de uso de la clave.",
   "Sign in with passkey": "Iniciar sesión con llave de acceso",
   Passkeys: "Llaves de acceso",
   Passkey: "Llave de acceso",

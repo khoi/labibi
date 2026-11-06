@@ -159,8 +159,8 @@ export const PL_MESSAGES: Record<string, string> = {
   "Your OpenAI": "Twój OpenAI",
   "Your Anthropic": "Twój Anthropic",
   "Your model provider": "Twój dostawca modelu",
-  "Connect a model in Settings before running bots.":
-    "Przed uruchomieniem botów połącz model w Ustawieniach.",
+  "Connect a model in Settings to use Doodle.":
+    "Połącz model w Ustawieniach, aby korzystać z Doodle.",
   "Connect your own API key in Models or choose Labradoodle credits in Billing.":
     "Połącz własny klucz API w Modelach lub wybierz środki Labradoodle w Rozliczeniach.",
   "The model provider returned an error.": "Dostawca modelu zwrócił błąd.",
@@ -331,7 +331,6 @@ export const PL_MESSAGES: Record<string, string> = {
   "Save to Vault": "Zapisz w sejfie",
   "Could not speak": "Nie udało się odczytać na głos",
   "Could not update reaction": "Nie udało się zaktualizować reakcji",
-  Created: "Utworzono",
   "Delete…": "Usuń…",
   Denied: "Odmowa",
   Done: "Gotowe",
@@ -435,7 +434,6 @@ export const PL_MESSAGES: Record<string, string> = {
   Title: "Tytuł",
   Members: "Członkowie",
   "Creating…": "Tworzenie…",
-  "Create space": "Utwórz przestrzeń",
   Active: "Aktywne",
   "Could not load routine": "Nie udało się wczytać rutyny",
   "Git event": "Zdarzenie Git",
@@ -692,8 +690,8 @@ export const PL_MESSAGES: Record<string, string> = {
   "Stream replies": "Strumieniuj odpowiedzi",
   "Load web images automatically": "Automatycznie wczytuj obrazy z sieci",
   System: "Systemowy",
-  "This permanently deletes your account, bots, conversations, memories, files, and saved connections. This cannot be undone.":
-    "Twoje konto, boty, rozmowy, wspomnienia, pliki i zapisane połączenia zostaną trwale usunięte. Tej operacji nie można cofnąć.",
+  "This permanently deletes your account, chats, memories, files, and saved connections. This cannot be undone.":
+    "Twoje konto, czaty, wspomnienia, pliki i zapisane połączenia zostaną trwale usunięte. Tej operacji nie można cofnąć.",
   "Try again.": "Spróbuj ponownie.",
   Usage: "Użycie",
   "Your account": "Twoje konto",
@@ -704,8 +702,8 @@ export const PL_MESSAGES: Record<string, string> = {
   "New password": "Nowe hasło",
   "Passwords do not match": "Hasła nie są zgodne",
   "Allow once": "Zezwól raz",
-  "Allow in this space": "Zezwól w tej przestrzeni",
-  "Allowed in this space": "Zezwolono w tej przestrzeni",
+  "Allow in this workspace": "Zezwól w tym obszarze roboczym",
+  "Allowed in this workspace": "Dozwolone w tym obszarze roboczym",
   "Always allow": "Zawsze zezwalaj",
   "Always allow this tool": "Zawsze zezwalaj na to narzędzie",
   "Always allow {site}": "Zawsze zezwalaj na {site}",
@@ -943,14 +941,14 @@ export const PL_MESSAGES: Record<string, string> = {
     "Dostawca nie mógł obsłużyć modelu wybranego dla tego bota.",
   "The bot couldn't finish its reply. Technical details includes the reported error.":
     "Bot nie mógł dokończyć odpowiedzi. Zgłoszony błąd znajduje się w szczegółach technicznych.",
-  "This bot's reply stopped at its key's daily limit. Your own key has its own limits.":
-    "Odpowiedź tego bota została przerwana po osiągnięciu dziennego limitu jego klucza. Twój klucz ma osobne limity.",
-  "This bot's reply stopped at its key's weekly limit. Your own key has its own limits.":
-    "Odpowiedź tego bota została przerwana po osiągnięciu tygodniowego limitu jego klucza. Twój klucz ma osobne limity.",
-  "This bot's reply stopped at its key's monthly limit. Your own key has its own limits.":
-    "Odpowiedź tego bota została przerwana po osiągnięciu miesięcznego limitu jego klucza. Twój klucz ma osobne limity.",
-  "This bot's reply stopped at its key's usage limit. Your own key has its own limits.":
-    "Odpowiedź tego bota została przerwana po osiągnięciu limitu użycia jego klucza. Twój klucz ma osobne limity.",
+  "Doodle's reply stopped at the key's daily limit.":
+    "Odpowiedź Doodle została przerwana po osiągnięciu dziennego limitu klucza.",
+  "Doodle's reply stopped at the key's weekly limit.":
+    "Odpowiedź Doodle została przerwana po osiągnięciu tygodniowego limitu klucza.",
+  "Doodle's reply stopped at the key's monthly limit.":
+    "Odpowiedź Doodle została przerwana po osiągnięciu miesięcznego limitu klucza.",
+  "Doodle's reply stopped at the key's usage limit.":
+    "Odpowiedź Doodle została przerwana po osiągnięciu limitu użycia klucza.",
   "Sign in with passkey": "Zaloguj się kluczem dostępu",
   Passkeys: "Klucze dostępu",
   Passkey: "Klucz dostępu",

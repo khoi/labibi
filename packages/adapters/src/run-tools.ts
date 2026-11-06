@@ -80,7 +80,7 @@ async function dispatchTool(
 ) {
   ctx.context.signal.throwIfAborted();
   if (ctx.tools.disabled.has(name)) {
-    return { error: "This tool is disabled for this bot." };
+    return { error: "This tool is turned off in Doodle's settings." };
   }
   if (PAGE_BROWSER_TOOL_NAMES.has(name) && !ctx.computer.pageBrowserAllowed) {
     return { error: "Page browser is unavailable on this computer." };

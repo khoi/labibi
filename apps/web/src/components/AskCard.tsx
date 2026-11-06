@@ -24,40 +24,27 @@ export type AskBlock = Extract<ThreadMessage["blocks"][number], { kind: "ask" }>
 function formatAnsweredState(
   answer: string | undefined,
   approval: boolean,
-  outcome?: "created" | "cancelled",
   actions?: AskBlock["actions"],
 ): string {
   if (!answer) return t`Answered`;
   if (!approval) return answer === "approved" ? t`Sent` : selectedAskActionLabel(answer, actions);
-  if (outcome === "created") return t`Created`;
-  if (outcome === "cancelled") return t`Cancelled`;
   if (answer === "allow")
-    return allowsSpace(actions) ? t`Allowed in this workspace` : t`Allowed once`;
+    return allowsWorkspace(actions) ? t`Allowed in this workspace` : t`Allowed once`;
   if (answer === "always") return t`Always allowed`;
   if (answer === "deny") return t`Denied`;
   return t`Answered: ${answer}`;
 }
 
-/**
- * The server's labels on the user's-computer approval, whose "allow" covers the whole space. Cards
- * from before it covered the space carry the older label.
- */
-const ALLOW_IN_SPACE = new Set(["Allow in this space", "Allow for this chat"]);
+/** The server's label on the user's-computer approval, whose "allow" covers the whole workspace. */
+const ALLOW_IN_WORKSPACE = "Allow in this workspace";
 
-function allowsSpace(actions: AskBlock["actions"]): boolean {
-  return actions?.some((action) => ALLOW_IN_SPACE.has(action.label)) ?? false;
+function allowsWorkspace(actions: AskBlock["actions"]): boolean {
+  return actions?.some((action) => action.label === ALLOW_IN_WORKSPACE) ?? false;
 }
 
-function approvalActionLabel(
-  id: string,
-  fallback: string,
-  outcome?: "created" | "cancelled",
-  site?: string,
-): string {
-  if (outcome === "created") return t`Create space`;
-  if (outcome === "cancelled") return t`Cancel`;
+function approvalActionLabel(id: string, fallback: string, site?: string): string {
   if (id === "allow")
-    return ALLOW_IN_SPACE.has(fallback) ? t`Allow in this workspace` : t`Allow once`;
+    return fallback === ALLOW_IN_WORKSPACE ? t`Allow in this workspace` : t`Allow once`;
   if (id === "always") return site ? t`Always allow ${site}` : t`Always allow this tool`;
   if (id === "deny") return t`Deny`;
   return fallback;
@@ -249,21 +236,12 @@ function PromptAskCard({ block, canAnswer, onAnswer, rpc = selectedSpaceRpc }: A
         </blockquote>
       ) : answered ? (
         <div className="mt-3.5 flex items-center gap-1.5 text-[13.5px] font-medium text-muted-foreground">
-          {displayedAnswer === "deny" ||
-          approvalActions?.find((action) => action.id === displayedAnswer)?.outcome ===
-            "cancelled" ? null : (
-            <Check aria-hidden className="size-4" />
-          )}
+          {displayedAnswer === "deny" ? null : <Check aria-hidden className="size-4" />}
           {block.instructionUpdate
             ? displayedAnswer === "deny"
               ? t`Dismissed`
               : t`Allowed once`
-            : formatAnsweredState(
-                displayedAnswer,
-                Boolean(approvalActions),
-                approvalActions?.find((action) => action.id === displayedAnswer)?.outcome,
-                askActions,
-              )}
+            : formatAnsweredState(displayedAnswer, Boolean(approvalActions), askActions)}
         </div>
       ) : !canAnswer ? (
         <div className="mt-3.5 text-[13.5px] font-medium text-muted-foreground">
@@ -295,7 +273,7 @@ function PromptAskCard({ block, canAnswer, onAnswer, rpc = selectedSpaceRpc }: A
                   t`Dismiss`
                 )
               ) : (
-                approvalActionLabel(action.id, action.label, action.outcome, block.site)
+                approvalActionLabel(action.id, action.label, block.site)
               )}
             </Button>
           ))}

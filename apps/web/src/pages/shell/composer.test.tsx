@@ -130,7 +130,7 @@ it.each([
   ],
   ['404: {"message":"Model example-model does not exist"}', "Choose a model", "models"],
   ['401: {"message":"Invalid API key"}', "Replace key", "connections"],
-  ["Connect a model in Settings before running bots.", "Connect a model", "connections"],
+  ["Connect a model in Settings to use Doodle.", "Connect a model", "connections"],
   ["Request timed out.", null, null],
   ['429: {"message":"Too many requests"}', null, null],
 ] as const)("offers the one action that fixes %s", (runError, label, opens) => {

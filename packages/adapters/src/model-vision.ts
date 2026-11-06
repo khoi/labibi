@@ -20,7 +20,7 @@ export const IMAGE_RETURNING_COMPUTER_TOOLS = new Set([
   "launch_app",
 ]);
 
-export const MODEL_CANNOT_SEE_MESSAGE = "This bot's model cannot see; pick a vision-capable model.";
+export const MODEL_CANNOT_SEE_MESSAGE = "This model cannot see; pick a vision-capable model.";
 
 export function modelIdSupportsImages(
   modelIds: readonly string[] | undefined,

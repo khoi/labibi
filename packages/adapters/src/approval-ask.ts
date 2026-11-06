@@ -94,7 +94,7 @@ export function buildApprovalAskBlock(
         : {}),
       status: "pending",
       actions: [
-        { id: "allow", label: "Allow in this space" },
+        { id: "allow", label: "Allow in this workspace" },
         { id: "deny", label: "Deny" },
       ],
     };
@@ -112,7 +112,7 @@ export function buildApprovalAskBlock(
       detailFormat: "code",
       status: "pending",
       actions: [
-        { id: "allow", label: "Allow in this space" },
+        { id: "allow", label: "Allow in this workspace" },
         { id: "deny", label: "Deny" },
       ],
     };

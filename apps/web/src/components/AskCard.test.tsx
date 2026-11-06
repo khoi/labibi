@@ -391,8 +391,8 @@ it("sizes approval buttons like the other card buttons", async () => {
   }
 });
 
-it.each(["Allow in this space", "Allow for this chat"])(
-  "says a user's-computer approval labelled %s allows the whole space",
+it.each(["Allow in this workspace"])(
+  "says a user's-computer approval labelled %s allows the whole workspace",
   async (label) => {
     const block: AskBlock = {
       kind: "ask",

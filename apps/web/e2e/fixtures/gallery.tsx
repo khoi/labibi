@@ -212,18 +212,6 @@ const approvals: Scenario = {
     bot([
       {
         kind: "ask",
-        approvalEffectId: "effect-3",
-        text: "Create the space Marketing?",
-        status: "pending",
-        actions: [
-          { id: "allow", label: "Create space", outcome: "created" },
-          { id: "deny", label: "Cancel", outcome: "cancelled" },
-        ],
-      },
-    ]),
-    bot([
-      {
-        kind: "ask",
         approvalEffectId: "effect-5",
         text: "Update instructions?",
         status: "pending",

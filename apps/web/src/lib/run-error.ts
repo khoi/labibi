@@ -30,10 +30,10 @@ export const translateRunError: RunErrorTranslator = (message, values) => {
       return i18n._({ id: "Your Anthropic", message: "Your Anthropic", values });
     case "Your model provider":
       return i18n._({ id: "Your model provider", message: "Your model provider", values });
-    case "Connect a model in Settings before running bots.":
+    case "Connect a model in Settings to use Doodle.":
       return i18n._({
-        id: "Connect a model in Settings before running bots.",
-        message: "Connect a model in Settings before running bots.",
+        id: "Connect a model in Settings to use Doodle.",
+        message: "Connect a model in Settings to use Doodle.",
         values,
       });
     case "Connect your own API key in Models or choose Labradoodle credits in Billing.":

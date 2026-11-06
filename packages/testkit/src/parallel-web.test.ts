@@ -155,7 +155,7 @@ describe("Parallel through the ordinary bot caller", () => {
         expect(resolveRuntimeModel(model!).apiKey).toBe(key);
       } else {
         await expect(fixture.resolveModel()).rejects.toThrow(
-          "Connect a model in Settings before running bots.",
+          "Connect a model in Settings to use Doodle.",
         );
       }
     },
@@ -286,7 +286,7 @@ describe("Parallel through the ordinary bot caller", () => {
     } as unknown as AgentRuntime;
     const fixture = executorFixture(runtime, ["web_search", "web_fetch"]);
     await fixture.execute();
-    expect(results).toEqual([{ error: "This tool is disabled for this bot." }]);
+    expect(results).toEqual([{ error: "This tool is turned off in Doodle's settings." }]);
     expect(fixture.peer.fetch).not.toHaveBeenCalled();
   });
 });

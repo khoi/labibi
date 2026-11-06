@@ -57,13 +57,13 @@ export const NL_MESSAGES: Record<string, string> = {
     "De update kon niet worden voltooid. Probeer het later opnieuw.",
   "Could not reach the update server.": "De updateserver is niet bereikbaar.",
   "Allow local computer access?": "Toegang tot de lokale computer toestaan?",
-  "Allow bots to use this computer?": "Bots toestaan deze computer te gebruiken?",
+  "Allow Doodle to use this computer?": "Doodle toestaan deze computer te gebruiken?",
   Cancel: "Annuleer",
   Allow: "Sta toe",
-  "Bots on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
-    "Bots op {host} kunnen opdrachten uitvoeren, bestanden lezen en wijzigen en apps openen met de rechten van je account. Je kunt de toegang intrekken in Instellingen.",
-  "Bots on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
-    "Bots op deze lokale instantie kunnen opdrachten uitvoeren, bestanden lezen en wijzigen en apps openen met de rechten van je account. Je kunt de toegang intrekken via het app-menu.",
+  "Doodle on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
+    "Doodle op {host} kan opdrachten uitvoeren, bestanden lezen en wijzigen en apps starten met de rechten van je account. Je kunt de toegang intrekken in Instellingen.",
+  "Doodle on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
+    "Doodle op deze lokale instantie kan opdrachten uitvoeren, bestanden lezen en wijzigen en apps starten met de rechten van je account. Je kunt de toegang intrekken via het app-menu.",
   "Local computer access requires an app-managed local instance.":
     "Toegang tot de lokale computer vereist een lokale instantie die door de app wordt beheerd.",
   "Local server is unavailable": "Lokale server is niet beschikbaar",

@@ -153,7 +153,7 @@ export const ZH_MESSAGES: Record<string, string> = {
   "Your OpenAI": "你的 OpenAI",
   "Your Anthropic": "你的 Anthropic",
   "Your model provider": "你的模型提供商",
-  "Connect a model in Settings before running bots.": "运行机器人前，请先在设置中连接模型。",
+  "Connect a model in Settings to use Doodle.": "请先在设置中连接模型，才能使用 Doodle。",
   "Connect your own API key in Models or choose Labradoodle credits in Billing.":
     "请在“模型”中连接你自己的 API 密钥，或在“账单”中选择 Labradoodle 额度。",
   "The model provider returned an error.": "模型提供商返回了错误。",
@@ -300,8 +300,8 @@ export const ZH_MESSAGES: Record<string, string> = {
   "Agent messages": "智能体消息",
   "Allowed once": "已允许一次",
   "Allow once": "允许一次",
-  "Allow in this space": "在此空间允许",
-  "Allowed in this space": "已在此空间允许",
+  "Allow in this workspace": "在此工作区允许",
+  "Allowed in this workspace": "已在此工作区允许",
   "Already have an account?": "已有账户？",
   "Always allow": "始终允许",
   "Always allow this tool": "始终允许此工具",
@@ -486,7 +486,6 @@ export const ZH_MESSAGES: Record<string, string> = {
   "Could not update notifications": "无法更新通知",
   "Could not update reaction": "无法更新反应",
   Create: "创建",
-  "Create space": "创建空间",
   Creating: "创建中",
   "Creating…": "正在创建…",
   "Current password": "当前密码",
@@ -722,8 +721,8 @@ export const ZH_MESSAGES: Record<string, string> = {
   "That URL did not look like a Labradoodle server": "该地址看起来不是 Labradoodle 服务器",
   "That URL is missing a host": "该地址缺少主机名",
   "The server changed while starting the request": "请求开始时服务器已更改",
-  "This permanently deletes your account, bots, conversations, memories, files, and saved connections. This cannot be undone.":
-    "这将永久删除你的账户、Bot、对话、记忆、文件和已保存的连接。此操作无法撤销。",
+  "This permanently deletes your account, chats, memories, files, and saved connections. This cannot be undone.":
+    "这将永久删除你的账户、聊天、记忆、文件和已保存的连接。此操作无法撤销。",
   "This routine no longer exists": "此例行任务已不存在",
   Thread: "对话",
   Title: "标题",
@@ -779,7 +778,6 @@ export const ZH_MESSAGES: Record<string, string> = {
     "在服务器上配置插件目录即可连接应用。",
   "Connected {name}.": "已连接 {name}。",
   "Connection pending": "连接待完成",
-  Created: "已创建",
   deleted: "已删除",
   "Display name": "显示名称",
   "exact-model-id": "exact-model-id",
@@ -967,14 +965,10 @@ export const ZH_MESSAGES: Record<string, string> = {
     "提供商无法提供为此机器人选择的模型。",
   "The bot couldn't finish its reply. Technical details includes the reported error.":
     "机器人未能完成回复。技术详情包含报告的错误。",
-  "This bot's reply stopped at its key's daily limit. Your own key has its own limits.":
-    "此机器人的回复因其密钥达到每日限额而停止。你自己的密钥有独立的限额。",
-  "This bot's reply stopped at its key's weekly limit. Your own key has its own limits.":
-    "此机器人的回复因其密钥达到每周限额而停止。你自己的密钥有独立的限额。",
-  "This bot's reply stopped at its key's monthly limit. Your own key has its own limits.":
-    "此机器人的回复因其密钥达到每月限额而停止。你自己的密钥有独立的限额。",
-  "This bot's reply stopped at its key's usage limit. Your own key has its own limits.":
-    "此机器人的回复因其密钥达到使用限额而停止。你自己的密钥有独立的限额。",
+  "Doodle's reply stopped at the key's daily limit.": "Doodle 的回复因密钥达到每日限额而停止。",
+  "Doodle's reply stopped at the key's weekly limit.": "Doodle 的回复因密钥达到每周限额而停止。",
+  "Doodle's reply stopped at the key's monthly limit.": "Doodle 的回复因密钥达到每月限额而停止。",
+  "Doodle's reply stopped at the key's usage limit.": "Doodle 的回复因密钥达到使用限额而停止。",
   "Sign in with passkey": "使用通行密钥登录",
   Passkeys: "通行密钥",
   Passkey: "通行密钥",

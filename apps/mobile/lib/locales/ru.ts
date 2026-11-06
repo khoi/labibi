@@ -160,8 +160,8 @@ export const RU_MESSAGES: Record<string, string> = {
   "Your OpenAI": "Ваш OpenAI",
   "Your Anthropic": "Ваш Anthropic",
   "Your model provider": "Ваш поставщик моделей",
-  "Connect a model in Settings before running bots.":
-    "Подключите модель в настройках, прежде чем запускать ботов.",
+  "Connect a model in Settings to use Doodle.":
+    "Подключите модель в настройках, чтобы пользоваться Doodle.",
   "Connect your own API key in Models or choose Labradoodle credits in Billing.":
     "Подключите свой API-ключ в разделе «Модели» или выберите кредиты Labradoodle в разделе «Оплата».",
   "The model provider returned an error.": "Поставщик моделей вернул ошибку.",
@@ -324,8 +324,8 @@ export const RU_MESSAGES: Record<string, string> = {
   "Agent messages": "Сообщения агента",
   "Allowed once": "Разрешено один раз",
   "Allow once": "Разрешить один раз",
-  "Allow in this space": "Разрешить в этом пространстве",
-  "Allowed in this space": "Разрешено в этом пространстве",
+  "Allow in this workspace": "Разрешить в этом рабочем пространстве",
+  "Allowed in this workspace": "Разрешено в этом рабочем пространстве",
   "Already have an account?": "У вас уже есть аккаунт?",
   "Always allow": "Всегда разрешать",
   "Always allow this tool": "Всегда разрешать этот инструмент",
@@ -508,7 +508,6 @@ export const RU_MESSAGES: Record<string, string> = {
   "Could not update notifications": "Не удалось обновить уведомления.",
   "Could not update reaction": "Не удалось обновить реакцию",
   Create: "Создать",
-  "Create space": "Создать пространство",
   Creating: "Создание",
   "Creating…": "Создание…",
   "Current password": "Текущий пароль",
@@ -736,8 +735,8 @@ export const RU_MESSAGES: Record<string, string> = {
   "That URL did not look like a Labradoodle server": "Этот адрес не похож на сервер Labradoodle",
   "That URL is missing a host": "Для этого URL-адреса отсутствует хост",
   "The server changed while starting the request": "Сервер изменился при запуске запроса",
-  "This permanently deletes your account, bots, conversations, memories, files, and saved connections. This cannot be undone.":
-    "Это навсегда удалит аккаунт, ботов, диалоги, память, файлы и сохранённые подключения. Отменить это действие нельзя.",
+  "This permanently deletes your account, chats, memories, files, and saved connections. This cannot be undone.":
+    "Это навсегда удалит аккаунт, чаты, память, файлы и сохранённые подключения. Отменить это действие нельзя.",
   "This routine no longer exists": "Эта задача больше не существует",
   Thread: "Диалог",
   Title: "Заголовок",
@@ -796,7 +795,6 @@ export const RU_MESSAGES: Record<string, string> = {
     "Настройте каталог плагинов на сервере для подключения приложений.",
   "Connected {name}.": "Подключен {name}.",
   "Connection pending": "Ожидается подключение",
-  Created: "Создано",
   deleted: "удалено",
   "Display name": "Отображаемое имя",
   "exact-model-id": "exact-model-id",
@@ -981,14 +979,14 @@ export const RU_MESSAGES: Record<string, string> = {
     "Провайдер не смог предоставить модель, выбранную для этого бота.",
   "The bot couldn't finish its reply. Technical details includes the reported error.":
     "Бот не смог завершить ответ. В технических деталях указана полученная ошибка.",
-  "This bot's reply stopped at its key's daily limit. Your own key has its own limits.":
-    "Ответ бота остановился из-за дневного лимита его ключа. У вашего ключа свои лимиты.",
-  "This bot's reply stopped at its key's weekly limit. Your own key has its own limits.":
-    "Ответ бота остановился из-за недельного лимита его ключа. У вашего ключа свои лимиты.",
-  "This bot's reply stopped at its key's monthly limit. Your own key has its own limits.":
-    "Ответ бота остановился из-за месячного лимита его ключа. У вашего ключа свои лимиты.",
-  "This bot's reply stopped at its key's usage limit. Your own key has its own limits.":
-    "Ответ бота остановился из-за лимита использования его ключа. У вашего ключа свои лимиты.",
+  "Doodle's reply stopped at the key's daily limit.":
+    "Ответ Doodle остановился из-за дневного лимита ключа.",
+  "Doodle's reply stopped at the key's weekly limit.":
+    "Ответ Doodle остановился из-за недельного лимита ключа.",
+  "Doodle's reply stopped at the key's monthly limit.":
+    "Ответ Doodle остановился из-за месячного лимита ключа.",
+  "Doodle's reply stopped at the key's usage limit.":
+    "Ответ Doodle остановился из-за лимита использования ключа.",
   "Sign in with passkey": "Войти с ключом доступа",
   Passkeys: "Ключи доступа",
   Passkey: "Ключ доступа",

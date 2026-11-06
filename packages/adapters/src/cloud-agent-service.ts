@@ -32,7 +32,7 @@ export async function executeCloudAgentTool(
 ) {
   const connection = deps.cloudAgent;
   if (!connection || !cloudAgentsEnabled(connection, context.spaceId)) {
-    return { error: "Cloud agents are not configured for this space." };
+    return { error: "Cloud agents are not configured for this workspace." };
   }
   let agent: CloudAgent;
   if (name === "cloud_agent_launch") {

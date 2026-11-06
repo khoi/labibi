@@ -1008,7 +1008,6 @@ msgstr "Canceled"
 msgid "cancelled"
 msgstr "cancelled"
 
-#: src/components/AskCard.tsx
 #: src/pages/RoutineRunHistory.tsx
 msgid "Cancelled"
 msgstr "Cancelled"
@@ -1057,7 +1056,6 @@ msgstr "Changing…"
 msgid "Chart failed to render: {error}"
 msgstr "Chart failed to render: {error}"
 
-#: src/lib/identity-display.ts
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/SpaceSearch.tsx
 msgid "Chat"
@@ -1387,8 +1385,8 @@ msgstr "Connect a model"
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
-msgid "Connect a model in Settings before running bots."
-msgstr "Connect a model in Settings before running bots."
+msgid "Connect a model in Settings to use Doodle."
+msgstr "Connect a model in Settings to use Doodle."
 
 #: src/pages/model-settings/connection-controls.tsx
 msgid "Connect API key"
@@ -2056,17 +2054,9 @@ msgstr "Create account"
 msgid "Create Routine"
 msgstr "Create Routine"
 
-#: src/components/AskCard.tsx
-msgid "Create space"
-msgstr "Create space"
-
 #: src/pages/Auth.tsx
 msgid "Create your Labradoodle"
 msgstr "Create your Labradoodle"
-
-#: src/components/AskCard.tsx
-msgid "Created"
-msgstr "Created"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Credential"
@@ -3866,7 +3856,6 @@ msgstr "Output"
 
 #: src/components/pages/SharePopover.tsx
 #: src/components/SpaceMembersSettings.tsx
-#: src/lib/identity-display.ts
 msgid "Owner"
 msgstr "Owner"
 

@@ -629,7 +629,7 @@ msgstr "Toestaan"
 
 #: src/components/AskCard.tsx
 msgid "Allow in this workspace"
-msgstr ""
+msgstr "Toestaan in deze werkruimte"
 
 #: src/lib/dictation.ts
 msgid "Allow Labradoodle to use Speech Recognition and the microphone in System Settings."
@@ -645,7 +645,7 @@ msgstr "Schrijven toestaan"
 
 #: src/components/AskCard.tsx
 msgid "Allowed in this workspace"
-msgstr ""
+msgstr "Toegestaan in deze werkruimte"
 
 #: src/components/AskCard.tsx
 msgid "Allowed once"
@@ -1008,7 +1008,6 @@ msgstr "Geannuleerd"
 msgid "cancelled"
 msgstr "geannuleerd"
 
-#: src/components/AskCard.tsx
 #: src/pages/RoutineRunHistory.tsx
 msgid "Cancelled"
 msgstr "Geannuleerd"
@@ -1057,7 +1056,6 @@ msgstr "Bezig met wijzigen…"
 msgid "Chart failed to render: {error}"
 msgstr "Grafiek kon niet worden weergegeven: {error}"
 
-#: src/lib/identity-display.ts
 #: src/pages/AccountSettingsOverlay.tsx
 #: src/pages/SpaceSearch.tsx
 msgid "Chat"
@@ -1387,8 +1385,8 @@ msgstr "Een model koppelen"
 
 #. js-lingui-explicit-id
 #: src/lib/run-error.ts
-msgid "Connect a model in Settings before running bots."
-msgstr "Verbind een model in Instellingen voordat je bots uitvoert."
+msgid "Connect a model in Settings to use Doodle."
+msgstr "Verbind een model in Instellingen om Doodle te gebruiken."
 
 #: src/pages/model-settings/connection-controls.tsx
 msgid "Connect API key"
@@ -2056,17 +2054,9 @@ msgstr "Account aanmaken"
 msgid "Create Routine"
 msgstr "Routine aanmaken"
 
-#: src/components/AskCard.tsx
-msgid "Create space"
-msgstr "Space aanmaken"
-
 #: src/pages/Auth.tsx
 msgid "Create your Labradoodle"
 msgstr "Maak je Labradoodle"
-
-#: src/components/AskCard.tsx
-msgid "Created"
-msgstr "Aangemaakt"
 
 #: src/pages/PluginsOverlay.tsx
 msgid "Credential"
@@ -3866,7 +3856,6 @@ msgstr "Uitvoer"
 
 #: src/components/pages/SharePopover.tsx
 #: src/components/SpaceMembersSettings.tsx
-#: src/lib/identity-display.ts
 msgid "Owner"
 msgstr "Eigenaar"
 

@@ -91,7 +91,7 @@ describe("addMcpServerFromTool", () => {
       "exec-1",
     );
     expect(result).toEqual({
-      error: "Bots can't add local (stdio) MCP servers. Ask an admin to add it in Settings.",
+      error: "Doodle can't add local (stdio) MCP servers. Ask an admin to add it in Settings.",
     });
     expect(create).not.toHaveBeenCalled();
   });

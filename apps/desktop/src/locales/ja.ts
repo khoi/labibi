@@ -59,13 +59,13 @@ export const JA_MESSAGES: Record<string, string> = {
     "アップデートを完了できませんでした。しばらくしてからもう一度お試しください。",
   "Could not reach the update server.": "アップデートサーバに接続できませんでした。",
   "Allow local computer access?": "ローカルコンピュータへのアクセスを許可しますか？",
-  "Allow bots to use this computer?": "ボットにこのコンピュータの使用を許可しますか？",
+  "Allow Doodle to use this computer?": "Doodle にこのコンピュータの使用を許可しますか？",
   Cancel: "キャンセル",
   Allow: "許可",
-  "Bots on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
-    "{host}のボットは、あなたのアカウントの権限でコマンドを実行し、ファイルを読み書きし、アプリを起動できます。アクセスは設定で取り消せます。",
-  "Bots on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
-    "このローカルインスタンスのボットは、あなたのアカウントの権限でコマンドを実行し、ファイルを読み書きし、アプリを起動できます。アクセスはアプリのメニューから取り消せます。",
+  "Doodle on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
+    "{host} の Doodle は、あなたのアカウントの権限でコマンドの実行、ファイルの読み取りと変更、アプリの起動ができます。アクセスは設定で取り消せます。",
+  "Doodle on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
+    "このローカルインスタンスの Doodle は、あなたのアカウントの権限でコマンドの実行、ファイルの読み取りと変更、アプリの起動ができます。アクセスはアプリメニューから取り消せます。",
   "Local computer access requires an app-managed local instance.":
     "ローカルコンピュータへのアクセスには、アプリが管理するローカルインスタンスが必要です。",
   "Local server is unavailable": "ローカルサーバを利用できません",

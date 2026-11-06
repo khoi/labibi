@@ -132,7 +132,7 @@ export async function addMcpServerFromTool(
   // A local server runs on the deployment's own hosts, so only an admin adds one.
   if (args.transport === "stdio") {
     return {
-      error: "Bots can't add local (stdio) MCP servers. Ask an admin to add it in Settings.",
+      error: "Doodle can't add local (stdio) MCP servers. Ask an admin to add it in Settings.",
     };
   }
   const parsed = parseMcpServerToolArgs(args);

@@ -91,7 +91,7 @@ export function useAccountDeletion({
     const prompted = promptAccountDeletion({
       title: t("Delete your account?"),
       message: t(
-        "This permanently deletes your account, bots, conversations, memories, files, and saved connections. This cannot be undone.",
+        "This permanently deletes your account, chats, memories, files, and saved connections. This cannot be undone.",
       ),
       cancelLabel: t("Cancel"),
       deleteLabel: t("Delete"),
@@ -156,7 +156,7 @@ export function useAccountDeletion({
           <Text style={styles.dialogTitle}>{t("Delete your account?")}</Text>
           <Text style={styles.dialogBody}>
             {t(
-              "This permanently deletes your account, bots, conversations, memories, files, and saved connections. This cannot be undone.",
+              "This permanently deletes your account, chats, memories, files, and saved connections. This cannot be undone.",
             )}
           </Text>
           {!security?.hasPassword ? (

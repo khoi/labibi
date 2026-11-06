@@ -58,13 +58,13 @@ export const KO_MESSAGES: Record<string, string> = {
     "업데이트를 완료할 수 없습니다. 나중에 다시 시도하세요.",
   "Could not reach the update server.": "업데이트 서버에 연결할 수 없습니다.",
   "Allow local computer access?": "로컬 컴퓨터 접근을 허용할까요?",
-  "Allow bots to use this computer?": "봇이 이 컴퓨터를 사용하도록 허용할까요?",
+  "Allow Doodle to use this computer?": "Doodle이 이 컴퓨터를 사용하도록 허용할까요?",
   Cancel: "취소",
   Allow: "허용",
-  "Bots on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
-    "{host}의 봇이 계정 권한으로 명령을 실행하고, 파일을 읽고 변경하고, 앱을 실행할 수 있습니다. 설정에서 접근을 취소할 수 있습니다.",
-  "Bots on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
-    "이 로컬 인스턴스의 봇이 계정 권한으로 명령을 실행하고, 파일을 읽고 변경하고, 앱을 실행할 수 있습니다. 앱 메뉴에서 접근을 취소할 수 있습니다.",
+  "Doodle on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
+    "{host}의 Doodle은 계정 권한으로 명령을 실행하고, 파일을 읽고 변경하고, 앱을 실행할 수 있습니다. 설정에서 액세스를 취소할 수 있습니다.",
+  "Doodle on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
+    "이 로컬 인스턴스의 Doodle은 계정 권한으로 명령을 실행하고, 파일을 읽고 변경하고, 앱을 실행할 수 있습니다. 앱 메뉴에서 액세스를 취소할 수 있습니다.",
   "Local computer access requires an app-managed local instance.":
     "로컬 컴퓨터 접근에는 앱에서 관리하는 로컬 인스턴스가 필요합니다.",
   "Local server is unavailable": "로컬 서버를 사용할 수 없습니다",

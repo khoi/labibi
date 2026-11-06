@@ -56,13 +56,13 @@ export const HI_MESSAGES: Record<string, string> = {
     "अपडेट पूरा नहीं हो सका। बाद में फिर से कोशिश करें।",
   "Could not reach the update server.": "अपडेट सर्वर तक नहीं पहुँच सके।",
   "Allow local computer access?": "लोकल कंप्यूटर एक्सेस की अनुमति दें?",
-  "Allow bots to use this computer?": "बॉट को इस कंप्यूटर का इस्तेमाल करने दें?",
+  "Allow Doodle to use this computer?": "Doodle को इस कंप्यूटर का इस्तेमाल करने दें?",
   Cancel: "रद्द करें",
   Allow: "अनुमति दें",
-  "Bots on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
-    "{host} के बॉट आपके खाते की अनुमतियों से कमांड चला सकते हैं, फ़ाइलें पढ़ और बदल सकते हैं, और ऐप खोल सकते हैं। आप सेटिंग्स में एक्सेस वापस ले सकते हैं।",
-  "Bots on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
-    "इस लोकल इंस्टेंस के बॉट आपके खाते की अनुमतियों से कमांड चला सकते हैं, फ़ाइलें पढ़ और बदल सकते हैं, और ऐप खोल सकते हैं। आप ऐप मेन्यू से एक्सेस वापस ले सकते हैं।",
+  "Doodle on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
+    "{host} पर Doodle आपके खाते की अनुमतियों से कमांड चला सकता है, फ़ाइलें पढ़ और बदल सकता है और ऐप खोल सकता है। आप सेटिंग्स में पहुंच रद्द कर सकते हैं।",
+  "Doodle on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
+    "इस लोकल इंस्टेंस पर Doodle आपके खाते की अनुमतियों से कमांड चला सकता है, फ़ाइलें पढ़ और बदल सकता है और ऐप खोल सकता है। आप ऐप मेनू से पहुंच रद्द कर सकते हैं।",
   "Local computer access requires an app-managed local instance.":
     "लोकल कंप्यूटर एक्सेस के लिए ऐप से मैनेज होने वाला लोकल इंस्टेंस ज़रूरी है।",
   "Local server is unavailable": "लोकल सर्वर उपलब्ध नहीं है",

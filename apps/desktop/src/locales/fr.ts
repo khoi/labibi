@@ -58,13 +58,13 @@ export const FR_MESSAGES: Record<string, string> = {
     "Impossible de terminer la mise à jour. Réessayez plus tard.",
   "Could not reach the update server.": "Impossible de joindre le serveur de mises à jour.",
   "Allow local computer access?": "Autoriser l’accès à l’ordinateur local ?",
-  "Allow bots to use this computer?": "Autoriser les bots à utiliser cet ordinateur ?",
+  "Allow Doodle to use this computer?": "Autoriser Doodle à utiliser cet ordinateur ?",
   Cancel: "Annuler",
   Allow: "Autoriser",
-  "Bots on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
-    "Les bots de {host} peuvent exécuter des commandes, lire et modifier des fichiers et lancer des apps avec les autorisations de votre compte. Vous pouvez révoquer l’accès dans les Réglages.",
-  "Bots on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
-    "Les bots de cette instance locale peuvent exécuter des commandes, lire et modifier des fichiers et lancer des apps avec les autorisations de votre compte. Vous pouvez révoquer l’accès depuis le menu de l’app.",
+  "Doodle on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
+    "Doodle sur {host} peut exécuter des commandes, lire et modifier des fichiers et lancer des apps avec les autorisations de votre compte. Vous pouvez révoquer l’accès dans les Réglages.",
+  "Doodle on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
+    "Doodle sur cette instance locale peut exécuter des commandes, lire et modifier des fichiers et lancer des apps avec les autorisations de votre compte. Vous pouvez révoquer l’accès depuis le menu de l’app.",
   "Local computer access requires an app-managed local instance.":
     "L’accès à l’ordinateur local nécessite une instance locale gérée par l’app.",
   "Local server is unavailable": "Le serveur local n’est pas disponible",

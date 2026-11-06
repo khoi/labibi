@@ -57,13 +57,13 @@ export const TR_MESSAGES: Record<string, string> = {
     "Güncelleme tamamlanamadı. Daha sonra yeniden deneyin.",
   "Could not reach the update server.": "Güncelleme sunucusuna ulaşılamadı.",
   "Allow local computer access?": "Yerel bilgisayara erişime izin verilsin mi?",
-  "Allow bots to use this computer?": "Botların bu bilgisayarı kullanmasına izin verilsin mi?",
+  "Allow Doodle to use this computer?": "Doodle'ın bu bilgisayarı kullanmasına izin verilsin mi?",
   Cancel: "Vazgeç",
   Allow: "İzin Ver",
-  "Bots on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
-    "{host} üzerindeki botlar hesabınızın izinleriyle komut çalıştırabilir, dosyaları okuyup değiştirebilir ve uygulama açabilir. Erişimi Ayarlar’dan iptal edebilirsiniz.",
-  "Bots on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
-    "Bu yerel örnekteki botlar hesabınızın izinleriyle komut çalıştırabilir, dosyaları okuyup değiştirebilir ve uygulama açabilir. Erişimi uygulama menüsünden iptal edebilirsiniz.",
+  "Doodle on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
+    "{host} üzerindeki Doodle, hesabının izinleriyle komut çalıştırabilir, dosyaları okuyup değiştirebilir ve uygulama açabilir. Erişimi Ayarlar'dan iptal edebilirsin.",
+  "Doodle on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
+    "Bu yerel örnekteki Doodle, hesabının izinleriyle komut çalıştırabilir, dosyaları okuyup değiştirebilir ve uygulama açabilir. Erişimi uygulama menüsünden iptal edebilirsin.",
   "Local computer access requires an app-managed local instance.":
     "Yerel bilgisayar erişimi, uygulamanın yönettiği bir yerel örnek gerektirir.",
   "Local server is unavailable": "Yerel sunucu kullanılamıyor",

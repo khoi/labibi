@@ -63,13 +63,13 @@ export const ES_MESSAGES: Record<string, string> = {
 
   // Computer access
   "Allow local computer access?": "¿Permitir el acceso a la computadora local?",
-  "Allow bots to use this computer?": "¿Permitir que los bots usen esta computadora?",
+  "Allow Doodle to use this computer?": "¿Permitir que Doodle use este ordenador?",
   Cancel: "Cancelar",
   Allow: "Permitir",
-  "Bots on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
-    "Los bots de {host} pueden ejecutar comandos, leer y cambiar archivos y abrir apps con los permisos de tu cuenta. Puedes revocar el acceso en Configuración.",
-  "Bots on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
-    "Los bots de esta instancia local pueden ejecutar comandos, leer y cambiar archivos y abrir apps con los permisos de tu cuenta. Puedes revocar el acceso desde el menú de la app.",
+  "Doodle on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
+    "Doodle en {host} puede ejecutar comandos, leer y cambiar archivos y abrir apps con los permisos de tu cuenta. Puedes revocar el acceso en Configuración.",
+  "Doodle on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
+    "Doodle en esta instancia local puede ejecutar comandos, leer y cambiar archivos y abrir apps con los permisos de tu cuenta. Puedes revocar el acceso desde el menú de la app.",
   "Local computer access requires an app-managed local instance.":
     "El acceso a la computadora local requiere una instancia local administrada por la app.",
   "Local server is unavailable": "El servidor local no está disponible",

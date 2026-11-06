@@ -57,9 +57,9 @@ export function userComputerOwner(input: {
 
 /**
  * The user's own computer always asks a person first, in every approval mode and whatever the
- * rules allow, until they choose "Allow in this space"; a block still refuses it. These tools run
+ * rules allow, until they choose "Allow in this workspace"; a block still refuses it. These tools run
  * only in the user's own runs (see userComputerOwner), so any effect of them past "intended" in
- * this space traces back to that approval. Removing every paired computer ends it, so pairing again
+ * this workspace traces back to that approval. Removing every paired computer ends it, so pairing again
  * asks again. Screen control is approved per app.
  */
 export async function userComputerGate(

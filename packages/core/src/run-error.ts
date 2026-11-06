@@ -30,14 +30,14 @@ export const VERBATIM_TOOL_RESULT_TOO_LARGE_ERROR =
 export const MODEL_REQUEST_LIMIT_ERROR =
   "This connection's request limit is too small. Choose another model.";
 
-export const MISSING_MODEL_RUN_ERROR = "Connect a model in Settings before running bots.";
+export const MISSING_MODEL_RUN_ERROR = "Connect a model in Settings to use Doodle.";
 
 /** A deployment model run while the organization has not chosen Labradoodle credits. */
 export const HOSTED_MODEL_CREDITS_REQUIRED_ERROR =
   "Connect your own API key in Models or choose Labradoodle credits in Billing.";
 
 /** A run in a billing organization without a paid plan, credits, or free period. */
-export const MODEL_ACCESS_REQUIRED_RUN_ERROR = "Subscribe in Billing to keep running bots.";
+export const MODEL_ACCESS_REQUIRED_RUN_ERROR = "Subscribe in Billing to keep using Doodle.";
 
 /** The API rejects a send with this message until the user can reach a model. */
 export const MODEL_REQUIRED_SEND_ERROR = "Connect a model to start a run.";

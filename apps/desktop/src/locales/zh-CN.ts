@@ -53,13 +53,13 @@ export const ZH_CN_MESSAGES: Record<string, string> = {
   "The update could not be completed. Try again later.": "无法完成更新。请稍后重试。",
   "Could not reach the update server.": "无法连接更新服务器。",
   "Allow local computer access?": "允许访问本地电脑？",
-  "Allow bots to use this computer?": "允许机器人使用这台电脑？",
+  "Allow Doodle to use this computer?": "允许 Doodle 使用这台电脑？",
   Cancel: "取消",
   Allow: "允许",
-  "Bots on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
-    "{host} 上的机器人可以使用你账户的权限运行命令、读取和更改文件以及打开应用。你可以在设置中撤销访问权限。",
-  "Bots on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
-    "此本地实例上的机器人可以使用你账户的权限运行命令、读取和更改文件以及打开应用。你可以在应用菜单中撤销访问权限。",
+  "Doodle on {host} can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access in Settings.":
+    "{host} 上的 Doodle 可以用你账户的权限运行命令、读取和修改文件以及启动应用。你可以在设置中撤销访问权限。",
+  "Doodle on this local instance can run commands, read and change files, and launch apps with your account’s permissions. You can revoke access from the app menu.":
+    "此本地实例上的 Doodle 可以用你账户的权限运行命令、读取和修改文件以及启动应用。你可以在应用菜单中撤销访问权限。",
   "Local computer access requires an app-managed local instance.":
     "本地电脑访问需要由应用管理的本地实例。",
   "Local server is unavailable": "本地服务器不可用",

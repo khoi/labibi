@@ -9,17 +9,6 @@ describe("askActionLabel", () => {
   afterEach(() => resetI18nForTests());
 
   it.each([
-    ["allow", "created", "Create space"],
-    ["deny", "created", "Create space"],
-    ["allow", "cancelled", "Cancel"],
-    ["deny", "cancelled", "Cancel"],
-  ] as const)("prioritizes %s's %s outcome", (id, outcome, expected) => {
-    expect(askActionLabel({ id, label: "Server label", outcome }, { approval: true }, fakeT)).toBe(
-      expected,
-    );
-  });
-
-  it.each([
     ["always", "example.test", "Always allow example.test"],
     ["always", undefined, "Always allow this tool"],
     ["always", "", "Always allow this tool"],
@@ -32,27 +21,22 @@ describe("askActionLabel", () => {
     );
   });
 
-  it.each(["Allow in this space", "Allow for this chat"])(
-    "labels the user's-computer allow from %s as covering the space",
-    (label) => {
-      expect(askActionLabel({ id: "allow", label }, { approval: true }, fakeT)).toBe(
-        "Allow in this space",
-      );
-    },
-  );
+  it("labels the user's-computer allow as covering the workspace", () => {
+    expect(
+      askActionLabel({ id: "allow", label: "Allow in this workspace" }, { approval: true }, fakeT),
+    ).toBe("Allow in this workspace");
+  });
 
   it.each(["allow", "always", "deny", "custom"])(
     "preserves the server label for non-approval action %s",
     (id) => {
-      for (const outcome of [undefined, "created", "cancelled"] as const) {
-        expect(
-          askActionLabel(
-            { id, label: "Server label", outcome },
-            { approval: false, site: "example.test" },
-            fakeT,
-          ),
-        ).toBe("Server label");
-      }
+      expect(
+        askActionLabel(
+          { id, label: "Server label" },
+          { approval: false, site: "example.test" },
+          fakeT,
+        ),
+      ).toBe("Server label");
     },
   );
 
