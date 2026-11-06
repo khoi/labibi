@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { personalWorkspaceName, signupPolicyFromEnv } from "@labradoodle/core";
 import { ensureFirstChat } from "./chats.js";
-import type { PrismaClient } from "./client.js";
+import type { Prisma, PrismaClient } from "./client.js";
 import { ensureSpaceDoodle } from "./doodle.js";
 
 export interface SignupPolicyEnv {
@@ -9,8 +9,10 @@ export interface SignupPolicyEnv {
   signupAllowlist: string | undefined;
 }
 
+const SHARED_WORKSPACE = { name: "Labradoodle", slug: "labradoodle" };
+
 type OrganizationClient = Pick<
-  PrismaClient,
+  Prisma.TransactionClient,
   | "organization"
   | "member"
   | "space"
@@ -111,21 +113,63 @@ export async function createOrganizationWithDefaultSpace(
 }
 
 /**
- * Provision the person's own workspace and a first chat in it with Doodle. Signup never grants
- * deployment administration.
+ * Put the person in the one workspace everyone shares. Whoever finds none creates and owns it;
+ * everyone else joins as a member, so it outlives its owner's account like any team workspace.
+ * Returns null while it is being deleted.
+ */
+export async function joinSharedWorkspace(
+  prisma: PrismaClient,
+  userId: string,
+): Promise<string | null> {
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext('labradoodle:shared-workspace'))`;
+    const existing = await tx.organization.findUnique({
+      where: { slug: SHARED_WORKSPACE.slug },
+      select: { id: true, spaces: { where: { isDefault: true }, select: { deletingAt: true } } },
+    });
+    if (!existing) {
+      return createOrganizationWithDefaultSpace(tx, {
+        userId,
+        orgId: newId(),
+        ...SHARED_WORKSPACE,
+      });
+    }
+    if (existing.spaces[0]?.deletingAt !== null) return null;
+    const organizationId = existing.id;
+    const now = new Date();
+    await tx.member.upsert({
+      where: { organizationId_userId: { organizationId, userId } },
+      create: { id: newId(), organizationId, userId, role: "member", createdAt: now },
+      update: {},
+    });
+    await tx.spaceMember.upsert({
+      where: { spaceId_userId: { spaceId: organizationId, userId } },
+      create: { id: newId(), spaceId: organizationId, organizationId, userId, createdAt: now },
+      update: {},
+    });
+    return organizationId;
+  });
+}
+
+/**
+ * Provision the shared workspace membership, then the person's own workspace, and a first chat
+ * with Doodle in the shared one. Joined first, the shared workspace is the one a new session
+ * opens. Signup never grants deployment administration.
  */
 export async function bootstrapUserSpace(
   prisma: PrismaClient,
   user: { id: string; name?: string | null; email?: string | null },
   env: SignupPolicyEnv,
 ): Promise<{ spaceId: string }> {
+  const sharedSpaceId = await joinSharedWorkspace(prisma, user.id);
   // Concurrent bootstraps for the same user (e.g. overlapping first phone inbounds) share the slug.
-  const spaceId = await createOrganizationWithDefaultSpace(prisma, {
+  const ownSpaceId = await createOrganizationWithDefaultSpace(prisma, {
     userId: user.id,
     orgId: newId(),
     name: personalWorkspaceName(user),
     slug: `user-${user.id.slice(0, 12)}`,
   });
+  const spaceId = sharedSpaceId ?? ownSpaceId;
   const policy = signupPolicyFromEnv(env);
   await prisma.deploymentSettings.upsert({
     where: { id: "default" },

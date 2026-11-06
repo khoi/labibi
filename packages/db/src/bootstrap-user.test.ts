@@ -7,15 +7,18 @@ vi.mock("./chats.js", () => ({ ensureFirstChat: vi.fn() }));
 function makePrisma(settings: { id: string; ownerUserId: string | null } | null) {
   const create = () => vi.fn(async (_input: { data: Record<string, unknown> }) => ({}));
   const prisma = {
+    $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma)),
+    $executeRaw: vi.fn(async () => 0),
     organization: {
       create: create(),
+      findUnique: vi.fn(async () => ({ id: "shared", spaces: [{ deletingAt: null }] })),
       findUniqueOrThrow: vi.fn(async () => {
         throw new Error("not found");
       }),
     },
-    member: { create: create() },
+    member: { create: create(), upsert: vi.fn(async () => ({})) },
     space: { create: create() },
-    spaceMember: { create: create() },
+    spaceMember: { create: create(), upsert: vi.fn(async () => ({})) },
     deploymentSettings: {
       findUnique: vi.fn(async () => settings),
       create: create(),
@@ -48,7 +51,7 @@ describe("bootstrapUserSpace", () => {
     const orgData = prisma.organization.create.mock.calls[0]![0].data;
     expect(orgData.name).toBe("Ada's workspace");
     expect(orgData.slug).toBe("user-user-1".slice(0, 16));
-    expect(result.spaceId).toBe(orgData.id);
+    expect(result.spaceId).toBe("shared");
 
     const memberData = prisma.member.create.mock.calls[0]![0].data;
     expect(memberData.organizationId).toBe(orgData.id);
@@ -98,11 +101,8 @@ describe("bootstrapUserSpace", () => {
 
   it("creates the user memory document and notification preference in the new workspace", async () => {
     const prisma = makePrisma({ id: "default", ownerUserId: "user-1" });
-    const { spaceId } = await bootstrapUserSpace(
-      prisma as unknown as PrismaClient,
-      { id: "user-1" },
-      env,
-    );
+    await bootstrapUserSpace(prisma as unknown as PrismaClient, { id: "user-1" }, env);
+    const spaceId = prisma.organization.create.mock.calls[0]![0].data.id;
 
     const memoryData = prisma.memoryDocument.create.mock.calls[0]![0].data;
     expect(memoryData.spaceId).toBe(spaceId);
@@ -120,8 +120,11 @@ describe("bootstrapUserSpace concurrency", () => {
     const uniqueViolation = async () => {
       throw Object.assign(new Error("Unique constraint failed"), { code: "P2002" });
     };
-    const prisma = {
+    const prisma: Record<string, unknown> = {
+      $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma)),
+      $executeRaw: vi.fn(async () => 0),
       organization: {
+        findUnique: vi.fn(async () => ({ id: "shared", spaces: [] })),
         create: vi.fn(uniqueViolation),
         findUniqueOrThrow: vi.fn(async () => ({ id: "org-winner" })),
       },
