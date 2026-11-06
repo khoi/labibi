@@ -214,8 +214,8 @@ export function Thread({ sessionEpoch, userId }: { sessionEpoch: number; userId:
   const composerPrompt =
     doodleOn && !inGroup
       ? t("Message {name}", { name: DOODLE_NAME })
-      : title
-        ? t("Message {name}", { name: title })
+      : chat?.title
+        ? t("Message {name}", { name: chat.title })
         : t("Message…");
   const doodleStatus =
     snap && (!showingSaved || error) ? snap.run?.status : (inboxChat?.status ?? snap?.run?.status);
