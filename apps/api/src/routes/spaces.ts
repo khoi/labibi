@@ -6,6 +6,7 @@ import {
   CannotRenameSpaceAsNonOwnerError,
   cancelSpaceInvites,
   createSpaceInvite,
+  ensureWelcomeChat,
   fallbackSpaceForMember,
   getSpaceDoodle,
   InvalidSpaceNameError,
@@ -230,15 +231,15 @@ export function spacesRoutes(ctx: RouterContext) {
     },
     bootstrap: authed.bootstrap.handler(async ({ context, input }) => {
       const actor = context.actor;
+      const welcomeChatId = await ensureWelcomeChat(deps.prisma, actor);
       const [me, spaces, doodle, chats] = await Promise.all([
         meDto(deps, actor),
         workspaces(actor),
         getSpaceDoodle(deps.prisma, actor),
         listChats(deps.prisma, actor),
       ]);
-      const [only] = chats;
-      if (chats.length === 1 && only?.doodle && !only.preview && only.members.length === 1)
-        void welcome(ctx.onboardingDeps, actor, only.id).catch((error) =>
+      if (welcomeChatId)
+        void welcome(ctx.onboardingDeps, actor, welcomeChatId).catch((error) =>
           getLogger().error("onboarding welcome failed", error),
         );
       const requested = input.threadId

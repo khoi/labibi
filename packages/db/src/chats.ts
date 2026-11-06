@@ -257,6 +257,38 @@ export async function ensureFirstChat(
   );
 }
 
+/**
+ * Until a person writes in a workspace, their chat alone with Doodle there, made if missing,
+ * so it can be welcomed. Returns null once they have written anything in the workspace.
+ */
+export async function ensureWelcomeChat(
+  prisma: PrismaClient,
+  actor: ChatActor,
+): Promise<string | null> {
+  return runAsSystem("find or make a new person's welcome chat", () =>
+    withTransactionRetry(() =>
+      prisma.$transaction(async (tx) => {
+        const wrote = await tx.message.findFirst({
+          where: { authorUserId: actor.userId, thread: { spaceId: actor.spaceId } },
+          select: { id: true },
+        });
+        if (wrote) return null;
+        await lockSpaceForContentCreation(tx, actor);
+        const solo = await tx.thread.findFirst({
+          where: {
+            spaceId: actor.spaceId,
+            doodle: true,
+            members: { every: { userId: actor.userId }, some: { userId: actor.userId } },
+          },
+          orderBy: { createdAt: "asc" },
+          select: { id: true },
+        });
+        return solo?.id ?? (await insertChat(tx, actor, { userIds: [], doodle: true }));
+      }),
+    ),
+  );
+}
+
 /** Only people of the workspace; anyone in the chat may add them, and they see its history. */
 export async function addChatMembers(
   prisma: PrismaClient,

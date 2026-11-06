@@ -776,6 +776,7 @@ model Message {
 
   @@unique([threadId, seq])
   @@unique([threadId, clientNonce])
+  @@index([authorUserId])
   @@index([replyToMessageId])
   @@index([runId, seq])
   @@index([searchTokens], type: Gin)
