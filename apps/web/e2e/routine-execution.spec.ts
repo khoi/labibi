@@ -1,10 +1,10 @@
 import type { Routine, RoutineHistory } from "@labradoodle/contracts";
 import { expect, test } from "@playwright/test";
 import {
-  activeBotId,
+  activeThreadId,
   captureScreenshot,
   completeOnboarding,
-  openBotPanelTab,
+  openChatPanelTab,
   rpc,
   signup,
 } from "./helpers";
@@ -25,7 +25,7 @@ test(
     await page.getByRole("option", { name: "한국어", exact: true }).click();
     await page.getByRole("button", { name: "계정 설정 닫기" }).click();
 
-    await openBotPanelTab(page, "자동 실행");
+    await openChatPanelTab(page, "자동 실행");
     await page.getByRole("button", { name: "자동 실행 만들기" }).click();
     await page.getByPlaceholder("이 루틴의 이름을 정하세요").fill("한국어 웹훅 확인");
     await page
@@ -46,9 +46,9 @@ test("routine test-run completes and survives reload", async ({ page }, testInfo
   const stamp = Date.now();
   await signup(page, `routine-${stamp}@rakazo.test`, "password12", "Routine");
   await completeOnboarding(page);
-  const botId = activeBotId(page);
+  const botId = activeThreadId(page);
 
-  await openBotPanelTab(page, "Routines");
+  await openChatPanelTab(page, "Routines");
   await expect(page.getByRole("button", { name: "Test run" })).toHaveCount(0);
   await page.getByRole("button", { name: "Create Routine" }).click();
   await page.locator("label:has-text('Name') input").fill("Daily verification");
@@ -73,7 +73,7 @@ test("routine test-run completes and survives reload", async ({ page }, testInfo
   await captureScreenshot(page, testInfo, "33-routine-scheduled");
 
   await routine.click();
-  const created = (await rpc<Routine[]>(page, "routines/list", { botId })).find(
+  const created = (await rpc<Routine[]>(page, "routines/list", { threadId: botId })).find(
     (item) => item.name === "Daily verification",
   );
   const runs = async () =>
@@ -97,7 +97,7 @@ test("routine test-run completes and survives reload", async ({ page }, testInfo
   await page.reload();
   await expect(reply).toBeVisible();
   await expect(reply).toContainText(/routine-run-now-ok/i);
-  await openBotPanelTab(page, "Routines");
+  await openChatPanelTab(page, "Routines");
   await expect(page.getByRole("button", { name: /Daily verification/ })).toContainText(
     "Weekdays at 9:00 AM",
   );
@@ -119,7 +119,7 @@ test("a routine run that failed to start shows the error in Details", async ({
   const stamp = Date.now();
   await signup(page, `routine-failed-${stamp}@rakazo.test`, "password12", "Routine");
   await completeOnboarding(page);
-  const botId = activeBotId(page);
+  const botId = activeThreadId(page);
   await rpc<Routine>(page, "routines/create", {
     botId,
     name: "Nightly check",
@@ -162,7 +162,7 @@ test("a routine run that failed to start shows the error in Details", async ({
   // Details then opens without the slide transition, so the capture shows the whole error.
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.reload();
-  await openBotPanelTab(page, "Routines");
+  await openChatPanelTab(page, "Routines");
   await page.getByRole("button", { name: /Nightly check/ }).click();
   const history = page.getByTestId("routine-run-history");
   await history.getByText("Details", { exact: true }).click();
@@ -174,7 +174,7 @@ test("run history links runs that replied and marks silent ones", async ({ page 
   const stamp = Date.now();
   await signup(page, `routine-states-${stamp}@rakazo.test`, "password12", "Routine");
   await completeOnboarding(page);
-  const botId = activeBotId(page);
+  const botId = activeThreadId(page);
   await rpc<Routine>(page, "routines/create", {
     botId,
     name: "Price watch",
@@ -222,7 +222,7 @@ test("run history links runs that replied and marks silent ones", async ({ page 
   );
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.reload();
-  await openBotPanelTab(page, "Routines");
+  await openChatPanelTab(page, "Routines");
   await page.getByRole("button", { name: /Price watch/ }).click();
   const history = page.getByTestId("routine-run-history");
   await expect(history.getByRole("heading", { name: "Run history" })).toBeVisible();

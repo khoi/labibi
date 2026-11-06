@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { activeBotId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
+import { activeThreadId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
 
 test("opens Artifacts from the account menu and lists created files", async ({
   page,
@@ -9,7 +9,7 @@ test("opens Artifacts from the account menu and lists created files", async ({
   await completeOnboarding(page);
   await page.goto("/app");
   await page.waitForURL(/\/app\/(?!artifacts(?:\/|$))[^/]+$/);
-  const chiefId = activeBotId(page);
+  const chiefId = activeThreadId(page);
 
   const sidebar = page.getByTestId("bots-sidebar");
   await expect(sidebar).toBeVisible();

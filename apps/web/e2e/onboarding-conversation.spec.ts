@@ -25,7 +25,7 @@ test("focus choice suggests apps and preserves a completed connection", async ({
   // The focus step suggests apps but must not rename the bot: the name the
   // user chose during creation ("Chief") is preserved.
   await expect(page.locator("main").getByText("Chief", { exact: true })).toBeVisible();
-  await expect(page.getByPlaceholder("Message Chief")).toBeVisible();
+  await expect(page.getByPlaceholder("Message Doodle")).toBeVisible();
   await expect(page.getByText("Slack", { exact: true })).toBeVisible();
   await expect(page.getByText("Gmail", { exact: true })).toBeVisible();
   const connectionCards = page.getByRole("group", { name: / connection$/ });

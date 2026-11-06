@@ -1,11 +1,11 @@
 import type { Page, Route } from "@playwright/test";
 import { expect, test } from "@playwright/test";
 import {
-  activeBotId,
+  activeThreadId,
   captureScreenshot,
   completeOnboarding,
-  createNamedBot,
-  openBotPanelTab,
+  createChat,
+  openChatPanelTab,
   rpc,
   signup,
 } from "./helpers";
@@ -284,7 +284,7 @@ test("a bot's page shows in its reply, opens full screen, is shared by link and 
   // It replies to the page's card, so the bot reads which page it is about by id.
   const history = await rpc<{
     messages: Array<{ id: string; replyToMessageId?: string; blocks: Array<{ kind: string }> }>;
-  }>(page, "threads/messages", { botId: activeBotId(page) });
+  }>(page, "threads/messages", { threadId: activeThreadId(page) });
   const asked = history.messages.find((message) =>
     message.blocks.some(
       (block) =>
@@ -323,7 +323,7 @@ test("a bot's page shows in its reply, opens full screen, is shared by link and 
   await expect(pageFrame(page, "Signups dashboard").getByText("1.9%")).toBeVisible();
   await page.keyboard.press("Escape");
 
-  await openBotPanelTab(page, "Pages");
+  await openChatPanelTab(page, "Pages");
   await page
     .getByTestId("bot-pages")
     .getByRole("button", { name: /^Signups dashboard/ })
@@ -370,12 +370,12 @@ test("a bot's page shows in its reply, opens full screen, is shared by link and 
   await captureScreenshot(page, testInfo, "page-library-empty");
 
   // The header pill reopens the bot panel on the Pages tab it closed on.
-  const pill = page.getByTestId("bot-settings-trigger");
+  const pill = page.getByTestId("chat-panel-trigger");
   await pill.click();
   await expect(pill).toHaveAttribute("aria-expanded", "false");
   await pill.click();
   await expect(
-    page.getByTestId("bot-settings").getByRole("tab", { name: "Pages", exact: true }),
+    page.getByTestId("chat-panel").getByRole("tab", { name: "Pages", exact: true }),
   ).toHaveAttribute("aria-selected", "true");
 });
 
@@ -587,7 +587,7 @@ test("a page's failures, a deleted page's card, and the Library's Share, search 
   await closePage(page);
 
   // The Library's Share opens the popover, every time.
-  await openBotPanelTab(page, "Pages");
+  await openChatPanelTab(page, "Pages");
   const library = page.getByTestId("bot-pages");
   for (let round = 0; round < 2; round++) {
     await library.getByRole("button", { name: "Actions for Alpha" }).click();
@@ -629,7 +629,7 @@ test("a page's failures, a deleted page's card, and the Library's Share, search 
 
   // A longer list gets a field to find a page by title.
   for (const title of ["One", "Two", "Three", "Four", "Five", "Six", "Seven"]) await save(title);
-  await openBotPanelTab(page, "Pages");
+  await openChatPanelTab(page, "Pages");
   await expect(library.getByRole("listitem")).toHaveCount(8);
   await expect(library.getByRole("button", { name: "Show more" })).toBeHidden();
   await library.getByRole("searchbox", { name: "Find a page" }).fill("sev");
@@ -667,8 +667,8 @@ test("a page's failures, a deleted page's card, and the Library's Share, search 
   await captureScreenshot(page, testInfo, "page-library-stale-error");
   // A list that can't be read at all is not shown as empty.
   await page.reload();
-  await openBotPanelTab(page, "Pages");
-  const unread = page.getByTestId("bot-settings").getByRole("alert");
+  await openChatPanelTab(page, "Pages");
+  const unread = page.getByTestId("chat-panel").getByRole("alert");
   await expect(unread).toContainText("Couldn't load pages.");
   await expect(page.getByText("Pages this bot builds for you appear here.")).toBeHidden();
   await captureScreenshot(page, testInfo, "page-library-error");
@@ -685,14 +685,14 @@ test("a group's pages show in its settings, and the palette finds and opens a pa
   await page.setViewportSize({ width: 1280, height: 860 });
   await signup(page, `pages-group-${Date.now()}@rakazo.test`, "password12", "Group Pages");
   await completeOnboarding(page);
-  const planner = await createNamedBot(page, "Planner");
-  const writer = await createNamedBot(page, "Writer");
+  const planner = await createChat(page, { name: "Planner" });
+  const writer = await createChat(page, { name: "Writer" });
   const group = await rpc<{ id: string }>(page, "groups/create", {
     name: "Launch team",
     botIds: [planner, writer],
   });
   await page.goto(`/app/g/${group.id}`);
-  await page.getByTestId("bot-settings-trigger").click();
+  await page.getByTestId("chat-panel-trigger").click();
   const settings = page.getByTestId("side-panel");
   await expect(settings).toHaveAttribute("data-panel", "group-settings");
   await expect(settings.getByRole("heading", { name: "Pages" })).toBeVisible();
@@ -702,7 +702,7 @@ test("a group's pages show in its settings, and the palette finds and opens a pa
     ),
   ).toBeVisible();
   await captureScreenshot(page, testInfo, "page-group-settings-empty");
-  await page.getByTestId("bot-settings-trigger").click();
+  await page.getByTestId("chat-panel-trigger").click();
   await expect(settings).toBeHidden();
 
   await send(
@@ -710,10 +710,10 @@ test("a group's pages show in its settings, and the palette finds and opens a pa
     `@Planner call save_page with ${JSON.stringify({ title: "Launch checklist", source: tiny("Launch checklist") })}\nthen say Made the Launch checklist.`,
   );
   await expect(page.getByTestId("page-card")).toHaveCount(1, { timeout: 30_000 });
-  await page.getByTestId("bot-settings-trigger").click();
+  await page.getByTestId("chat-panel-trigger").click();
   await expect(settings.getByText("Launch checklist")).toBeVisible();
   await captureScreenshot(page, testInfo, "page-group-settings");
-  await page.getByTestId("bot-settings-trigger").click();
+  await page.getByTestId("chat-panel-trigger").click();
 
   await page.keyboard.press("ControlOrMeta+K");
   const palette = page.getByTestId("command-palette");

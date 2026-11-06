@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { activeBotId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
+import { activeThreadId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
 
 test("onboarding choices show borderless rows in both themes", async ({ page }, testInfo) => {
   await signup(page, `onboarding-rows-${Date.now()}@rakazo.test`, "password12", "Sample");
@@ -32,7 +32,7 @@ test("renders tappable choice buttons and submits the offered action id", async 
   await signup(page, `choice-card-${stamp}@rakazo.test`, "password12", "Choice Card");
   await completeOnboarding(page);
 
-  const botId = activeBotId(page);
+  const botId = activeThreadId(page);
   const composer = page.getByPlaceholder(/Message/);
   await composer.fill("pick from these cities with tappable choices");
   await page.keyboard.press("Enter");
@@ -111,7 +111,7 @@ test("renders tappable choice buttons and submits the offered action id", async 
               actions?: Array<{ id: string; label: string }>;
             }>;
           }>;
-        }>(page, "threads/messages", { botId });
+        }>(page, "threads/messages", { threadId: botId });
         const answered = history.messages
           .flatMap((message) => message.blocks)
           .find(

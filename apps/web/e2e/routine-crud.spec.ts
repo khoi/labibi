@@ -1,11 +1,11 @@
-import type { Bot, Routine } from "@labradoodle/contracts";
+import type { Chat, Routine } from "@labradoodle/contracts";
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
 import {
-  activeBotId,
+  activeThreadId,
   captureScreenshot,
   completeOnboarding,
-  openBotPanelTab,
+  openChatPanelTab,
   rpc,
   signup,
 } from "./helpers";
@@ -21,7 +21,7 @@ test("a delayed schedule is visible only while the routine is active", async ({
 }, testInfo) => {
   await signup(page, `routine-delay-${Date.now()}@rakazo.test`, "password12", "Routine delay");
   await completeOnboarding(page);
-  const botId = activeBotId(page);
+  const botId = activeThreadId(page);
   const routine = await rpc<Routine>(page, "routines/create", {
     botId,
     name: "Morning report",
@@ -40,7 +40,7 @@ test("a delayed schedule is visible only while the routine is active", async ({
     await route.fulfill({ response, json: body });
   });
   await page.reload();
-  await openBotPanelTab(page, "Routines");
+  await openChatPanelTab(page, "Routines");
   await page.getByRole("button", { name: /Morning report/ }).click();
   const delay = page.getByRole("status").filter({ hasText: "Schedule delayed" });
   await expect(delay).toBeVisible();
@@ -74,7 +74,7 @@ test("routine editing updates in place, preserves timezone, deletion persists, a
   const stamp = Date.now();
   await signup(page, `routine-crud-${stamp}@rakazo.test`, "password12", "Routine CRUD");
   await completeOnboarding(page);
-  const botId = activeBotId(page);
+  const botId = activeThreadId(page);
 
   const created = await rpc<Routine>(page, "routines/create", {
     botId,
@@ -88,7 +88,7 @@ test("routine editing updates in place, preserves timezone, deletion persists, a
   expect(created.nextRunAt).not.toBeNull();
   expect(localSchedule(created.nextRunAt!, created.timezone)).toMatchObject({ hour: 9, minute: 0 });
   await page.reload();
-  await openBotPanelTab(page, "Routines");
+  await openChatPanelTab(page, "Routines");
 
   await page.getByRole("button", { name: /Tokyo check-in/ }).click();
   await page.locator("label:has-text('Name') input").fill("Weekday check-in");
@@ -103,7 +103,7 @@ test("routine editing updates in place, preserves timezone, deletion persists, a
   await expect(updatedButton).toContainText("Weekdays at 9:00 AM");
   await expect(page.getByRole("button", { name: /Tokyo check-in/ })).toHaveCount(0);
 
-  const [updated] = await rpc<Routine[]>(page, "routines/list", { botId });
+  const [updated] = await rpc<Routine[]>(page, "routines/list", { threadId: botId });
   expect(updated).toMatchObject({
     name: "Weekday check-in",
     prompt: "Send the revised update",
@@ -131,7 +131,7 @@ test("routine editing updates in place, preserves timezone, deletion persists, a
   await dialog.getByRole("button", { name: "Delete", exact: true }).click();
   await removeResponse;
   await expect(updatedButton).toHaveCount(0);
-  expect(await rpc<Routine[]>(page, "routines/list", { botId })).toEqual([]);
+  expect(await rpc<Routine[]>(page, "routines/list", { threadId: botId })).toEqual([]);
 
   // A routine runs on the bot's model until another is picked.
   await page.getByRole("button", { name: "Create Routine" }).click();
@@ -152,7 +152,7 @@ test("routine editing updates in place, preserves timezone, deletion persists, a
     modelId: null,
     thinkingLevel: null,
   });
-  const routines = await rpc<Routine[]>(page, "routines/list", { botId });
+  const routines = await rpc<Routine[]>(page, "routines/list", { threadId: botId });
   expect(routines.find((routine) => routine.name === "Model check")).toMatchObject({
     modelProvider: null,
     modelId: null,
@@ -184,10 +184,10 @@ test("routine editing updates in place, preserves timezone, deletion persists, a
     expect(renamePatch).not.toHaveProperty(column);
 
   await page.reload();
-  await expect(page.getByPlaceholder("Message Chief")).toBeVisible();
-  expect((await rpc<Routine[]>(page, "routines/list", { botId })).map((r) => r.name)).toEqual([
-    "Renamed model check",
-  ]);
+  await expect(page.getByPlaceholder("Message Doodle")).toBeVisible();
+  expect(
+    (await rpc<Routine[]>(page, "routines/list", { threadId: botId })).map((r) => r.name),
+  ).toEqual(["Renamed model check"]);
   await expect(updatedButton).toHaveCount(0);
 });
 
@@ -197,9 +197,9 @@ test("a successful routine create is not reported as failed when refresh fails",
   const stamp = Date.now();
   await signup(page, `routine-refresh-${stamp}@rakazo.test`, "password12", "Routine Refresh");
   await completeOnboarding(page);
-  const botId = activeBotId(page);
+  const botId = activeThreadId(page);
 
-  await openBotPanelTab(page, "Routines");
+  await openChatPanelTab(page, "Routines");
   await page.getByRole("button", { name: "Create Routine" }).click();
   await page.locator("label:has-text('Name') input").fill("Persisted routine");
   await page.locator("label:has-text('Instruction') textarea").fill("Run once each morning");
@@ -224,27 +224,26 @@ test("a successful routine create is not reported as failed when refresh fails",
   await expect(page.getByRole("alert")).toHaveCount(0);
 
   await page.unroute("**/rpc/routines/list");
-  const routines = await rpc<Routine[]>(page, "routines/list", { botId });
+  const routines = await rpc<Routine[]>(page, "routines/list", { threadId: botId });
   expect(routines).toHaveLength(1);
   expect(routines[0]?.name).toBe("Persisted routine");
 });
 
-test("switching bots while a routine save is pending does not reopen stale state", {
+test("switching chats while a routine save is pending does not reopen stale state", {
   tag: "@nightly",
 }, async ({ page }) => {
   const stamp = Date.now();
   await signup(page, `routine-switch-${stamp}@rakazo.test`, "password12", "Routine Switch");
   await completeOnboarding(page);
-  const firstBotId = activeBotId(page);
-  const secondBot = await rpc<Bot>(page, "bots/create", {
+  const firstBotId = activeThreadId(page);
+  const secondBot = await rpc<Chat>(page, "threads/create", {
     name: "Second",
-    description: "",
-    instructions: "",
-    notifyOnFinish: false,
+    userIds: [],
+    doodle: true,
   });
   await Promise.all([
     rpc<Routine>(page, "routines/create", {
-      botId: firstBotId,
+      threadId: firstBotId,
       name: "First routine",
       prompt: "First prompt",
       crons: ["0 9 * * *"],
@@ -253,7 +252,7 @@ test("switching bots while a routine save is pending does not reopen stale state
       notify: true,
     }),
     rpc<Routine>(page, "routines/create", {
-      botId: secondBot.id,
+      threadId: secondBot.id,
       name: "Second routine",
       prompt: "Second prompt",
       crons: ["0 9 * * *"],
@@ -264,7 +263,7 @@ test("switching bots while a routine save is pending does not reopen stale state
   ]);
   await page.reload();
 
-  await openBotPanelTab(page, "Routines");
+  await openChatPanelTab(page, "Routines");
   await page.getByRole("button", { name: /First routine/ }).click();
   await page.locator("label:has-text('Name') input").fill("First routine updated");
 
@@ -296,7 +295,7 @@ test("switching bots while a routine save is pending does not reopen stale state
     .first()
     .getByRole("button", { name: /^Second/ })
     .click();
-  await page.waitForURL(new RegExp(`/app/${secondBot.id}$`));
+  await page.waitForURL(new RegExp(`/app/c/${secondBot.id}$`));
   await expect(page.getByTestId("side-panel")).toHaveAttribute("data-panel", "closed");
 
   releaseUpdate();
@@ -304,7 +303,7 @@ test("switching bots while a routine save is pending does not reopen stale state
   await expect(page.getByTestId("side-panel")).toHaveAttribute("data-panel", "closed");
   await expect(page.getByRole("alert")).toHaveCount(0);
 
-  await openBotPanelTab(page, "Routines");
+  await openChatPanelTab(page, "Routines");
   await expect(page.getByRole("button", { name: /Second routine/ })).toHaveCount(1);
   await expect(page.getByRole("button", { name: /First routine/ })).toHaveCount(0);
 
@@ -332,10 +331,10 @@ test("switching bots while a routine save is pending does not reopen stale state
   );
 
   const botList = page.locator("aside").first();
-  await botList.getByRole("button", { name: /^Chief/ }).click();
+  await botList.locator(`[data-chat-id="${firstBotId}"]`).click();
   await staleListIntercepted;
   await botList.getByRole("button", { name: /^Second/ }).click();
-  await page.waitForURL(new RegExp(`/app/${secondBot.id}$`));
+  await page.waitForURL(new RegExp(`/app/c/${secondBot.id}$`));
   releaseStaleList();
   await staleListResponse;
   await page.unroute("**/rpc/routines/list");
@@ -366,9 +365,9 @@ test("change-trigger screenshot walkthrough", { tag: "@nightly" }, async ({ page
   const stamp = Date.now();
   await signup(page, `routine-walkthrough-${stamp}@rakazo.test`, "password12", "Routine Watch");
   await completeOnboarding(page);
-  const botId = activeBotId(page);
+  const botId = activeThreadId(page);
 
-  await openBotPanelTab(page, "Routines");
+  await openChatPanelTab(page, "Routines");
   await expect(page.getByRole("button", { name: "Create Routine" })).toBeVisible();
   await expect(page.getByText(/Booting up .* computer/)).toBeHidden();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
@@ -422,7 +421,7 @@ test("change-trigger screenshot walkthrough", { tag: "@nightly" }, async ({ page
   await card.getByRole("textbox", { name: "Tool name", exact: true }).fill("");
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByRole("alert")).toHaveText("Pick a tool to check");
-  expect(await rpc<Routine[]>(page, "routines/list", { botId })).toEqual([]);
+  expect(await rpc<Routine[]>(page, "routines/list", { threadId: botId })).toEqual([]);
   await page.getByRole("alert").scrollIntoViewIfNeeded();
   await captureScreenshot(page, testInfo, "routine-watch-09-validation");
 
@@ -450,7 +449,7 @@ test("change-trigger screenshot walkthrough", { tag: "@nightly" }, async ({ page
   await expect(page.getByRole("button", { name: /Inbox watch/ })).toContainText(
     "When something changes",
   );
-  const routines = await rpc<Routine[]>(page, "routines/list", { botId });
+  const routines = await rpc<Routine[]>(page, "routines/list", { threadId: botId });
   expect(routines.find((routine) => routine.name === "Inbox watch")?.watch).toMatchObject({
     kind: "files",
     paths: ["inbox/", "reports/latest.csv"],

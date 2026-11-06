@@ -1,10 +1,10 @@
 import type { Page, Route } from "@playwright/test";
 import { expect, test } from "@playwright/test";
 import {
-  activeBotId,
+  activeThreadId,
   captureScreenshot,
   completeOnboarding,
-  createNamedBot,
+  createChat,
   rpc,
   signup,
 } from "./helpers";
@@ -13,8 +13,8 @@ test("needs-you computer card opens a group member bot computer", async ({ page 
   const stamp = Date.now();
   await signup(page, `needs-you-group-${stamp}@rakazo.test`, "password12", "Needs You Group");
   await completeOnboarding(page);
-  const chiefId = activeBotId(page);
-  const writerId = await createNamedBot(page, "Writer");
+  const chiefId = activeThreadId(page);
+  const writerId = await createChat(page, { name: "Writer" });
   const group = await rpc<{ id: string }>(page, "groups/create", {
     name: "Needs you team",
     botIds: [chiefId, writerId],
@@ -125,7 +125,7 @@ async function mockMemberComputerRpcs(page: Page, botId: string) {
   };
   const computerJson = JSON.stringify({ json: status });
   const fulfillForBot = async (route: Route, body: string) => {
-    expect(route.request().postDataJSON()).toMatchObject({ json: { botId } });
+    expect(route.request().postDataJSON()).toMatchObject({ json: { threadId: botId } });
     await route.fulfill({ contentType: "application/json", body });
   };
   await page.route("**/rpc/computer/boot", async (route) => {

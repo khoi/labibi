@@ -1,12 +1,12 @@
 import { expect, test } from "@playwright/test";
-import { activeBotId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
+import { activeThreadId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
 
 test("a ?m= deep link jumps while the thread is streaming", async ({ page }, testInfo) => {
   const stamp = Date.now();
   await signup(page, `jump-${stamp}@rakazo.test`, "password12", "Jump Tester");
   await completeOnboarding(page);
 
-  const botId = activeBotId(page);
+  const botId = activeThreadId(page);
   const transcript = page.getByTestId("transcript");
   const composer = page.getByRole("combobox", { name: /Message/ });
   const rows = transcript.locator("[data-message-id]");
@@ -91,7 +91,7 @@ test("a ?m= deep link jumps while the thread is streaming", async ({ page }, tes
   } finally {
     flooding = false;
     await flood;
-    await rpc(page, "threads/stop", { botId }).catch(() => {});
+    await rpc(page, "threads/stop", { threadId: botId }).catch(() => {});
   }
 });
 
@@ -102,8 +102,8 @@ test("the chat follows your sends and a reader at the bottom, not a reader who s
   const stamp = Date.now();
   await signup(page, `follow-${stamp}@rakazo.test`, "password12", "Follow Tester");
   await completeOnboarding(page);
-  const botId = activeBotId(page);
-  await rpc(page, "onboarding/dismissFocus", { botId });
+  const botId = activeThreadId(page);
+  await rpc(page, "onboarding/dismissFocus", { threadId: botId });
 
   const transcript = page.getByTestId("transcript");
   const rows = transcript.locator("[data-message-id]");
@@ -127,7 +127,7 @@ test("the chat follows your sends and a reader at the bottom, not a reader who s
   const long = (tag: string) =>
     `work for 1 second ${tag}\nline two\nline three\nline four\nline five`;
   const arrive = (tag: string) =>
-    rpc(page, "threads/send", { botId, text: long(tag), clientNonce: `${tag}-${stamp}` });
+    rpc(page, "threads/send", { threadId: botId, text: long(tag), clientNonce: `${tag}-${stamp}` });
   const replied = async (tag: string) => {
     await expect(userBubble(tag)).toBeAttached({ timeout: 20_000 });
     await expect

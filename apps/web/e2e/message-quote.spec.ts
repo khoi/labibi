@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import { activeBotId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
+import { activeThreadId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
 
 /**
  * Build a real browser Selection over `startNeedle` … `endNeedle` inside `scope`
@@ -152,7 +152,7 @@ test("an armed reply survives the parent paging out of the transcript", async ({
 
   const transcript = page.getByTestId("transcript");
   const composer = page.getByRole("combobox", { name: /Message/ });
-  const botId = activeBotId(page);
+  const botId = activeThreadId(page);
   const userRow = (text: string) =>
     transcript
       .locator("[data-message-id]")
@@ -186,7 +186,7 @@ test("an armed reply survives the parent paging out of the transcript", async ({
   await expect(lastFiller).toBeVisible({ timeout: 30_000 });
   const lastFillerId = await lastFiller.getAttribute("data-message-id");
   expect(lastFillerId).toBeTruthy();
-  await rpc(page, "threads/stop", { botId });
+  await rpc(page, "threads/stop", { threadId: botId });
   // stop deletes the cancelled runs' thread.progress events; if one of those
   // was the last applied event, the live cursor outranks every later snapshot
   // and refreshes are discarded as stale. A reaction writes one durable event
@@ -198,7 +198,7 @@ test("an armed reply survives the parent paging out of the transcript", async ({
     clientNonce: `qr-${stamp}`,
   });
   // Opening the bot panel refreshes the thread.
-  const panelButton = page.getByTestId("bot-settings-trigger");
+  const panelButton = page.getByTestId("chat-panel-trigger");
   await expect(async () => {
     if ((await panelButton.getAttribute("aria-expanded")) === "true") {
       await panelButton.click();
@@ -222,7 +222,7 @@ test("an armed reply survives the parent paging out of the transcript", async ({
   await expect(userRow(parentText)).toBeVisible({ timeout: 20_000 });
 
   // Stop the reply's run so its continues cannot churn into the next test.
-  await rpc(page, "threads/stop", { botId });
+  await rpc(page, "threads/stop", { threadId: botId });
 });
 
 test("triple-clicking the last paragraph of the latest reply quotes it", async ({ page }) => {

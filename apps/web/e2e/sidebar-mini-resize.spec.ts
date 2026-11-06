@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { captureScreenshot, completeOnboarding, openBotPanelTab, rpc, signup } from "./helpers";
+import { captureScreenshot, completeOnboarding, openChatPanelTab, rpc, signup } from "./helpers";
 
 test("sidebar rail keeps chats interactive and remembers a dragged width", async ({
   page,
@@ -14,7 +14,7 @@ test("sidebar rail keeps chats interactive and remembers a dragged width", async
     notifyOnFinish: true,
     computerMode: "team",
   });
-  await rpc(page, "threads/markUnread", { botId: bot.id });
+  await rpc(page, "threads/markUnread", { threadId: bot.id });
   await page.reload();
   const sidebar = page.getByTestId("bots-sidebar");
   const handle = page.getByRole("separator", { name: "Resize bots sidebar" });
@@ -139,7 +139,7 @@ test("narrow desktop keeps the chat width when both panels are open", async ({
   await handle.focus();
   await handle.press("End");
   await expect(sidebar).toHaveCSS("width", "480px");
-  await openBotPanelTab(page, "Computer");
+  await openChatPanelTab(page, "Computer");
   const panel = page.getByTestId("side-panel");
   await expect(panel).toHaveCSS("position", "absolute");
   const chat = page.locator('[data-space-switch="main"]');

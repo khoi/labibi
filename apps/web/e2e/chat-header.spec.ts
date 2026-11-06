@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { activeBotId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
+import { activeThreadId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
 
 test("the chat header floats over the transcript", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   await signup(page, `chat-header-${Date.now()}@rakazo.test`, "password12", "Sample");
   await completeOnboarding(page);
-  await rpc(page, "onboarding/dismissFocus", { botId: activeBotId(page) });
+  await rpc(page, "onboarding/dismissFocus", { threadId: activeThreadId(page) });
 
   const composer = page.getByRole("combobox", { name: /Message/ });
   const transcript = page.getByTestId("transcript");
@@ -16,7 +16,7 @@ test("the chat header floats over the transcript", async ({ page }, testInfo) =>
     await expect(transcript.getByText(text, { exact: true })).toBeVisible();
   }
 
-  const header = await page.getByTestId("bot-settings-trigger").boundingBox();
+  const header = await page.getByTestId("chat-panel-trigger").boundingBox();
   const scroller = await transcript.boundingBox();
   if (!header || !scroller) throw new Error("missing chat layout");
   // Messages scroll under the floating header rather than stopping below a bar.

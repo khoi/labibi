@@ -1,13 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { activeBotId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
+import { activeThreadId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
 
 test("a short reply thread shows one time separator and navigates to its parent", async ({
   page,
 }, testInfo) => {
   await signup(page, `time-replies-${Date.now()}@rakazo.test`, "password12", "Reply Tester");
   await completeOnboarding(page);
-  const botId = activeBotId(page);
-  await rpc(page, "threads/clear", { botId });
+  const botId = activeThreadId(page);
+  await rpc(page, "threads/clear", { threadId: botId });
   await page.reload({ waitUntil: "domcontentloaded" });
   const transcript = page.getByTestId("transcript");
   const composer = page.getByRole("combobox", { name: /^Message/ });

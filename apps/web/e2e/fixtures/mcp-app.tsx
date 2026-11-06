@@ -76,7 +76,7 @@ const messages: ThreadMessage[] = [
 /** Stands in for the composer: shows what the app offered to it. */
 function Offered() {
   const [text, setText] = useState("");
-  useEffect(() => subscribeComposerOffer(composerDraftKey({ botId: BOT.botId }), setText), []);
+  useEffect(() => subscribeComposerOffer(composerDraftKey({ threadId: "thread-1" }), setText), []);
   return text ? (
     <output data-testid="composer-offer" className="m-4 block text-sm">
       {text}

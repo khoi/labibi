@@ -17,10 +17,11 @@ export function realSandboxTimeout(real: number, emulated: number) {
   return isRealSandboxProvider() ? real : emulated;
 }
 
-export function activeBotId(page: Page) {
-  const id = new URL(page.url()).pathname.split("/").filter(Boolean).at(-1);
-  if (!id || id === "app") throw new Error(`missing bot id in ${page.url()}`);
-  return id;
+/** The open chat's thread id, from its `/app/c/:threadId` route. */
+export function activeThreadId(page: Page) {
+  const match = /\/app\/c\/([^/?#]+)/.exec(new URL(page.url()).pathname);
+  if (!match?.[1]) throw new Error(`missing chat id in ${page.url()}`);
+  return decodeURIComponent(match[1]);
 }
 
 export async function rpc<T>(page: Page, procedure: string, body: unknown): Promise<T> {
@@ -32,30 +33,20 @@ export async function rpc<T>(page: Page, procedure: string, body: unknown): Prom
   return parsed.json as T;
 }
 
+/** Signup lands in the first chat, with only the new person and Doodle in it. */
 export async function completeOnboarding(page: Page, testInfo?: TestInfo) {
   await page.waitForURL(/\/(onboarding|app)/, { timeout: 20_000 });
-  // Optional Server integrations step (needsSetup). Skip when shown, then the
-  // first bot is created automatically — land in Chief's chat with no form.
+  // Optional Server integrations step (needsSetup). Skip when shown, then land in the first chat.
   const integrations = page.getByRole("heading", { name: "Server integrations", exact: true });
-  const chief = page.getByText("Chief").first();
-  await integrations.or(chief).waitFor({ timeout: 20_000 });
-  if ((await chief.isVisible().catch(() => false)) && page.url().includes("/app")) {
-    if (testInfo) {
-      await captureScreenshot(page, testInfo, "03-create-first-bot");
-      await captureScreenshot(page, testInfo, "06-onboarding-complete");
-    }
-    return;
-  }
+  const composer = page.locator('textarea[name="chat-message"]');
+  await integrations.or(composer).waitFor({ timeout: 20_000 });
   if (await integrations.isVisible().catch(() => false)) {
     if (testInfo) await captureScreenshot(page, testInfo, "02-connect-apps");
     await page.getByRole("button", { name: "Skip", exact: true }).click();
   }
-  await page.waitForURL(/\/app\//, { timeout: 20_000 });
-  await expect(page.getByText("Chief").first()).toBeVisible();
-  if (testInfo) {
-    await captureScreenshot(page, testInfo, "03-create-first-bot");
-    await captureScreenshot(page, testInfo, "06-onboarding-complete");
-  }
+  await page.waitForURL(/\/app\/c\//, { timeout: 20_000 });
+  await expect(composer).toBeVisible();
+  if (testInfo) await captureScreenshot(page, testInfo, "06-onboarding-complete");
 }
 
 /**
@@ -107,12 +98,12 @@ export async function openIntegrationsAdd(page: Page, item: string) {
 }
 
 /**
- * Opens the bot panel from the header pill and shows one tab, leaving an open routine editor.
+ * Opens the chat panel from the header pill and shows one tab, leaving an open routine editor.
  * `name` is the tab's label in the UI language ("Routines", or "자동 실행" in Korean).
  */
-export async function openBotPanelTab(page: Page, name: string) {
-  const pill = page.getByTestId("bot-settings-trigger");
-  const tab = page.getByTestId("bot-settings").getByRole("tab", { name, exact: true });
+export async function openChatPanelTab(page: Page, name: string) {
+  const pill = page.getByTestId("chat-panel-trigger");
+  const tab = page.getByTestId("chat-panel").getByRole("tab", { name, exact: true });
   // A reloaded page restores its saved panel a moment after it draws, so a single pass can
   // race that restore; the sequence is retried until the tab shows.
   await expect(async () => {
@@ -180,9 +171,9 @@ export async function captureScreenshot(page: Page, testInfo: TestInfo, name: st
   await testInfo.attach(name, { contentType: "image/png", path: screenshotPath });
 }
 
-export async function openNewGroup(page: Page) {
-  await page.getByTestId("create-menu-trigger").click();
-  await page.getByTestId("create-new-group").click();
+export async function openNewChat(page: Page) {
+  await page.getByTestId("new-chat-trigger").click();
+  await expect(page.getByTestId("new-chat-dialog")).toBeVisible();
 }
 
 export async function openUserSettings(
@@ -286,20 +277,19 @@ export async function manageModelConnection(
   return dialog;
 }
 
-export async function createNamedBot(
+/** Starts a chat over the API and opens it. */
+export async function createChat(
   page: Page,
-  name: string,
-  options: { computerMode?: "team" | "dedicated" } = {},
+  input: { name?: string; userIds?: string[]; doodle?: boolean } = {},
 ) {
-  const bot = await rpc<{ id: string; name: string }>(page, "bots/create", {
-    name,
-    title: "",
-    notifyOnFinish: true,
-    computerMode: options.computerMode ?? "team",
+  const chat = await rpc<{ id: string }>(page, "threads/create", {
+    ...(input.name ? { name: input.name } : {}),
+    userIds: input.userIds ?? [],
+    doodle: input.doodle ?? true,
   });
-  await page.goto(`/app/${bot.id}`);
-  await expect(page.getByPlaceholder(`Message ${name}`)).toBeVisible();
-  return bot.id;
+  await page.goto(`/app/c/${chat.id}`);
+  await expect(page.locator('textarea[name="chat-message"]')).toBeVisible();
+  return chat.id;
 }
 
 /**

@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import { activeBotId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
+import { activeThreadId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
 
 test("renders masked secret card and saves without putting the value in chat", async ({
   page,
@@ -9,7 +9,7 @@ test("renders masked secret card and saves without putting the value in chat", a
   await signup(page, `secret-card-${stamp}@rakazo.test`, "password12", "Secret Card");
   await completeOnboarding(page);
 
-  const botId = activeBotId(page);
+  const botId = activeThreadId(page);
   const composer = page.getByPlaceholder(/Message/);
   await composer.fill("show a secret card for a masked api key");
   await page.keyboard.press("Enter");
@@ -94,7 +94,7 @@ test("renders masked secret card and saves without putting the value in chat", a
               detail?: string;
             }>;
           }>;
-        }>(page, "threads/messages", { botId });
+        }>(page, "threads/messages", { threadId: botId });
         const answered = history.messages
           .flatMap((message) => message.blocks)
           .find(
@@ -122,7 +122,7 @@ test("renders masked secret card and saves without putting the value in chat", a
       { timeout: 30_000 },
     )
     .toBe("completed");
-  const history = await rpc(page, "threads/messages", { botId });
+  const history = await rpc(page, "threads/messages", { threadId: botId });
   expect(JSON.stringify(history)).not.toContain(secretValue);
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(card.getByText("Saved", { exact: true })).toBeVisible();
@@ -135,7 +135,7 @@ async function openSecretCard(page: Page, name: string, prompt: string) {
   const stamp = Date.now();
   await signup(page, `secret-${name}-${stamp}@rakazo.test`, "password12", "Secret Lines");
   await completeOnboarding(page);
-  const botId = activeBotId(page);
+  const botId = activeThreadId(page);
   await page.getByPlaceholder(/Message/).fill(prompt);
   await page.keyboard.press("Enter");
   await expect
@@ -369,7 +369,7 @@ test("uses a login for this run only when Save to Vault is turned off on its car
   await signup(page, `login-once-${stamp}@rakazo.test`, "password12", "Login Once");
   await completeOnboarding(page);
 
-  const botId = activeBotId(page);
+  const botId = activeThreadId(page);
   await page.getByPlaceholder(/Message/).fill("show a login card");
   await page.keyboard.press("Enter");
   await expect

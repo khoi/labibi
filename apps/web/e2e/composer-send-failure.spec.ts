@@ -1,7 +1,7 @@
 import type { Routine } from "@labradoodle/contracts";
 import type { Locator, Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import { activeBotId, completeOnboarding, createNamedBot, rpc, signup } from "./helpers";
+import { activeThreadId, completeOnboarding, createChat, rpc, signup } from "./helpers";
 
 async function openComposer(page: Page, prefix: string) {
   await signup(page, `${prefix}-${Date.now()}@rakazo.test`, "password12", "Draft Keeper");
@@ -13,7 +13,7 @@ async function openComposer(page: Page, prefix: string) {
 
 async function createRoutine(page: Page, name: string) {
   return rpc<Routine>(page, "routines/create", {
-    botId: activeBotId(page),
+    threadId: activeThreadId(page),
     name,
     prompt: "Summarize today",
     crons: ["0 9 * * *"],
@@ -116,10 +116,10 @@ test("an accepted send clears recovered text after returning to the thread", {
   tag: "@nightly",
 }, async ({ page }) => {
   await openComposer(page, "pending-return");
-  await createNamedBot(page, "Other thread");
+  await createChat(page, { name: "Other thread" });
   const sidebar = page.locator("aside").first();
   await sidebar.getByRole("button", { name: /^Chief/ }).click();
-  const composer = page.getByRole("combobox", { name: "Message Chief", exact: true });
+  const composer = page.getByRole("combobox", { name: "Message Doodle", exact: true });
   let releaseSend = () => {};
   const released = new Promise<void>((resolve) => {
     releaseSend = resolve;
@@ -184,7 +184,7 @@ test("a retried send after an edit reuses the attachment's uploaded artifact", {
   tag: "@nightly",
 }, async ({ page }) => {
   const composer = await openComposer(page, "attachment-retry");
-  const botId = activeBotId(page);
+  const botId = activeThreadId(page);
   const uploadNonces: string[] = [];
   await page.route("**/rpc/artifacts/create", async (route) => {
     uploadNonces.push(route.request().postDataJSON().json.clientNonce);

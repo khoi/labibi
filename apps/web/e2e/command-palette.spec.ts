@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { activeBotId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
+import { activeThreadId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
 
 test("command palette switches bots and runs actions", async ({ page }, testInfo) => {
   const stamp = Date.now();
@@ -8,7 +8,7 @@ test("command palette switches bots and runs actions", async ({ page }, testInfo
   await page.goto("/app");
   await page.waitForURL(/\/app\/[^/]+$/);
 
-  const chiefId = activeBotId(page);
+  const chiefId = activeThreadId(page);
   const researcher = await rpc<{ id: string }>(page, "bots/create", {
     name: "Researcher",
     instructions: "",
@@ -42,14 +42,14 @@ test("command palette switches bots and runs actions", async ({ page }, testInfo
   await page.getByRole("option", { name: /Researcher/ }).click();
   await expect(dialog).toBeHidden();
   await page.waitForURL(new RegExp(`/app/${researcher.id}$`));
-  expect(activeBotId(page)).toBe(researcher.id);
+  expect(activeThreadId(page)).toBe(researcher.id);
   await expect(page.getByRole("combobox", { name: "Message Researcher" })).toBeVisible();
 
   await page.keyboard.press("ControlOrMeta+K");
   await expect(dialog).toBeVisible();
   await page.getByTestId(`command-palette-bot-${chiefId}`).click();
   await page.waitForURL(new RegExp(`/app/${chiefId}$`));
-  expect(activeBotId(page)).toBe(chiefId);
+  expect(activeThreadId(page)).toBe(chiefId);
 
   await page.keyboard.press("ControlOrMeta+K");
   const lightTheme = page.getByTestId("command-palette-action-appearance-light");

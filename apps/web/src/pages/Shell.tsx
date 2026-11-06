@@ -827,7 +827,13 @@ function SpaceShell() {
               key={active.id}
               draftKey={`chat:${active.id}`}
               enterToSend={enterToSend}
-              activeName={active.doodle ? DOODLE_NAME : undefined}
+              activeName={
+                soloChat(active, userId)
+                  ? active.doodle
+                    ? DOODLE_NAME
+                    : undefined
+                  : active.title || undefined
+              }
               running={composerRunning}
               disabled={Boolean(recordingSkill)}
               pendingAttachments={composer.activePendingAttachments}

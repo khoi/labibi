@@ -9,7 +9,6 @@ const boatSandbox = process.env.SANDBOX_PROVIDER === "boat";
 // any test tagged @nightly. Unit and Postgres suites already cover their behavior.
 const skipNightly = Boolean(process.env.E2E_SKIP_NIGHTLY);
 const nightlySpecs = [
-  "activity-list",
   "app-connect-card",
   "app-marks",
   "artifacts-tab",
@@ -38,17 +37,11 @@ const nightlySpecs = [
   "message-hover-actions",
   "message-jump",
   "message-quote",
-  "messaging-settings",
   "mobile-sidebar-swipe",
   "model-header-discovery",
   "nav-links",
-  "new-bot-ux",
-  "readable-names",
-  "resizable-side-panel",
   "run-failure",
   "settings-shell",
-  "sidebar-created-bots",
-  "sidebar-density",
   "sidebar-mini-resize",
   "sidebar-search",
   "subagent-card",

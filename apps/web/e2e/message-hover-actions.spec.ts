@@ -1,6 +1,6 @@
 import type { Locator, Page, TestInfo } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import { activeBotId, captureScreenshot, completeOnboarding, signup } from "./helpers";
+import { activeThreadId, captureScreenshot, completeOnboarding, signup } from "./helpers";
 
 /** Submit from the Send control so an in-flight prior send cannot swallow Enter. */
 async function sendComposerMessage(page: Page, composer: Locator, text: string) {
@@ -72,7 +72,7 @@ async function expectRailAtRest(page: Page, row: Locator) {
 async function expectHeaderAboveHoveredRow(page: Page, testInfo: TestInfo, row: Locator) {
   const placement = await row.evaluate((element) => {
     const transcript = element.closest<HTMLElement>('[data-testid="transcript"]');
-    const header = document.querySelector<HTMLElement>('[data-testid="bot-settings-trigger"]');
+    const header = document.querySelector<HTMLElement>('[data-testid="chat-panel-trigger"]');
     if (!transcript || !header) throw new Error("missing transcript or chat header");
 
     // Make even a short thread scrollable so the row can sit underneath the header.
@@ -116,7 +116,7 @@ async function expectHeaderAboveHoveredRow(page: Page, testInfo: TestInfo, row: 
     await page.mouse.move(placement.hoverPoint.x, placement.hoverPoint.y);
     await expect(row.getByTestId("message-hover-rail")).toHaveCSS("opacity", "1");
     const headerReceivesHit = await page.evaluate(({ x, y }) => {
-      const header = document.querySelector<HTMLElement>('[data-testid="bot-settings-trigger"]');
+      const header = document.querySelector<HTMLElement>('[data-testid="chat-panel-trigger"]');
       const topmost = document.elementFromPoint(x, y);
       return Boolean(header && topmost && header.contains(topmost));
     }, placement.headerPoint);
@@ -350,7 +350,7 @@ test("message hover shows beside-bubble actions; reply links to parent", async (
   await captureScreenshot(page, testInfo, "message-user-actions-mobile");
   await page.setViewportSize({ width: 1280, height: 812 });
   await expect(page.getByTestId("bots-sidebar")).toBeVisible();
-  await page.getByTestId("bot-settings-trigger").hover({ trial: true });
+  await page.getByTestId("chat-panel-trigger").hover({ trial: true });
   await expectHeaderAboveHoveredRow(page, testInfo, parentRow);
 });
 
@@ -473,7 +473,7 @@ test("a reaction receipt refreshes live work and exposes Stop", async ({ page },
     .locator("[data-message-id]")
     .filter({ has: botText })
     .first();
-  const botId = activeBotId(page);
+  const botId = activeThreadId(page);
   let reacted = false;
   // No run events are emitted: the receipt alone must refresh the active state.
   await page.route("**/rpc/threads/react", async (route) => {

@@ -1,12 +1,6 @@
 import type { ComputerUpdate } from "@labradoodle/contracts";
 import { expect, test } from "@playwright/test";
-import {
-  activeBotId,
-  captureScreenshot,
-  completeOnboarding,
-  openBotPanelTab,
-  signup,
-} from "./helpers";
+import { captureScreenshot, completeOnboarding, openChatPanelTab, signup } from "./helpers";
 
 test("computer maintenance shows durable background progress and failure recovery", async ({
   page,
@@ -14,13 +8,9 @@ test("computer maintenance shows durable background progress and failure recover
   await page.addInitScript(() => localStorage.setItem("rakazo.uiAppearance", "dark"));
   await signup(page, `computer-update-${Date.now()}@rakazo.test`, "password12", "Computer Update");
   await completeOnboarding(page);
-  const botId = activeBotId(page);
   let updates: ComputerUpdate[] = [];
   const updating: ComputerUpdate = {
     id: "update-example",
-    botId,
-    name: "Chief",
-    mode: "team",
     action: "update",
     status: "running",
     stage: "restoring",
@@ -43,7 +33,7 @@ test("computer maintenance shows durable background progress and failure recover
     updates = [{ ...updating, id: "recovery-example", action: "recover", stage: "preparing" }];
     return route.fulfill({ json: { json: updates[0] } });
   });
-  await openBotPanelTab(page, "Computer");
+  await openChatPanelTab(page, "Computer");
   await expect(page.getByTestId("computer-preview")).toBeVisible();
   await page.getByTestId("computer-preview").hover();
   await page.getByTestId("computer-preview-open").click();

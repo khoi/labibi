@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { Artifact, ArtifactWithContent } from "@labradoodle/contracts";
 import { expect, test } from "@playwright/test";
-import { activeBotId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
+import { activeThreadId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
 
 test("Excel files can be attached and uploaded without losing their bytes", async ({
   page,
@@ -30,7 +30,9 @@ test("Excel files can be attached and uploaded without losing their bytes", asyn
   await expect(
     page.getByTestId("transcript").getByText("Here are the current statements", { exact: true }),
   ).toBeVisible();
-  const artifacts = await rpc<Artifact[]>(page, "artifacts/list", { botId: activeBotId(page) });
+  const artifacts = await rpc<Artifact[]>(page, "artifacts/list", {
+    threadId: activeThreadId(page),
+  });
   for (const [index, file] of files.entries()) {
     const artifact = artifacts.find((item) => item.name === file.name);
     expect(artifact).toBeDefined();

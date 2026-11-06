@@ -8,7 +8,7 @@ import {
   completeOnboarding,
   manageModelConnection,
   modelConnectionDialog,
-  openBotPanelTab,
+  openChatPanelTab,
   openModelConnection,
   openUserSettings,
   pickReopenedModel,
@@ -321,8 +321,8 @@ test("connects, lists, and uses an OpenAI-compatible endpoint", async ({ page },
       .click();
     await expect(saved).toBeHidden();
     await page.getByRole("button", { name: "Close model settings" }).click();
-    await openBotPanelTab(page, "Advanced");
-    const settings = page.getByTestId("bot-settings");
+    await openChatPanelTab(page, "Advanced");
+    const settings = page.getByTestId("chat-panel");
     // The Model select sits inside its wrapping <label>, so the label text includes
     // option copy and getByLabel(..., { exact: true }) misses it. Use the role name.
     const botModel = settings.getByRole("combobox", { name: "Model", exact: true });

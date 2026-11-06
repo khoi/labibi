@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
 import {
-  activeBotId,
+  activeThreadId,
   captureScreenshot,
   completeOnboarding,
-  createNamedBot,
+  createChat,
   rpc,
   signup,
 } from "./helpers";
@@ -12,8 +12,8 @@ test("a bot connects an app inline in a normal chat", async ({ page }, testInfo)
   await page.setViewportSize({ width: 1280, height: 900 });
   await signup(page, `inline-connect-${Date.now()}@rakazo.test`, "password12", "Sample");
   await completeOnboarding(page);
-  const botId = activeBotId(page);
-  await rpc(page, "onboarding/dismissFocus", { botId });
+  const botId = activeThreadId(page);
+  await rpc(page, "onboarding/dismissFocus", { threadId: botId });
   await page.getByPlaceholder(/Message/).fill("Can you check my Gmail inbox?");
   await page.keyboard.press("Enter");
   const card = page.getByRole("group", { name: "Gmail connection", exact: true });
@@ -48,8 +48,8 @@ test("a group card authorizes in its own thread without duplicate pending cards"
 }, testInfo) => {
   await signup(page, `group-connect-${Date.now()}@rakazo.test`, "password12", "Sample");
   await completeOnboarding(page);
-  const firstBotId = activeBotId(page);
-  const peerId = await createNamedBot(page, "Assistant");
+  const firstBotId = activeThreadId(page);
+  const peerId = await createChat(page, { name: "Assistant" });
   const group = await rpc<{ id: string }>(page, "groups/create", {
     name: "Team",
     botIds: [firstBotId, peerId],

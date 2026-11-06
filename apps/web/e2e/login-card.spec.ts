@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { activeBotId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
+import { activeThreadId, captureScreenshot, completeOnboarding, rpc, signup } from "./helpers";
 
 test("saves a website login from a username and password card without echoing either", async ({
   page,
@@ -8,7 +8,7 @@ test("saves a website login from a username and password card without echoing ei
   await signup(page, `login-card-${stamp}@rakazo.test`, "password12", "Login Card");
   await completeOnboarding(page);
 
-  const botId = activeBotId(page);
+  const botId = activeThreadId(page);
   await page.getByPlaceholder(/Message/).fill("show a login card");
   await page.keyboard.press("Enter");
 
@@ -95,7 +95,7 @@ test("saves a website login from a username and password card without echoing ei
       { timeout: 30_000 },
     )
     .toBe("completed");
-  const history = JSON.stringify(await rpc(page, "threads/messages", { botId }));
+  const history = JSON.stringify(await rpc(page, "threads/messages", { threadId: botId }));
   expect(history).not.toContain(username);
   expect(history).not.toContain(password);
   await page.reload({ waitUntil: "domcontentloaded" });

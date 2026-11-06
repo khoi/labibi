@@ -30,8 +30,8 @@ export function threadEvent(seq: number, overrides: Partial<ProductEvent>): Prod
 /** Folds events through the same reducer the chat shell uses. */
 export function reduceThreadEvents(events: Partial<ProductEvent>[]): ThreadSnapshot {
   const empty: ThreadSnapshot = {
-    botId: BOT.botId,
     threadId: "thread-1",
+    chat: {} as ThreadSnapshot["chat"],
     cursor: 0,
     messages: [],
     olderCursor: null,
@@ -63,7 +63,6 @@ export function FixtureTranscript({
   bots?: GroupAvatarMember[];
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const bot = (botId: string | undefined) => bots.find((member) => member.botId === botId);
   return (
     <main className="flex h-dvh flex-col bg-background text-foreground">
       {header}
@@ -73,7 +72,7 @@ export function FixtureTranscript({
         scrollRequest={null}
         onScrollRequestHandled={noop}
         followRequest={0}
-        artifactTarget={{ botId: BOT.botId }}
+        artifactTarget={{ threadId: "thread-1" }}
         messages={messages}
         showToolActivity={showToolActivity}
         olderCursor={null}
@@ -82,7 +81,8 @@ export function FixtureTranscript({
         answerableAskIds={answerableAskIds}
         dismissableAskIds={answerableAskIds}
         running={running}
-        workingBots={running ? [bots[0]!] : []}
+        members={[]}
+        showSpeakers={bots.length > 1}
         onLoadOlder={noop}
         onAnswer={resolved}
         onReply={noop}
@@ -90,8 +90,6 @@ export function FixtureTranscript({
         onQuote={noop}
         onReact={resolved}
         onJumpToMessage={noop}
-        memberName={(botId) => bot(botId)?.name}
-        peerBot={(botId) => bot(botId) ?? BOT}
         onRefresh={resolved}
         onBotChanged={resolved}
         onAddRoutine={noop}

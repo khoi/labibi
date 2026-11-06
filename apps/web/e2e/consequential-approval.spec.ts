@@ -1,7 +1,7 @@
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
 import {
-  activeBotId,
+  activeThreadId,
   captureScreenshot,
   completeOnboarding,
   openUserSettings,
@@ -125,7 +125,7 @@ async function expectComposerReady(page: Page) {
 
 async function requestDestinationWrite(page: Page, prompt: string) {
   await sendDestinationWrite(page, prompt);
-  const botId = activeBotId(page);
+  const botId = activeThreadId(page);
   await expect
     .poll(
       async () => {
@@ -148,7 +148,7 @@ async function requestDestinationWrite(page: Page, prompt: string) {
 }
 
 async function waitForRunIdle(page: Page) {
-  const botId = activeBotId(page);
+  const botId = activeThreadId(page);
   await expect
     .poll(
       async () => {

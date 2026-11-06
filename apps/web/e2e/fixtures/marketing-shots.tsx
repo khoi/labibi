@@ -1,4 +1,4 @@
-import type { Bot, Me, ModelCatalogEntry } from "@labradoodle/contracts";
+import type { Doodle, Me, ModelCatalogEntry } from "@labradoodle/contracts";
 import { defaultCronPreset } from "@labradoodle/core";
 import { I18nProvider } from "@lingui/react";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -7,10 +7,10 @@ import { createRoot } from "react-dom/client";
 import { AskCard } from "../../src/components/AskCard";
 import { bootstrapI18n, i18n } from "../../src/lib/i18n";
 import { queryClient } from "../../src/lib/query";
+import { DoodleSettings } from "../../src/pages/DoodleSettings";
 import type { RoutineDraftState } from "../../src/pages/RoutineEditor";
 import { RoutineEditor } from "../../src/pages/RoutineEditor";
 import { SettingsOverlay } from "../../src/pages/SettingsOverlay";
-import { BotSettings } from "../../src/pages/shell/bot-panel";
 import "../../src/styles.css";
 
 const demoRpc: Record<string, unknown> = {
@@ -42,6 +42,7 @@ const demoRpc: Record<string, unknown> = {
     },
   ],
   me: null,
+  "doodle/get": demoDoodle(),
   "memory/list": [],
   "agentSkills/list": [],
 };
@@ -60,32 +61,19 @@ window.fetch = async (input, init) => {
   return realFetch(input, init);
 };
 
-function inboxBot(): Bot {
+function demoDoodle(): Doodle {
   return {
-    id: "bot-inbox",
+    id: "doodle-demo",
     spaceId: "space-demo",
-    name: "Inbox",
-    title: "Sorts the demo inbox",
     instructions: "File routine mail. Ask before sending anything.",
-    color: "ink",
-    notifyOnFinish: true,
-    archivedAt: null,
-    unread: false,
-    memoryScope: null,
-    threadId: "thread-demo",
-    preview: "",
-    status: "idle",
-    computerMode: "team",
-    updatedAt: "2026-10-07T00:00:00.000Z",
-    createdAt: "2026-10-07T00:00:00.000Z",
+    instructionHistory: [],
     voiceId: null,
-    autoSpeak: false,
     modelProvider: "openai",
     modelId: "gpt-4.1",
     thinkingLevel: null,
-    webhookConfigured: false,
-    runErrorId: null,
     disabledBuiltinTools: [],
+    canCustomize: true,
+    updatedAt: "2026-10-07T00:00:00.000Z",
   };
 }
 
@@ -100,14 +88,7 @@ function ModelShot() {
       data-ready={ready ? "true" : "false"}
       className="mx-auto max-w-[720px] bg-background p-8 text-foreground"
     >
-      <BotSettings
-        bot={inboxBot()}
-        memoryProviderConfigured={false}
-        onSkillsChange={() => undefined}
-        onSave={async () => undefined}
-        onExport={async () => undefined}
-        onClear={() => undefined}
-      />
+      <DoodleSettings />
     </main>
   );
 }
@@ -182,6 +163,7 @@ const subscriptionMe: Me = {
   spaceId: "space-demo",
   isDeploymentOwner: true,
   isAdmin: false,
+  readAloud: false,
   needsModel: false,
   defaultProvider: "anthropic",
   defaultModel: "claude-sonnet-5-5",
