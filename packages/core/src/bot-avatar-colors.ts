@@ -78,7 +78,8 @@ export function resolvePersonaColorDef(
         c.legacyHexes?.some((hex) => hex.toLowerCase() === clean),
     );
     if (found) return found;
-    if (/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(explicitColor)) return nearestBotColor(explicitColor);
+    if (/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(explicitColor))
+      return nearestBotColor(explicitColor);
   }
   const seed = (shippedHash(identity) ^ Math.imul(1, 2654435769)) >>> 0;
   const index = Math.floor(shippedRandom((seed ^ 2654435769) >>> 0)() * BOT_COLOR_LIST.length);

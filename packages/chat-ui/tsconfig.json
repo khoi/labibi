@@ -8,5 +8,5 @@
     "module": "ESNext",
     "moduleResolution": "bundler"
   },
-  "include": ["src"]
+  "include": ["src", "../ui-web/src/dood/assets.d.ts"]
 }

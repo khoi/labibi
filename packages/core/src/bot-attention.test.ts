@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   botAvatarActivity,
+  drawsDood,
   initialLogoAvatarSignals,
   logoAvatarActivity,
   logoAvatarNeedsAttention,
-  drawsDood,
 } from "./logo-avatar-activity.js";
 import { createLogoAvatarActivityStore } from "./logo-avatar-activity-store.js";
 
