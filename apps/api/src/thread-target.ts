@@ -21,7 +21,6 @@ import { MessageBlock as MessageBlockSchema } from "@labradoodle/contracts";
 import type { ChatAuthor } from "@labradoodle/core";
 import {
   ACTIVE_RUN_STATUSES,
-  BACKGROUND_RUN_TRIGGERS,
   doodleReplies,
   isConversationalRun,
   MODEL_REQUIRED_SEND_ERROR,
@@ -261,18 +260,12 @@ export async function threadSnapshot(
             where: {
               threadId: target.threadId,
               status: { in: [...ACTIVE_RUN_STATUSES] },
-              OR: [
-                { trigger: { notIn: [...BACKGROUND_RUN_TRIGGERS] } },
-                { status: { in: ["waiting_input", "waiting_takeover"] } },
-              ],
             },
             orderBy: [{ createdAt: "desc" }, { id: "desc" }],
           }),
           tx.run.findFirst({
             where: {
               threadId: target.threadId,
-              // Background work stays silent; waiting is handled above.
-              trigger: { notIn: [...BACKGROUND_RUN_TRIGGERS] },
               status: { in: [...ACTIVE_RUN_STATUSES, "failed"] },
             },
             // The id tiebreak keeps ordering deterministic under equal timestamps.
@@ -288,8 +281,6 @@ export async function threadSnapshot(
             ? await tx.run.findFirst({
                 where: {
                   threadId: target.threadId,
-                  // Background failures must not bury a user-visible failure.
-                  trigger: { notIn: [...BACKGROUND_RUN_TRIGGERS] },
                   status: { in: ["failed", "completed", "cancelled"] },
                 },
                 orderBy: [{ createdAt: "desc" }, { id: "desc" }],

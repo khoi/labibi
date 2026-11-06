@@ -19,7 +19,6 @@ export const RUN_TRIGGERS = [
   "cloud_agent",
   "purchase",
   "media",
-  "tickets",
 ] as const;
 export const RunTriggerSchema = z.enum(RUN_TRIGGERS);
 export type RunTrigger = z.infer<typeof RunTriggerSchema>;

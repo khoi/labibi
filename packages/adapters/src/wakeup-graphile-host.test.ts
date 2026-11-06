@@ -101,7 +101,6 @@ describe("GraphileJobPublisher.enqueue", () => {
     ["created", "run.interactive"],
     ["routine", "run.continue"],
     ["bot_message", "run.continue"],
-    ["tickets", "run.continue"],
     ["webhook", "run.continue"],
     ["cloud_agent", "run.continue"],
   ])("routes %s from the persisted trigger to %s", async (trigger, task) => {

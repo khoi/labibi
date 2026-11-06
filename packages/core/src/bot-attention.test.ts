@@ -28,18 +28,6 @@ describe("avatar attention", () => {
     },
   );
 
-  it("suppresses background waits", () => {
-    expect(
-      needsAttention(
-        logoAvatarActivity({
-          ...initialLogoAvatarSignals("bot"),
-          status: "waiting_input",
-          background: true,
-        }),
-      ),
-    ).toBe(false);
-  });
-
   it.each([
     { ...bot, color: "data:image/png;base64,fixture" },
     { ...bot, archivedAt: "2026-01-01T00:00:00.000Z" },
@@ -53,7 +41,7 @@ describe("avatar attention", () => {
       threadId: "thread",
       botId: "bot",
       cursor: 1,
-      run: { id: "run", botId: "bot", status: "running", trigger: "user" },
+      run: { id: "run", botId: "bot", status: "running" },
     });
     expect(needsAttention(store.getActivity("bot", "waiting_input"))).toBe(false);
     store.apply("chat", {

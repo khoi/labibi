@@ -13,7 +13,6 @@ import {
   containsSecret,
   DOODLE_NAME,
   humanizeToolName,
-  isBackgroundRunTrigger,
   redactSecrets,
   redactSecretsAfter,
   TAKEOVER_COMPUTER_PENDING_STATE,
@@ -47,7 +46,6 @@ import {
   completionNotificationBody,
   completionNotificationPreview,
   notifyRun,
-  runSendsFinishNotification,
   subagentMarksUnread,
 } from "./run-notifications.js";
 import {
@@ -107,7 +105,7 @@ export async function consumeRunEvents(
   const publishThinking = async (active: boolean) => {
     if (thinking === active) return;
     thinking = active;
-    if (ctx.scripted || isBackgroundRunTrigger(run.trigger)) return;
+    if (ctx.scripted) return;
     try {
       await deps.events.append({
         spaceId: run.spaceId,
@@ -278,7 +276,7 @@ async function streamProgress(ctx: RunContext, event: RuntimeEvent<"progress">) 
   const { reply } = ctx.state;
   // Tool status lines are not the model writing.
   if (!event.activity) ctx.state.toolCallStreak = { key: undefined, count: 0 };
-  if (run.trigger === "routine" || isBackgroundRunTrigger(run.trigger)) return;
+  if (run.trigger === "routine") return;
   // The bot's own note stays the working line until it writes again.
   if (event.activity && reply.narrationStatusShowing) return;
   // Flush batched text deltas first so an activity line cannot land
@@ -606,7 +604,7 @@ async function stopStuckToolLoop(ctx: RunContext, toolName: string) {
     leaseOwner: workerId,
     leaseFence: fence,
     outcome: "completed",
-    blocks: isBackgroundRunTrigger(run.trigger) ? [] : [{ kind: "text", text: stuckText }],
+    blocks: [{ kind: "text", text: stuckText }],
   });
   if (!stopped) return;
   ctx.stopHeartbeatAfterCompletion();
@@ -731,7 +729,6 @@ export async function completeRun(ctx: RunContext) {
   recordExplicitNoResponse(reply, reply.lastDiscardedMidTurnNarration);
   // When nothing follows the last step, the notes since the last interim message are the reply.
   if (
-    !isBackgroundRunTrigger(run.trigger) &&
     !reply.explicitNoResponse &&
     reply.workingNotes.length > 0 &&
     !reply.textSinceLastStep.trim()
@@ -748,7 +745,6 @@ export async function completeRun(ctx: RunContext) {
   }
   // Runs that hold their narration back keep only the last held-back preview.
   if (
-    !isBackgroundRunTrigger(run.trigger) &&
     !reply.explicitNoResponse &&
     !reply.assembled.trim() &&
     reply.lastDiscardedMidTurnNarration &&
@@ -764,12 +760,11 @@ export async function completeRun(ctx: RunContext) {
     ? stripNoResponseReply(reply.assembled, reply.messageSegments)
     : stripStrayNoResponse(reply.assembled, reply.messageSegments);
   let completionBlocks = silentReply.blocks;
-  if (!silentReply.assembled || isBackgroundRunTrigger(run.trigger)) {
+  if (!silentReply.assembled) {
     // Mid-turn progress already posted durable chat messages; skip the empty
     // "…" fallback so we do not add a junk final bubble.
     completionBlocks = completionMessageSegments(completionBlocks, {
       allowSilentEmpty: ctx.allowSilentEmptyRun || reply.publishedMidTurnUserMessage,
-      suppressOutput: isBackgroundRunTrigger(run.trigger),
       skipEmptyFallback: reply.publishedTerminalSubagent || reply.publishedMidTurnUserMessage,
     });
   }
@@ -812,7 +807,7 @@ export async function completeRun(ctx: RunContext) {
       .catch((error) => getLogger().error("steering continuation enqueue", error));
   }
   const notifyBody = completionNotificationPreview(text);
-  if (runSendsFinishNotification(run.trigger) && notifyBody && !completed.continuationRunId) {
+  if (notifyBody && !completed.continuationRunId) {
     await notifyRun(deps, run, {
       kind: "completion",
       title: `${DOODLE_NAME} finished`,
@@ -954,7 +949,7 @@ export async function failRun(
     );
   }
   const retrying = !failed.continuationRunId && (await scheduleRoutineRetry(deps, run, error));
-  if (runSendsFinishNotification(run.trigger) && !failed.continuationRunId && !retrying) {
+  if (!failed.continuationRunId && !retrying) {
     await notifyRun(deps, run, {
       kind: "failure",
       title: `${DOODLE_NAME} failed`,

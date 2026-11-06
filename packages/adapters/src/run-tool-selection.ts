@@ -1,5 +1,5 @@
 import { disabledBuiltinToolSet } from "@labradoodle/contracts";
-import { isBackgroundRunTrigger, isPersonStartedRun } from "@labradoodle/core";
+import { isPersonStartedRun } from "@labradoodle/core";
 import { builtinAgentTools } from "./builtin-tools.js";
 import { selectCloudAgentTools } from "./cloud-agent-tools-select.js";
 import { selectMemoryTools } from "./memory-tools.js";
@@ -80,8 +80,6 @@ export function selectBuiltinToolsForRun(options: {
       (options.paymentWalletEnabled || !PURCHASE_TOOL_NAMES.has(tool.name)) &&
       (options.mediaImagesEnabled || tool.name !== "generate_image") &&
       (options.mediaVideoEnabled || tool.name !== "generate_video") &&
-      (!isBackgroundRunTrigger(options.trigger) ||
-        !["message_user", "generate_image", "generate_video"].includes(tool.name)) &&
       (options.userComputer || tool.name !== "user_computer_shell") &&
       ((options.userComputer && options.userComputerScreen) ||
         !USER_COMPUTER_SCREEN_TOOLS.has(tool.name)) &&

@@ -1,6 +1,6 @@
 import type { MessageBlock } from "@labradoodle/contracts";
 import { ATTACHMENT_MAX_BYTES } from "@labradoodle/contracts";
-import { inferAttachmentMimeType, isBackgroundRunTrigger } from "@labradoodle/core";
+import { inferAttachmentMimeType } from "@labradoodle/core";
 import { resolveWorkspacePath } from "./computer-support.js";
 import { desktopGuardApplies, desktopProtectionGuardMessage } from "./desktop-command-guard.js";
 import { protectedActivateScriptWriteRefusal } from "./desktop-guard-words.js";
@@ -34,7 +34,6 @@ export async function callMediaTool(ctx: RunContext, call: ToolCall, recoverOnly
   const mediaGeneration = ctx.providers.mediaGeneration;
   if (
     (name !== "generate_image" && name !== "generate_video") ||
-    isBackgroundRunTrigger(run.trigger) ||
     !mediaGeneration ||
     !deps.artifacts
   )

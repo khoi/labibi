@@ -69,12 +69,6 @@ describe("bot media tools", () => {
     expect(names({ mediaImagesEnabled: true })).not.toContain("generate_video");
     expect(names({ mediaVideoEnabled: true })).toContain("generate_video");
     expect(
-      names({ trigger: "tickets", mediaImagesEnabled: true, mediaVideoEnabled: true }),
-    ).not.toContain("generate_image");
-    expect(
-      names({ trigger: "tickets", mediaImagesEnabled: true, mediaVideoEnabled: true }),
-    ).not.toContain("generate_video");
-    expect(
       names({ mediaVideoEnabled: true, disabledBuiltinTools: ["generate_video"] }),
     ).not.toContain("generate_video");
   });

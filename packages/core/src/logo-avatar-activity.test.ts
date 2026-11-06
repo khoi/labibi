@@ -164,18 +164,6 @@ describe("logo avatar activity from public events", () => {
       logoAvatarActivity(reduceLogoAvatarSignals(state, event(3, "run.failed", {}, "older-run"))),
     ).toBe("working");
   });
-
-  it("keeps hidden background ticket work out of avatar activity", () => {
-    let state = reduceLogoAvatarSignals(
-      initialLogoAvatarSignals("bot-1"),
-      event(1, "run.started", { trigger: "tickets" }),
-    );
-    state = reduceLogoAvatarSignals(
-      state,
-      event(2, "agent.tool.called", { name: "read_file", executionId: "hidden-read" }),
-    );
-    expect(logoAvatarActivity(state)).toBe("idle");
-  });
 });
 
 describe("genuine coarse thinking activity", () => {
@@ -244,24 +232,12 @@ describe("genuine coarse thinking activity", () => {
       expect(state.thinking).toBe(false);
     }
   });
-  it("does not guess from malformed markers, background work or snapshot status", () => {
+  it("does not guess from malformed markers or snapshot status", () => {
     const state = started();
     for (const payload of [{}, { activity: { thinking: "true" } }, { text: "Thinking" }]) {
       expect(
         logoAvatarActivity(reduceLogoAvatarSignals(state, event(2, "thread.meta", payload))),
       ).toBe("working");
     }
-    const background = reduceLogoAvatarSignals(
-      initialLogoAvatarSignals("bot-1"),
-      event(1, "run.started", { trigger: "tickets" }),
-    );
-    expect(
-      logoAvatarActivity(
-        reduceLogoAvatarSignals(
-          background,
-          event(2, "thread.meta", { activity: { thinking: true } }),
-        ),
-      ),
-    ).toBe("idle");
   });
 });

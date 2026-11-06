@@ -1,5 +1,5 @@
 import type { MessageBlock } from "@labradoodle/contracts";
-import { isBackgroundRunTrigger, redactSecrets } from "@labradoodle/core";
+import { redactSecrets } from "@labradoodle/core";
 import type { Prisma, RunLease } from "@labradoodle/db";
 import {
   appendEventInTransaction,
@@ -67,10 +67,6 @@ export async function publishMessage(
     result: "stopped";
   },
 ) {
-  if (isBackgroundRunTrigger(run.trigger)) {
-    blocks = blocks.filter((block) => block.kind === "ask" || block.kind === "computer");
-    if (blocks.length === 0 && !stoppedHelper) return null;
-  }
   const lease = runLeaseFor(deps, run.id);
   // Concurrent runs in one thread contend for its sequence counters; Postgres aborts a
   // deadlock victim, which commits nothing, so retry instead of failing the run.

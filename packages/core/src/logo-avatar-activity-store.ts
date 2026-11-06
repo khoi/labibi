@@ -9,9 +9,9 @@ import {
   logoAvatarActivity,
   reduceLogoAvatarSignals,
 } from "./logo-avatar-activity.js";
-import { isBackgroundRunTrigger, isRunWaitingOnUser, isRunWorking } from "./run-state.js";
+import { isRunWaitingOnUser, isRunWorking } from "./run-state.js";
 
-type ActivityRun = Pick<Run, "id" | "botId" | "status" | "trigger">;
+type ActivityRun = Pick<Run, "id" | "botId" | "status">;
 export interface LogoAvatarActivitySnapshot {
   threadId: string;
   cursor: number;
@@ -56,13 +56,11 @@ export function createLogoAvatarActivityStore() {
   const sources = new Map<string, Set<string>>();
   const listeners = new Set<() => void>();
   let activities = new Map<string, LogoAvatarActivity>();
-  let backgroundOnly = new Set<string>();
   let stamp = 0;
 
   const publish = () => {
     const grouped = new Map<string, { signals: LogoAvatarSignals; stamp: number }[]>();
     const next = new Map<string, LogoAvatarActivity>();
-    const nextBackgroundOnly = new Set<string>();
     for (const thread of threads.values()) {
       for (const botId of thread.idleBots) next.set(botId, "idle");
       for (const run of thread.runs.values()) {
@@ -72,9 +70,7 @@ export function createLogoAvatarActivityStore() {
       }
     }
     for (const [botId, all] of grouped) {
-      const foreground = all.filter(({ signals }) => !signals.background);
-      if (!foreground.length) nextBackgroundOnly.add(botId);
-      const active = foreground.filter(
+      const active = all.filter(
         ({ signals }) => isRunWorking(signals.status) || isRunWaitingOnUser(signals.status),
       );
       if (active.length) {
@@ -85,7 +81,7 @@ export function createLogoAvatarActivityStore() {
         }
         next.set(botId, selected);
       } else {
-        const latest = foreground.reduce<(typeof foreground)[number] | undefined>(
+        const latest = all.reduce<(typeof all)[number] | undefined>(
           (previous, run) => (!previous || run.stamp > previous.stamp ? run : previous),
           undefined,
         );
@@ -94,13 +90,10 @@ export function createLogoAvatarActivityStore() {
     }
     if (
       next.size === activities.size &&
-      [...next].every(([botId, value]) => activities.get(botId) === value) &&
-      nextBackgroundOnly.size === backgroundOnly.size &&
-      [...nextBackgroundOnly].every((botId) => backgroundOnly.has(botId))
+      [...next].every(([botId, value]) => activities.get(botId) === value)
     )
       return;
     activities = next;
-    backgroundOnly = nextBackgroundOnly;
     for (const listener of listeners) listener();
   };
   const own = (source: string, threadId: string) => {
@@ -131,7 +124,6 @@ export function createLogoAvatarActivityStore() {
           runId: run.id,
           status: run.status,
           cursor: snapshot.cursor,
-          background: isBackgroundRunTrigger(run.trigger),
         },
         stamp: ++stamp,
       });
@@ -147,9 +139,8 @@ export function createLogoAvatarActivityStore() {
     },
     getActivity(botId: string, status?: string): LogoAvatarActivity {
       const known = activities.get(botId);
-      // An idle observed chat cannot rule out public work in an unobserved group.
-      // Background-only observations retain their existing privacy suppression.
-      if (known && (known !== "idle" || backgroundOnly.has(botId))) return known;
+      // An idle observed chat cannot rule out work in an unobserved one.
+      if (known && known !== "idle") return known;
       return logoAvatarStatusActivity(status);
     },
     hydrate(source: string, snapshot: LogoAvatarActivitySnapshot) {
@@ -175,8 +166,8 @@ export function createLogoAvatarActivityStore() {
       }
       if (!event.botId || !event.runId) return;
       const previous = thread.runs.get(event.runId);
-      // A missed run start/absent snapshot has unknown provenance, including whether
-      // it is background work. Keep the status fallback generic until reconciled.
+      // A missed run start or absent snapshot has unknown provenance. Keep the status
+      // fallback generic until reconciled.
       if (!previous && event.type !== "run.started") return;
       const signals = reduceLogoAvatarSignals(
         previous?.signals ?? initialLogoAvatarSignals(event.botId),
@@ -190,7 +181,6 @@ export function createLogoAvatarActivityStore() {
           if (
             runId !== event.runId &&
             old.signals.botId === event.botId &&
-            old.signals.background === signals.background &&
             !isRunWorking(old.signals.status) &&
             !isRunWaitingOnUser(old.signals.status)
           )

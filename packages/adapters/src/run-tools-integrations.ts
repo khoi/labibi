@@ -1,5 +1,5 @@
 import type { ConnectorApp } from "@labradoodle/adapter-kit";
-import { isBackgroundRunTrigger, redactSecrets } from "@labradoodle/core";
+import { redactSecrets } from "@labradoodle/core";
 import { normalizedHttpUrl } from "@labradoodle/core/egress";
 import { getLogger } from "@labradoodle/logging";
 import { executeCloudAgentTool } from "./cloud-agent-service.js";
@@ -35,8 +35,7 @@ export async function connectorTool(ctx: RunContext, call: ToolCall) {
   const { name, args, effectKey, connectorCall } = call;
   if (deps.connector) {
     let result: unknown = { error: `unknown tool ${name}` };
-    // Background work posts no cards, so it does not fetch the app either.
-    const withApp = Boolean(deps.artifacts) && !isBackgroundRunTrigger(run.trigger);
+    const withApp = Boolean(deps.artifacts);
     for await (const event of deps.connector.execute(
       { ...connectorCall, tool: name, args, executionId: effectKey, withApp },
       context,

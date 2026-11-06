@@ -5,7 +5,6 @@ import {
   assertTransition,
   canTransition,
   isActive,
-  isBackgroundRunTrigger,
   isConversationalRun,
   isRunWaitingOnUser,
   isRunWorking,
@@ -60,15 +59,6 @@ describe("run state machine", () => {
     expect(isConversationalRun("follow_up")).toBe(true);
     expect(isConversationalRun("routine")).toBe(false);
     expect(isConversationalRun("webhook")).toBe(false);
-    expect(isConversationalRun("tickets")).toBe(false);
-  });
-
-  it("marks ticket runs as background work that stays out of the chat", () => {
-    expect(isBackgroundRunTrigger("tickets")).toBe(true);
-    expect(isBackgroundRunTrigger("reaction")).toBe(false);
-    expect(isBackgroundRunTrigger("user")).toBe(false);
-    expect(isBackgroundRunTrigger("routine")).toBe(false);
-    expect(isBackgroundRunTrigger(null)).toBe(false);
   });
 
   it("rejects rewriting a completed run", () => {

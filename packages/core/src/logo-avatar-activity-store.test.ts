@@ -14,7 +14,7 @@ const snapshot = (cursor: number) => ({
   threadId: "thread-a",
   cursor,
   botId: "bot-a",
-  run: { id: "run-a", botId: "bot-a", status: "running" as const, trigger: "user" as const },
+  run: { id: "run-a", botId: "bot-a", status: "running" as const },
 });
 
 describe("live logo avatar activity store", () => {
@@ -108,13 +108,10 @@ describe("live logo avatar activity store", () => {
     s.apply("chat", event(3, "thread.message.created", { role: "bot" }));
     expect(s.getActivity("bot-a")).toBe("working");
   });
-  it("keeps background, unknown tools and missing provenance conservative", () => {
+  it("keeps unknown tools and missing provenance conservative", () => {
     const s = createLogoAvatarActivityStore();
     s.apply("chat", event(1, "agent.tool.called", { name: "read_file", executionId: "read" }));
     expect(s.getActivity("bot-a", "running")).toBe("working");
-    s.apply("chat", event(2, "run.started", { trigger: "tickets" }));
-    s.apply("chat", event(3, "agent.tool.called", { name: "computer_act", executionId: "screen" }));
-    expect(s.getActivity("bot-a", "running")).toBe("idle");
     s.apply("chat", event(4, "run.started", { trigger: "user" }, "visible"));
     s.apply(
       "chat",
@@ -187,15 +184,4 @@ it("lets an idle observed chat retain generic work reported elsewhere", () => {
   s.apply("group", event(2, "run.completed"));
   expect(s.getActivity("bot-a", "running")).toBe("working");
   expect(s.getActivity("bot-a", "idle")).toBe("idle");
-});
-
-it("publishes a background-only fallback change without exposing its activity", () => {
-  const s = createLogoAvatarActivityStore();
-  s.apply("chat", event(1, "run.started", { trigger: "tickets" }));
-  expect(s.getActivity("bot-a", "running")).toBe("idle");
-  let notifications = 0;
-  s.subscribe(() => notifications++);
-  s.hydrate("chat", { ...snapshot(2), run: null });
-  expect(s.getActivity("bot-a", "running")).toBe("working");
-  expect(notifications).toBe(1);
 });

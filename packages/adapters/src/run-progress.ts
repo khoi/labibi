@@ -4,7 +4,6 @@ import {
   appendToolCallSegment,
   createStreamingRedactor,
   endsSentence,
-  isBackgroundRunTrigger,
   isConversationalRun,
   noteLastToolStep,
   redactSecrets,
@@ -157,13 +156,7 @@ export async function flushProgress(ctx: RunContext) {
   const { reply } = ctx.state;
   // Routines may finish silently. Do not leak narration or a partial silence
   // sentinel before the final outcome is known.
-  if (
-    ctx.scripted ||
-    !reply.pendingProgress ||
-    run.trigger === "routine" ||
-    isBackgroundRunTrigger(run.trigger)
-  )
-    return;
+  if (ctx.scripted || !reply.pendingProgress || run.trigger === "routine") return;
   await deps.events.append({
     spaceId: run.spaceId,
     threadId: thread.id,
@@ -269,17 +262,11 @@ export async function publishNarrationBeforeAsk(ctx: RunContext) {
 
 /**
  * Replaces the text streamed so far with the note as the working line. Runs that hold their
- * narration back (routines, peers, background work) keep their live view.
+ * narration back (routines) keep their live view.
  */
 export async function showNarrationStatus(ctx: RunContext, note: string | undefined) {
   const { deps, run, runId, bot, thread } = ctx;
-  if (
-    !note ||
-    ctx.scripted ||
-    !runPromotesMidTurnNarration(run.trigger) ||
-    isBackgroundRunTrigger(run.trigger)
-  )
-    return;
+  if (!note || ctx.scripted || !runPromotesMidTurnNarration(run.trigger)) return;
   ctx.state.reply.narrationStatusShowing = true;
   await deps.events.append({
     spaceId: run.spaceId,

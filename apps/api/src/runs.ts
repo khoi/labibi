@@ -1,5 +1,5 @@
 import type { Actor, RunActivityRow } from "@labradoodle/contracts";
-import { ACTIVE_RUN_STATUSES, BACKGROUND_RUN_TRIGGERS, truncatePlainText } from "@labradoodle/core";
+import { ACTIVE_RUN_STATUSES, truncatePlainText } from "@labradoodle/core";
 import type { PrismaClient } from "@labradoodle/db";
 import { listChats } from "@labradoodle/db";
 
@@ -22,7 +22,6 @@ export async function listSpaceRuns(
     prisma.run.findMany({
       where: {
         spaceId: actor.spaceId,
-        trigger: { notIn: [...BACKGROUND_RUN_TRIGGERS] },
         ...(filter === "active"
           ? { status: { in: [...ACTIVE_RUN_STATUSES] } }
           : { status: { in: [...TERMINAL_STATUSES] } }),

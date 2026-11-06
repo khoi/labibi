@@ -1,7 +1,6 @@
 import type { NotificationMessage, NotificationProvider } from "@labradoodle/adapter-kit";
 import type { MessageBlock } from "@labradoodle/contracts";
 import {
-  isBackgroundRunTrigger,
   plainTextFromMarkdown,
   redactSecrets,
   truncatedPlainText,
@@ -112,8 +111,6 @@ export async function notifyRun(
   message: Omit<NotificationMessage, "sender">,
   options: { retryOnFailure?: boolean } = {},
 ) {
-  if (isBackgroundRunTrigger(run.trigger) && message.kind !== "help" && message.kind !== "takeover")
-    return;
   const routine = run.routineId
     ? await deps.prisma.routine
         .findUnique({ where: { id: run.routineId }, select: { notify: true } })
@@ -154,10 +151,6 @@ export function publishChatAlert(
     }))().catch((error) => getLogger().error("chat alert publish", error));
 }
 
-export function runSendsFinishNotification(trigger: string): boolean {
-  return !isBackgroundRunTrigger(trigger);
-}
-
 /** User-facing text for completion notifications; empty when only tool/step activity remains. */
 export function completionNotificationBody(assembled: string, blocks: MessageBlock[]): string {
   if (assembled) return assembled;
@@ -184,11 +177,9 @@ export function secretAskNotification(botName: string, label: string, runSecrets
 }
 
 export function completionMarksUnread(trigger: string, text: string): boolean {
-  if (isBackgroundRunTrigger(trigger)) return false;
   return (trigger !== "routine" && trigger !== "reaction") || Boolean(text);
 }
 
 export function subagentMarksUnread(trigger: string, status: "running" | "completed" | "failed") {
-  if (isBackgroundRunTrigger(trigger)) return false;
   return status === "failed" || trigger !== "routine";
 }

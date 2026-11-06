@@ -22,24 +22,10 @@ export const QUEUE_HOLDING_RUN_STATUSES = ACTIVE_RUN_STATUSES.filter(
 const TERMINAL: RunStatus[] = ["completed", "failed", "cancelled"];
 /**
  * These turns carry their own prompt and must not take a user message as steering.
- * Routine and webhook runs are not the conversation, and neither is a wake from another bot:
- * its reply goes back to that bot. A message that lands during any of them waits, and the
- * continuation after the turn finishes answers it.
+ * Routine and webhook runs are not the conversation. A message that lands during either waits,
+ * and the continuation after the turn finishes answers it.
  */
-const NON_CONVERSATIONAL_RUN_TRIGGERS = new Set(["routine", "webhook", "tickets"]);
-
-/**
- * Background triggers do internal work that must not leak into the chat: the
- * sidebar must not show them as activity and the bot transcript must not render
- * their steps/text.
- * Existing ask and approval cards can still request user input.
- */
-export const BACKGROUND_RUN_TRIGGERS = ["tickets"] as const;
-const BACKGROUND_RUN_TRIGGER_SET = new Set<string>(BACKGROUND_RUN_TRIGGERS);
-
-export function isBackgroundRunTrigger(trigger: string | null | undefined): boolean {
-  return BACKGROUND_RUN_TRIGGER_SET.has(trigger ?? "");
-}
+const NON_CONVERSATIONAL_RUN_TRIGGERS = new Set(["routine", "webhook"]);
 
 const allowed: Record<RunStatus, RunStatus[]> = {
   queued: ["leased", "cancelled"],

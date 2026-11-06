@@ -34,7 +34,6 @@ import {
   displayName,
   ensureAiDataConsent,
   isActive,
-  isBackgroundRunTrigger,
   isRunTerminalEvent,
   isServerUnreachable,
   isUnreachableStatus,
@@ -1493,10 +1492,6 @@ export function applyMobileThreadEvent(
   }
   if (event.type === "run.started") {
     const cursor = event.seq ?? prev.cursor;
-    const trigger = typeof event.payload?.trigger === "string" ? event.payload.trigger : undefined;
-    if (isBackgroundRunTrigger(trigger)) {
-      return cursor === prev.cursor ? prev : { ...prev, cursor };
-    }
     if (!event.runId) return cursor === prev.cursor ? prev : { ...prev, cursor };
     const previousRun =
       prev.activeRuns?.find((candidate) => candidate.id === event.runId) ??

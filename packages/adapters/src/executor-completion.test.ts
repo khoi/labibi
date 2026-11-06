@@ -5,7 +5,6 @@ import {
   completionMarksUnread,
   completionNotificationBody,
   completionNotificationPreview,
-  runSendsFinishNotification,
   secretAskNotification,
   subagentMarksUnread,
 } from "./run-notifications.js";
@@ -41,14 +40,6 @@ describe("completionMessageSegments", () => {
 
   it("allows a fully empty completion for silent runs", () => {
     expect(completionMessageSegments([], { allowSilentEmpty: true })).toEqual([]);
-  });
-
-  it("drops suppressed output", () => {
-    expect(
-      completionMessageSegments([{ kind: "text", text: "Research is checking this." }], {
-        suppressOutput: true,
-      }),
-    ).toEqual([]);
   });
 });
 
@@ -213,31 +204,6 @@ describe("completionMarksUnread", () => {
       expect(completionMarksUnread(trigger, completionNotificationBody("", blocks))).toBe(false);
     },
   );
-});
-
-describe("background ticket runs", () => {
-  it("stay silent, drop mid-turn narration, and never mark unread or notify", () => {
-    expect(runAllowsSilentEmpty("tickets")).toBe(true);
-    expect(runPromotesMidTurnNarration("tickets")).toBe(false);
-    const segments = completionMessageSegments([{ kind: "text", text: "Closed the ticket." }], {
-      allowSilentEmpty: runAllowsSilentEmpty("tickets"),
-      suppressOutput: true,
-    });
-    expect(segments).toEqual([]);
-    expect(completionMarksUnread("tickets", "")).toBe(false);
-    expect(completionMarksUnread("tickets", "Closed the ticket.")).toBe(false);
-    expect(subagentMarksUnread("tickets", "completed")).toBe(false);
-    expect(subagentMarksUnread("tickets", "failed")).toBe(false);
-    expect(runSendsFinishNotification("tickets")).toBe(false);
-    expect(runSendsFinishNotification("user")).toBe(true);
-    expect(runReplyGuidance("tickets")).toBe(ROUTINE_SILENT_REPLY_GUIDANCE);
-  });
-
-  it("drops a tool-only ticket final so the transcript gets no bubble", () => {
-    const steps = [{ kind: "steps" as const, steps: [{ label: "Ticket comment", count: 1 }] }];
-    const blocks = finalBlocksAfterMidTurnProgress(steps, runAllowsSilentEmpty("tickets"));
-    expect(blocks).toEqual([]);
-  });
 });
 
 describe("stripNoResponseReply", () => {

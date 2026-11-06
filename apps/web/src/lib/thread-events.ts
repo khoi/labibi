@@ -11,7 +11,6 @@ import type {
 import { RUN_TRIGGERS } from "@labradoodle/contracts";
 import {
   isActive,
-  isBackgroundRunTrigger,
   isRunTerminalEvent,
   mergeThreadHistory,
   payloadAuthor,
@@ -287,11 +286,6 @@ export function reduceThreadSnapshot(
     };
   }
   if (event.type === "run.started") {
-    // Background runs (ticket work) stay invisible in the transcript; the server
-    // already filters their events and snapshots, this guards a late arrival.
-    if (isBackgroundRunTrigger(event.payload.trigger as string | undefined)) {
-      return { ...prev, cursor: event.seq };
-    }
     if (!event.runId) return { ...prev, cursor: event.seq };
     const previousRun =
       prev.activeRuns?.find((candidate) => candidate.id === event.runId) ??

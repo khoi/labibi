@@ -45,7 +45,6 @@ export * from "./mcp-app.js";
 export * from "./message-pages.js";
 export * from "./message-reactions.js";
 export * from "./message-replies.js";
-export * from "./message-visibility.js";
 export * from "./model-connection-form.js";
 export * from "./model-oauth.js";
 export * from "./model-probe.js";

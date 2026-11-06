@@ -1,15 +1,5 @@
-import type {
-  MessageAuthor,
-  MessageBlock,
-  ThreadMessage,
-  ThreadMessagePage,
-} from "@labradoodle/contracts";
+import type { MessageAuthor, ThreadMessage, ThreadMessagePage } from "@labradoodle/contracts";
 import { MessageBlock as MessageBlockSchema } from "@labradoodle/contracts";
-import {
-  BACKGROUND_RUN_TRIGGERS,
-  isBackgroundInputBlock,
-  isBackgroundRunTrigger,
-} from "@labradoodle/core";
 import { messageReplyPreview } from "@labradoodle/core/message-quote";
 import type { Prisma, PrismaClient } from "@labradoodle/db";
 import { loadMessageAuthors } from "@labradoodle/db";
@@ -30,7 +20,6 @@ export async function loadMessagePage(
   before: number | undefined,
   pageSize: number,
   around?: { messageId?: string; seq?: number },
-  includeBackgroundRuns = false,
 ): Promise<ThreadMessagePage> {
   if (around) {
     let targetSeq = around.seq;
@@ -57,43 +46,31 @@ export async function loadMessagePage(
       const hasOlder = first
         ? (await prisma.message.count({ where: { threadId, seq: { lt: first.seq } } })) > 0
         : false;
-      const messages = includeBackgroundRuns
-        ? rows
-        : await withoutBackgroundRunMessages(prisma, rows);
       return {
         threadId,
-        messages: await toThreadMessages(prisma, messages),
+        messages: await toThreadMessages(prisma, rows),
         olderCursor: hasOlder ? (first?.seq ?? null) : null,
         coveredThroughSeq,
       };
     }
   }
 
-  let cursor = before;
-  while (true) {
-    const rows = await prisma.message.findMany({
-      where: {
-        threadId,
-        ...(cursor === undefined ? {} : { seq: { lt: cursor } }),
-      },
-      orderBy: { seq: "desc" },
-      take: pageSize + 1,
-      include: { replyTo: { select: replySelection } },
-    });
-    const hasOlder = rows.length > pageSize;
-    const pageRows = rows.slice(0, pageSize).reverse();
-    const visibleRows = includeBackgroundRuns
-      ? pageRows
-      : await withoutBackgroundRunMessages(prisma, pageRows);
-    if (visibleRows.length > 0 || !hasOlder) {
-      return {
-        threadId,
-        messages: await toThreadMessages(prisma, visibleRows),
-        olderCursor: hasOlder ? (pageRows[0]?.seq ?? null) : null,
-      };
-    }
-    cursor = pageRows[0]?.seq;
-  }
+  const rows = await prisma.message.findMany({
+    where: {
+      threadId,
+      ...(before === undefined ? {} : { seq: { lt: before } }),
+    },
+    orderBy: { seq: "desc" },
+    take: pageSize + 1,
+    include: { replyTo: { select: replySelection } },
+  });
+  const hasOlder = rows.length > pageSize;
+  const pageRows = rows.slice(0, pageSize).reverse();
+  return {
+    threadId,
+    messages: await toThreadMessages(prisma, pageRows),
+    olderCursor: hasOlder ? (pageRows[0]?.seq ?? null) : null,
+  };
 }
 
 export async function loadAllMessages(
@@ -104,75 +81,11 @@ export async function loadAllMessages(
   const pages: ThreadMessage[][] = [];
   let before: number | undefined;
   do {
-    const page = await loadMessagePage(prisma, threadId, before, pageSize, undefined, true);
+    const page = await loadMessagePage(prisma, threadId, before, pageSize);
     pages.push(page.messages);
     before = page.olderCursor ?? undefined;
   } while (before !== undefined);
   return pages.reverse().flat();
-}
-
-async function withoutBackgroundRunMessages<
-  T extends {
-    runId: string | null;
-    blocks: Prisma.JsonValue;
-  },
->(prisma: MessageDb, rows: T[]): Promise<T[]> {
-  const runIds = [...new Set(rows.flatMap((row) => (row.runId ? [row.runId] : [])))];
-  if (runIds.length === 0) return rows;
-  const runs = await prisma.run.findMany({
-    where: { id: { in: runIds }, trigger: { in: [...BACKGROUND_RUN_TRIGGERS] } },
-    select: { id: true },
-  });
-  const backgroundRunIds = new Set(runs.map((run) => run.id));
-  // Ticket work stays off the transcript except existing user-input cards.
-  return rows.filter(
-    (row) =>
-      !row.runId ||
-      !backgroundRunIds.has(row.runId) ||
-      (row.blocks as MessageBlock[]).some(isBackgroundInputBlock),
-  );
-}
-
-export async function isBackgroundRun(
-  prisma: MessageDb,
-  runId: string | undefined,
-  cache: Map<string, Promise<boolean>>,
-): Promise<boolean> {
-  if (!runId) return false;
-  let backgroundRun = cache.get(runId);
-  if (!backgroundRun) {
-    backgroundRun = prisma.run
-      .findUnique({ where: { id: runId }, select: { trigger: true } })
-      .then((run) => isBackgroundRunTrigger(run?.trigger));
-    cache.set(runId, backgroundRun);
-  }
-  return backgroundRun;
-}
-
-/**
- * A background run's chatter stays off the transcript: no starts, progress, steps,
- * or final text. An open thread still receives the state it needs to answer without
- * a reload — waiting input, computer takeover, and terminal run events — plus the
- * existing user-input cards.
- */
-export function shouldForwardBackgroundThreadEvent(event: {
-  type: string;
-  payload: { blocks?: unknown };
-}): boolean {
-  if (
-    event.type === "run.completed" ||
-    event.type === "run.failed" ||
-    event.type === "run.cancelled" ||
-    event.type === "run.waiting_input" ||
-    event.type === "computer.takeover.requested"
-  ) {
-    return true;
-  }
-  if (event.type !== "thread.message.created" && event.type !== "thread.message.updated") {
-    return false;
-  }
-  const blocks = event.payload.blocks;
-  return Array.isArray(blocks) && blocks.some(isBackgroundInputBlock);
 }
 
 type MessageRow = {

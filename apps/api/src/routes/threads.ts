@@ -25,11 +25,7 @@ import type { RouterDeps } from "../router.js";
 import { createRoutineTestRun, routineTestRunNonce, routineTestTarget } from "../routines.js";
 import { withSerializableRetry } from "../serializable-retry.js";
 import { assertTeachingSendAllowed } from "../taught-skills.js";
-import {
-  isBackgroundRun,
-  loadMessagePage,
-  shouldForwardBackgroundThreadEvent,
-} from "../thread-message-pages.js";
+import { loadMessagePage } from "../thread-message-pages.js";
 import type { ChatTarget } from "../thread-target.js";
 import {
   reactToThreadMessage,
@@ -204,7 +200,6 @@ export function threadsRoutes(ctx: RouterContext) {
       }),
       subscribe: authed.threads.subscribe.handler(async function* ({ context, input }) {
         const target = await resolveChatTarget(deps.prisma, context.actor, input);
-        const backgroundRunCache = new Map<string, Promise<boolean>>();
         const follow = deps.events.follow(target.threadId, input.cursor, context.signal);
         // A half-open stream looks identical to an idle one, so punctuate silence:
         // the client treats any frame as liveness and reconnects once they stop.
@@ -243,15 +238,8 @@ export function threadsRoutes(ctx: RouterContext) {
             }
             pending = undefined;
             if (next.done) return;
-            const event = next.value;
-            // Filtered events also restart the heartbeat, so check before skipping them.
             await assertStillAuthorized();
-            if (
-              (await isBackgroundRun(deps.prisma, event.runId, backgroundRunCache)) &&
-              !shouldForwardBackgroundThreadEvent(event)
-            )
-              continue;
-            yield event;
+            yield next.value;
           }
         } finally {
           // Not awaited: closing can queue behind a read that the abort has not landed on yet.

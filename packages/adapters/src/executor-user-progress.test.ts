@@ -445,11 +445,6 @@ it("does not restore narration already published as durable progress", async () 
   expect(finalizeRun.mock.calls[0]![0].blocks.filter((block) => block.kind === "text")).toEqual([]);
 });
 
-it("keeps background ticket runs silent", async () => {
-  const { finalizeRun } = await runTurn("", true, undefined, [], "fyi", { trigger: "tickets" });
-  expect(finalizeRun.mock.calls[0]![0].blocks).toEqual([]);
-});
-
 describe("held-back narration on peer requests", () => {
   it.each(["request", "question"] as const)(
     "saves the last non-empty narration as the final result for an empty %s reply",
@@ -1047,7 +1042,7 @@ describe("public coarse thinking lifecycle", () => {
       ).toEqual([{ activity: { thinking: true } }, { activity: { thinking: false } }]);
     }
   });
-  it("does not emit background thinking or accept arbitrary runtime metadata into public payloads", async () => {
+  it("does not accept arbitrary runtime metadata into public payloads", async () => {
     const privateMarker = {
       type: "thinking",
       active: true,
@@ -1063,11 +1058,6 @@ describe("public coarse thinking lifecycle", () => {
         .map(({ payload }) => payload),
     ).toEqual([{ activity: { thinking: true } }, { activity: { thinking: false } }]);
     expect(JSON.stringify(visible.savedEvents)).not.toContain("private fixture reasoning");
-    const background = await runTurn("", true, "", [], "fyi", {
-      trigger: "tickets",
-      runtimeEvents: [privateMarker, { type: "done" }],
-    });
-    expect(background.savedEvents.some((event) => event.type === "thread.meta")).toBe(false);
   });
 });
 

@@ -1,5 +1,5 @@
 import { hasThinkingActivityMarker, parseBotAvatarValue } from "@labradoodle/contracts";
-import { isBackgroundRunTrigger, isRunWaitingOnUser, isRunWorking } from "./run-state.js";
+import { isRunWaitingOnUser, isRunWorking } from "./run-state.js";
 
 /** Minimal public stream fields used by web and native activity projections. */
 export interface LogoAvatarEvent {
@@ -49,7 +49,6 @@ export interface LogoAvatarSignals {
   thinking: boolean;
   tools: readonly { executionId: string; name: string }[];
   cursor: number;
-  background: boolean;
 }
 
 export function initialLogoAvatarSignals(botId: string): LogoAvatarSignals {
@@ -60,7 +59,6 @@ export function initialLogoAvatarSignals(botId: string): LogoAvatarSignals {
     thinking: false,
     tools: [],
     cursor: -1,
-    background: false,
   };
 }
 
@@ -82,7 +80,6 @@ const COMPUTER_TOOLS = new Set([
 ]);
 
 export function logoAvatarActivity(signals: LogoAvatarSignals): LogoAvatarActivity {
-  if (signals.background) return "idle";
   if (signals.status === "failed") return "error";
   if (isRunWaitingOnUser(signals.status)) return "waiting";
   if (!isRunWorking(signals.status)) return "idle";
@@ -114,7 +111,6 @@ export function reduceLogoAvatarSignals(
       tools: [],
       composing: false,
       thinking: false,
-      background: isBackgroundRunTrigger(String(event.payload.trigger ?? "")),
     };
   }
   if (!previous.runId || event.runId !== previous.runId) return next;

@@ -1,25 +1,10 @@
-import {
-  ACTIVE_RUN_STATUSES,
-  BACKGROUND_RUN_TRIGGERS,
-  plainTextFromMarkdown,
-} from "@labradoodle/core";
-
-import type { PrismaClient } from "./client.js";
-import { Prisma } from "./client.js";
+import { ACTIVE_RUN_STATUSES, plainTextFromMarkdown } from "@labradoodle/core";
 
 export const activeRunStatuses = [...ACTIVE_RUN_STATUSES];
-const backgroundRunTriggers = [...BACKGROUND_RUN_TRIGGERS];
-const userVisibleBotRunTriggers = ["bot_message", ...BACKGROUND_RUN_TRIGGERS];
 
-/**
- * Active conversational/foreground runs for a bot's sidebar status. Background
- * ticket runs keep working silently, so they must not make the avatar spin.
- */
+/** Active runs for a chat's status in the list. */
 export const activeRunSelection = {
-  where: {
-    status: { in: activeRunStatuses },
-    trigger: { notIn: backgroundRunTriggers },
-  },
+  where: { status: { in: activeRunStatuses } },
   orderBy: { createdAt: "desc" as const },
   select: { status: true, threadId: true },
 } as const;
@@ -39,36 +24,6 @@ export function threadRunStatus(
   threadId: string,
 ): string {
   return primaryActiveRun(runs.filter((run) => run.threadId === threadId))?.status ?? "idle";
-}
-
-/** Latest user-visible run per thread, bounded in SQL rather than by Prisma in memory. */
-export async function withLatestBotRuns<T extends { thread: { id: string } | null }>(
-  prisma: PrismaClient,
-  parents: T[],
-) {
-  const threadIds = parents.flatMap((parent) => (parent.thread ? [parent.thread.id] : []));
-  const loaded =
-    threadIds.length === 0
-      ? []
-      : await prisma.$queryRaw<Array<{ id: string; threadId: string; status: string }>>(Prisma.sql`
-    SELECT r.id, r."threadId", r.status
-    FROM unnest(${threadIds}::text[]) AS t(id)
-    CROSS JOIN LATERAL (
-      SELECT id, "threadId", status
-      FROM runs
-      WHERE "threadId" = t.id AND trigger NOT IN (${Prisma.join(userVisibleBotRunTriggers)})
-      ORDER BY "createdAt" DESC, id DESC
-      LIMIT 1
-    ) r
-  `);
-  const byThread = new Map(loaded.map((run) => [run.threadId, run]));
-  return parents.map((parent) => {
-    const run = parent.thread ? byThread.get(parent.thread.id) : undefined;
-    return {
-      ...parent,
-      thread: parent.thread ? { ...parent.thread, runs: run ? [run] : [] } : null,
-    };
-  });
 }
 
 export function previewFromBlocks(blocks: unknown): string {

@@ -177,7 +177,6 @@ describe("isPersonStartedRun", () => {
     ["follow_up", false, false],
     ["bot_message", true, false],
     ["spawn", true, false],
-    ["tickets", true, false],
     ["webhook", true, false],
     ["routine", true, false],
     ["resume", true, false],

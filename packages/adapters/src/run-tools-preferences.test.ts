@@ -251,15 +251,7 @@ describe("update_preferences", () => {
       }).some((tool) => tool.name === "update_preferences");
     expect(offered("user")).toBe(true);
     expect(offered("follow_up", true)).toBe(true);
-    for (const trigger of [
-      "follow_up",
-      "routine",
-      "bot_message",
-      "webhook",
-      "spawn",
-      "tickets",
-      "created",
-    ])
+    for (const trigger of ["follow_up", "routine", "bot_message", "webhook", "spawn", "created"])
       expect(offered(trigger), trigger).toBe(false);
   });
 });
