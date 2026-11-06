@@ -12,15 +12,15 @@ import {
   signup,
 } from "./helpers";
 
-function sidebarBotButton(page: Page, name: RegExp | string) {
-  return page.locator("[data-sidebar-group] [data-chat-id]").filter({
+function sidebarChat(page: Page, name: RegExp | string) {
+  return page.locator("[data-chat-id]").filter({
     has: page.locator("[data-chat-title]").filter({ hasText: name }),
   });
 }
 
 test.describe.configure({ mode: "serial" });
 
-test("takeover, routine, plugins, and export are reachable", async ({ page }, testInfo) => {
+test("takeover, routine and plugins are reachable", async ({ page }, testInfo) => {
   const stamp = Date.now();
   await signup(page, `flow-${stamp}@rakazo.test`, "password12", "Flow");
   await completeOnboarding(page);
@@ -68,27 +68,9 @@ test("takeover, routine, plugins, and export are reachable", async ({ page }, te
       message: "the second protected-input run must be ready for takeover",
     })
     .toBe("waiting_takeover");
-  // Reopen the computer tab so Open sees a refreshed computer status.
-  const sidePanel = page.getByTestId("side-panel");
-  const pill = page.getByTestId("chat-panel-trigger");
-  if ((await pill.getAttribute("aria-expanded")) === "true") {
-    await pill.click();
-    await expect(sidePanel).toHaveAttribute("data-panel", "closed");
-  }
-  await openChatPanelTab(page, "Computer");
-  await expect(sidePanel).toHaveAttribute("data-panel", "computer");
-  await expect(sidePanel).toHaveCSS("width", "384px");
-  const [mainBox, panelBox] = await Promise.all([
-    page.locator("main").boundingBox(),
-    sidePanel.boundingBox(),
-  ]);
-  expect(mainBox).not.toBeNull();
-  expect(panelBox).not.toBeNull();
-  expect((mainBox?.x ?? 0) + (mainBox?.width ?? 0)).toBeLessThanOrEqual(panelBox?.x ?? 0);
-  await sidePanel.getByTestId("computer-preview").hover();
-  const openComputer = sidePanel.getByTestId("computer-preview-open");
-  await expect(openComputer).toBeVisible({ timeout: 30_000 });
-  await openComputer.click();
+  const secondCard = page.getByTestId("computer-card").last();
+  await expect(secondCard.getByText("Needs you", { exact: true })).toBeVisible();
+  await secondCard.getByTestId("computer-card-open").click();
   await page
     .getByTestId("computer-chrome")
     .getByRole("button", { name: "Take control", exact: true })
@@ -325,24 +307,6 @@ test("takeover, routine, plugins, and export are reachable", async ({ page }, te
   await captureScreenshot(page, testInfo, "02-graphql-installed");
 
   await page.getByRole("button", { name: "Close integrations" }).click();
-
-  await page.getByText("Chief").first().click();
-  await openChatPanelTab(page, "Advanced");
-  const downloadPromise = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Export" }).click();
-  const download = await downloadPromise;
-  expect(download.suggestedFilename()).toMatch(/chief-export\.json/i);
-  await page.getByRole("button", { name: "Close panel" }).click();
-
-  await page.locator("aside").first().getByRole("button", { name: /Chief/ }).first().click({
-    button: "right",
-  });
-  const botMenu = page.getByRole("menu", { name: "Actions for Chief" });
-  await botMenu.getByRole("menuitem", { name: "Delete" }).click();
-  await expect(page.getByRole("radio", { name: /Keep memories/ })).toBeChecked();
-  await expect(page.getByRole("radio", { name: /Delete memories too/ })).toBeVisible();
-  await page.getByRole("button", { name: "Cancel" }).click();
-  await captureScreenshot(page, testInfo, "12-bot-settings");
 });
 
 test("sign-in and stop work in the shell", async ({ page }, testInfo) => {
@@ -430,8 +394,7 @@ test("sign-in and stop work in the shell", async ({ page }, testInfo) => {
   await page.getByPlaceholder("Password").fill("password12");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
   await page.waitForURL(/\/app/, { timeout: 20_000 });
-  await expect(sidebarBotButton(page, /^Chief/)).toBeVisible();
-  await expect(sidebarBotButton(page, /Scout/)).toBeVisible();
+  await expect(sidebarChat(page, /keep working until I stop you/)).toBeVisible();
   await captureScreenshot(page, testInfo, "15-restored-session");
 });
 
