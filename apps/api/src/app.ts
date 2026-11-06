@@ -146,6 +146,7 @@ import {
   withClientIp,
 } from "./client-ip.js";
 import { cspReportRoutes } from "./csp-report.js";
+import { readDevSeed, seedAccounts, wipeDatabase } from "./dev-start-over.js";
 import { configuredEmailProvider } from "./email.js";
 import type { AppEnv } from "./env.js";
 import { loadEnv } from "./env.js";
@@ -946,8 +947,14 @@ async function buildApp(overrides: CreateAppOverrides): Promise<AppHandles> {
       if (c.req.header("content-type") !== "application/json") return c.text("Bad request", 400);
       const session = await auth.api.getSession({ headers: c.req.raw.headers });
       if (!session?.user) return c.text("Unauthorized", 401);
-      await auth.startOver(session.user.id);
-      return c.json({ ok: true });
+      const seed = readDevSeed();
+      if (!seed) {
+        await auth.startOver(session.user.id);
+        return c.json({ seeded: false });
+      }
+      await wipeDatabase(prisma);
+      await seedAccounts(app, { prisma, auth, webOrigin: env.webOrigin }, seed);
+      return c.json({ seeded: true });
     });
   }
   mountAuditExportRoute(app, { prisma, sessionActor });

@@ -249,7 +249,8 @@ function ShellSidebarFooter({
     if (response?.ok) {
       clearSpaceSelection();
       clearComposerDrafts();
-      window.location.assign("/sign-in?next=/onboarding");
+      const { seeded } = (await response.json()) as { seeded: boolean };
+      window.location.assign(seeded ? "/sign-in" : "/sign-in?next=/onboarding");
       return;
     }
     setStartingOver(false);
