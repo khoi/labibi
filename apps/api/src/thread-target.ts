@@ -408,7 +408,7 @@ async function replayExistingSend(
   const linkedRun =
     message.sourceRuns[0] ??
     (message.runId ? await deps.prisma.run.findUnique({ where: { id: message.runId } }) : null);
-  if (!linkedRun && orderedReceiptRuns.length === 0) return null;
+  if (!linkedRun && orderedReceiptRuns.length === 0) return sendResult(message, []);
   const runs = orderedReceiptRuns.length
     ? orderedReceiptRuns
     : message.sourceRuns.length
@@ -442,12 +442,11 @@ function sendEventRunIds(payload: Prisma.JsonValue | undefined): string[] {
   return Array.isArray(runIds) ? runIds.filter((id): id is string => typeof id === "string") : [];
 }
 
+/** A message Doodle does not answer has no run. */
 function sendResult(message: { seq: number }, runs: Array<{ id: string; taskId: string }>) {
   const first = runs[0];
-  if (!first) throw new IsolationError("Send did not create a run");
   return {
-    taskId: first.taskId,
-    runId: first.id,
+    ...(first ? { taskId: first.taskId, runId: first.id } : {}),
     seq: message.seq,
     runIds: runs.map((run) => run.id),
   };
