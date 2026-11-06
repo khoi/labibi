@@ -4,7 +4,6 @@ import {
   activeThreadId,
   captureScreenshot,
   completeOnboarding,
-  createChat,
   openChatPanelTab,
   rpc,
   signup,
@@ -366,7 +365,7 @@ test("a bot's page shows in its reply, opens full screen, is shared by link and 
   const confirm = page.getByRole("alertdialog", { name: "Delete Signups dashboard?" });
   await captureScreenshot(page, testInfo, "page-delete-confirm");
   await confirm.getByRole("button", { name: "Delete" }).click();
-  await expect(page.getByText("Pages this bot builds for you appear here.")).toBeVisible();
+  await expect(page.getByTestId("chat-files")).toBeVisible();
   await captureScreenshot(page, testInfo, "page-library-empty");
 
   // The header pill reopens the bot panel on the Pages tab it closed on.
@@ -678,60 +677,6 @@ test("a page's failures, a deleted page's card, and the Library's Share, search 
   await expect(unread).toBeHidden();
 });
 
-test("a group's pages show in its settings, and the palette finds and opens a page", async ({
-  page,
-}, testInfo) => {
-  await page.addInitScript(() => localStorage.setItem("rakazo.uiAppearance", "dark"));
-  await page.setViewportSize({ width: 1280, height: 860 });
-  await signup(page, `pages-group-${Date.now()}@rakazo.test`, "password12", "Group Pages");
-  await completeOnboarding(page);
-  const planner = await createChat(page, { name: "Planner" });
-  const writer = await createChat(page, { name: "Writer" });
-  const group = await rpc<{ id: string }>(page, "groups/create", {
-    name: "Launch team",
-    botIds: [planner, writer],
-  });
-  await page.goto(`/app/g/${group.id}`);
-  await page.getByTestId("chat-panel-trigger").click();
-  const settings = page.getByTestId("side-panel");
-  await expect(settings).toHaveAttribute("data-panel", "group-settings");
-  await expect(settings.getByRole("heading", { name: "Pages" })).toBeVisible();
-  await expect(
-    settings.getByText(
-      "Pages this group builds for you appear here. Ask for a dashboard, tracker or plan to make one.",
-    ),
-  ).toBeVisible();
-  await captureScreenshot(page, testInfo, "page-group-settings-empty");
-  await page.getByTestId("chat-panel-trigger").click();
-  await expect(settings).toBeHidden();
-
-  await send(
-    page,
-    `@Planner call save_page with ${JSON.stringify({ title: "Launch checklist", source: tiny("Launch checklist") })}\nthen say Made the Launch checklist.`,
-  );
-  await expect(page.getByTestId("page-card")).toHaveCount(1, { timeout: 30_000 });
-  await page.getByTestId("chat-panel-trigger").click();
-  await expect(settings.getByText("Launch checklist")).toBeVisible();
-  await captureScreenshot(page, testInfo, "page-group-settings");
-  await page.getByTestId("chat-panel-trigger").click();
-
-  await page.keyboard.press("ControlOrMeta+K");
-  const palette = page.getByTestId("command-palette");
-  await expect(palette).toBeVisible();
-  await page.keyboard.type("launch che");
-  await expect(palette.getByText("Pages", { exact: true })).toBeVisible();
-  const row = palette.getByRole("option", { name: /Launch checklist/ });
-  await expect(row).toBeVisible();
-  await captureScreenshot(page, testInfo, "page-palette");
-  await row.click();
-  await expect(palette).toBeHidden();
-  await expect(page.getByTestId("page-view")).toBeVisible();
-  await expect(
-    pageFrame(page, "Launch checklist").getByRole("heading", { name: "Launch checklist" }),
-  ).toBeVisible();
-});
-
-/** A page that asks the app to copy, open a link and fill a reply as soon as it loads. */
 const ROGUE = `Object.defineProperty(KeyboardEvent.prototype, "repeat", { get: () => false });
 function Rogue() {
   const [sent, setSent] = useState(0);

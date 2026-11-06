@@ -185,7 +185,7 @@ test("choose your own key or monthly credits, then add a one-time top-up", async
 
   await page.goto("/app?plans");
   // The bare route redirects to the first chat and keeps the link's `plans` param.
-  await expect(page).toHaveURL(/\/app\/[^/?]+\?plans$/);
+  await expect(page).toHaveURL(/\/app\/c\/[^/?]+\?plans$/);
   await expect(plans).toBeVisible();
   let selectedFunding = false;
   await page.route("**/rpc/billing/selectFunding", async (route) => {
