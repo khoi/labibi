@@ -92,7 +92,6 @@ export function SidebarHeader({
   );
 }
 
-/** Switches between the person's workspaces; shown only once they are in more than one. */
 export function WorkspaceSwitcher({
   workspaces,
   currentId,
@@ -108,7 +107,8 @@ export function WorkspaceSwitcher({
 }) {
   const { t } = useLingui();
   const current = workspaces.find((workspace) => workspace.id === currentId);
-  if (workspaces.length < 2 || !current) return null;
+  if (!current) return null;
+  const switchable = workspaces.length > 1;
   const otherUnread = workspaces.some(
     (workspace) => workspace.id !== currentId && workspace.unread,
   );
@@ -135,19 +135,23 @@ export function WorkspaceSwitcher({
           </span>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-(--anchor-width) min-w-[220px]">
-          {workspaces.map((workspace) => (
-            <DropdownMenuItem key={workspace.id} onClick={() => onSelect(workspace)}>
-              <span className="min-w-0 flex-1 truncate" dir="auto">
-                {workspace.name}
-              </span>
-              {workspace.id === currentId ? (
-                <Check aria-hidden="true" />
-              ) : workspace.unread ? (
-                <span aria-hidden="true" className="size-2 rounded-full bg-unread" />
-              ) : null}
-            </DropdownMenuItem>
-          ))}
-          <DropdownMenuSeparator />
+          {switchable ? (
+            <>
+              {workspaces.map((workspace) => (
+                <DropdownMenuItem key={workspace.id} onClick={() => onSelect(workspace)}>
+                  <span className="min-w-0 flex-1 truncate" dir="auto">
+                    {workspace.name}
+                  </span>
+                  {workspace.id === currentId ? (
+                    <Check aria-hidden="true" />
+                  ) : workspace.unread ? (
+                    <span aria-hidden="true" className="size-2 rounded-full bg-unread" />
+                  ) : null}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+            </>
+          ) : null}
           {current.isOwner ? (
             <DropdownMenuItem onClick={onInvite}>
               <UserPlus />

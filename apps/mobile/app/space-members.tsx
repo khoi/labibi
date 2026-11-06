@@ -2,7 +2,7 @@ import { MenuView } from "@expo/ui/community/menu";
 import type { SpaceMember, SpaceMembers } from "@labradoodle/contracts";
 import { accountDisplay } from "@labradoodle/core";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -27,7 +27,16 @@ export default function SpaceMembersScreen() {
   const styles = useThemedStyles(createStyles);
   const appearance = useResolvedAppearance();
   const router = useRouter();
-  const { spaceId, name } = useLocalSearchParams<{ spaceId: string; name?: string }>();
+  const {
+    spaceId,
+    name,
+    invite: inviteOnOpen,
+  } = useLocalSearchParams<{
+    spaceId: string;
+    name?: string;
+    invite?: string;
+  }>();
+  const invitedOnOpen = useRef(false);
   const [members, setMembers] = useState<SpaceMembers | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -63,6 +72,12 @@ export default function SpaceMembersScreen() {
       setPending(false);
     }
   }
+
+  useEffect(() => {
+    if (inviteOnOpen !== "1" || invitedOnOpen.current) return;
+    invitedOnOpen.current = true;
+    void invite();
+  }, [inviteOnOpen]);
 
   async function cancelInvites() {
     if (!spaceId) return;

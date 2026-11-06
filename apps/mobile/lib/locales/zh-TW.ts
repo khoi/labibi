@@ -542,6 +542,7 @@ export const ZH_TW_MESSAGES: Record<string, string> = {
   "Mark as unread": "標為未讀",
   "Show less": "收起",
   Members: "成員",
+  "Invite people": "邀請成員",
   Max: "最高",
   Minimal: "最低",
   Medium: "中",

@@ -587,6 +587,7 @@ export const RU_MESSAGES: Record<string, string> = {
   "Mark as unread": "Отметить как непрочитанное",
   "Show less": "Свернуть",
   Members: "Участники",
+  "Invite people": "Пригласить людей",
   "Members ({min}–{max})": "Участники ({min}–{max})",
   "Message…": "Сообщение…",
   Message: "Сообщение",

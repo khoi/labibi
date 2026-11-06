@@ -430,6 +430,7 @@ export const PL_MESSAGES: Record<string, string> = {
   Thinking: "Rozumowanie",
   Title: "Tytuł",
   Members: "Członkowie",
+  "Invite people": "Zaproś osoby",
   "Creating…": "Tworzenie…",
   Active: "Aktywne",
   "Could not load routine": "Nie udało się wczytać rutyny",

@@ -1060,6 +1060,7 @@ export const ES_MESSAGES: Record<string, string> = {
   "Could not switch {failedNames}. Try again.":
     "No se pudo cambiar {failedNames}. Vuelve a intentarlo.",
   Members: "Miembros",
+  "Invite people": "Invitar personas",
   Invite: "Invitar",
   "Leave space": "Salir del espacio",
   "Leave {name}?": "¿Salir de {name}?",

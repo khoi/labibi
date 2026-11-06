@@ -423,6 +423,7 @@ export const JA_MESSAGES: Record<string, string> = {
   Thinking: "思考",
   Title: "タイトル",
   Members: "メンバー",
+  "Invite people": "メンバーを招待",
   "Creating…": "作成中…",
   Active: "有効",
   "Could not load routine": "ルーティンを読み込めませんでした",

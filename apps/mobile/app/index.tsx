@@ -385,10 +385,19 @@ function Home({ embedded, onSelectSpace }: InboxPaneProps & { embedded: boolean 
               current={current}
               disabled={spaceBusy}
               onSelect={(spaceId) => void chooseWorkspace(spaceId)}
+              onInvite={() =>
+                router.push({
+                  pathname: "/space-members",
+                  params: { spaceId: current.id, invite: "1" },
+                })
+              }
+              onMembers={() =>
+                router.push({ pathname: "/space-members", params: { spaceId: current.id } })
+              }
             />
           )
         : undefined,
-    [workspaces, current, spaceBusy, chooseWorkspace],
+    [workspaces, current, spaceBusy, chooseWorkspace, router],
   );
 
   useHomeHeader({ nativeHeader, ready, hasSession, newChat, headerTitle: title });

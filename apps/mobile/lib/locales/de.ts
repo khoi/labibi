@@ -437,6 +437,7 @@ export const DE_MESSAGES: Record<string, string> = {
   Thinking: "Denkmodus",
   Title: "Titel",
   Members: "Mitglieder",
+  "Invite people": "Personen einladen",
   "Creating…": "Wird erstellt…",
   Active: "Aktiv",
   "Could not load routine": "Routine konnte nicht geladen werden",

@@ -432,6 +432,7 @@ export const NL_MESSAGES: Record<string, string> = {
   Thinking: "Denkt",
   Title: "Titel",
   Members: "Leden",
+  "Invite people": "Mensen uitnodigen",
   "Creating…": "Bezig met aanmaken…",
   Active: "Actief",
   "Could not load routine": "Routine laden mislukt",
