@@ -55,7 +55,7 @@ type NativeNotifications = {
 
 const nativeNotifications =
   Platform.OS === "android"
-    ? requireNativeModule<NativeNotifications>("RakazoNotifications")
+    ? requireNativeModule<NativeNotifications>("LabradoodleNotifications")
     : null;
 
 export type NotificationThreadTarget = { threadId: string };
@@ -72,7 +72,7 @@ export function notificationTargetsThread(
   target: NotificationThreadTarget | null,
 ): boolean {
   if (!data || !target) return false;
-  return (data.threadId ?? data["rakazo.threadId"]) === target.threadId;
+  return (data.threadId ?? data["labradoodle.threadId"]) === target.threadId;
 }
 
 export function configureForegroundNotifications(): void {

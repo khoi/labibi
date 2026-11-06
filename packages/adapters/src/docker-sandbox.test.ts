@@ -89,7 +89,7 @@ describe("Docker sandbox", () => {
 
     expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toMatchObject({
       argv: ["env", "-u", "FAILED", "--", "sleep", "10"],
-      cwd: "/home/rakazo",
+      cwd: "/home/labradoodle",
       timeoutMs: 75,
     });
     expect(events).toEqual([
@@ -98,8 +98,8 @@ describe("Docker sandbox", () => {
       { type: "exit", code: 124 },
     ]);
     expect(fetchMock.mock.calls[0]?.[1]?.headers).toMatchObject({
-      "x-rakazo-bot-id": "bot",
-      "x-rakazo-screen-id": "bot",
+      "x-labradoodle-bot-id": "bot",
+      "x-labradoodle-screen-id": "bot",
     });
     expect(fetchMock.mock.calls[0]?.[1]?.headers).toMatchObject({
       "x-request-id": expect.any(String),
@@ -334,10 +334,10 @@ describe("Docker sandbox", () => {
         method: "DELETE",
         headers: expect.objectContaining({
           authorization: "Bearer test-token",
-          "x-rakazo-bot-id": "home-bot",
-          "x-rakazo-screen-id": "bot",
-          "x-rakazo-screen-lease-id": "run-1:1",
-          "x-rakazo-space-id": "workspace",
+          "x-labradoodle-bot-id": "home-bot",
+          "x-labradoodle-screen-id": "bot",
+          "x-labradoodle-screen-lease-id": "run-1:1",
+          "x-labradoodle-space-id": "workspace",
         }),
       }),
     );
@@ -516,7 +516,7 @@ describe("Docker sandbox", () => {
       "http://supervisor.test/computers/computer-1/screen",
       expect.objectContaining({
         method: "DELETE",
-        headers: expect.objectContaining({ "x-rakazo-cancel-run-work": "1" }),
+        headers: expect.objectContaining({ "x-labradoodle-cancel-run-work": "1" }),
       }),
     );
   });
@@ -534,7 +534,7 @@ describe("Docker sandbox", () => {
 
     await provider.releaseScreen(computer, { ...context, keepScreenWarm: true });
     expect(fetchMock.mock.calls[0]?.[1]?.headers).toMatchObject({
-      "x-rakazo-preserve-screen": "1",
+      "x-labradoodle-preserve-screen": "1",
     });
 
     await provider.releaseScreen(computer, {
@@ -543,9 +543,9 @@ describe("Docker sandbox", () => {
       cancelRunWork: true,
     });
     expect(fetchMock.mock.calls[1]?.[1]?.headers).toMatchObject({
-      "x-rakazo-cancel-run-work": "1",
+      "x-labradoodle-cancel-run-work": "1",
     });
-    expect(fetchMock.mock.calls[1]?.[1]?.headers).not.toHaveProperty("x-rakazo-preserve-screen");
+    expect(fetchMock.mock.calls[1]?.[1]?.headers).not.toHaveProperty("x-labradoodle-preserve-screen");
 
     const abort = new AbortController();
     abort.abort();
@@ -554,7 +554,7 @@ describe("Docker sandbox", () => {
       keepScreenWarm: true,
       signal: abort.signal,
     });
-    expect(fetchMock.mock.calls[2]?.[1]?.headers).not.toHaveProperty("x-rakazo-preserve-screen");
+    expect(fetchMock.mock.calls[2]?.[1]?.headers).not.toHaveProperty("x-labradoodle-preserve-screen");
   });
 });
 
@@ -579,8 +579,8 @@ describe("Docker page browser", () => {
         signal: context.signal,
         body: JSON.stringify({ command: "snapshot" }),
         headers: expect.objectContaining({
-          "x-rakazo-bot-id": "team-home",
-          "x-rakazo-screen-lease-id": "run-1:1",
+          "x-labradoodle-bot-id": "team-home",
+          "x-labradoodle-screen-lease-id": "run-1:1",
         }),
       }),
     );

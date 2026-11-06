@@ -219,7 +219,7 @@ describe("optional Parallel web provider", () => {
       for (const request of peer.requests) {
         expect(request.url).toBe("https://search.parallel.ai/mcp");
         expect(request.headers.get("user-agent")).toBe(
-          "Labradoodle/0.1 (+https://github.com/elie222/rakazo; web tools)",
+          "Labradoodle/0.1 (+https://github.com/khoi/labibi; web tools)",
         );
         expect(request.headers.has("authorization")).toBe(false);
       }
@@ -277,7 +277,7 @@ describe("optional Parallel web provider", () => {
     try {
       vi.stubEnv("NODE_ENV", "production");
       vi.stubEnv("VITEST", "");
-      vi.stubEnv("RAKAZO_ALLOW_DEV_SECRETS", "");
+      vi.stubEnv("LABRADOODLE_ALLOW_DEV_SECRETS", "");
       vi.stubEnv("BETTER_AUTH_SECRET", "");
       vi.stubEnv("ENCRYPTION_KEY", "a".repeat(64));
       await createWebProvider("parallel", peer.network).search({ query: "question" }, context);

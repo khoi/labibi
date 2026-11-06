@@ -21,7 +21,7 @@ let primedBootstrap: {
 
 const initialTarget = initialBootstrapTarget(
   window.location.pathname,
-  Boolean(window.rakazoDesktop),
+  Boolean(window.labradoodleDesktop),
 );
 if (initialTarget) {
   const { threadId } = initialTarget;

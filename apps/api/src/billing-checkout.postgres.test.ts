@@ -44,7 +44,7 @@ dbTests("billing checkout coordination", () => {
   const actor: Actor = {
     userId,
     spaceId,
-    email: `checkout-${stamp}@rakazo.test`,
+    email: `checkout-${stamp}@labradoodle.test`,
     isDeploymentOwner: false,
   };
   let prisma: PrismaClient, db: ReturnType<typeof createDb>;
@@ -197,7 +197,7 @@ dbTests("checkout and organization deletion", () => {
     const actor: Actor = {
       userId,
       spaceId,
-      email: `deletion-${stamp}@rakazo.test`,
+      email: `deletion-${stamp}@labradoodle.test`,
       isDeploymentOwner: false,
     };
     return { organizationId, spaceId, actor };
@@ -210,7 +210,7 @@ dbTests("checkout and organization deletion", () => {
       data: {
         id: userId,
         name: "Deletion owner",
-        email: `deletion-${stamp}@rakazo.test`,
+        email: `deletion-${stamp}@labradoodle.test`,
         emailVerified: false,
       },
     });

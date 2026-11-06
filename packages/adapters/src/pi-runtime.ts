@@ -330,7 +330,7 @@ export class PiAgentRuntime implements AgentRuntime {
           restored
             ? (restored.historyMessageIds ??
                 history.flatMap((message) => {
-                  const id = (message as Message & { rakazoMessageId?: string }).rakazoMessageId;
+                  const id = (message as Message & { labradoodleMessageId?: string }).labradoodleMessageId;
                   return id ? [id] : [];
                 }))
             : [
@@ -1263,8 +1263,8 @@ function toPiImages(images: AgentRunRequest["currentTurnImages"]) {
  * replays them as plain text from another model: no signatures or reasoning, same on every provider.
  */
 const HISTORY_ASSISTANT = {
-  api: "rakazo-history",
-  provider: "rakazo-history",
+  api: "labradoodle-history",
+  provider: "labradoodle-history",
   model: "history",
 };
 const NO_USAGE = {
@@ -1279,9 +1279,9 @@ const NO_USAGE = {
 const CONVERSATION_START = "[Conversation start]";
 
 type HistoryMessage = Message & {
-  rakazoHistory: true;
-  rakazoMessageId?: string;
-  rakazoCreatedAt?: string;
+  labradoodleHistory: true;
+  labradoodleMessageId?: string;
+  labradoodleCreatedAt?: string;
 };
 
 /** What the model reads for a message by someone other than this bot or the human of a direct chat. */
@@ -1321,9 +1321,9 @@ function toHistory(
       const created = m.createdAt ? Date.parse(m.createdAt) : Number.NaN;
       const common = {
         timestamp: Number.isNaN(created) ? 0 : created,
-        rakazoHistory: true as const,
-        rakazoMessageId: m.id,
-        rakazoCreatedAt: m.createdAt,
+        labradoodleHistory: true as const,
+        labradoodleMessageId: m.id,
+        labradoodleCreatedAt: m.createdAt,
       };
       if (m.role === "assistant" && !m.speaker) {
         // A reply that holds only tool work has no text to replay.
@@ -1355,7 +1355,7 @@ function toHistory(
 function isHistoryReply(message: Message | undefined): boolean {
   return (
     message?.role === "assistant" &&
-    Boolean((message as Message & { rakazoHistory?: true }).rakazoHistory)
+    Boolean((message as Message & { labradoodleHistory?: true }).labradoodleHistory)
   );
 }
 

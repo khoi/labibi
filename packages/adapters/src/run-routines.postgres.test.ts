@@ -12,7 +12,7 @@ describePostgres("routine tick prompt and model consistency (PostgreSQL)", () =>
   let db: ReturnType<typeof createDb>;
   let system: PrismaClient;
   let identity: { userId: string; spaceId: string; botId: string; threadId: string };
-  const address = `routine-prompt-${randomUUID()}@rakazo.test`;
+  const address = `routine-prompt-${randomUUID()}@labradoodle.test`;
   beforeAll(async () => {
     db = createDb(url!);
     system = asSystem(db.prisma);

@@ -43,7 +43,7 @@ import {
   rewrittenNovncHeaders,
   shouldInjectNovncStorageShim,
 } from "./src/novnc-html.js";
-import { rakazoPwa } from "./src/pwa/plugin.js";
+import { labradoodlePwa } from "./src/pwa/plugin.js";
 import type { ScreenTargetFailure } from "./src/screen-proxy.js";
 import {
   checkScreenAuthorization,
@@ -59,10 +59,10 @@ import {
 } from "./src/screen-proxy.js";
 
 const webPort = Number(process.env.WEB_PORT ?? 5173);
-const DESKTOP_STACK_PROBE_PATH = "/.well-known/rakazo-desktop-stack";
-const DESKTOP_STACK_TOKEN_HEADER = "x-rakazo-desktop-stack-token";
+const DESKTOP_STACK_PROBE_PATH = "/.well-known/labradoodle-desktop-stack";
+const DESKTOP_STACK_TOKEN_HEADER = "x-labradoodle-desktop-stack-token";
 const SCREEN_UPSTREAM_TIMEOUT_MS = 20_000;
-const screenLog = createServiceLogger({ service: "rakazo-web" });
+const screenLog = createServiceLogger({ service: "labradoodle-web" });
 
 function screenPolicy(url: string | undefined) {
   return url?.startsWith("/novnc/session/control/") ? "control" : "view";
@@ -480,10 +480,10 @@ export default defineConfig(({ command, mode }) => {
     webOrigin && !["127.0.0.1", "localhost", "[::1]"].includes(new URL(webOrigin).hostname)
       ? `${webOrigin}/`
       : null;
-  const previewHost = process.env.RAKAZO_HOST ?? rootEnv.RAKAZO_HOST ?? "localhost";
+  const previewHost = process.env.LABRADOODLE_HOST ?? rootEnv.LABRADOODLE_HOST ?? "localhost";
   const allowedHosts = [
     previewHost,
-    ...(process.env.RAKAZO_ALLOWED_HOSTS ?? rootEnv.RAKAZO_ALLOWED_HOSTS ?? "")
+    ...(process.env.LABRADOODLE_ALLOWED_HOSTS ?? rootEnv.LABRADOODLE_ALLOWED_HOSTS ?? "")
       .split(",")
       .map((entry) => entry.trim())
       .filter(Boolean),
@@ -500,19 +500,19 @@ export default defineConfig(({ command, mode }) => {
         process.env.SANDBOX_SUPERVISOR_TOKEN ?? rootEnv.SANDBOX_SUPERVISOR_TOKEN,
       BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET ?? rootEnv.BETTER_AUTH_SECRET,
     });
-  const performanceAssetDelayMs = Number(process.env.RAKAZO_PERFORMANCE_ASSET_DELAY_MS ?? 0);
+  const performanceAssetDelayMs = Number(process.env.LABRADOODLE_PERFORMANCE_ASSET_DELAY_MS ?? 0);
   const desktopStackToken =
-    process.env.RAKAZO_DESKTOP_STACK_TOKEN ?? rootEnv.RAKAZO_DESKTOP_STACK_TOKEN ?? "";
-  const imageTag = process.env.RAKAZO_IMAGE_TAG ?? rootEnv.RAKAZO_IMAGE_TAG ?? "edge";
+    process.env.LABRADOODLE_DESKTOP_STACK_TOKEN ?? rootEnv.LABRADOODLE_DESKTOP_STACK_TOKEN ?? "";
+  const imageTag = process.env.LABRADOODLE_IMAGE_TAG ?? rootEnv.LABRADOODLE_IMAGE_TAG ?? "edge";
   // Invalid origins throw here, so the server refuses to start rather than serve a wider policy.
   const appPolicy = appContentSecurityPolicy({
     scriptSrc: parseContentSecuritySources(
-      "RAKAZO_CSP_SCRIPT_SRC",
-      process.env.RAKAZO_CSP_SCRIPT_SRC ?? rootEnv.RAKAZO_CSP_SCRIPT_SRC,
+      "LABRADOODLE_CSP_SCRIPT_SRC",
+      process.env.LABRADOODLE_CSP_SCRIPT_SRC ?? rootEnv.LABRADOODLE_CSP_SCRIPT_SRC,
     ),
     connectSrc: parseContentSecuritySources(
-      "RAKAZO_CSP_CONNECT_SRC",
-      process.env.RAKAZO_CSP_CONNECT_SRC ?? rootEnv.RAKAZO_CSP_CONNECT_SRC,
+      "LABRADOODLE_CSP_CONNECT_SRC",
+      process.env.LABRADOODLE_CSP_CONNECT_SRC ?? rootEnv.LABRADOODLE_CSP_CONNECT_SRC,
     ),
     crisp: parseCrispWebsiteId(process.env.CRISP_WEBSITE_ID ?? rootEnv.CRISP_WEBSITE_ID) !== null,
   });
@@ -531,12 +531,12 @@ export default defineConfig(({ command, mode }) => {
         },
       },
     },
-    define: { "import.meta.env.RAKAZO_BUILD": JSON.stringify(buildId) },
+    define: { "import.meta.env.LABRADOODLE_BUILD": JSON.stringify(buildId) },
     plugins: [
       {
         // The API reads this to name the deployed build, and a tab fetches it to confirm the
         // server already serves a newer build before it reloads.
-        name: "rakazo-build-id",
+        name: "labradoodle-build-id",
         apply: "build",
         generateBundle() {
           this.emitFile({ type: "asset", fileName: "build-id", source: `${buildId}\n` });
@@ -546,10 +546,10 @@ export default defineConfig(({ command, mode }) => {
       babel({ plugins: ["@lingui/babel-plugin-lingui-macro"] }),
       lingui(),
       tailwindcss(),
-      rakazoPwa(buildId),
+      labradoodlePwa(buildId),
       {
         // Dev keeps React Refresh unrestricted in app pages; screen documents always use CSP.
-        name: "rakazo-content-security-policy",
+        name: "labradoodle-content-security-policy",
         generateBundle() {
           for (const [pathname, asset] of Object.entries(wuyingScreenAssets)) {
             this.emitFile({ type: "asset", fileName: pathname.slice(1), source: asset.source });
@@ -593,7 +593,7 @@ export default defineConfig(({ command, mode }) => {
       },
       {
         // A shared page's link is its only key: keep it out of search results and Referer.
-        name: "rakazo-shared-page-headers",
+        name: "labradoodle-shared-page-headers",
         configureServer(server) {
           server.middlewares.use(sharedPageHeaders);
         },
@@ -602,7 +602,7 @@ export default defineConfig(({ command, mode }) => {
         },
       },
       {
-        name: "rakazo-missing-asset-404",
+        name: "labradoodle-missing-asset-404",
         configurePreviewServer({ config, middlewares }) {
           const outDir = path.resolve(config.root, config.build.outDir);
           const assetsDir = path.join(outDir, config.build.assetsDir);
@@ -623,13 +623,13 @@ export default defineConfig(({ command, mode }) => {
         },
       },
       {
-        name: "rakazo-desktop-stack-probe",
+        name: "labradoodle-desktop-stack-probe",
         configureServer: (server) => attachDesktopStackProbe(server, desktopStackToken, imageTag),
         configurePreviewServer: (server) =>
           attachDesktopStackProbe(server, desktopStackToken, imageTag),
       },
       {
-        name: "rakazo-performance-asset-delay",
+        name: "labradoodle-performance-asset-delay",
         configurePreviewServer(server) {
           if (!Number.isFinite(performanceAssetDelayMs) || performanceAssetDelayMs <= 0) return;
           server.middlewares.use((req, _res, next) => {
@@ -644,7 +644,7 @@ export default defineConfig(({ command, mode }) => {
       },
       {
         // The hosts the running server allows, as Vite resolved them, for proxied upgrades.
-        name: "rakazo-api-proxy-hosts",
+        name: "labradoodle-api-proxy-hosts",
         configureServer: (server) => {
           proxyHosts = server.config.server.allowedHosts;
         },
@@ -653,7 +653,7 @@ export default defineConfig(({ command, mode }) => {
         },
       },
       {
-        name: "rakazo-public-url",
+        name: "labradoodle-public-url",
         configureServer(server) {
           if (!publicUrl) return;
           const printUrls = server.printUrls.bind(server);
@@ -664,13 +664,13 @@ export default defineConfig(({ command, mode }) => {
         },
       },
       {
-        name: "rakazo-novnc-proxy",
+        name: "labradoodle-novnc-proxy",
         configureServer: (server) => attachNovncProxy(server, screenProxySecret(), api),
         configurePreviewServer: (server) => attachNovncProxy(server, screenProxySecret(), api),
       },
     ],
     server: {
-      host: process.env.RAKAZO_DEV_HOST ?? rootEnv.RAKAZO_DEV_HOST ?? "127.0.0.1",
+      host: process.env.LABRADOODLE_DEV_HOST ?? rootEnv.LABRADOODLE_DEV_HOST ?? "127.0.0.1",
       port: webPort,
       strictPort: true,
       allowedHosts,

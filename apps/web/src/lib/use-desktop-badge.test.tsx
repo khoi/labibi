@@ -15,12 +15,12 @@ function Harness({ count, signedIn = true }: { count: number; signedIn?: boolean
 beforeEach(() => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   set.mockReset().mockResolvedValue(true);
-  window.rakazoDesktop = { badge: { set } } as unknown as LabradoodleDesktop;
+  window.labradoodleDesktop = { badge: { set } } as unknown as LabradoodleDesktop;
   root = createRoot(document.createElement("div"));
 });
 afterEach(() => {
   act(() => root.unmount());
-  delete window.rakazoDesktop;
+  delete window.labradoodleDesktop;
   vi.unstubAllGlobals();
 });
 
@@ -47,7 +47,7 @@ it("clears on unmount and tolerates rejected IPC calls", async () => {
 it.each([undefined, {} as LabradoodleDesktop])(
   "does nothing without the optional badge bridge (%s)",
   (bridge) => {
-    window.rakazoDesktop = bridge;
+    window.labradoodleDesktop = bridge;
     act(() => root.render(<Harness count={2} />));
     act(() => root.render(<Harness count={0} />));
     act(() => root.render(null));

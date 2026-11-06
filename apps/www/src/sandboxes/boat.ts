@@ -1,6 +1,6 @@
 import {
   BOAT,
-  BOAT_RAKAZO,
+  BOAT_LABRADOODLE,
   BOAT_SIZES,
   E2B_PRO_FEE,
   METHOD_NOTE,
@@ -20,7 +20,7 @@ import {
 } from "./shared";
 import type { Sandbox } from "./types";
 
-const minimumHours = Math.floor(BOAT.minimum / BOAT_RAKAZO.hour);
+const minimumHours = Math.floor(BOAT.minimum / BOAT_LABRADOODLE.hour);
 const fullMonth = (hour: number) => `$${Math.round(hour * 730)}`;
 const shape = (size: { vcpus: number; gb: number }) => `${size.vcpus} vCPU / ${size.gb} GB`;
 
@@ -92,33 +92,33 @@ export const boat: Sandbox = {
     {
       heading: "What a Labradoodle computer costs on Boat",
       paragraphs: [
-        `${METHOD_NOTE} Labradoodle can't run Boat at that size: its smallest Boat machine is the default ${shape(BOAT_RAKAZO)}, so the table compares that size on providers that bill per second. Because Boat is cheap per hour and has a monthly minimum, most people and small teams pay exactly $${BOAT.minimum}: the minimum covers all the computers on one Boat account.`,
+        `${METHOD_NOTE} Labradoodle can't run Boat at that size: its smallest Boat machine is the default ${shape(BOAT_LABRADOODLE)}, so the table compares that size on providers that bill per second. Because Boat is cheap per hour and has a monthly minimum, most people and small teams pay exactly $${BOAT.minimum}: the minimum covers all the computers on one Boat account.`,
       ],
       table: {
-        caption: `One ${shape(BOAT_RAKAZO)} computer a month`,
+        caption: `One ${shape(BOAT_LABRADOODLE)} computer a month`,
         columns: ["Provider", "4 hours a workday (88 hours)", "Around the clock (720 hours)"],
         rows: [
           {
             topic: "Boat",
             cells: [
-              `${usd(boatMonthly(BOAT_RAKAZO.hour, WORKDAY_HOURS))}, the minimum (${usd(BOAT_RAKAZO.hour * WORKDAY_HOURS)} of usage)`,
-              usd(boatMonthly(BOAT_RAKAZO.hour, MONTH_HOURS)),
+              `${usd(boatMonthly(BOAT_LABRADOODLE.hour, WORKDAY_HOURS))}, the minimum (${usd(BOAT_LABRADOODLE.hour * WORKDAY_HOURS)} of usage)`,
+              usd(boatMonthly(BOAT_LABRADOODLE.hour, MONTH_HOURS)),
             ],
           },
           {
             topic: "[Novita](/sandboxes/novita/)",
-            cells: [usd(monthly(RATES.novita, WORKDAY_HOURS, BOAT_RAKAZO)), usd(monthly(RATES.novita, MONTH_HOURS, BOAT_RAKAZO))],
+            cells: [usd(monthly(RATES.novita, WORKDAY_HOURS, BOAT_LABRADOODLE)), usd(monthly(RATES.novita, MONTH_HOURS, BOAT_LABRADOODLE))],
           },
           {
             topic: "[E2B](/sandboxes/e2b/)",
             cells: [
-              usd(monthly(RATES.e2b, WORKDAY_HOURS, BOAT_RAKAZO)),
-              `${usd(monthly(RATES.e2b, MONTH_HOURS, BOAT_RAKAZO))}, or ${usd(monthly(RATES.e2b, MONTH_HOURS, BOAT_RAKAZO) + E2B_PRO_FEE)} with Pro for 24-hour sessions`,
+              usd(monthly(RATES.e2b, WORKDAY_HOURS, BOAT_LABRADOODLE)),
+              `${usd(monthly(RATES.e2b, MONTH_HOURS, BOAT_LABRADOODLE))}, or ${usd(monthly(RATES.e2b, MONTH_HOURS, BOAT_LABRADOODLE) + E2B_PRO_FEE)} with Pro for 24-hour sessions`,
             ],
           },
           {
             topic: "[Daytona](/sandboxes/daytona/)",
-            cells: [usd(monthly(RATES.daytona, WORKDAY_HOURS, BOAT_RAKAZO)), usd(monthly(RATES.daytona, MONTH_HOURS, BOAT_RAKAZO))],
+            cells: [usd(monthly(RATES.daytona, WORKDAY_HOURS, BOAT_LABRADOODLE)), usd(monthly(RATES.daytona, MONTH_HOURS, BOAT_LABRADOODLE))],
           },
           {
             topic: "[Docker](/sandboxes/docker/) on a rented server",
@@ -214,7 +214,7 @@ export const boat: Sandbox = {
     PRICING.daytona,
     PRICING.novita,
     PRICING.hetzner,
-    PRICING.rakazo,
+    PRICING.labradoodle,
     PROVIDERS_DOC,
     RUNTIME_DOC,
   ],

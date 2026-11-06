@@ -2,8 +2,8 @@ import * as SecureStore from "expo-secure-store";
 import { captureApiRequestContext, currentApiBase, fetchMobileJson, selectedSpaceId } from "./api";
 import { currentSessionGeneration } from "./session";
 
-const LAST_CHAT_KEY = "rakazo.last_chat_id";
-const LEGACY_KEYS = ["rakazo.last_bot_id", "rakazo.last_bot_space_id"];
+const LAST_CHAT_KEY = "labradoodle.last_chat_id";
+const LEGACY_KEYS = ["labradoodle.last_bot_id", "labradoodle.last_bot_space_id"];
 const READ_TIMEOUT_MS = 500;
 let writes: Promise<unknown> = Promise.resolve();
 
@@ -19,7 +19,7 @@ async function currentOwner() {
   if (!context.headers.authorization) return null;
   const { response, body, invalidJson } = await fetchMobileJson<{ user?: { id?: string } }>(
     `${context.apiBase}/api/auth/get-session`,
-    { headers: { ...context.headers, origin: "rakazo://" } },
+    { headers: { ...context.headers, origin: "labradoodle://" } },
     {},
   );
   if (

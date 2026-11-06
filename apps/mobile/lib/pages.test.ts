@@ -74,7 +74,7 @@ describe("pageCardState", () => {
 
 describe("pageMessage", () => {
   it("reads a WebView message, and nothing from text that is not one", () => {
-    const link = { type: "rakazo-page:open-link", url: "https://example.com/" };
+    const link = { type: "labradoodle-page:open-link", url: "https://example.com/" };
     expect(pageMessage(JSON.stringify(link))).toEqual(link);
     expect(pageMessage("not json")).toBeNull();
   });

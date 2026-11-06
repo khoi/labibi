@@ -29,7 +29,7 @@ COMPUTER_MAX_ACTIVE_MS=7200000 # uptime cap for providers that bill while runnin
 COMPUTER_MAX_ACTIVE_UNBILLED_MS=0 # uptime cap for providers that do not bill while running (Docker, Kubernetes, Incus); minimum 60000; 0 (default) disables; needs SANDBOX_IDLE_MS on
 SANDBOX_COMMAND_TIMEOUT_MS=300000 # stop a shell command after 5 minutes
 MAX_TOOL_CALLS_PER_TURN=  # optional Pi turn tool-call fuse; unset/0 = unlimited
-RAKAZO_MESSAGE_USER_MAX_CHARS=500 # message_user length cap; narration stays at 500
+LABRADOODLE_MESSAGE_USER_MAX_CHARS=500 # message_user length cap; narration stays at 500
 E2B_API_KEY=              # when SANDBOX_PROVIDER=e2b
 NOVITA_API_KEY=           # when SANDBOX_PROVIDER=novita; build its template first
 DAYTONA_API_KEY=          # when SANDBOX_PROVIDER=daytona
@@ -54,7 +54,7 @@ ceiling because Node's HTTP client stops waiting at that point on its own.
 - `MODEL_STREAM_IDLE_TIMEOUT_MS` (default `180000`) is how long a started response may go silent,
   for every provider.
 - `MODEL_CONNECT_TIMEOUT_MS` (default `30000`) bounds connecting to an OpenAI-compatible model or
-  speech connection added in the app. `RAKAZO_LOCAL_MODELS` servers and built-in providers keep
+  speech connection added in the app. `LABRADOODLE_LOCAL_MODELS` servers and built-in providers keep
   Node's own connect wait; the other two settings apply to them as described above.
 
 ## Feature switches
@@ -71,7 +71,7 @@ Labradoodle uses two Postgres logins:
 
 - The owner (`POSTGRES_USER`, or `DATABASE_MIGRATION_URL` outside Compose) runs migrations and
   owns the tables.
-- The app login (`rakazo_app` with `POSTGRES_APP_PASSWORD`, or `DATABASE_URL`) is not a
+- The app login (`labradoodle_app` with `POSTGRES_APP_PASSWORD`, or `DATABASE_URL`) is not a
   superuser, cannot bypass row-level security, cannot create objects, and can only read and write
   the app tables.
 
@@ -79,9 +79,9 @@ Labradoodle uses two Postgres logins:
 one-shot `migrate` container runs before the API starts) applies the migrations and the job queue
 schema as the owner. Only that container gets the owner login, so code running in the API or
 worker cannot find one that bypasses row-level security. It then creates the app login named in `DATABASE_URL`, or updates its
-password, and grants it the `rakazo_app` role. When migrations run as a role without
+password, and grants it the `labradoodle_app` role. When migrations run as a role without
 `CREATEROLE`, as on some managed Postgres, create the login yourself and
-`GRANT rakazo_app TO <login>`.
+`GRANT labradoodle_app TO <login>`.
 
 Messages, events, threads, memory, artifacts, secrets, model and voice credentials, skills, bots,
 runs, tasks, routines, connections, MCP servers and sign-ins, computers, steering messages, usage
@@ -121,7 +121,7 @@ those slots.
 
 Chat runs execute in the API container that receives the message, and routines and other
 background runs execute in the worker, so both hold live agent turns. In the production Compose
-file, `RAKAZO_API_MEMORY_LIMIT` and `RAKAZO_WORKER_MEMORY_LIMIT` cap them (Compose sizes such as
+file, `LABRADOODLE_API_MEMORY_LIMIT` and `LABRADOODLE_WORKER_MEMORY_LIMIT` cap them (Compose sizes such as
 `2g` or `3072m`, default `2g` each). Raise them on a larger host. Deploys briefly run the old and
 new container of each side by side, so leave room for both.
 
@@ -130,8 +130,8 @@ new container of each side by side, so leave room for both.
 The API listens on `API_HOST` (default `127.0.0.1`) and `API_PORT` (default `3100`). Keep loopback
 unless a container or a trusted reverse proxy must reach it; the Compose files set this for you.
 The published-images stack publishes the web app on `127.0.0.1:5173` and the API on
-`127.0.0.1:3100`; set `RAKAZO_WEB_PORT` or `RAKAZO_API_PORT` to use other host ports.
-For LAN access, set `RAKAZO_WEB_BIND` as described in
+`127.0.0.1:3100`; set `LABRADOODLE_WEB_PORT` or `LABRADOODLE_API_PORT` to use other host ports.
+For LAN access, set `LABRADOODLE_WEB_BIND` as described in
 [Connecting a phone on the same network](./self-host-clients.md#connecting-a-phone-on-the-same-network).
 
 ## Outbound proxy

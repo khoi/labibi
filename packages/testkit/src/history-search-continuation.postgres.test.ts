@@ -140,7 +140,7 @@ describe.skipIf(!enabled)("unfinished broad history search", () => {
         },
       ],
     });
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-history-continuation-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "labradoodle-history-continuation-"));
     try {
       const { createApp } = await import("@labradoodle/api/app");
       const result = await runTrial(

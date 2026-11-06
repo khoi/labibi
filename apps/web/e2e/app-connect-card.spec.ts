@@ -3,7 +3,7 @@ import { activeThreadId, captureScreenshot, completeOnboarding, rpc, signup } fr
 
 test("a bot connects an app inline in a normal chat", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1280, height: 900 });
-  await signup(page, `inline-connect-${Date.now()}@rakazo.test`, "password12", "Sample");
+  await signup(page, `inline-connect-${Date.now()}@labradoodle.test`, "password12", "Sample");
   await completeOnboarding(page);
   const botId = activeThreadId(page);
   await rpc(page, "onboarding/dismissFocus", { threadId: botId });

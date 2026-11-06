@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { BUILTIN_AGENT_SKILLS, RAKAZO_DOCS_URLS } from "./builtin-skills.js";
+import { BUILTIN_AGENT_SKILLS, LABRADOODLE_DOCS_URLS } from "./builtin-skills.js";
 
 const repoFile = (path: string) => new URL(`../../../${path}`, import.meta.url);
 const publishedSlugs = [
@@ -11,7 +11,7 @@ describe("Labradoodle skill", () => {
   it("links only to published docs pages", () => {
     const skill = BUILTIN_AGENT_SKILLS.find((s) => s.name === "Labradoodle")!;
     const urls = [...skill.content.matchAll(/https?:\/\/\S+/g)].map((match) => match[0]);
-    expect(urls).toEqual(RAKAZO_DOCS_URLS);
+    expect(urls).toEqual(LABRADOODLE_DOCS_URLS);
     for (const url of urls) {
       const slug =
         url === "https://labradoodle.com/docs.md"

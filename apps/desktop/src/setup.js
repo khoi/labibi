@@ -1,5 +1,5 @@
 (() => {
-  const bridge = window.rakazoSetup;
+  const bridge = window.labradoodleSetup;
   document.documentElement.dataset.platform = bridge?.platform ?? "browser";
   const messages = bridge?.locale?.messages ?? {};
 

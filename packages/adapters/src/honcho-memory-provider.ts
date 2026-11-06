@@ -39,7 +39,7 @@ import { truncateUtf8 } from "./utf8.js";
 export const HONCHO_PROVIDER_ID = "honcho";
 
 // Shared peers are workspace-scoped; only an explicit workspace opts Spaces into sharing.
-const SHARED_PEER_ID = honchoResourceId("rakazo-shared");
+const SHARED_PEER_ID = honchoResourceId("labradoodle-shared");
 
 const DEFAULT_REASONING_LEVEL: HonchoReasoningLevel = "low";
 
@@ -62,7 +62,7 @@ export function honchoRequiresPrivateEndpoint(settings: Record<string, string>):
 /** Spaces do not share memory implicitly, so each Space gets its own Honcho workspace by default. */
 export function honchoWorkspaceId(settings: Record<string, string>, spaceId: string): string {
   const configured = settings.workspaceId?.trim();
-  return honchoResourceId(configured || `rakazo-${spaceId}`);
+  return honchoResourceId(configured || `labradoodle-${spaceId}`);
 }
 
 export function honchoScopePeerId(scope: MemoryScope): string {

@@ -4,7 +4,7 @@ import { activeThreadId, captureScreenshot, completeOnboarding, rpc, signup } fr
 test("a short reply thread shows one time separator and navigates to its parent", async ({
   page,
 }, testInfo) => {
-  await signup(page, `time-replies-${Date.now()}@rakazo.test`, "password12", "Reply Tester");
+  await signup(page, `time-replies-${Date.now()}@labradoodle.test`, "password12", "Reply Tester");
   await completeOnboarding(page);
   const botId = activeThreadId(page);
   await rpc(page, "threads/clear", { threadId: botId });

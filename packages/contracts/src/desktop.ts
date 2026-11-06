@@ -229,7 +229,7 @@ export type DesktopSetupLink = "docker-desktop" | "orbstack" | "docker-engine";
 
 /**
  * Bridge exposed only to the first-run setup window. The app window keeps the
- * narrower `rakazoDesktop` bridge so a connected server can never re-point the app.
+ * narrower `labradoodleDesktop` bridge so a connected server can never re-point the app.
  */
 export interface LabradoodleSetup {
   /** Used only to reserve space for native window controls in the local setup UI. */

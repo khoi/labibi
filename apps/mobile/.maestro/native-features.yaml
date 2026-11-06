@@ -1,4 +1,4 @@
-appId: com.rakazo.app
+appId: com.labradoodle.app
 name: Android native features
 tags:
   - android
@@ -13,7 +13,7 @@ tags:
 - runFlow: helpers/sign-in.yaml
 
 # Device speech (expo-speech): no voice provider is connected yet.
-- openLink: "rakazo:///thread?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
+- openLink: "labradoodle:///thread?threadId=${LABRADOODLE_SCREENSHOT_THREAD_ID}"
 - extendedWaitUntil:
     visible: "The fixture workspace is ready."
     timeout: 10000
@@ -27,7 +27,7 @@ tags:
 - tapOn: "Stop"
 
 # Text shared in from another app opens a new chat with Doodle, the text in its composer.
-- evalScript: ${output.share = http.get(RAKAZO_DEVICE_CONTROL_URL + '/share-text')}
+- evalScript: ${output.share = http.get(LABRADOODLE_DEVICE_CONTROL_URL + '/share-text')}
 - assertTrue: ${output.share.ok}
 - extendedWaitUntil:
     visible: "Shared from another app"
@@ -38,11 +38,11 @@ tags:
 - tapOn: "Attach file"
 - tapOn: "Photo library"
 - extendedWaitUntil:
-    visible: "Photo taken on.*|.*rakazo-fixture.*"
+    visible: "Photo taken on.*|.*labradoodle-fixture.*"
     timeout: 15000
 - takeScreenshot: "42-photo-picker"
 - tapOn:
-    text: "Photo taken on.*|.*rakazo-fixture.*"
+    text: "Photo taken on.*|.*labradoodle-fixture.*"
     index: 0
 - runFlow:
     when:
@@ -58,17 +58,17 @@ tags:
 - tapOn: "File"
 - runFlow:
     when:
-      notVisible: "rakazo-fixture.pdf"
+      notVisible: "labradoodle-fixture.pdf"
     commands:
       - tapOn: "Show roots"
       - tapOn: "Downloads"
 - extendedWaitUntil:
-    visible: "rakazo-fixture.pdf"
+    visible: "labradoodle-fixture.pdf"
     timeout: 15000
 - takeScreenshot: "43-document-picker"
-- tapOn: "rakazo-fixture.pdf"
+- tapOn: "labradoodle-fixture.pdf"
 - extendedWaitUntil:
-    visible: "Remove rakazo-fixture.pdf"
+    visible: "Remove labradoodle-fixture.pdf"
     timeout: 15000
 
 # Camera permission (the emulator has no camera, so the flow denies the prompt).
@@ -86,7 +86,7 @@ tags:
 
 - tapOn: "Send"
 - extendedWaitUntil:
-    visible: ".*rakazo-fixture.pdf"
+    visible: ".*labradoodle-fixture.pdf"
     timeout: 30000
 - extendedWaitUntil:
     visible: "Open image .*"
@@ -94,7 +94,7 @@ tags:
 - takeScreenshot: "45-sent-attachments"
 
 # Native PDF viewer (labradoodle-pdf-view): Share appears only after the file loaded.
-- tapOn: ".*rakazo-fixture.pdf"
+- tapOn: ".*labradoodle-fixture.pdf"
 - extendedWaitUntil:
     visible: "Share"
     timeout: 20000
@@ -107,7 +107,7 @@ tags:
     timeout: 10000
 
 # Vault's New item menu opens from a Compose-hosted trigger on Android.
-- openLink: "rakazo:///vault"
+- openLink: "labradoodle:///vault"
 - extendedWaitUntil:
     visible: "New item"
     timeout: 15000
@@ -118,7 +118,7 @@ tags:
 - takeScreenshot: "46b-vault-new-item"
 - back
 
-- openLink: "rakazo:///thread?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
+- openLink: "labradoodle:///thread?threadId=${LABRADOODLE_SCREENSHOT_THREAD_ID}"
 - extendedWaitUntil:
     visible: "Message Doodle"
     timeout: 10000

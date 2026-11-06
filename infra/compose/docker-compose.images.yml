@@ -7,7 +7,7 @@
 # Pin a published vX.Y.Z tag for a fixed version; `latest` moves to each new stable release.
 # Default SANDBOX_PROVIDER=docker boots a local computer via the in-stack supervisor (no E2B key).
 # Optional: set e2b / daytona / boat plus the matching API key for remote computers.
-name: rakazo
+name: labradoodle
 
 # What the api and worker both read. Each service adds the keys only it reads, so a process
 # only sees what it uses instead of the whole .env. A key with no value is passed through
@@ -17,7 +17,7 @@ x-app-environment: &app-environment
   # Runtime
   NODE_ENV: production
   # The app's own login, subject to row-level security (docs/self-host-configuration.md#database-roles).
-  DATABASE_URL: postgres://rakazo_app:${POSTGRES_APP_PASSWORD:?Set POSTGRES_APP_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-rakazo}
+  DATABASE_URL: postgres://labradoodle_app:${POSTGRES_APP_PASSWORD:?Set POSTGRES_APP_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-labradoodle}
   REALTIME_DATABASE_URL:
   DB_POOL_MAX:
   DATA_DIR: /data
@@ -41,11 +41,11 @@ x-app-environment: &app-environment
   AGENT_RUNTIME: pi
   MAX_UPLOAD_SIZE_MB:
   MAX_ATTACHMENTS_PER_MESSAGE:
-  RAKAZO_UPDATE_RESTART_SUPERVISOR:
+  LABRADOODLE_UPDATE_RESTART_SUPERVISOR:
   USER_DEVICES_ENABLED:
-  RAKAZO_MESSAGE_USER_MAX_CHARS:
+  LABRADOODLE_MESSAGE_USER_MAX_CHARS:
   TEACH_RECORDING_TTL_MS:
-  RAKAZO_SECRETS_ALLOW_PRIVATE_HTTP:
+  LABRADOODLE_SECRETS_ALLOW_PRIVATE_HTTP:
   EXPO_ACCESS_TOKEN:
   # Secret storage
   SECRET_STORE: ${SECRET_STORE:-encrypted}
@@ -85,7 +85,7 @@ x-app-environment: &app-environment
   PI_DEFAULT_MODEL:
   PI_DEFAULT_CREDENTIALS:
   PI_SESSION_RECORDING:
-  RAKAZO_LIVE_MODEL_CATALOG:
+  LABRADOODLE_LIVE_MODEL_CATALOG:
   OPENROUTER_API_KEY:
   ANTHROPIC_API_KEY:
   TYPESAFE_API_KEY:
@@ -94,19 +94,19 @@ x-app-environment: &app-environment
   MODEL_STREAM_TIMEOUT_MS:
   MODEL_CONNECT_TIMEOUT_MS:
   MODEL_STREAM_IDLE_TIMEOUT_MS:
-  RAKAZO_LOCAL_MODELS:
-  RAKAZO_LOCAL_MODELS_URL:
-  RAKAZO_LOCAL_VISION_MODELS:
-  RAKAZO_LOCAL_REASONING_MODELS:
-  RAKAZO_LOCAL_CONTEXT_WINDOW:
-  RAKAZO_LOCAL_MAX_TOKENS:
-  RAKAZO_OPENAI_COMPATIBLE_VISION_MODELS:
-  RAKAZO_OPENAI_COMPAT_ALLOW_PUBLIC:
-  RAKAZO_OPENAI_COMPAT_PRIVATE_HOSTS:
-  RAKAZO_AUTO_REVIEW_PROVIDER:
-  RAKAZO_AUTO_REVIEW_MODEL:
-  RAKAZO_AUTO_REVIEW_MIN_CONFIDENCE:
-  RAKAZO_AUTO_REVIEW_TIMEOUT_MS:
+  LABRADOODLE_LOCAL_MODELS:
+  LABRADOODLE_LOCAL_MODELS_URL:
+  LABRADOODLE_LOCAL_VISION_MODELS:
+  LABRADOODLE_LOCAL_REASONING_MODELS:
+  LABRADOODLE_LOCAL_CONTEXT_WINDOW:
+  LABRADOODLE_LOCAL_MAX_TOKENS:
+  LABRADOODLE_OPENAI_COMPATIBLE_VISION_MODELS:
+  LABRADOODLE_OPENAI_COMPAT_ALLOW_PUBLIC:
+  LABRADOODLE_OPENAI_COMPAT_PRIVATE_HOSTS:
+  LABRADOODLE_AUTO_REVIEW_PROVIDER:
+  LABRADOODLE_AUTO_REVIEW_MODEL:
+  LABRADOODLE_AUTO_REVIEW_MIN_CONFIDENCE:
+  LABRADOODLE_AUTO_REVIEW_TIMEOUT_MS:
   RELEASE_WATCH_EVAL_MODEL:
   FISH_TTS_MODEL:
   FISH_ASR_MODEL:
@@ -259,22 +259,22 @@ services:
     pids_limit: 200
     mem_limit: 2g
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-rakazo}
+      POSTGRES_USER: ${POSTGRES_USER:-labradoodle}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
-      POSTGRES_DB: ${POSTGRES_DB:-rakazo}
+      POSTGRES_DB: ${POSTGRES_DB:-labradoodle}
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
       - data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rakazo} -d ${POSTGRES_DB:-rakazo}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-labradoodle} -d ${POSTGRES_DB:-labradoodle}"]
       interval: 5s
       timeout: 5s
       retries: 20
 
   # Pull-only stub so `compose up` fetches the published desktop image without a checkout.
   computer:
-    image: ${RAKAZO_COMPUTER_IMAGE:-ghcr.io/elie222/rakazo/computer}:${RAKAZO_COMPUTER_IMAGE_TAG:-edge}
+    image: ${LABRADOODLE_COMPUTER_IMAGE:-ghcr.io/khoi/labibi/computer}:${LABRADOODLE_COMPUTER_IMAGE_TAG:-edge}
     command: ["true"]
     network_mode: none
     restart: "no"
@@ -291,7 +291,7 @@ services:
   # Runs from the app image. Not published as its own image and not exposed on the host:
   # access to the supervisor is equivalent to control of the Docker host.
   supervisor:
-    image: ${RAKAZO_IMAGE:-ghcr.io/elie222/rakazo/app}:${RAKAZO_IMAGE_TAG:-edge}
+    image: ${LABRADOODLE_IMAGE:-ghcr.io/khoi/labibi/app}:${LABRADOODLE_IMAGE_TAG:-edge}
     restart: unless-stopped
     command: ["pnpm", "--filter", "@labradoodle/sandbox-supervisor", "start"]
     init: true
@@ -307,10 +307,10 @@ services:
       SUPERVISOR_HOST: "0.0.0.0"
       SUPERVISOR_PORT: "7091"
       DOCKER_SOCKET: /var/run/docker.sock
-      RAKAZO_COMPUTER_IMAGE: ${RAKAZO_COMPUTER_IMAGE:-ghcr.io/elie222/rakazo/computer}:${RAKAZO_COMPUTER_IMAGE_TAG:-edge}
-      RAKAZO_COMPUTER_MEMORY: ${RAKAZO_COMPUTER_MEMORY:-2g}
-      RAKAZO_COMPUTER_CPUS: ${RAKAZO_COMPUTER_CPUS:-2}
-      RAKAZO_COMPUTER_PIDS_LIMIT: ${RAKAZO_COMPUTER_PIDS_LIMIT:-2048}
+      LABRADOODLE_COMPUTER_IMAGE: ${LABRADOODLE_COMPUTER_IMAGE:-ghcr.io/khoi/labibi/computer}:${LABRADOODLE_COMPUTER_IMAGE_TAG:-edge}
+      LABRADOODLE_COMPUTER_MEMORY: ${LABRADOODLE_COMPUTER_MEMORY:-2g}
+      LABRADOODLE_COMPUTER_CPUS: ${LABRADOODLE_COMPUTER_CPUS:-2}
+      LABRADOODLE_COMPUTER_PIDS_LIMIT: ${LABRADOODLE_COMPUTER_PIDS_LIMIT:-2048}
       SANDBOX_COMMAND_TIMEOUT_MS: ${SANDBOX_COMMAND_TIMEOUT_MS:-300000}
       SANDBOX_SUPERVISOR_TOKEN: ${SANDBOX_SUPERVISOR_TOKEN:?Set SANDBOX_SUPERVISOR_TOKEN in .env}
       SANDBOX_SCREEN_NETWORK: isolated
@@ -347,10 +347,10 @@ services:
       retries: 20
 
   # Applies migrations as the database owner, creates the runtime login, and exits. Only this
-  # container gets the owner login: the API and worker connect as rakazo_app, which row-level
+  # container gets the owner login: the API and worker connect as labradoodle_app, which row-level
   # security binds, so code running in either cannot find a login that bypasses it.
   migrate:
-    image: ${RAKAZO_IMAGE:-ghcr.io/elie222/rakazo/app}:${RAKAZO_IMAGE_TAG:-edge}
+    image: ${LABRADOODLE_IMAGE:-ghcr.io/khoi/labibi/app}:${LABRADOODLE_IMAGE_TAG:-edge}
     working_dir: /app/apps/api
     command: ["pnpm", "db:deploy"]
     restart: "no"
@@ -361,8 +361,8 @@ services:
     pids_limit: 256
     mem_limit: 1536m
     environment:
-      DATABASE_URL: postgres://rakazo_app:${POSTGRES_APP_PASSWORD:?Set POSTGRES_APP_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-rakazo}
-      DATABASE_MIGRATION_URL: postgres://${POSTGRES_USER:-rakazo}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-rakazo}
+      DATABASE_URL: postgres://labradoodle_app:${POSTGRES_APP_PASSWORD:?Set POSTGRES_APP_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-labradoodle}
+      DATABASE_MIGRATION_URL: postgres://${POSTGRES_USER:-labradoodle}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-labradoodle}
     networks:
       - data
     depends_on:
@@ -370,7 +370,7 @@ services:
         condition: service_healthy
 
   api:
-    image: ${RAKAZO_IMAGE:-ghcr.io/elie222/rakazo/app}:${RAKAZO_IMAGE_TAG:-edge}
+    image: ${LABRADOODLE_IMAGE:-ghcr.io/khoi/labibi/app}:${LABRADOODLE_IMAGE_TAG:-edge}
     restart: unless-stopped
     # Node runs directly, not through pnpm: pnpm does not pass SIGTERM on, so a stop would kill the
     # process before its graceful shutdown finishes in-flight requests and jobs.
@@ -412,8 +412,8 @@ services:
       SIGNUPS_ENABLED:
       SIGNUP_ALLOWLIST:
       SCREEN_PROXY_SECRET: ${SCREEN_PROXY_SECRET:?Set SCREEN_PROXY_SECRET in .env}
-      RAKAZO_DESKTOP_STACK_TOKEN: ${RAKAZO_DESKTOP_STACK_TOKEN:-}
-      RAKAZO_GIT_SHA:
+      LABRADOODLE_DESKTOP_STACK_TOKEN: ${LABRADOODLE_DESKTOP_STACK_TOKEN:-}
+      LABRADOODLE_GIT_SHA:
       SENTRY_BROWSER_DSN: ${SENTRY_BROWSER_DSN:-}
       PRIVACY_POLICY_URL:
       EMAIL_PROVIDER:
@@ -428,12 +428,12 @@ services:
       CRISP_WEBSITE_ID:
       INTEGRATIONS_CATALOG_URL:
       SPACE_TEARDOWN_TIMEOUT_MS:
-      RAKAZO_MIN_CLIENT_BUILD:
-      RAKAZO_NAV_LINKS:
-      RAKAZO_ADMIN_EMAILS:
+      LABRADOODLE_MIN_CLIENT_BUILD:
+      LABRADOODLE_NAV_LINKS:
+      LABRADOODLE_ADMIN_EMAILS:
       VOICE_SUMMARY_MIN_CHARS:
     ports:
-      - "127.0.0.1:${RAKAZO_API_PORT:-3100}:3100"
+      - "127.0.0.1:${LABRADOODLE_API_PORT:-3100}:3100"
     volumes:
       - appdata:/data
     networks:
@@ -459,7 +459,7 @@ services:
       retries: 20
 
   worker:
-    image: ${RAKAZO_IMAGE:-ghcr.io/elie222/rakazo/app}:${RAKAZO_IMAGE_TAG:-edge}
+    image: ${LABRADOODLE_IMAGE:-ghcr.io/khoi/labibi/app}:${LABRADOODLE_IMAGE_TAG:-edge}
     restart: unless-stopped
     # Directly, not through pnpm, so a stop reaches it (see the api command).
     working_dir: /app/apps/worker
@@ -501,7 +501,7 @@ services:
         condition: service_healthy
 
   web:
-    image: ${RAKAZO_IMAGE:-ghcr.io/elie222/rakazo/app}:${RAKAZO_IMAGE_TAG:-edge}
+    image: ${LABRADOODLE_IMAGE:-ghcr.io/khoi/labibi/app}:${LABRADOODLE_IMAGE_TAG:-edge}
     restart: unless-stopped
     # Directly, not through pnpm, so a stop reaches it (see the api command).
     working_dir: /app/apps/web
@@ -522,17 +522,17 @@ services:
       # Keep that fixed so pids_limit holds on many-core hosts (#2430).
       RAYON_NUM_THREADS: "4"
       API_PROXY_TARGET: http://api:3100
-      RAKAZO_HOST: ${RAKAZO_HOST:-localhost}
+      LABRADOODLE_HOST: ${LABRADOODLE_HOST:-localhost}
       # Set only by the packaged desktop app. Its authenticated probe prevents a
       # source dev server on the same host port from impersonating this stack.
-      RAKAZO_DESKTOP_STACK_TOKEN: ${RAKAZO_DESKTOP_STACK_TOKEN:-}
-      RAKAZO_IMAGE_TAG: ${RAKAZO_IMAGE_TAG:-edge}
+      LABRADOODLE_DESKTOP_STACK_TOKEN: ${LABRADOODLE_DESKTOP_STACK_TOKEN:-}
+      LABRADOODLE_IMAGE_TAG: ${LABRADOODLE_IMAGE_TAG:-edge}
       SCREEN_PROXY_SECRET: ${SCREEN_PROXY_SECRET:?Set SCREEN_PROXY_SECRET in .env}
-      RAKAZO_CSP_SCRIPT_SRC: ${RAKAZO_CSP_SCRIPT_SRC:-}
-      RAKAZO_CSP_CONNECT_SRC: ${RAKAZO_CSP_CONNECT_SRC:-}
+      LABRADOODLE_CSP_SCRIPT_SRC: ${LABRADOODLE_CSP_SCRIPT_SRC:-}
+      LABRADOODLE_CSP_CONNECT_SRC: ${LABRADOODLE_CSP_CONNECT_SRC:-}
       CRISP_WEBSITE_ID:
     ports:
-      - "${RAKAZO_WEB_BIND:-127.0.0.1}:${RAKAZO_WEB_PORT:-5173}:5173"
+      - "${LABRADOODLE_WEB_BIND:-127.0.0.1}:${LABRADOODLE_WEB_PORT:-5173}:5173"
     networks:
       - app
     depends_on:

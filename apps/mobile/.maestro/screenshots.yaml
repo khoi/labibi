@@ -1,4 +1,4 @@
-appId: com.rakazo.app
+appId: com.labradoodle.app
 name: Labradoodle mobile screenshots
 tags:
   - screenshots
@@ -35,9 +35,9 @@ tags:
 - runFlow: helpers/server.yaml
 
 - tapOn: "Email"
-- inputText: ${RAKAZO_SCREENSHOT_EMAIL}
+- inputText: ${LABRADOODLE_SCREENSHOT_EMAIL}
 - tapOn: "Password"
-- inputText: ${RAKAZO_SCREENSHOT_PASSWORD}
+- inputText: ${LABRADOODLE_SCREENSHOT_PASSWORD}
 - hideKeyboard
 - tapOn: "Sign in"
 - tapOn:
@@ -69,11 +69,11 @@ tags:
 - tapOn:
     id: "search-sheet-close"
 
-- openLink: "rakazo:///new-chat"
+- openLink: "labradoodle:///new-chat"
 - assertVisible: "Start chat"
 - takeScreenshot: "08-new-chat"
 
-- openLink: "rakazo:///account"
+- openLink: "labradoodle:///account"
 - extendedWaitUntil:
     visible: "Change password"
     timeout: 10000
@@ -87,20 +87,20 @@ tags:
     direction: DOWN
 - takeScreenshot: "10c-account-notifications"
 
-- openLink: "rakazo:///models"
+- openLink: "labradoodle:///models"
 - extendedWaitUntil:
     visible: "Main model"
     timeout: 10000
 - assertVisible: "Approval model"
 - takeScreenshot: "11-models"
 
-- openLink: "rakazo:///voice"
+- openLink: "labradoodle:///voice"
 - extendedWaitUntil:
     visible: "Scripted"
     timeout: 10000
 - takeScreenshot: "12-voice"
 
-- openLink: "rakazo:///integrations"
+- openLink: "labradoodle:///integrations"
 - extendedWaitUntil:
     visible: "Search apps"
     timeout: 10000
@@ -112,7 +112,7 @@ tags:
     timeout: 10000
 - takeScreenshot: "14-integrations-advanced"
 
-- openLink: "rakazo:///thread?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
+- openLink: "labradoodle:///thread?threadId=${LABRADOODLE_SCREENSHOT_THREAD_ID}"
 - extendedWaitUntil:
     visible: "The fixture workspace is ready."
     timeout: 10000
@@ -159,27 +159,27 @@ tags:
 - assertVisible: "Cancel reply"
 - tapOn: "Cancel reply"
 # A chat's people, Doodle and actions live in its settings.
-- openLink: "rakazo:///chat-settings?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
+- openLink: "labradoodle:///chat-settings?threadId=${LABRADOODLE_SCREENSHOT_THREAD_ID}"
 - extendedWaitUntil:
     visible: "Delete chat"
     timeout: 10000
 - assertVisible: "Clear conversation"
 - takeScreenshot: "16-chat-settings"
 
-- openLink: "rakazo:///doodle-settings"
+- openLink: "labradoodle:///doodle-settings"
 - extendedWaitUntil:
     visible: "Instructions"
     timeout: 10000
 - assertVisible: "Model"
 - takeScreenshot: "17-doodle-settings"
 
-- openLink: "rakazo:///computer"
+- openLink: "labradoodle:///computer"
 - extendedWaitUntil:
     visible: "Take control"
     timeout: 10000
 - takeScreenshot: "18-computer"
 
-- openLink: "rakazo:///thread?threadId=${RAKAZO_SCREENSHOT_TEAM_THREAD_ID}"
+- openLink: "labradoodle:///thread?threadId=${LABRADOODLE_SCREENSHOT_TEAM_THREAD_ID}"
 - extendedWaitUntil:
     visible: "The fixture launch plan is ready."
     timeout: 10000
@@ -200,20 +200,20 @@ tags:
 - assertVisible: "Speak message"
 - back
 
-- openLink: "rakazo:///chat-settings?threadId=${RAKAZO_SCREENSHOT_TEAM_THREAD_ID}"
+- openLink: "labradoodle:///chat-settings?threadId=${LABRADOODLE_SCREENSHOT_TEAM_THREAD_ID}"
 - extendedWaitUntil:
     visible: "Delete chat"
     timeout: 10000
 - takeScreenshot: "20-team-chat-settings"
 
-- openLink: "rakazo:///routine?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}&routineId=${RAKAZO_SCREENSHOT_ROUTINE_ID}"
+- openLink: "labradoodle:///routine?threadId=${LABRADOODLE_SCREENSHOT_THREAD_ID}&routineId=${LABRADOODLE_SCREENSHOT_ROUTINE_ID}"
 - extendedWaitUntil:
     visible: "Weekly fixture review"
     timeout: 10000
 - takeScreenshot: "21-routine"
 
 # Verify saved appearance changes on already-mounted screens and modal routes.
-- openLink: "rakazo:///account"
+- openLink: "labradoodle:///account"
 - extendedWaitUntil:
     visible: "Dark"
     timeout: 10000
@@ -224,29 +224,29 @@ tags:
     direction: DOWN
 - takeScreenshot: "22b-account-notifications-dark"
 
-- openLink: "rakazo:///new-chat"
+- openLink: "labradoodle:///new-chat"
 - assertVisible: "Start chat"
 - takeScreenshot: "24-new-chat-dark"
 
-- openLink: "rakazo:///thread?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
+- openLink: "labradoodle:///thread?threadId=${LABRADOODLE_SCREENSHOT_THREAD_ID}"
 - extendedWaitUntil:
     visible: "The fixture workspace is ready."
     timeout: 10000
 - takeScreenshot: "26-thread-dark"
 
-- openLink: "rakazo:///thread?threadId=${RAKAZO_SCREENSHOT_TEAM_THREAD_ID}"
+- openLink: "labradoodle:///thread?threadId=${LABRADOODLE_SCREENSHOT_TEAM_THREAD_ID}"
 - extendedWaitUntil:
     visible: "The fixture launch plan is ready."
     timeout: 10000
 - takeScreenshot: "27-team-chat-dark"
 
-- openLink: "rakazo:///chat-settings?threadId=${RAKAZO_SCREENSHOT_TEAM_THREAD_ID}"
+- openLink: "labradoodle:///chat-settings?threadId=${LABRADOODLE_SCREENSHOT_TEAM_THREAD_ID}"
 - assertVisible: "Delete chat"
 - takeScreenshot: "28-team-chat-settings-dark"
 
-- openLink: "rakazo:///account"
+- openLink: "labradoodle:///account"
 - tapOn: "Light"
-- openLink: "rakazo:///thread?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
+- openLink: "labradoodle:///thread?threadId=${LABRADOODLE_SCREENSHOT_THREAD_ID}"
 - assertVisible: "The fixture workspace is ready."
 - takeScreenshot: "29-thread-light-restored"
 

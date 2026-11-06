@@ -8,7 +8,7 @@ import type { MemoryProviderConnectionDraft, MemoryProviderSettingsFormProps } f
 const RESOURCE_ID_PATTERN = /^[A-Za-z0-9_-]{0,512}$/;
 // Labradoodle writes to these peers, so they cannot be read as the user's own peer.
 function isReservedPeerId(value: string): boolean {
-  return value === "rakazo-shared" || value.startsWith("bot-");
+  return value === "labradoodle-shared" || value.startsWith("bot-");
 }
 
 export function HonchoSettingsForm({ busy, onConnect }: MemoryProviderSettingsFormProps) {
@@ -84,7 +84,7 @@ export function HonchoSettingsForm({ busy, onConnect }: MemoryProviderSettingsFo
           aria-invalid={workspaceValid ? undefined : true}
           aria-describedby={workspaceValid ? undefined : workspaceErrorId}
           onChange={(event) => setWorkspace(event.target.value)}
-          placeholder="rakazo-<space>"
+          placeholder="labradoodle-<space>"
           maxLength={512}
           autoComplete="off"
         />
@@ -119,7 +119,7 @@ export function HonchoSettingsForm({ busy, onConnect }: MemoryProviderSettingsFo
             <FieldError id={userPeerErrorId}>
               {userPeerFormatValid ? (
                 <Trans>
-                  rakazo-shared and IDs starting with bot- are reserved for Labradoodle.
+                  labradoodle-shared and IDs starting with bot- are reserved for Labradoodle.
                 </Trans>
               ) : (
                 <Trans>Use up to 512 letters, digits, _ or -.</Trans>

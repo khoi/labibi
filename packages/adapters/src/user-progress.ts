@@ -70,11 +70,11 @@ export function midTurnProgressBudgetUsed(publishedCount: number): boolean {
 }
 
 /**
- * The message_user cap: `RAKAZO_MESSAGE_USER_MAX_CHARS` when it is a positive integer,
+ * The message_user cap: `LABRADOODLE_MESSAGE_USER_MAX_CHARS` when it is a positive integer,
  * else USER_PROGRESS_MESSAGE_MAX_LENGTH.
  */
 export function messageUserMaxLength(): number {
-  const value = process.env.RAKAZO_MESSAGE_USER_MAX_CHARS?.trim();
+  const value = process.env.LABRADOODLE_MESSAGE_USER_MAX_CHARS?.trim();
   if (!value || !/^\d+$/.test(value)) return USER_PROGRESS_MESSAGE_MAX_LENGTH;
   const raw = Number(value);
   return Number.isSafeInteger(raw) && raw >= 1 ? raw : USER_PROGRESS_MESSAGE_MAX_LENGTH;

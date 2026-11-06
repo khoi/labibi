@@ -25,10 +25,10 @@ public class LabradoodleFileDropModule: Module {
   private static let resizeHeadroom = 4
   // Formats attachments accept as they are; anything else is re-encoded as JPEG.
   private static let keptTypes: [UTType] = [.png, .jpeg, .gif, .webP]
-  private let worker = DispatchQueue(label: "rakazo.file-drop")
+  private let worker = DispatchQueue(label: "labradoodle.file-drop")
 
   public func definition() -> ModuleDefinition {
-    Name("RakazoFileDrop")
+    Name("LabradoodleFileDrop")
 
     Events("onFilesDropped", "onDropStarted")
 

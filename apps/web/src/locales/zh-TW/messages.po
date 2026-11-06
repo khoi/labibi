@@ -1,7 +1,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: rakazo-web\n"
+"Project-Id-Version: labradoodle-web\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-26 00:00+0000\n"
 "PO-Revision-Date: \n"
@@ -4107,8 +4107,8 @@ msgid "Queued"
 msgstr "排隊中"
 
 #: src/pages/memory-providers/HonchoSettingsForm.tsx
-msgid "rakazo-shared and IDs starting with bot- are reserved for Labradoodle."
-msgstr "rakazo-shared 與以 bot- 開頭的 ID 保留給 Labradoodle 使用。"
+msgid "labradoodle-shared and IDs starting with bot- are reserved for Labradoodle."
+msgstr "labradoodle-shared 與以 bot- 開頭的 ID 保留給 Labradoodle 使用。"
 
 #: src/pages/shell/message-hover-actions.tsx
 msgid "React"

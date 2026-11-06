@@ -38,7 +38,7 @@
     "yaml": "2.9.1"
   },
   "build": {
-    "appId": "dev.rakazo.desktop",
+    "appId": "dev.labradoodle.desktop",
     "directories": {
       "output": "out",
       "buildResources": "assets"
@@ -62,7 +62,7 @@
       }
     ],
     "extraMetadata": {
-      "name": "rakazo",
+      "name": "labradoodle",
       "main": "dist/main.js"
     },
     "mac": {
@@ -77,8 +77,8 @@
       },
       "extraResources": [
         {
-          "from": "build/speech/rakazo-speech",
-          "to": "speech/rakazo-speech"
+          "from": "build/speech/labradoodle-speech",
+          "to": "speech/labradoodle-speech"
         },
         {
           "from": "assets/es.lproj",
@@ -120,7 +120,7 @@
       "artifactName": "${productName}-Setup-${version}.${ext}"
     },
     "win": {
-      "executableName": "Rakazo",
+      "executableName": "Labradoodle",
       "icon": "assets/icon.ico",
       "target": [
         "nsis"
@@ -128,7 +128,7 @@
       "verifyUpdateCodeSignature": true
     },
     "linux": {
-      "executableName": "rakazo",
+      "executableName": "labradoodle",
       "icon": "assets/icon.png",
       "target": [
         "AppImage"
@@ -137,8 +137,8 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "elie222",
-        "repo": "rakazo"
+        "owner": "khoi",
+        "repo": "labibi"
       }
     ]
   }

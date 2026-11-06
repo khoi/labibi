@@ -7,7 +7,7 @@
 // unmerged schema changes never reach the shared one.
 //
 // The database is `.env`'s DATABASE_URL when it accepts a connection. Otherwise a local
-// Postgres container (`rakazo-dev-postgres`) is started and reused by every checkout.
+// Postgres container (`labradoodle-dev-postgres`) is started and reused by every checkout.
 // Setting WEB_PORT or API_PORT, in the shell or `.env`, turns off port selection. A relative
 // DATA_DIR resolves in the main checkout, so checkouts sharing the database share its files.
 // Branch databases, and their copied files, are dropped once the branch is deleted or merged.
@@ -39,12 +39,12 @@ const dotenv = require("dotenv");
 const DEFAULT_PORTS = { web: 5173, api: 3100, supervisor: 7091 };
 const PORT_STEP = 10;
 const MANAGED = {
-  container: "rakazo-dev-postgres",
+  container: "labradoodle-dev-postgres",
   image: "postgres:18",
   port: 54318,
-  owner: "rakazo",
-  runtime: "rakazo_dev",
-  database: "rakazo",
+  owner: "labradoodle",
+  runtime: "labradoodle_dev",
+  database: "labradoodle",
 };
 const SERVICES = [
   "@labradoodle/api",
@@ -225,7 +225,7 @@ function branchMigrations(branch) {
 }
 
 // Marks a finished branch database and records which repository and branch own it.
-const BRANCH_DATABASE_COMMENT = "rakazo dev branch: ";
+const BRANCH_DATABASE_COMMENT = "labradoodle dev branch: ";
 
 function branchDatabaseComment(branch) {
   return BRANCH_DATABASE_COMMENT + JSON.stringify({ repo: repositoryId(), branch });
@@ -253,7 +253,7 @@ function branchDatabaseName(sharedName, branch) {
 
 /** A branch database's files, kept apart so deleting one never removes a file main still uses. */
 function branchDataDir(sharedDataDir, name) {
-  return path.join(path.dirname(sharedDataDir), ".rakazo-dev-branches", name, "data");
+  return path.join(path.dirname(sharedDataDir), ".labradoodle-dev-branches", name, "data");
 }
 
 async function branchDatabase(shared, sharedDataDir) {
@@ -428,7 +428,7 @@ generateClientIfStale(env);
 const migrationLock = new Client({ connectionString: shared.migrationUrl });
 await migrationLock.connect();
 try {
-  await migrationLock.query("SELECT pg_advisory_lock(hashtext('rakazo dev migrate'))");
+  await migrationLock.query("SELECT pg_advisory_lock(hashtext('labradoodle dev migrate'))");
   runPnpm(["db:migrate"], { cwd: root, env, stdio: "inherit" });
 } finally {
   await migrationLock.end();
@@ -439,7 +439,7 @@ if (process.argv.includes("--tunnel")) {
   tunnel = await openTunnel(Number(env.WEB_PORT ?? setting("WEB_PORT") ?? DEFAULT_PORTS.web));
   env.WEB_ORIGIN = tunnel.url;
   env.BETTER_AUTH_URL = tunnel.url;
-  env.RAKAZO_ALLOWED_HOSTS = [setting("RAKAZO_ALLOWED_HOSTS"), new URL(tunnel.url).hostname]
+  env.LABRADOODLE_ALLOWED_HOSTS = [setting("LABRADOODLE_ALLOWED_HOSTS"), new URL(tunnel.url).hostname]
     .filter(Boolean)
     .join(",");
   log(`Open ${tunnel.url}`);

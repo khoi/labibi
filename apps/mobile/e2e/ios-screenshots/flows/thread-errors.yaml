@@ -1,11 +1,11 @@
-appId: com.rakazo.app
+appId: com.labradoodle.app
 name: Thread error recovery
 ---
 - runFlow:
     file: ../subflows/sign-in.yaml
     env:
-      RAKAZO_ACTIVE_EMAIL: ${RAKAZO_SCREENSHOT_EMAIL}
-- openLink: "rakazo:///thread?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
+      LABRADOODLE_ACTIVE_EMAIL: ${LABRADOODLE_SCREENSHOT_EMAIL}
+- openLink: "labradoodle:///thread?threadId=${LABRADOODLE_SCREENSHOT_THREAD_ID}"
 - extendedWaitUntil:
     visible: ".*weekly limit.*"
     timeout: 20000

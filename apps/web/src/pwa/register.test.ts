@@ -7,7 +7,7 @@ function host(desktop?: LabradoodleDesktop) {
   const target = new EventTarget() as EventTarget & Parameters<typeof registerServiceWorker>[0];
   Object.assign(target, {
     navigator: { serviceWorker: { register } },
-    rakazoDesktop: desktop,
+    labradoodleDesktop: desktop,
   });
   return { target, register };
 }

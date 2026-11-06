@@ -134,7 +134,7 @@ function mount(saved: DesktopSetup | null, locale = ENGLISH): Harness {
       },
     },
   };
-  (window as { rakazoSetup?: LabradoodleSetup }).rakazoSetup = bridge;
+  (window as { labradoodleSetup?: LabradoodleSetup }).labradoodleSetup = bridge;
   // Run the plain script the same way setup.html's script tag does.
   new Function(setupScript)();
 
@@ -174,7 +174,7 @@ async function boot(saved: DesktopSetup | null, locale = ENGLISH): Promise<Harne
 describe("setup", () => {
   afterEach(() => {
     document.body.innerHTML = "";
-    delete (window as { rakazoSetup?: LabradoodleSetup }).rakazoSetup;
+    delete (window as { labradoodleSetup?: LabradoodleSetup }).labradoodleSetup;
   });
 
   it("keeps an address edited while the connection check is pending", async () => {

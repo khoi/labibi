@@ -75,7 +75,7 @@ export class InfisicalSecretStore extends SecretChanges implements SecretStore {
     try {
       await this.authenticate();
       // Reading an absent key fails differently when the project, environment or folder is missing.
-      await this.request(`${SECRETS_PATH}/rakazo_start_check?${this.readQuery()}`, "GET");
+      await this.request(`${SECRETS_PATH}/labradoodle_start_check?${this.readQuery()}`, "GET");
     } catch (error) {
       if (error instanceof SecretNotFoundError) return;
       this.degraded = true;
@@ -137,12 +137,12 @@ export class InfisicalSecretStore extends SecretChanges implements SecretStore {
   }
   private key(ref: string, context: SecretContext): string {
     const recordId = typeof context === "string" ? context : context.recordId;
-    const prefix = `rakazo_${credentialDigest(recordId).slice(0, 24)}_`;
+    const prefix = `labradoodle_${credentialDigest(recordId).slice(0, 24)}_`;
     const key = ref.slice(INFISICAL_REF_PREFIX.length);
     if (
       !ref.startsWith(INFISICAL_REF_PREFIX) ||
       !key.startsWith(prefix) ||
-      !/^rakazo_[a-f0-9]{24}_[a-f0-9-]{36}$/.test(key)
+      !/^labradoodle_[a-f0-9]{24}_[a-f0-9-]{36}$/.test(key)
     )
       throw new SecretNotFoundError();
     return key;
@@ -170,7 +170,7 @@ export class InfisicalSecretStore extends SecretChanges implements SecretStore {
     context.signal.throwIfAborted();
     if (options.ephemeral) throw new Error("Ephemeral secrets require local encrypted storage");
     const recordId = options.recordId ?? randomUUID();
-    const key = `rakazo_${credentialDigest(recordId).slice(0, 24)}_${randomUUID()}`;
+    const key = `labradoodle_${credentialDigest(recordId).slice(0, 24)}_${randomUUID()}`;
     const ref = INFISICAL_REF_PREFIX + key;
     try {
       await this.request(

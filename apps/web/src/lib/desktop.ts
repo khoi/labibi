@@ -4,12 +4,12 @@ export type { LabradoodleDesktop, LabradoodleDesktopOAuthCallback } from "@labra
 
 declare global {
   interface Window {
-    rakazoDesktop?: LabradoodleDesktop;
+    labradoodleDesktop?: LabradoodleDesktop;
   }
 }
 
 export function desktopBridge(): LabradoodleDesktop | undefined {
-  return typeof window === "undefined" ? undefined : window.rakazoDesktop;
+  return typeof window === "undefined" ? undefined : window.labradoodleDesktop;
 }
 
 /** The compact `code#state` form the manual paste flow already accepts. */

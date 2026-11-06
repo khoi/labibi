@@ -94,7 +94,7 @@ export async function prepareSupermemoryConnection(
   // Clearing a conversation deletes its memory, which only owner and admin keys may do.
   // Deleting a fresh random tag checks that without touching anyone's data.
   const deletable = await deleteSupermemoryContainer(
-    `rakazo:delete-probe:${randomUUID()}`,
+    `labradoodle:delete-probe:${randomUUID()}`,
     connection,
   );
   if (!deletable.ok) throw new Error(deletable.error);
@@ -116,11 +116,11 @@ export function decodeLegacySupermemoryCredentials(
 }
 
 function durableContainerTag(scope: MemoryScope): string {
-  return scope.kind === "chat" ? `rakazo:chat:${scope.threadId}` : `rakazo:person:${scope.userId}`;
+  return scope.kind === "chat" ? `labradoodle:chat:${scope.threadId}` : `labradoodle:person:${scope.userId}`;
 }
 
 function historyContainerTag(history: SemanticMemoryHistory): string {
-  return `rakazo:chat:${history.threadId}:history:${history.generation}`;
+  return `labradoodle:chat:${history.threadId}:history:${history.generation}`;
 }
 
 function recallContainerTags(request: SemanticMemoryRecallRequest): string[] {

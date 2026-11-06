@@ -11,8 +11,8 @@ import { i18n } from "./i18n";
 import { identityLabels } from "./identity-display";
 import { reportClientError } from "./monitoring";
 
-const SPACE_STORAGE_KEY = "rakazo:space-id";
-export const ORGANIZATION_SPACES_STORAGE_KEY = "rakazo:org-spaces";
+const SPACE_STORAGE_KEY = "labradoodle:space-id";
+export const ORGANIZATION_SPACES_STORAGE_KEY = "labradoodle:org-spaces";
 
 type RpcClientContext = { spaceId?: string | null };
 
@@ -26,7 +26,7 @@ export function selectedSpaceId(): string | null {
 }
 
 /** Fired after the selected Space changes, so per-organization state (billing) can reload. */
-export const SPACE_SELECTED_EVENT = "rakazo:space-selected";
+export const SPACE_SELECTED_EVENT = "labradoodle:space-selected";
 
 export function selectSpace(id: string): boolean {
   let selected: boolean;
@@ -54,14 +54,14 @@ export function clearSpaceSelection(): void {
   }
 }
 
-/** Adds `x-rakazo-space-id` when a space is selected. */
+/** Adds `x-labradoodle-space-id` when a space is selected. */
 export function withSpaceHeaders(
   init?: HeadersInit,
   spaceId: string | null = selectedSpaceId(),
 ): Headers {
   const headers = new Headers(init);
-  if (spaceId) headers.set("x-rakazo-space-id", spaceId);
-  else headers.delete("x-rakazo-space-id");
+  if (spaceId) headers.set("x-labradoodle-space-id", spaceId);
+  else headers.delete("x-labradoodle-space-id");
   return headers;
 }
 

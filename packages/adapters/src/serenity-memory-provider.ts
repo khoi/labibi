@@ -161,7 +161,7 @@ export function sanitizeSerenityBrainLabel(label: string): string {
 // adding a path segment.
 export function serenityScopeEntity(scope: MemoryScope, brainLabel = ""): string {
   const [type, id] =
-    scope.kind === "chat" ? ["rakazo-chat", scope.threadId] : ["rakazo-person", scope.userId];
+    scope.kind === "chat" ? ["labradoodle-chat", scope.threadId] : ["labradoodle-person", scope.userId];
   const label = sanitizeSerenityBrainLabel(brainLabel);
   return label ? `${type}/${label}--${id}` : `${type}/${id}`;
 }
@@ -172,7 +172,7 @@ function rememberOperationKey(runScope: string, entity: string, fact: string): s
     .update(`${runScope}\n${entity}\n${fact.trim()}`)
     .digest("hex")
     .slice(0, 48);
-  return `rakazo:${digest}`;
+  return `labradoodle:${digest}`;
 }
 
 const wordSegmenter = new Intl.Segmenter("en", { granularity: "word" });
@@ -288,7 +288,7 @@ export class SerenityMemoryProvider implements SemanticMemoryProvider {
       };
     }
     const entity = serenityScopeEntity(request.scope, this.connection.brainLabel);
-    const provenance = `rakazo space:${context.spaceId} ${entity}`;
+    const provenance = `labradoodle space:${context.spaceId} ${entity}`;
     const result = await rememberSerenity(request.content, provenance, this.connection, {
       entity,
       operationKey: rememberOperationKey(

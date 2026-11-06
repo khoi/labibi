@@ -90,7 +90,7 @@ export function useThreadMentionCatalog(
       if (
         requestContext.apiBase !== apiBase ||
         requestContext.sessionGeneration !== generation ||
-        (requestContext.headers["x-rakazo-space-id"] ?? null) !== spaceId
+        (requestContext.headers["x-labradoodle-space-id"] ?? null) !== spaceId
       ) {
         invalidateActivation();
         return;

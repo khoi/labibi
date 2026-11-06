@@ -76,8 +76,8 @@ describe("describeToolActivity", () => {
     expect(describeToolActivity("run_subagent", { name: "scout", task: "…" })).toBe(
       "Delegating to helper: scout",
     );
-    expect(describeToolActivity("web_search", { query: "rakazo agents" })).toBe(
-      "Searching the web: rakazo agents",
+    expect(describeToolActivity("web_search", { query: "labradoodle agents" })).toBe(
+      "Searching the web: labradoodle agents",
     );
     expect(describeToolActivity("web_fetch", { url: "https://example.com" })).toBe(
       "Reading page: https://example.com/",

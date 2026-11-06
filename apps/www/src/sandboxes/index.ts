@@ -12,7 +12,7 @@ import { novita } from "./novita";
 import { railway } from "./railway";
 import {
   BOAT,
-  BOAT_RAKAZO,
+  BOAT_LABRADOODLE,
   COMPUTER_PROVIDERS_DOCS_PATH,
   DAYTONA_CREDIT,
   E2B_CREDIT,
@@ -151,11 +151,11 @@ const HUB_SECTIONS: readonly ArticleSection[] = [
           cells: ["Nothing extra", "Free", "Electricity", `${About(macMiniMonthly(MONTH_HOURS))} for a Mac mini`],
         },
       ],
-      note: `${PRICES_NOTE} Usage before free credits. Labradoodle can't run Boat at 2 vCPU / 4 GB: self-hosted installs use ${BOAT_RAKAZO.vcpus} vCPU / ${BOAT_RAKAZO.gb} GB machines, which cost ${usd(boatMonthly(BOAT_RAKAZO.hour, WORKDAY_HOURS))} and ${usd(boatMonthly(BOAT_RAKAZO.hour, MONTH_HOURS))}, and larger Labradoodle Cloud plans use [larger ones](/sandboxes/boat/). Each option's page shows the rates and assumptions behind its numbers.`,
+      note: `${PRICES_NOTE} Usage before free credits. Labradoodle can't run Boat at 2 vCPU / 4 GB: self-hosted installs use ${BOAT_LABRADOODLE.vcpus} vCPU / ${BOAT_LABRADOODLE.gb} GB machines, which cost ${usd(boatMonthly(BOAT_LABRADOODLE.hour, WORKDAY_HOURS))} and ${usd(boatMonthly(BOAT_LABRADOODLE.hour, MONTH_HOURS))}, and larger Labradoodle Cloud plans use [larger ones](/sandboxes/boat/). Each option's page shows the rates and assumptions behind its numbers.`,
     },
     bullets: [
       "For a few hours a day, per-second providers are cheapest. Novita has the lowest rate of the hosted options Labradoodle supports, and E2B and Daytona charge the same as each other.",
-      `Boat's $${BOAT.minimum} minimum covers about ${Math.floor(BOAT.minimum / BOAT_RAKAZO.hour)} hours of the bigger computer self-hosted Labradoodle uses, and it covers every computer on the account, so it is cheaper than E2B or Daytona once your computers run more than about ${boatBeatsE2bHours} hours a month between them, and by far around the clock.`,
+      `Boat's $${BOAT.minimum} minimum covers about ${Math.floor(BOAT.minimum / BOAT_LABRADOODLE.hour)} hours of the bigger computer self-hosted Labradoodle uses, and it covers every computer on the account, so it is cheaper than E2B or Daytona once your computers run more than about ${boatBeatsE2bHours} hours a month between them, and by far around the clock.`,
       "A server you rent for Docker costs the same whether bots work or not. It's the cheapest way to run many computers, if you're happy to look after it.",
     ],
   },
@@ -240,7 +240,7 @@ const HUB_SOURCES: readonly SourceLink[] = [
   PRICING.hetzner,
   PRICING.digitalocean,
   { label: "DigitalOcean Kubernetes pricing", href: "https://www.digitalocean.com/pricing/kubernetes" },
-  PRICING.rakazo,
+  PRICING.labradoodle,
 ];
 
 export const SANDBOXES_HUB = {

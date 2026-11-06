@@ -49,8 +49,8 @@ CREATE TRIGGER "audit_events_no_update"
 
 DO $$
 BEGIN
-  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'rakazo_app') THEN
-    REVOKE UPDATE ON TABLE "audit_events" FROM rakazo_app;
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'labradoodle_app') THEN
+    REVOKE UPDATE ON TABLE "audit_events" FROM labradoodle_app;
   END IF;
 END $$;
 

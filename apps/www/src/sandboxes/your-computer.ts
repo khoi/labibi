@@ -1,6 +1,6 @@
 import { GITHUB_URL } from "../site";
 import {
-  BOAT_RAKAZO,
+  BOAT_LABRADOODLE,
   E2B_PRO_FEE,
   MAC_MINI,
   MONTH_HOURS,
@@ -99,8 +99,8 @@ export const yourComputer: Sandbox = {
             ],
           },
           {
-            topic: `[Boat](/sandboxes/boat/), ${BOAT_RAKAZO.vcpus} vCPU / ${BOAT_RAKAZO.gb} GB`,
-            cells: ["VM", `${usd(boatMonthly(BOAT_RAKAZO.hour, WORKDAY_HOURS))} minimum`, usd(boatMonthly(BOAT_RAKAZO.hour, MONTH_HOURS))],
+            topic: `[Boat](/sandboxes/boat/), ${BOAT_LABRADOODLE.vcpus} vCPU / ${BOAT_LABRADOODLE.gb} GB`,
+            cells: ["VM", `${usd(boatMonthly(BOAT_LABRADOODLE.hour, WORKDAY_HOURS))} minimum`, usd(boatMonthly(BOAT_LABRADOODLE.hour, MONTH_HOURS))],
           },
         ],
         note: `${PRICES_NOTE} Electricity is an estimate; your rate and load will differ.`,

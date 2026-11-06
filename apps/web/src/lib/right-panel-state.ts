@@ -6,7 +6,7 @@ export type RightPanelState = { panel: Panel; routineId?: string };
 const durablePanels: readonly Panel[] = ["files", "memory", "routines", "routine", null];
 
 export function rightPanelStorageKey(userId: string, spaceId: string, threadId: string): string {
-  return `rakazo:right-panel-state:${userId}:${spaceId}:chat:${threadId}`;
+  return `labradoodle:right-panel-state:${userId}:${spaceId}:chat:${threadId}`;
 }
 
 export function readRightPanelState(key: string): RightPanelState {

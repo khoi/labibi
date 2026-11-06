@@ -31,7 +31,7 @@ describePostgres("claimed Space deletion (PostgreSQL)", () => {
       await db.pool.end();
     };
     await system.user.create({
-      data: { id: userId, name: userId, email: `${userId}@rakazo.test`, emailVerified: false },
+      data: { id: userId, name: userId, email: `${userId}@labradoodle.test`, emailVerified: false },
     });
     await system.organization.create({
       data: { id: organizationId, name: "Claimed", slug: organizationId, createdAt: new Date() },

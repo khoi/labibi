@@ -204,8 +204,8 @@ be set, so leave the pair out of the laptop's `.env`, and the key policy must
 allow that principal:
 
 ```bash
-aws login --profile rakazo-kms
-AWS_KMS_PROFILE=rakazo-kms pnpm -s --filter @labradoodle/api content-encryption export --bot <bot id> > labradoodle-export.jsonl
+aws login --profile labradoodle-kms
+AWS_KMS_PROFILE=labradoodle-kms pnpm -s --filter @labradoodle/api content-encryption export --bot <bot id> > labradoodle-export.jsonl
 ```
 
 ### Wrapped settings

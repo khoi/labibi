@@ -4,6 +4,6 @@
     "modules": ["LabradoodlePdfViewModule"]
   },
   "android": {
-    "modules": ["com.rakazo.pdfview.LabradoodlePdfViewModule"]
+    "modules": ["com.labradoodle.pdfview.LabradoodlePdfViewModule"]
   }
 }

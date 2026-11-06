@@ -1,8 +1,8 @@
 import type { ComposerMentionBinding } from "@labradoodle/core";
 import { createKeyedListeners, validateComposerMentionBindings } from "@labradoodle/core";
 
-export const COMPOSER_DRAFT_STORAGE_PREFIX = "rakazo.composerDraft.";
-const COMPOSER_BINDINGS_STORAGE_PREFIX = "rakazo.composerBindings.";
+export const COMPOSER_DRAFT_STORAGE_PREFIX = "labradoodle.composerDraft.";
+const COMPOSER_BINDINGS_STORAGE_PREFIX = "labradoodle.composerBindings.";
 
 type ComposerDraftSubmission = { text: string; bindingRecord: string | null };
 const pendingSubmissions = new Map<string, ComposerDraftSubmission>();

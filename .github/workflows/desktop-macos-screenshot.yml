@@ -49,10 +49,10 @@ jobs:
           test -s "$RUNNER_TEMP/fallback-decoded.png"
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIconName' apps/desktop/out/mac-arm64/Labradoodle.app/Contents/Info.plist)" = Icon
         env:
-          RAKAZO_ALLOW_DEV_SECRETS: "1"
+          LABRADOODLE_ALLOW_DEV_SECRETS: "1"
       - name: Capture packaged macOS setup window and Dock
         env:
-          RAKAZO_E2E_EXECUTABLE: out/mac-arm64/Labradoodle.app/Contents/MacOS/Labradoodle
+          LABRADOODLE_E2E_EXECUTABLE: out/mac-arm64/Labradoodle.app/Contents/MacOS/Labradoodle
         run: >-
           pnpm --filter @labradoodle/desktop exec playwright test
           --config e2e/playwright.config.ts setup.spec.ts

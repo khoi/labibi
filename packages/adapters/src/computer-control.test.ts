@@ -102,14 +102,14 @@ describe("computer control leases", () => {
     const enqueueError = new Error("job broker unavailable");
     const harness = controlHarness({ waitingRunId: "run-1", enqueueError });
     const sink = createTestSink();
-    installLogger(createLogger({ service: "rakazo-worker", sinks: [sink] }));
+    installLogger(createLogger({ service: "labradoodle-worker", sinks: [sink] }));
 
     await expect(expireComputerControl(harness.deps, "computer-id", "lease-1")).resolves.toBe(true);
 
     expect(sink.events.some((event) => event.message === "takeover continuation enqueue")).toBe(
       true,
     );
-    installLogger(createLogger({ service: "rakazo-worker", level: "off", sinks: [] }));
+    installLogger(createLogger({ service: "labradoodle-worker", level: "off", sinks: [] }));
   });
 
   it("keeps the denied lease retryable when provider revocation fails", async () => {

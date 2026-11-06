@@ -18,7 +18,7 @@ public final class LabradoodleFoldRegionsModule: Module {
   deinit { displayLink?.invalidate() }
 
   public func definition() -> ModuleDefinition {
-    Name("RakazoFoldRegions")
+    Name("LabradoodleFoldRegions")
     Events("onChange")
 
     AsyncFunction("getRegions") { () -> [[String: Double]] in

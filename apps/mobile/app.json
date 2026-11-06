@@ -1,9 +1,9 @@
 {
   "expo": {
     "name": "Labradoodle",
-    "slug": "rakazo",
+    "slug": "labradoodle",
     "owner": "inbox-zero",
-    "scheme": "rakazo",
+    "scheme": "labradoodle",
     "version": "1.0.12",
     "orientation": "default",
     "userInterfaceStyle": "automatic",
@@ -52,7 +52,7 @@
         {
           "ios": {
             "enabled": true,
-            "appGroupId": "group.com.rakazo.app",
+            "appGroupId": "group.com.labradoodle.app",
             "activationRule": {
               "supportsText": true,
               "supportsWebUrlWithMaxCount": 1,
@@ -95,7 +95,7 @@
       "pl": "./locales/pl.json"
     },
     "ios": {
-      "bundleIdentifier": "com.rakazo.app",
+      "bundleIdentifier": "com.labradoodle.app",
       "buildNumber": "1",
       "supportsTablet": true,
       "icon": "../../packages/ui-tokens/assets/Labradoodle.icon",
@@ -116,7 +116,7 @@
       }
     },
     "android": {
-      "package": "com.rakazo.app",
+      "package": "com.labradoodle.app",
       "versionCode": 10,
       "softwareKeyboardLayoutMode": "resize",
       "icon": "./assets/icon.png",
@@ -140,14 +140,14 @@
               "appExtensions": [
                 {
                   "targetName": "expo-sharing-extension",
-                  "bundleIdentifier": "com.rakazo.app.expo-sharing-extension",
+                  "bundleIdentifier": "com.labradoodle.app.expo-sharing-extension",
                   "entitlements": {
-                    "com.apple.security.application-groups": ["group.com.rakazo.app"]
+                    "com.apple.security.application-groups": ["group.com.labradoodle.app"]
                   }
                 },
                 {
                   "targetName": "AgentNotifications",
-                  "bundleIdentifier": "com.rakazo.app.notifications",
+                  "bundleIdentifier": "com.labradoodle.app.notifications",
                   "entitlements": {
                     "com.apple.developer.usernotifications.communication": true
                   }

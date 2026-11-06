@@ -6,7 +6,7 @@ The template runs Labradoodle, PostgreSQL and agent computers on Railway. No Doc
 
 ## Deploy
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/rakazo-template)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/labradoodle-template)
 
 1. Deploy the template. Enter your email in `OWNER_EMAIL` and a Railway workspace or account API token in `RAILWAY_API_TOKEN`.
 2. Wait for Labradoodle to become healthy. Open its generated HTTPS domain.

@@ -219,7 +219,7 @@ describe("model roles", () => {
     });
     expect(
       deploymentModelRole("approval", {
-        env: { RAKAZO_AUTO_REVIEW_PROVIDER: "local-provider", RAKAZO_AUTO_REVIEW_MODEL: "judge" },
+        env: { LABRADOODLE_AUTO_REVIEW_PROVIDER: "local-provider", LABRADOODLE_AUTO_REVIEW_MODEL: "judge" },
       }),
     ).toEqual({ primary: { provider: "local-provider", modelId: "judge" }, backups: [] });
   });

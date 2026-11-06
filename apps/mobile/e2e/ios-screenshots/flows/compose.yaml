@@ -1,11 +1,11 @@
-appId: com.rakazo.app
+appId: com.labradoodle.app
 name: Compose
 ---
 - runFlow:
     file: ../subflows/sign-in.yaml
     env:
-      RAKAZO_ACTIVE_EMAIL: ${RAKAZO_SCREENSHOT_EMAIL}
-- openLink: "rakazo:///new-chat"
+      LABRADOODLE_ACTIVE_EMAIL: ${LABRADOODLE_SCREENSHOT_EMAIL}
+- openLink: "labradoodle:///new-chat"
 - extendedWaitUntil:
     visible: ".*Dana Teammate.*"
     timeout: 15000
@@ -13,4 +13,4 @@ name: Compose
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 03-new-chat
-- openLink: "rakazo:///"
+- openLink: "labradoodle:///"

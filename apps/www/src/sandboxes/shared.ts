@@ -147,7 +147,7 @@ export const BOAT_SIZES = [
 ] as const;
 
 /** The standard size, which the worked examples price. */
-export const BOAT_RAKAZO = BOAT.default;
+export const BOAT_LABRADOODLE = BOAT.default;
 
 export function boatMonthly(hourPrice: number, hours: number): number {
   return Math.max(BOAT.minimum, hourPrice * hours);
@@ -210,9 +210,9 @@ export const SERVERS = {
 } as const;
 
 /** Docker computers are capped at 2 GB by default; Labradoodle and its database take about 4 GB. */
-export const DOCKER_MEMORY = { computerGb: 2, rakazoGb: 4 };
+export const DOCKER_MEMORY = { computerGb: 2, labradoodleGb: 4 };
 export const dockerComputersFit = (serverGb: number) =>
-  Math.floor((serverGb - DOCKER_MEMORY.rakazoGb) / DOCKER_MEMORY.computerGb);
+  Math.floor((serverGb - DOCKER_MEMORY.labradoodleGb) / DOCKER_MEMORY.computerGb);
 
 /**
  * Kubernetes reserves a pod's full limit when only limits are set, and the node's own pods take
@@ -246,5 +246,5 @@ export const PRICING = {
   },
   hetzner: { label: "Hetzner Cloud pricing", href: "https://www.hetzner.com/cloud/cost-optimized/" },
   digitalocean: { label: "DigitalOcean Droplet pricing", href: "https://www.digitalocean.com/pricing/droplets" },
-  rakazo: { label: "Labradoodle pricing", href: `${SITE_URL}/pricing/` },
+  labradoodle: { label: "Labradoodle pricing", href: `${SITE_URL}/pricing/` },
 } satisfies Record<string, SourceLink>;

@@ -38,7 +38,7 @@ describe.skipIf(!databaseAvailable)("eval history accounting", () => {
           },
         ]),
       });
-      const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-eval-history-"));
+      const dataDir = await mkdtemp(path.join(tmpdir(), "labradoodle-eval-history-"));
       try {
         const { createApp } = await import("@labradoodle/api/app");
         const result = await runTrial(

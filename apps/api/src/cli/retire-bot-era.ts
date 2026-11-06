@@ -56,7 +56,7 @@ await unwrapEnvFromKeyManager();
 const dryRun = parseDryRun();
 const env = loadEnv();
 const { prisma, pool } = createDb(env.databaseUrl, {
-  applicationName: "rakazo-retire-bot-era",
+  applicationName: "labradoodle-retire-bot-era",
   keyProvider: contentKeyProviderFromEnv(),
 });
 const write = (line: string) => process.stdout.write(`${line}\n`);

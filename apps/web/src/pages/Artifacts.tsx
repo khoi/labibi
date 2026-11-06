@@ -54,7 +54,7 @@ import { WindowChrome } from "./WindowChrome";
 
 type ViewMode = "grid" | "list";
 type DateFilter = "all" | "today" | "week" | "month";
-const VIEW_MODE_STORAGE_KEY = "rakazo:artifacts-view-mode";
+const VIEW_MODE_STORAGE_KEY = "labradoodle:artifacts-view-mode";
 const LIST_PAGE_SIZE = 60;
 
 type ArtifactSummary = Artifact & { versionCount: number };

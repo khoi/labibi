@@ -281,6 +281,6 @@ function isAllowedTargetName(hostname: string) {
   return (
     hostname === "localhost" ||
     (ipVersion(hostname) !== 0 && isPrivateNetworkAddress(hostname)) ||
-    /^rakazo-bot-[a-zA-Z0-9_.-]+$/.test(hostname)
+    /^labradoodle-bot-[a-zA-Z0-9_.-]+$/.test(hostname)
   );
 }

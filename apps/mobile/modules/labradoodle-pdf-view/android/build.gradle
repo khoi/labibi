@@ -3,11 +3,11 @@ plugins {
   id 'expo-module-gradle-plugin'
 }
 
-group = 'com.rakazo.pdfview'
+group = 'com.labradoodle.pdfview'
 version = '0.1.0'
 
 android {
-  namespace 'com.rakazo.pdfview'
+  namespace 'com.labradoodle.pdfview'
   defaultConfig {
     versionName '0.1.0'
   }

@@ -68,9 +68,9 @@ import { useModelOAuthSignIn } from "../lib/use-model-oauth-signin";
 import { errorText } from "../lib/user-error";
 import { CompatibleKeyField } from "./model-settings/compatible-key-field";
 
-const CUSTOM_MODEL_OPTION = "__rakazo_custom_model__";
+const CUSTOM_MODEL_OPTION = "__labradoodle_custom_model__";
 /** Labradoodle credits sit among the providers as the one choice that needs no account of its own. */
-const CREDITS_OPTION = "__rakazo_credits__";
+const CREDITS_OPTION = "__labradoodle_credits__";
 /** A provider whose catalog entry offers both sign-in and a key appears once per way to connect. */
 type ProviderAuth = "sign-in" | "key";
 
@@ -504,7 +504,7 @@ export function OnboardingPage() {
   if (step === "loading" || (step === "bot" && !error)) return <PageLoading />;
 
   return (
-    <div className="min-h-full bg-background px-6 py-12" data-rakazo-surface="onboarding">
+    <div className="min-h-full bg-background px-6 py-12" data-labradoodle-surface="onboarding">
       <AccountMenu signingOut={signingOut} onLogOut={() => void logOut()} />
       <div key={step} className="rk-step-enter mx-auto w-full max-w-[560px]">
         {step === "survey" ? <SignupSurvey onDone={() => setSurveyDone(true)} /> : null}

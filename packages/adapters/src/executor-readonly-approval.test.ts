@@ -2068,8 +2068,8 @@ describe("selected approval decision model execution", () => {
 });
 
 it("tries a connected approval backup when the deployment checker is unavailable", async () => {
-  vi.stubEnv("RAKAZO_AUTO_REVIEW_PROVIDER", "missing-provider");
-  vi.stubEnv("RAKAZO_AUTO_REVIEW_MODEL", "missing-model");
+  vi.stubEnv("LABRADOODLE_AUTO_REVIEW_PROVIDER", "missing-provider");
+  vi.stubEnv("LABRADOODLE_AUTO_REVIEW_MODEL", "missing-model");
   const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
     new Response(
       JSON.stringify({
@@ -2125,8 +2125,8 @@ it("asks instead of using deployment credentials after a selected approval conne
 
 it("uses the OpenRouter environment key for a decision checker on another deployment provider", async () => {
   vi.stubEnv("PI_DEFAULT_PROVIDER", "anthropic");
-  vi.stubEnv("RAKAZO_AUTO_REVIEW_PROVIDER", "openrouter");
-  vi.stubEnv("RAKAZO_AUTO_REVIEW_MODEL", "typesafe/jev-1.14");
+  vi.stubEnv("LABRADOODLE_AUTO_REVIEW_PROVIDER", "openrouter");
+  vi.stubEnv("LABRADOODLE_AUTO_REVIEW_MODEL", "typesafe/jev-1.14");
   vi.stubEnv("OPENROUTER_API_KEY", "fake-environment-review-key");
   const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
     new Response(

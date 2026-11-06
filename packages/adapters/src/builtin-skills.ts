@@ -1,6 +1,6 @@
 import { buildSkillMd } from "@labradoodle/core";
 
-const RAKAZO_DOCS: ReadonlyArray<readonly [topics: string, url: string]> = [
+const LABRADOODLE_DOCS: ReadonlyArray<readonly [topics: string, url: string]> = [
   ["Getting started, first bot, what Labradoodle does", "https://labradoodle.com/docs.md"],
   [
     "Creating bots, chatting, bot settings, sidebar, search",
@@ -35,7 +35,7 @@ const RAKAZO_DOCS: ReadonlyArray<readonly [topics: string, url: string]> = [
 ];
 
 /** Fixed URLs, so fetching one can't carry anything out of a run. */
-export const RAKAZO_DOCS_URLS = RAKAZO_DOCS.map(([, url]) => url);
+export const LABRADOODLE_DOCS_URLS = LABRADOODLE_DOCS.map(([, url]) => url);
 
 /**
  * Built-in Agent Skills (SKILL.md recipes) available to every user.
@@ -63,7 +63,7 @@ const SKILLS: Array<{ name: string; description: string; body: string }> = [
     description: "Use Labradoodle: chat apps, your computer, billing, hosting",
     body: `Answer questions about Labradoodle itself from its docs. Fetch the matching page with web_fetch before answering, then answer briefly in your own words and link the page. If fetching fails or is unavailable, answer only what this index says and link the page. Never invent menus, buttons, or steps the page doesn't show. Account-specific facts (credit balance, plan, usage) aren't in the docs: point to the screen that shows them.
 
-${RAKAZO_DOCS.map(([topics, url]) => `- ${topics}: ${url}`).join("\n")}`,
+${LABRADOODLE_DOCS.map(([topics, url]) => `- ${topics}: ${url}`).join("\n")}`,
   },
 ];
 

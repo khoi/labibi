@@ -30,7 +30,7 @@ const HOST_API_URL = `http://127.0.0.1:${API_PORT}`;
 const DEVICE_CONTROL_URL = `http://127.0.0.1:${DEVICE_CONTROL_PORT}`;
 const EXPAND_NOTIFICATIONS_URL = `${DEVICE_CONTROL_URL}/expand-notifications`;
 /** Files the native-features flow picks through the system photo and document pickers. */
-const PICKER_FILES = { image: "rakazo-fixture.png", pdf: "rakazo-fixture.pdf" };
+const PICKER_FILES = { image: "labradoodle-fixture.png", pdf: "labradoodle-fixture.pdf" };
 const WEB_ORIGIN = "http://127.0.0.1:5180";
 /** Flows to run, in order. A flow with a window runs on the emulator resized to it. */
 const FLOWS: { name: string; window?: { size: string; density: string } }[] = [
@@ -147,7 +147,7 @@ async function main() {
  * that clears app data during that teardown has its fresh launch killed with the old task.
  */
 async function settleApp() {
-  execFileSync("adb", ["shell", "am", "force-stop", "com.rakazo.app"], { stdio: "inherit" });
+  execFileSync("adb", ["shell", "am", "force-stop", "com.labradoodle.app"], { stdio: "inherit" });
   await new Promise((resolve) => setTimeout(resolve, 10_000));
 }
 
@@ -172,23 +172,23 @@ async function runFlow(flow: string, fixture: Awaited<ReturnType<typeof seedFixt
       "--output",
       path.join(REPORT_DIR, `${flow}.html`),
       "-e",
-      `RAKAZO_MOBILE_API_URL=http://10.0.2.2:${API_PORT}`,
+      `LABRADOODLE_MOBILE_API_URL=http://10.0.2.2:${API_PORT}`,
       "-e",
-      `RAKAZO_SCREENSHOT_EMAIL=${EMAIL}`,
+      `LABRADOODLE_SCREENSHOT_EMAIL=${EMAIL}`,
       "-e",
-      `RAKAZO_SCREENSHOT_PASSWORD=${PASSWORD}`,
+      `LABRADOODLE_SCREENSHOT_PASSWORD=${PASSWORD}`,
       "-e",
-      `RAKAZO_SCREENSHOT_THREAD_ID=${fixture.threadId}`,
+      `LABRADOODLE_SCREENSHOT_THREAD_ID=${fixture.threadId}`,
       "-e",
-      `RAKAZO_SCREENSHOT_TEAM_THREAD_ID=${fixture.teamThreadId}`,
+      `LABRADOODLE_SCREENSHOT_TEAM_THREAD_ID=${fixture.teamThreadId}`,
       "-e",
-      `RAKAZO_SCREENSHOT_ROUTINE_ID=${fixture.routineId}`,
+      `LABRADOODLE_SCREENSHOT_ROUTINE_ID=${fixture.routineId}`,
       "-e",
-      "RAKAZO_NOTIFICATION_VIDEO=notification-demo",
+      "LABRADOODLE_NOTIFICATION_VIDEO=notification-demo",
       "-e",
-      `RAKAZO_EXPAND_NOTIFICATIONS_URL=${EXPAND_NOTIFICATIONS_URL}`,
+      `LABRADOODLE_EXPAND_NOTIFICATIONS_URL=${EXPAND_NOTIFICATIONS_URL}`,
       "-e",
-      `RAKAZO_DEVICE_CONTROL_URL=${DEVICE_CONTROL_URL}`,
+      `LABRADOODLE_DEVICE_CONTROL_URL=${DEVICE_CONTROL_URL}`,
       path.join(FLOW_DIR, `${flow}.yaml`),
     ],
     process.env,
@@ -208,7 +208,7 @@ function startDeviceControlServer(): Server {
         "shell",
         "am start -a android.intent.action.SEND -t text/plain",
         "--es android.intent.extra.TEXT 'Shared from another app'",
-        "-n com.rakazo.app/.MainActivity",
+        "-n com.labradoodle.app/.MainActivity",
       ]),
   };
   const server = createServer((req, res) => {

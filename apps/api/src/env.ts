@@ -60,10 +60,10 @@ export interface AppEnv {
   piSessionRecording: boolean;
   /** USER_DEVICES_ENABLED=false stops users connecting their own computers. Default on. */
   userDevicesEnabled: boolean;
-  /** Operator menu links that frame a same-origin page (RAKAZO_NAV_LINKS). */
+  /** Operator menu links that frame a same-origin page (LABRADOODLE_NAV_LINKS). */
   navLinks?: NavLink[];
   /** Verified accounts that review plugin submissions, add stdio MCP servers, and grant access
-   * (RAKAZO_ADMIN_EMAILS), lowercased. */
+   * (LABRADOODLE_ADMIN_EMAILS), lowercased. */
   adminEmails: string[];
   maxUploadSizeBytes: number;
   maxAttachmentsPerMessage: number;
@@ -122,7 +122,7 @@ export interface AppEnv {
   mcpAllowPrivateEndpoint: boolean;
   port: number;
   gitSha: string | undefined;
-  /** Oldest client build per kind the API still serves (RAKAZO_MIN_CLIENT_BUILD). */
+  /** Oldest client build per kind the API still serves (LABRADOODLE_MIN_CLIENT_BUILD). */
   minimumClientBuilds?: MinimumClientBuilds;
   /** Browser error reporting, served to the web app at runtime. The DSN is public by design. */
   browserMonitoring:
@@ -193,7 +193,7 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
     nodeEnv: source.NODE_ENV ?? "",
     databaseUrl: required(source, "DATABASE_URL"),
     realtimeDatabaseUrl: source.REALTIME_DATABASE_URL ?? required(source, "DATABASE_URL"),
-    desktopStackToken: optional(source.RAKAZO_DESKTOP_STACK_TOKEN),
+    desktopStackToken: optional(source.LABRADOODLE_DESKTOP_STACK_TOKEN),
     authSecret,
     authUrl: resolveWebOrigin(source.BETTER_AUTH_URL, webOrigin, "BETTER_AUTH_URL"),
     webOrigin,
@@ -214,8 +214,8 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
     dataDir: source.DATA_DIR ?? "./data",
     piSessionRecording: source.PI_SESSION_RECORDING === "true",
     userDevicesEnabled: source.USER_DEVICES_ENABLED !== "false",
-    navLinks: parseNavLinks(source.RAKAZO_NAV_LINKS),
-    adminEmails: list(source.RAKAZO_ADMIN_EMAILS).map((email) => email.toLowerCase()),
+    navLinks: parseNavLinks(source.LABRADOODLE_NAV_LINKS),
+    adminEmails: list(source.LABRADOODLE_ADMIN_EMAILS).map((email) => email.toLowerCase()),
     maxUploadSizeBytes: uploadSizeFromEnv(source),
     maxAttachmentsPerMessage: attachmentCountFromEnv(source),
     voiceSummaryMinChars: voiceSummaryMinCharsFromEnv(source.VOICE_SUMMARY_MIN_CHARS),
@@ -271,8 +271,8 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
     mcpStdio: mcpStdioOptionsFromEnv(source),
     mcpAllowPrivateEndpoint: source.MCP_ALLOW_PRIVATE_ENDPOINT === "true",
     port: Number(source.API_PORT ?? 3100),
-    gitSha: optional(source.GIT_SHA) ?? optional(source.RAKAZO_GIT_SHA),
-    minimumClientBuilds: parseMinimumClientBuilds(source.RAKAZO_MIN_CLIENT_BUILD),
+    gitSha: optional(source.GIT_SHA) ?? optional(source.LABRADOODLE_GIT_SHA),
+    minimumClientBuilds: parseMinimumClientBuilds(source.LABRADOODLE_MIN_CLIENT_BUILD),
     browserMonitoring: browserMonitoringFromEnv(source),
     crispWebsiteId: parseCrispWebsiteId(source.CRISP_WEBSITE_ID),
   };

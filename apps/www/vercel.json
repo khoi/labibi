@@ -1,7 +1,7 @@
 {
   "redirects": [
     {
-      "source": "/blog/openclaw-vs-hermes-vs-rakazo/",
+      "source": "/blog/openclaw-vs-hermes-vs-labradoodle/",
       "destination": "/blog/openclaw-vs-hermes-vs-labradoodle/",
       "statusCode": 301
     },
@@ -11,7 +11,7 @@
         {
           "type": "host",
           "value": {
-            "eq": "rakazo.com"
+            "eq": "labradoodle.com"
           }
         }
       ],
@@ -24,7 +24,7 @@
         {
           "type": "host",
           "value": {
-            "eq": "www.rakazo.com"
+            "eq": "www.labradoodle.com"
           }
         }
       ],

@@ -1,7 +1,7 @@
 import type { Hono } from "hono";
 
 /** Package of the Labradoodle Android app (apps/mobile/app.json). */
-const ANDROID_PACKAGE = "com.rakazo.app";
+const ANDROID_PACKAGE = "com.labradoodle.app";
 
 /**
  * Which native apps can use this server's passkeys: only those the domain vouches for

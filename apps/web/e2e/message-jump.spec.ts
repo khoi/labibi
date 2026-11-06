@@ -3,7 +3,7 @@ import { activeThreadId, captureScreenshot, completeOnboarding, rpc, signup } fr
 
 test("a ?m= deep link jumps while the thread is streaming", async ({ page }, testInfo) => {
   const stamp = Date.now();
-  await signup(page, `jump-${stamp}@rakazo.test`, "password12", "Jump Tester");
+  await signup(page, `jump-${stamp}@labradoodle.test`, "password12", "Jump Tester");
   await completeOnboarding(page);
 
   const botId = activeThreadId(page);
@@ -100,7 +100,7 @@ test("the chat follows your sends and a reader at the bottom, not a reader who s
 }, testInfo) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   const stamp = Date.now();
-  await signup(page, `follow-${stamp}@rakazo.test`, "password12", "Follow Tester");
+  await signup(page, `follow-${stamp}@labradoodle.test`, "password12", "Follow Tester");
   await completeOnboarding(page);
   const botId = activeThreadId(page);
   await rpc(page, "onboarding/dismissFocus", { threadId: botId });

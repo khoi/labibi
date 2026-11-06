@@ -23,8 +23,8 @@ function demuxLogs(data: Buffer): string {
  * unreachable daemon or a missing computer image fails the suite instead of
  * skipping it: a silent skip reads as a verified check. The reachability half
  * still skips on a host without outbound IPv6, after the subnet allocation is
- * verified. Needs the computer image (RAKAZO_COMPUTER_IMAGE or
- * rakazo/computer:local, which ships python3).
+ * verified. Needs the computer image (LABRADOODLE_COMPUTER_IMAGE or
+ * labradoodle/computer:local, which ships python3).
  */
 it.skipIf(process.env.VERIFY_DOCKER_COMPUTER_IPV6 !== "1")(
   "gives a computer network IPv6 that reaches IPv6-only destinations",
@@ -64,10 +64,10 @@ socket.create_connection(addrs[0][4][:2], timeout=10).close()
 print("V6_OK")`;
       try {
         container = await docker.createContainer({
-          Image: process.env.RAKAZO_COMPUTER_IMAGE ?? "rakazo/computer:local",
+          Image: process.env.LABRADOODLE_COMPUTER_IMAGE ?? "labradoodle/computer:local",
           Entrypoint: ["python3", "-c", probe],
           Cmd: [],
-          Labels: { "rakazo.ipv6Probe": "true" },
+          Labels: { "labradoodle.ipv6Probe": "true" },
           HostConfig: {
             NetworkMode: options.Name,
             CapDrop: ["ALL"],
@@ -80,7 +80,7 @@ print("V6_OK")`;
       } catch (error) {
         if (/404|No such image|manifest/i.test(String(error))) {
           throw new Error(
-            `VERIFY_DOCKER_COMPUTER_IPV6=1 but the computer image is not available locally; build it or set RAKAZO_COMPUTER_IMAGE: ${String(error)}`,
+            `VERIFY_DOCKER_COMPUTER_IPV6=1 but the computer image is not available locally; build it or set LABRADOODLE_COMPUTER_IMAGE: ${String(error)}`,
           );
         }
         throw error;

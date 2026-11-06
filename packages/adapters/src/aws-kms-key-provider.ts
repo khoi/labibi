@@ -136,8 +136,8 @@ export class AwsKmsKeyProvider implements KeyProvider {
 
 function encryptionContext(context: KeyWrapContext): Record<string, string> {
   return {
-    "rakazo:purpose": "space-key/v1",
-    "rakazo:space": context.spaceId,
-    "rakazo:version": String(context.version),
+    "labradoodle:purpose": "space-key/v1",
+    "labradoodle:space": context.spaceId,
+    "labradoodle:version": String(context.version),
   };
 }

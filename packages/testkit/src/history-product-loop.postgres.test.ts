@@ -145,7 +145,7 @@ describe.skipIf(!enabled)("product history diagnostic loop", () => {
         })),
       ],
     });
-    const dataDir = await mkdtemp(path.join(tmpdir(), "rakazo-product-loop-"));
+    const dataDir = await mkdtemp(path.join(tmpdir(), "labradoodle-product-loop-"));
     try {
       const { createApp } = await import("@labradoodle/api/app");
       const result = await runTrial(scenario, 1, {

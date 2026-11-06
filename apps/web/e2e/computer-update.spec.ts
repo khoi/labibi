@@ -5,8 +5,8 @@ import { captureScreenshot, completeOnboarding, openUserSettings, signup } from 
 test("computer maintenance shows durable background progress and failure recovery", async ({
   page,
 }, testInfo) => {
-  await page.addInitScript(() => localStorage.setItem("rakazo.uiAppearance", "dark"));
-  await signup(page, `computer-update-${Date.now()}@rakazo.test`, "password12", "Computer Update");
+  await page.addInitScript(() => localStorage.setItem("labradoodle.uiAppearance", "dark"));
+  await signup(page, `computer-update-${Date.now()}@labradoodle.test`, "password12", "Computer Update");
   await completeOnboarding(page);
   let updates: ComputerUpdate[] = [];
   const updating: ComputerUpdate = {

@@ -23,7 +23,7 @@ export async function registerPushToken() {
     await rpc("notifications/registerPush", {
       token,
       ...(Platform.OS === "android" &&
-      requireOptionalNativeModule<{ supportsSenderAvatars?: boolean }>("RakazoNotifications")
+      requireOptionalNativeModule<{ supportsSenderAvatars?: boolean }>("LabradoodleNotifications")
         ?.supportsSenderAvatars
         ? { presentation: "android_sender" as const }
         : {}),

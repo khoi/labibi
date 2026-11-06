@@ -20,7 +20,7 @@ type Row = Record<string, unknown>;
 const actor = {
   spaceId: "space-1",
   userId: "user-1",
-  email: "user@rakazo.test",
+  email: "user@labradoodle.test",
   isDeploymentOwner: true,
 } satisfies Actor;
 
@@ -132,7 +132,7 @@ function botSecretDeps(seed: Row[] = []) {
       screenProxySecret: "fake-test-secret",
       sandboxProvider: "fake",
     },
-    dataDir: "/tmp/rakazo-router-test",
+    dataDir: "/tmp/labradoodle-router-test",
   } as unknown as RouterDeps;
   const handler = new RPCHandler(createRouter(deps));
   async function call(path: string, input: unknown) {

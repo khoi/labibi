@@ -467,7 +467,7 @@ async function main() {
     return;
   }
   // This CLI owns a disposable database. Never migrate or evaluate against an inherited database.
-  const dataDir = mkdtempSync(path.join(tmpdir(), "rakazo-evals-"));
+  const dataDir = mkdtempSync(path.join(tmpdir(), "labradoodle-evals-"));
   let postgres: StartedPostgreSqlContainer | undefined;
   let stopRequested = false;
   const stop = new AbortController();

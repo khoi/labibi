@@ -49,7 +49,7 @@ describePostgres("background video delivery (PostgreSQL)", () => {
   let prisma: PrismaClient;
   let db: ReturnType<typeof createDb>;
   const users: string[] = [];
-  const dataDir = mkdtempSync(path.join(tmpdir(), "rakazo-media-poll-"));
+  const dataDir = mkdtempSync(path.join(tmpdir(), "labradoodle-media-poll-"));
   beforeAll(() => {
     db = createDb(process.env.DATABASE_URL!);
     prisma = db.prisma;

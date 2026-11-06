@@ -33,7 +33,7 @@ function _computer(overrides: Partial<ComputerStatus> = {}): ComputerStatus {
 describe("embeddableScreenUrl", () => {
   it("leaves a public stream URL alone", () => {
     const url = "https://sandbox.e2b.app/stream?authKey=abc&view_only=true";
-    expect(embeddableScreenUrl(url, "https://api.rakazo.test")).toBe(url);
+    expect(embeddableScreenUrl(url, "https://api.labradoodle.test")).toBe(url);
   });
 
   it.each(["screen.example", "8.8.8.8", "172.32.0.1", "100.63.255.255", "100.128.0.1"])(
@@ -253,10 +253,10 @@ describe("readScreenUrl", () => {
 
 describe("screen page states", () => {
   it("takes only the exact state message a screen page posts", () => {
-    expect(screenPageState('{"rakazoScreen":"connected"}')).toBe("connected");
-    expect(screenPageState('{"rakazoScreen":"disconnected"}')).toBe("disconnected");
-    expect(screenPageState('{"rakazoScreen":"connected","detail":"text"}')).toBeNull();
-    expect(screenPageState('{"rakazoScreen":"reconnect"}')).toBeNull();
+    expect(screenPageState('{"labradoodleScreen":"connected"}')).toBe("connected");
+    expect(screenPageState('{"labradoodleScreen":"disconnected"}')).toBe("disconnected");
+    expect(screenPageState('{"labradoodleScreen":"connected","detail":"text"}')).toBeNull();
+    expect(screenPageState('{"labradoodleScreen":"reconnect"}')).toBeNull();
     expect(screenPageState('["connected"]')).toBeNull();
     expect(screenPageState('"connected"')).toBeNull();
     expect(screenPageState("null")).toBeNull();
@@ -301,18 +301,18 @@ describe("screen page redirects and origin", () => {
         }) as unknown as Response,
     );
     await expect(
-      screenPageStatus("https://app.example.test/novnc/x?rakazo_probe=1", followed),
+      screenPageStatus("https://app.example.test/novnc/x?labradoodle_probe=1", followed),
     ).resolves.toBe(0);
     const same = vi.fn(
       async () =>
         ({
           status: 204,
-          url: "https://app.example.test/novnc/x?rakazo_probe=1",
+          url: "https://app.example.test/novnc/x?labradoodle_probe=1",
           type: "default",
         }) as unknown as Response,
     );
     await expect(
-      screenPageStatus("https://app.example.test/novnc/x?rakazo_probe=1", same),
+      screenPageStatus("https://app.example.test/novnc/x?labradoodle_probe=1", same),
     ).resolves.toBe(204);
     const redirected = vi.fn(
       async () => ({ status: 200, redirected: true, type: "basic" }) as unknown as Response,

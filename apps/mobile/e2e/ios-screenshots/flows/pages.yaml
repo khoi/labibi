@@ -1,11 +1,11 @@
-appId: com.rakazo.app
+appId: com.labradoodle.app
 name: Pages
 ---
 - runFlow:
     file: ../subflows/sign-in.yaml
     env:
-      RAKAZO_ACTIVE_EMAIL: ${RAKAZO_SCREENSHOT_EMAIL}
-- openLink: "rakazo:///thread?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
+      LABRADOODLE_ACTIVE_EMAIL: ${LABRADOODLE_SCREENSHOT_EMAIL}
+- openLink: "labradoodle:///thread?threadId=${LABRADOODLE_SCREENSHOT_THREAD_ID}"
 - extendedWaitUntil:
     visible: "Open Launch dashboard"
     timeout: 20000
@@ -26,7 +26,7 @@ name: Pages
     timeout: 10000
 - takeScreenshot: 04-share-link
 - tapOn: "Only you"
-- openLink: "rakazo:///pages?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
+- openLink: "labradoodle:///pages?threadId=${LABRADOODLE_SCREENSHOT_THREAD_ID}"
 - extendedWaitUntil:
     visible: "Launch dashboard"
     timeout: 20000

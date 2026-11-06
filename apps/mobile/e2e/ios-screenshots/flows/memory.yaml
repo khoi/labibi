@@ -1,11 +1,11 @@
-appId: com.rakazo.app
+appId: com.labradoodle.app
 name: Memory
 ---
 - runFlow:
     file: ../subflows/sign-in.yaml
     env:
-      RAKAZO_ACTIVE_EMAIL: ${RAKAZO_SCREENSHOT_EMAIL}
-- openLink: "rakazo:///memory"
+      LABRADOODLE_ACTIVE_EMAIL: ${LABRADOODLE_SCREENSHOT_EMAIL}
+- openLink: "labradoodle:///memory"
 - extendedWaitUntil:
     visible: "team.md"
     timeout: 20000
@@ -19,7 +19,7 @@ name: Memory
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: 02-personal-note
-- openLink: "rakazo:///memory?threadId=${RAKAZO_SCREENSHOT_THREAD_ID}"
+- openLink: "labradoodle:///memory?threadId=${LABRADOODLE_SCREENSHOT_THREAD_ID}"
 - extendedWaitUntil:
     visible: "preferences.md"
     timeout: 15000

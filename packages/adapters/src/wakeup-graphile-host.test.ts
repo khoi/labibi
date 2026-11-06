@@ -824,7 +824,7 @@ describe("GraphileJobWorkerHost runner lifecycle", () => {
     const first = mockRunner();
     run.mockResolvedValueOnce(first.runner);
     const sink = createTestSink();
-    installLogger(createLogger({ service: "rakazo-worker", sinks: [sink] }));
+    installLogger(createLogger({ service: "labradoodle-worker", sinks: [sink] }));
     const host = new GraphileJobWorkerHost({} as Pool, {
       sleep: async () => undefined,
     });
@@ -864,7 +864,7 @@ describe("GraphileJobWorkerHost runner lifecycle", () => {
       });
     } finally {
       await host.stop();
-      installLogger(createLogger({ service: "rakazo-worker", level: "off", sinks: [] }));
+      installLogger(createLogger({ service: "labradoodle-worker", level: "off", sinks: [] }));
     }
 
     expect(sink.events).toEqual([

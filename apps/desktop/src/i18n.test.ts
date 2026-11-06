@@ -225,7 +225,7 @@ describe("desktop language", () => {
   it.each(["es-AR", "pl-PL"])(
     "opens the next launch in the reported language %s",
     async (locale) => {
-      const userData = await mkdtemp(path.join(tmpdir(), "rakazo-locale-"));
+      const userData = await mkdtemp(path.join(tmpdir(), "labradoodle-locale-"));
       try {
         await expect(readUiLocale(userData)).resolves.toBeNull();
         const { event, target } = appFrame();

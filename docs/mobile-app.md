@@ -4,8 +4,8 @@ Chat with your bots, answer their questions, and watch their computers from your
 
 ## Install
 
-- iPhone: [App Store](https://apps.apple.com/app/rakazo/id6801531099).
-- Android: [Google Play](https://play.google.com/store/apps/details?id=com.rakazo.app).
+- iPhone: [App Store](https://apps.apple.com/app/labradoodle/id6801531099).
+- Android: [Google Play](https://play.google.com/store/apps/details?id=com.labradoodle.app).
 
 You can also choose **Get the mobile app** from the account menu in the web or desktop app.
 

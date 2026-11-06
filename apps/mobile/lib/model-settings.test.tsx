@@ -52,7 +52,7 @@ vi.mock("./side-insets", () => ({ useSideInsets: () => ({}) }));
 vi.mock("./api", () => ({
   currentApiBase: () => "https://app.example.test",
   captureApiRequestContext: async (spaceId = "space-fixture") => ({
-    headers: { "x-rakazo-space-id": spaceId },
+    headers: { "x-labradoodle-space-id": spaceId },
   }),
   selectedSpaceId: () => "space-fixture",
   rpc: async (

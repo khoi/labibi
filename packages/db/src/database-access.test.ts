@@ -21,8 +21,8 @@ vi.mock("pg", async (importActual) => ({
   },
 }));
 
-const owner = "postgres://rakazo:owner-password@postgres:5432/rakazo";
-const runtime = "postgres://rakazo_app:app-password@postgres:5432/rakazo";
+const owner = "postgres://labradoodle:owner-password@postgres:5432/labradoodle";
+const runtime = "postgres://labradoodle_app:app-password@postgres:5432/labradoodle";
 
 describe("databaseUrls", () => {
   it("migrates as the owner and runs the app as the runtime login", () => {
@@ -43,7 +43,7 @@ describe("databaseUrls", () => {
   });
 
   it("treats two URLs for the same login as shared", () => {
-    const sameLogin = "postgres://rakazo:owner-password@127.0.0.1:5433/rakazo";
+    const sameLogin = "postgres://labradoodle:owner-password@127.0.0.1:5433/labradoodle";
     expect(databaseUrls({ DATABASE_URL: sameLogin, DATABASE_MIGRATION_URL: owner }).separate).toBe(
       false,
     );
@@ -56,19 +56,19 @@ describe("databaseUrls", () => {
 
 describe("rowSecurityWarning", () => {
   it("is silent when the policies apply", () => {
-    expect(rowSecurityWarning({ enforced: true, role: "rakazo_app" })).toBeUndefined();
+    expect(rowSecurityWarning({ enforced: true, role: "labradoodle_app" })).toBeUndefined();
   });
 
   it("says to rerun db:migrate when the bypass key is stale", () => {
-    expect(rowSecurityWarning({ enforced: true, role: "rakazo_app", systemBlocked: true })).toMatch(
+    expect(rowSecurityWarning({ enforced: true, role: "labradoodle_app", systemBlocked: true })).toMatch(
       /db:migrate/,
     );
   });
 
   it("names the login and why it bypasses the policies", () => {
     expect(
-      rowSecurityWarning({ enforced: false, role: "rakazo", reason: "is a superuser" }),
-    ).toContain("connects as rakazo, which is a superuser");
+      rowSecurityWarning({ enforced: false, role: "labradoodle", reason: "is a superuser" }),
+    ).toContain("connects as labradoodle, which is a superuser");
   });
 });
 
@@ -95,7 +95,7 @@ describe("provisionRuntimeRole", () => {
     sent.length = 0;
     await provisionRuntimeRole(owner, runtime);
     const setPassword = sent.find((sql) => sql.includes("PASSWORD"));
-    expect(setPassword).toMatch(/^CREATE ROLE "rakazo_app" LOGIN PASSWORD 'SCRAM-SHA-256\$4096:/);
+    expect(setPassword).toMatch(/^CREATE ROLE "labradoodle_app" LOGIN PASSWORD 'SCRAM-SHA-256\$4096:/);
     expect(sent.join("\n")).not.toContain("app-password");
   });
 });

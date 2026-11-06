@@ -1,0 +1,11 @@
+[Unit]
+Description=Notify operators when a production backup fails
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/labradoodle-host-alert backup-failure "Nightly backup failed. Inspect labradoodle-backup.service on the server."
+StateDirectory=labradoodle/alerts
+StateDirectoryMode=0700
+ProtectSystem=strict
+ReadWritePaths=/var/lib/labradoodle/alerts
+PrivateTmp=true

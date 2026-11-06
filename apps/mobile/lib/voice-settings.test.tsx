@@ -24,7 +24,7 @@ vi.mock("./api", () => ({
   selectedSpaceId: () => "space-fixture",
   captureApiRequestContext: async (spaceId?: string) => ({
     apiBase: "https://app.example.test",
-    headers: spaceId ? { "x-rakazo-space-id": spaceId } : {},
+    headers: spaceId ? { "x-labradoodle-space-id": spaceId } : {},
   }),
 }));
 vi.mock("./session", () => ({ currentSessionGeneration: () => 1 }));

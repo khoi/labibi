@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="rakazo_channel_live">Doodle’s live status</string>
-  <string name="rakazo_channel_messages">Messages</string>
-  <string name="rakazo_channel_scheduled">Scheduled tasks</string>
-  <string name="rakazo_channel_attention">Needs attention</string>
+  <string name="labradoodle_channel_live">Doodle’s live status</string>
+  <string name="labradoodle_channel_messages">Messages</string>
+  <string name="labradoodle_channel_scheduled">Scheduled tasks</string>
+  <string name="labradoodle_channel_attention">Needs attention</string>
 
-  <string name="rakazo_live_one">%1$s is working</string>
-  <string name="rakazo_live_working">Working</string>
+  <string name="labradoodle_live_one">%1$s is working</string>
+  <string name="labradoodle_live_working">Working</string>
 
-  <string name="rakazo_scheduled_title">%1$s · Scheduled task</string>
-  <string name="rakazo_replied_group">%1$s replied in %2$s</string>
-  <string name="rakazo_replied">%1$s replied</string>
+  <string name="labradoodle_scheduled_title">%1$s · Scheduled task</string>
+  <string name="labradoodle_replied_group">%1$s replied in %2$s</string>
+  <string name="labradoodle_replied">%1$s replied</string>
 
-  <string name="rakazo_attention_failed">%1$s hit a problem</string>
-  <string name="rakazo_attention_takeover">%1$s needs you on screen</string>
-  <string name="rakazo_attention_input">%1$s needs your input</string>
+  <string name="labradoodle_attention_failed">%1$s hit a problem</string>
+  <string name="labradoodle_attention_takeover">%1$s needs you on screen</string>
+  <string name="labradoodle_attention_input">%1$s needs your input</string>
 </resources>

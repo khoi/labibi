@@ -589,7 +589,7 @@ describe("synthesizeVoice", () => {
     [undefined, 403],
   ] as const)("answers %s from the provider with HTTP %i and a warning", async (code, status) => {
     const sink = createTestSink();
-    installLogger(createLogger({ service: "rakazo-api", sinks: [sink] }));
+    installLogger(createLogger({ service: "labradoodle-api", sinks: [sink] }));
     const synthesize = vi
       .fn()
       .mockRejectedValue(
@@ -635,7 +635,7 @@ describe("synthesizeVoice", () => {
       code,
     });
     expect(sink.events.map((event) => event.level)).toEqual(["warn"]);
-    installLogger(createLogger({ service: "rakazo-api", level: "off", sinks: [] }));
+    installLogger(createLogger({ service: "labradoodle-api", level: "off", sinks: [] }));
   });
 });
 
@@ -686,7 +686,7 @@ describe("voiceCredentialPlaintext", () => {
   });
 
   it("rejects a public server address as a bad request", () => {
-    vi.stubEnv("RAKAZO_OPENAI_COMPAT_ALLOW_PUBLIC", "0");
+    vi.stubEnv("LABRADOODLE_OPENAI_COMPAT_ALLOW_PUBLIC", "0");
     try {
       expect(() =>
         voiceCredentialPlaintext({

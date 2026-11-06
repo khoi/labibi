@@ -18,7 +18,7 @@ describeSearch("workspace search", () => {
   let app: App;
   let stop: () => Promise<void>;
   const stamp = Date.now();
-  const dataDir = mkdtempSync(path.join(tmpdir(), "rakazo-search-"));
+  const dataDir = mkdtempSync(path.join(tmpdir(), "labradoodle-search-"));
 
   beforeAll(async () => {
     const { createApp } = await import("@labradoodle/api/app");
@@ -37,7 +37,7 @@ describeSearch("workspace search", () => {
   });
 
   it("finds bots, messages, files, links, and routines within the workspace", async () => {
-    const cookie = await signup(app, `search-${stamp}@rakazo.test`, "Search User");
+    const cookie = await signup(app, `search-${stamp}@labradoodle.test`, "Search User");
     const {
       chats: [botChat],
     } = await rpc<{
@@ -108,7 +108,7 @@ describeSearch("workspace search", () => {
   });
 
   it("finds literal message text without widening wildcard queries", async () => {
-    const cookie = await signup(app, `search-literal-${stamp}@rakazo.test`, "Literal Search");
+    const cookie = await signup(app, `search-literal-${stamp}@labradoodle.test`, "Literal Search");
     const {
       chats: [botChat],
     } = await rpc<{
@@ -138,7 +138,7 @@ describeSearch("workspace search", () => {
   });
 
   it("returns no hits for another workspace", async () => {
-    const ownerCookie = await signup(app, `search-owner-${stamp}@rakazo.test`, "Owner");
+    const ownerCookie = await signup(app, `search-owner-${stamp}@labradoodle.test`, "Owner");
     const {
       chats: [ownerBotChat],
     } = await rpc<{
@@ -147,7 +147,7 @@ describeSearch("workspace search", () => {
     }>(app, ownerCookie, "bootstrap", {});
     await sendAndWait(app, ownerCookie, ownerBotChat!.id, { text: "owner-only-token-xyz" });
 
-    const intruderCookie = await signup(app, `search-intruder-${stamp}@rakazo.test`, "Intruder");
+    const intruderCookie = await signup(app, `search-intruder-${stamp}@labradoodle.test`, "Intruder");
     const hits = await rpc<{ hits: unknown[] }>(app, intruderCookie, "search/query", {
       q: "owner-only-token-xyz",
     });

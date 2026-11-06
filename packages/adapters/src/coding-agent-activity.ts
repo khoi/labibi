@@ -55,7 +55,7 @@ export async function activeCodingAgent(
           "bash",
           "-c",
           CODING_AGENT_PROBE,
-          "rakazo-coding-agent-probe",
+          "labradoodle-coding-agent-probe",
           String(Math.max(1, Math.ceil(windowMs / 60_000))),
           ...entries,
         ],

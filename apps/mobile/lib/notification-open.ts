@@ -24,7 +24,7 @@ function singleRouteParam(value: string | string[] | undefined): string | undefi
 
 function notificationField(data: Record<string, unknown>, key: string): string | undefined {
   const direct = data[key];
-  const prefixed = data[`rakazo.${key}`];
+  const prefixed = data[`labradoodle.${key}`];
   const value = typeof direct === "string" ? direct : prefixed;
   return typeof value === "string" ? singleRouteParam(value) : undefined;
 }

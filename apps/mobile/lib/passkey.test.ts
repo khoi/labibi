@@ -155,7 +155,7 @@ describe("passkey sign-in", () => {
     expect(options?.path).toBe("/api/auth/passkey/generate-authenticate-options");
     expect(get).toHaveBeenCalledWith({ challenge: "challenge", rpId: "labradoodle.example.test" });
     expect(verify?.path).toBe("/api/auth/passkey/verify-authentication");
-    expect(verify?.headers).toMatchObject({ origin: "rakazo://", cookie: CHALLENGE });
+    expect(verify?.headers).toMatchObject({ origin: "labradoodle://", cookie: CHALLENGE });
     expect(verify?.headers).not.toHaveProperty("authorization");
     // iOS would otherwise merge the jar's copy of the cookie with ours (CHALLENGE_NOT_FOUND).
     expect([options?.credentials, verify?.credentials]).toEqual(["omit", "omit"]);
@@ -266,7 +266,7 @@ describe("passkey registration", () => {
     expect(verify?.headers).toMatchObject({
       authorization: "Bearer current-session",
       cookie: CHALLENGE,
-      origin: "rakazo://",
+      origin: "labradoodle://",
     });
     expect([options?.credentials, verify?.credentials]).toEqual(["omit", "omit"]);
     expect(verify?.body).toEqual({ response: credential });

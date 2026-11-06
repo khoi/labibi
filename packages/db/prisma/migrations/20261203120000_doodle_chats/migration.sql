@@ -163,7 +163,7 @@ SELECT 'c' || substr(md5('doodle:' || "id"), 1, 24), "id", CURRENT_TIMESTAMP FRO
 -- Chat content is visible only to the chat's people, in the workspace the request is for.
 -- Definer rights read thread_members past its own policy; the search path is fixed so a
 -- caller cannot shadow the table.
-CREATE FUNCTION rakazo_is_thread_member(thread_id text) RETURNS boolean
+CREATE FUNCTION labradoodle_is_thread_member(thread_id text) RETURNS boolean
   LANGUAGE sql STABLE SECURITY DEFINER
   SET search_path = pg_catalog, pg_temp
   AS $$
@@ -177,54 +177,54 @@ CREATE FUNCTION rakazo_is_thread_member(thread_id text) RETURNS boolean
 
 ALTER TABLE "thread_members" ENABLE ROW LEVEL SECURITY;
 CREATE POLICY thread_members_tenant ON "thread_members"
-  USING (rakazo_is_thread_member("threadId"));
+  USING (labradoodle_is_thread_member("threadId"));
 CREATE POLICY thread_members_system ON "thread_members"
   USING ((SELECT app_rls_bypass()));
 
 DROP POLICY threads_tenant ON "threads";
 CREATE POLICY threads_tenant ON "threads"
-  USING (rakazo_is_thread_member("id"));
+  USING (labradoodle_is_thread_member("id"));
 
 DROP POLICY messages_tenant ON "messages";
 CREATE POLICY messages_tenant ON "messages"
-  USING (rakazo_is_thread_member("threadId"));
+  USING (labradoodle_is_thread_member("threadId"));
 
 DROP POLICY events_tenant ON "events";
 CREATE POLICY events_tenant ON "events"
-  USING (rakazo_is_thread_member("threadId"));
+  USING (labradoodle_is_thread_member("threadId"));
 
 DROP POLICY runs_tenant ON "runs";
 CREATE POLICY runs_tenant ON "runs"
-  USING (rakazo_is_thread_member("threadId"));
+  USING (labradoodle_is_thread_member("threadId"));
 
 DROP POLICY tasks_tenant ON "tasks";
 CREATE POLICY tasks_tenant ON "tasks"
-  USING (rakazo_is_thread_member("threadId"));
+  USING (labradoodle_is_thread_member("threadId"));
 
 DROP POLICY steering_messages_tenant ON "steering_messages";
 CREATE POLICY steering_messages_tenant ON "steering_messages"
   USING (EXISTS (
     SELECT 1 FROM "messages" m
-    WHERE m."id" = "steering_messages"."messageId" AND rakazo_is_thread_member(m."threadId")
+    WHERE m."id" = "steering_messages"."messageId" AND labradoodle_is_thread_member(m."threadId")
   ));
 
 DROP POLICY routines_tenant ON "routines";
 CREATE POLICY routines_tenant ON "routines"
-  USING (rakazo_is_thread_member("threadId"));
+  USING (labradoodle_is_thread_member("threadId"));
 
 DROP POLICY artifacts_tenant ON "artifacts";
 CREATE POLICY artifacts_tenant ON "artifacts"
-  USING (rakazo_is_thread_member("threadId"));
+  USING (labradoodle_is_thread_member("threadId"));
 
 DROP POLICY pages_tenant ON "pages";
 CREATE POLICY pages_tenant ON "pages"
-  USING (rakazo_is_thread_member("threadId"));
+  USING (labradoodle_is_thread_member("threadId"));
 
 DROP POLICY page_versions_tenant ON "page_versions";
 CREATE POLICY page_versions_tenant ON "page_versions"
   USING (EXISTS (
     SELECT 1 FROM "pages" p
-    WHERE p."id" = "page_versions"."pageId" AND rakazo_is_thread_member(p."threadId")
+    WHERE p."id" = "page_versions"."pageId" AND labradoodle_is_thread_member(p."threadId")
   ));
 
 -- A chat's memory is its members'; personal memory is its owner's alone.
@@ -232,7 +232,7 @@ DROP POLICY memory_documents_tenant ON "memory_documents";
 CREATE POLICY memory_documents_tenant ON "memory_documents"
   USING (
     ("threadId" IS NULL AND "userId" = NULLIF(current_setting('app.user_id', true), ''))
-    OR rakazo_is_thread_member("threadId")
+    OR labradoodle_is_thread_member("threadId")
   );
 
 DROP POLICY memory_revisions_tenant ON "memory_revisions";
@@ -242,7 +242,7 @@ CREATE POLICY memory_revisions_tenant ON "memory_revisions"
     WHERE d."id" = "memory_revisions"."documentId"
       AND (
         (d."threadId" IS NULL AND d."userId" = NULLIF(current_setting('app.user_id', true), ''))
-        OR rakazo_is_thread_member(d."threadId")
+        OR labradoodle_is_thread_member(d."threadId")
       )
   ));
 

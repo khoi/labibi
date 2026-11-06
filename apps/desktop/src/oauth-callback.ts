@@ -18,7 +18,7 @@ export function oauthCallbackFrom(
   url: string,
   options: OAuthCallbackFromOptions = {},
 ): LabradoodleDesktopOAuthCallback | undefined {
-  if (options.frameName === "rakazo-sso-oauth") return undefined;
+  if (options.frameName === "labradoodle-sso-oauth") return undefined;
   let target: URL;
   try {
     target = new URL(url);

@@ -85,10 +85,10 @@ export function resolveUploadPath(requestedPath: string): string {
   return normalizeWorkspacePath(expandHomePrefix(requestedPath));
 }
 
-// A leading ~ or /home/rakazo means the workspace root, the same as a leading /.
+// A leading ~ or /home/labradoodle means the workspace root, the same as a leading /.
 function expandHomePrefix(value: string): string {
   return value.replace(
-    /^(?:~|[\\/]home[\\/]rakazo)([\\/]|$)/,
+    /^(?:~|[\\/]home[\\/]labradoodle)([\\/]|$)/,
     (_, separator: string) => separator || "/",
   );
 }

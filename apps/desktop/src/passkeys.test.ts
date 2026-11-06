@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { associatedPasskeyRpIds, PASSKEY_RP_ID, passkeyEntitlements } from "./passkeys.js";
-import { RAKAZO_CLOUD_URL } from "./setup-config.js";
+import { LABRADOODLE_CLOUD_URL } from "./setup-config.js";
 
 const root = path.resolve(import.meta.dirname, "..");
 const pkg = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8")) as {
@@ -41,7 +41,7 @@ describe("passkeyEntitlements", () => {
     const plist = passkeyEntitlements(base, "ABCDE12345", pkg.build.appId);
     expect(plist.startsWith(base.slice(0, base.lastIndexOf("</dict>")).trimEnd())).toBe(true);
     expect(plist).toContain(
-      "<key>com.apple.application-identifier</key>\n    <string>ABCDE12345.dev.rakazo.desktop</string>",
+      "<key>com.apple.application-identifier</key>\n    <string>ABCDE12345.dev.labradoodle.desktop</string>",
     );
     expect(plist).toContain(
       `<key>com.apple.developer.associated-domains</key>\n    <array>\n      <string>webcredentials:${PASSKEY_RP_ID}</string>\n    </array>\n  </dict>\n</plist>`,
@@ -67,7 +67,7 @@ describe("passkeyEntitlements", () => {
     expect(() => passkeyEntitlements(base, "", pkg.build.appId)).toThrow();
     expect(() => passkeyEntitlements(base, "abcde12345", pkg.build.appId)).toThrow();
     expect(() => passkeyEntitlements(base, "ABCDE12345</string>", pkg.build.appId)).toThrow();
-    expect(() => passkeyEntitlements(base, "ABCDE12345", "dev rakazo")).toThrow();
+    expect(() => passkeyEntitlements(base, "ABCDE12345", "dev labradoodle")).toThrow();
     const derived = passkeyEntitlements(base, "ABCDE12345", pkg.build.appId);
     expect(() => passkeyEntitlements(derived, "ABCDE12345", pkg.build.appId)).toThrow();
   });
@@ -80,17 +80,17 @@ describe("self-hosted passkey domain", () => {
   });
 
   async function load(rpId: string) {
-    vi.stubEnv("RAKAZO_PASSKEY_RP_ID", rpId);
+    vi.stubEnv("LABRADOODLE_PASSKEY_RP_ID", rpId);
     vi.resetModules();
     return import("./passkeys.js");
   }
 
   it("defaults to the hosted server's domain", async () => {
     const passkeys = await load("");
-    expect(passkeys.PASSKEY_RP_ID).toBe(new URL(RAKAZO_CLOUD_URL).hostname);
+    expect(passkeys.PASSKEY_RP_ID).toBe(new URL(LABRADOODLE_CLOUD_URL).hostname);
   });
 
-  it("associates the build with RAKAZO_PASSKEY_RP_ID", async () => {
+  it("associates the build with LABRADOODLE_PASSKEY_RP_ID", async () => {
     const passkeys = await load(" Labradoodle.Example.org ");
     expect(passkeys.PASSKEY_RP_ID).toBe("labradoodle.example.org");
     expect(passkeys.passkeyEntitlements(base, "ABCDE12345", pkg.build.appId)).toContain(
@@ -106,7 +106,7 @@ describe("self-hosted passkey domain", () => {
   ])("refuses to sign entitlements for %s", async (rpId) => {
     const passkeys = await load(rpId);
     expect(() => passkeys.passkeyEntitlements(base, "ABCDE12345", pkg.build.appId)).toThrow(
-      "RAKAZO_PASSKEY_RP_ID",
+      "LABRADOODLE_PASSKEY_RP_ID",
     );
   });
 });

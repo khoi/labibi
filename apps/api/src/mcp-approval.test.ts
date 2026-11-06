@@ -34,7 +34,7 @@ function fixture(blocks: unknown[]) {
   const actor = {
     userId: "user",
     spaceId: "space",
-    email: "user@rakazo.test",
+    email: "user@labradoodle.test",
     isDeploymentOwner: true,
   };
   return { deps, actor, tx };
@@ -64,7 +64,7 @@ describe("queueMcpConnectedRun", () => {
   const actor = {
     userId: "user",
     spaceId: "space",
-    email: "user@rakazo.test",
+    email: "user@labradoodle.test",
     isDeploymentOwner: true,
   };
   const input = { botId: "bot", serverId: "srv-a", threadId: "thread" };

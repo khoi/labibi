@@ -26,14 +26,14 @@ test(
     });
 
     await page.goto("/sign-up");
-    await expect(page.locator('[data-rakazo-app-state="session-pending"]')).toBeVisible();
+    await expect(page.locator('[data-labradoodle-app-state="session-pending"]')).toBeVisible();
     await expect(page.locator("#root")).toHaveText("");
     await captureScreenshot(page, testInfo, "signup-session-pending");
 
     const capabilitiesRequested = page.waitForRequest("**/api/auth/capabilities");
     releaseSession();
     await capabilitiesRequested;
-    await expect(page.locator('[data-rakazo-app-state="ready"]')).toBeVisible();
+    await expect(page.locator('[data-labradoodle-app-state="ready"]')).toBeVisible();
     await expect(page.locator("#root")).toHaveText("");
     await captureScreenshot(page, testInfo, "signup-options-pending");
 
@@ -146,7 +146,7 @@ test("logout protects bot deep links and sign-in restores the session", async ({
   page,
 }, testInfo) => {
   const stamp = Date.now();
-  const email = `auth-lifecycle-${stamp}@rakazo.test`;
+  const email = `auth-lifecycle-${stamp}@labradoodle.test`;
   const password = "password12";
   const userName = "Auth Lifecycle";
 
@@ -264,7 +264,7 @@ test("logout protects bot deep links and sign-in restores the session", async ({
 
 test("changes and recovers an email password", async ({ page }, testInfo) => {
   const stamp = Date.now();
-  const email = `password-recovery-${stamp}@rakazo.test`;
+  const email = `password-recovery-${stamp}@labradoodle.test`;
   const originalPassword = "password12";
   const changedPassword = "changed-password12";
   const resetPassword = "reset-password12";

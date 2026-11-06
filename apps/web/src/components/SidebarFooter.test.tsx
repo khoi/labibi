@@ -25,7 +25,7 @@ beforeEach(() => {
 afterEach(async () => {
   await act(async () => root.unmount());
   host.remove();
-  delete window.rakazoDesktop;
+  delete window.labradoodleDesktop;
   vi.restoreAllMocks();
 });
 async function render(
@@ -34,7 +34,7 @@ async function render(
   onIntegrations = vi.fn(),
   logos?: Array<{ name: string; logo?: string }>,
 ) {
-  const email = "account@rakazo.test";
+  const email = "account@labradoodle.test";
   await act(async () =>
     root.render(
       <DesktopUpdatesProvider>
@@ -74,7 +74,7 @@ function bridge(phase: DesktopUpdateState["phase"]) {
     checkedAt: null,
   };
   const install = vi.fn(async () => state);
-  window.rakazoDesktop = {
+  window.labradoodleDesktop = {
     platform: "darwin",
     window: {
       close: async () => {},
@@ -155,7 +155,7 @@ it("offers Google Play on Android", async () => {
   const mobile = [...document.querySelectorAll("a")].find(
     (link) => link.textContent === "Get the mobile app",
   )!;
-  expect(mobile.href).toBe("https://play.google.com/store/apps/details?id=com.rakazo.app");
+  expect(mobile.href).toBe("https://play.google.com/store/apps/details?id=com.labradoodle.app");
 });
 
 it("falls back when app artwork fails and accepts replacement artwork", async () => {
@@ -180,7 +180,7 @@ it.each(["throw", "state"] as const)(
     if (failure === "throw") install.mockRejectedValueOnce(new Error("offline"));
     else
       install.mockResolvedValueOnce({
-        ...(await window.rakazoDesktop!.update.state()),
+        ...(await window.labradoodleDesktop!.update.state()),
         phase: "error",
         message: "Update could not be installed",
       });

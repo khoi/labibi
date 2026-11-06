@@ -1,4 +1,4 @@
-const PENDING = "rakazo:sign-in-pending";
+const PENDING = "labradoodle:sign-in-pending";
 
 export function markSignInPending() {
   try {

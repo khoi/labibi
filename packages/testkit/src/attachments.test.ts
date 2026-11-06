@@ -21,7 +21,7 @@ describeAttachments("chat attachments", () => {
   let app: App;
   let stop: () => Promise<void>;
   const stamp = Date.now();
-  const dataDir = mkdtempSync(path.join(tmpdir(), "rakazo-attachments-"));
+  const dataDir = mkdtempSync(path.join(tmpdir(), "labradoodle-attachments-"));
   const tinyPng = Buffer.from(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
     "base64",
@@ -45,7 +45,7 @@ describeAttachments("chat attachments", () => {
   });
 
   it("uploads, sends with image/file, and rejects invalid attachments", async () => {
-    const cookie = await signup(app, `attachments-${stamp}@rakazo.test`, "Attachment User");
+    const cookie = await signup(app, `attachments-${stamp}@labradoodle.test`, "Attachment User");
     const {
       chats: [botChat],
     } = await rpc<{
@@ -151,7 +151,7 @@ describeAttachments("chat attachments", () => {
   });
 
   it("attaches a workspace file into the thread", async () => {
-    const cookie = await signup(app, `attach-thread-${stamp}@rakazo.test`, "Attach Thread User");
+    const cookie = await signup(app, `attach-thread-${stamp}@labradoodle.test`, "Attach Thread User");
     const {
       chats: [botChat],
     } = await rpc<{
@@ -179,8 +179,8 @@ describeAttachments("chat attachments", () => {
     );
   });
   it("persists server-owned reply previews, isolates threads, and handles deletion", async () => {
-    const cookie = await signup(app, `replies-${stamp}@rakazo.test`, "Reply User");
-    const otherCookie = await signup(app, `replies-other-${stamp}@rakazo.test`, "Other User");
+    const cookie = await signup(app, `replies-${stamp}@labradoodle.test`, "Reply User");
+    const otherCookie = await signup(app, `replies-other-${stamp}@labradoodle.test`, "Other User");
     const {
       chats: [botChat],
     } = await rpc<{

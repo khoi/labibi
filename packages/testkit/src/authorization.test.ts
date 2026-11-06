@@ -45,7 +45,7 @@ describeWithDatabase("API authorization and resource isolation", () => {
   const loadPushToken = async (userId: string) => (await pushTokens.load(userId))?.token;
   let app: App;
   const stamp = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  const dataDir = mkdtempSync(path.join(tmpdir(), "rakazo-authz-"));
+  const dataDir = mkdtempSync(path.join(tmpdir(), "labradoodle-authz-"));
 
   beforeAll(async () => {
     const { createApp } = await import("@labradoodle/api/app");
@@ -327,8 +327,8 @@ describeWithDatabase("API authorization and resource isolation", () => {
   });
 
   it("hands a device's push token to the account that registers it last", async () => {
-    const first = await signup(app, `push-first-${stamp}@rakazo.test`, "Push First");
-    const second = await signup(app, `push-second-${stamp}@rakazo.test`, "Push Second");
+    const first = await signup(app, `push-first-${stamp}@labradoodle.test`, "Push First");
+    const second = await signup(app, `push-second-${stamp}@labradoodle.test`, "Push Second");
     const firstUser = (await rpc<Actor>(app, first, "me")).userId;
     const secondUser = (await rpc<Actor>(app, second, "me")).userId;
     const device = "ExponentPushToken[shared-device]";
@@ -352,7 +352,7 @@ describeWithDatabase("API authorization and resource isolation", () => {
   const emptyBody = { method: "POST", body: "" };
 
   it("ends the session when an older phone app signs out with an empty body", async () => {
-    const phone = await phoneSession(app, `phone-sign-out-${stamp}@rakazo.test`);
+    const phone = await phoneSession(app, `phone-sign-out-${stamp}@labradoodle.test`);
     const signedOut = await app.request("/api/auth/sign-out", {
       ...emptyBody,
       headers: { ...phone.headers, "content-type": "application/json", "content-length": "0" },
@@ -362,7 +362,7 @@ describeWithDatabase("API authorization and resource isolation", () => {
   });
 
   it("accepts the deletion-code request older apps send with no body", async () => {
-    const phone = await phoneSession(app, `phone-deletion-code-${stamp}@rakazo.test`);
+    const phone = await phoneSession(app, `phone-deletion-code-${stamp}@labradoodle.test`);
     const response = await app.request("/api/auth/request-account-deletion", {
       ...emptyBody,
       headers: { ...phone.headers, "content-length": "0" },
@@ -372,7 +372,7 @@ describeWithDatabase("API authorization and resource isolation", () => {
   });
 
   it("still rejects a malformed auth body", async () => {
-    const phone = await phoneSession(app, `phone-malformed-${stamp}@rakazo.test`);
+    const phone = await phoneSession(app, `phone-malformed-${stamp}@labradoodle.test`);
     const response = await app.request("/api/auth/sign-out", {
       method: "POST",
       headers: { ...phone.headers, "content-type": "application/json" },
@@ -383,7 +383,7 @@ describeWithDatabase("API authorization and resource isolation", () => {
   });
 
   it("marks account and RPC replies as not cacheable, including errors", async () => {
-    const email = `phone-no-store-${stamp}@rakazo.test`;
+    const email = `phone-no-store-${stamp}@labradoodle.test`;
     const phone = await phoneSession(app, email);
     const rpc = (path: string, headers: Record<string, string>) =>
       app.request(`/rpc/${path}`, {
@@ -394,7 +394,7 @@ describeWithDatabase("API authorization and resource isolation", () => {
     const signIn = (password: string) =>
       app.request("/api/auth/sign-in/email", {
         method: "POST",
-        headers: { "content-type": "application/json", origin: "rakazo://" },
+        headers: { "content-type": "application/json", origin: "labradoodle://" },
         body: JSON.stringify({ email, password }),
       });
     const responses = {
@@ -407,7 +407,7 @@ describeWithDatabase("API authorization and resource isolation", () => {
         body: "{}",
       }),
       me: await rpc("me", phone.headers),
-      signedOutMe: await rpc("me", { origin: "rakazo://" }),
+      signedOutMe: await rpc("me", { origin: "labradoodle://" }),
       unknownProcedure: await rpc("not-a-procedure", phone.headers),
     };
 
@@ -430,8 +430,8 @@ describeWithDatabase("API authorization and resource isolation", () => {
   });
 
   it("uses the bearer session over another account's session cookie", async () => {
-    const a = await phoneSession(app, `phone-cookie-a-${stamp}@rakazo.test`);
-    const b = await phoneSession(app, `phone-cookie-b-${stamp}@rakazo.test`);
+    const a = await phoneSession(app, `phone-cookie-a-${stamp}@labradoodle.test`);
+    const b = await phoneSession(app, `phone-cookie-b-${stamp}@labradoodle.test`);
     const both = { ...b.headers, cookie: a.cookie, "content-type": "application/json" };
     const me = () =>
       app.request("/rpc/me", { method: "POST", headers: both, body: JSON.stringify({ json: {} }) });
@@ -451,14 +451,14 @@ describeWithDatabase("API authorization and resource isolation", () => {
   });
 
   it("accepts only signed bearer tokens, and every sign-in hands one out", async () => {
-    const email = `phone-signed-${stamp}@rakazo.test`;
+    const email = `phone-signed-${stamp}@labradoodle.test`;
     const phone = await phoneSession(app, email);
     const me = async (token: string) =>
       (
         await app.request("/rpc/me", {
           method: "POST",
           headers: {
-            origin: "rakazo://",
+            origin: "labradoodle://",
             authorization: `Bearer ${token}`,
             "content-type": "application/json",
           },
@@ -469,7 +469,7 @@ describeWithDatabase("API authorization and resource isolation", () => {
       const response = await app.request(`/api/auth${path}`, {
         method: "POST",
         headers: {
-          origin: "rakazo://",
+          origin: "labradoodle://",
           "content-type": "application/json",
           ...(token ? { authorization: `Bearer ${token}` } : {}),
         },
@@ -494,7 +494,7 @@ describeWithDatabase("API authorization and resource isolation", () => {
     expect(await me(stored.token)).toBe(401);
     expect(await me(`${stored.token}.${"A".repeat(43)}=`)).toBe(401);
     const rawSession = await app.request("/api/auth/get-session", {
-      headers: { origin: "rakazo://", authorization: `Bearer ${stored.token}` },
+      headers: { origin: "labradoodle://", authorization: `Bearer ${stored.token}` },
     });
     expect(await rawSession.json()).toBeNull();
 
@@ -513,7 +513,7 @@ describeWithDatabase("API authorization and resource isolation", () => {
   });
 
   it("drops a push token when the session that registered it is revoked", async () => {
-    const email = `push-sessions-${stamp}@rakazo.test`;
+    const email = `push-sessions-${stamp}@labradoodle.test`;
     const phone = await signup(app, email, "Push Sessions");
     const userId = (await rpc<Actor>(app, phone, "me")).userId;
     const token = "ExponentPushToken[phone]";
@@ -555,7 +555,7 @@ describeWithDatabase("API authorization and resource isolation", () => {
   });
 
   it("does not deliver a push token after its session expires without a request", async () => {
-    const email = `push-expired-${stamp}@rakazo.test`;
+    const email = `push-expired-${stamp}@labradoodle.test`;
     const phone = await signup(app, email, "Push Expired");
     const userId = (await rpc<Actor>(app, phone, "me")).userId;
     const token = "ExponentPushToken[expired-session]";
@@ -590,8 +590,8 @@ describeWithDatabase("API authorization and resource isolation", () => {
   });
 
   it("keeps approval rules private to each user in a shared Space", async () => {
-    const owner = await signup(app, `approval-owner-${stamp}@rakazo.test`, "Approval Owner");
-    const member = await signup(app, `approval-member-${stamp}@rakazo.test`, "Approval Member");
+    const owner = await signup(app, `approval-owner-${stamp}@labradoodle.test`, "Approval Owner");
+    const member = await signup(app, `approval-member-${stamp}@labradoodle.test`, "Approval Member");
     const ownerActor = await rpc<Actor>(app, owner, "me");
     const memberActor = await rpc<Actor>(app, member, "me");
 
@@ -633,7 +633,7 @@ describeWithDatabase("API authorization and resource isolation", () => {
   });
 
   it("keeps the Better Auth organization routes closed to product sessions", async () => {
-    const cookie = await signup(app, `org-routes-${stamp}@rakazo.test`, "Org Routes");
+    const cookie = await signup(app, `org-routes-${stamp}@labradoodle.test`, "Org Routes");
     const actor = await rpc<Actor>(app, cookie, "me");
     const marker = await extraSpace(cookie, "Marker");
 
@@ -666,7 +666,7 @@ describeWithDatabase("API authorization and resource isolation", () => {
   });
 
   it("keeps compatible headers encrypted and out of DTOs across reconnects", async () => {
-    const cookie = await signup(app, `model-headers-${stamp}@rakazo.test`, "Model Headers");
+    const cookie = await signup(app, `model-headers-${stamp}@labradoodle.test`, "Model Headers");
     const actor = await rpc<Actor>(app, cookie, "me");
     const connection = {
       provider: "openai-compatible",
@@ -706,7 +706,7 @@ describeWithDatabase("API authorization and resource isolation", () => {
   });
 
   it("validates custom thinking against the saved connection capability", async () => {
-    const cookie = await signup(app, `custom-thinking-${stamp}@rakazo.test`, "Custom Thinking");
+    const cookie = await signup(app, `custom-thinking-${stamp}@labradoodle.test`, "Custom Thinking");
     const { doodle } = await rpc<{ doodle: { id: string } }>(app, cookie, "bootstrap", {});
     const connection = {
       provider: "openai-compatible",
@@ -755,7 +755,7 @@ describeWithDatabase("API authorization and resource isolation", () => {
   });
 
   it("binds a new default to the space preference credential, not a newer unused duplicate", async () => {
-    const cookie = await signup(app, `model-duplicates-${stamp}@rakazo.test`, "Model Duplicates");
+    const cookie = await signup(app, `model-duplicates-${stamp}@labradoodle.test`, "Model Duplicates");
     const actor = await rpc<Actor>(app, cookie, "me");
     const olderSecret = await db.secret.create({
       data: {
@@ -818,7 +818,7 @@ describeWithDatabase("API authorization and resource isolation", () => {
   });
 
   it("never hands out session tokens and asks for the password before account deletion", async () => {
-    const email = `sessions-${stamp}@rakazo.test`;
+    const email = `sessions-${stamp}@labradoodle.test`;
     const cookie = await signup(app, email, "Sessions");
     const second = await app.request("/api/auth/sign-in/email", {
       method: "POST",
@@ -850,8 +850,8 @@ describeWithDatabase("API authorization and resource isolation", () => {
   });
 
   it("denies server administration to every app account, including a stored former owner", async () => {
-    const formerOwner = await signup(app, `former-owner-${stamp}@rakazo.test`, "Test Account");
-    const other = await signup(app, `ordinary-${stamp}@rakazo.test`, "Other Account");
+    const formerOwner = await signup(app, `former-owner-${stamp}@labradoodle.test`, "Test Account");
+    const other = await signup(app, `ordinary-${stamp}@labradoodle.test`, "Other Account");
     const account = await rpc<Actor>(app, formerOwner, "me");
     await handles.prisma.deploymentSettings.update({
       where: { id: "default" },
@@ -923,12 +923,12 @@ async function signup(app: App, email: string, name: string) {
 async function phoneSession(app: App, email: string) {
   const response = await app.request("/api/auth/sign-up/email", {
     method: "POST",
-    headers: { "content-type": "application/json", origin: "rakazo://" },
+    headers: { "content-type": "application/json", origin: "labradoodle://" },
     body: JSON.stringify({ email, password: "password12", name: "Phone" }),
   });
   const { token, user } = (await response.json()) as { token: string; user: { id: string } };
   const cookie = sessionCookieHeader(response);
-  const headers = { origin: "rakazo://", authorization: `Bearer ${token}` };
+  const headers = { origin: "labradoodle://", authorization: `Bearer ${token}` };
   const me = async () =>
     (
       await app.request("/rpc/me", {
@@ -973,7 +973,7 @@ async function raw(
     headers: {
       "content-type": "application/json",
       ...(cookie ? { cookie } : {}),
-      ...(spaceId ? { "x-rakazo-space-id": spaceId } : {}),
+      ...(spaceId ? { "x-labradoodle-space-id": spaceId } : {}),
       origin: "http://127.0.0.1:5173",
     },
     body: JSON.stringify({ json: body ?? {} }),
