@@ -12,7 +12,6 @@ import {
   rename,
   rm,
   stat,
-  unlink,
   utimes,
   writeFile,
 } from "node:fs/promises";
@@ -243,22 +242,6 @@ export class LocalAgentHomeStore implements AgentHomeStore {
     return listed.filter((entry): entry is NonNullable<typeof entry> => entry !== null);
   }
 
-  /**
-   * Deletes folders directly under `parent` (a Team Computer's bot folders or browser profiles)
-   * and returns whether any were there. Only for a home no running computer mounts: a symlinked
-   * parent is refused and a final symlink is unlinked.
-   */
-  async removeFolders(botId: string, parent: string, names: readonly string[]): Promise<boolean> {
-    return this.withBotWrite(botId, async () => {
-      await this.recoverInterruptedCommit(botId);
-      let removed = false;
-      for (const name of names) {
-        if (await removeContainedDirectory(this.botDir(botId), parent, name)) removed = true;
-      }
-      return removed;
-    });
-  }
-
   /** Deletes this host's copy of a home, an interrupted save's previous copy and its revision. */
   async remove(botId: string): Promise<void> {
     await this.withBotWrite(botId, () => this.removeCopy(botId));
@@ -373,25 +356,6 @@ export async function removeAgentHome(home: AgentHomeStore, homeKey: string, dat
   await removeTree(resolveAgentHomePath(home, homeKey, dataDir));
 }
 
-/**
- * Deletes folders under `parent` in a stored home and saves the result, so a computer that boots
- * from it later, on any host, no longer has them.
- */
-export async function removeAgentHomeFolders(
-  home: AgentHomeStore,
-  homeKey: string,
-  parent: string,
-  names: readonly string[],
-  dataDir = "./data",
-): Promise<void> {
-  if (home instanceof LocalAgentHomeStore) {
-    await home.removeFolders(homeKey, parent, names);
-    return;
-  }
-  for (const name of names)
-    await removeContainedDirectory(resolveAgentHomePath(home, homeKey, dataDir), parent, name);
-}
-
 export function newRevision() {
   return `rev-${Date.now()}-${randomUUID().slice(0, 8)}`;
 }
@@ -471,41 +435,6 @@ function assertContained(root: string, candidate: string) {
 
 function isHiddenTopEntry(root: string, candidate: string) {
   return path.relative(root, candidate).split(path.sep)[0]!.startsWith(".");
-}
-
-/** Delete one folder in a home. A symlinked parent is refused; a final symlink is unlinked. */
-async function removeContainedDirectory(root: string, parent: string, name: string) {
-  const target = path.join(root, parent, name);
-  const info = await lstat(target).catch((error: unknown) => {
-    if (isMissing(error)) return null;
-    throw error;
-  });
-  if (!info) return false;
-  const parentInfo = await lstat(path.dirname(target)).catch((error: unknown) => {
-    if (isMissing(error)) return null;
-    throw error;
-  });
-  if (!parentInfo || parentInfo.isSymbolicLink() || !parentInfo.isDirectory()) {
-    throw new Error("folder escapes the team home");
-  }
-  if (info.isSymbolicLink()) {
-    await unlink(target);
-    return true;
-  }
-  const resolvedRoot = await realpath(root);
-  const resolvedTarget = await realpath(target);
-  const relative = path.relative(resolvedRoot, resolvedTarget);
-  if (
-    path.dirname(resolvedTarget) !== path.join(resolvedRoot, parent) ||
-    path.basename(resolvedTarget) !== name ||
-    relative === "" ||
-    relative.startsWith("..") ||
-    path.isAbsolute(relative)
-  ) {
-    throw new Error("folder escapes the team home");
-  }
-  await removeTree(resolvedTarget);
-  return true;
 }
 
 /**

@@ -574,11 +574,6 @@ describe("LocalAgentHomeStore with Go's read-only module cache", () => {
       (_store: LocalAgentHomeStore, root: string) =>
         removeAgentHome({} as AgentHomeStore, "bot-1", root),
     ],
-    [
-      "removing a Team bot's folder",
-      ["bot-1/bots/gone"],
-      (store: LocalAgentHomeStore) => store.removeFolders("bot-1", "bots", ["gone"]),
-    ],
   ])("removes the cache when %s", async (_case, seeded, removeIt) => {
     const { root, store } = await fixture();
     const outside = path.join(root, "outside");
