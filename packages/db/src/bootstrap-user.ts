@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { signupPolicyFromEnv } from "@labradoodle/core";
+import { personalWorkspaceName, signupPolicyFromEnv } from "@labradoodle/core";
 import { ensureFirstChat } from "./chats.js";
 import type { PrismaClient } from "./client.js";
 import { ensureSpaceDoodle } from "./doodle.js";
@@ -111,19 +111,19 @@ export async function createOrganizationWithDefaultSpace(
 }
 
 /**
- * Provision a personal workspace and a first chat in it with Doodle. Signup never grants
+ * Provision the person's own workspace and a first chat in it with Doodle. Signup never grants
  * deployment administration.
  */
 export async function bootstrapUserSpace(
   prisma: PrismaClient,
-  user: { id: string },
+  user: { id: string; name?: string | null; email?: string | null },
   env: SignupPolicyEnv,
 ): Promise<{ spaceId: string }> {
   // Concurrent bootstraps for the same user (e.g. overlapping first phone inbounds) share the slug.
   const spaceId = await createOrganizationWithDefaultSpace(prisma, {
     userId: user.id,
     orgId: newId(),
-    name: "Personal",
+    name: personalWorkspaceName(user),
     slug: `user-${user.id.slice(0, 12)}`,
   });
   const policy = signupPolicyFromEnv(env);

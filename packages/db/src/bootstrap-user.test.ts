@@ -36,17 +36,17 @@ function makePrisma(settings: { id: string; ownerUserId: string | null } | null)
 const env = { signupsEnabled: "false", signupAllowlist: "a@example.com, b@example.com" };
 
 describe("bootstrapUserSpace", () => {
-  it("creates a personal organization with a default workspace", async () => {
+  it("creates a personal organization with a default workspace named for its owner", async () => {
     const prisma = makePrisma({ id: "default", ownerUserId: "user-1" });
     const result = await bootstrapUserSpace(
       prisma as unknown as PrismaClient,
-      { id: "user-1" },
+      { id: "user-1", name: "Ada Lovelace" },
       env,
     );
 
     expect(prisma.organization.create).toHaveBeenCalledTimes(1);
     const orgData = prisma.organization.create.mock.calls[0]![0].data;
-    expect(orgData.name).toBe("Personal");
+    expect(orgData.name).toBe("Ada's workspace");
     expect(orgData.slug).toBe("user-user-1".slice(0, 16));
     expect(result.spaceId).toBe(orgData.id);
 
@@ -60,7 +60,7 @@ describe("bootstrapUserSpace", () => {
       expect.objectContaining({
         id: orgData.id,
         organizationId: orgData.id,
-        name: "Personal",
+        name: "Ada's workspace",
       }),
     );
     const spaceMemberData = prisma.spaceMember.create.mock.calls[0]![0].data;

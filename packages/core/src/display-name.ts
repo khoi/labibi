@@ -24,22 +24,33 @@ export function displayName(name: string | null | undefined, fallback: string): 
   return trimmed && /[\p{L}\p{N}]/u.test(trimmed) && !isOpaqueName(trimmed) ? trimmed : fallback;
 }
 
-export function accountDisplay(
-  account: { name?: string | null; email?: string | null; image?: string | null },
-  fallback: string,
-): { label: string; initial: string | null; image: string | null } {
+/** The account's real name, or empty when it has none or only repeats its email. */
+function personName(account: { name?: string | null; email?: string | null }): string {
   const email = account.email?.trim() ?? "";
   const name = displayName(account.name, "");
   const comparable = name.toLowerCase();
   const emailDerived =
     email &&
     (comparable === email.toLowerCase() || comparable === email.split("@")[0]?.toLowerCase());
-  const label = (emailDerived ? "" : name) || email || fallback;
+  return emailDerived ? "" : name;
+}
+
+export function accountDisplay(
+  account: { name?: string | null; email?: string | null; image?: string | null },
+  fallback: string,
+): { label: string; initial: string | null; image: string | null } {
+  const label = personName(account) || account.email?.trim() || fallback;
   return {
     label,
     initial: label.match(/[\p{L}\p{N}]/u)?.[0]?.toUpperCase() ?? null,
     image: account.image || null,
   };
+}
+
+/** A person's own workspace is named for them: "Ada's workspace", or "Workspace" without a name. */
+export function personalWorkspaceName(account: { name?: string | null; email?: string | null }) {
+  const first = personName(account).split(/\s+/)[0];
+  return first ? `${first}'s workspace` : "Workspace";
 }
 
 /** Only identity metadata changes; message text, filenames and tool identifiers stay literal. */

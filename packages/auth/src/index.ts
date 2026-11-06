@@ -197,12 +197,12 @@ export function createAuth(prisma: PrismaClient, env: AuthEnv) {
     return (await hasAdmittedAccount(prisma)) ? { ...policy, enabled: false } : policy;
   };
   /** Admits the sole account one at a time, so two first signups cannot both get in. */
-  const admitSoleAccount = (userId: string) =>
+  const admitSoleAccount = (user: { id: string; name: string; email: string }) =>
     prisma.$transaction(async (tx) => {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext('labradoodle:single-account'))`;
-      if (await hasAdmittedAccount(tx, userId)) return false;
+      if (await hasAdmittedAccount(tx, user.id)) return false;
       // Committed before the lock is released, so the next signup sees it.
-      await bootstrapUserSpace(prisma, { id: userId }, env);
+      await bootstrapUserSpace(prisma, user, env);
       return true;
     });
   /** The directory provisioned this account, so it is admitted whatever the signup policy. */
@@ -679,7 +679,7 @@ export function createAuth(prisma: PrismaClient, env: AuthEnv) {
                 });
               }
               if (!env.singleAccount) await bootstrapUserSpace(prisma, user, env);
-              else if (!(await admitSoleAccount(user.id)))
+              else if (!(await admitSoleAccount(user)))
                 throw new APIError("FORBIDDEN", {
                   code: "REGISTRATION_CLOSED",
                   message: "Registration is closed",
